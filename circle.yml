@@ -14,4 +14,8 @@ deployment:
   lambda:
     branch: [master]
     commands:
-      - make live
+      - make live-lambda
+  website:
+    branch: [master]
+    commands:
+      - make live-website
