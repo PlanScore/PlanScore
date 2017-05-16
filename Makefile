@@ -14,8 +14,14 @@ planscore-uploadfields.zip:
 	pip install -q -t planscore-uploadfields .
 	cd planscore-uploadfields && zip -rq ../planscore-uploadfields.zip .
 
+planscore-afterupload.zip:
+	mkdir -p planscore-afterupload
+	pip install -q -t planscore-afterupload .
+	cd planscore-afterupload && zip -rq ../planscore-afterupload.zip .
+
 clean:
 	rm -rf build
 	rm -rf planscore-uploadfields planscore-uploadfields.zip
+	rm -rf planscore-afterupload planscore-afterupload.zip
 
 .PHONY: clean all live-lambda live-website
