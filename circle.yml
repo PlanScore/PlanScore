@@ -11,11 +11,8 @@ test:
     - python setup.py test
 
 deployment:
-  lambda:
+  production:
     branch: [master]
     commands:
       - make live-lambda
-  website:
-    branch: [master]
-    commands:
       - make live-website
