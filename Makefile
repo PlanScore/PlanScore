@@ -5,7 +5,9 @@ live-lambda: all
 	aws --region us-east-1 lambda update-function-configuration --function-name PlanScore-UploadFields --handler planscore.upload_fields.lambda_handler >> /dev/null
 
 live-website:
-	aws s3 cp --acl public-read --content-type 'text/html; charset=utf-8' index.html s3://planscore-website/
+	mkdir -p build
+	ln -f *.html build/
+	aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete build/ s3://planscore-website/
 
 planscore-uploadfields.zip:
 	mkdir -p planscore-uploadfields
