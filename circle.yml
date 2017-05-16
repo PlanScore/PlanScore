@@ -12,6 +12,6 @@ test:
 
 deployment:
   lambda:
-    branch: [master, migurski/add-s3-upload-loop]
+    branch: [master]
     commands:
       - make live
