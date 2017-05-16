@@ -1,0 +1,9 @@
+machine:
+  python:
+    version: 3.6.1
+
+deployment:
+  lambda:
+    branch: [master, migurski/add-s3-upload-loop]
+    commands:
+      - make live
