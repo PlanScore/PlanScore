@@ -19,7 +19,7 @@ def get_upload_fields(s3, creds):
     if creds.token:
         presigned['fields']['x-amz-security-token'] = creds.token
     
-    return presigned
+    return presigned['url'], presigned['fields']
 
 def lambda_handler(event, context):
     '''
