@@ -1,0 +1,17 @@
+machine:
+  python:
+    version: 3.6.1
+
+dependencies:
+  override:
+    - pip install .
+
+test:
+  override:
+    - python setup.py test
+
+deployment:
+  lambda:
+    branch: [master]
+    commands:
+      - make live
