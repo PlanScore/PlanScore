@@ -15,6 +15,7 @@ planscore-uploadfields.zip:
 	cd planscore-uploadfields && zip -rq ../planscore-uploadfields.zip .
 
 clean:
+	rm -rf build
 	rm -rf planscore-uploadfields planscore-uploadfields.zip
 
 .PHONY: clean all live-lambda live-website

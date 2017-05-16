@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>Upload</title>
+	<script language="javascript">
+
+	    function enable_form(url, form)
+	    {
+            var request = new XMLHttpRequest();
+            request.open('GET', url, true);
+
+            request.onload = function()
+            {
+                if(request.status >= 200 && request.status < 400)
+                {
+                    // Returns a two-element array with URL and form fields.
+                    var data = JSON.parse(request.responseText);
+                    for(var key in data[1]) {
+                        form.elements[key].value = data[1][key];
+                    }
+                    form.action = data[0];
+                    form.elements['submission'].disabled = false;
+                }
+            };
+
+            request.onerror = function() { /* There was a connection error of some sort */ };
+            request.send();
+	    }
+
+	</script>
+</head>
+<body>
+    <form action="#" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="key" value="uploads/${filename}">
+        <input type="hidden" name="AWSAccessKeyId" value="ASIAI4U54FIKFPYYUT3A">
+        <input type="hidden" name="policy" value="">
+        <input type="hidden" name="signature" value="/d29LoPV++/r9Q4pZAxvLVaiyTw=">
+        <input type="hidden" name="success_action_redirect" value="http://example.com">
+        <input type="hidden" name="acl" value="public-read">
+        <input type="hidden" name="x-amz-security-token" value="">
+        <input type="file" name="file">
+        <input type="submit" name="submission" value="Upload" disabled>
+    </form>
+	<script language="javascript">
+	    enable_form('https://api.planscore.org/upload', document.forms[0]);
+	</script>
+</body>
+</html>
