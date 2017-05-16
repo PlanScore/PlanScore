@@ -6,8 +6,8 @@ live: all
 
 planscore-uploadfields.zip:
 	mkdir -p planscore-uploadfields
-	pip install -t planscore-uploadfields .
-	cd planscore-uploadfields && zip -r ../planscore-uploadfields.zip .
+	pip install -q -t planscore-uploadfields .
+	cd planscore-uploadfields && zip -rq ../planscore-uploadfields.zip .
 
 clean:
 	rm -rf planscore-uploadfields planscore-uploadfields.zip
