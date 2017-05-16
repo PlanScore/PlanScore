@@ -16,6 +16,6 @@ deployment:
     commands:
       - make live-lambda
   website:
-    branch: [master, migurski/update-s3-website]
+    branch: [master]
     commands:
       - make live-website
