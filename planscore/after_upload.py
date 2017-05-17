@@ -15,6 +15,10 @@ def lambda_handler(event, context):
     query = planscore.util.event_query_args(event)
     summary = get_uploaded_info(s3, query['bucket'], query['key'])
     
+    from osgeo import ogr
+    geom = ogr.CreateGeometryFromWkt('point(0 0)')
+    print('geom:', geom)
+    
     return {
         'statusCode': '200',
         'headers': {'Access-Control-Allow-Origin': '*'},

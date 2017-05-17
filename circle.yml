@@ -16,3 +16,8 @@ deployment:
     commands:
       - make live-lambda
       - make live-website
+  score_uploaded_plans:
+    branch: [migurski/score-uploaded-plans]
+    commands:
+      - make planscore-afterupload.zip
+      - aws --region us-east-1 lambda update-function-code --function-name PlanScore-AfterUpload --zip-file fileb://planscore-afterupload.zip >> /dev/null
