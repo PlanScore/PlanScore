@@ -9,5 +9,8 @@ setup(
     test_suite = 'planscore.tests',
     install_requires = [
         'boto3 == 1.4.4',
-        ]
+        ],
+    extras_require = {
+        'GDAL': ['GDAL == 2.1.3'],
+        }
 )
