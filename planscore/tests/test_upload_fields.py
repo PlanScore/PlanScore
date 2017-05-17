@@ -10,7 +10,7 @@ class TestUploadFields (unittest.TestCase):
         url, fields = upload_fields.get_upload_fields(s3, creds, 'https://example.org')
         
         self.assertEqual(len(s3.generate_presigned_post.mock_calls), 1)
-        self.assertEqual(fields['success_action_redirect'], 'https://example.org/uploads')
+        self.assertEqual(fields['success_action_redirect'], 'https://example.org/uploaded')
         self.assertIs(fields['x-amz-security-token'], creds.token)
     
     def test_without_token(self):
@@ -21,5 +21,5 @@ class TestUploadFields (unittest.TestCase):
         url, fields = upload_fields.get_upload_fields(s3, creds, 'https://example.org')
         
         self.assertEqual(len(s3.generate_presigned_post.mock_calls), 1)
-        self.assertEqual(fields['success_action_redirect'], 'https://example.org/uploads')
+        self.assertEqual(fields['success_action_redirect'], 'https://example.org/uploaded')
         self.assertNotIn('x-amz-security-token', fields)

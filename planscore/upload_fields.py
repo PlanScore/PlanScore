@@ -1,6 +1,7 @@
 import boto3, json, pprint, urllib.parse, planscore.util
 
-AFTER_PATH = '/uploads'
+# API Gateway resource for planscore.after_upload.lambda_handler
+AFTER_PATH = '/uploaded'
 
 def get_upload_fields(s3, creds, request_url):
     '''
@@ -37,4 +38,4 @@ def lambda_handler(event, context):
 
 if __name__ == '__main__':
     s3, creds = boto3.client('s3'), boto3.session.Session().get_credentials()
-    pprint.pprint(get_upload_fields(s3, creds))
+    pprint.pprint(get_upload_fields(s3, creds, 'http://localhost'))

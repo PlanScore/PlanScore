@@ -8,3 +8,8 @@ def event_url(event):
     path = event.get('path', '/')
     
     return urllib.parse.urlunparse((scheme, hostname, path, None, None, None))
+
+def event_query_args(event):
+    '''
+    '''
+    return event.get('queryStringParameters') or {}

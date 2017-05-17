@@ -12,3 +12,16 @@ class TestUtil (unittest.TestCase):
 
         url3 = util.event_url({'headers': {'Host': 'example.org'}, 'path': '/hello'})
         self.assertEqual(url3, 'http://example.org/hello')
+    
+    def test_event_query_args(self):
+        args1 = util.event_query_args({})
+        self.assertEqual(args1, {})
+
+        args2 = util.event_query_args({'queryStringParameters': None})
+        self.assertEqual(args2, {})
+
+        args3 = util.event_query_args({'queryStringParameters': {}})
+        self.assertEqual(args3, {})
+
+        args4 = util.event_query_args({'queryStringParameters': {'foo': 'bar'}})
+        self.assertEqual(args4, {'foo': 'bar'})

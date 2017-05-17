@@ -1,19 +1,24 @@
-import boto3, pprint
+import boto3, pprint, planscore.util
+
+def get_uploaded_info(s3, bucket, key):
+    '''
+    '''
+    upload = s3.get_object(Bucket=bucket, Key=key)
+    return '{ContentLength} bytes in {0}'.format(key, **upload)
 
 def lambda_handler(event, context):
     '''
     '''
-    print('Event, context:')
+    print('Event:')
     pprint.pprint(event)
-    pprint.pprint(context)
-    pprint.pprint(dir(context))
-    pprint.pprint(context.client_context)
-    pprint.pprint(dir(context.client_context))
+    s3 = boto3.client('s3')
+    query = planscore.util.event_query_args(event)
+    summary = get_uploaded_info(s3, query['bucket'], query['key'])
     
     return {
         'statusCode': '200',
-        'headers': {'X-Custom-Header': 'Yo'},
-        'body': 'Hello world'
+        'headers': {'Access-Control-Allow-Origin': '*'},
+        'body': summary
         }
 
 if __name__ == '__main__':
