@@ -7,6 +7,9 @@ setup(
     description = '',
     packages = ['planscore', 'planscore.tests'],
     test_suite = 'planscore.tests',
+    package_data = {
+        'planscore.tests': ['data/*.*'],
+        },
     install_requires = [
         'boto3 == 1.4.4',
         ],
