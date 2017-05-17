@@ -1,4 +1,4 @@
-import boto3, pprint
+import boto3, json, pprint
 
 def get_upload_fields(s3, creds):
     '''
@@ -25,7 +25,13 @@ def lambda_handler(event, context):
     '''
     '''
     s3, creds = boto3.client('s3'), boto3.session.Session().get_credentials()
-    return get_upload_fields(s3, creds)
+    url, fields = get_upload_fields(s3, creds)
+    
+    return {
+        'statusCode': '200',
+        'headers': {'Access-Control-Allow-Origin': '*'},
+        'body': json.dumps([url, fields], indent=2)
+        }
 
 if __name__ == '__main__':
     s3, creds = boto3.client('s3'), boto3.session.Session().get_credentials()
