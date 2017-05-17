@@ -49,7 +49,7 @@ RUN \
   make -j $(nproc) && \
   make install
 
-# Add GDAL libs to the function zip
+# Add GDAL libs to the function tarball
 
 WORKDIR /var/task
 
@@ -58,8 +58,8 @@ RUN \
   strip lib/libproj.so.12.0.0
 
 RUN \
-  zip --symlinks \
-    -r /tmp/task.zip \
+  tar -cvf \
+    /tmp/task.tar \
     lib/libgdal.so* \
     lib/libproj.so* \
     share/gdal/
@@ -75,24 +75,21 @@ ENV PATH /tmp/virtualenv/bin:/var/task/bin:/usr/local/sbin:/usr/local/bin:/usr/s
 COPY . /var/gdalambda
 WORKDIR /var/gdalambda
 
-RUN \
-  pip install -r requirements.txt
+RUN pip install 'GDAL == 2.1.3'
 
-# Add Python deps to the function zip
+# Add Python deps to the function tarball
 
 WORKDIR /tmp/virtualenv/lib/python3.6/site-packages
 
-# skip the zipping (above, too) and put it in a staging directory that can be copied to a volume or output via tar on stdout
-# determined by copying the app in, touching start, exercising it, then using find /tmp/virtualenv/lib/python3.6/site-packages -type f -anewer start | sort
 RUN \
-  zip \
-    -r /tmp/task.zip \
+  tar -rvf \
+    /tmp/task.tar \
     gdalconst.py \
     ogr.py \
     osr.py \
     osgeo/*.so \
     osgeo/*.py \
-    gdal.pyc \
+    gdal.py \
     __pycache__/gdalconst.cpython-36.pyc \
     __pycache__/ogr.cpython-36.pyc \
     __pycache__/osr.cpython-36.pyc \

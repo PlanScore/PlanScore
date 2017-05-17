@@ -1,6 +1,5 @@
-task.zip: Dockerfile
-	docker run --rm --entrypoint cat $$(docker build -q .) /tmp/task.zip > $@
-	zip -r $@ task.py
+gdal-2.1.3-python-3.6.1.tar.gz: Dockerfile
+	docker run --rm --entrypoint cat $$(docker build -q .) /tmp/task.tar | gzip --stdout > $@
 
 clean:
-	rm -f task.zip
+	rm -f gdal-2.1.3-python-3.6.1.tar.gz
