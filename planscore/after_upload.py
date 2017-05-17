@@ -1,4 +1,5 @@
-import boto3, pprint, planscore.util
+import boto3, pprint
+from . import util
 
 def get_uploaded_info(s3, bucket, key):
     '''
@@ -12,7 +13,7 @@ def lambda_handler(event, context):
     print('Event:')
     pprint.pprint(event)
     s3 = boto3.client('s3')
-    query = planscore.util.event_query_args(event)
+    query = util.event_query_args(event)
     summary = get_uploaded_info(s3, query['bucket'], query['key'])
     
     from osgeo import ogr
