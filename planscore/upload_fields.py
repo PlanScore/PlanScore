@@ -1,9 +1,11 @@
-import boto3, json, pprint
+import boto3, json, pprint, urllib.parse, planscore.util
 
-def get_upload_fields(s3, creds):
+AFTER_PATH = '/uploads'
+
+def get_upload_fields(s3, creds, request_url):
     '''
     '''
-    acl, redirect_url = "public-read", 'http://example.com'
+    acl, redirect_url = 'private', urllib.parse.urljoin(request_url, AFTER_PATH)
     
     presigned = s3.generate_presigned_post(
         'planscore', 'uploads/${filename}',
@@ -25,7 +27,7 @@ def lambda_handler(event, context):
     '''
     '''
     s3, creds = boto3.client('s3'), boto3.session.Session().get_credentials()
-    url, fields = get_upload_fields(s3, creds)
+    url, fields = get_upload_fields(s3, creds, planscore.util.event_url(event))
     
     return {
         'statusCode': '200',
