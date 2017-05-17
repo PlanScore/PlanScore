@@ -3,7 +3,11 @@ machine:
     version: 3.6.1
 
 dependencies:
+  pre:
+    - sudo apt-get update -y
+    - sudo apt-get install -y libgdal1-dev
   override:
+    - CPLUS_INCLUDE_PATH=/usr/include/gdal C_INCLUDE_PATH=/usr/include/gdal pip install "GDAL <= `gdal-config --version`"
     - pip install .
 
 test:
