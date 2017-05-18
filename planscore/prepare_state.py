@@ -1,10 +1,12 @@
 import argparse, math, itertools, io, gzip
-from osgeo import ogr
+from osgeo import ogr, osr
 import boto3, ModestMaps.Geo, ModestMaps.Core
 
 TILE_ZOOM = 12
 FRACTION_FIELD = 'PlanScore:Fraction'
 KEY_FORMAT = 'data/{state}/{zxy}.geojson'
+
+EPSG4326 = osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)
 
 def get_projection():
     ''' Return a spherical mercator MMaps Projection instance.
@@ -62,6 +64,8 @@ def main():
             geometry = feature.GetGeometryRef()
             local_feature = feature.Clone()
             local_geometry = geometry.Clone().Intersection(bbox_geom)
+            local_geometry.TransformTo(EPSG4326)
+
             fraction = local_geometry.GetArea() / geometry.GetArea()
             local_feature.SetField(FRACTION_FIELD, fraction)
             local_feature.SetGeometry(local_geometry)
