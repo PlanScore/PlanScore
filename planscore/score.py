@@ -7,7 +7,7 @@ ogr.UseExceptions()
 def score_plan(s3, bucket, upload, plan_path, tiles_prefix):
     '''
     '''
-    feature_count, output, upload.tiles = 0, io.StringIO(), []
+    feature_count, output, upload.districts = 0, io.StringIO(), []
     ds = ogr.Open(plan_path)
     print(ds, file=output)
     
@@ -19,8 +19,8 @@ def score_plan(s3, bucket, upload, plan_path, tiles_prefix):
         print(index, feature, file=output)
 
         totals, tiles, district_output = score_district(s3, bucket, feature.GetGeometryRef(), tiles_prefix)
-        upload.tiles.append(tiles)
         output.write(district_output)
+        upload.districts.append(dict(totals=totals, tiles=tiles))
     
     length = os.stat(plan_path).st_size
     

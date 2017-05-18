@@ -36,7 +36,7 @@ class TestScore (unittest.TestCase):
     def test_score_plan_geojson(self, score_district):
         '''
         '''
-        score_district.return_value = None, 'some tiles', 'Better score a district.\n'
+        score_district.return_value = {'Yo': 1}, ['zxy'], 'Better score a district.\n'
         
         plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         upload = data.Upload('id', os.path.basename(plan_path), [])
@@ -45,13 +45,13 @@ class TestScore (unittest.TestCase):
         scored = score.score_plan(None, None, upload, plan_path, tiles_prefix)
         self.assertIn('2 features in 1119-byte null-plan.geojson', scored)
         self.assertIn('Better score a district.', scored)
-        self.assertEqual(upload.tiles, ['some tiles', 'some tiles'])
+        self.assertEqual(upload.districts, [{'totals': {'Yo': 1}, 'tiles': ['zxy']}] * 2)
     
     @unittest.mock.patch('planscore.score.score_district')
     def test_score_plan_gpkg(self, score_district):
         '''
         '''
-        score_district.return_value = None, 'some tiles', 'Better score a district.\n'
+        score_district.return_value = {'Yo': 1}, ['zxy'], 'Better score a district.\n'
         
         plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.gpkg')
         upload = data.Upload('id', os.path.basename(plan_path), [])
@@ -60,7 +60,7 @@ class TestScore (unittest.TestCase):
         scored = score.score_plan(None, None, upload, plan_path, tiles_prefix)
         self.assertIn('2 features in 40960-byte null-plan.gpkg', scored)
         self.assertIn('Better score a district.', scored)
-        self.assertEqual(upload.tiles, ['some tiles', 'some tiles'])
+        self.assertEqual(upload.districts, [{'totals': {'Yo': 1}, 'tiles': ['zxy']}] * 2)
     
     def test_score_plan_bad_file_type(self):
         '''

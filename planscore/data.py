@@ -5,10 +5,10 @@ UPLOAD_INDEX_KEY = 'uploads/{id}/index.json'
 
 class Upload:
 
-    def __init__(self, id, key, tiles=None):
+    def __init__(self, id, key, districts=None, **kwargs):
         self.id = id
         self.key = key
-        self.tiles = tiles
+        self.districts = districts or []
     
     def index_key(self):
         return UPLOAD_INDEX_KEY.format(id=self.id)
@@ -17,7 +17,7 @@ class Upload:
         data = dict(
             id = self.id,
             key = self.key,
-            tiles = self.tiles,
+            districts = self.districts,
             )
     
         return json.dumps(data, sort_keys=True, indent=2)
@@ -29,5 +29,5 @@ class Upload:
         return Upload(
             id = data['id'], 
             key = data['key'],
-            tiles = data.get('tiles'),
+            districts = data.get('districts'),
             )
