@@ -1,4 +1,4 @@
-import boto3, pprint, os, io, tempfile, shutil, contextlib
+import boto3, pprint, os, io, tempfile, shutil, contextlib, posixpath, json
 import itsdangerous
 from osgeo import ogr
 from . import util, prepare_state
@@ -20,12 +20,13 @@ def get_uploaded_info(s3, bucket, key):
     '''
     '''
     upload = s3.get_object(Bucket=bucket, Key=key)
-    feature_count, output = 0, io.StringIO()
+    feature_bboxes, feature_count, output = [], 0, io.StringIO()
     
     with temporary_buffer_file(os.path.basename(key), upload['Body']) as path:
         ds = ogr.Open(path)
         print(ds, file=output)
         for (index, feature) in enumerate(ds.GetLayer(0)):
+            feature_bboxes.append([])
             feature_count += 1
             geometry = feature.GetGeometryRef()
             geometry.TransformTo(prepare_state.EPSG4326)
@@ -33,15 +34,32 @@ def get_uploaded_info(s3, bucket, key):
             xxyy_extent = geometry.GetEnvelope()
             tiles = prepare_state.iter_extent_tiles(xxyy_extent, prepare_state.TILE_ZOOM)
             print(index, feature, file=output)
-            for (coord, _) in tiles:
+            for (coord, tile_wkt) in tiles:
+                tile_zxy = '{zoom}/{column}/{row}'.format(**coord.__dict__)
+                tile_geom = ogr.CreateGeometryFromWkt(tile_wkt)
+                
+                if not tile_geom.Intersects(geometry):
+                    continue
+                
+                feature_bboxes[-1].append(tile_zxy)
                 print(' ', prepare_state.KEY_FORMAT.format(state='XX',
-                    zxy='{zoom}/{column}/{row}'.format(**coord.__dict__)),
-                    file=output)
+                    zxy=tile_zxy), file=output)
+    
+    index_key = posixpath.join(posixpath.dirname(key), 'index.json')
+    put_upload_index(s3, bucket, index_key, feature_bboxes)
     
     print('{0} features in {ContentLength}-byte {1}'.format(feature_count, key, **upload),
         file=output) 
     
     return output.getvalue()
+
+def put_upload_index(s3, bucket, key, data):
+    '''
+    '''
+    body = json.dumps(data).encode('utf8')
+
+    s3.put_object(Bucket='planscore', Key=key, Body=body,
+        ContentType='text/json', ACL='private')
 
 def lambda_handler(event, context):
     '''

@@ -30,8 +30,17 @@ class TestAfterUpload (unittest.TestCase):
         self.assertEqual(response['statusCode'], '400')
         self.assertIn('Bad ID', response['body'])
     
+    def test_put_upload_index(self):
+        '''
+        '''
+        s3 = unittest.mock.Mock()
+        after_upload.put_upload_index(s3, 'bucket', 'key', ['yo'])
+        s3.put_object.assert_called_once_with(Bucket='planscore', Key='key',
+            Body=b'["yo"]', ACL='private', ContentType='text/json')
+    
     @unittest.mock.patch('planscore.after_upload.temporary_buffer_file')
-    def test_get_uploaded_info_good_file_geojson(self, temporary_buffer_file):
+    @unittest.mock.patch('planscore.after_upload.put_upload_index')
+    def test_get_uploaded_info_good_file_geojson(self, put_upload_index, temporary_buffer_file):
         '''
         '''
         @contextlib.contextmanager
@@ -43,13 +52,16 @@ class TestAfterUpload (unittest.TestCase):
         s3 = unittest.mock.Mock()
         s3.get_object.return_value = {'ContentLength': 1119, 'Body': None}
 
-        info = after_upload.get_uploaded_info(s3, 'planscore', 'uploads/null-plan.geojson')
+        info = after_upload.get_uploaded_info(s3, 'planscore', 'uploads/id/null-plan.geojson')
 
+        put_upload_index.assert_called_once_with(s3, 'planscore', 'uploads/id/index.json',
+            [['12/2047/2047', '12/2047/2048'], ['12/2047/2047', '12/2048/2047', '12/2047/2048', '12/2048/2048']])
         temporary_buffer_file.assert_called_once_with('null-plan.geojson', None)
-        self.assertIn('2 features in 1119-byte uploads/null-plan.geojson', info)
+        self.assertIn('2 features in 1119-byte uploads/id/null-plan.geojson', info)
     
     @unittest.mock.patch('planscore.after_upload.temporary_buffer_file')
-    def test_get_uploaded_info_good_file_geopackage(self, temporary_buffer_file):
+    @unittest.mock.patch('planscore.after_upload.put_upload_index')
+    def test_get_uploaded_info_good_file_geopackage(self, put_upload_index, temporary_buffer_file):
         '''
         '''
         @contextlib.contextmanager
@@ -61,10 +73,12 @@ class TestAfterUpload (unittest.TestCase):
         s3 = unittest.mock.Mock()
         s3.get_object.return_value = {'ContentLength': 40960, 'Body': None}
 
-        info = after_upload.get_uploaded_info(s3, 'planscore', 'uploads/null-plan.gpkg')
+        info = after_upload.get_uploaded_info(s3, 'planscore', 'uploads/id/null-plan.gpkg')
 
+        put_upload_index.assert_called_once_with(s3, 'planscore', 'uploads/id/index.json',
+            [['12/2047/2047', '12/2047/2048'], ['12/2047/2047', '12/2048/2047', '12/2047/2048', '12/2048/2048']])
         temporary_buffer_file.assert_called_once_with('null-plan.gpkg', None)
-        self.assertIn('2 features in 40960-byte uploads/null-plan.gpkg', info)
+        self.assertIn('2 features in 40960-byte uploads/id/null-plan.gpkg', info)
     
     def test_get_uploaded_info_bad_file(self):
         '''
