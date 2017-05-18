@@ -3,7 +3,7 @@ from .. import after_upload
 
 class TestAfterUpload (unittest.TestCase):
     
-    def test_get_uploaded_info_good_file(self):
+    def test_get_uploaded_info_good_file_geojson(self):
         '''
         '''
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
@@ -21,6 +21,25 @@ class TestAfterUpload (unittest.TestCase):
 
         temporary_buffer_file.assert_called_once_with('null-plan.geojson', None)
         self.assertIn('2 features in 1119-byte uploads/null-plan.geojson', info)
+    
+    def test_get_uploaded_info_good_file_geopackage(self):
+        '''
+        '''
+        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.gpkg')
+
+        @contextlib.contextmanager
+        def nullplan_file(*args):
+            yield nullplan_path
+        
+        s3 = unittest.mock.Mock()
+        s3.get_object.return_value = {'ContentLength': 40960, 'Body': None}
+
+        with unittest.mock.patch('planscore.after_upload.temporary_buffer_file') as temporary_buffer_file:
+            temporary_buffer_file.side_effect = nullplan_file
+            info = after_upload.get_uploaded_info(s3, 'planscore', 'uploads/null-plan.gpkg')
+
+        temporary_buffer_file.assert_called_once_with('null-plan.gpkg', None)
+        self.assertIn('2 features in 40960-byte uploads/null-plan.gpkg', info)
     
     def test_get_uploaded_info_bad_file(self):
         '''

@@ -26,7 +26,10 @@ def get_uploaded_info(s3, bucket, key):
         print(ds, file=output)
         for (index, feature) in enumerate(ds.GetLayer(0)):
             feature_count += 1
-            xxyy_extent = feature.GetGeometryRef().GetEnvelope()
+            geometry = feature.GetGeometryRef()
+            geometry.TransformTo(prepare_state.EPSG4326)
+            
+            xxyy_extent = geometry.GetEnvelope()
             tiles = prepare_state.iter_extent_tiles(xxyy_extent, prepare_state.TILE_ZOOM)
             print(index, feature, file=output)
             for (coord, _) in tiles:
