@@ -1,18 +1,7 @@
-import boto3, pprint, os, io, tempfile, shutil, contextlib, json
+import boto3, pprint, os, io, json
 import itsdangerous
 from osgeo import ogr
 from . import util, data, score
-
-@contextlib.contextmanager
-def temporary_buffer_file(filename, buffer):
-    try:
-        dirname = tempfile.mkdtemp(prefix='temporary_buffer_file-')
-        filepath = os.path.join(dirname, filename)
-        with open(filepath, 'wb') as file:
-            file.write(buffer.read())
-        yield filepath
-    finally:
-        shutil.rmtree(dirname)
 
 def get_uploaded_info(s3, bucket, key, id):
     '''
@@ -20,8 +9,8 @@ def get_uploaded_info(s3, bucket, key, id):
     object = s3.get_object(Bucket=bucket, Key=key)
     upload = data.Upload(id, key, [])
     
-    with temporary_buffer_file(os.path.basename(key), object['Body']) as path:
-        output = score.score_plan(upload, path, None)
+    with util.temporary_buffer_file(os.path.basename(key), object['Body']) as path:
+        output = score.score_plan(s3, upload, path, None)
     
     put_upload_index(s3, bucket, upload)
     

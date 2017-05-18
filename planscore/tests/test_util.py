@@ -1,7 +1,17 @@
-import unittest, unittest.mock
+import unittest, unittest.mock, io, os
 from .. import util
 
 class TestUtil (unittest.TestCase):
+
+    def test_temporary_buffer_file(self):
+        buffer = io.BytesIO(b'Hello world')
+        
+        with util.temporary_buffer_file('hello.txt', buffer) as path:
+            with open(path, 'rb') as file:
+                data = file.read()
+        
+        self.assertEqual(data, buffer.getvalue())
+        self.assertFalse(os.path.exists(path))
     
     def test_event_url(self):
         url1 = util.event_url({'headers': {'Host': 'example.org'}})

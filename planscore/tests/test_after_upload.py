@@ -40,7 +40,7 @@ class TestAfterUpload (unittest.TestCase):
             Body=upload.to_json.return_value.encode.return_value,
             ACL='private', ContentType='text/json')
     
-    @unittest.mock.patch('planscore.after_upload.temporary_buffer_file')
+    @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.after_upload.put_upload_index')
     @unittest.mock.patch('planscore.score.score_plan')
     def test_get_uploaded_info_good_file(self, score_plan, put_upload_index, temporary_buffer_file):
