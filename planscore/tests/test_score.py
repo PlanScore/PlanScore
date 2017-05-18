@@ -1,13 +1,19 @@
-import unittest, unittest.mock, io, os, contextlib, json
+import unittest, unittest.mock, io, os, contextlib, json, gzip, itertools
 from .. import score, data
 from osgeo import ogr
+
+should_gzip = itertools.cycle([True, False])
 
 def mock_s3_get_object(Bucket, Key):
     '''
     '''
     path = os.path.join(os.path.dirname(__file__), 'data', Key)
     with open(path, 'rb') as file:
-        return {'Body': io.BytesIO(file.read())}
+        if next(should_gzip):
+            return {'Body': io.BytesIO(gzip.compress(file.read())),
+                'ContentEncoding': 'gzip'}
+        else:
+            return {'Body': io.BytesIO(file.read())}
 
 class TestScore (unittest.TestCase):
 
