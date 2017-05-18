@@ -1,20 +1,28 @@
-import argparse, math, itertools, io
+import argparse, math, itertools, io, gzip
 from osgeo import ogr
 import boto3, ModestMaps.Geo, ModestMaps.Core
 
+TILE_ZOOM = 12
 FRACTION_FIELD = 'PlanScore:Fraction'
+KEY_FORMAT = 'data/{state}/{zxy}.geojson'
 
 def get_projection():
+    ''' Return a spherical mercator MMaps Projection instance.
+    '''
     pi = math.pi
     tx = ModestMaps.Geo.deriveTransformation(-pi, pi, 0, 0, pi, pi, 1, 0, -pi, -pi, 0, 1)
     return ModestMaps.Geo.MercatorProjection(0, tx)
 
-def iter_layer_tiles(layer, zoom):
-    '''
+def iter_extent_tiles(xxyy_extent, zoom):
+    ''' Generate a stream of (MMaps Coordinate, geometry WKT) tuples.
+    
+        Extent is given as four-elements (xmin, xmax, ymin, ymax) to match
+        values returned from layer.GetExtent() and geometry.GetEnvelope().
     '''
     mercator = get_projection()
+    wkt_format = 'POLYGON(({x1} {y1}, {x1} {y2}, {x2} {y2}, {x2} {y1}, {x1} {y1}))'
     
-    w, e, s, n = layer.GetExtent()
+    w, e, s, n = xxyy_extent
     nw, se = ModestMaps.Geo.Location(n, w), ModestMaps.Geo.Location(s, e)
     ul, lr = [mercator.locationCoordinate(loc).zoomTo(zoom).container() for loc in (nw, se)]
     rows, columns = range(ul.row, lr.row + 1), range(ul.column, lr.column + 1)
@@ -24,10 +32,9 @@ def iter_layer_tiles(layer, zoom):
         tile_lr = tile_ul.down().right()
         tile_nw = mercator.coordinateLocation(tile_ul)
         tile_se = mercator.coordinateLocation(tile_lr)
-        print(tile_nw.lat, tile_nw.lon, tile_se.lat, tile_se.lon)
         
         x1, y1, x2, y2 = tile_nw.lon, tile_se.lat, tile_se.lon, tile_nw.lat
-        bbox_wkt = 'POLYGON(({x1} {y1}, {x1} {y2}, {x2} {y2}, {x2} {y1}, {x1} {y1}))'.format(**locals())
+        bbox_wkt = wkt_format.format(**locals())
         
         yield (tile_ul, bbox_wkt)
 
@@ -37,18 +44,15 @@ parser.add_argument('filename', help='Name of geographic file with precinct data
 
 def main():
     args = parser.parse_args()
+    s3 = boto3.client('s3')
 
-    print('wooo', args)
-    
     ds = ogr.Open(args.filename)
     layer = ds.GetLayer(0)
     
     layer_defn = layer.GetLayerDefn()
     layer_defn.AddFieldDefn(ogr.FieldDefn(FRACTION_FIELD, ogr.OFTReal))
     
-    for (tile, bbox_wkt) in iter_layer_tiles(layer, 12):
-        print('{zoom}/{column}/{row}'.format(**tile.__dict__))
-        
+    for (tile, bbox_wkt) in iter_extent_tiles(layer.GetExtent(), TILE_ZOOM):
         bbox_geom = ogr.CreateGeometryFromWkt(bbox_wkt)
         layer.SetSpatialFilter(bbox_geom)
         
@@ -61,18 +65,20 @@ def main():
             fraction = local_geometry.GetArea() / geometry.GetArea()
             local_feature.SetField(FRACTION_FIELD, fraction)
             local_feature.SetGeometry(local_geometry)
-            features_json.append(local_feature.ExportToJson())
+            features_json.append(local_feature.ExportToJson(options=['COORDINATE_PRECISION=7']))
+        
+        if not features_json:
+            continue
     
         buffer = io.StringIO()
         print('{"type": "FeatureCollection", "features": [', file=buffer)
         print(',\n'.join(features_json), file=buffer)
         print(']}', file=buffer)
+        
+        tile_zxy = '{zoom}/{column}/{row}'.format(**tile.__dict__)
+        key = KEY_FORMAT.format(state='XX', zxy=tile_zxy)
+        body = gzip.compress(buffer.getvalue().encode('utf8'))
+        print(key, '-', '{:.1f}KB'.format(len(body) / 1024))
     
-        s3 = boto3.client('s3')
-        s3.put_object(ACL='public-read', Body=buffer.getvalue().encode('utf8'),
-            Bucket='planscore', Key='data/XX/{zoom}/{column}/{row}.geojson'.format(**tile.__dict__))
-    
-    #help(s3.put_object)
-            
-    return
-    help(feature)
+        s3.put_object(Bucket='planscore', Key=key, Body=body,
+            ContentEncoding='gzip', ContentType='text/json', ACL='public-read')
