@@ -33,9 +33,9 @@ class TestAfterUpload (unittest.TestCase):
     def test_put_upload_index(self):
         '''
         '''
-        s3, upload = unittest.mock.Mock(), unittest.mock.Mock()
-        after_upload.put_upload_index(s3, 'bucket', upload)
-        s3.put_object.assert_called_once_with(Bucket='planscore',
+        s3, bucket, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
+        after_upload.put_upload_index(s3, bucket, upload)
+        s3.put_object.assert_called_once_with(Bucket=bucket,
             Key=upload.index_key.return_value,
             Body=upload.to_json.return_value.encode.return_value,
             ACL='private', ContentType='text/json')
@@ -55,31 +55,31 @@ class TestAfterUpload (unittest.TestCase):
 
         temporary_buffer_file.side_effect = nullplan_file
 
-        s3 = unittest.mock.Mock()
+        s3, bucket = unittest.mock.Mock(), unittest.mock.Mock()
         s3.get_object.return_value = {'Body': None}
 
-        info = after_upload.get_uploaded_info(s3, 'planscore', upload_key, 'id')
+        info = after_upload.get_uploaded_info(s3, bucket, upload_key, 'id')
 
         self.assertEqual(len(score_plan.mock_calls), 1)
-        self.assertIs(score_plan.mock_calls[0][1][0], s3)
-        upload = score_plan.mock_calls[0][1][1]
+        self.assertEqual(score_plan.mock_calls[0][1][:2], (s3, bucket))
+        upload = score_plan.mock_calls[0][1][2]
         self.assertEqual(upload.id, 'id')
         self.assertEqual(upload.key, upload_key)
-        self.assertEqual(score_plan.mock_calls[0][1][2], nullplan_path)
+        self.assertEqual(score_plan.mock_calls[0][1][3], nullplan_path)
 
         temporary_buffer_file.assert_called_once_with('null-plan.geojson', None)
         self.assertIs(info, score_plan.return_value)
     
-        self.assertEqual(put_upload_index.mock_calls[0][1][:2], (s3, 'planscore'))
+        self.assertEqual(put_upload_index.mock_calls[0][1][:2], (s3, bucket))
         self.assertIs(put_upload_index.mock_calls[0][1][2], upload)
     
     def test_get_uploaded_info_bad_file(self):
         '''
         '''
-        s3 = unittest.mock.Mock()
+        s3, bucket = unittest.mock.Mock(), unittest.mock.Mock()
         s3.get_object.return_value = {'Body': io.BytesIO(b'Bad data')}
 
         with self.assertRaises(RuntimeError) as error:
-            after_upload.get_uploaded_info(s3, 'planscore', 'uploads/id/null-plan.geojson', 'id')
+            after_upload.get_uploaded_info(s3, bucket, 'uploads/id/null-plan.geojson', 'id')
 
         self.assertEqual(str(error.exception), 'Failed to read GeoJSON data')

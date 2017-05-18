@@ -10,7 +10,7 @@ def get_uploaded_info(s3, bucket, key, id):
     upload = data.Upload(id, key, [])
     
     with util.temporary_buffer_file(os.path.basename(key), object['Body']) as path:
-        output = score.score_plan(s3, upload, path, None)
+        output = score.score_plan(s3, bucket, upload, path, None)
     
     put_upload_index(s3, bucket, upload)
     
@@ -22,7 +22,7 @@ def put_upload_index(s3, bucket, upload):
     key = upload.index_key()
     body = upload.to_json().encode('utf8')
 
-    s3.put_object(Bucket='planscore', Key=key, Body=body,
+    s3.put_object(Bucket=bucket, Key=key, Body=body,
         ContentType='text/json', ACL='private')
 
 def lambda_handler(event, context):
