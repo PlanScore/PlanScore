@@ -1,4 +1,15 @@
-import urllib.parse
+import urllib.parse, tempfile, shutil, os, contextlib
+
+@contextlib.contextmanager
+def temporary_buffer_file(filename, buffer):
+    try:
+        dirname = tempfile.mkdtemp(prefix='temporary_buffer_file-')
+        filepath = os.path.join(dirname, filename)
+        with open(filepath, 'wb') as file:
+            file.write(buffer.read())
+        yield filepath
+    finally:
+        shutil.rmtree(dirname)
 
 def event_url(event):
     '''
