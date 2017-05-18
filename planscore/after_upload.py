@@ -1,4 +1,5 @@
 import boto3, pprint, os, io, tempfile, shutil, contextlib
+import itsdangerous
 from osgeo import ogr
 from . import util, prepare_state
 
@@ -45,16 +46,18 @@ def get_uploaded_info(s3, bucket, key):
 def lambda_handler(event, context):
     '''
     '''
-    print('Event:')
-    pprint.pprint(event)
     s3 = boto3.client('s3')
     query = util.event_query_args(event)
+    secret = os.environ.get('PLANSCORE_SECRET', 'fake')
+    
+    if not itsdangerous.Signer(secret).validate(query['id']):
+        return {
+            'statusCode': '400',
+            'headers': {'Access-Control-Allow-Origin': '*'},
+            'body': 'Bad ID'
+            }
+    
     summary = get_uploaded_info(s3, query['bucket'], query['key'])
-    
-    from osgeo import ogr
-    geom = ogr.CreateGeometryFromWkt('point(0 0)')
-    print('geom:', geom)
-    
     return {
         'statusCode': '200',
         'headers': {'Access-Control-Allow-Origin': '*'},
