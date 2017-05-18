@@ -69,8 +69,6 @@ class TestScore (unittest.TestCase):
         
         with self.assertRaises(RuntimeError) as error:
             scored = score.score_plan(None, upload, plan_path, tiles_prefix)
-        
-        self.assertEqual(str(error.exception), 'Could not open file')
     
     def test_score_plan_bad_file_content(self):
         '''
@@ -81,5 +79,3 @@ class TestScore (unittest.TestCase):
         
         with self.assertRaises(RuntimeError) as error:
             scored = score.score_plan(None, upload, plan_path, tiles_prefix)
-        
-        self.assertEqual(str(error.exception), 'Failed to read GeoJSON data')
