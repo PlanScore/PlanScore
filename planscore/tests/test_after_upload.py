@@ -65,7 +65,7 @@ class TestAfterUpload (unittest.TestCase):
         upload = score_plan.mock_calls[0][1][2]
         self.assertEqual(upload.id, 'id')
         self.assertEqual(upload.key, upload_key)
-        self.assertEqual(score_plan.mock_calls[0][1][3], nullplan_path)
+        self.assertEqual(score_plan.mock_calls[0][1][3:], (nullplan_path, 'data/XX'))
 
         temporary_buffer_file.assert_called_once_with('null-plan.geojson', None)
         self.assertIs(info, score_plan.return_value)
