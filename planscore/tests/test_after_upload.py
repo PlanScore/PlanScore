@@ -20,7 +20,7 @@ class TestAfterUpload (unittest.TestCase):
             info = after_upload.get_uploaded_info(s3, 'planscore', 'uploads/null-plan.geojson')
 
         temporary_buffer_file.assert_called_once_with('null-plan.geojson', None)
-        self.assertEqual(info, '2 features in 1119-byte uploads/null-plan.geojson')
+        self.assertIn('2 features in 1119-byte uploads/null-plan.geojson', info)
     
     def test_get_uploaded_info_bad_file(self):
         '''

@@ -1,6 +1,6 @@
 import boto3, pprint, os, io, tempfile, shutil, contextlib
 from osgeo import ogr
-from . import util
+from . import util, prepare_state
 
 ogr.UseExceptions()
 
@@ -19,12 +19,25 @@ def get_uploaded_info(s3, bucket, key):
     '''
     '''
     upload = s3.get_object(Bucket=bucket, Key=key)
+    feature_count, output = 0, io.StringIO()
     
     with temporary_buffer_file(os.path.basename(key), upload['Body']) as path:
         ds = ogr.Open(path)
-        feature_count = len(ds.GetLayer(0))
+        print(ds, file=output)
+        for (index, feature) in enumerate(ds.GetLayer(0)):
+            feature_count += 1
+            xxyy_extent = feature.GetGeometryRef().GetEnvelope()
+            tiles = prepare_state.iter_extent_tiles(xxyy_extent, prepare_state.TILE_ZOOM)
+            print(index, feature, file=output)
+            for (coord, _) in tiles:
+                print(' ', prepare_state.KEY_FORMAT.format(state='XX',
+                    zxy='{zoom}/{column}/{row}'.format(**coord.__dict__)),
+                    file=output)
     
-    return '{0} features in {ContentLength}-byte {1}'.format(feature_count, key, **upload)
+    print('{0} features in {ContentLength}-byte {1}'.format(feature_count, key, **upload),
+        file=output) 
+    
+    return output.getvalue()
 
 def lambda_handler(event, context):
     '''
