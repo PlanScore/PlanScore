@@ -42,61 +42,41 @@ class TestAfterUpload (unittest.TestCase):
     
     @unittest.mock.patch('planscore.after_upload.temporary_buffer_file')
     @unittest.mock.patch('planscore.after_upload.put_upload_index')
-    def test_get_uploaded_info_good_file_geojson(self, put_upload_index, temporary_buffer_file):
+    @unittest.mock.patch('planscore.score.score_plan')
+    def test_get_uploaded_info_good_file(self, score_plan, put_upload_index, temporary_buffer_file):
         '''
         '''
+        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
+        upload_key = data.UPLOAD_PREFIX.format(id='id') + 'null-plan.geojson'
+        
         @contextlib.contextmanager
         def nullplan_file(*args):
-            yield os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
+            yield nullplan_path
 
         temporary_buffer_file.side_effect = nullplan_file
 
         s3 = unittest.mock.Mock()
-        s3.get_object.return_value = {'ContentLength': 1119, 'Body': None}
+        s3.get_object.return_value = {'Body': None}
 
-        info = after_upload.get_uploaded_info(s3, 'planscore',
-            data.UPLOAD_PREFIX.format(id='id') + 'null-plan.geojson', 'id')
+        info = after_upload.get_uploaded_info(s3, 'planscore', upload_key, 'id')
+
+        self.assertEqual(len(score_plan.mock_calls), 1)
+        upload = score_plan.mock_calls[0][1][0]
+        self.assertEqual(upload.id, 'id')
+        self.assertEqual(upload.key, upload_key)
+        self.assertEqual(score_plan.mock_calls[0][1][1], nullplan_path)
 
         temporary_buffer_file.assert_called_once_with('null-plan.geojson', None)
-        self.assertIn('2 features in 1119-byte uploads/id/upload/null-plan.geojson', info)
-        
-        self.assertEqual(put_upload_index.mock_calls[0][1][:2], (s3, 'planscore'))
-        self.assertEqual(put_upload_index.mock_calls[0][1][2].id, 'id')
-        self.assertEqual(put_upload_index.mock_calls[0][1][2].key, data.UPLOAD_PREFIX.format(id='id') + 'null-plan.geojson')
-        self.assertEqual(put_upload_index.mock_calls[0][1][2].tiles,
-            [['12/2047/2047', '12/2047/2048'], ['12/2047/2047', '12/2048/2047', '12/2047/2048', '12/2048/2048']])
+        self.assertIs(info, score_plan.return_value)
     
-    @unittest.mock.patch('planscore.after_upload.temporary_buffer_file')
-    @unittest.mock.patch('planscore.after_upload.put_upload_index')
-    def test_get_uploaded_info_good_file_geopackage(self, put_upload_index, temporary_buffer_file):
-        '''
-        '''
-        @contextlib.contextmanager
-        def nullplan_file(*args):
-            yield os.path.join(os.path.dirname(__file__), 'data', 'null-plan.gpkg')
-
-        temporary_buffer_file.side_effect = nullplan_file
-
-        s3 = unittest.mock.Mock()
-        s3.get_object.return_value = {'ContentLength': 40960, 'Body': None}
-
-        info = after_upload.get_uploaded_info(s3, 'planscore',
-            data.UPLOAD_PREFIX.format(id='id') + 'null-plan.gpkg', 'id')
-
-        temporary_buffer_file.assert_called_once_with('null-plan.gpkg', None)
-        self.assertIn('2 features in 40960-byte uploads/id/upload/null-plan.gpkg', info)
-        
         self.assertEqual(put_upload_index.mock_calls[0][1][:2], (s3, 'planscore'))
-        self.assertEqual(put_upload_index.mock_calls[0][1][2].id, 'id')
-        self.assertEqual(put_upload_index.mock_calls[0][1][2].key, data.UPLOAD_PREFIX.format(id='id') + 'null-plan.gpkg')
-        self.assertEqual(put_upload_index.mock_calls[0][1][2].tiles,
-            [['12/2047/2047', '12/2047/2048'], ['12/2047/2047', '12/2048/2047', '12/2047/2048', '12/2048/2048']])
+        self.assertIs(put_upload_index.mock_calls[0][1][2], upload)
     
     def test_get_uploaded_info_bad_file(self):
         '''
         '''
         s3 = unittest.mock.Mock()
-        s3.get_object.return_value = {'ContentLength': 8, 'Body': io.BytesIO(b'Bad data')}
+        s3.get_object.return_value = {'Body': io.BytesIO(b'Bad data')}
 
         with self.assertRaises(RuntimeError) as error:
             after_upload.get_uploaded_info(s3, 'planscore', 'uploads/id/null-plan.geojson', 'id')

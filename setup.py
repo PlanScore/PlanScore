@@ -8,7 +8,7 @@ setup(
     packages = ['planscore', 'planscore.tests'],
     test_suite = 'planscore.tests',
     package_data = {
-        'planscore.tests': ['data/*.*'],
+        'planscore.tests': ['data/*.*', 'data/*/*/*/*.geojson'],
         },
     install_requires = [
         'boto3 == 1.4.4',

@@ -1,9 +1,7 @@
 import boto3, pprint, os, io, tempfile, shutil, contextlib, json
 import itsdangerous
 from osgeo import ogr
-from . import util, data, prepare_state
-
-ogr.UseExceptions()
+from . import util, data, score
 
 @contextlib.contextmanager
 def temporary_buffer_file(filename, buffer):
@@ -20,37 +18,14 @@ def get_uploaded_info(s3, bucket, key, id):
     '''
     '''
     object = s3.get_object(Bucket=bucket, Key=key)
-    upload, feature_count, output = data.Upload(id, key, []), 0, io.StringIO()
+    upload = data.Upload(id, key, [])
     
     with temporary_buffer_file(os.path.basename(key), object['Body']) as path:
-        ds = ogr.Open(path)
-        print(ds, file=output)
-        for (index, feature) in enumerate(ds.GetLayer(0)):
-            upload.tiles.append([])
-            feature_count += 1
-            geometry = feature.GetGeometryRef()
-            geometry.TransformTo(prepare_state.EPSG4326)
-            
-            xxyy_extent = geometry.GetEnvelope()
-            tiles = prepare_state.iter_extent_tiles(xxyy_extent, prepare_state.TILE_ZOOM)
-            print(index, feature, file=output)
-            for (coord, tile_wkt) in tiles:
-                tile_zxy = '{zoom}/{column}/{row}'.format(**coord.__dict__)
-                tile_geom = ogr.CreateGeometryFromWkt(tile_wkt)
-                
-                if not tile_geom.Intersects(geometry):
-                    continue
-                
-                upload.tiles[-1].append(tile_zxy)
-                print(' ', prepare_state.KEY_FORMAT.format(state='XX',
-                    zxy=tile_zxy), file=output)
+        output = score.score_plan(upload, path, None)
     
     put_upload_index(s3, bucket, upload)
     
-    print('{0} features in {ContentLength}-byte {1}'.format(feature_count, key, **object),
-        file=output) 
-    
-    return output.getvalue()
+    return output
 
 def put_upload_index(s3, bucket, upload):
     '''
