@@ -1,6 +1,6 @@
-import json, pprint, urllib.parse, uuid, posixpath, os
+import json, pprint, urllib.parse, uuid, os
 import boto3, itsdangerous
-import planscore.util
+from . import util, data
 
 # API Gateway resource for planscore.after_upload.lambda_handler
 AFTER_PATH = '/uploaded'
@@ -14,12 +14,12 @@ def get_upload_fields(s3, creds, request_url, secret):
     acl, redirect_url = 'private', urllib.parse.urljoin(request_url, redirect_path)
     
     presigned = s3.generate_presigned_post(
-        'planscore', posixpath.join('uploads', unsigned_id, '${filename}'),
+        'planscore', data.UPLOAD_PREFIX.format(id=unsigned_id) + '${filename}',
         ExpiresIn=300,
         Conditions=[
             {"acl": acl},
             {"success_action_redirect": redirect_url},
-            ["starts-with", '$key', posixpath.join('uploads', unsigned_id, '')],
+            ["starts-with", '$key', data.UPLOAD_PREFIX.format(id=unsigned_id)],
             ])
     
     presigned['fields'].update(acl=acl, success_action_redirect=redirect_url)
@@ -39,7 +39,7 @@ def generate_signed_id(secret):
 def lambda_handler(event, context):
     '''
     '''
-    request_url = planscore.util.event_url(event)
+    request_url = util.event_url(event)
     secret = os.environ.get('PLANSCORE_SECRET', 'fake')
     s3, creds = boto3.client('s3'), boto3.session.Session().get_credentials()
     url, fields = get_upload_fields(s3, creds, request_url, secret)
