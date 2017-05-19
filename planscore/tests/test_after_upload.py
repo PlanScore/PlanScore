@@ -5,17 +5,18 @@ class TestAfterUpload (unittest.TestCase):
     
     @unittest.mock.patch('planscore.after_upload.get_uploaded_info')
     def test_lambda_handler(self, get_uploaded_info):
-        event = {
-            'queryStringParameters': {'id': 'id.k0_XwbOLGLUdv241zsPluNc3HYs',
-                'bucket': 'planscore', 'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson'}
-            }
+        query = {'id': 'id.k0_XwbOLGLUdv241zsPluNc3HYs', 'bucket': 'planscore',
+            'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson'}
 
         os.environ.update(PLANSCORE_SECRET='fake-secret', AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
-        response = after_upload.lambda_handler(event, None)
+        response = after_upload.lambda_handler({'queryStringParameters': query}, None)
         
         self.assertEqual(response['statusCode'], '200')
         self.assertIn('Access-Control-Allow-Origin', response['headers'])
         self.assertEqual(response['body'], get_uploaded_info.return_value)
+        
+        self.assertEqual(get_uploaded_info.mock_calls[0][1][1:],
+            (query['bucket'], query['key'], 'id'))
     
     @unittest.mock.patch('planscore.after_upload.get_uploaded_info')
     def test_lambda_handler_bad_id(self, get_uploaded_info):

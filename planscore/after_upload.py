@@ -32,14 +32,16 @@ def lambda_handler(event, context):
     query = util.event_query_args(event)
     secret = os.environ.get('PLANSCORE_SECRET', 'fake')
     
-    if not itsdangerous.Signer(secret).validate(query['id']):
+    try:
+        id = itsdangerous.Signer(secret).unsign(query['id']).decode('utf8')
+    except itsdangerous.BadSignature:
         return {
             'statusCode': '400',
             'headers': {'Access-Control-Allow-Origin': '*'},
             'body': 'Bad ID'
             }
     
-    summary = get_uploaded_info(s3, query['bucket'], query['key'], query['id'])
+    summary = get_uploaded_info(s3, query['bucket'], query['key'], id)
     return {
         'statusCode': '200',
         'headers': {'Access-Control-Allow-Origin': '*'},
