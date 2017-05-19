@@ -21,7 +21,3 @@ deployment:
     commands:
       - make live-lambda
       - make live-website
-  prepare_static_site:
-    branch: [migurski/prepare-static-site]
-    commands:
-      - make live-website
