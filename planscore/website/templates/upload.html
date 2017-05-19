@@ -1,0 +1,21 @@
+{% extends "layout.html" %}
+{% block title %}Upload{% endblock %}
+{% block head %}
+	<script src="{{ url_for('static', filename='upload.js') }}"></script>
+{% endblock %}
+{% block content %}
+    <form action="#" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="key">
+        <input type="hidden" name="AWSAccessKeyId">
+        <input type="hidden" name="policy">
+        <input type="hidden" name="signature">
+        <input type="hidden" name="success_action_redirect">
+        <input type="hidden" name="acl">
+        <input type="hidden" name="x-amz-security-token">
+        <input type="file" name="file">
+        <input type="submit" name="submission" value="Upload" disabled>
+    </form>
+	<script language="javascript">
+	    enable_form('{{upload_fields_url}}', document.forms[0]);
+	</script>
+{% endblock %}

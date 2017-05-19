@@ -1,15 +1,13 @@
-all: planscore-lambda.zip
+all: planscore/website/build
 
-live-lambda: all
+live-lambda: planscore-lambda.zip
 	aws --region us-east-1 lambda update-function-code --function-name PlanScore-UploadFields --zip-file fileb://planscore-lambda.zip >> /dev/null
 	aws --region us-east-1 lambda update-function-configuration --function-name PlanScore-UploadFields --handler lambda.upload_fields >> /dev/null
 	aws --region us-east-1 lambda update-function-code --function-name PlanScore-AfterUpload --zip-file fileb://planscore-lambda.zip >> /dev/null
 	aws --region us-east-1 lambda update-function-configuration --function-name PlanScore-AfterUpload --handler lambda.after_upload >> /dev/null
 
-live-website:
-	mkdir -p build
-	ln -f *.html build/
-	aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete build/ s3://planscore-website/
+live-website: planscore/website/build
+	aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete $</ s3://planscore-website/
 
 # Just one Lambda codebase is created, with different entry points and environments.
 planscore-lambda.zip:
@@ -19,8 +17,11 @@ planscore-lambda.zip:
 	cp lambda.py planscore-lambda/lambda.py
 	cd planscore-lambda && zip -rq ../planscore-lambda.zip .
 
+planscore/website/build:
+	python -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
+
 clean:
-	rm -rf build
+	rm -rf planscore/website/build
 	rm -rf planscore-lambda planscore-lambda.zip
 
 .PHONY: clean all live-lambda live-website
