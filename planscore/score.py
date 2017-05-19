@@ -74,4 +74,6 @@ def score_district(s3, bucket, district_geom, tiles_prefix):
         print(' ', prepare_state.KEY_FORMAT.format(state='XX',
             zxy=tile_zxy), file=output)
     
+    print('>', totals, file=output)
+    
     return totals, tile_list, output.getvalue()

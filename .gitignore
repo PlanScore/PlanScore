@@ -1,7 +1,5 @@
 .venv
 PlanScore.egg-info
 __pycache__
-planscore-uploadfields
-planscore-uploadfields.zip
-planscore-afterupload
-planscore-afterupload.zip
+planscore-lambda
+planscore-lambda.zip
