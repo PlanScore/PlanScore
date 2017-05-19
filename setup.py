@@ -5,7 +5,7 @@ setup(
     url = 'https://github.com/migurski/PlanScore',
     author = 'Michal Migurski',
     description = '',
-    packages = ['planscore', 'planscore.tests'],
+    packages = ['planscore', 'planscore.website', 'planscore.tests'],
     test_suite = 'planscore.tests',
     package_data = {
         'planscore.website': ['templates/*.html', 'static/*.*'],
