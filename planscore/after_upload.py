@@ -23,7 +23,7 @@ def put_upload_index(s3, bucket, upload):
     body = upload.to_json().encode('utf8')
 
     s3.put_object(Bucket=bucket, Key=key, Body=body,
-        ContentType='text/json', ACL='private')
+        ContentType='text/json', ACL='public-read')
 
 def get_redirect_url(website_base, id):
     '''

@@ -42,7 +42,7 @@ class TestAfterUpload (unittest.TestCase):
         s3.put_object.assert_called_once_with(Bucket=bucket,
             Key=upload.index_key.return_value,
             Body=upload.to_json.return_value.encode.return_value,
-            ACL='private', ContentType='text/json')
+            ACL='public-read', ContentType='text/json')
     
     def test_get_redirect_url(self):
         '''
