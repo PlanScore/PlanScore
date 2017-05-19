@@ -1,11 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<meta charset="utf-8" />
-	<title>Upload</title>
+{% extends "layout.html" %}
+{% block title %}Upload{% endblock %}
+{% block head %}
 	<script src="{{ url_for('static', filename='upload.js') }}"></script>
-</head>
-<body>
+{% endblock %}
+{% block content %}
     <form action="#" method="post" enctype="multipart/form-data">
         <input type="hidden" name="key">
         <input type="hidden" name="AWSAccessKeyId">
@@ -20,5 +18,4 @@
 	<script language="javascript">
 	    enable_form('{{upload_fields_url}}', document.forms[0]);
 	</script>
-</body>
-</html>
+{% endblock %}

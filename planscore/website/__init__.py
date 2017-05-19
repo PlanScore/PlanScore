@@ -6,7 +6,7 @@ app.config['PLANSCORE_API_BASE'] = os.environ.get('API_BASE', 'https://api.plans
 
 @app.route('/')
 def get_index():
-    return '<p>🚧 Under Construction.</p>'
+    return flask.render_template('index.html')
 
 @app.route('/upload.html')
 def get_upload():
