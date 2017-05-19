@@ -13,3 +13,7 @@ def get_upload():
     planscore_api_base = app.config['PLANSCORE_API_BASE']
     upload_fields_url = urllib.parse.urljoin(planscore_api_base, 'upload')
     return flask.render_template('upload.html', upload_fields_url=upload_fields_url)
+
+@app.route('/plan.html')
+def get_plan():
+    return 'A man, a plan, a canal: Panama'

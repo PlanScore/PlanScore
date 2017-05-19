@@ -1,7 +1,7 @@
-import boto3, pprint, os, io, json
+import boto3, pprint, os, io, json, urllib.parse
 import itsdangerous
 from osgeo import ogr
-from . import util, data, score
+from . import util, data, score, website
 
 def get_uploaded_info(s3, bucket, key, id):
     '''
@@ -25,13 +25,22 @@ def put_upload_index(s3, bucket, upload):
     s3.put_object(Bucket=bucket, Key=key, Body=body,
         ContentType='text/json', ACL='private')
 
+def get_redirect_url(website_base, id):
+    '''
+    '''
+    rules = {rule.endpoint: str(rule) for rule in website.app.url_map.iter_rules()}
+    redirect_url = urllib.parse.urljoin(website_base, rules['get_plan'])
+
+    return '{}?{}'.format(redirect_url, urllib.parse.urlencode(dict(id=id)))
+
 def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3')
     query = util.event_query_args(event)
     secret = os.environ.get('PLANSCORE_SECRET', 'fake')
-    
+    website_base = os.environ.get('WEBSITE_BASE', 'https://planscore.org/')
+
     try:
         id = itsdangerous.Signer(secret).unsign(query['id']).decode('utf8')
     except itsdangerous.BadSignature:
@@ -42,9 +51,10 @@ def lambda_handler(event, context):
             }
     
     summary = get_uploaded_info(s3, query['bucket'], query['key'], id)
+    redirect_url = get_redirect_url(website_base, id)
     return {
-        'statusCode': '200',
-        'headers': {'Access-Control-Allow-Origin': '*'},
+        'statusCode': '302',
+        'headers': {'Location': redirect_url},
         'body': summary
         }
 

@@ -8,12 +8,15 @@ class TestAfterUpload (unittest.TestCase):
         query = {'id': 'id.k0_XwbOLGLUdv241zsPluNc3HYs', 'bucket': 'planscore',
             'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson'}
 
-        os.environ.update(PLANSCORE_SECRET='fake-secret', AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
+        os.environ.update(PLANSCORE_SECRET='fake-secret', WEBSITE_BASE='https://example.com/',
+            AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
+
+        get_uploaded_info.return_value = 'get_uploaded_info.return_value'
         response = after_upload.lambda_handler({'queryStringParameters': query}, None)
         
-        self.assertEqual(response['statusCode'], '200')
-        self.assertIn('Access-Control-Allow-Origin', response['headers'])
-        self.assertEqual(response['body'], get_uploaded_info.return_value)
+        self.assertEqual(response['statusCode'], '302')
+        self.assertIn(get_uploaded_info.return_value, response['body'])
+        self.assertEqual(response['headers']['Location'], 'https://example.com/plan.html?id=id')
         
         self.assertEqual(get_uploaded_info.mock_calls[0][1][1:],
             (query['bucket'], query['key'], 'id'))
@@ -40,6 +43,12 @@ class TestAfterUpload (unittest.TestCase):
             Key=upload.index_key.return_value,
             Body=upload.to_json.return_value.encode.return_value,
             ACL='private', ContentType='text/json')
+    
+    def test_get_redirect_url(self):
+        '''
+        '''
+        redirect_url = after_upload.get_redirect_url('https://planscore.org/', 'ID')
+        self.assertEqual(redirect_url, 'https://planscore.org/plan.html?id=ID')
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.after_upload.put_upload_index')
