@@ -1,5 +1,5 @@
 import flask, os, urllib.parse
-from .. import data
+from .. import data, score
 
 app = flask.Flask(__name__)
 
@@ -22,4 +22,5 @@ def get_upload():
 @app.route('/plan.html')
 def get_plan():
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
-    return flask.render_template('plan.html', data_url_pattern=data_url_pattern)
+    return flask.render_template('plan.html', fields=score.FIELD_NAMES,
+        data_url_pattern=data_url_pattern)

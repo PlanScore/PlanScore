@@ -3,7 +3,7 @@ function get_plan_url(url_pattern, id)
     return url_pattern.replace('{id}', id);
 }
 
-function load_plan_score(url, table)
+function load_plan_score(url, fields, table)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -30,7 +30,10 @@ function load_plan_score(url, table)
                 new_row = row.cloneNode(true);
                 columns = new_row.getElementsByTagName('td');
                 columns[0].innerText = i;
-                columns[1].innerText = data.districts[i].totals.Voters;
+                for(var j = 0; j < fields.length; j++)
+                {
+                    columns[j+1].innerText = data.districts[i].totals[fields[j]];
+                }
                 tbody.appendChild(new_row);
             }
         }

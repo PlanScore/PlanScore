@@ -7,18 +7,23 @@
     <table id="districts">
         <tr>
             <th>District</th>
-            <th>Voters</th>
+            {% for field in fields %}
+                <th>{{ field }}</th>
+            {% endfor %}
         </tr>
-        <!-- this sample row will be removed, cloned, and replaced -->
+        {# this sample row will be removed, cloned, and replaced #}
         <tr>
             <td>&nbsp;</td>
-            <td>&nbsp;</td>
+            {% for field in fields %}
+                <td>&nbsp;</td>
+            {% endfor %}
         </tr>
     </table>
 	<script language="javascript">
-	    var plan_id = location.search.replace('?', ''),
+	    var fields = {{ fields|tojson }},
+	        plan_id = location.search.replace('?', ''),
 	        plan_url = get_plan_url('{{ data_url_pattern }}', plan_id);
 
-	    load_plan_score(plan_url, document.getElementById('districts'));
+	    load_plan_score(plan_url, fields, document.getElementById('districts'));
 	</script>
 {% endblock %}
