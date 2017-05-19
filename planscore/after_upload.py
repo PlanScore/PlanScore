@@ -31,7 +31,7 @@ def get_redirect_url(website_base, id):
     rules = {rule.endpoint: str(rule) for rule in website.app.url_map.iter_rules()}
     redirect_url = urllib.parse.urljoin(website_base, rules['get_plan'])
 
-    return '{}?{}'.format(redirect_url, urllib.parse.urlencode(dict(id=id)))
+    return '{}?{}'.format(redirect_url, id)
 
 def lambda_handler(event, context):
     '''

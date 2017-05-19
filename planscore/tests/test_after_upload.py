@@ -16,7 +16,7 @@ class TestAfterUpload (unittest.TestCase):
         
         self.assertEqual(response['statusCode'], '302')
         self.assertIn(get_uploaded_info.return_value, response['body'])
-        self.assertEqual(response['headers']['Location'], 'https://example.com/plan.html?id=id')
+        self.assertEqual(response['headers']['Location'], 'https://example.com/plan.html?id')
         
         self.assertEqual(get_uploaded_info.mock_calls[0][1][1:],
             (query['bucket'], query['key'], 'id'))
@@ -48,7 +48,7 @@ class TestAfterUpload (unittest.TestCase):
         '''
         '''
         redirect_url = after_upload.get_redirect_url('https://planscore.org/', 'ID')
-        self.assertEqual(redirect_url, 'https://planscore.org/plan.html?id=ID')
+        self.assertEqual(redirect_url, 'https://planscore.org/plan.html?ID')
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.after_upload.put_upload_index')
