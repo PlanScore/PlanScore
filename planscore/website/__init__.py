@@ -1,10 +1,13 @@
 import flask, os, urllib.parse
-from .. import data
+from .. import data, score
 
 app = flask.Flask(__name__)
 
 app.config['PLANSCORE_S3_BUCKET'] = os.environ.get('S3_BUCKET', 'planscore')
 app.config['PLANSCORE_API_BASE'] = os.environ.get('API_BASE', 'https://api.planscore.org/')
+
+def get_data_url_pattern(bucket):
+    return 'https://{}.s3.amazonaws.com/{}'.format(bucket, data.UPLOAD_INDEX_KEY)
 
 @app.route('/')
 def get_index():
@@ -18,5 +21,6 @@ def get_upload():
 
 @app.route('/plan.html')
 def get_plan():
-    return 'A man, a plan, a canal: Panama\n{}\n{}\n'.format(
-        data.UPLOAD_INDEX_KEY, flask.current_app.config['PLANSCORE_S3_BUCKET'])
+    data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
+    return flask.render_template('plan.html', fields=score.FIELD_NAMES,
+        data_url_pattern=data_url_pattern)

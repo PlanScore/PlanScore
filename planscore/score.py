@@ -4,6 +4,8 @@ from . import prepare_state, util
 
 ogr.UseExceptions()
 
+FIELD_NAMES = ('Voters', )
+
 def score_plan(s3, bucket, upload, plan_path, tiles_prefix):
     '''
     '''
@@ -36,7 +38,7 @@ def score_district(s3, bucket, district_geom, tiles_prefix):
     '''
     '''
     tile_list, output = [], io.StringIO()
-    totals = {'Voters': 0}
+    totals = {field: 0 for field in FIELD_NAMES}
     
     if district_geom.GetSpatialReference():
         district_geom.TransformTo(prepare_state.EPSG4326)
@@ -69,9 +71,9 @@ def score_district(s3, bucket, district_geom, tiles_prefix):
                 overlap_area = overlap_geom.Area() / precinct_geom.Area()
                 precinct_fraction = overlap_area * feature.GetField(prepare_state.FRACTION_FIELD)
                 
-                for key in totals:
-                    precinct_value = precinct_fraction * feature.GetField(key)
-                    totals[key] += precinct_value
+                for name in FIELD_NAMES:
+                    precinct_value = precinct_fraction * feature.GetField(name)
+                    totals[name] += precinct_value
                 
         tile_list.append(tile_zxy)
         print(' ', prepare_state.KEY_FORMAT.format(state='XX',

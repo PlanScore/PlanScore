@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}Plan{% endblock %}
+{% block head %}
+	<script src="{{ url_for('static', filename='plan.js') }}"></script>
+{% endblock %}
+{% block content %}
+    <table id="districts">
+        <tr>
+            <th>District</th>
+            {% for field in fields %}
+                <th>{{ field }}</th>
+            {% endfor %}
+        </tr>
+        {# this sample row will be removed, cloned, and replaced #}
+        <tr>
+            <td>&nbsp;</td>
+            {% for field in fields %}
+                <td>&nbsp;</td>
+            {% endfor %}
+        </tr>
+    </table>
+	<script language="javascript">
+	    var fields = {{ fields|tojson }},
+	        plan_id = location.search.replace('?', ''),
+	        plan_url = get_plan_url('{{ data_url_pattern }}', plan_id);
+
+	    load_plan_score(plan_url, fields, document.getElementById('districts'));
+	</script>
+{% endblock %}
