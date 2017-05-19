@@ -12,9 +12,10 @@ def get_upload_fields(s3, creds, request_url, secret):
     redirect_query = urllib.parse.urlencode(dict(id=signed_id))
     redirect_path = '{}?{}'.format(AFTER_PATH, redirect_query)
     acl, redirect_url = 'private', urllib.parse.urljoin(request_url, redirect_path)
+    bucket = os.environ.get('S3_BUCKET', 'planscore')
     
     presigned = s3.generate_presigned_post(
-        'planscore', data.UPLOAD_PREFIX.format(id=unsigned_id) + '${filename}',
+        bucket, data.UPLOAD_PREFIX.format(id=unsigned_id) + '${filename}',
         ExpiresIn=300,
         Conditions=[
             {"acl": acl},

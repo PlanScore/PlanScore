@@ -32,11 +32,16 @@ class TestUploadFields (unittest.TestCase):
         s3, creds = unittest.mock.Mock(), unittest.mock.Mock()
         s3.generate_presigned_post.return_value = {'url': None, 'fields': {}}
 
+        os.environ['S3_BUCKET'] = 'the-bucket'
         generate_signed_id.return_value = 'id', 'id.sig'
         url, fields = upload_fields.get_upload_fields(s3, creds, 'https://example.org', 'sec')
-    
+        
+        s3.generate_presigned_post.assert_called_once_with('the-bucket',
+            'uploads/id/upload/${filename}', Conditions=[{'acl': 'private'},
+            {'success_action_redirect': 'https://example.org/uploaded?id=id.sig'},
+            ['starts-with', '$key', 'uploads/id/upload/']], ExpiresIn=300)
+
         generate_signed_id.assert_called_once_with('sec')
-        self.assertEqual(len(s3.generate_presigned_post.mock_calls), 1)
         self.assertEqual(fields['success_action_redirect'], 'https://example.org/uploaded?id=id.sig')
         self.assertIs(fields['x-amz-security-token'], creds.token)
     
@@ -46,10 +51,15 @@ class TestUploadFields (unittest.TestCase):
         s3.generate_presigned_post.return_value = {'url': None, 'fields': {}}
         creds.token = None
 
+        os.environ['S3_BUCKET'] = 'the-bucket'
         generate_signed_id.return_value = 'id', 'id.sig'
         url, fields = upload_fields.get_upload_fields(s3, creds, 'https://example.org', 'sec')
         
+        s3.generate_presigned_post.assert_called_once_with('the-bucket',
+            'uploads/id/upload/${filename}', Conditions=[{'acl': 'private'},
+            {'success_action_redirect': 'https://example.org/uploaded?id=id.sig'},
+            ['starts-with', '$key', 'uploads/id/upload/']], ExpiresIn=300)
+
         generate_signed_id.assert_called_once_with('sec')
-        self.assertEqual(len(s3.generate_presigned_post.mock_calls), 1)
         self.assertEqual(fields['success_action_redirect'], 'https://example.org/uploaded?id=id.sig')
         self.assertNotIn('x-amz-security-token', fields)
