@@ -24,6 +24,21 @@ RUN \
   make -j $(nproc) && \
   make install
 
+# Fetch GEOS
+
+RUN \
+  curl -L http://download.osgeo.org/geos/geos-3.6.1.tar.bz2 | tar jxf - -C /tmp
+
+# Build and install GEOS
+
+WORKDIR /tmp/geos-3.6.1
+
+RUN \
+  ./configure \
+    --prefix=/var/task && \
+  make -j $(nproc) && \
+  make install
+
 # Fetch GDAL
 
 RUN \
@@ -37,6 +52,7 @@ WORKDIR /tmp/gdal-dev/gdal
 RUN \
   ./configure \
     --prefix=/var/task \
+    --with-geos=/var/task/bin/geos-config \
     --datarootdir=/var/task/share/gdal \
     --with-jpeg=internal \
     --without-qhull \
@@ -55,12 +71,16 @@ WORKDIR /var/task
 
 RUN \
   strip lib/libgdal.so.20.1.0 && \
+  strip lib/libgeos_c.so.1.10.1 && \
+  strip lib/libgeos-3.6.1.so && \
   strip lib/libproj.so.12.0.0
 
 RUN \
   tar -cvf \
     /tmp/task.tar \
     lib/libgdal.so* \
+    lib/libgeos_c.so* \
+    lib/libgeos-3.6.1.so \
     lib/libproj.so* \
     share/gdal/
 
@@ -71,9 +91,6 @@ RUN \
   virtualenv /tmp/virtualenv
 
 ENV PATH /tmp/virtualenv/bin:/var/task/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-
-COPY . /var/gdalambda
-WORKDIR /var/gdalambda
 
 RUN pip install 'GDAL == 2.1.3'
 

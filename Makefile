@@ -16,7 +16,7 @@ live-website:
 planscore-%.zip:
 	mkdir -p planscore-$*
 	pip install -q -t planscore-$* .
-	curl https://planscore.s3.amazonaws.com/code/gdal-2.1.3-python-3.6.1.tar.gz -s | tar -C planscore-$* -xzvf -
+	curl https://planscore.s3.amazonaws.com/code/gdal-2.1.3-geos-3.6.1-python-3.6.1.tar.gz -s | tar -C planscore-$* -xzvf -
 	cp lambda.py planscore-$*/lambda.py
 	cd planscore-$* && zip -rq ../planscore-$*.zip .
 
