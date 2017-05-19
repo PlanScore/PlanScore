@@ -8,7 +8,7 @@ setup(
     packages = ['planscore', 'planscore.tests'],
     test_suite = 'planscore.tests',
     package_data = {
-        'planscore.website': ['templates/*.html'],
+        'planscore.website': ['templates/*.html', 'static/*.*'],
         'planscore.tests': ['data/*.*', 'data/*/*/*/*.geojson'],
         },
     install_requires = [
