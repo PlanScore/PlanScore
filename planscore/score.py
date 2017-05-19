@@ -27,6 +27,9 @@ def score_plan(s3, bucket, upload, plan_path, tiles_prefix):
     print('{} features in {}-byte {}'.format(feature_count,
         length, os.path.basename(plan_path)), file=output) 
     
+    print('Uploading to s3://{}/{}...'.format(bucket, upload.index_key()),
+        file=output)
+    
     return output.getvalue()
 
 def score_district(s3, bucket, district_geom, tiles_prefix):
