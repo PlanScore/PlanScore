@@ -7,9 +7,8 @@ live-lambda: all
 	aws --region us-east-1 lambda update-function-configuration --function-name PlanScore-AfterUpload --handler lambda.after_upload >> /dev/null
 
 live-website:
-	mkdir -p build
-	ln -f *.html build/
-	aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete build/ s3://planscore-website/
+	python -c 'import planscore.website, flask_frozen; flask_frozen.Freezer(planscore.website.app).freeze()'
+	aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete planscore/build/ s3://planscore-website/
 
 # Just one Lambda codebase is created, with different entry points and environments.
 planscore-lambda.zip:
