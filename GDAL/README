@@ -1,0 +1,11 @@
+Compiled GDAL, PROJ.4, and GEOS libraries are needed for reading geodata.
+On AWS Lambda, these are packaged into a single tarball using the Dockerfile
+here. This script comes from Seth Fitzsimmons's work on OAM Dynamic Tiler with
+additional GEOS build as explained by Matthew Perry in a blog post on compiling
+code for AWS Lambda.
+
+Links:
+
+https://github.com/hotosm/oam-dynamic-tiler/tree/master/deps
+https://github.com/migurski/GDALAMBDA/tree/0024d2758
+http://www.perrygeo.com/running-python-with-compiled-code-on-aws-lambda.html
