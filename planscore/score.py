@@ -1,5 +1,6 @@
 import io, os, gzip
 from osgeo import ogr
+import botocore.exceptions
 from . import prepare_state, util
 
 ogr.UseExceptions()
@@ -53,8 +54,13 @@ def score_district(s3, bucket, district_geom, tiles_prefix):
         if not tile_geom.Intersects(district_geom):
             continue
         
-        object = s3.get_object(Bucket='planscore',
-            Key='{}/{}.geojson'.format(tiles_prefix, tile_zxy))
+        try:
+            object = s3.get_object(Bucket='planscore',
+                Key='{}/{}.geojson'.format(tiles_prefix, tile_zxy))
+        except botocore.exceptions.ClientError as error:
+            if error.response['Error']['Code'] == 'NoSuchKey':
+                continue
+            raise
 
         if object.get('ContentEncoding') == 'gzip':
             object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))

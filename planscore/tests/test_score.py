@@ -1,5 +1,6 @@
 import unittest, unittest.mock, io, os, contextlib, json, gzip, itertools
 from .. import score, data
+import botocore.exceptions
 from osgeo import ogr
 
 should_gzip = itertools.cycle([True, False])
@@ -8,6 +9,8 @@ def mock_s3_get_object(Bucket, Key):
     '''
     '''
     path = os.path.join(os.path.dirname(__file__), 'data', Key)
+    if not os.path.exists(path):
+        raise botocore.exceptions.ClientError({'Error': {'Code': 'NoSuchKey'}}, 'GetObject')
     with open(path, 'rb') as file:
         if next(should_gzip):
             return {'Body': io.BytesIO(gzip.compress(file.read())),
@@ -37,6 +40,22 @@ class TestScore (unittest.TestCase):
         self.assertAlmostEqual(totals1['Voters'] + totals2['Voters'], 15)
         self.assertEqual(tiles1, ['12/2047/2047', '12/2047/2048'])
         self.assertEqual(tiles2, ['12/2047/2047', '12/2048/2047', '12/2047/2048', '12/2048/2048'])
+    
+    def test_score_district_missing_tile(self):
+        '''
+        '''
+        s3, bucket = unittest.mock.Mock(), unittest.mock.Mock()
+        s3.get_object.side_effect = mock_s3_get_object
+        
+        with open(os.path.join(os.path.dirname(__file__), 'data', 'null-ranch.geojson')) as file:
+            geojson = json.load(file)
+        
+        feature = geojson['features'][0]
+        geometry = ogr.CreateGeometryFromJson(json.dumps(feature['geometry']))
+        totals, tiles, _ = score.score_district(s3, bucket, geometry, 'XX')
+
+        self.assertFalse(totals['Voters'])
+        self.assertFalse(tiles)
     
     @unittest.mock.patch('planscore.score.score_district')
     def test_score_plan_geojson(self, score_district):
