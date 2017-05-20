@@ -10,7 +10,7 @@ FIELD_NAMES = ('Voters', 'Blue Votes', 'Red Votes')
 def score_plan(s3, bucket, input_upload, plan_path, tiles_prefix):
     '''
     '''
-    upload = input_upload.clone(districts=[])
+    new_districts = []
     feature_count, output = 0, io.StringIO()
     ds = ogr.Open(plan_path)
     print(ds, file=output)
@@ -24,17 +24,18 @@ def score_plan(s3, bucket, input_upload, plan_path, tiles_prefix):
 
         totals, tiles, district_output = score_district(s3, bucket, feature.GetGeometryRef(), tiles_prefix)
         output.write(district_output)
-        upload.districts.append(dict(totals=totals, tiles=tiles))
+        new_districts.append(dict(totals=totals, tiles=tiles))
     
+    output_upload = calculate_gap(input_upload.clone(districts=new_districts))
     length = os.stat(plan_path).st_size
     
     print('{} features in {}-byte {}'.format(feature_count,
         length, os.path.basename(plan_path)), file=output) 
     
-    print('Uploading to s3://{}/{}...'.format(bucket, upload.index_key()),
+    print('Uploading to s3://{}/{}...'.format(bucket, output_upload.index_key()),
         file=output)
     
-    return upload, output.getvalue()
+    return output_upload, output.getvalue()
 
 def score_district(s3, bucket, district_geom, tiles_prefix):
     '''
