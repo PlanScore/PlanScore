@@ -33,7 +33,7 @@ def score_plan(s3, bucket, upload, plan_path, tiles_prefix):
     print('Uploading to s3://{}/{}...'.format(bucket, upload.index_key()),
         file=output)
     
-    return output.getvalue()
+    return upload, output.getvalue()
 
 def score_district(s3, bucket, district_geom, tiles_prefix):
     '''
