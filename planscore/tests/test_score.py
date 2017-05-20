@@ -38,8 +38,8 @@ class TestScore (unittest.TestCase):
         totals2, tiles2, _ = score.score_district(s3, bucket, geometry2, 'XX')
         
         self.assertAlmostEqual(totals1['Voters'] + totals2['Voters'], 15)
-        self.assertEqual(tiles1, ['12/2047/2047', '12/2047/2048'])
-        self.assertEqual(tiles2, ['12/2047/2047', '12/2048/2047', '12/2047/2048', '12/2048/2048'])
+        self.assertEqual(tiles1, ['10/511/511', '10/511/512'])
+        self.assertEqual(tiles2, ['10/511/511', '10/512/511', '10/511/512', '10/512/512'])
     
     def test_score_district_missing_tile(self):
         '''

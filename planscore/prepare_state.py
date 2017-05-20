@@ -2,7 +2,7 @@ import argparse, math, itertools, io, gzip
 from osgeo import ogr, osr
 import boto3, ModestMaps.Geo, ModestMaps.Core
 
-TILE_ZOOM = 12
+TILE_ZOOM = 10
 FRACTION_FIELD = 'PlanScore:Fraction'
 KEY_FORMAT = 'data/{state}/{zxy}.geojson'
 
