@@ -112,8 +112,11 @@ def calculate_gap(upload):
             wasted_blue += blue_votes - win_threshold # surplus
             wasted_red += red_votes # loser
         else:
-            raise ValueError('Unlikely 50/50 split')
+            pass # raise ValueError('Unlikely 50/50 split')
 
+    if election_votes == 0:
+        return upload.clone(summary={'Efficiency Gap': None})
+    
     efficiency_gap = (wasted_red - wasted_blue) / election_votes
     
     return upload.clone(summary={'Efficiency Gap': efficiency_gap})

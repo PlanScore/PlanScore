@@ -72,7 +72,7 @@ class TestScore (unittest.TestCase):
         self.assertEqual(tiles2, ['10/511/511', '10/512/511', '10/511/512', '10/512/512'])
     
     def test_score_district_missing_tile(self):
-        ''' District scores come up empty for an area with not tiles
+        ''' District scores come up empty for an area with no tiles
         '''
         s3, bucket = unittest.mock.Mock(), unittest.mock.Mock()
         s3.get_object.side_effect = mock_s3_get_object
@@ -120,6 +120,19 @@ class TestScore (unittest.TestCase):
         self.assertIn('Better score a district.', output)
         self.assertEqual(scored.districts, [{'totals': {'Red Votes': 1, 'Blue Votes': 0}, 'tiles': ['zxy']}] * 2)
         self.assertEqual(scored.summary, {'Efficiency Gap': .5})
+    
+    @unittest.mock.patch('planscore.score.score_district')
+    def test_score_plan_missing_tile(self, score_district):
+        ''' District plan scores come up empty for an area with no tiles
+        '''
+        score_district.return_value = {'Red Votes': 0, 'Blue Votes': 0}, \
+            ['zxy'], 'Better score a district.\n'
+        
+        plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.gpkg')
+        upload = data.Upload('id', os.path.basename(plan_path))
+        
+        scored, output = score.score_plan(None, None, upload, plan_path, None)
+        self.assertFalse(scored.summary['Efficiency Gap'])
     
     def test_score_plan_bad_file_type(self):
         ''' An error is raised when an unknown plan file type is submitted
