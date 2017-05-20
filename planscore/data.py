@@ -22,6 +22,10 @@ class Upload:
     
         return json.dumps(data, sort_keys=True, indent=2)
     
+    def clone(self, districts=None):
+        return Upload(self.id, self.key,
+            districts = districts or self.districts)
+    
     @staticmethod
     def from_json(body):
         data = json.loads(body)

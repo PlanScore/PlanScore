@@ -7,10 +7,11 @@ ogr.UseExceptions()
 
 FIELD_NAMES = ('Voters', 'Blue Votes', 'Red Votes')
 
-def score_plan(s3, bucket, upload, plan_path, tiles_prefix):
+def score_plan(s3, bucket, input_upload, plan_path, tiles_prefix):
     '''
     '''
-    feature_count, output, upload.districts = 0, io.StringIO(), []
+    upload = input_upload.clone(districts=[])
+    feature_count, output = 0, io.StringIO()
     ds = ogr.Open(plan_path)
     print(ds, file=output)
     
