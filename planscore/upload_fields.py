@@ -1,4 +1,4 @@
-import json, pprint, urllib.parse, uuid, os
+import json, pprint, urllib.parse, datetime, random, os
 import boto3, itsdangerous
 from . import util, data
 
@@ -31,9 +31,14 @@ def get_upload_fields(s3, creds, request_url, secret):
     return presigned['url'], presigned['fields']
 
 def generate_signed_id(secret):
+    ''' Generate a unique ID with a signature.
+    
+        We want this to include date for sorting, be a valid ISO-8601 datetime,
+        and to use a big random number for fake nanosecond accuracy to increase
+        likelihood of uniqueness.
     '''
-    '''
-    identifier = str(uuid.uuid4())
+    now, nsec = datetime.datetime.utcnow(), random.randint(0, 999999999)
+    identifier = '{}.{:09d}Z'.format(now.strftime('%Y%m%dT%H%M%S'), nsec)
     signer = itsdangerous.Signer(secret)
     return identifier, signer.sign(identifier.encode('utf8')).decode('utf8')
 
