@@ -7,6 +7,7 @@ RUN \
   && yum install -y \
     automake16 \
     libcurl-devel \
+    sqlite-devel \
     libpng-devel
 
 # Fetch PROJ.4
@@ -42,12 +43,12 @@ RUN \
 # Fetch GDAL
 
 RUN \
-  mkdir -p /tmp/gdal-dev && \
-  curl -L https://github.com/OSGeo/gdal/archive/3288b145e6e966499a961c27636f2c9ea80157c2.tar.gz | tar zxf - -C /tmp/gdal-dev --strip-components=1
+  mkdir -p /tmp/gdal-2.1.3 && \
+  curl -L https://github.com/OSGeo/gdal/archive/tags/2.1.3.tar.gz | tar zxf - -C /tmp/gdal-2.1.3 --strip-components=1
 
 # Build + install GDAL
 
-WORKDIR /tmp/gdal-dev/gdal
+WORKDIR /tmp/gdal-2.1.3/gdal
 
 RUN \
   ./configure \
@@ -55,6 +56,7 @@ RUN \
     --with-geos=/var/task/bin/geos-config \
     --datarootdir=/var/task/share/gdal \
     --with-jpeg=internal \
+    --with-sqlite3 \
     --without-qhull \
     --without-mrf \
     --without-grib \
@@ -70,7 +72,7 @@ RUN \
 WORKDIR /var/task
 
 RUN \
-  strip lib/libgdal.so.20.1.0 && \
+  strip lib/libgdal.so.20.1.3 && \
   strip lib/libgeos_c.so.1.10.1 && \
   strip lib/libgeos-3.6.1.so && \
   strip lib/libproj.so.12.0.0
