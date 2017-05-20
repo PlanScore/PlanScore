@@ -96,9 +96,8 @@ class TestScore (unittest.TestCase):
         
         plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         upload = data.Upload('id', os.path.basename(plan_path), [])
-        tiles_prefix = None
         
-        scored, output = score.score_plan(None, None, upload, plan_path, tiles_prefix)
+        scored, output = score.score_plan(None, None, upload, plan_path, None)
         self.assertIn('2 features in 1119-byte null-plan.geojson', output)
         self.assertIn('Better score a district.', output)
         self.assertEqual(scored.districts, [{'totals': {'Red Votes': 0, 'Blue Votes': 1}, 'tiles': ['zxy']}] * 2)
@@ -113,9 +112,8 @@ class TestScore (unittest.TestCase):
         
         plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.gpkg')
         upload = data.Upload('id', os.path.basename(plan_path), [])
-        tiles_prefix = None
         
-        scored, output = score.score_plan(None, None, upload, plan_path, tiles_prefix)
+        scored, output = score.score_plan(None, None, upload, plan_path, None)
         self.assertIn('2 features in 40960-byte null-plan.gpkg', output)
         self.assertIn('Better score a district.', output)
         self.assertEqual(scored.districts, [{'totals': {'Red Votes': 1, 'Blue Votes': 0}, 'tiles': ['zxy']}] * 2)
@@ -139,17 +137,15 @@ class TestScore (unittest.TestCase):
         '''
         plan_path = __file__
         upload = data.Upload('id', os.path.basename(plan_path), [])
-        tiles_prefix = None
         
         with self.assertRaises(RuntimeError) as error:
-            score.score_plan(None, None, upload, plan_path, tiles_prefix)
+            score.score_plan(None, None, upload, plan_path, None)
     
     def test_score_plan_bad_file_content(self):
         ''' An error is raised when a bad plan file is submitted
         '''
         plan_path = os.path.join(os.path.dirname(__file__), 'data', 'bad-data.geojson')
         upload = data.Upload('id', os.path.basename(plan_path), [])
-        tiles_prefix = None
         
         with self.assertRaises(RuntimeError) as error:
-            score.score_plan(None, None, upload, plan_path, tiles_prefix)
+            score.score_plan(None, None, upload, plan_path, None)
