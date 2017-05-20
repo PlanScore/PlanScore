@@ -38,6 +38,8 @@ class TestScore (unittest.TestCase):
         totals2, tiles2, _ = score.score_district(s3, bucket, geometry2, 'XX')
         
         self.assertAlmostEqual(totals1['Voters'] + totals2['Voters'], 15)
+        self.assertAlmostEqual(totals1['Blue Votes'] + totals2['Blue Votes'], 6)
+        self.assertAlmostEqual(totals1['Red Votes'] + totals2['Red Votes'], 6)
         self.assertEqual(tiles1, ['10/511/511', '10/511/512'])
         self.assertEqual(tiles2, ['10/511/511', '10/512/511', '10/511/512', '10/512/512'])
     
