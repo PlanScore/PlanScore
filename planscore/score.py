@@ -5,12 +5,13 @@ from . import prepare_state, util
 
 ogr.UseExceptions()
 
-FIELD_NAMES = ('Voters', )
+FIELD_NAMES = ('Voters', 'Blue Votes', 'Red Votes')
 
-def score_plan(s3, bucket, upload, plan_path, tiles_prefix):
+def score_plan(s3, bucket, input_upload, plan_path, tiles_prefix):
     '''
     '''
-    feature_count, output, upload.districts = 0, io.StringIO(), []
+    new_districts = []
+    feature_count, output = 0, io.StringIO()
     ds = ogr.Open(plan_path)
     print(ds, file=output)
     
@@ -23,17 +24,18 @@ def score_plan(s3, bucket, upload, plan_path, tiles_prefix):
 
         totals, tiles, district_output = score_district(s3, bucket, feature.GetGeometryRef(), tiles_prefix)
         output.write(district_output)
-        upload.districts.append(dict(totals=totals, tiles=tiles))
+        new_districts.append(dict(totals=totals, tiles=tiles))
     
+    output_upload = calculate_gap(input_upload.clone(districts=new_districts))
     length = os.stat(plan_path).st_size
     
     print('{} features in {}-byte {}'.format(feature_count,
         length, os.path.basename(plan_path)), file=output) 
     
-    print('Uploading to s3://{}/{}...'.format(bucket, upload.index_key()),
+    print('Uploading to s3://{}/{}...'.format(bucket, output_upload.index_key()),
         file=output)
     
-    return output.getvalue()
+    return output_upload, output.getvalue()
 
 def score_district(s3, bucket, district_geom, tiles_prefix):
     '''
@@ -88,3 +90,30 @@ def score_district(s3, bucket, district_geom, tiles_prefix):
     print('>', totals, file=output)
     
     return totals, tile_list, output.getvalue()
+
+def calculate_gap(upload):
+    '''
+    '''
+    election_votes, wasted_red, wasted_blue, red_wins, blue_wins = 0, 0, 0, 0, 0
+
+    for district in upload.districts:
+        red_votes = district['totals']['Red Votes']
+        blue_votes = district['totals']['Blue Votes']
+        district_votes = red_votes + blue_votes
+        election_votes += district_votes
+        win_threshold = district_votes / 2
+    
+        if red_votes > blue_votes:
+            red_wins += 1
+            wasted_red += red_votes - win_threshold # surplus
+            wasted_blue += blue_votes # loser
+        elif blue_votes > red_votes:
+            blue_wins += 1
+            wasted_blue += blue_votes - win_threshold # surplus
+            wasted_red += red_votes # loser
+        else:
+            raise ValueError('Unlikely 50/50 split')
+
+    efficiency_gap = (wasted_red - wasted_blue) / election_votes
+    
+    return upload.clone(summary={'Efficiency Gap': efficiency_gap})

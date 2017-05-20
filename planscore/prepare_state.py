@@ -2,7 +2,7 @@ import argparse, math, itertools, io, gzip
 from osgeo import ogr, osr
 import boto3, ModestMaps.Geo, ModestMaps.Core
 
-TILE_ZOOM = 12
+TILE_ZOOM = 10
 FRACTION_FIELD = 'PlanScore:Fraction'
 KEY_FORMAT = 'data/{state}/{zxy}.geojson'
 
@@ -43,6 +43,8 @@ def iter_extent_tiles(xxyy_extent, zoom):
 parser = argparse.ArgumentParser(description='YESS')
 
 parser.add_argument('filename', help='Name of geographic file with precinct data')
+parser.add_argument('--zoom', type=int, default=TILE_ZOOM,
+    help='Zoom level. Default {}.'.format(TILE_ZOOM))
 
 def main():
     args = parser.parse_args()
@@ -54,7 +56,7 @@ def main():
     layer_defn = layer.GetLayerDefn()
     layer_defn.AddFieldDefn(ogr.FieldDefn(FRACTION_FIELD, ogr.OFTReal))
     
-    for (tile, bbox_wkt) in iter_extent_tiles(layer.GetExtent(), TILE_ZOOM):
+    for (tile, bbox_wkt) in iter_extent_tiles(layer.GetExtent(), args.zoom):
         bbox_geom = ogr.CreateGeometryFromWkt(bbox_wkt)
         layer.SetSpatialFilter(bbox_geom)
         

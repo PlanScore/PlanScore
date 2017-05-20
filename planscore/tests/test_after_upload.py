@@ -56,8 +56,11 @@ class TestAfterUpload (unittest.TestCase):
     def test_get_uploaded_info_good_file(self, score_plan, put_upload_index, temporary_buffer_file):
         '''
         '''
+        id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
-        upload_key = data.UPLOAD_PREFIX.format(id='id') + 'null-plan.geojson'
+        upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
+        upload, output = data.Upload(id, upload_key), unittest.mock.Mock()
+        score_plan.return_value = upload, output
         
         @contextlib.contextmanager
         def nullplan_file(*args):
@@ -68,20 +71,16 @@ class TestAfterUpload (unittest.TestCase):
         s3, bucket = unittest.mock.Mock(), unittest.mock.Mock()
         s3.get_object.return_value = {'Body': None}
 
-        info = after_upload.get_uploaded_info(s3, bucket, upload_key, 'id')
+        info = after_upload.get_uploaded_info(s3, bucket, upload_key, id)
 
         self.assertEqual(len(score_plan.mock_calls), 1)
         self.assertEqual(score_plan.mock_calls[0][1][:2], (s3, bucket))
-        upload = score_plan.mock_calls[0][1][2]
-        self.assertEqual(upload.id, 'id')
-        self.assertEqual(upload.key, upload_key)
         self.assertEqual(score_plan.mock_calls[0][1][3:], (nullplan_path, 'data/XX'))
 
         temporary_buffer_file.assert_called_once_with('null-plan.geojson', None)
-        self.assertIs(info, score_plan.return_value)
+        self.assertIs(info, output)
     
-        self.assertEqual(put_upload_index.mock_calls[0][1][:2], (s3, bucket))
-        self.assertIs(put_upload_index.mock_calls[0][1][2], upload)
+        put_upload_index.assert_called_once_with(s3, bucket, upload)
     
     def test_get_uploaded_info_bad_file(self):
         '''
