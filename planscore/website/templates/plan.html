@@ -19,11 +19,16 @@
             {% endfor %}
         </tr>
     </table>
+    <dl>
+        <dt>Efficiency Gap</dt>
+        <dd id="efficiency-gap">&nbsp;</dd>
+    </dl>
 	<script language="javascript">
 	    var fields = {{ fields|tojson }},
 	        plan_id = location.search.replace('?', ''),
 	        plan_url = get_plan_url('{{ data_url_pattern }}', plan_id);
 
-	    load_plan_score(plan_url, fields, document.getElementById('districts'));
+	    load_plan_score(plan_url, fields, document.getElementById('districts'),
+	        document.getElementById('efficiency-gap'));
 	</script>
 {% endblock %}
