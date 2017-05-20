@@ -89,3 +89,30 @@ def score_district(s3, bucket, district_geom, tiles_prefix):
     print('>', totals, file=output)
     
     return totals, tile_list, output.getvalue()
+
+def calculate_gap(upload):
+    '''
+    '''
+    election_votes, wasted_red, wasted_blue, red_wins, blue_wins = 0, 0, 0, 0, 0
+
+    for district in upload.districts:
+        red_votes = district['totals']['Red Votes']
+        blue_votes = district['totals']['Blue Votes']
+        district_votes = red_votes + blue_votes
+        election_votes += district_votes
+        win_threshold = district_votes / 2
+    
+        if red_votes > blue_votes:
+            red_wins += 1
+            wasted_red += red_votes - win_threshold # surplus
+            wasted_blue += blue_votes # loser
+        elif blue_votes > red_votes:
+            blue_wins += 1
+            wasted_blue += blue_votes - win_threshold # surplus
+            wasted_red += red_votes # loser
+        else:
+            raise ValueError('Unlikely 50/50 split')
+
+    efficiency_gap = (wasted_red - wasted_blue) / election_votes
+    
+    return upload.clone(summary={'Efficiency Gap': efficiency_gap})
