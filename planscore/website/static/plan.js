@@ -19,7 +19,7 @@ function nice_gap(value)
     if(value > 0) {
         return '+' + (100 * value).toFixed(1) + '% for Blue';
     } else {
-        return '+' + (100 * value).toFixed(1) + '% for Red';
+        return '+' + (100 * -value).toFixed(1) + '% for Red';
     }
 }
 
