@@ -51,7 +51,7 @@ class TestAfterUpload (unittest.TestCase):
     def test_put_geojson_file(self):
         ''' Geometry GeoJSON file is posted to S3
         '''
-        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
+        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.gpkg')
         s3, bucket, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
         after_upload.put_geojson_file(s3, bucket, upload, nullplan_path)
         s3.put_object.assert_called_once_with(Bucket=bucket,
