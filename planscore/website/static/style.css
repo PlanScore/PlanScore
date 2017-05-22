@@ -1,0 +1,11 @@
+body
+{
+    width: 720px;
+    margin: 1em auto 4em auto;
+}
+
+p img
+{
+    width: 100%;
+    border: 1px solid #ddd;
+}
