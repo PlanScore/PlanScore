@@ -5,6 +5,8 @@ class TestAfterUpload (unittest.TestCase):
     
     @unittest.mock.patch('planscore.after_upload.get_uploaded_info')
     def test_lambda_handler(self, get_uploaded_info):
+        ''' Lambda event triggers the right call to get_uploaded_info()
+        '''
         query = {'id': 'id.k0_XwbOLGLUdv241zsPluNc3HYs', 'bucket': 'planscore',
             'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson'}
 
@@ -23,6 +25,8 @@ class TestAfterUpload (unittest.TestCase):
     
     @unittest.mock.patch('planscore.after_upload.get_uploaded_info')
     def test_lambda_handler_bad_id(self, get_uploaded_info):
+        ''' Lambda event with an incorrectly-signed ID fails as expected
+        '''
         event = {
             'queryStringParameters': {'id': 'id.WRONG'}
             }
@@ -35,7 +39,7 @@ class TestAfterUpload (unittest.TestCase):
         self.assertIn('Bad ID', response['body'])
     
     def test_put_upload_index(self):
-        '''
+        ''' Upload index file is posted to S3
         '''
         s3, bucket, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
         after_upload.put_upload_index(s3, bucket, upload)
@@ -56,7 +60,7 @@ class TestAfterUpload (unittest.TestCase):
             ACL='public-read', ContentType='text/json')
     
     def test_get_redirect_url(self):
-        '''
+        ''' Expected redirect URL is returned from get_redirect_url()
         '''
         redirect_url = after_upload.get_redirect_url('https://planscore.org/', 'ID')
         self.assertEqual(redirect_url, 'https://planscore.org/plan.html?ID')
@@ -96,7 +100,7 @@ class TestAfterUpload (unittest.TestCase):
         put_geojson_file.assert_called_once_with(s3, bucket, upload, nullplan_path)
     
     def test_get_uploaded_info_bad_file(self):
-        '''
+        ''' An invalid district file fails in an expected way
         '''
         s3, bucket = unittest.mock.Mock(), unittest.mock.Mock()
         s3.get_object.return_value = {'Body': io.BytesIO(b'Bad data')}
