@@ -1,9 +1,13 @@
 {% extends "layout.html" %}
 {% block title %}Plan{% endblock %}
 {% block head %}
-	<script src="{{ url_for('static', filename='plan.js') }}"></script>
+    <script src="{{ url_for('static', filename='plan.js') }}"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
 {% endblock %}
 {% block content %}
+    <div id="map" style="width: 650px; height: 400px; border: 1px solid black">
+    </div>
     <table id="districts">
         <tr>
             <th>District</th>
@@ -31,5 +35,7 @@
 
 	    load_plan_score(plan_url, fields, document.getElementById('districts'),
 	        document.getElementById('efficiency-gap'));
+	    
+	    load_plan_map(geom_url, document.getElementById('map'));
 	</script>
 {% endblock %}
