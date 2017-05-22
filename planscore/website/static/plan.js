@@ -27,6 +27,33 @@ function load_plan_score(url, fields, table, eff_gap)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
+    
+    function on_loaded_score(plan)
+    {
+        var rows = table.getElementsByTagName('tr'),
+            row = rows[rows.length - 1],
+            tbody = row.parentNode,
+            columns;
+        
+        // Remove the sample row
+        tbody.removeChild(row);
+        
+        // Clone it for each district
+        for(var i = 0; i < plan.districts.length; i++)
+        {
+            new_row = row.cloneNode(true);
+            columns = new_row.getElementsByTagName('td');
+            columns[0].innerText = i + 1;
+            for(var j = 0; j < fields.length; j++)
+            {
+                columns[j+1].innerText = nice_count(plan.districts[i].totals[fields[j]]);
+            }
+            tbody.appendChild(new_row);
+        }
+        
+        // Note the efficiency gap
+        eff_gap.innerText = nice_gap(plan.summary['Efficiency Gap']);
+    }
 
     request.onload = function()
     {
@@ -35,30 +62,7 @@ function load_plan_score(url, fields, table, eff_gap)
             // Returns a dictionary with a list of districts
             var data = JSON.parse(request.responseText);
             console.log('Loaded plan:', data);
-            
-            var rows = document.getElementsByTagName('tr'),
-                row = rows[rows.length - 1],
-                tbody = row.parentNode,
-                columns;
-            
-            // Remove the sample row
-            tbody.removeChild(row);
-            
-            // Clone it for each district
-            for(var i = 0; i < data.districts.length; i++)
-            {
-                new_row = row.cloneNode(true);
-                columns = new_row.getElementsByTagName('td');
-                columns[0].innerText = i + 1;
-                for(var j = 0; j < fields.length; j++)
-                {
-                    columns[j+1].innerText = nice_count(data.districts[i].totals[fields[j]]);
-                }
-                tbody.appendChild(new_row);
-            }
-            
-            // Note the efficiency gap
-            eff_gap.innerText = nice_gap(data['summary']['Efficiency Gap']);
+            on_loaded_score(data);
         }
     };
 
@@ -97,7 +101,7 @@ function load_plan_map(url, div)
     {
         if(request.status >= 200 && request.status < 400)
         {
-            // Returns a dictionary with a list of districts
+            // Returns a GeoJSON dictionary
             var data = JSON.parse(request.responseText);
             console.log('Loaded map:', data);
             on_loaded_geojson(L.geoJSON(data));
