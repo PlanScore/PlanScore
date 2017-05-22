@@ -9,6 +9,9 @@ app.config['PLANSCORE_API_BASE'] = os.environ.get('API_BASE', 'https://api.plans
 def get_data_url_pattern(bucket):
     return 'https://{}.s3.amazonaws.com/{}'.format(bucket, data.UPLOAD_INDEX_KEY)
 
+def get_geom_url_pattern(bucket):
+    return 'https://{}.s3.amazonaws.com/{}'.format(bucket, data.UPLOAD_GEOMETRY_KEY)
+
 @app.route('/')
 def get_index():
     return flask.render_template('index.html')
@@ -22,5 +25,6 @@ def get_upload():
 @app.route('/plan.html')
 def get_plan():
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
+    geom_url_pattern = get_geom_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     return flask.render_template('plan.html', fields=score.FIELD_NAMES,
-        data_url_pattern=data_url_pattern)
+        data_url_pattern=data_url_pattern, geom_url_pattern=geom_url_pattern)

@@ -1,4 +1,4 @@
-function get_plan_url(url_pattern, id)
+function format_url(url_pattern, id)
 {
     return url_pattern.replace('{id}', id);
 }
