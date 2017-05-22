@@ -5,6 +5,8 @@ class TestAfterUpload (unittest.TestCase):
     
     @unittest.mock.patch('planscore.after_upload.get_uploaded_info')
     def test_lambda_handler(self, get_uploaded_info):
+        ''' Lambda event triggers the right call to get_uploaded_info()
+        '''
         query = {'id': 'id.k0_XwbOLGLUdv241zsPluNc3HYs', 'bucket': 'planscore',
             'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson'}
 
@@ -23,6 +25,8 @@ class TestAfterUpload (unittest.TestCase):
     
     @unittest.mock.patch('planscore.after_upload.get_uploaded_info')
     def test_lambda_handler_bad_id(self, get_uploaded_info):
+        ''' Lambda event with an incorrectly-signed ID fails as expected
+        '''
         event = {
             'queryStringParameters': {'id': 'id.WRONG'}
             }
@@ -35,7 +39,7 @@ class TestAfterUpload (unittest.TestCase):
         self.assertIn('Bad ID', response['body'])
     
     def test_put_upload_index(self):
-        '''
+        ''' Upload index file is posted to S3
         '''
         s3, bucket, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
         after_upload.put_upload_index(s3, bucket, upload)
@@ -44,17 +48,29 @@ class TestAfterUpload (unittest.TestCase):
             Body=upload.to_json.return_value.encode.return_value,
             ACL='public-read', ContentType='text/json')
     
-    def test_get_redirect_url(self):
+    def test_put_geojson_file(self):
+        ''' Geometry GeoJSON file is posted to S3
         '''
+        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
+        s3, bucket, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
+        after_upload.put_geojson_file(s3, bucket, upload, nullplan_path)
+        s3.put_object.assert_called_once_with(Bucket=bucket,
+            Key=upload.geometry_key.return_value,
+            Body=b'{"type": "FeatureCollection", "features": [\n{"type": "Feature", "properties": {}, "geometry": { "type": "Polygon", "coordinates": [ [ [ -0.000236, 0.0004533 ], [ -0.0006813, 0.0002468 ], [ -0.0006357, -0.0003487 ], [ -0.0000268, -0.0004694 ], [ -0.0000188, -0.0000215 ], [ -0.000236, 0.0004533 ] ] ] }},\n{"type": "Feature", "properties": {}, "geometry": { "type": "Polygon", "coordinates": [ [ [ -0.0002259, 0.0004311 ], [ 0.000338, 0.0006759 ], [ 0.0004452, 0.0006142 ], [ 0.0005525, 0.000059 ], [ 0.0005257, -0.0005069 ], [ 0.0003862, -0.0005659 ], [ -0.0000939, -0.0004935 ], [ -0.0001016, -0.0004546 ], [ -0.0000268, -0.0004694 ], [ -0.0000188, -0.0000215 ], [ -0.0002259, 0.0004311 ] ] ] }}\n]}',
+            ACL='public-read', ContentType='text/json')
+    
+    def test_get_redirect_url(self):
+        ''' Expected redirect URL is returned from get_redirect_url()
         '''
         redirect_url = after_upload.get_redirect_url('https://planscore.org/', 'ID')
         self.assertEqual(redirect_url, 'https://planscore.org/plan.html?ID')
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.after_upload.put_upload_index')
+    @unittest.mock.patch('planscore.after_upload.put_geojson_file')
     @unittest.mock.patch('planscore.score.score_plan')
-    def test_get_uploaded_info_good_file(self, score_plan, put_upload_index, temporary_buffer_file):
-        '''
+    def test_get_uploaded_info_good_file(self, score_plan, put_geojson_file, put_upload_index, temporary_buffer_file):
+        ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
@@ -81,9 +97,10 @@ class TestAfterUpload (unittest.TestCase):
         self.assertIs(info, output)
     
         put_upload_index.assert_called_once_with(s3, bucket, upload)
+        put_geojson_file.assert_called_once_with(s3, bucket, upload, nullplan_path)
     
     def test_get_uploaded_info_bad_file(self):
-        '''
+        ''' An invalid district file fails in an expected way
         '''
         s3, bucket = unittest.mock.Mock(), unittest.mock.Mock()
         s3.get_object.return_value = {'Body': io.BytesIO(b'Bad data')}

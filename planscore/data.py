@@ -2,6 +2,7 @@ import json
 
 UPLOAD_PREFIX = 'uploads/{id}/upload/'
 UPLOAD_INDEX_KEY = 'uploads/{id}/index.json'
+UPLOAD_GEOMETRY_KEY = 'uploads/{id}/geometry.json'
 
 class Upload:
 
@@ -13,6 +14,9 @@ class Upload:
     
     def index_key(self):
         return UPLOAD_INDEX_KEY.format(id=self.id)
+    
+    def geometry_key(self):
+        return UPLOAD_GEOMETRY_KEY.format(id=self.id)
     
     def to_json(self):
         data = dict(
