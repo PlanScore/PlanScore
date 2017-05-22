@@ -1,4 +1,4 @@
-import boto3, pprint, os, io, json, urllib.parse
+import boto3, pprint, os, io, json, urllib.parse, gzip
 import itsdangerous
 from osgeo import ogr
 from . import util, data, score, website, prepare_state
@@ -37,9 +37,10 @@ def put_geojson_file(s3, bucket, upload, path):
 
     features = ['{"type": "Feature", "properties": {}, "geometry": '+g+'}' for g in geometries]
     geojson = '{"type": "FeatureCollection", "features": [\n'+',\n'.join(features)+'\n]}'
+    body = gzip.compress(geojson.encode('utf8'))
     
-    s3.put_object(Bucket=bucket, Key=key, Body=geojson.encode('utf8'),
-        ContentType='text/json', ACL='public-read')
+    s3.put_object(Bucket=bucket, Key=key, Body=body,
+        ContentEncoding='gzip', ContentType='text/json', ACL='public-read')
 
 def put_upload_index(s3, bucket, upload):
     ''' Save a JSON index file for this upload.
