@@ -16,10 +16,10 @@ h1, h2, th
     color: #B4881D;
 }
 
-a:link { color: #2E8CCF }
+a, a:link { color: #2E8CCF; text-decoration: underline }
 a:visited { color: #6D73C2 }
 
-h1 a:link, h1 a:visited, h2 a:link, h2 a:visited { color: inherit }
+h1 a, h2 a { color: inherit !important; text-decoration: none !important }
 
 a img
 {
