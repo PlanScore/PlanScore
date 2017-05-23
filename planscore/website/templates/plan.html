@@ -10,7 +10,7 @@
         {
             width: 100%;
             height: 400px;
-            border: 1px solid gray;
+            border: 1px solid #93A1A1;
         }
 
     </style>
@@ -45,6 +45,7 @@
 	    load_plan_score(plan_url, fields, document.getElementById('districts'),
 	        document.getElementById('efficiency-gap'));
 	    
-	    load_plan_map(geom_url, document.getElementById('map'));
+	    load_plan_map(geom_url, document.getElementById('map'),
+	        getComputedStyle(document.getElementsByTagName('h1')[0]).color);
 	</script>
 {% endblock %}

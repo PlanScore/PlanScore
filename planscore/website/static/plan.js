@@ -70,13 +70,17 @@ function load_plan_score(url, fields, table, eff_gap)
     request.send();
 }
 
-function load_plan_map(url, div)
+function load_plan_map(url, div, color)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
 
-    function on_loaded_geojson(geojson)
+    function on_loaded_geojson(data)
     {
+        var geojson = L.geoJSON(data, {
+            style: { color: color, weight: 1, fillOpacity: .1 }
+            });
+    
         console.log('GeoJSON bounds:', geojson.getBounds());
 
         // Initialize the map on the passed div in the middle of the ocean
@@ -104,7 +108,7 @@ function load_plan_map(url, div)
             // Returns a GeoJSON dictionary
             var data = JSON.parse(request.responseText);
             console.log('Loaded map:', data);
-            on_loaded_geojson(L.geoJSON(data));
+            on_loaded_geojson(data);
         }
     };
 
