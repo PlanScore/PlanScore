@@ -5,6 +5,10 @@
 {% endblock %}
 {% block content %}
     <form action="#" method="post" enctype="multipart/form-data">
+        <p>
+            Upload a GeoJSON or Geopackage file. While PlanScore is under
+            construction, only district plans for Null Island will work.
+        </p>
         <input type="hidden" name="key">
         <input type="hidden" name="AWSAccessKeyId">
         <input type="hidden" name="policy">
@@ -12,8 +16,10 @@
         <input type="hidden" name="success_action_redirect">
         <input type="hidden" name="acl">
         <input type="hidden" name="x-amz-security-token">
-        <input type="file" name="file">
-        <input type="submit" name="submission" value="Upload" disabled>
+        <p>
+            <input type="file" name="file">
+            <input type="submit" name="submission" value="Upload" disabled>
+        </p>
     </form>
 	<script language="javascript">
 	    enable_form('{{upload_fields_url}}', document.forms[0]);

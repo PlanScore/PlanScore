@@ -19,7 +19,9 @@ h1, h2, th
 a:link { color: #2E8CCF }
 a:visited { color: #6D73C2 }
 
-p img
+h1 a:link, h1 a:visited, h2 a:link, h2 a:visited { color: inherit }
+
+a img
 {
     width: 100%;
     border: 1px solid;
