@@ -1,9 +1,12 @@
 import unittest, unittest.mock, io, os, contextlib, json, gzip, itertools
 from .. import score, data
 import botocore.exceptions
-from osgeo import ogr
+from osgeo import ogr, gdal
 
 should_gzip = itertools.cycle([True, False])
+
+# Don't clutter output when running invalid data in tests
+gdal.PushErrorHandler('CPLQuietErrorHandler')
 
 def mock_s3_get_object(Bucket, Key):
     '''
