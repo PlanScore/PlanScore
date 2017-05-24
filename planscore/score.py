@@ -75,7 +75,15 @@ def score_district(s3, bucket, district_geom, tiles_prefix):
                 if not precinct_geom.Intersects(district_geom):
                     continue
                 
-                overlap_geom = precinct_geom.Intersection(district_geom)
+                try:
+                    overlap_geom = precinct_geom.Intersection(district_geom)
+                except RuntimeError as e:
+                    if 'TopologyException' in str(e) and not precinct_geom.IsValid():
+                        # Sometimes, a precinct geometry can be invalid
+                        # so inflate it by a tiny amount to smooth out problems
+                        precinct_geom = precinct_geom.Buffer(0.0000001)
+                    else:
+                        raise
                 overlap_area = overlap_geom.Area() / precinct_geom.Area()
                 precinct_fraction = overlap_area * feature.GetField(prepare_state.FRACTION_FIELD)
                 

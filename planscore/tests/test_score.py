@@ -84,12 +84,11 @@ class TestScore (unittest.TestCase):
 
         geometry = ogr.CreateGeometryFromJson(json.dumps(feature['geometry']))
         totals, tiles, _ = score.score_district(s3, bucket, geometry, 'NC')
-
-        self.assertAlmostEqual(totals1['Voters'] + totals2['Voters'], 15)
-        self.assertAlmostEqual(totals1['Blue Votes'] + totals2['Blue Votes'], 6)
-        self.assertAlmostEqual(totals1['Red Votes'] + totals2['Red Votes'], 6)
-        self.assertEqual(tiles1, ['10/511/511', '10/511/512'])
-        self.assertEqual(tiles2, ['10/511/511', '10/512/511', '10/511/512', '10/512/512'])
+        
+        self.assertAlmostEqual(totals['Voters'], 124011.6413881468)
+        self.assertAlmostEqual(totals['Blue Votes'], 12717.196301225393)
+        self.assertAlmostEqual(totals['Red Votes'], 15607.833841392498)
+        self.assertEqual(tiles, ['10/276/403'])
     
     def test_score_district_missing_tile(self):
         ''' District scores come up empty for an area with no tiles
