@@ -43,6 +43,8 @@ def iter_extent_tiles(xxyy_extent, zoom):
 parser = argparse.ArgumentParser(description='YESS')
 
 parser.add_argument('filename', help='Name of geographic file with precinct data')
+parser.add_argument('--state', default='XX',
+    help='State abbreviation. Default {}.'.format('XX'))
 parser.add_argument('--zoom', type=int, default=TILE_ZOOM,
     help='Zoom level. Default {}.'.format(TILE_ZOOM))
 
@@ -82,7 +84,7 @@ def main():
         print(']}', file=buffer)
         
         tile_zxy = '{zoom}/{column}/{row}'.format(**tile.__dict__)
-        key = KEY_FORMAT.format(state='XX', zxy=tile_zxy)
+        key = KEY_FORMAT.format(state=args.state, zxy=tile_zxy)
         body = gzip.compress(buffer.getvalue().encode('utf8'))
         print(key, '-', '{:.1f}KB'.format(len(body) / 1024))
     
