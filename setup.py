@@ -8,6 +8,7 @@ setup(
     packages = ['planscore', 'planscore.website', 'planscore.tests'],
     test_suite = 'planscore.tests',
     package_data = {
+        'planscore': ['geodata/*.*'],
         'planscore.website': ['templates/*.html', 'static/*.*'],
         'planscore.tests': ['data/*.*', 'data/*/*/*/*.geojson'],
         },
