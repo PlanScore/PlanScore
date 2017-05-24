@@ -14,7 +14,8 @@ def get_uploaded_info(s3, bucket, key, id):
     upload = data.Upload(id, key, [])
     
     with util.temporary_buffer_file(os.path.basename(key), object['Body']) as path:
-        scored_upload, output = score.score_plan(s3, bucket, upload, path, 'data/XX')
+        prefix = 'data/{}'.format(guess_state(path))
+        scored_upload, output = score.score_plan(s3, bucket, upload, path, prefix)
         put_geojson_file(s3, bucket, scored_upload, path)
     
     put_upload_index(s3, bucket, scored_upload)
