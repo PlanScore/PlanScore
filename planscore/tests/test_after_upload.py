@@ -67,6 +67,15 @@ class TestAfterUpload (unittest.TestCase):
         redirect_url = after_upload.get_redirect_url('https://planscore.org/', 'ID')
         self.assertEqual(redirect_url, 'https://planscore.org/plan.html?ID')
     
+    def test_guess_state(self):
+        ''' Test that guess_state() guesses the correct U.S. state.
+        '''
+        null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
+        self.assertEqual(after_upload.guess_state(null_plan_path), 'XX')
+
+        nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
+        self.assertEqual(after_upload.guess_state(nc_plan_path), 'NC')
+    
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.after_upload.put_upload_index')
     @unittest.mock.patch('planscore.after_upload.put_geojson_file')
