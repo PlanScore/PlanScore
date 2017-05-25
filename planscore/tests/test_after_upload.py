@@ -1,5 +1,5 @@
 import unittest, unittest.mock, io, os, contextlib
-from .. import after_upload, data
+from .. import after_upload, data, districts
 
 class TestAfterUpload (unittest.TestCase):
     
@@ -76,12 +76,27 @@ class TestAfterUpload (unittest.TestCase):
         nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
         self.assertEqual(after_upload.guess_state(nc_plan_path), 'NC')
     
+    @unittest.mock.patch('boto3.client')
+    def test_fan_out_district_lambdas(self, boto3_client):
+        ''' Test that district Lambda fan-out is invoked correctly.
+        '''
+        null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
+        after_upload.fan_out_district_lambdas('bucket-name', 'data/XX', null_plan_path)
+        
+        for call in boto3_client.return_value.mock_calls:
+            kwargs = call[2]
+            self.assertEqual(kwargs['FunctionName'], districts.FUNCTION_NAME)
+            self.assertEqual(kwargs['InvocationType'], 'Event')
+            self.assertIn(b'bucket-name', kwargs['Payload'])
+            self.assertIn(b'data/XX', kwargs['Payload'])
+    
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.after_upload.put_upload_index')
     @unittest.mock.patch('planscore.after_upload.put_geojson_file')
+    @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
     @unittest.mock.patch('planscore.after_upload.guess_state')
     @unittest.mock.patch('planscore.score.score_plan')
-    def test_get_uploaded_info_good_file(self, score_plan, guess_state, put_geojson_file, put_upload_index, temporary_buffer_file):
+    def test_get_uploaded_info_good_file(self, score_plan, guess_state, fan_out_district_lambdas, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
@@ -97,7 +112,7 @@ class TestAfterUpload (unittest.TestCase):
 
         temporary_buffer_file.side_effect = nullplan_file
 
-        s3, bucket = unittest.mock.Mock(), unittest.mock.Mock()
+        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         info = after_upload.get_uploaded_info(s3, bucket, upload_key, id)
@@ -112,6 +127,7 @@ class TestAfterUpload (unittest.TestCase):
     
         put_upload_index.assert_called_once_with(s3, bucket, upload)
         put_geojson_file.assert_called_once_with(s3, bucket, upload, nullplan_path)
+        fan_out_district_lambdas.assert_called_once_with(bucket, 'data/XX', nullplan_path)
     
     def test_get_uploaded_info_bad_file(self):
         ''' An invalid district file fails in an expected way

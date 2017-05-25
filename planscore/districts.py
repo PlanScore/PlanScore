@@ -5,6 +5,8 @@ from . import prepare_state, score
 
 ogr.UseExceptions()
 
+FUNCTION_NAME = 'PlanScore-RunDistrict'
+
 class Storage:
     ''' Wrapper for S3-related details.
     '''

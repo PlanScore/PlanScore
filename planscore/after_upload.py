@@ -1,7 +1,7 @@
 import boto3, pprint, os, io, json, urllib.parse, gzip, functools
 import itsdangerous
 from osgeo import ogr
-from . import util, data, score, website, prepare_state
+from . import util, data, score, website, prepare_state, districts
 
 ogr.UseExceptions()
 
@@ -15,12 +15,41 @@ def get_uploaded_info(s3, bucket, key, id):
     
     with util.temporary_buffer_file(os.path.basename(key), object['Body']) as path:
         prefix = 'data/{}'.format(guess_state(path))
+        fan_out_district_lambdas(bucket, prefix, path)
         scored_upload, output = score.score_plan(s3, bucket, upload, path, prefix)
         put_geojson_file(s3, bucket, scored_upload, path)
     
     put_upload_index(s3, bucket, scored_upload)
     
     return output
+
+def fan_out_district_lambdas(bucket, prefix, path):
+    '''
+    '''
+    print('fan_out_district_lambdas:', (bucket, prefix, path))
+    try:
+        lam = boto3.client('lambda')
+        ds = ogr.Open(path)
+    
+        if not ds:
+            raise RuntimeError('Could not open file to fan out district invokations')
+        
+        for feature in ds.GetLayer(0):
+            geometry = feature.GetGeometryRef()
+
+            if geometry.GetSpatialReference():
+                geometry.TransformTo(prepare_state.EPSG4326)
+    
+            payload = dict(
+                geometry = geometry.ExportToWkt(),
+                bucket = bucket, prefix = prefix
+                )
+            
+            inv = lam.invoke(FunctionName=districts.FUNCTION_NAME, InvocationType='Event',
+                Payload=json.dumps(payload).encode('utf8'))
+
+    except Exception as e:
+        print('Exception in fan_out_district_lambdas:', e)
 
 def guess_state(path):
     ''' Guess state postal abbreviation for the given input path.
