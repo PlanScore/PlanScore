@@ -1,7 +1,7 @@
 import collections, json, io, gzip
 from osgeo import ogr
 import boto3, botocore.exceptions
-from . import prepare_state
+from . import prepare_state, score
 
 ogr.UseExceptions()
 
@@ -36,7 +36,13 @@ def consume_tiles(s3, bucket, tiles_prefix, totals, precincts, tiles):
 def score_precinct(totals, precinct):
     '''
     '''
-    totals['Voters'] += precinct['Voters']
+    #overlap_area = overlap_geom.Area() / precinct_geom.Area()
+    #precinct_fraction = overlap_area * feature.GetField(prepare_state.FRACTION_FIELD)
+    precinct_fraction = precinct['properties'][prepare_state.FRACTION_FIELD]
+    
+    for name in score.FIELD_NAMES:
+        precinct_value = precinct_fraction * precinct['properties'][name]
+        totals[name] += precinct_value
 
 def load_tile_precincts(s3, bucket, tiles_prefix, tile_zxy):
     ''' Get GeoJSON features for a specific tile.

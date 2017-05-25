@@ -71,8 +71,6 @@ class TestDistricts (unittest.TestCase):
             self.assertEqual(totals['Voters'], 15)
         
         self.assertEqual(len(score_precinct.mock_calls), expected_calls)
-        self.assertEqual([len(call[1]) for call in load_tile_precincts.mock_calls], [4, 4, 4],
-            'Every call to load_tile_precincts should have four arguments')
     
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
     @unittest.mock.patch('planscore.districts.score_precinct')
@@ -112,6 +110,17 @@ class TestDistricts (unittest.TestCase):
 
         with self.assertRaises(StopIteration):
             next(call)
+    
+    def test_score_precinct(self):
+        ''' Correct values appears in totals dict after scoring a precinct.
+        '''
+        totals = {"Voters": 0, "Red Votes": 0, "Blue Votes": 0}
+        precinct = {"type": "Feature", "properties": {"GEOID": "2", "NAME": "Precinct 2", "Voters": 5, "Red Votes": 1, "Blue Votes": 3, "PlanScore:Fraction": 0.21941107029382734}, "geometry": {"type": "Polygon", "coordinates": [[[-3.16e-05, 0.0], [-0.0001175, 0.0001898], [-0.0001175, 0.0001911], [-0.0001048, 0.0001927], [-0.0001053, 0.0002125], [-0.0001084, 0.0002196], [-0.0001028, 0.0002211], [-0.0001023, 0.0002318], [-9.07e-05, 0.0002364], [-8.71e-05, 0.0002349], [-8.66e-05, 0.000242], [-8.26e-05, 0.0002471], [-7.45e-05, 0.0002486], [-6.49e-05, 0.0002394], [-5.94e-05, 0.0002384], [-5.78e-05, 0.0002354], [-4.02e-05, 0.0002344], [-3.86e-05, 0.0002425], [-2.96e-05, 0.000245], [-3.01e-05, 0.0002379], [-2.6e-05, 0.0002379], [-1.79e-05, 0.0002232], [-1.04e-05, 0.0002232], [-7.3e-06, 0.0002181], [-2.8e-06, 0.0002181], [-0.0, 0.0002153], [-0.0, 0.0], [-3.16e-05, 0.0]]]}}
+        districts.score_precinct(totals, precinct)
+        
+        self.assertAlmostEqual(totals['Voters'], 1.097055351)
+        self.assertAlmostEqual(totals['Red Votes'], 0.21941107)
+        self.assertAlmostEqual(totals['Blue Votes'], 0.658233211)
     
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
     def test_iterate_precincts(self, load_tile_precincts):
