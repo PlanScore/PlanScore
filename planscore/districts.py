@@ -5,39 +5,56 @@ from . import prepare_state, score
 
 ogr.UseExceptions()
 
+class Partial:
+    ''' Partially-calculated district sums, used by consume_tiles().
+    '''
+    def __init__(self, totals, precincts, tiles, geometry):
+        self.totals = totals
+        self.precincts = precincts
+        self.tiles = tiles
+        self.geometry = geometry
+    
+    def to_dict(self):
+        return dict(totals=self.totals, precincts=self.precincts, tiles=self.tiles)
+    
+    @staticmethod
+    def from_event(event):
+        totals = event.get('totals')
+        precincts = event.get('precincts')
+        tiles = event.get('tiles')
+        geometry = ogr.CreateGeometryFromWkt(event['geometry'])
+    
+        if totals is None or precincts is None or tiles is None:
+            totals, precincts, tiles = collections.defaultdict(int), [], get_geometry_tile_zxys(geometry)
+        
+        return Partial(totals, precincts, tiles, geometry)
+
 def lambda_handler(event, context):
     '''
     '''
-    totals = event.get('totals')
-    precincts = event.get('precincts')
-    tiles = event.get('tiles')
-    geometry = ogr.CreateGeometryFromWkt(event['geometry'])
-    
-    if totals is None or precincts is None or tiles is None:
-        totals, precincts, tiles = collections.defaultdict(int), [], get_geometry_tile_zxys(geometry)
-        
+    partial = Partial.from_event(event)
     s3 = boto3.client('s3')
     bucket = event.get('bucket')
     tiles_prefix = event.get('tiles_prefix')
     
-    for _ in consume_tiles(s3, bucket, tiles_prefix, geometry, totals, precincts, tiles):
-        print('Iteration:', json.dumps(dict(totals=totals, precincts=precincts, tiles=tiles)))
+    for _ in consume_tiles(s3, bucket, tiles_prefix, partial):
+        print('Iteration:', json.dumps(partial.to_dict()))
 
-def consume_tiles(s3, bucket, tiles_prefix, district_geom, totals, precincts, tiles):
+def consume_tiles(s3, bucket, tiles_prefix, partial):
     ''' Generate a stream of steps, updating totals from precincts and tiles.
     
         Inputs are modified directly, and lists should be empty at completion.
     '''
-    for precinct in iterate_precincts(s3, bucket, tiles_prefix, precincts, tiles):
-        score_precinct(totals, district_geom, precinct)
+    for precinct in iterate_precincts(s3, bucket, tiles_prefix, partial.precincts, partial.tiles):
+        score_precinct(partial, precinct)
         yield
 
-def score_precinct(totals, district_geom, precinct):
+def score_precinct(partial, precinct):
     '''
     '''
     precinct_geom = ogr.CreateGeometryFromJson(json.dumps(precinct['geometry']))
     try:
-        overlap_geom = precinct_geom.Intersection(district_geom)
+        overlap_geom = precinct_geom.Intersection(partial.geometry)
     except RuntimeError as e:
         if 'TopologyException' in str(e) and not precinct_geom.IsValid():
             # Sometimes, a precinct geometry can be invalid
@@ -50,7 +67,7 @@ def score_precinct(totals, district_geom, precinct):
     
     for name in score.FIELD_NAMES:
         precinct_value = precinct_fraction * precinct['properties'][name]
-        totals[name] += precinct_value
+        partial.totals[name] += precinct_value
 
 def load_tile_precincts(s3, bucket, tiles_prefix, tile_zxy):
     ''' Get GeoJSON features for a specific tile.
