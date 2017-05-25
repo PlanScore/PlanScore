@@ -20,14 +20,31 @@ def mock_s3_get_object(Bucket, Key):
 
 class TestDistricts (unittest.TestCase):
 
+    def test_Storage(self):
+        ''' Storage.from_event() creates the right properties.
+        '''
+        s3 = unittest.mock.Mock()
+        storage = districts.Storage.from_event(dict(bucket='bucket', prefix='XX'), s3)
+        self.assertEqual(storage.s3, s3)
+        self.assertEqual(storage.bucket, 'bucket')
+        self.assertEqual(storage.prefix, 'XX')
+
+    def test_Partial(self):
+        ''' Partial.from_event() creates the right properties.
+        '''
+        partial = districts.Partial.from_event(dict(geometry='POINT(0.00001 0.00001)'))
+        self.assertEqual(str(partial.geometry), 'POINT (0.00001 0.00001)')
+        self.assertEqual(partial.totals, {})
+        self.assertEqual(partial.precincts, [])
+        self.assertEqual(partial.tiles, ['10/512/511'])
+
     @unittest.mock.patch('planscore.districts.consume_tiles')
     def test_lambda_handler_init(self, consume_tiles):
         ''' Lambda event data with just geometry starts the process.
         '''
         event = {'geometry': 'POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))'}
         districts.lambda_handler(event, None)
-        partial = consume_tiles.mock_calls[0][1][3]
-        self.assertEqual(consume_tiles.mock_calls[0][1][1:3], (None, None))
+        storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.totals, partial.precincts, partial.tiles),
             ({}, [], ['10/511/511', '10/511/512']))
 
@@ -38,8 +55,7 @@ class TestDistricts (unittest.TestCase):
         event = {'totals': {}, 'precincts': [{'Totals': 1}], 'tiles': ['10/511/512'],
             'geometry': 'POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))'}
         districts.lambda_handler(event, None)
-        partial = consume_tiles.mock_calls[0][1][3]
-        self.assertEqual(consume_tiles.mock_calls[0][1][1:3], (None, None))
+        storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.totals, partial.precincts, partial.tiles),
             ({}, [{'Totals': 1}], ['10/511/512']))
 
@@ -48,8 +64,6 @@ class TestDistricts (unittest.TestCase):
     def test_consume_tiles(self, score_precinct, load_tile_precincts):
         ''' Expected updates are made to totals dictionary.
         '''
-        s3, bucket, tiles_prefix = None, None, None
-
         cases = [
             ({'Voters': 0}, [], [({'Voters': 1}, {'Voters': 2}), ({'Voters': 4}, {'Voters': 8})]),
             ({'Voters': 0}, [{'Voters': 1}, {'Voters': 2}], [({'Voters': 4}, {'Voters': 8})]),
@@ -62,13 +76,13 @@ class TestDistricts (unittest.TestCase):
             partial.totals['Voters'] += precinct['Voters']
         
         # Just use the identity function to extend precincts
-        load_tile_precincts.side_effect = lambda s3, bucket, tiles_prefix, tile: tile
+        load_tile_precincts.side_effect = lambda storage, tile: tile
         score_precinct.side_effect = mock_score_precinct
         expected_calls = 0
         
         for (totals, precincts, tiles) in cases:
             partial = districts.Partial(totals, precincts, tiles, None)
-            iterations = list(districts.consume_tiles(s3, bucket, tiles_prefix, partial))
+            iterations = list(districts.consume_tiles(None, partial))
             expected_calls += len(iterations)
             self.assertFalse(partial.precincts, 'Precincts should be completely emptied')
             self.assertFalse(partial.tiles, 'Tiles should be completely emptied')
@@ -81,20 +95,18 @@ class TestDistricts (unittest.TestCase):
     def test_consume_tiles_detail(self, score_precinct, load_tile_precincts):
         ''' Expected updates are made to totals dictionary and lists.
         '''
-        s3, bucket, tiles_prefix = None, None, None
-
         def mock_score_precinct(partial, precinct):
             partial.totals['Voters'] += precinct['Voters']
         
         # Just use the identity function to extend precincts
-        load_tile_precincts.side_effect = lambda s3, bucket, tiles_prefix, tile: tile
+        load_tile_precincts.side_effect = lambda storage, tile: tile
         score_precinct.side_effect = mock_score_precinct
 
         totals, precincts, tiles = {'Voters': 0}, [], \
             [({'Voters': 1}, {'Voters': 2}), ({'Voters': 4}, {'Voters': 8})]
         
         partial = districts.Partial(totals, precincts, tiles, None)
-        call = districts.consume_tiles(s3, bucket, tiles_prefix, partial)
+        call = districts.consume_tiles(None, partial)
         self.assertEqual((partial.totals, partial.precincts, partial.tiles),
             ({'Voters': 0}, [], [({'Voters': 1}, {'Voters': 2}), ({'Voters': 4}, {'Voters': 8})]))
         
@@ -144,12 +156,12 @@ class TestDistricts (unittest.TestCase):
             ]
         
         # Just use the identity function to extend precincts
-        load_tile_precincts.side_effect = lambda s3, bucket, tiles_prefix, tile: tile
+        load_tile_precincts.side_effect = lambda storage, tile: tile
         expected_calls = 0
         
         for (input, tiles, expected) in cases:
             expected_calls += len(tiles)
-            actual = list(districts.iterate_precincts(None, None, None, input, tiles))
+            actual = list(districts.iterate_precincts(None, input, tiles))
             self.assertFalse(input, 'Input should be completely emptied')
             self.assertFalse(tiles, 'Tiles should be completely emptied')
             self.assertEqual(actual, expected)
@@ -161,12 +173,13 @@ class TestDistricts (unittest.TestCase):
         '''
         s3 = unittest.mock.Mock()
         s3.get_object.side_effect = mock_s3_get_object
+        storage = districts.Storage(s3, 'bucket-name', 'XX')
 
-        precincts1 = districts.load_tile_precincts(s3, 'bucket-name', 'XX', '10/511/511')
+        precincts1 = districts.load_tile_precincts(storage, '10/511/511')
         s3.get_object.assert_called_once_with(Bucket='bucket-name', Key='XX/10/511/511.geojson')
         self.assertEqual(len(precincts1), 3)
 
-        precincts2 = districts.load_tile_precincts(s3, 'bucket-name', 'XX', '10/-1/-1')
+        precincts2 = districts.load_tile_precincts(storage, '10/-1/-1')
         self.assertEqual(len(precincts2), 0)
 
     def test_get_geometry_tile_zxys(self):

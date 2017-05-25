@@ -5,6 +5,20 @@ from . import prepare_state, score
 
 ogr.UseExceptions()
 
+class Storage:
+    ''' Wrapper for S3-related details.
+    '''
+    def __init__(self, s3, bucket, prefix):
+        self.s3 = s3
+        self.bucket = bucket
+        self.prefix = prefix
+    
+    @staticmethod
+    def from_event(event, s3):
+        bucket = event.get('bucket')
+        prefix = event.get('prefix')
+        return Storage(s3, bucket, prefix)
+
 class Partial:
     ''' Partially-calculated district sums, used by consume_tiles().
     '''
@@ -33,19 +47,17 @@ def lambda_handler(event, context):
     '''
     '''
     partial = Partial.from_event(event)
-    s3 = boto3.client('s3')
-    bucket = event.get('bucket')
-    tiles_prefix = event.get('tiles_prefix')
+    storage = Storage.from_event(event, boto3.client('s3'))
     
-    for _ in consume_tiles(s3, bucket, tiles_prefix, partial):
+    for _ in consume_tiles(storage, partial):
         print('Iteration:', json.dumps(partial.to_dict()))
 
-def consume_tiles(s3, bucket, tiles_prefix, partial):
+def consume_tiles(storage, partial):
     ''' Generate a stream of steps, updating totals from precincts and tiles.
     
         Inputs are modified directly, and lists should be empty at completion.
     '''
-    for precinct in iterate_precincts(s3, bucket, tiles_prefix, partial.precincts, partial.tiles):
+    for precinct in iterate_precincts(storage, partial.precincts, partial.tiles):
         score_precinct(partial, precinct)
         yield
 
@@ -69,12 +81,12 @@ def score_precinct(partial, precinct):
         precinct_value = precinct_fraction * precinct['properties'][name]
         partial.totals[name] += precinct_value
 
-def load_tile_precincts(s3, bucket, tiles_prefix, tile_zxy):
+def load_tile_precincts(storage, tile_zxy):
     ''' Get GeoJSON features for a specific tile.
     '''
     try:
-        object = s3.get_object(Bucket=bucket,
-            Key='{}/{}.geojson'.format(tiles_prefix, tile_zxy))
+        object = storage.s3.get_object(Bucket=storage.bucket,
+            Key='{}/{}.geojson'.format(storage.prefix, tile_zxy))
     except botocore.exceptions.ClientError as error:
         if error.response['Error']['Code'] == 'NoSuchKey':
             return []
@@ -86,7 +98,7 @@ def load_tile_precincts(s3, bucket, tiles_prefix, tile_zxy):
     geojson = json.load(object['Body'])
     return geojson['features']
 
-def iterate_precincts(s3, bucket, tiles_prefix, precincts, tiles):
+def iterate_precincts(storage, precincts, tiles):
     ''' Generate a stream of precincts, getting new ones from tiles as needed.
     
         Input lists are modified directly, and should be empty at completion.
@@ -100,7 +112,7 @@ def iterate_precincts(s3, bucket, tiles_prefix, precincts, tiles):
         if tiles and not precincts:
             # All out of precincts; fill up from the next tile.
             tile_zxy = tiles.pop(0)
-            more_precincts = load_tile_precincts(s3, bucket, tiles_prefix, tile_zxy)
+            more_precincts = load_tile_precincts(storage, tile_zxy)
             precincts.extend(more_precincts)
 
 def get_geometry_tile_zxys(district_geom):
