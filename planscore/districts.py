@@ -1,4 +1,4 @@
-import collections
+import collections, json
 from osgeo import ogr
 from . import prepare_state
 
