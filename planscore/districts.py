@@ -1,5 +1,6 @@
-import collections, json
+import collections, json, io, gzip
 from osgeo import ogr
+import boto3, botocore.exceptions
 from . import prepare_state
 
 ogr.UseExceptions()
@@ -15,16 +16,20 @@ def lambda_handler(event, context):
             get_geometry_tile_zxys(geometry)
     else:
         raise RuntimeError('Missing required totals, precincts, tiles, and geometry')
+        
+    s3 = boto3.client('s3')
+    bucket = event.get('bucket')
+    tiles_prefix = event.get('tiles_prefix')
     
-    for _ in consume_tiles(totals, precincts, tiles):
+    for _ in consume_tiles(s3, bucket, tiles_prefix, totals, precincts, tiles):
         print('Iteration:', json.dumps(dict(totals=totals, precincts=precincts, tiles=tiles)))
 
-def consume_tiles(totals, precincts, tiles):
+def consume_tiles(s3, bucket, tiles_prefix, totals, precincts, tiles):
     ''' Generate a stream of steps, updating totals from precincts and tiles.
     
         Inputs are modified directly, and lists should be empty at completion.
     '''
-    for precinct in iterate_precincts(precincts, tiles):
+    for precinct in iterate_precincts(s3, bucket, tiles_prefix, precincts, tiles):
         score_precinct(totals, precinct)
         yield
 
@@ -33,12 +38,24 @@ def score_precinct(totals, precinct):
     '''
     totals['Voters'] += precinct['Voters']
 
-def load_tile_precincts(tile):
+def load_tile_precincts(s3, bucket, tiles_prefix, tile_zxy):
+    ''' Get GeoJSON features for a specific tile.
     '''
-    '''
-    return tile
+    try:
+        object = s3.get_object(Bucket=bucket,
+            Key='{}/{}.geojson'.format(tiles_prefix, tile_zxy))
+    except botocore.exceptions.ClientError as error:
+        if error.response['Error']['Code'] == 'NoSuchKey':
+            return []
+        raise
 
-def iterate_precincts(precincts, tiles):
+    if object.get('ContentEncoding') == 'gzip':
+        object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
+    
+    geojson = json.load(object['Body'])
+    return geojson['features']
+
+def iterate_precincts(s3, bucket, tiles_prefix, precincts, tiles):
     ''' Generate a stream of precincts, getting new ones from tiles as needed.
     
         Input lists are modified directly, and should be empty at completion.
@@ -51,7 +68,8 @@ def iterate_precincts(precincts, tiles):
     
         if tiles and not precincts:
             # All out of precincts; fill up from the next tile.
-            more_precincts = load_tile_precincts(tiles.pop(0))
+            tile_zxy = tiles.pop(0)
+            more_precincts = load_tile_precincts(s3, bucket, tiles_prefix, tile_zxy)
             precincts.extend(more_precincts)
 
 def get_geometry_tile_zxys(district_geom):
