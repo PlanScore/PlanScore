@@ -46,7 +46,6 @@ def score_precinct(totals, district_geom, precinct):
         else:
             raise
     overlap_area = overlap_geom.Area() / precinct_geom.Area()
-    print('overlap_area:', overlap_area, precinct['properties']['NAME'])
     precinct_fraction = overlap_area * precinct['properties'][prepare_state.FRACTION_FIELD]
     
     for name in score.FIELD_NAMES:

@@ -8,10 +8,8 @@ should_gzip = itertools.cycle([True, False])
 def mock_s3_get_object(Bucket, Key):
     '''
     '''
-    print('mock_s3_get_object:', Bucket, Key)
     path = os.path.join(os.path.dirname(__file__), 'data', Key)
     if not os.path.exists(path):
-        print('botocore.exceptions.ClientError:', Key)
         raise botocore.exceptions.ClientError({'Error': {'Code': 'NoSuchKey'}}, 'GetObject')
     with open(path, 'rb') as file:
         if next(should_gzip):
