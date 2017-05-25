@@ -1,3 +1,17 @@
+def consume_tiles(totals, precincts, tiles):
+    ''' Generate a stream of steps, updating totals from precincts and tiles.
+    
+        Inputs are modified directly, and lists should be empty at completion.
+    '''
+    for precinct in iterate_precincts(precincts, tiles):
+        score_precinct(totals, precinct)
+        yield
+
+def score_precinct(totals, precinct):
+    '''
+    '''
+    totals['Voters'] += precinct['Voters']
+
 def load_tile_precincts(tile):
     '''
     '''
@@ -5,6 +19,8 @@ def load_tile_precincts(tile):
 
 def iterate_precincts(precincts, tiles):
     ''' Generate a stream of precincts, getting new ones from tiles as needed.
+    
+        Input lists are modified directly, and should be empty at completion.
     '''
     while precincts or tiles:
         if precincts:
