@@ -28,24 +28,27 @@ class TestDistricts (unittest.TestCase):
         '''
         event = {'geometry': 'POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))'}
         districts.lambda_handler(event, None)
-        self.assertEqual(consume_tiles.mock_calls[0][1][1:],
-            (None, None, {}, [], ['10/511/511', '10/511/512']))
+        self.assertEqual(consume_tiles.mock_calls[0][1][1:3], (None, None))
+        self.assertEqual(consume_tiles.mock_calls[0][1][4:],
+            ({}, [], ['10/511/511', '10/511/512']))
 
     @unittest.mock.patch('planscore.districts.consume_tiles')
     def test_lambda_handler_continue(self, consume_tiles):
         ''' Lambda event data with existing totals continues the process.
         '''
-        event = {'totals': {}, 'precincts': [{'Totals': 1}], 'tiles': ['10/511/512']}
+        event = {'totals': {}, 'precincts': [{'Totals': 1}], 'tiles': ['10/511/512'],
+            'geometry': 'POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))'}
         districts.lambda_handler(event, None)
-        self.assertEqual(consume_tiles.mock_calls[0][1][1:],
-            (None, None, {}, [{'Totals': 1}], ['10/511/512']))
+        self.assertEqual(consume_tiles.mock_calls[0][1][1:3], (None, None))
+        self.assertEqual(consume_tiles.mock_calls[0][1][4:],
+            ({}, [{'Totals': 1}], ['10/511/512']))
 
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
     @unittest.mock.patch('planscore.districts.score_precinct')
     def test_consume_tiles(self, score_precinct, load_tile_precincts):
         ''' Expected updates are made to totals dictionary.
         '''
-        s3, bucket, tiles_prefix = None, None, None
+        s3, bucket, tiles_prefix, district_geom = None, None, None, None
 
         cases = [
             ({'Voters': 0}, [], [({'Voters': 1}, {'Voters': 2}), ({'Voters': 4}, {'Voters': 8})]),
@@ -55,7 +58,7 @@ class TestDistricts (unittest.TestCase):
             ({'Voters': 15}, [], []),
             ]
         
-        def mock_score_precinct(totals, precinct):
+        def mock_score_precinct(totals, district_geom, precinct):
             totals['Voters'] += precinct['Voters']
         
         # Just use the identity function to extend precincts
@@ -64,7 +67,7 @@ class TestDistricts (unittest.TestCase):
         expected_calls = 0
         
         for (totals, precincts, tiles) in cases:
-            iterations = list(districts.consume_tiles(s3, bucket, tiles_prefix, totals, precincts, tiles))
+            iterations = list(districts.consume_tiles(s3, bucket, tiles_prefix, district_geom, totals, precincts, tiles))
             expected_calls += len(iterations)
             self.assertFalse(precincts, 'Precincts should be completely emptied')
             self.assertFalse(tiles, 'Tiles should be completely emptied')
@@ -77,9 +80,9 @@ class TestDistricts (unittest.TestCase):
     def test_consume_tiles_detail(self, score_precinct, load_tile_precincts):
         ''' Expected updates are made to totals dictionary and lists.
         '''
-        s3, bucket, tiles_prefix = None, None, None
+        s3, bucket, tiles_prefix, district_geom = None, None, None, None
 
-        def mock_score_precinct(totals, precinct):
+        def mock_score_precinct(totals, district_geom, precinct):
             totals['Voters'] += precinct['Voters']
         
         # Just use the identity function to extend precincts
@@ -89,7 +92,7 @@ class TestDistricts (unittest.TestCase):
         totals, precincts, tiles = {'Voters': 0}, [], \
             [({'Voters': 1}, {'Voters': 2}), ({'Voters': 4}, {'Voters': 8})]
         
-        call = districts.consume_tiles(s3, bucket, tiles_prefix, totals, precincts, tiles)
+        call = districts.consume_tiles(s3, bucket, tiles_prefix, district_geom, totals, precincts, tiles)
         self.assertEqual((totals, precincts, tiles), ({'Voters': 0}, [],
             [({'Voters': 1}, {'Voters': 2}), ({'Voters': 4}, {'Voters': 8})]))
         
@@ -115,12 +118,13 @@ class TestDistricts (unittest.TestCase):
         ''' Correct values appears in totals dict after scoring a precinct.
         '''
         totals = {"Voters": 0, "Red Votes": 0, "Blue Votes": 0}
-        precinct = {"type": "Feature", "properties": {"GEOID": "2", "NAME": "Precinct 2", "Voters": 5, "Red Votes": 1, "Blue Votes": 3, "PlanScore:Fraction": 0.21941107029382734}, "geometry": {"type": "Polygon", "coordinates": [[[-3.16e-05, 0.0], [-0.0001175, 0.0001898], [-0.0001175, 0.0001911], [-0.0001048, 0.0001927], [-0.0001053, 0.0002125], [-0.0001084, 0.0002196], [-0.0001028, 0.0002211], [-0.0001023, 0.0002318], [-9.07e-05, 0.0002364], [-8.71e-05, 0.0002349], [-8.66e-05, 0.000242], [-8.26e-05, 0.0002471], [-7.45e-05, 0.0002486], [-6.49e-05, 0.0002394], [-5.94e-05, 0.0002384], [-5.78e-05, 0.0002354], [-4.02e-05, 0.0002344], [-3.86e-05, 0.0002425], [-2.96e-05, 0.000245], [-3.01e-05, 0.0002379], [-2.6e-05, 0.0002379], [-1.79e-05, 0.0002232], [-1.04e-05, 0.0002232], [-7.3e-06, 0.0002181], [-2.8e-06, 0.0002181], [-0.0, 0.0002153], [-0.0, 0.0], [-3.16e-05, 0.0]]]}}
-        districts.score_precinct(totals, precinct)
+        geometry = ogr.CreateGeometryFromWkt('POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))')
+        precinct = {"type": "Feature", "properties": {"GEOID": "3", "NAME": "Precinct 3", "Voters": 4, "Red Votes": 3, "Blue Votes": 0, "PlanScore:Fraction": 0.563558429345361}, "geometry": {"type": "Polygon", "coordinates": [[[-0.0003853, 0.0], [-0.0003819, 2.5e-06], [-0.0003824, 1.16e-05], [-0.0003895, 1.16e-05], [-0.000391, 1.47e-05], [-0.0003922, 2.1e-05], [-0.0003832, 3.27e-05], [-0.0003844, 3.81e-05], [-0.0003751, 5.2e-05], [-0.0003683, 5.48e-05], [-0.0003685, 5.99e-05], [-0.0003642, 6.45e-05], [-0.0003597, 6.45e-05], [-0.0003531, 6.45e-05], [-0.0003432, 6.91e-05], [-0.0003379, 6.96e-05], [-0.0003321, 7.06e-05], [-0.0003273, 7.72e-05], [-0.0003268, 8.46e-05], [-0.0003185, 8.97e-05], [-0.0003109, 9.04e-05], [-0.0003064, 9.5e-05], [-0.0002973, 9.45e-05], [-0.0002978, 0.0001047], [-0.0002887, 0.0001103], [-0.0002826, 0.0001067], [-0.0002746, 0.0001042], [-0.0002756, 0.0001164], [-0.0002852, 0.0001179], [-0.0002852, 0.0001245], [-0.0002776, 0.0001291], [-0.0002776, 0.0001438], [-0.0002756, 0.0001464], [-0.00027, 0.0001474], [-0.0002644, 0.0001606], [-0.0002619, 0.0001657], [-0.0002518, 0.0001632], [-0.0002463, 0.0001738], [-0.0002397, 0.0001728], [-0.0002286, 0.0001815], [-0.0002225, 0.0001815], [-0.0002205, 0.0001922], [-0.0002154, 0.0001947], [-0.0002114, 0.0002049], [-0.0001973, 0.0002166], [-0.0001952, 0.0002237], [-0.0001811, 0.0002181], [-0.0001821, 0.000213], [-0.0001882, 0.0002038], [-0.0001856, 0.0001988], [-0.0001856, 0.0001942], [-0.0001882, 0.000184], [-0.0001826, 0.000184], [-0.000176, 0.0001749], [-0.0001715, 0.0001754], [-0.0001634, 0.0001866], [-0.0001594, 0.0001876], [-0.0001538, 0.0001916], [-0.0001478, 0.0001855], [-0.0001382, 0.0001922], [-0.0001255, 0.0001906], [-0.000125, 0.000183], [-0.000118, 0.0001825], [-0.0001175, 0.0001898], [-3.16e-05, 0.0], [-0.0003853, 0.0]]]}}
+        districts.score_precinct(totals, geometry, precinct)
         
-        self.assertAlmostEqual(totals['Voters'], 1.097055351)
-        self.assertAlmostEqual(totals['Red Votes'], 0.21941107)
-        self.assertAlmostEqual(totals['Blue Votes'], 0.658233211)
+        self.assertAlmostEqual(totals['Voters'], 2.25423371)
+        self.assertAlmostEqual(totals['Red Votes'], 1.69067528)
+        self.assertAlmostEqual(totals['Blue Votes'], 0)
     
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
     def test_iterate_precincts(self, load_tile_precincts):

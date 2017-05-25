@@ -8,37 +8,46 @@ ogr.UseExceptions()
 def lambda_handler(event, context):
     '''
     '''
-    if 'totals' in event and 'precincts' in event and 'tiles' in event:
-        totals, precincts, tiles = event['totals'], event['precincts'], event['tiles']
-    elif 'geometry' in event:
-        geometry = ogr.CreateGeometryFromWkt(event['geometry'])
-        totals, precincts, tiles = collections.defaultdict(int), [], \
-            get_geometry_tile_zxys(geometry)
-    else:
-        raise RuntimeError('Missing required totals, precincts, tiles, and geometry')
+    totals = event.get('totals')
+    precincts = event.get('precincts')
+    tiles = event.get('tiles')
+    geometry = ogr.CreateGeometryFromWkt(event['geometry'])
+    
+    if totals is None or precincts is None or tiles is None:
+        totals, precincts, tiles = collections.defaultdict(int), [], get_geometry_tile_zxys(geometry)
         
     s3 = boto3.client('s3')
     bucket = event.get('bucket')
     tiles_prefix = event.get('tiles_prefix')
     
-    for _ in consume_tiles(s3, bucket, tiles_prefix, totals, precincts, tiles):
+    for _ in consume_tiles(s3, bucket, tiles_prefix, geometry, totals, precincts, tiles):
         print('Iteration:', json.dumps(dict(totals=totals, precincts=precincts, tiles=tiles)))
 
-def consume_tiles(s3, bucket, tiles_prefix, totals, precincts, tiles):
+def consume_tiles(s3, bucket, tiles_prefix, district_geom, totals, precincts, tiles):
     ''' Generate a stream of steps, updating totals from precincts and tiles.
     
         Inputs are modified directly, and lists should be empty at completion.
     '''
     for precinct in iterate_precincts(s3, bucket, tiles_prefix, precincts, tiles):
-        score_precinct(totals, precinct)
+        score_precinct(totals, district_geom, precinct)
         yield
 
-def score_precinct(totals, precinct):
+def score_precinct(totals, district_geom, precinct):
     '''
     '''
-    #overlap_area = overlap_geom.Area() / precinct_geom.Area()
-    #precinct_fraction = overlap_area * feature.GetField(prepare_state.FRACTION_FIELD)
-    precinct_fraction = precinct['properties'][prepare_state.FRACTION_FIELD]
+    precinct_geom = ogr.CreateGeometryFromJson(json.dumps(precinct['geometry']))
+    try:
+        overlap_geom = precinct_geom.Intersection(district_geom)
+    except RuntimeError as e:
+        if 'TopologyException' in str(e) and not precinct_geom.IsValid():
+            # Sometimes, a precinct geometry can be invalid
+            # so inflate it by a tiny amount to smooth out problems
+            precinct_geom = precinct_geom.Buffer(0.0000001)
+        else:
+            raise
+    overlap_area = overlap_geom.Area() / precinct_geom.Area()
+    print('overlap_area:', overlap_area, precinct['properties']['NAME'])
+    precinct_fraction = overlap_area * precinct['properties'][prepare_state.FRACTION_FIELD]
     
     for name in score.FIELD_NAMES:
         precinct_value = precinct_fraction * precinct['properties'][name]
