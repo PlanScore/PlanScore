@@ -1,4 +1,4 @@
-import collections, json, io, gzip
+import collections, json, io, gzip, statistics, time
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import prepare_state, score
@@ -14,6 +14,9 @@ class Storage:
         self.s3 = s3
         self.bucket = bucket
         self.prefix = prefix
+    
+    def to_event(self):
+        return dict(bucket=self.bucket, prefix=self.prefix)
     
     @staticmethod
     def from_event(event, s3):
@@ -31,7 +34,11 @@ class Partial:
         self.geometry = geometry
     
     def to_dict(self):
-        return dict(totals=self.totals, precincts=self.precincts, tiles=self.tiles)
+        return dict(totals=self.totals, precincts=len(self.precincts), tiles=self.tiles)
+    
+    def to_event(self):
+        return dict(totals=self.totals, precincts=self.precincts,
+            tiles=self.tiles, geometry=self.geometry.ExportToWkt())
     
     @staticmethod
     def from_event(event):
@@ -50,9 +57,31 @@ def lambda_handler(event, context):
     '''
     partial = Partial.from_event(event)
     storage = Storage.from_event(event, boto3.client('s3'))
+
+    start_time, times = time.time(), []
     
     for _ in consume_tiles(storage, partial):
         print('Iteration:', json.dumps(partial.to_dict()))
+
+        times.append(time.time() - start_time)
+        start_time = time.time()
+        
+        stdev = statistics.stdev(times) if len(times) > 1 else times[0]
+        cutoff_msec = 1000 * (statistics.mean(times) + 3 * stdev)
+        
+        if context.get_remaining_time_in_millis() > cutoff_msec:
+            # There's time to do more
+            continue
+
+        event = partial.to_event()
+        event.update(storage.to_event())
+
+        lam = boto3.client('lambda')
+        lam.invoke(FunctionName=FUNCTION_NAME, InvocationType='Event',
+            Payload=json.dumps(event).encode('utf8'))
+
+        print('Stopping with', context.get_remaining_time_in_millis(), 'msec remaining')
+        return
 
 def consume_tiles(storage, partial):
     ''' Generate a stream of steps, updating totals from precincts and tiles.

@@ -38,8 +38,9 @@ class TestDistricts (unittest.TestCase):
         self.assertEqual(partial.precincts, [])
         self.assertEqual(partial.tiles, ['10/512/511'])
 
+    @unittest.mock.patch('boto3.client')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_init(self, consume_tiles):
+    def test_lambda_handler_init(self, consume_tiles, boto3_client):
         ''' Lambda event data with just geometry starts the process.
         '''
         event = {'geometry': 'POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))'}
@@ -47,9 +48,32 @@ class TestDistricts (unittest.TestCase):
         storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.totals, partial.precincts, partial.tiles),
             ({}, [], ['10/511/511', '10/511/512']))
+        self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 0)
 
+    @unittest.mock.patch('boto3.client')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_continue(self, consume_tiles):
+    def test_lambda_handler_timeout(self, consume_tiles, boto3_client):
+        ''' Lambda event hands off the process when no time is left.
+        '''
+        event = {'bucket': 'bucket-name', 'prefix': 'data/XX',
+            'geometry': 'POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))'}
+
+        context = unittest.mock.Mock()
+        context.get_remaining_time_in_millis.return_value = 0
+        consume_tiles.return_value = [None]
+
+        districts.lambda_handler(event, context)
+        self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 1)
+
+        kwargs = boto3_client.return_value.invoke.mock_calls[0][2]
+        self.assertEqual(kwargs['FunctionName'], districts.FUNCTION_NAME)
+        self.assertEqual(kwargs['InvocationType'], 'Event')
+        self.assertIn(event['bucket'].encode('utf8'), kwargs['Payload'])
+        self.assertIn(event['prefix'].encode('utf8'), kwargs['Payload'])
+
+    @unittest.mock.patch('boto3.client')
+    @unittest.mock.patch('planscore.districts.consume_tiles')
+    def test_lambda_handler_continue(self, consume_tiles, boto3_client):
         ''' Lambda event data with existing totals continues the process.
         '''
         event = {'totals': {}, 'precincts': [{'Totals': 1}], 'tiles': ['10/511/512'],
@@ -58,6 +82,7 @@ class TestDistricts (unittest.TestCase):
         storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.totals, partial.precincts, partial.tiles),
             ({}, [{'Totals': 1}], ['10/511/512']))
+        self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 0)
 
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
     @unittest.mock.patch('planscore.districts.score_precinct')
