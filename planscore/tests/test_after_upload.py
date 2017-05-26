@@ -83,10 +83,11 @@ class TestAfterUpload (unittest.TestCase):
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         after_upload.fan_out_district_lambdas('bucket-name', 'data/XX', null_plan_path)
         
-        for call in boto3_client.return_value.mock_calls:
+        for (index, call) in enumerate(boto3_client.return_value.mock_calls):
             kwargs = call[2]
             self.assertEqual(kwargs['FunctionName'], districts.FUNCTION_NAME)
             self.assertEqual(kwargs['InvocationType'], 'Event')
+            self.assertIn('"index": {}'.format(index).encode('utf8'), kwargs['Payload'])
             self.assertIn(b'bucket-name', kwargs['Payload'])
             self.assertIn(b'data/XX', kwargs['Payload'])
     

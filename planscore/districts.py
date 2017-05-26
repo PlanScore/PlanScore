@@ -27,18 +27,20 @@ class Storage:
 class Partial:
     ''' Partially-calculated district sums, used by consume_tiles().
     '''
-    def __init__(self, totals, precincts, tiles, geometry):
+    def __init__(self, index, totals, precincts, tiles, geometry):
+        self.index = index
         self.totals = totals
         self.precincts = precincts
         self.tiles = tiles
         self.geometry = geometry
     
     def to_dict(self):
-        return dict(totals=self.totals, precincts=len(self.precincts), tiles=self.tiles)
+        return dict(index=self.index, totals=self.totals,
+            precincts=len(self.precincts), tiles=self.tiles)
     
     def to_event(self):
-        return dict(totals=self.totals, precincts=self.precincts,
-            tiles=self.tiles, geometry=self.geometry.ExportToWkt())
+        return dict(index=self.index, totals=self.totals, tiles=self.tiles,
+            precincts=self.precincts, geometry=self.geometry.ExportToWkt())
     
     @staticmethod
     def from_event(event):
@@ -46,11 +48,12 @@ class Partial:
         precincts = event.get('precincts')
         tiles = event.get('tiles')
         geometry = ogr.CreateGeometryFromWkt(event['geometry'])
+        index = event['index']
     
         if totals is None or precincts is None or tiles is None:
             totals, precincts, tiles = collections.defaultdict(int), [], get_geometry_tile_zxys(geometry)
         
-        return Partial(totals, precincts, tiles, geometry)
+        return Partial(index, totals, precincts, tiles, geometry)
 
 def lambda_handler(event, context):
     '''
