@@ -15,7 +15,7 @@ def get_uploaded_info(s3, bucket, key, id):
     
     with util.temporary_buffer_file(os.path.basename(key), object['Body']) as path:
         prefix = 'data/{}'.format(guess_state(path))
-        fan_out_district_lambdas(bucket, prefix, path)
+        fan_out_district_lambdas(bucket, prefix, upload, path)
         scored_upload, output = score.score_plan(s3, bucket, upload, path, prefix)
         put_geojson_file(s3, bucket, scored_upload, path)
     
@@ -23,7 +23,7 @@ def get_uploaded_info(s3, bucket, key, id):
     
     return output
 
-def fan_out_district_lambdas(bucket, prefix, path):
+def fan_out_district_lambdas(bucket, prefix, upload, path):
     '''
     '''
     print('fan_out_district_lambdas:', (bucket, prefix, path))
@@ -41,7 +41,7 @@ def fan_out_district_lambdas(bucket, prefix, path):
                 geometry.TransformTo(prepare_state.EPSG4326)
     
             payload = dict(index=index, geometry=geometry.ExportToWkt(),
-                bucket=bucket, prefix=prefix)
+                bucket=bucket, prefix=prefix, upload=upload.to_dict())
 
             lam.invoke(FunctionName=districts.FUNCTION_NAME, InvocationType='Event',
                 Payload=json.dumps(payload).encode('utf8'))

@@ -80,8 +80,9 @@ class TestAfterUpload (unittest.TestCase):
     def test_fan_out_district_lambdas(self, boto3_client):
         ''' Test that district Lambda fan-out is invoked correctly.
         '''
+        upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
-        after_upload.fan_out_district_lambdas('bucket-name', 'data/XX', null_plan_path)
+        after_upload.fan_out_district_lambdas('bucket-name', 'data/XX', upload, null_plan_path)
         
         for (index, call) in enumerate(boto3_client.return_value.mock_calls):
             kwargs = call[2]
@@ -90,6 +91,7 @@ class TestAfterUpload (unittest.TestCase):
             self.assertIn('"index": {}'.format(index).encode('utf8'), kwargs['Payload'])
             self.assertIn(b'bucket-name', kwargs['Payload'])
             self.assertIn(b'data/XX', kwargs['Payload'])
+            self.assertIn(b'"id": "ID"', kwargs['Payload'])
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.after_upload.put_upload_index')
@@ -128,7 +130,11 @@ class TestAfterUpload (unittest.TestCase):
     
         put_upload_index.assert_called_once_with(s3, bucket, upload)
         put_geojson_file.assert_called_once_with(s3, bucket, upload, nullplan_path)
-        fan_out_district_lambdas.assert_called_once_with(bucket, 'data/XX', nullplan_path)
+        
+        self.assertEqual(len(fan_out_district_lambdas.mock_calls), 1)
+        self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX'))
+        self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][2].key, upload.key)
+        self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][3], nullplan_path)
     
     def test_get_uploaded_info_bad_file(self):
         ''' An invalid district file fails in an expected way
