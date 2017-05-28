@@ -62,8 +62,9 @@ class Partial:
 def lambda_handler(event, context):
     '''
     '''
+    s3 = boto3.client('s3')
     partial = Partial.from_event(event)
-    storage = Storage.from_event(event, boto3.client('s3'))
+    storage = Storage.from_event(event, s3)
 
     start_time, times = time.time(), []
     
@@ -90,7 +91,13 @@ def lambda_handler(event, context):
         print('Stopping with', context.get_remaining_time_in_millis(), 'msec remaining')
         return
     
-    print('All Done', partial.to_dict())
+    key = partial.upload.district_key(partial.index)
+    body = json.dumps(partial.totals).encode('utf8')
+    
+    print('Uploading', len(body), 'bytes to', key)
+    
+    s3.put_object(Bucket=storage.bucket, Key=key, Body=body,
+        ContentEncoding='gzip', ContentType='text/json', ACL='private')
 
 def consume_tiles(storage, partial):
     ''' Generate a stream of steps, updating totals from precincts and tiles.

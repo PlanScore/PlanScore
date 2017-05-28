@@ -3,6 +3,7 @@ import json
 UPLOAD_PREFIX = 'uploads/{id}/upload/'
 UPLOAD_INDEX_KEY = 'uploads/{id}/index.json'
 UPLOAD_GEOMETRY_KEY = 'uploads/{id}/geometry.json'
+UPLOAD_DISTRICTS_KEY = 'uploads/{id}/districts/{index}.json'
 
 class Upload:
 
@@ -17,6 +18,9 @@ class Upload:
     
     def geometry_key(self):
         return UPLOAD_GEOMETRY_KEY.format(id=self.id)
+    
+    def district_key(self, index):
+        return UPLOAD_DISTRICTS_KEY.format(id=self.id, index=index)
     
     def to_dict(self):
         return dict(

@@ -54,6 +54,10 @@ class TestDistricts (unittest.TestCase):
             (-1, {}, [], ['10/511/511', '10/511/512'], 'ID'))
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 0)
 
+        boto3_client.return_value.put_object.assert_called_once_with(
+            Key='uploads/ID/districts/-1.json', Body=b'{}', ACL='private',
+            Bucket=None, ContentEncoding='gzip', ContentType='text/json')
+
     @unittest.mock.patch('boto3.client')
     @unittest.mock.patch('planscore.districts.consume_tiles')
     def test_lambda_handler_timeout(self, consume_tiles, boto3_client):
@@ -78,6 +82,8 @@ class TestDistricts (unittest.TestCase):
         self.assertIn(event['bucket'].encode('utf8'), kwargs['Payload'])
         self.assertIn(event['prefix'].encode('utf8'), kwargs['Payload'])
 
+        self.assertEqual(len(boto3_client.return_value.put_object.mock_calls), 0)
+
     @unittest.mock.patch('boto3.client')
     @unittest.mock.patch('planscore.districts.consume_tiles')
     def test_lambda_handler_continue(self, consume_tiles, boto3_client):
@@ -91,6 +97,10 @@ class TestDistricts (unittest.TestCase):
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
             (-1, {}, [{'Totals': 1}], ['10/511/512'], 'ID'))
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 0)
+
+        boto3_client.return_value.put_object.assert_called_once_with(
+            Key='uploads/ID/districts/-1.json', Body=b'{}', ACL='private',
+            Bucket=None, ContentEncoding='gzip', ContentType='text/json')
 
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
     @unittest.mock.patch('planscore.districts.score_precinct')
