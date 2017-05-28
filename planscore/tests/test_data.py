@@ -62,6 +62,12 @@ class TestData (unittest.TestCase):
         upload = data.Upload(id='ID', key='uploads/ID/upload/whatever.json')
         self.assertEqual(upload.geometry_key(), 'uploads/ID/geometry.json')
     
+    def test_upload_district_key(self):
+        ''' data.Upload.district_key() correctly munges Upload.key
+        '''
+        upload = data.Upload(id='ID', key='uploads/ID/upload/whatever.json')
+        self.assertEqual(upload.district_key(999), 'uploads/ID/districts/999.json')
+    
     def test_upload_clone(self):
         ''' data.Upload.clone() returns a copy with the right properties
         '''

@@ -1,7 +1,7 @@
-import collections, json, io, gzip
+import collections, json, io, gzip, statistics, time
 from osgeo import ogr
 import boto3, botocore.exceptions
-from . import prepare_state, score
+from . import prepare_state, score, data
 
 ogr.UseExceptions()
 
@@ -15,6 +15,9 @@ class Storage:
         self.bucket = bucket
         self.prefix = prefix
     
+    def to_event(self):
+        return dict(bucket=self.bucket, prefix=self.prefix)
+    
     @staticmethod
     def from_event(event, s3):
         bucket = event.get('bucket')
@@ -24,14 +27,23 @@ class Storage:
 class Partial:
     ''' Partially-calculated district sums, used by consume_tiles().
     '''
-    def __init__(self, totals, precincts, tiles, geometry):
+    def __init__(self, index, totals, precincts, tiles, geometry, upload):
+        self.index = index
         self.totals = totals
         self.precincts = precincts
         self.tiles = tiles
         self.geometry = geometry
+        self.upload = upload
     
     def to_dict(self):
-        return dict(totals=self.totals, precincts=self.precincts, tiles=self.tiles)
+        return dict(index=self.index, totals=self.totals,
+            precincts=len(self.precincts), tiles=self.tiles,
+            upload=self.upload.to_dict())
+    
+    def to_event(self):
+        return dict(index=self.index, totals=self.totals, tiles=self.tiles,
+            precincts=self.precincts, geometry=self.geometry.ExportToWkt(),
+            upload=self.upload.to_dict())
     
     @staticmethod
     def from_event(event):
@@ -39,20 +51,53 @@ class Partial:
         precincts = event.get('precincts')
         tiles = event.get('tiles')
         geometry = ogr.CreateGeometryFromWkt(event['geometry'])
+        index = event['index']
+        upload = data.Upload.from_dict(event['upload'])
     
         if totals is None or precincts is None or tiles is None:
             totals, precincts, tiles = collections.defaultdict(int), [], get_geometry_tile_zxys(geometry)
         
-        return Partial(totals, precincts, tiles, geometry)
+        return Partial(index, totals, precincts, tiles, geometry, upload)
 
 def lambda_handler(event, context):
     '''
     '''
+    s3 = boto3.client('s3')
     partial = Partial.from_event(event)
-    storage = Storage.from_event(event, boto3.client('s3'))
+    storage = Storage.from_event(event, s3)
+
+    start_time, times = time.time(), []
     
     for _ in consume_tiles(storage, partial):
         print('Iteration:', json.dumps(partial.to_dict()))
+
+        times.append(time.time() - start_time)
+        start_time = time.time()
+        
+        stdev = statistics.stdev(times) if len(times) > 1 else times[0]
+        cutoff_msec = 1000 * (statistics.mean(times) + 3 * stdev)
+        
+        if context.get_remaining_time_in_millis() > cutoff_msec:
+            # There's time to do more
+            continue
+
+        event = partial.to_event()
+        event.update(storage.to_event())
+
+        lam = boto3.client('lambda')
+        lam.invoke(FunctionName=FUNCTION_NAME, InvocationType='Event',
+            Payload=json.dumps(event).encode('utf8'))
+
+        print('Stopping with', context.get_remaining_time_in_millis(), 'msec remaining')
+        return
+    
+    key = partial.upload.district_key(partial.index)
+    body = json.dumps(partial.totals).encode('utf8')
+    
+    print('Uploading', len(body), 'bytes to', key)
+    
+    s3.put_object(Bucket=storage.bucket, Key=key, Body=body,
+        ContentEncoding='gzip', ContentType='text/json', ACL='private')
 
 def consume_tiles(storage, partial):
     ''' Generate a stream of steps, updating totals from precincts and tiles.

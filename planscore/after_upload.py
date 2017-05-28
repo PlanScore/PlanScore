@@ -32,20 +32,18 @@ def fan_out_district_lambdas(bucket, prefix, path):
         ds = ogr.Open(path)
     
         if not ds:
-            raise RuntimeError('Could not open file to fan out district invokations')
+            raise RuntimeError('Could not open file to fan out district invocations')
         
-        for feature in ds.GetLayer(0):
+        for (index, feature) in enumerate(ds.GetLayer(0)):
             geometry = feature.GetGeometryRef()
 
             if geometry.GetSpatialReference():
                 geometry.TransformTo(prepare_state.EPSG4326)
     
-            payload = dict(
-                geometry = geometry.ExportToWkt(),
-                bucket = bucket, prefix = prefix
-                )
-            
-            inv = lam.invoke(FunctionName=districts.FUNCTION_NAME, InvocationType='Event',
+            payload = dict(index=index, geometry=geometry.ExportToWkt(),
+                bucket=bucket, prefix=prefix)
+
+            lam.invoke(FunctionName=districts.FUNCTION_NAME, InvocationType='Event',
                 Payload=json.dumps(payload).encode('utf8'))
 
     except Exception as e:
