@@ -18,15 +18,16 @@ class Upload:
     def geometry_key(self):
         return UPLOAD_GEOMETRY_KEY.format(id=self.id)
     
-    def to_json(self):
-        data = dict(
+    def to_dict(self):
+        return dict(
             id = self.id,
             key = self.key,
             districts = self.districts,
             summary = self.summary,
             )
     
-        return json.dumps(data, sort_keys=True, indent=2)
+    def to_json(self):
+        return json.dumps(self.to_dict(), sort_keys=True, indent=2)
     
     def clone(self, districts=None, summary=None):
         return Upload(self.id, self.key,
@@ -34,12 +35,14 @@ class Upload:
             summary = summary or self.summary)
     
     @staticmethod
-    def from_json(body):
-        data = json.loads(body)
-    
+    def from_dict(data):
         return Upload(
             id = data['id'], 
             key = data['key'],
             districts = data.get('districts'),
             summary = data.get('summary'),
             )
+    
+    @staticmethod
+    def from_json(body):
+        return Upload.from_dict(json.loads(body))

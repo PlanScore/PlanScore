@@ -1,7 +1,7 @@
 import collections, json, io, gzip, statistics, time
 from osgeo import ogr
 import boto3, botocore.exceptions
-from . import prepare_state, score
+from . import prepare_state, score, data
 
 ogr.UseExceptions()
 
@@ -27,20 +27,23 @@ class Storage:
 class Partial:
     ''' Partially-calculated district sums, used by consume_tiles().
     '''
-    def __init__(self, index, totals, precincts, tiles, geometry):
+    def __init__(self, index, totals, precincts, tiles, geometry, upload):
         self.index = index
         self.totals = totals
         self.precincts = precincts
         self.tiles = tiles
         self.geometry = geometry
+        self.upload = upload
     
     def to_dict(self):
         return dict(index=self.index, totals=self.totals,
-            precincts=len(self.precincts), tiles=self.tiles)
+            precincts=len(self.precincts), tiles=self.tiles,
+            upload=self.upload.to_dict())
     
     def to_event(self):
         return dict(index=self.index, totals=self.totals, tiles=self.tiles,
-            precincts=self.precincts, geometry=self.geometry.ExportToWkt())
+            precincts=self.precincts, geometry=self.geometry.ExportToWkt(),
+            upload=self.upload.to_dict())
     
     @staticmethod
     def from_event(event):
@@ -49,11 +52,12 @@ class Partial:
         tiles = event.get('tiles')
         geometry = ogr.CreateGeometryFromWkt(event['geometry'])
         index = event['index']
+        upload = data.Upload.from_dict(event['upload'])
     
         if totals is None or precincts is None or tiles is None:
             totals, precincts, tiles = collections.defaultdict(int), [], get_geometry_tile_zxys(geometry)
         
-        return Partial(index, totals, precincts, tiles, geometry)
+        return Partial(index, totals, precincts, tiles, geometry, upload)
 
 def lambda_handler(event, context):
     '''
@@ -85,6 +89,8 @@ def lambda_handler(event, context):
 
         print('Stopping with', context.get_remaining_time_in_millis(), 'msec remaining')
         return
+    
+    print('All Done', partial.to_dict())
 
 def consume_tiles(storage, partial):
     ''' Generate a stream of steps, updating totals from precincts and tiles.
