@@ -120,6 +120,7 @@ def score_precinct(partial, precinct):
             # Sometimes, a precinct geometry can be invalid
             # so inflate it by a tiny amount to smooth out problems
             precinct_geom = precinct_geom.Buffer(0.0000001)
+            overlap_geom = precinct_geom.Intersection(partial.geometry)
         else:
             raise
     overlap_area = overlap_geom.Area() / precinct_geom.Area()

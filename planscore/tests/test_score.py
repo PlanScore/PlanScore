@@ -88,9 +88,9 @@ class TestScore (unittest.TestCase):
         geometry = ogr.CreateGeometryFromJson(json.dumps(feature['geometry']))
         totals, tiles, _ = score.score_district(s3, bucket, geometry, 'NC')
         
-        self.assertAlmostEqual(totals['Voters'], 124011.6413881468)
-        self.assertAlmostEqual(totals['Blue Votes'], 12717.196301225393)
-        self.assertAlmostEqual(totals['Red Votes'], 15607.833841392498)
+        self.assertAlmostEqual(totals['Voters'], 87695.33161001765)
+        self.assertAlmostEqual(totals['Blue Votes'], 8474.991380678142)
+        self.assertAlmostEqual(totals['Red Votes'], 13157.538612555834)
         self.assertEqual(tiles, ['10/276/403'])
     
     def test_score_district_missing_tile(self):
