@@ -34,6 +34,10 @@ def fan_out_district_lambdas(bucket, prefix, upload, path):
         if not ds:
             raise RuntimeError('Could not open file to fan out district invocations')
         
+        # Used so that the length of the upload districts array is correct
+        district_blanks = [None] * ds.GetLayer(0).GetFeatureCount()
+        payload_upload = upload.clone(districts=district_blanks)
+        
         for (index, feature) in enumerate(ds.GetLayer(0)):
             geometry = feature.GetGeometryRef()
 
@@ -41,7 +45,7 @@ def fan_out_district_lambdas(bucket, prefix, upload, path):
                 geometry.TransformTo(prepare_state.EPSG4326)
     
             payload = dict(index=index, geometry=geometry.ExportToWkt(),
-                bucket=bucket, prefix=prefix, upload=upload.to_dict())
+                bucket=bucket, prefix=prefix, upload=payload_upload.to_dict())
 
             lam.invoke(FunctionName=districts.FUNCTION_NAME, InvocationType='Event',
                 Payload=json.dumps(payload).encode('utf8'))

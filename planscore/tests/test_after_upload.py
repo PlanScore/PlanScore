@@ -92,6 +92,8 @@ class TestAfterUpload (unittest.TestCase):
             self.assertIn(b'bucket-name', kwargs['Payload'])
             self.assertIn(b'data/XX', kwargs['Payload'])
             self.assertIn(b'"id": "ID"', kwargs['Payload'])
+            self.assertIn(b'"districts": [null, null]', kwargs['Payload'],
+                'Should have the right number of districts even though they are blanks')
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.after_upload.put_upload_index')
