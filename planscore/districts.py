@@ -93,7 +93,7 @@ def lambda_handler(event, context):
         
         stdev = statistics.stdev(times) if len(times) > 1 else times[0]
         cutoff_msec = 1000 * (statistics.mean(times) + 3 * stdev)
-        remain_msec = context.get_remaining_time_in_millis() - 5000 # 5 seconds for Lambda
+        remain_msec = context.get_remaining_time_in_millis() - 10000 # 10 seconds for Lambda
         
         print('Checking if remaining msec', remain_msec, '> cutoff msec', cutoff_msec)
         if remain_msec > cutoff_msec:
