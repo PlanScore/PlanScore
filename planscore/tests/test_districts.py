@@ -69,9 +69,11 @@ class TestDistricts (unittest.TestCase):
             self.assertEqual(districts.Partial.unscrunch(value), value,
                 'Lists and dictionaries should unscrunch to themselves')
 
+    @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
+    @unittest.mock.patch('planscore.districts.post_score_results')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_init(self, consume_tiles, boto3_client):
+    def test_lambda_handler_init(self, consume_tiles, post_score_results, boto3_client, stdout):
         ''' Lambda event data with just geometry starts the process.
         '''
         event = {'index': -1, 'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
@@ -81,14 +83,13 @@ class TestDistricts (unittest.TestCase):
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
             (-1, {}, [], ['10/511/511', '10/511/512'], 'ID'))
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 0)
+        post_score_results.assert_called_once_with(storage, partial)
 
-        boto3_client.return_value.put_object.assert_called_once_with(
-            Key='uploads/ID/districts/-1.json', Body=b'{}', ACL='private',
-            Bucket=None, ContentType='text/json')
-
+    @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
+    @unittest.mock.patch('planscore.districts.post_score_results')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_timeout(self, consume_tiles, boto3_client):
+    def test_lambda_handler_timeout(self, consume_tiles, post_score_results, boto3_client, stdout):
         ''' Lambda event hands off the process when no time is left.
         '''
         event = {'index': -1, 'bucket': 'bucket-name', 'prefix': 'data/XX',
@@ -110,11 +111,13 @@ class TestDistricts (unittest.TestCase):
         self.assertIn(event['bucket'].encode('utf8'), kwargs['Payload'])
         self.assertIn(event['prefix'].encode('utf8'), kwargs['Payload'])
 
-        self.assertEqual(len(boto3_client.return_value.put_object.mock_calls), 0)
+        self.assertEqual(len(post_score_results.mock_calls), 0)
 
+    @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
+    @unittest.mock.patch('planscore.districts.post_score_results')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_continue(self, consume_tiles, boto3_client):
+    def test_lambda_handler_continue(self, consume_tiles, post_score_results, boto3_client, stdout):
         ''' Lambda event data with existing totals continues the process.
         '''
         event = {'index': -1, 'totals': {}, 'precincts': [{'Totals': 1}], 'tiles': ['10/511/512'],
@@ -125,11 +128,22 @@ class TestDistricts (unittest.TestCase):
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
             (-1, {}, [{'Totals': 1}], ['10/511/512'], 'ID'))
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 0)
+        post_score_results.assert_called_once_with(storage, partial)
 
-        boto3_client.return_value.put_object.assert_called_once_with(
-            Key='uploads/ID/districts/-1.json', Body=b'{}', ACL='private',
-            Bucket=None, ContentType='text/json')
+    @unittest.mock.patch('sys.stdout')
+    def test_post_score_results(self, stdout):
+        ''' Expected results are posted to S3.
+        '''
+        storage = districts.Storage(unittest.mock.Mock(), 'bucket-name', 'data/XX')
+        partial = districts.Partial(-1, {"Voters": 1}, [], [], None,
+            data.Upload('ID', 'uploads/ID/upload/file.geojson'))
+        
+        districts.post_score_results(storage, partial)
 
+        storage.s3.put_object.assert_called_once_with(
+            ACL='private', Body=b'{"Voters": 1}', Bucket='bucket-name',
+            ContentType='text/json', Key='uploads/ID/districts/-1.json')
+    
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
     @unittest.mock.patch('planscore.districts.score_precinct')
     def test_consume_tiles(self, score_precinct, load_tile_precincts):
@@ -255,7 +269,8 @@ class TestDistricts (unittest.TestCase):
         precincts2 = districts.load_tile_precincts(storage, '10/-1/-1')
         self.assertEqual(len(precincts2), 0)
 
-    def test_get_geometry_tile_zxys(self):
+    @unittest.mock.patch('sys.stdout')
+    def test_get_geometry_tile_zxys(self, stdout):
         ''' Get an expected list of Z/X/Y tile strings for a geometry.
         '''
         with open(os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')) as file:

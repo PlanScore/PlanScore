@@ -109,12 +109,17 @@ def lambda_handler(event, context):
 
         return
     
+    post_score_results(storage, partial)
+
+def post_score_results(storage, partial):
+    '''
+    '''
     key = partial.upload.district_key(partial.index)
     body = json.dumps(partial.totals).encode('utf8')
     
     print('Uploading', len(body), 'bytes to', key)
     
-    s3.put_object(Bucket=storage.bucket, Key=key, Body=body,
+    storage.s3.put_object(Bucket=storage.bucket, Key=key, Body=body,
         ContentType='text/json', ACL='private')
 
 def consume_tiles(storage, partial):
