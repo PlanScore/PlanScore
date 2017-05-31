@@ -86,19 +86,19 @@ def lambda_handler(event, context):
     start_time, times = time.time(), []
     
     for _ in consume_tiles(storage, partial):
-        print('Iteration:', json.dumps(partial.to_dict()))
-
         times.append(time.time() - start_time)
         start_time = time.time()
         
         stdev = statistics.stdev(times) if len(times) > 1 else times[0]
         cutoff_msec = 1000 * (statistics.mean(times) + 3 * stdev)
-        remain_msec = context.get_remaining_time_in_millis() - 10000 # 10 seconds for Lambda
+        remain_msec = context.get_remaining_time_in_millis() - 15000 # 15 seconds for Lambda
         
-        print('Checking if remaining msec', remain_msec, '> cutoff msec', cutoff_msec)
         if remain_msec > cutoff_msec:
             # There's time to do more
             continue
+
+        print('Iteration:', json.dumps(partial.to_dict()))
+        print('Stopping with', remain_msec, 'msec remaining')
 
         event = partial.to_event()
         event.update(storage.to_event())
@@ -107,7 +107,6 @@ def lambda_handler(event, context):
         lam.invoke(FunctionName=FUNCTION_NAME, InvocationType='Event',
             Payload=json.dumps(event).encode('utf8'))
 
-        print('Stopping with', remain_msec, 'msec remaining')
         return
     
     key = partial.upload.district_key(partial.index)
@@ -116,7 +115,7 @@ def lambda_handler(event, context):
     print('Uploading', len(body), 'bytes to', key)
     
     s3.put_object(Bucket=storage.bucket, Key=key, Body=body,
-        ContentEncoding='gzip', ContentType='text/json', ACL='private')
+        ContentType='text/json', ACL='private')
 
 def consume_tiles(storage, partial):
     ''' Generate a stream of steps, updating totals from precincts and tiles.

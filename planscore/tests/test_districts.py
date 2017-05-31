@@ -84,7 +84,7 @@ class TestDistricts (unittest.TestCase):
 
         boto3_client.return_value.put_object.assert_called_once_with(
             Key='uploads/ID/districts/-1.json', Body=b'{}', ACL='private',
-            Bucket=None, ContentEncoding='gzip', ContentType='text/json')
+            Bucket=None, ContentType='text/json')
 
     @unittest.mock.patch('boto3.client')
     @unittest.mock.patch('planscore.districts.consume_tiles')
@@ -128,7 +128,7 @@ class TestDistricts (unittest.TestCase):
 
         boto3_client.return_value.put_object.assert_called_once_with(
             Key='uploads/ID/districts/-1.json', Body=b'{}', ACL='private',
-            Bucket=None, ContentEncoding='gzip', ContentType='text/json')
+            Bucket=None, ContentType='text/json')
 
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
     @unittest.mock.patch('planscore.districts.score_precinct')
