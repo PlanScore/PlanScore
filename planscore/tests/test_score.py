@@ -171,3 +171,28 @@ class TestScore (unittest.TestCase):
         
         with self.assertRaises(RuntimeError) as error:
             score.score_plan(None, None, upload, plan_path, None)
+    
+    @unittest.mock.patch('boto3.client')
+    @unittest.mock.patch('planscore.score.calculate_gap')
+    def test_lambda_handler(self, calculate_gap, boto3_client):
+        '''
+        '''
+        s3 = boto3_client.return_value
+        s3.list_objects.return_value = {'Contents': [
+            {'Key': 'uploads/sample-plan/districts/0.json'},
+            {'Key': 'uploads/sample-plan/districts/1.json'}
+            ]}
+        
+        s3.get_object.side_effect = mock_s3_get_object
+
+        score.lambda_handler({'bucket': 'bucket-name', 'id': 'sample-plan',
+            'key': 'uploads/sample-plan/upload/file.geojson'}, None)
+        
+        s3.list_objects.assert_called_once_with(
+            Bucket='bucket-name', Prefix='uploads/sample-plan/districts')
+        
+        self.assertEqual(len(s3.get_object.mock_calls), 2, 'Should have asked for each district in turn')
+        
+        input_upload = calculate_gap.mock_calls[0][1][0]
+        self.assertEqual(input_upload.id, 'sample-plan')
+        self.assertEqual(len(input_upload.districts), 2)
