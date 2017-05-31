@@ -99,9 +99,12 @@ def lambda_handler(event, context):
     
     print('All done, invoking', score.FUNCTION_NAME)
     
+    event = partial.upload.to_dict()
+    event.update(storage.to_event())
+
     lam = boto3.client('lambda')
     lam.invoke(FunctionName=score.FUNCTION_NAME, InvocationType='Event',
-        Payload=partial.upload.to_json().encode('utf8'))
+        Payload=json.dumps(event).encode('utf8'))
 
 def post_score_results(storage, partial):
     '''

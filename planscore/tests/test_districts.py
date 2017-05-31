@@ -146,6 +146,7 @@ class TestDistricts (unittest.TestCase):
         kwargs = boto3_client.return_value.invoke.mock_calls[0][2]
         self.assertEqual(kwargs['FunctionName'], score.FUNCTION_NAME)
         self.assertEqual(kwargs['InvocationType'], 'Event')
+        self.assertIn(b'"bucket": "bucket-name"', kwargs['Payload'])
         self.assertIn(b'"key": "uploads/ID/upload/file.geojson"', kwargs['Payload'])
         self.assertIn(b'"id": "ID"', kwargs['Payload'])
 
