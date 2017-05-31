@@ -1,4 +1,4 @@
-import collections, json, io, gzip, statistics, time
+import collections, json, io, gzip, statistics, time, base64
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import prepare_state, score, data
@@ -42,8 +42,8 @@ class Partial:
     
     def to_event(self):
         return dict(index=self.index, totals=self.totals, tiles=self.tiles,
-            precincts=self.precincts, geometry=self.geometry.ExportToWkt(),
-            upload=self.upload.to_dict())
+            geometry=self.geometry.ExportToWkt(), upload=self.upload.to_dict(),
+            precincts=Partial.scrunch(self.precincts))
     
     @staticmethod
     def from_event(event):
@@ -53,11 +53,28 @@ class Partial:
         geometry = ogr.CreateGeometryFromWkt(event['geometry'])
         index = event['index']
         upload = data.Upload.from_dict(event['upload'])
-    
+        
         if totals is None or precincts is None or tiles is None:
             totals, precincts, tiles = collections.defaultdict(int), [], get_geometry_tile_zxys(geometry)
         
-        return Partial(index, totals, precincts, tiles, geometry, upload)
+        return Partial(index, totals, Partial.unscrunch(precincts), tiles, geometry, upload)
+    
+    @staticmethod
+    def scrunch(thing):
+        ''' Scrunch a thing into a compact (?) textual representation.
+        '''
+        return base64.a85encode(gzip.compress(json.dumps(thing).encode('utf8'))).decode('ascii')
+    
+    @staticmethod
+    def unscrunch(thing):
+        ''' Accept a scrunched representation of a thing and return the thing.
+            
+            Lists and dictionaries are simply returned instead of unscrunched.
+        '''
+        if type(thing) in (tuple, list, dict):
+            return thing
+
+        return json.loads(gzip.decompress(base64.a85decode(thing)).decode('utf8'))
 
 def lambda_handler(event, context):
     '''
