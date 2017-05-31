@@ -21,11 +21,3 @@ deployment:
     commands:
       - make live-lambda
       - make live-website
-  schmroduction:
-    branch: [migurski/support-north-carolina]
-    commands:
-      - make planscore-lambda.zip
-      - aws --region us-east-1 lambda update-function-code --function-name PlanScore-AfterUpload --zip-file fileb://planscore-lambda.zip >> /dev/null
-      - aws --region us-east-1 lambda update-function-configuration --function-name PlanScore-AfterUpload --handler lambda.after_upload --timeout 30 >> /dev/null
-      - aws --region us-east-1 lambda update-function-code --function-name PlanScore-RunDistrict --zip-file fileb://planscore-lambda.zip >> /dev/null
-      - aws --region us-east-1 lambda update-function-configuration --function-name PlanScore-RunDistrict --handler lambda.run_district >> /dev/null

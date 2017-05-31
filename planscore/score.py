@@ -143,7 +143,7 @@ def put_upload_index(s3, bucket, upload):
 def lambda_handler(event, context):
     '''
     '''
-    print('event:', event)
+    print('event:', json.dumps(event))
 
     input_upload = data.Upload.from_dict(event)
     storage = data.Storage.from_event(event, boto3.client('s3'))
