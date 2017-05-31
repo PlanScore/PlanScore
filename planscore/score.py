@@ -6,6 +6,7 @@ from . import prepare_state, util
 ogr.UseExceptions()
 
 FIELD_NAMES = ('Voters', 'Blue Votes', 'Red Votes')
+FUNCTION_NAME = 'PlanScore-ScoreDistrictPlan'
 
 def score_plan(s3, bucket, input_upload, plan_path, tiles_prefix):
     '''

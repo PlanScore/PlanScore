@@ -111,8 +111,14 @@ def lambda_handler(event, context):
     
     final = post_score_results(storage, partial)
     
-    if final:
-        print('All done, move on to scoring district plan')
+    if not final:
+        return
+    
+    print('All done, invoking', score.FUNCTION_NAME)
+    
+    lam = boto3.client('lambda')
+    lam.invoke(FunctionName=score.FUNCTION_NAME, InvocationType='Event',
+        Payload=partial.upload.to_json().encode('utf8'))
 
 def post_score_results(storage, partial):
     '''
