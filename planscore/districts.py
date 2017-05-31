@@ -76,9 +76,10 @@ def lambda_handler(event, context):
         
         stdev = statistics.stdev(times) if len(times) > 1 else times[0]
         cutoff_msec = 1000 * (statistics.mean(times) + 3 * stdev)
+        remain_msec = context.get_remaining_time_in_millis() - 5000 # 5 seconds for Lambda
         
-        print('Checking if remaining msec', context.get_remaining_time_in_millis(), '> cutoff msec', cutoff_msec)
-        if context.get_remaining_time_in_millis() > cutoff_msec:
+        print('Checking if remaining msec', remain_msec, '> cutoff msec', cutoff_msec)
+        if remain_msec > cutoff_msec:
             # There's time to do more
             continue
 
@@ -89,7 +90,7 @@ def lambda_handler(event, context):
         lam.invoke(FunctionName=FUNCTION_NAME, InvocationType='Event',
             Payload=json.dumps(event).encode('utf8'))
 
-        print('Stopping with', context.get_remaining_time_in_millis(), 'msec remaining')
+        print('Stopping with', remain_msec, 'msec remaining')
         return
     
     key = partial.upload.district_key(partial.index)
