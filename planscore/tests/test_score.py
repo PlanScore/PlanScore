@@ -196,3 +196,5 @@ class TestScore (unittest.TestCase):
         input_upload = calculate_gap.mock_calls[0][1][0]
         self.assertEqual(input_upload.id, 'sample-plan')
         self.assertEqual(len(input_upload.districts), 2)
+        self.assertIn('totals', input_upload.districts[0])
+        self.assertIn('totals', input_upload.districts[1])

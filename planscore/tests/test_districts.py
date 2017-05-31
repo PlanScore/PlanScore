@@ -168,7 +168,7 @@ class TestDistricts (unittest.TestCase):
             Bucket='bucket-name', Prefix='uploads/ID/districts')
 
         storage.s3.put_object.assert_called_once_with(
-            ACL='private', Body=b'{"Voters": 1}', Bucket='bucket-name',
+            ACL='private', Body=b'{"totals": {"Voters": 1}}', Bucket='bucket-name',
             ContentType='text/json', Key='uploads/ID/districts/-1.json')
         
         # Second time through, both expected districts are there
