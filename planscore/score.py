@@ -1,11 +1,12 @@
-import io, os, gzip
+import io, os, gzip, posixpath, json
 from osgeo import ogr
-import botocore.exceptions
-from . import prepare_state, util
+import boto3, botocore.exceptions
+from . import prepare_state, util, data
 
 ogr.UseExceptions()
 
 FIELD_NAMES = ('Voters', 'Blue Votes', 'Red Votes')
+FUNCTION_NAME = 'PlanScore-ScoreDistrictPlan'
 
 def score_plan(s3, bucket, input_upload, plan_path, tiles_prefix):
     '''
@@ -129,3 +130,43 @@ def calculate_gap(upload):
     efficiency_gap = (wasted_red - wasted_blue) / election_votes
     
     return upload.clone(summary={'Efficiency Gap': efficiency_gap})
+
+def put_upload_index(s3, bucket, upload):
+    ''' Save a JSON index file for this upload.
+    '''
+    key = upload.index_key()
+    body = upload.to_json().encode('utf8')
+
+    s3.put_object(Bucket=bucket, Key=key, Body=body,
+        ContentType='text/json', ACL='public-read')
+
+def lambda_handler(event, context):
+    '''
+    '''
+    print('event:', event)
+
+    input_upload = data.Upload.from_dict(event)
+    storage = data.Storage.from_event(event, boto3.client('s3'))
+    
+    # Look for all expected districts.
+    prefix = posixpath.dirname(input_upload.district_key(-1))
+    listed_objects = storage.s3.list_objects(Bucket=storage.bucket, Prefix=prefix)
+    existing_keys = [obj.get('Key') for obj in listed_objects.get('Contents', [])]
+    
+    new_districts = []
+    
+    for key in existing_keys:
+        try:
+            object = storage.s3.get_object(Bucket=storage.bucket, Key=key)
+        except botocore.exceptions.ClientError as error:
+            if error.response['Error']['Code'] == 'NoSuchKey':
+                continue
+            raise
+
+        if object.get('ContentEncoding') == 'gzip':
+            object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
+        
+        new_districts.append(json.load(object['Body']))
+
+    output_upload = calculate_gap(input_upload.clone(districts=new_districts))
+    put_upload_index(storage.s3, storage.bucket, output_upload)

@@ -171,3 +171,45 @@ class TestScore (unittest.TestCase):
         
         with self.assertRaises(RuntimeError) as error:
             score.score_plan(None, None, upload, plan_path, None)
+    
+    def test_put_upload_index(self):
+        ''' Upload index file is posted to S3
+        '''
+        s3, bucket, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
+        score.put_upload_index(s3, bucket, upload)
+        s3.put_object.assert_called_once_with(Bucket=bucket,
+            Key=upload.index_key.return_value,
+            Body=upload.to_json.return_value.encode.return_value,
+            ACL='public-read', ContentType='text/json')
+    
+    @unittest.mock.patch('sys.stdout')
+    @unittest.mock.patch('boto3.client')
+    @unittest.mock.patch('planscore.score.calculate_gap')
+    @unittest.mock.patch('planscore.score.put_upload_index')
+    def test_lambda_handler(self, put_upload_index, calculate_gap, boto3_client, stdout):
+        '''
+        '''
+        s3 = boto3_client.return_value
+        s3.list_objects.return_value = {'Contents': [
+            {'Key': 'uploads/sample-plan/districts/0.json'},
+            {'Key': 'uploads/sample-plan/districts/1.json'}
+            ]}
+        
+        s3.get_object.side_effect = mock_s3_get_object
+
+        score.lambda_handler({'bucket': 'bucket-name', 'id': 'sample-plan',
+            'key': 'uploads/sample-plan/upload/file.geojson'}, None)
+        
+        s3.list_objects.assert_called_once_with(
+            Bucket='bucket-name', Prefix='uploads/sample-plan/districts')
+        
+        self.assertEqual(len(s3.get_object.mock_calls), 2, 'Should have asked for each district in turn')
+        
+        input_upload = calculate_gap.mock_calls[0][1][0]
+        self.assertEqual(input_upload.id, 'sample-plan')
+        self.assertEqual(len(input_upload.districts), 2)
+        self.assertIn('totals', input_upload.districts[0])
+        self.assertIn('totals', input_upload.districts[1])
+        
+        output_upload = calculate_gap.return_value
+        put_upload_index.assert_called_once_with(s3, 'bucket-name', output_upload)

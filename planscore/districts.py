@@ -1,4 +1,4 @@
-import collections, json, io, gzip, statistics, time, base64
+import collections, json, io, gzip, statistics, time, base64, posixpath
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import prepare_state, score, data
@@ -6,23 +6,6 @@ from . import prepare_state, score, data
 ogr.UseExceptions()
 
 FUNCTION_NAME = 'PlanScore-RunDistrict'
-
-class Storage:
-    ''' Wrapper for S3-related details.
-    '''
-    def __init__(self, s3, bucket, prefix):
-        self.s3 = s3
-        self.bucket = bucket
-        self.prefix = prefix
-    
-    def to_event(self):
-        return dict(bucket=self.bucket, prefix=self.prefix)
-    
-    @staticmethod
-    def from_event(event, s3):
-        bucket = event.get('bucket')
-        prefix = event.get('prefix')
-        return Storage(s3, bucket, prefix)
 
 class Partial:
     ''' Partially-calculated district sums, used by consume_tiles().
@@ -81,7 +64,7 @@ def lambda_handler(event, context):
     '''
     s3 = boto3.client('s3')
     partial = Partial.from_event(event)
-    storage = Storage.from_event(event, s3)
+    storage = data.Storage.from_event(event, s3)
 
     start_time, times = time.time(), []
     
@@ -109,13 +92,42 @@ def lambda_handler(event, context):
 
         return
     
+    final = post_score_results(storage, partial)
+    
+    if not final:
+        return
+    
+    print('All done, invoking', score.FUNCTION_NAME)
+    
+    event = partial.upload.to_dict()
+    event.update(storage.to_event())
+
+    lam = boto3.client('lambda')
+    lam.invoke(FunctionName=score.FUNCTION_NAME, InvocationType='Event',
+        Payload=json.dumps(event).encode('utf8'))
+
+def post_score_results(storage, partial):
+    '''
+    '''
     key = partial.upload.district_key(partial.index)
-    body = json.dumps(partial.totals).encode('utf8')
+    body = json.dumps(dict(totals=partial.totals)).encode('utf8')
     
     print('Uploading', len(body), 'bytes to', key)
     
-    s3.put_object(Bucket=storage.bucket, Key=key, Body=body,
+    storage.s3.put_object(Bucket=storage.bucket, Key=key, Body=body,
         ContentType='text/json', ACL='private')
+    
+    # Look for the other expected districts.
+    prefix = posixpath.dirname(key)
+    listed_objects = storage.s3.list_objects(Bucket=storage.bucket, Prefix=prefix)
+    existing_keys = [obj.get('Key') for obj in listed_objects.get('Contents', [])]
+    
+    for index in range(len(partial.upload.districts)):
+        if partial.upload.district_key(index) not in existing_keys:
+            return False
+    
+    # All of them were found
+    return True
 
 def consume_tiles(storage, partial):
     ''' Generate a stream of steps, updating totals from precincts and tiles.
