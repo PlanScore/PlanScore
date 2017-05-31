@@ -91,15 +91,12 @@ class TestAfterUpload (unittest.TestCase):
     @unittest.mock.patch('planscore.after_upload.put_geojson_file')
     @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
     @unittest.mock.patch('planscore.after_upload.guess_state')
-    @unittest.mock.patch('planscore.score.score_plan')
-    def test_get_uploaded_info_good_file(self, score_plan, guess_state, fan_out_district_lambdas, put_geojson_file, put_upload_index, temporary_buffer_file):
+    def test_get_uploaded_info_good_file(self, guess_state, fan_out_district_lambdas, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
-        upload, output = data.Upload(id, upload_key), unittest.mock.Mock()
-        score_plan.return_value = upload, output
         guess_state.return_value = 'XX'
         
         @contextlib.contextmanager
@@ -114,13 +111,10 @@ class TestAfterUpload (unittest.TestCase):
         info = after_upload.get_uploaded_info(s3, bucket, upload_key, id)
         guess_state.assert_called_once_with(nullplan_path)
 
-        self.assertEqual(len(score_plan.mock_calls), 1)
-        self.assertEqual(score_plan.mock_calls[0][1][:2], (s3, bucket))
-        self.assertEqual(score_plan.mock_calls[0][1][3:], (nullplan_path, 'data/XX'))
-
         temporary_buffer_file.assert_called_once_with('null-plan.geojson', None)
-        self.assertIs(info, output)
+        self.assertIsNone(info)
     
+        upload = put_geojson_file.mock_calls[0][1][2]
         put_upload_index.assert_called_once_with(s3, bucket, upload)
         put_geojson_file.assert_called_once_with(s3, bucket, upload, nullplan_path)
         

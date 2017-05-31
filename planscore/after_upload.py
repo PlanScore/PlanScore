@@ -16,12 +16,10 @@ def get_uploaded_info(s3, bucket, key, id):
     with util.temporary_buffer_file(os.path.basename(key), object['Body']) as path:
         prefix = 'data/{}'.format(guess_state(path))
         fan_out_district_lambdas(bucket, prefix, upload, path)
-        scored_upload, output = score.score_plan(s3, bucket, upload, path, prefix)
-        put_geojson_file(s3, bucket, scored_upload, path)
+        put_geojson_file(s3, bucket, upload, path)
     
-    score.put_upload_index(s3, bucket, scored_upload)
-    
-    return output
+    score.put_upload_index(s3, bucket, upload)
+    return None
 
 def fan_out_district_lambdas(bucket, prefix, upload, path):
     '''
