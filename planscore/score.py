@@ -169,5 +169,4 @@ def lambda_handler(event, context):
         new_districts.append(json.load(object['Body']))
 
     output_upload = calculate_gap(input_upload.clone(districts=new_districts))
-    
-    return 'Score this!'
+    put_upload_index(storage.s3, storage.bucket, output_upload)
