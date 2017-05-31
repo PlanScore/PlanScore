@@ -20,15 +20,6 @@ def mock_s3_get_object(Bucket, Key):
 
 class TestDistricts (unittest.TestCase):
 
-    def test_Storage(self):
-        ''' Storage.from_event() creates the right properties.
-        '''
-        s3 = unittest.mock.Mock()
-        storage = districts.Storage.from_event(dict(bucket='bucket', prefix='XX'), s3)
-        self.assertEqual(storage.s3, s3)
-        self.assertEqual(storage.bucket, 'bucket')
-        self.assertEqual(storage.prefix, 'XX')
-
     def test_Partial(self):
         ''' Partial.from_event() creates the right properties.
         '''
@@ -77,7 +68,8 @@ class TestDistricts (unittest.TestCase):
         ''' Lambda event data with just geometry starts the process.
         '''
         post_score_results.return_value = False
-        event = {'index': -1, 'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
+        event = {'index': -1, 'bucket': 'bucket-name',
+            'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
             'geometry': 'POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))'}
         districts.lambda_handler(event, None)
         storage, partial = consume_tiles.mock_calls[0][1]
@@ -122,7 +114,8 @@ class TestDistricts (unittest.TestCase):
         ''' Lambda event data with existing totals continues the process.
         '''
         post_score_results.return_value = False
-        event = {'index': -1, 'totals': {}, 'precincts': [{'Totals': 1}], 'tiles': ['10/511/512'],
+        event = {'index': -1, 'bucket': 'bucket-name', 'totals': {},
+            'precincts': [{'Totals': 1}], 'tiles': ['10/511/512'],
             'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
             'geometry': 'POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))'}
         districts.lambda_handler(event, None)
@@ -140,7 +133,8 @@ class TestDistricts (unittest.TestCase):
         ''' Lambda event for the final district hands off to the score function.
         '''
         post_score_results.return_value = True
-        event = {'index': -1, 'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
+        event = {'index': -1, 'bucket': 'bucket-name',
+            'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
             'geometry': 'POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))'}
         districts.lambda_handler(event, None)
         storage, partial = consume_tiles.mock_calls[0][1]
@@ -163,7 +157,7 @@ class TestDistricts (unittest.TestCase):
             data.Upload('ID', 'uploads/ID/upload/file.geojson', districts=[None, None]))
         
         # First time through, there's only one district noted on the server
-        storage = districts.Storage(unittest.mock.Mock(), 'bucket-name', 'data/XX')
+        storage = data.Storage(unittest.mock.Mock(), 'bucket-name', 'data/XX')
         storage.s3.list_objects.return_value = {
             'Contents': [{'Key': 'uploads/ID/districts/0.json'}]}
         
@@ -301,7 +295,7 @@ class TestDistricts (unittest.TestCase):
         '''
         s3 = unittest.mock.Mock()
         s3.get_object.side_effect = mock_s3_get_object
-        storage = districts.Storage(s3, 'bucket-name', 'XX')
+        storage = data.Storage(s3, 'bucket-name', 'XX')
 
         precincts1 = districts.load_tile_precincts(storage, '10/511/511')
         s3.get_object.assert_called_once_with(Bucket='bucket-name', Key='XX/10/511/511.geojson')

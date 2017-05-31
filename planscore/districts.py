@@ -7,23 +7,6 @@ ogr.UseExceptions()
 
 FUNCTION_NAME = 'PlanScore-RunDistrict'
 
-class Storage:
-    ''' Wrapper for S3-related details.
-    '''
-    def __init__(self, s3, bucket, prefix):
-        self.s3 = s3
-        self.bucket = bucket
-        self.prefix = prefix
-    
-    def to_event(self):
-        return dict(bucket=self.bucket, prefix=self.prefix)
-    
-    @staticmethod
-    def from_event(event, s3):
-        bucket = event.get('bucket')
-        prefix = event.get('prefix')
-        return Storage(s3, bucket, prefix)
-
 class Partial:
     ''' Partially-calculated district sums, used by consume_tiles().
     '''
@@ -81,7 +64,7 @@ def lambda_handler(event, context):
     '''
     s3 = boto3.client('s3')
     partial = Partial.from_event(event)
-    storage = Storage.from_event(event, s3)
+    storage = data.Storage.from_event(event, s3)
 
     start_time, times = time.time(), []
     

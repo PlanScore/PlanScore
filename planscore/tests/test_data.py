@@ -3,6 +3,15 @@ from .. import data
 
 class TestData (unittest.TestCase):
 
+    def test_Storage(self):
+        ''' Storage.from_event() creates the right properties.
+        '''
+        s3 = unittest.mock.Mock()
+        storage = data.Storage.from_event(dict(bucket='bucket', prefix='XX'), s3)
+        self.assertEqual(storage.s3, s3)
+        self.assertEqual(storage.bucket, 'bucket')
+        self.assertEqual(storage.prefix, 'XX')
+
     def test_upload_storage(self):
         ''' Past and future data.Upload instances are readable
         '''
