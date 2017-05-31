@@ -129,3 +129,9 @@ def calculate_gap(upload):
     efficiency_gap = (wasted_red - wasted_blue) / election_votes
     
     return upload.clone(summary={'Efficiency Gap': efficiency_gap})
+
+def lambda_handler(event, context):
+    '''
+    '''
+    print('event:', event)
+    return 'Score this!'

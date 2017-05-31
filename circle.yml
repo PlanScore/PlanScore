@@ -27,3 +27,5 @@ deployment:
       - make planscore-lambda.zip
       - aws --region us-east-1 lambda update-function-code --function-name PlanScore-RunDistrict --zip-file fileb://planscore-lambda.zip >> /dev/null
       - aws --region us-east-1 lambda update-function-configuration --function-name PlanScore-RunDistrict --handler lambda.run_district >> /dev/null
+      - aws --region us-east-1 lambda update-function-code --function-name PlanScore-ScoreDistrictPlan --zip-file fileb://planscore-lambda.zip >> /dev/null
+      - aws --region us-east-1 lambda update-function-configuration --function-name PlanScore-ScoreDistrictPlan --handler lambda.score_plan --timeout 30 >> /dev/null
