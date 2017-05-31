@@ -134,15 +134,35 @@ class TestDistricts (unittest.TestCase):
     def test_post_score_results(self, stdout):
         ''' Expected results are posted to S3.
         '''
-        storage = districts.Storage(unittest.mock.Mock(), 'bucket-name', 'data/XX')
         partial = districts.Partial(-1, {"Voters": 1}, [], [], None,
-            data.Upload('ID', 'uploads/ID/upload/file.geojson'))
+            data.Upload('ID', 'uploads/ID/upload/file.geojson', districts=[None, None]))
+        
+        # First time through, there's only one district noted on the server
+        storage = districts.Storage(unittest.mock.Mock(), 'bucket-name', 'data/XX')
+        storage.s3.list_objects.return_value = {
+            'Contents': [{'Key': 'uploads/ID/districts/0.json'}]}
         
         districts.post_score_results(storage, partial)
+
+        storage.s3.list_objects.assert_called_once_with(
+            Bucket='bucket-name', Prefix='uploads/ID/districts')
 
         storage.s3.put_object.assert_called_once_with(
             ACL='private', Body=b'{"Voters": 1}', Bucket='bucket-name',
             ContentType='text/json', Key='uploads/ID/districts/-1.json')
+        
+        # Second time through, both expected districts are there
+        storage.s3 = unittest.mock.Mock()
+        storage.s3.list_objects.return_value = {'Contents': [
+            {'Key': 'uploads/ID/districts/0.json'}, {'Key': 'uploads/ID/districts/1.json'}]}
+
+        districts.post_score_results(storage, partial)
+
+        storage.s3.list_objects.assert_called_once_with(
+            Bucket='bucket-name', Prefix='uploads/ID/districts')
+
+        self.assertEqual(len(storage.s3.put_object.mock_calls), 2,
+            'Should see two posts to S3')
     
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
     @unittest.mock.patch('planscore.districts.score_precinct')

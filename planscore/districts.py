@@ -1,4 +1,4 @@
-import collections, json, io, gzip, statistics, time, base64
+import collections, json, io, gzip, statistics, time, base64, posixpath
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import prepare_state, score, data
@@ -121,6 +121,22 @@ def post_score_results(storage, partial):
     
     storage.s3.put_object(Bucket=storage.bucket, Key=key, Body=body,
         ContentType='text/json', ACL='private')
+    
+    # Look for the other expected districts.
+    prefix = posixpath.dirname(key)
+    listed_objects = storage.s3.list_objects(Bucket=storage.bucket, Prefix=prefix)
+    existing_keys = [obj.get('Key') for obj in listed_objects.get('Contents', [])]
+    
+    for index in range(len(partial.upload.districts)):
+        if partial.upload.district_key(index) not in existing_keys:
+            return
+    
+    # All of them were found, so upload a stubby summary.
+    key = partial.upload.index_key()
+    body = partial.upload.to_json().encode('utf8')
+
+    storage.s3.put_object(Bucket=storage.bucket, Key=key,
+        Body=body, ContentType='text/json', ACL='public-read')
 
 def consume_tiles(storage, partial):
     ''' Generate a stream of steps, updating totals from precincts and tiles.
