@@ -109,7 +109,10 @@ def lambda_handler(event, context):
 
         return
     
-    post_score_results(storage, partial)
+    final = post_score_results(storage, partial)
+    
+    if final:
+        print('All done, move on to scoring district plan')
 
 def post_score_results(storage, partial):
     '''
@@ -129,14 +132,10 @@ def post_score_results(storage, partial):
     
     for index in range(len(partial.upload.districts)):
         if partial.upload.district_key(index) not in existing_keys:
-            return
+            return False
     
-    # All of them were found, so upload a stubby summary.
-    key = partial.upload.index_key()
-    body = partial.upload.to_json().encode('utf8')
-
-    storage.s3.put_object(Bucket=storage.bucket, Key=key,
-        Body=body, ContentType='text/json', ACL='public-read')
+    # All of them were found
+    return True
 
 def consume_tiles(storage, partial):
     ''' Generate a stream of steps, updating totals from precincts and tiles.

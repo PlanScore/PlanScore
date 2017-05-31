@@ -142,7 +142,8 @@ class TestDistricts (unittest.TestCase):
         storage.s3.list_objects.return_value = {
             'Contents': [{'Key': 'uploads/ID/districts/0.json'}]}
         
-        districts.post_score_results(storage, partial)
+        final = districts.post_score_results(storage, partial)
+        self.assertFalse(final, 'Should see False return from post_score_results()')
 
         storage.s3.list_objects.assert_called_once_with(
             Bucket='bucket-name', Prefix='uploads/ID/districts')
@@ -156,13 +157,8 @@ class TestDistricts (unittest.TestCase):
         storage.s3.list_objects.return_value = {'Contents': [
             {'Key': 'uploads/ID/districts/0.json'}, {'Key': 'uploads/ID/districts/1.json'}]}
 
-        districts.post_score_results(storage, partial)
-
-        storage.s3.list_objects.assert_called_once_with(
-            Bucket='bucket-name', Prefix='uploads/ID/districts')
-
-        self.assertEqual(len(storage.s3.put_object.mock_calls), 2,
-            'Should see two posts to S3')
+        final = districts.post_score_results(storage, partial)
+        self.assertTrue(final, 'Should see True return from post_score_results()')
     
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
     @unittest.mock.patch('planscore.districts.score_precinct')
