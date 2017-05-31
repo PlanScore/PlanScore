@@ -1,4 +1,4 @@
-import collections, json, io, gzip, statistics, time
+import collections, json, io, gzip, statistics, time, base64
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import prepare_state, score, data
@@ -42,8 +42,8 @@ class Partial:
     
     def to_event(self):
         return dict(index=self.index, totals=self.totals, tiles=self.tiles,
-            precincts=self.precincts, geometry=self.geometry.ExportToWkt(),
-            upload=self.upload.to_dict())
+            geometry=self.geometry.ExportToWkt(), upload=self.upload.to_dict(),
+            precincts=Partial.scrunch(self.precincts))
     
     @staticmethod
     def from_event(event):
@@ -53,11 +53,28 @@ class Partial:
         geometry = ogr.CreateGeometryFromWkt(event['geometry'])
         index = event['index']
         upload = data.Upload.from_dict(event['upload'])
-    
+        
         if totals is None or precincts is None or tiles is None:
             totals, precincts, tiles = collections.defaultdict(int), [], get_geometry_tile_zxys(geometry)
         
-        return Partial(index, totals, precincts, tiles, geometry, upload)
+        return Partial(index, totals, Partial.unscrunch(precincts), tiles, geometry, upload)
+    
+    @staticmethod
+    def scrunch(thing):
+        ''' Scrunch a thing into a compact (?) textual representation.
+        '''
+        return base64.a85encode(gzip.compress(json.dumps(thing).encode('utf8'))).decode('ascii')
+    
+    @staticmethod
+    def unscrunch(thing):
+        ''' Accept a scrunched representation of a thing and return the thing.
+            
+            Lists and dictionaries are simply returned instead of unscrunched.
+        '''
+        if type(thing) in (tuple, list, dict):
+            return thing
+
+        return json.loads(gzip.decompress(base64.a85decode(thing)).decode('utf8'))
 
 def lambda_handler(event, context):
     '''
@@ -69,17 +86,19 @@ def lambda_handler(event, context):
     start_time, times = time.time(), []
     
     for _ in consume_tiles(storage, partial):
-        print('Iteration:', json.dumps(partial.to_dict()))
-
         times.append(time.time() - start_time)
         start_time = time.time()
         
         stdev = statistics.stdev(times) if len(times) > 1 else times[0]
         cutoff_msec = 1000 * (statistics.mean(times) + 3 * stdev)
+        remain_msec = context.get_remaining_time_in_millis() - 15000 # 15 seconds for Lambda
         
-        if context.get_remaining_time_in_millis() > cutoff_msec:
+        if remain_msec > cutoff_msec:
             # There's time to do more
             continue
+
+        print('Iteration:', json.dumps(partial.to_dict()))
+        print('Stopping with', remain_msec, 'msec remaining')
 
         event = partial.to_event()
         event.update(storage.to_event())
@@ -88,7 +107,6 @@ def lambda_handler(event, context):
         lam.invoke(FunctionName=FUNCTION_NAME, InvocationType='Event',
             Payload=json.dumps(event).encode('utf8'))
 
-        print('Stopping with', context.get_remaining_time_in_millis(), 'msec remaining')
         return
     
     key = partial.upload.district_key(partial.index)
@@ -97,7 +115,7 @@ def lambda_handler(event, context):
     print('Uploading', len(body), 'bytes to', key)
     
     s3.put_object(Bucket=storage.bucket, Key=key, Body=body,
-        ContentEncoding='gzip', ContentType='text/json', ACL='private')
+        ContentType='text/json', ACL='private')
 
 def consume_tiles(storage, partial):
     ''' Generate a stream of steps, updating totals from precincts and tiles.
@@ -119,6 +137,7 @@ def score_precinct(partial, precinct):
             # Sometimes, a precinct geometry can be invalid
             # so inflate it by a tiny amount to smooth out problems
             precinct_geom = precinct_geom.Buffer(0.0000001)
+            overlap_geom = precinct_geom.Intersection(partial.geometry)
         else:
             raise
     overlap_area = overlap_geom.Area() / precinct_geom.Area()
