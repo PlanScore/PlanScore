@@ -66,8 +66,9 @@ class TestAfterUpload (unittest.TestCase):
         nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
         self.assertEqual(after_upload.guess_state(nc_plan_path), 'NC')
     
+    @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
-    def test_fan_out_district_lambdas(self, boto3_client):
+    def test_fan_out_district_lambdas(self, boto3_client, stdout):
         ''' Test that district Lambda fan-out is invoked correctly.
         '''
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')

@@ -182,10 +182,11 @@ class TestScore (unittest.TestCase):
             Body=upload.to_json.return_value.encode.return_value,
             ACL='public-read', ContentType='text/json')
     
+    @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
     @unittest.mock.patch('planscore.score.calculate_gap')
     @unittest.mock.patch('planscore.score.put_upload_index')
-    def test_lambda_handler(self, put_upload_index, calculate_gap, boto3_client):
+    def test_lambda_handler(self, put_upload_index, calculate_gap, boto3_client, stdout):
         '''
         '''
         s3 = boto3_client.return_value
@@ -210,6 +211,5 @@ class TestScore (unittest.TestCase):
         self.assertIn('totals', input_upload.districts[0])
         self.assertIn('totals', input_upload.districts[1])
         
-        print('put_upload_index.mock_calls:', put_upload_index.mock_calls)
         output_upload = calculate_gap.return_value
         put_upload_index.assert_called_once_with(s3, 'bucket-name', output_upload)
