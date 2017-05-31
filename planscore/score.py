@@ -131,6 +131,15 @@ def calculate_gap(upload):
     
     return upload.clone(summary={'Efficiency Gap': efficiency_gap})
 
+def put_upload_index(s3, bucket, upload):
+    ''' Save a JSON index file for this upload.
+    '''
+    key = upload.index_key()
+    body = upload.to_json().encode('utf8')
+
+    s3.put_object(Bucket=bucket, Key=key, Body=body,
+        ContentType='text/json', ACL='public-read')
+
 def lambda_handler(event, context):
     '''
     '''

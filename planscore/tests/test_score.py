@@ -172,6 +172,16 @@ class TestScore (unittest.TestCase):
         with self.assertRaises(RuntimeError) as error:
             score.score_plan(None, None, upload, plan_path, None)
     
+    def test_put_upload_index(self):
+        ''' Upload index file is posted to S3
+        '''
+        s3, bucket, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
+        score.put_upload_index(s3, bucket, upload)
+        s3.put_object.assert_called_once_with(Bucket=bucket,
+            Key=upload.index_key.return_value,
+            Body=upload.to_json.return_value.encode.return_value,
+            ACL='public-read', ContentType='text/json')
+    
     @unittest.mock.patch('boto3.client')
     @unittest.mock.patch('planscore.score.calculate_gap')
     def test_lambda_handler(self, calculate_gap, boto3_client):

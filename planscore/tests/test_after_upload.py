@@ -38,16 +38,6 @@ class TestAfterUpload (unittest.TestCase):
         self.assertEqual(response['statusCode'], '400')
         self.assertIn('Bad ID', response['body'])
     
-    def test_put_upload_index(self):
-        ''' Upload index file is posted to S3
-        '''
-        s3, bucket, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
-        after_upload.put_upload_index(s3, bucket, upload)
-        s3.put_object.assert_called_once_with(Bucket=bucket,
-            Key=upload.index_key.return_value,
-            Body=upload.to_json.return_value.encode.return_value,
-            ACL='public-read', ContentType='text/json')
-    
     @unittest.mock.patch('gzip.compress')
     def test_put_geojson_file(self, compress):
         ''' Geometry GeoJSON file is posted to S3
@@ -96,7 +86,7 @@ class TestAfterUpload (unittest.TestCase):
                 'Should have the right number of districts even though they are blanks')
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
-    @unittest.mock.patch('planscore.after_upload.put_upload_index')
+    @unittest.mock.patch('planscore.score.put_upload_index')
     @unittest.mock.patch('planscore.after_upload.put_geojson_file')
     @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
     @unittest.mock.patch('planscore.after_upload.guess_state')
