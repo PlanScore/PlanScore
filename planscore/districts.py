@@ -68,7 +68,10 @@ def lambda_handler(event, context):
 
     start_time, times = time.time(), []
     
-    for _ in consume_tiles(storage, partial):
+    print('Starting with', len(partial.precincts),
+        'precincts and', len(partial.tiles), 'tiles remaining')
+
+    for (index, _) in enumerate(consume_tiles(storage, partial)):
         times.append(time.time() - start_time)
         start_time = time.time()
         
@@ -82,7 +85,8 @@ def lambda_handler(event, context):
 
         print('Iteration:', json.dumps(partial.to_dict()))
         print('Stopping with', remain_msec, 'msec,', len(partial.precincts),
-            'precincts, and', len(partial.tiles), 'tiles remaining')
+            'precincts, and', len(partial.tiles), 'tiles remaining after',
+            index + 1, 'iterations.')
 
         event = partial.to_event()
         event.update(storage.to_event())
