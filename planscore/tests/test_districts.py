@@ -29,7 +29,7 @@ class TestDistricts (unittest.TestCase):
         self.assertEqual(partial.index, -1)
         self.assertEqual(partial.totals, {})
         self.assertEqual(partial.precincts, [])
-        self.assertEqual(partial.tiles, ['10/512/511'])
+        self.assertEqual(partial.tiles, ['12/2048/2047'])
         self.assertEqual(partial.upload.id, 'ID')
     
     def test_Partial_to_event(self):
@@ -74,7 +74,7 @@ class TestDistricts (unittest.TestCase):
         districts.lambda_handler(event, None)
         storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
-            (-1, {}, [], ['10/511/511', '10/511/512'], 'ID'))
+            (-1, {}, [], ['12/2047/2047', '12/2047/2048'], 'ID'))
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 0)
         post_score_results.assert_called_once_with(storage, partial)
 
@@ -115,13 +115,13 @@ class TestDistricts (unittest.TestCase):
         '''
         post_score_results.return_value = False
         event = {'index': -1, 'bucket': 'bucket-name', 'totals': {},
-            'precincts': [{'Totals': 1}], 'tiles': ['10/511/512'],
+            'precincts': [{'Totals': 1}], 'tiles': ['12/2047/2048'],
             'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
             'geometry': 'POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))'}
         districts.lambda_handler(event, None)
         storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
-            (-1, {}, [{'Totals': 1}], ['10/511/512'], 'ID'))
+            (-1, {}, [{'Totals': 1}], ['12/2047/2048'], 'ID'))
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 0)
         post_score_results.assert_called_once_with(storage, partial)
 
@@ -139,7 +139,7 @@ class TestDistricts (unittest.TestCase):
         districts.lambda_handler(event, None)
         storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
-            (-1, {}, [], ['10/511/511', '10/511/512'], 'ID'))
+            (-1, {}, [], ['12/2047/2047', '12/2047/2048'], 'ID'))
         post_score_results.assert_called_once_with(storage, partial)
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 1)
 
@@ -298,11 +298,11 @@ class TestDistricts (unittest.TestCase):
         s3.get_object.side_effect = mock_s3_get_object
         storage = data.Storage(s3, 'bucket-name', 'XX')
 
-        precincts1 = districts.load_tile_precincts(storage, '10/511/511')
-        s3.get_object.assert_called_once_with(Bucket='bucket-name', Key='XX/10/511/511.geojson')
+        precincts1 = districts.load_tile_precincts(storage, '12/2047/2047')
+        s3.get_object.assert_called_once_with(Bucket='bucket-name', Key='XX/12/2047/2047.geojson')
         self.assertEqual(len(precincts1), 3)
 
-        precincts2 = districts.load_tile_precincts(storage, '10/-1/-1')
+        precincts2 = districts.load_tile_precincts(storage, '12/-1/-1')
         self.assertEqual(len(precincts2), 0)
 
     @unittest.mock.patch('sys.stdout')
@@ -320,5 +320,5 @@ class TestDistricts (unittest.TestCase):
         geometry2 = ogr.CreateGeometryFromJson(json.dumps(feature2['geometry']))
         done2 = districts.get_geometry_tile_zxys(geometry2)
         
-        self.assertEqual(done1, ['10/511/511', '10/511/512'])
-        self.assertEqual(done2, ['10/511/511', '10/512/511', '10/511/512', '10/512/512'])
+        self.assertEqual(done1, ['12/2047/2047', '12/2047/2048'])
+        self.assertEqual(done2, ['12/2047/2047', '12/2048/2047', '12/2047/2048', '12/2048/2048'])

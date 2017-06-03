@@ -71,8 +71,8 @@ class TestScore (unittest.TestCase):
         self.assertAlmostEqual(totals1['Voters'] + totals2['Voters'], 15)
         self.assertAlmostEqual(totals1['Blue Votes'] + totals2['Blue Votes'], 6)
         self.assertAlmostEqual(totals1['Red Votes'] + totals2['Red Votes'], 6)
-        self.assertEqual(tiles1, ['10/511/511', '10/511/512'])
-        self.assertEqual(tiles2, ['10/511/511', '10/512/511', '10/511/512', '10/512/512'])
+        self.assertEqual(tiles1, ['12/2047/2047', '12/2047/2048'])
+        self.assertEqual(tiles2, ['12/2047/2047', '12/2048/2047', '12/2047/2048', '12/2048/2048'])
     
     def test_score_district_invalid_geom(self):
         ''' District scores are correctly read despite topology error.
@@ -88,10 +88,10 @@ class TestScore (unittest.TestCase):
         geometry = ogr.CreateGeometryFromJson(json.dumps(feature['geometry']))
         totals, tiles, _ = score.score_district(s3, bucket, geometry, 'NC')
         
-        self.assertAlmostEqual(totals['Voters'], 87695.33161001765)
-        self.assertAlmostEqual(totals['Blue Votes'], 8474.991380678142)
-        self.assertAlmostEqual(totals['Red Votes'], 13157.538612555834)
-        self.assertEqual(tiles, ['10/276/403'])
+        self.assertAlmostEqual(totals['Voters'], 621.0287544586728)
+        self.assertAlmostEqual(totals['Blue Votes'], 866.9575196315632)
+        self.assertAlmostEqual(totals['Red Votes'], 811.4376789272283)
+        self.assertEqual(tiles, ['12/1104/1612'])
     
     def test_score_district_missing_tile(self):
         ''' District scores come up empty for an area with no tiles
