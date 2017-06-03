@@ -1,4 +1,4 @@
-import collections, json, io, gzip, statistics, time, base64, posixpath
+import collections, json, io, gzip, statistics, time, base64, posixpath, pickle
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import prepare_state, score, data
@@ -46,7 +46,7 @@ class Partial:
     def scrunch(thing):
         ''' Scrunch a thing into a compact (?) textual representation.
         '''
-        return base64.a85encode(gzip.compress(json.dumps(thing).encode('utf8'))).decode('ascii')
+        return base64.a85encode(gzip.compress(pickle.dumps(thing))).decode('ascii')
     
     @staticmethod
     def unscrunch(thing):
@@ -57,7 +57,7 @@ class Partial:
         if type(thing) in (tuple, list, dict):
             return thing
 
-        return json.loads(gzip.decompress(base64.a85decode(thing)).decode('utf8'))
+        return pickle.loads(gzip.decompress(base64.a85decode(thing)))
 
 def lambda_handler(event, context):
     '''
