@@ -74,21 +74,25 @@ def lambda_handler(event, context):
         
         stdev = statistics.stdev(times) if len(times) > 1 else times[0]
         cutoff_msec = 1000 * (statistics.mean(times) + 3 * stdev)
-        remain_msec = context.get_remaining_time_in_millis() - 15000 # 15 seconds for Lambda
+        remain_msec = context.get_remaining_time_in_millis() - 30000 # 30 seconds for Lambda
         
         if remain_msec > cutoff_msec:
             # There's time to do more
             continue
 
         print('Iteration:', json.dumps(partial.to_dict()))
-        print('Stopping with', remain_msec, 'msec remaining')
+        print('Stopping with', remain_msec, 'msec,', len(partial.precincts),
+            'precincts, and', len(partial.tiles), 'tiles remaining')
 
         event = partial.to_event()
         event.update(storage.to_event())
+        
+        payload = json.dumps(event).encode('utf8')
+        print('Sending payload of', len(payload), 'bytes...')
 
         lam = boto3.client('lambda')
         lam.invoke(FunctionName=FUNCTION_NAME, InvocationType='Event',
-            Payload=json.dumps(event).encode('utf8'))
+            Payload=payload)
 
         return
     
