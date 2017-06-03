@@ -199,18 +199,16 @@ class TestDistricts (unittest.TestCase):
         # Just use the identity function to extend precincts
         load_tile_precincts.side_effect = lambda storage, tile: tile
         score_precinct.side_effect = mock_score_precinct
-        expected_calls = 0
         
-        for (totals, precincts, tiles) in cases:
+        for (index, (totals, precincts, tiles)) in enumerate(cases):
             partial = districts.Partial(-1, totals, precincts, tiles, None, None)
             iterations = list(districts.consume_tiles(None, partial))
-            expected_calls += len(iterations)
-            self.assertFalse(partial.precincts, 'Precincts should be completely emptied')
-            self.assertFalse(partial.tiles, 'Tiles should be completely emptied')
-            self.assertEqual(partial.totals['Voters'], 15)
+            self.assertFalse(partial.precincts, 'Precincts should be completely emptied ({})'.format(index))
+            self.assertFalse(partial.tiles, 'Tiles should be completely emptied ({})'.format(index))
+            self.assertEqual(partial.totals['Voters'], 15, '({})'.format(index))
             self.assertEqual(partial.index, -1)
         
-        self.assertEqual(len(score_precinct.mock_calls), expected_calls)
+        self.assertEqual(len(score_precinct.mock_calls), 14)
     
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
     @unittest.mock.patch('planscore.districts.score_precinct')
@@ -224,30 +222,30 @@ class TestDistricts (unittest.TestCase):
         load_tile_precincts.side_effect = lambda storage, tile: tile
         score_precinct.side_effect = mock_score_precinct
 
-        totals, precincts, tiles = {'Voters': 0}, [], \
-            [({'Voters': 1}, {'Voters': 2}), ({'Voters': 4}, {'Voters': 8})]
+        totals, precincts, tiles = {'Voters': 0}, [{'Voters': 1}], \
+            [({'Voters': 2}, ), ({'Voters': 4}, {'Voters': 8})]
         
         upload = data.Upload('ID', None)
         partial = districts.Partial(-1, totals, precincts, tiles, None, upload)
         call = districts.consume_tiles(None, partial)
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
-            (-1, {'Voters': 0}, [], [({'Voters': 1}, {'Voters': 2}), ({'Voters': 4}, {'Voters': 8})], 'ID'))
+            (-1, {'Voters': 0}, [{'Voters': 1}], [({'Voters': 2}, ), ({'Voters': 4}, {'Voters': 8})], 'ID'),
+            'Should see the original lists unchanged')
         
         next(call)
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
-            (-1, {'Voters': 1}, [{'Voters': 2}], [({'Voters': 4}, {'Voters': 8})], 'ID'))
+            (-1, {'Voters': 1}, [], [({'Voters': 2}, ), ({'Voters': 4}, {'Voters': 8})], 'ID'),
+            'Should see the precincts list emptied and tiles list untouched')
         
         next(call)
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
-            (-1, {'Voters': 3}, [], [({'Voters': 4}, {'Voters': 8})], 'ID'))
+            (-1, {'Voters': 3}, [], [({'Voters': 4}, {'Voters': 8})], 'ID'),
+            'Should see the first tile scored and a still-empty precincts list')
         
         next(call)
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
-            (-1, {'Voters': 7}, [{'Voters': 8}], [], 'ID'))
-        
-        next(call)
-        self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
-            (-1, {'Voters': 15}, [], [], 'ID'))
+            (-1, {'Voters': 15}, [], [], 'ID'),
+            'Should see the precincts and tiles lists emptied')
 
         with self.assertRaises(StopIteration):
             next(call)

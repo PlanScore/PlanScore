@@ -142,8 +142,21 @@ def consume_tiles(storage, partial):
     
         Inputs are modified directly, and lists should be empty at completion.
     '''
-    for precinct in iterate_precincts(storage, partial.precincts, partial.tiles):
+    # Start by draining the precincts list, which should be empty anyway.
+    while partial.precincts:
+        precinct = partial.precincts.pop(0)
         score_precinct(partial, precinct)
+    
+    # Yield once with an emptied precincts list.
+    yield
+    
+    # Iterate over each tile, loading precincts and scoring them.
+    while partial.tiles:
+        tile_zxy = partial.tiles.pop(0)
+        for precinct in load_tile_precincts(storage, tile_zxy):
+            score_precinct(partial, precinct)
+        
+        # Yield after each complete tile is processed.
         yield
 
 def score_precinct(partial, precinct):
