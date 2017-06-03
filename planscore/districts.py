@@ -173,6 +173,10 @@ def score_precinct(partial, precinct):
             overlap_geom = precinct_geom.Intersection(partial.geometry)
         else:
             raise
+    if precinct_geom.Area() == 0:
+        # If we're about to divide by zero, don't bother.
+        return
+
     overlap_area = overlap_geom.Area() / precinct_geom.Area()
     precinct_fraction = overlap_area * precinct['properties'][prepare_state.FRACTION_FIELD]
     
