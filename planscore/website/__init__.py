@@ -1,4 +1,4 @@
-import flask, os, urllib.parse
+import flask, os, urllib.parse, markdown
 from .. import data, score
 
 MODELS_BASEDIR = os.path.join(os.path.dirname(__file__), 'models')
@@ -46,7 +46,7 @@ def get_model(name):
     model_basedir = os.path.join(MODELS_BASEDIR, name)
     
     with open(os.path.join(model_basedir, 'README.md')) as file:
-        model_readme = file.read()
+        model_readme = markdown.markdown(file.read())
 
     model_files = list()
     for (base, _, files) in os.walk(model_basedir):
