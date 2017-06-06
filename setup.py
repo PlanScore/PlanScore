@@ -9,7 +9,7 @@ setup(
     test_suite = 'planscore.tests',
     package_data = {
         'planscore': ['geodata/*.*'],
-        'planscore.website': ['templates/*.html', 'static/*.*'],
+        'planscore.website': ['templates/*.html', 'static/*.*', 'models/*/*.*'],
         'planscore.tests': ['data/*.*', 'data/*/*/*/*.geojson',
             'data/uploads/sample-plan/districts/?.json'],
         },

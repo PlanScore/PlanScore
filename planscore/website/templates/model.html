@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block title %}Model{% endblock %}
+{% block content %}
+    <p>A model.</p>
+    <blockquote>
+    {{ readme|safe }}
+    </blockquote>
+    <ul>
+        {% for file in files %}
+            <li><a href="{{ url_for('get_model_file', name=name, path=file) }}">{{ file }}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}
