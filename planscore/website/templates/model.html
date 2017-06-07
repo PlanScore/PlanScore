@@ -1,0 +1,11 @@
+{% extends "layout.html" %}
+{% block title %}Model{% endblock %}
+{% block content %}
+    <p><a href="{{ url_for('get_models') }}">&#11013;&#65038; All Models</a></p>
+    {{ readme|safe }}
+    <ul>
+        {% for file in files %}
+            <li><a href="{{ url_for('get_model_file', name=name, path=file) }}">{{ file }}</a></li>
+        {% endfor %}
+    </ul>
+{% endblock %}

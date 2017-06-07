@@ -9,7 +9,7 @@ setup(
     test_suite = 'planscore.tests',
     package_data = {
         'planscore': ['geodata/*.*'],
-        'planscore.website': ['templates/*.html', 'static/*.*'],
+        'planscore.website': ['templates/*.html', 'static/*.*', 'models/*/*.*'],
         'planscore.tests': ['data/*.*', 'data/*/*/*/*.geojson',
             'data/uploads/sample-plan/districts/?.json'],
         },
@@ -20,6 +20,7 @@ setup(
         'Flask == 0.12.2',
         'Jinja2 == 2.9.6',
         'Frozen-Flask == 0.14',
+        'Markdown == 2.6.8',
         ],
     extras_require = {
         'GDAL': ['GDAL == 2.1.3'],
