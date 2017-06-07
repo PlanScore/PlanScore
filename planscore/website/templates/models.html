@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block title %}Models{% endblock %}
 {% block content %}
-    <p>Models</p>
+    <h2>Models</h2>
     <ul>
         {% for model in models %}
             <li><a href="{{ url_for('get_model', name=model) }}">{{ model }}</a></li>
