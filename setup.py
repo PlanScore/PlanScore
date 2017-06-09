@@ -5,11 +5,10 @@ setup(
     url = 'https://github.com/migurski/PlanScore',
     author = 'Michal Migurski',
     description = '',
-    packages = ['planscore', 'planscore.website', 'planscore.tests'],
+    packages = ['planscore', 'planscore.tests'],
     test_suite = 'planscore.tests',
     package_data = {
         'planscore': ['geodata/*.*'],
-        'planscore.website': ['templates/*.html', 'static/*.*', 'models/*/*.*'],
         'planscore.tests': ['data/*.*', 'data/*/*/*/*.geojson',
             'data/uploads/sample-plan/districts/?.json'],
         },
