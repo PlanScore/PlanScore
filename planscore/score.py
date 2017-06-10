@@ -119,14 +119,17 @@ def calculate_gap(upload):
     '''
     summary_dict, gaps = {}, {
         'Red/Blue': ('Red Votes', 'Blue Votes'),
+        'US House': ('US House Rep Votes', 'US House Dem Votes'),
+        'SLDU': ('SLDU Rep Votes', 'SLDU Dem Votes'),
+        'SLDL': ('SLDL Rep Votes', 'SLDL Dem Votes'),
         }
     
     for (prefix, (red_field, blue_field)) in gaps.items():
         election_votes, wasted_red, wasted_blue, red_wins, blue_wins = 0, 0, 0, 0, 0
 
         for district in upload.districts:
-            red_votes = district['totals'][red_field]
-            blue_votes = district['totals'][blue_field]
+            red_votes = district['totals'].get(red_field) or 0
+            blue_votes = district['totals'].get(blue_field) or 0
             district_votes = red_votes + blue_votes
             election_votes += district_votes
             win_threshold = district_votes / 2

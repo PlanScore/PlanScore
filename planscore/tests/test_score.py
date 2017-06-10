@@ -51,6 +51,48 @@ class TestScore (unittest.TestCase):
         output = score.calculate_gap(input)
         self.assertEqual(output.summary['Efficiency Gap'], -.25)
 
+    def test_calculate_gap_ushouse(self):
+        ''' Efficiency gap can be correctly calculated for a U.S. House election
+        '''
+        input = data.Upload(id=None, key=None,
+            districts = [
+                dict(totals={'US House Rep Votes': 2, 'US House Dem Votes': 6}, tile=None),
+                dict(totals={'US House Rep Votes': 3, 'US House Dem Votes': 5}, tile=None),
+                dict(totals={'US House Rep Votes': 5, 'US House Dem Votes': 3}, tile=None),
+                dict(totals={'US House Rep Votes': 6, 'US House Dem Votes': 2}, tile=None),
+                ])
+        
+        output = score.calculate_gap(input)
+        self.assertEqual(output.summary['US House Efficiency Gap'], 0)
+
+    def test_calculate_gap_ushouse(self):
+        ''' Efficiency gap can be correctly calculated for a State upper house election
+        '''
+        input = data.Upload(id=None, key=None,
+            districts = [
+                dict(totals={'SLDU Rep Votes': 2, 'SLDU Dem Votes': 6}, tile=None),
+                dict(totals={'SLDU Rep Votes': 3, 'SLDU Dem Votes': 5}, tile=None),
+                dict(totals={'SLDU Rep Votes': 5, 'SLDU Dem Votes': 3}, tile=None),
+                dict(totals={'SLDU Rep Votes': 6, 'SLDU Dem Votes': 2}, tile=None),
+                ])
+        
+        output = score.calculate_gap(input)
+        self.assertEqual(output.summary['SLDU Efficiency Gap'], 0)
+
+    def test_calculate_gap_ushouse(self):
+        ''' Efficiency gap can be correctly calculated for a State lower house election
+        '''
+        input = data.Upload(id=None, key=None,
+            districts = [
+                dict(totals={'SLDL Rep Votes': 2, 'SLDL Dem Votes': 6}, tile=None),
+                dict(totals={'SLDL Rep Votes': 3, 'SLDL Dem Votes': 5}, tile=None),
+                dict(totals={'SLDL Rep Votes': 5, 'SLDL Dem Votes': 3}, tile=None),
+                dict(totals={'SLDL Rep Votes': 6, 'SLDL Dem Votes': 2}, tile=None),
+                ])
+        
+        output = score.calculate_gap(input)
+        self.assertEqual(output.summary['SLDL Efficiency Gap'], 0)
+
     def test_score_district(self):
         ''' District scores are correctly read from input GeoJSON
         '''
@@ -123,7 +165,7 @@ class TestScore (unittest.TestCase):
         self.assertIn('2 features in 1119-byte null-plan.geojson', output)
         self.assertIn('Better score a district.', output)
         self.assertEqual(scored.districts, [{'totals': {'Red Votes': 0, 'Blue Votes': 1}, 'tiles': ['zxy']}] * 2)
-        self.assertEqual(scored.summary, {'Efficiency Gap': -.5})
+        self.assertEqual(scored.summary['Efficiency Gap'], -.5)
     
     @unittest.mock.patch('planscore.score.score_district')
     def test_score_plan_gpkg(self, score_district):
@@ -139,7 +181,7 @@ class TestScore (unittest.TestCase):
         self.assertIn('2 features in 40960-byte null-plan.gpkg', output)
         self.assertIn('Better score a district.', output)
         self.assertEqual(scored.districts, [{'totals': {'Red Votes': 1, 'Blue Votes': 0}, 'tiles': ['zxy']}] * 2)
-        self.assertEqual(scored.summary, {'Efficiency Gap': .5})
+        self.assertEqual(scored.summary['Efficiency Gap'], .5)
     
     @unittest.mock.patch('planscore.score.score_district')
     def test_score_plan_missing_tile(self, score_district):
