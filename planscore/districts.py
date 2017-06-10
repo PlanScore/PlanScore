@@ -162,7 +162,13 @@ def consume_tiles(storage, partial):
 def score_precinct(partial, precinct):
     '''
     '''
+    precinct_frac = precinct['properties'][prepare_state.FRACTION_FIELD]
     precinct_geom = ogr.CreateGeometryFromJson(json.dumps(precinct['geometry']))
+
+    if precinct_frac == 0 or precinct_geom is None:
+        # If there's no geometry or overlap here, don't bother.
+        return
+
     try:
         overlap_geom = precinct_geom.Intersection(partial.geometry)
     except RuntimeError as e:
@@ -178,7 +184,7 @@ def score_precinct(partial, precinct):
         return
 
     overlap_area = overlap_geom.Area() / precinct_geom.Area()
-    precinct_fraction = overlap_area * precinct['properties'][prepare_state.FRACTION_FIELD]
+    precinct_fraction = overlap_area * precinct_frac
     
     for name in score.FIELD_NAMES:
         precinct_value = precinct_fraction * (precinct['properties'][name] or 0)
