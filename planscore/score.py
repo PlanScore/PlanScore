@@ -5,7 +5,16 @@ from . import prepare_state, util, data
 
 ogr.UseExceptions()
 
-FIELD_NAMES = ('Voters', 'Blue Votes', 'Red Votes')
+FIELD_NAMES = (
+    # Toy fields
+    'Voters', 'Blue Votes', 'Red Votes',
+
+    # Real fields
+    'Population', 'Voting-Age Population', 'Black Voting-Age Population',
+    'US Senate Rep Votes', 'US Senate Dem Votes', 'US House Rep Votes', 'US House Dem Votes',
+    'SLDU Rep Votes', 'SLDU Dem Votes', 'SLDL Rep Votes', 'SLDL Dem Votes',
+    )
+
 FUNCTION_NAME = 'PlanScore-ScoreDistrictPlan'
 
 def score_plan(s3, bucket, input_upload, plan_path, tiles_prefix):
@@ -70,6 +79,8 @@ def score_district(s3, bucket, district_geom, tiles_prefix):
         
         with util.temporary_buffer_file('tile.geojson', object['Body']) as path:
             ds = ogr.Open(path)
+            defn = ds.GetLayer(0).GetLayerDefn()
+            fields = [defn.GetFieldDefn(i).name for i in range(defn.GetFieldCount())]
             for feature in ds.GetLayer(0):
                 precinct_geom = feature.GetGeometryRef()
                 
@@ -90,6 +101,8 @@ def score_district(s3, bucket, district_geom, tiles_prefix):
                 precinct_fraction = overlap_area * feature.GetField(prepare_state.FRACTION_FIELD)
                 
                 for name in FIELD_NAMES:
+                    if name not in fields:
+                        continue
                     precinct_value = precinct_fraction * feature.GetField(name)
                     totals[name] += precinct_value
                 
