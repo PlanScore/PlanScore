@@ -25,5 +25,4 @@ deployment:
   development:
     branch: [migurski/support-north-carolina]
     commands:
-      - make planscore-lambda.zip
-      - aws --region us-east-1 lambda update-function-code --function-name 'PlanScore-AfterUpload' --zip-file fileb://planscore-lambda.zip
+      - make live-lambda
