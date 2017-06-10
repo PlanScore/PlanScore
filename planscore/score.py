@@ -117,32 +117,40 @@ def score_district(s3, bucket, district_geom, tiles_prefix):
 def calculate_gap(upload):
     '''
     '''
-    election_votes, wasted_red, wasted_blue, red_wins, blue_wins = 0, 0, 0, 0, 0
-
-    for district in upload.districts:
-        red_votes = district['totals']['Red Votes']
-        blue_votes = district['totals']['Blue Votes']
-        district_votes = red_votes + blue_votes
-        election_votes += district_votes
-        win_threshold = district_votes / 2
+    summary_dict, gaps = {}, {
+        'Red/Blue': ('Red Votes', 'Blue Votes'),
+        }
     
-        if red_votes > blue_votes:
-            red_wins += 1
-            wasted_red += red_votes - win_threshold # surplus
-            wasted_blue += blue_votes # loser
-        elif blue_votes > red_votes:
-            blue_wins += 1
-            wasted_blue += blue_votes - win_threshold # surplus
-            wasted_red += red_votes # loser
+    for (prefix, (red_field, blue_field)) in gaps.items():
+        election_votes, wasted_red, wasted_blue, red_wins, blue_wins = 0, 0, 0, 0, 0
+
+        for district in upload.districts:
+            red_votes = district['totals'][red_field]
+            blue_votes = district['totals'][blue_field]
+            district_votes = red_votes + blue_votes
+            election_votes += district_votes
+            win_threshold = district_votes / 2
+    
+            if red_votes > blue_votes:
+                red_wins += 1
+                wasted_red += red_votes - win_threshold # surplus
+                wasted_blue += blue_votes # loser
+            elif blue_votes > red_votes:
+                blue_wins += 1
+                wasted_blue += blue_votes - win_threshold # surplus
+                wasted_red += red_votes # loser
+            else:
+                pass # raise ValueError('Unlikely 50/50 split')
+
+        if election_votes > 0:
+            efficiency_gap = (wasted_red - wasted_blue) / election_votes
         else:
-            pass # raise ValueError('Unlikely 50/50 split')
+            efficiency_gap = None
 
-    if election_votes == 0:
-        return upload.clone(summary={'Efficiency Gap': None})
+        key = 'Efficiency Gap' if (prefix == 'Red/Blue') else '{} Efficiency Gap'.format(prefix)
+        summary_dict[key] = efficiency_gap
     
-    efficiency_gap = (wasted_red - wasted_blue) / election_votes
-    
-    return upload.clone(summary={'Efficiency Gap': efficiency_gap})
+    return upload.clone(summary=summary_dict)
 
 def put_upload_index(s3, bucket, upload):
     ''' Save a JSON index file for this upload.
