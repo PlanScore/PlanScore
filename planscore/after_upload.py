@@ -14,7 +14,7 @@ def get_uploaded_info(s3, bucket, key, id):
     upload = data.Upload(id, key, [])
     
     with util.temporary_buffer_file(os.path.basename(key), object['Body']) as path:
-        prefix = 'data/{}'.format(guess_state(path))
+        prefix = 'data/{}/001'.format(guess_state(path))
         fan_out_district_lambdas(bucket, prefix, upload, path)
         put_geojson_file(s3, bucket, upload, path)
     
