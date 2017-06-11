@@ -4,7 +4,7 @@ import boto3, ModestMaps.Geo, ModestMaps.Core
 
 TILE_ZOOM = 12
 FRACTION_FIELD = 'PlanScore:Fraction'
-KEY_FORMAT = 'data/{state}/{zxy}.geojson'
+KEY_FORMAT = 'data/{state}/{version}/{zxy}.geojson'
 
 EPSG4326 = osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)
 
@@ -84,7 +84,7 @@ def main():
         print(']}', file=buffer)
         
         tile_zxy = '{zoom}/{column}/{row}'.format(**tile.__dict__)
-        key = KEY_FORMAT.format(state=args.state, zxy=tile_zxy)
+        key = KEY_FORMAT.format(state=args.state, zxy=tile_zxy, version='001')
         body = gzip.compress(buffer.getvalue().encode('utf8'))
         print(key, '-', '{:.1f}KB'.format(len(body) / 1024))
     

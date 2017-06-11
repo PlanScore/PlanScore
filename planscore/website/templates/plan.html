@@ -18,23 +18,10 @@
 {% block content %}
     <p id="map"></p>
     <table id="districts">
-        <tr>
-            <th>District</th>
-            {% for field in fields %}
-                <th>{{ field }}</th>
-            {% endfor %}
-        </tr>
-        {# this sample row will be removed, cloned, and replaced #}
-        <tr>
-            <td>&nbsp;</td>
-            {% for field in fields %}
-                <td>&nbsp;</td>
-            {% endfor %}
-        </tr>
+        {# this table will be populated by load_plan_score() #}
     </table>
-    <dl>
-        <dt>Efficiency Gap</dt>
-        <dd id="efficiency-gap">&nbsp;</dd>
+    <dl id="efficiency-gaps">
+        {# this list will be populated by load_plan_score() #}
     </dl>
 	<script language="javascript">
 	    var fields = {{ fields|tojson }},
@@ -43,7 +30,7 @@
 	        geom_url = format_url('{{ geom_url_pattern }}', plan_id);
 
 	    load_plan_score(plan_url, fields, document.getElementById('districts'),
-	        document.getElementById('efficiency-gap'));
+	        document.getElementById('efficiency-gaps'));
 	    
 	    load_plan_map(geom_url, document.getElementById('map'),
 	        getComputedStyle(document.getElementsByTagName('h1')[0]).color);

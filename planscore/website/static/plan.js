@@ -5,12 +5,16 @@ function format_url(url_pattern, id)
 
 function nice_count(value)
 {
-    if(value >= 100) {
+    if(value >= 1000) {
+        return (value / 1000).toFixed(1) + 'k';
+    } else if(value >= 100) {
         return value.toFixed(0);
     } else if(value >= 10) {
         return value.toFixed(1);
-    } else {
+    } else if(value >= 0) {
         return value.toFixed(2);
+    } else {
+        return '–';
     }
 }
 
@@ -23,36 +27,95 @@ function nice_gap(value)
     }
 }
 
-function load_plan_score(url, fields, table, eff_gap)
+function load_plan_score(url, fields, table, eff_gaps)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
     
     function on_loaded_score(plan)
     {
-        var rows = table.getElementsByTagName('tr'),
-            row = rows[rows.length - 1],
-            tbody = row.parentNode,
-            columns;
+        // Build list of columns
+        var column = ['District'],
+            columns = [column],
+            field;
         
-        // Remove the sample row
-        tbody.removeChild(row);
-        
-        // Clone it for each district
-        for(var i = 0; i < plan.districts.length; i++)
+        for(var j = 0; j < plan.districts.length; j++)
         {
-            new_row = row.cloneNode(true);
-            columns = new_row.getElementsByTagName('td');
-            columns[0].innerText = i + 1;
-            for(var j = 0; j < fields.length; j++)
-            {
-                columns[j+1].innerText = nice_count(plan.districts[i].totals[fields[j]]);
-            }
-            tbody.appendChild(new_row);
+            column.push(j + 1);
         }
         
-        // Note the efficiency gap
-        eff_gap.innerText = nice_gap(plan.summary['Efficiency Gap']);
+        for(var i in fields)
+        {
+            field = fields[i];
+            column = [field];
+            columns.push(column);
+            
+            for(var j in plan.districts)
+            {
+                column.push(plan.districts[j].totals[field]);
+            }
+        }
+        
+        // Remove any column with empty rows
+        for(var i = columns.length - 1; i > 0; i--)
+        {
+            for(var j = 1; j <= plan.districts.length; j++)
+            {
+                if(columns[i][j] == undefined)
+                {
+                    columns.splice(i, 1);
+                    break;
+                }
+            }
+        }
+        
+        // Write table out to page
+        var new_row = document.createElement('tr'),
+            new_cell;
+        
+        for(var i in columns)
+        {
+            new_cell = document.createElement('th');
+            new_cell.innerText = columns[i][0];
+            new_row.appendChild(new_cell);
+        }
+        
+        table.appendChild(new_row);
+        
+        for(var j = 1; j < columns[0].length; j++)
+        {
+            new_row = document.createElement('tr');
+            new_cell = document.createElement('td');
+            new_cell.innerText = columns[0][j];
+            new_row.appendChild(new_cell);
+        
+            for(var i = 1; i < columns.length; i++)
+            {
+                new_cell = document.createElement('td');
+                new_cell.innerText = nice_count(columns[i][j]);
+                new_row.appendChild(new_cell);
+            }
+        
+            table.appendChild(new_row);
+        }
+        
+        // Note the efficiency gaps
+        var new_term, new_defn;
+        
+        for(var name in plan.summary)
+        {
+            if(plan.summary[name] == undefined)
+            {
+                continue;
+            }
+        
+            new_term = document.createElement('dt');
+            new_defn = document.createElement('dd');
+            new_term.innerText = name;
+            new_defn.innerText = nice_gap(plan.summary[name]);
+            new_term.appendChild(new_defn);
+            eff_gaps.appendChild(new_term);
+        }
     }
 
     request.onload = function()
