@@ -22,7 +22,3 @@ deployment:
     commands:
       - make live-lambda
       - make live-website
-  development:
-    branch: [migurski/support-north-carolina]
-    commands:
-      - make live-lambda
