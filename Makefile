@@ -4,16 +4,16 @@ live-lambda: planscore-lambda.zip
 	parallel \
 		aws --region us-east-1 lambda update-function-code --function-name '{1}' \
 		--zip-file fileb://planscore-lambda.zip \
-		:::  PlanScore-UploadFields PlanScore-AfterUpload PlanScore-RunDistrict PlanScore-ScoreDistrictPlan \
+		:::  $(LAMBDA_PREFIX)-UploadFields $(LAMBDA_PREFIX)-AfterUpload $(LAMBDA_PREFIX)-RunDistrict $(LAMBDA_PREFIX)-ScoreDistrictPlan \
 		>> /dev/null
 	aws --region us-east-1 lambda update-function-configuration --dead-letter-config TargetArn=$(AWS_LAMBDA_DLQ_ARN) \
-	    --function-name PlanScore-UploadFields --handler lambda.upload_fields --timeout 3 >> /dev/null
+	    --function-name $(LAMBDA_PREFIX)-UploadFields --handler lambda.upload_fields --timeout 3 >> /dev/null
 	aws --region us-east-1 lambda update-function-configuration --dead-letter-config TargetArn=$(AWS_LAMBDA_DLQ_ARN) \
-	    --function-name PlanScore-AfterUpload --handler lambda.after_upload --timeout 30 >> /dev/null
+	    --function-name $(LAMBDA_PREFIX)-AfterUpload --handler lambda.after_upload --timeout 30 >> /dev/null
 	aws --region us-east-1 lambda update-function-configuration --dead-letter-config TargetArn=$(AWS_LAMBDA_DLQ_ARN) \
-	    --function-name PlanScore-RunDistrict --handler lambda.run_district --timeout 300 >> /dev/null
+	    --function-name $(LAMBDA_PREFIX)-RunDistrict --handler lambda.run_district --timeout 300 >> /dev/null
 	aws --region us-east-1 lambda update-function-configuration --dead-letter-config TargetArn=$(AWS_LAMBDA_DLQ_ARN) \
-	    --function-name PlanScore-ScoreDistrictPlan --handler lambda.score_plan --timeout 30 >> /dev/null
+	    --function-name $(LAMBDA_PREFIX)-ScoreDistrictPlan --handler lambda.score_plan --timeout 30 >> /dev/null
 
 live-website: planscore/website/build
 	aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete $</ s3://$(AWS_WEBSITE_BUCKET)/
