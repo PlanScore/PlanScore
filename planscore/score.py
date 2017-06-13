@@ -15,7 +15,7 @@ FIELD_NAMES = (
     'SLDU Rep Votes', 'SLDU Dem Votes', 'SLDL Rep Votes', 'SLDL Dem Votes',
     )
 
-FUNCTION_NAME = 'PlanScore-ScoreDistrictPlan'
+FUNCTION_NAME = '{}-ScoreDistrictPlan'.format(os.environ.get('LAMBDA_PREFIX', 'PlanScore'))
 
 def score_plan(s3, bucket, input_upload, plan_path, tiles_prefix):
     '''

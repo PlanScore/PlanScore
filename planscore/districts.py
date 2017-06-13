@@ -1,11 +1,11 @@
-import collections, json, io, gzip, statistics, time, base64, posixpath, pickle
+import os, collections, json, io, gzip, statistics, time, base64, posixpath, pickle
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import prepare_state, score, data
 
 ogr.UseExceptions()
 
-FUNCTION_NAME = 'PlanScore-RunDistrict'
+FUNCTION_NAME = '{}-RunDistrict'.format(os.environ.get('LAMBDA_PREFIX', 'PlanScore'))
 
 class Partial:
     ''' Partially-calculated district sums, used by consume_tiles().
