@@ -16,7 +16,7 @@ live-lambda: planscore-lambda.zip
 	    --function-name PlanScore-ScoreDistrictPlan --handler lambda.score_plan --timeout 30 >> /dev/null
 
 live-website: planscore/website/build
-	aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete $</ s3://planscore-website/
+	aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete $</ s3://$(AWS_WEBSITE_BUCKET)/
 
 # Just one Lambda codebase is created, with different entry points and environments.
 planscore-lambda.zip:

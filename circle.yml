@@ -22,3 +22,7 @@ deployment:
     commands:
       - make live-lambda
       - make live-website
+  development:
+    branch: [migurski/support-north-carolina]
+    commands:
+      - env AWS_WEBSITE_BUCKET=planscore-dev-website AWS_DATA_BUCKET=planscore-dev make live-website
