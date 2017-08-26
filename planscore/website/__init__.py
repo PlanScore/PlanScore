@@ -1,4 +1,4 @@
-import flask, os, urllib.parse, markdown
+import flask, os, urllib.parse, markdown, boto3, json
 from .. import data, score
 
 MODELS_BASEDIR = os.path.join(os.path.dirname(__file__), 'models')
@@ -14,14 +14,20 @@ def get_data_url_pattern(bucket):
 def get_geom_url_pattern(bucket):
     return 'https://{}.s3.amazonaws.com/{}'.format(bucket, data.UPLOAD_GEOMETRY_KEY)
 
+def get_function_url(endpoint, relpath):
+    planscore_api_base = flask.current_app.config['PLANSCORE_API_BASE']
+    if planscore_api_base:
+        return urllib.parse.urljoin(planscore_api_base, relpath)
+    else:
+        return flask.url_for(endpoint)
+
 @app.route('/')
 def get_index():
     return flask.render_template('index.html')
 
 @app.route('/upload.html')
 def get_upload():
-    planscore_api_base = flask.current_app.config['PLANSCORE_API_BASE']
-    upload_fields_url = urllib.parse.urljoin(planscore_api_base, 'upload')
+    upload_fields_url = get_function_url('get_localstack_upload', 'upload')
     return flask.render_template('upload.html', upload_fields_url=upload_fields_url)
 
 @app.route('/plan.html')
@@ -61,3 +67,22 @@ def get_model(name):
 def get_model_file(name, path):
     dirname, filename = os.path.split(os.path.join(MODELS_BASEDIR, name, path))
     return flask.send_from_directory(dirname, filename)
+
+@app.route('/_localstack/upload')
+def get_localstack_upload():
+    payload = dict(headers=dict(flask.request.headers), path=flask.request.path)
+
+    lam = boto3.client('lambda', endpoint_url='http://localhost:4574',
+        aws_access_key_id='nobody', aws_secret_access_key='nothing')
+
+    resp = lam.invoke(Payload=json.dumps(payload).encode('utf8'),
+        FunctionName='PlanScore-UploadFields', InvocationType='RequestResponse')
+    
+    try:
+        resp_data = json.load(resp['Payload'])
+    except:
+        raise
+    else:
+        print(resp_data['body'])
+        return flask.Response(resp_data['body'], status=resp_data['statusCode'],
+            headers=dict(resp_data['headers'], **{'Content-Type': 'application/json'}))
