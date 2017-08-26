@@ -18,6 +18,9 @@ live-lambda: planscore-lambda.zip
 live-website: planscore/website/build
 	aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete $</ s3://planscore-website/
 
+localstack-env: planscore-lambda.zip
+	./setup-localstack.py planscore-lambda.zip
+
 # Just one Lambda codebase is created, with different entry points and environments.
 planscore-lambda.zip: gdal-geos-python.tar.gz
 	mkdir -p planscore-lambda
@@ -37,4 +40,4 @@ clean:
 	rm -rf planscore-lambda planscore-lambda.zip
 	rm -f gdal-geos-python.tar.gz
 
-.PHONY: clean all live-lambda live-website
+.PHONY: clean all live-lambda live-website localstack-env
