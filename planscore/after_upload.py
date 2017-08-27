@@ -1,7 +1,7 @@
 import boto3, pprint, os, io, json, urllib.parse, gzip, functools
 import itsdangerous
 from osgeo import ogr
-from . import util, data, score, website, prepare_state, districts
+from . import util, data, score, website, prepare_state, districts, constants
 
 ogr.UseExceptions()
 
@@ -26,7 +26,7 @@ def fan_out_district_lambdas(bucket, prefix, upload, path):
     '''
     print('fan_out_district_lambdas:', (bucket, prefix, path))
     try:
-        lam = boto3.client('lambda')
+        lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
         ds = ogr.Open(path)
     
         if not ds:
@@ -99,10 +99,16 @@ def put_geojson_file(s3, bucket, upload, path):
 
     features = ['{"type": "Feature", "properties": {}, "geometry": '+g+'}' for g in geometries]
     geojson = '{"type": "FeatureCollection", "features": [\n'+',\n'.join(features)+'\n]}'
-    body = gzip.compress(geojson.encode('utf8'))
+    
+    if constants.S3_ENDPOINT_URL:
+        # Do not attempt gzip when using localstack S3, since it's not supported.
+        body, args = geojson.encode('utf8'), dict()
+    else:
+        body = gzip.compress(geojson.encode('utf8'))
+        args = dict(ContentEncoding='gzip')
     
     s3.put_object(Bucket=bucket, Key=key, Body=body,
-        ContentEncoding='gzip', ContentType='text/json', ACL='public-read')
+        ContentType='text/json', ACL='public-read', **args)
 
 def get_redirect_url(website_base, id):
     '''
@@ -115,10 +121,10 @@ def get_redirect_url(website_base, id):
 def lambda_handler(event, context):
     '''
     '''
-    s3 = boto3.client('s3')
+    s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
     query = util.event_query_args(event)
     secret = os.environ.get('PLANSCORE_SECRET', 'fake')
-    website_base = os.environ.get('WEBSITE_BASE', 'https://planscore.org/')
+    website_base = os.environ.get('WEBSITE_BASE', 'http://example.org/')
 
     try:
         id = itsdangerous.Signer(secret).unsign(query['id']).decode('utf8')

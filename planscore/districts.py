@@ -1,7 +1,7 @@
 import collections, json, io, gzip, statistics, time, base64, posixpath, pickle
 from osgeo import ogr
 import boto3, botocore.exceptions
-from . import prepare_state, score, data
+from . import prepare_state, score, data, constants
 
 ogr.UseExceptions()
 
@@ -62,7 +62,7 @@ class Partial:
 def lambda_handler(event, context):
     '''
     '''
-    s3 = boto3.client('s3')
+    s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
     partial = Partial.from_event(event)
     storage = data.Storage.from_event(event, s3)
 
@@ -94,7 +94,7 @@ def lambda_handler(event, context):
         payload = json.dumps(event).encode('utf8')
         print('Sending payload of', len(payload), 'bytes...')
 
-        lam = boto3.client('lambda')
+        lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
         lam.invoke(FunctionName=FUNCTION_NAME, InvocationType='Event',
             Payload=payload)
 
@@ -110,7 +110,7 @@ def lambda_handler(event, context):
     event = partial.upload.to_dict()
     event.update(storage.to_event())
 
-    lam = boto3.client('lambda')
+    lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
     lam.invoke(FunctionName=score.FUNCTION_NAME, InvocationType='Event',
         Payload=json.dumps(event).encode('utf8'))
 

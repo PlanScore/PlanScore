@@ -83,6 +83,7 @@ def get_localstack_lambda(path):
 
     function_name = {
         constants.API_UPLOAD_RELPATH: 'PlanScore-UploadFields',
+        constants.API_UPLOADED_RELPATH: 'PlanScore-AfterUpload',
         }[path]
 
     lam = boto3.client('lambda', endpoint_url='http://localhost:4574',

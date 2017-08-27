@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys, argparse, boto3, glob, gzip, socket, posixpath as pp
+import sys, argparse, boto3, glob, socket, posixpath as pp
 import botocore.exceptions
 
 parser = argparse.ArgumentParser(description='Set up localstack environment.')
@@ -36,12 +36,12 @@ pattern = pp.join(basedir, '12', '*', '*.geojson')
 
 for path in glob.glob(pattern):
     with open(path, 'rb') as file:
-        data = gzip.compress(file.read())
+        data = file.read()
         
     key = pp.join(prefix, pp.relpath(path, basedir))
     
     s3.put_object(Bucket=BUCKETNAME, Key=key, ACL='public-read',
-        Body=data, ContentEncoding='gzip', ContentType='text/json')
+        Body=data, ContentType='text/json')
         
     print('    Put object', key)
 
@@ -65,7 +65,9 @@ for (function_name, handler, timeout) in FUNCTIONS:
         Handler=handler, Timeout=timeout, Role='x', Code=dict(ZipFile=code_bytes),
         Environment=dict(Variables={
             'PLANSCORE_SECRET': 'localstack',
+            'WEBSITE_BASE': 'http://127.0.0.1:5000/',
             'S3_ENDPOINT_URL': ENDPOINT_S3,
+            'LAMBDA_ENDPOINT_URL': ENDPOINT_LAM,
             }),
         # DeadLetterConfig=dict(TargetArn=''),
         )

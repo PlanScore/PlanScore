@@ -1,7 +1,7 @@
 import io, os, gzip, posixpath, json
 from osgeo import ogr
 import boto3, botocore.exceptions
-from . import prepare_state, util, data
+from . import prepare_state, util, data, constants
 
 ogr.UseExceptions()
 
@@ -170,7 +170,7 @@ def lambda_handler(event, context):
     print('event:', json.dumps(event))
 
     input_upload = data.Upload.from_dict(event)
-    storage = data.Storage.from_event(event, boto3.client('s3'))
+    storage = data.Storage.from_event(event, boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL))
     
     # Look for all expected districts.
     prefix = posixpath.dirname(input_upload.district_key(-1))

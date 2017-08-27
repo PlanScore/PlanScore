@@ -2,9 +2,6 @@ import json, pprint, urllib.parse, datetime, random, os
 import boto3, itsdangerous
 from . import util, data, constants
 
-# API Gateway resource for planscore.after_upload.lambda_handler
-S3_ENDPOINT_URL = os.environ.get('S3_ENDPOINT_URL')
-
 def get_upload_fields(s3, creds, request_url, secret):
     '''
     '''
@@ -47,7 +44,7 @@ def lambda_handler(event, context):
     '''
     request_url = util.event_url(event)
     secret = os.environ.get('PLANSCORE_SECRET', 'fake')
-    s3 = boto3.client('s3', endpoint_url=S3_ENDPOINT_URL)
+    s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
     creds = boto3.session.Session().get_credentials()
     url, fields = get_upload_fields(s3, creds, request_url, secret)
     
