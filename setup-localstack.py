@@ -63,6 +63,9 @@ for (function_name, handler, timeout) in FUNCTIONS:
 
     lam.create_function(FunctionName=function_name, Runtime='python3.6',
         Handler=handler, Timeout=timeout, Role='x', Code=dict(ZipFile=code_bytes),
-        Environment=dict(Variables={'PLANSCORE_SECRET': 'localstack'}),
+        Environment=dict(Variables={
+            'PLANSCORE_SECRET': 'localstack',
+            'S3_ENDPOINT_URL': ENDPOINT_S3,
+            }),
         # DeadLetterConfig=dict(TargetArn=''),
         )

@@ -1,0 +1,2 @@
+API_UPLOAD_RELPATH = 'upload'
+API_UPLOADED_RELPATH = 'uploaded'
