@@ -9,10 +9,10 @@ app.config['PLANSCORE_S3_BUCKET'] = os.environ.get('S3_BUCKET', 'planscore')
 app.config['PLANSCORE_API_BASE'] = os.environ.get('API_BASE')
 
 def get_data_url_pattern(bucket):
-    return 'https://{}.s3.amazonaws.com/{}'.format(bucket, data.UPLOAD_INDEX_KEY)
+    return constants.S3_URL_PATTERN.format(b=bucket, k=data.UPLOAD_INDEX_KEY)
 
 def get_geom_url_pattern(bucket):
-    return 'https://{}.s3.amazonaws.com/{}'.format(bucket, data.UPLOAD_GEOMETRY_KEY)
+    return constants.S3_URL_PATTERN.format(b=bucket, k=data.UPLOAD_GEOMETRY_KEY)
 
 def get_function_url(endpoint, relpath):
     planscore_api_base = flask.current_app.config['PLANSCORE_API_BASE']

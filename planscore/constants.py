@@ -1,4 +1,4 @@
-import os
+import os, urllib.parse
 
 # Relative URL paths for AWS Lambda functions.
 #
@@ -20,3 +20,8 @@ API_UPLOADED_RELPATH = 'uploaded'
 
 S3_ENDPOINT_URL = os.environ.get('S3_ENDPOINT_URL')
 LAMBDA_ENDPOINT_URL = os.environ.get('LAMBDA_ENDPOINT_URL')
+
+if S3_ENDPOINT_URL:
+    S3_URL_PATTERN = urllib.parse.urljoin(S3_ENDPOINT_URL, '/{b}/{k}')
+else:
+    S3_URL_PATTERN = 'https://{b}.s3.amazonaws.com/{k}'
