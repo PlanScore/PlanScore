@@ -43,10 +43,9 @@ def lambda_handler(event, context):
     '''
     '''
     request_url = util.event_url(event)
-    secret = os.environ.get('PLANSCORE_SECRET', 'fake')
     s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
     creds = boto3.session.Session().get_credentials()
-    url, fields = get_upload_fields(s3, creds, request_url, secret)
+    url, fields = get_upload_fields(s3, creds, request_url, constants.SECRET)
     
     return {
         'statusCode': '200',

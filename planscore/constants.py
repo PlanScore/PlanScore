@@ -6,6 +6,7 @@ def _local_url(port):
 
 #
 
+SECRET = os.environ.get('PLANSCORE_SECRET', 'fake')
 S3_BUCKET = os.environ.get('S3_BUCKET', 'planscore')
 
 # Relative URL paths for AWS Lambda functions.

@@ -4,10 +4,12 @@ from .. import after_upload, data, districts, constants
 class TestAfterUpload (unittest.TestCase):
 
     def setUp(self):
+        self.prev_secret, constants.SECRET = constants.SECRET, 'fake-secret'
         self.prev_s3_url, constants.S3_ENDPOINT_URL = constants.S3_ENDPOINT_URL, None
         self.prev_lam_url, constants.LAMBDA_ENDPOINT_URL = constants.LAMBDA_ENDPOINT_URL, None
     
     def tearDown(self):
+        constants.SECRET = self.prev_secret
         constants.S3_ENDPOINT_URL = self.prev_s3_url
         constants.LAMBDA_ENDPOINT_URL = self.prev_lam_url
 
@@ -18,7 +20,7 @@ class TestAfterUpload (unittest.TestCase):
         query = {'id': 'id.k0_XwbOLGLUdv241zsPluNc3HYs', 'bucket': 'planscore',
             'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson'}
 
-        os.environ.update(PLANSCORE_SECRET='fake-secret', WEBSITE_BASE='https://example.com/',
+        os.environ.update(WEBSITE_BASE='https://example.com/',
             AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
 
         get_uploaded_info.return_value = 'get_uploaded_info.return_value'
@@ -39,7 +41,7 @@ class TestAfterUpload (unittest.TestCase):
             'queryStringParameters': {'id': 'id.WRONG'}
             }
 
-        os.environ.update(PLANSCORE_SECRET='fake-secret', AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
+        os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
         response = after_upload.lambda_handler(event, None)
         
         self.assertFalse(get_uploaded_info.mock_calls)

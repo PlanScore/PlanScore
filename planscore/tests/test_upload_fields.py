@@ -4,9 +4,11 @@ from .. import upload_fields, constants
 class TestUploadFields (unittest.TestCase):
 
     def setUp(self):
+        self.prev_secret, constants.SECRET = constants.SECRET, 'fake-secret'
         self.prev_bucket, constants.S3_BUCKET = constants.S3_BUCKET, 'the-bucket'
     
     def tearDown(self):
+        constants.SECRET = self.prev_secret
         constants.S3_BUCKET = self.prev_bucket
 
     def test_generate_signed_id(self):
@@ -22,7 +24,7 @@ class TestUploadFields (unittest.TestCase):
         get_upload_fields.return_value = 'https://s3.example.com', {'field': 'value'}
         event_url.return_value = 'http://example.com'
 
-        os.environ.update(PLANSCORE_SECRET='fake-secret', AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
+        os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
         response = upload_fields.lambda_handler({}, None)
         
         self.assertEqual(response['statusCode'], '200')

@@ -125,11 +125,10 @@ def lambda_handler(event, context):
     '''
     s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
     query = util.event_query_args(event)
-    secret = os.environ.get('PLANSCORE_SECRET', 'fake')
     website_base = os.environ.get('WEBSITE_BASE', 'http://example.org/')
 
     try:
-        id = itsdangerous.Signer(secret).unsign(query['id']).decode('utf8')
+        id = itsdangerous.Signer(constants.SECRET).unsign(query['id']).decode('utf8')
     except itsdangerous.BadSignature:
         return {
             'statusCode': '400',
