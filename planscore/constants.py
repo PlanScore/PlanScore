@@ -9,6 +9,9 @@ def _local_url(port):
 SECRET = os.environ.get('PLANSCORE_SECRET', 'fake')
 S3_BUCKET = os.environ.get('S3_BUCKET', 'planscore')
 
+WEBSITE_BASE = os.environ.get('WEBSITE_BASE')
+API_BASE = os.environ.get('API_BASE')
+
 # Relative URL paths for AWS Lambda functions.
 #
 # These values interact with environment variables like WEBSITE_BASE and

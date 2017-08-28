@@ -125,7 +125,7 @@ def lambda_handler(event, context):
     '''
     s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
     query = util.event_query_args(event)
-    website_base = os.environ.get('WEBSITE_BASE', 'http://example.org/')
+    website_base = constants.WEBSITE_BASE
 
     try:
         id = itsdangerous.Signer(constants.SECRET).unsign(query['id']).decode('utf8')
