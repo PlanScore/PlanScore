@@ -1,5 +1,5 @@
 import unittest, os
-from .. import website
+from .. import website, constants
 
 class TestWebsite (unittest.TestCase):
     
@@ -18,5 +18,5 @@ class TestWebsite (unittest.TestCase):
     
     def test_get_plan(self):
         html = self.app.get('/plan.html?12345').data.decode('utf8')
-        self.assertIn('https://fake-bucket.s3.amazonaws.com/uploads/{id}/index.json', html)
-        self.assertIn('https://fake-bucket.s3.amazonaws.com/uploads/{id}/geometry.json', html)
+        self.assertIn(constants.S3_URL_PATTERN.format(b='fake-bucket', k='uploads/{id}/index.json'), html)
+        self.assertIn(constants.S3_URL_PATTERN.format(b='fake-bucket', k='uploads/{id}/geometry.json'), html)

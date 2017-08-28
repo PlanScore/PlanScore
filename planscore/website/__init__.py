@@ -86,7 +86,7 @@ def get_localstack_lambda(path):
         constants.API_UPLOADED_RELPATH: 'PlanScore-AfterUpload',
         }[path]
 
-    lam = boto3.client('lambda', endpoint_url='http://localhost:4574',
+    lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL,
         aws_access_key_id='nobody', aws_secret_access_key='nothing')
 
     resp = lam.invoke(Payload=json.dumps(event).encode('utf8'),

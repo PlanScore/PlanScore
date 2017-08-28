@@ -1,7 +1,10 @@
 import unittest, unittest.mock, io, os, contextlib
-from .. import after_upload, data, districts
+from .. import after_upload, data, districts, constants
 
 class TestAfterUpload (unittest.TestCase):
+
+    def setUp(self):
+        constants.S3_ENDPOINT_URL, constants.LAMBDA_ENDPOINT_URL = None, None
     
     @unittest.mock.patch('planscore.after_upload.get_uploaded_info')
     def test_lambda_handler(self, get_uploaded_info):

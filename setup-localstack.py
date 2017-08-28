@@ -53,6 +53,15 @@ lam = boto3.client('lambda', endpoint_url=ENDPOINT_LAM, **AWS_CREDS)
 with open(CODE_PATH, 'rb') as code_file:
     code_bytes = code_file.read()
 
+env = {
+    'PLANSCORE_SECRET': 'localstack',
+    'WEBSITE_BASE': 'http://127.0.0.1:5000/',
+    'S3_ENDPOINT_URL': ENDPOINT_S3,
+    'LAMBDA_ENDPOINT_URL': ENDPOINT_LAM,
+    }
+
+print('    Environment:', ' '.join(['='.join(kv) for kv in env.items()]))
+
 for (function_name, handler, timeout) in FUNCTIONS:
     print('    Create function', function_name)
 
@@ -62,12 +71,7 @@ for (function_name, handler, timeout) in FUNCTIONS:
         pass # don't care, just be sure it's gone
 
     lam.create_function(FunctionName=function_name, Runtime='python3.6',
-        Handler=handler, Timeout=timeout, Role='x', Code=dict(ZipFile=code_bytes),
-        Environment=dict(Variables={
-            'PLANSCORE_SECRET': 'localstack',
-            'WEBSITE_BASE': 'http://127.0.0.1:5000/',
-            'S3_ENDPOINT_URL': ENDPOINT_S3,
-            'LAMBDA_ENDPOINT_URL': ENDPOINT_LAM,
-            }),
+        Handler=handler, Timeout=timeout, Code=dict(ZipFile=code_bytes),
+        Environment=dict(Variables=env), Role='x',
         # DeadLetterConfig=dict(TargetArn=''),
         )

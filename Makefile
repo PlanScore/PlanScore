@@ -33,7 +33,7 @@ gdal-geos-python.tar.gz:
 	curl https://planscore.s3.amazonaws.com/code/gdal-2.1.3-geos-3.6.1-python-3.6.1.tar.gz -o $@ -s
 
 planscore/website/build:
-	env API_BASE=https://api.planscore.org/ \
+	env AWS=amazonaws.com API_BASE=https://api.planscore.org/ \
 		python -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
 
 clean:
