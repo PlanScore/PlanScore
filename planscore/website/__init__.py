@@ -5,7 +5,7 @@ MODELS_BASEDIR = os.path.join(os.path.dirname(__file__), 'models')
 
 app = flask.Flask(__name__)
 
-app.config['PLANSCORE_S3_BUCKET'] = os.environ.get('S3_BUCKET', 'planscore')
+app.config['PLANSCORE_S3_BUCKET'] = constants.S3_BUCKET
 app.config['PLANSCORE_API_BASE'] = os.environ.get('API_BASE')
 
 def get_data_url_pattern(bucket):

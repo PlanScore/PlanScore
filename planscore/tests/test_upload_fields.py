@@ -1,7 +1,13 @@
 import unittest, unittest.mock, itsdangerous, os
-from .. import upload_fields
+from .. import upload_fields, constants
 
 class TestUploadFields (unittest.TestCase):
+
+    def setUp(self):
+        self.prev_bucket, constants.S3_BUCKET = constants.S3_BUCKET, 'the-bucket'
+    
+    def tearDown(self):
+        constants.S3_BUCKET = self.prev_bucket
 
     def test_generate_signed_id(self):
         unsigned_id, signed_id = upload_fields.generate_signed_id('secret')
@@ -32,7 +38,6 @@ class TestUploadFields (unittest.TestCase):
         s3, creds = unittest.mock.Mock(), unittest.mock.Mock()
         s3.generate_presigned_post.return_value = {'url': None, 'fields': {}}
 
-        os.environ['S3_BUCKET'] = 'the-bucket'
         generate_signed_id.return_value = 'id', 'id.sig'
         url, fields = upload_fields.get_upload_fields(s3, creds, 'https://example.org', 'sec')
         
@@ -51,7 +56,6 @@ class TestUploadFields (unittest.TestCase):
         s3.generate_presigned_post.return_value = {'url': None, 'fields': {}}
         creds.token = None
 
-        os.environ['S3_BUCKET'] = 'the-bucket'
         generate_signed_id.return_value = 'id', 'id.sig'
         url, fields = upload_fields.get_upload_fields(s3, creds, 'https://example.org', 'sec')
         

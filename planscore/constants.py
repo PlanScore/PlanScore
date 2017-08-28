@@ -4,6 +4,10 @@ def _local_url(port):
     host_address = socket.gethostbyname(socket.gethostname())
     return 'http://{}:{}'.format(host_address, port)
 
+#
+
+S3_BUCKET = os.environ.get('S3_BUCKET', 'planscore')
+
 # Relative URL paths for AWS Lambda functions.
 #
 # These values interact with environment variables like WEBSITE_BASE and

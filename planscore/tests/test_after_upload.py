@@ -4,8 +4,13 @@ from .. import after_upload, data, districts, constants
 class TestAfterUpload (unittest.TestCase):
 
     def setUp(self):
-        constants.S3_ENDPOINT_URL, constants.LAMBDA_ENDPOINT_URL = None, None
+        self.prev_s3_url, constants.S3_ENDPOINT_URL = constants.S3_ENDPOINT_URL, None
+        self.prev_lam_url, constants.LAMBDA_ENDPOINT_URL = constants.LAMBDA_ENDPOINT_URL, None
     
+    def tearDown(self):
+        constants.S3_ENDPOINT_URL = self.prev_s3_url
+        constants.LAMBDA_ENDPOINT_URL = self.prev_lam_url
+
     @unittest.mock.patch('planscore.after_upload.get_uploaded_info')
     def test_lambda_handler(self, get_uploaded_info):
         ''' Lambda event triggers the right call to get_uploaded_info()
