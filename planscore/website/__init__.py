@@ -1,18 +1,25 @@
-import flask, os, urllib.parse, markdown
-from .. import data, score
+import flask, os, urllib.parse, markdown, boto3, json
+from .. import data, score, constants
 
 MODELS_BASEDIR = os.path.join(os.path.dirname(__file__), 'models')
 
 app = flask.Flask(__name__)
 
-app.config['PLANSCORE_S3_BUCKET'] = os.environ.get('S3_BUCKET', 'planscore')
-app.config['PLANSCORE_API_BASE'] = os.environ.get('API_BASE', 'https://api.planscore.org/')
+app.config['PLANSCORE_S3_BUCKET'] = constants.S3_BUCKET
+app.config['PLANSCORE_API_BASE'] = constants.API_BASE
 
 def get_data_url_pattern(bucket):
-    return 'https://{}.s3.amazonaws.com/{}'.format(bucket, data.UPLOAD_INDEX_KEY)
+    return constants.S3_URL_PATTERN.format(b=bucket, k=data.UPLOAD_INDEX_KEY)
 
 def get_geom_url_pattern(bucket):
-    return 'https://{}.s3.amazonaws.com/{}'.format(bucket, data.UPLOAD_GEOMETRY_KEY)
+    return constants.S3_URL_PATTERN.format(b=bucket, k=data.UPLOAD_GEOMETRY_KEY)
+
+def get_function_url(endpoint, relpath):
+    planscore_api_base = flask.current_app.config['PLANSCORE_API_BASE']
+    if planscore_api_base:
+        return urllib.parse.urljoin(planscore_api_base, relpath)
+    else:
+        return flask.url_for(endpoint, path=relpath)
 
 @app.route('/')
 def get_index():
@@ -20,8 +27,7 @@ def get_index():
 
 @app.route('/upload.html')
 def get_upload():
-    planscore_api_base = flask.current_app.config['PLANSCORE_API_BASE']
-    upload_fields_url = urllib.parse.urljoin(planscore_api_base, 'upload')
+    upload_fields_url = get_function_url('get_localstack_lambda', constants.API_UPLOAD_RELPATH)
     return flask.render_template('upload.html', upload_fields_url=upload_fields_url)
 
 @app.route('/plan.html')
@@ -61,3 +67,36 @@ def get_model(name):
 def get_model_file(name, path):
     dirname, filename = os.path.split(os.path.join(MODELS_BASEDIR, name, path))
     return flask.send_from_directory(dirname, filename)
+
+@app.route('/_localstack/<path:path>')
+def get_localstack_lambda(path):
+    ''' Proxy requests to Lambda functions running under localstack.
+    
+        Provided for local development only. In production, these requests
+        would be handled by AWS Cloudfront using Lambda proxy integration:
+        http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-create-api-as-simple-proxy-for-lambda.html#api-gateway-create-api-as-simple-proxy-for-lambda-test
+    '''
+    # Build an event as expected by Lambda functions.
+    event = dict(httpMethod=flask.request.method,
+        path=flask.request.path, headers=dict(flask.request.headers),
+        queryStringParameters={k: v for (k, v) in flask.request.args.items()})
+
+    function_name = {
+        constants.API_UPLOAD_RELPATH: 'PlanScore-UploadFields',
+        constants.API_UPLOADED_RELPATH: 'PlanScore-AfterUpload',
+        }[path]
+
+    lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL,
+        aws_access_key_id='nobody', aws_secret_access_key='nothing')
+
+    resp = lam.invoke(Payload=json.dumps(event).encode('utf8'),
+        FunctionName=function_name, InvocationType='RequestResponse')
+    
+    try:
+        resp_data = json.load(resp['Payload'])
+    except:
+        raise
+    else:
+        print(resp_data['body'])
+        return flask.Response(resp_data['body'], status=resp_data['statusCode'],
+            headers=dict(resp_data['headers'], **{'Content-Type': 'application/json'}))
