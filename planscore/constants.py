@@ -1,13 +1,25 @@
 import os, socket, urllib.parse
 
 def _local_url(port):
+    ''' Generate a local URL with a given port number.
+        
+        Host addresses will be different from localhost or 127.0.0.1, so that
+        localstack S3 can be accessible from localstack Lambda in Docker.
+    '''
     host_address = socket.gethostbyname(socket.gethostname())
     return 'http://{}:{}'.format(host_address, port)
 
-#
-
+# Signing secret for securing redirects between front-end and back-end.
 SECRET = os.environ.get('PLANSCORE_SECRET', 'fake')
+
+# S3 bucket name, which should generally be left alone.
 S3_BUCKET = os.environ.get('S3_BUCKET', 'planscore')
+
+# Website and API URLs.
+#
+# Used to coordinate links, form actions, and redirects between Flask app
+# and Lambda functions. In production, these will be set to values such as
+# 'http://planscore.org/'.
 
 WEBSITE_BASE = os.environ.get('WEBSITE_BASE')
 API_BASE = os.environ.get('API_BASE')
