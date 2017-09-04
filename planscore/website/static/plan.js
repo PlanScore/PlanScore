@@ -199,16 +199,27 @@ function load_plan_map(url, div, color)
             center: [0, 0],
             zoom: 8
         });
+        
+        var pane = map.createPane('labels');
+        pane.style.zIndex = 450; // http://leafletjs.com/reference-1.0.3.html#map-overlaypane
+        pane.style.pointerEvents = 'none';
     
         // Add Toner tiles for base map
-        L.tileLayer('http://{s}.tile.stamen.com/toner-lite/{z}/{x}/{y}@2x.png', {
-            attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://maps.stamen.com/">Map tiles</a> by <a href="http://stamen.com/">Stamen</a>',
+        L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy;<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy;<a href="https://carto.com/attribution">CARTO</a>',
             maxZoom: 18
         }).addTo(map);
         
         // Add a GeoJSON layer and fit it into view
         geojson.addTo(map);
         map.fitBounds(geojson.getBounds());
+
+        // Add Toner label tiles for base map
+        L.tileLayer('http://{s}.tile.stamen.com/toner-labels/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy;<a href="http://stamen.com/">Stamen</a>',
+            pane: 'labels',
+            maxZoom: 18
+        }).addTo(map);
     }
 
     request.onload = function()
