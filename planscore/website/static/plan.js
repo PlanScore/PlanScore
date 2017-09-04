@@ -18,12 +18,17 @@ function nice_count(value)
     }
 }
 
+function nice_percent(value)
+{
+    return (100 * value).toFixed(1) + '%';
+}
+
 function nice_gap(value)
 {
     if(value > 0) {
-        return '+' + (100 * value).toFixed(1) + '% for Democrats.';
+        return '+' + nice_percent(value) + ' for Democrats';
     } else {
-        return '+' + (100 * -value).toFixed(1) + '% for Republicans.';
+        return '+' + nice_percent(-value) + ' for Republicans';
     }
 }
 
@@ -99,7 +104,72 @@ function which_district_color(district, plan)
     return '#808080';
 }
 
-function load_plan_score(url, fields, table, score_EG, map_url, map_div)
+function show_efficiency_gap_score(plan, score_EG)
+{
+    var summary_name = which_score_summary_name(plan);
+    clear_element(score_EG);
+
+    var new_h3 = document.createElement('h3'),
+        new_score = document.createElement('p'),
+        new_words = document.createElement('p');
+
+    new_h3.innerText = 'Efficiency Gap';
+    new_score.className = 'score'
+
+    if(Math.abs(plan.summary[summary_name]) < .07) {
+        new_score.innerText = 'A';
+    } else {
+        new_score.innerText = 'F';
+    }
+
+    new_words.innerText = nice_gap(plan.summary[summary_name]);
+
+    score_EG.appendChild(new_h3);
+    score_EG.appendChild(new_score);
+    score_EG.appendChild(new_words);
+}
+
+function show_demographics_score(plan, score_dem)
+{
+    var summary_name = which_score_summary_name(plan);
+
+    if(summary_name == 'Efficiency Gap')
+    {
+        return;
+    }
+    
+    var black_shares = [];
+    
+    for(var i = 0; i < plan.districts.length; i++)
+    {
+        var totals = plan.districts[i].totals;
+        black_shares.push(totals['Black Voting-Age Population'] / totals['Voting-Age Population']);
+    }
+    
+    clear_element(score_dem);
+
+    var new_h3 = document.createElement('h3'),
+        new_score = document.createElement('p'),
+        new_words = document.createElement('p');
+
+    new_h3.innerText = 'Demographics';
+    new_score.className = 'score'
+
+    if(Math.max.apply(null, black_shares) > .33) {
+        new_score.innerText = 'A';
+    } else {
+        new_score.innerText = 'F';
+    }
+
+    new_words.innerText = ('One district with ' 
+        + nice_percent(Math.max.apply(null, black_shares)) + ' minority population');
+
+    score_dem.appendChild(new_h3);
+    score_dem.appendChild(new_score);
+    score_dem.appendChild(new_words);
+}
+
+function load_plan_score(url, fields, table, score_EG, score_dem, map_url, map_div)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -169,28 +239,9 @@ function load_plan_score(url, fields, table, score_EG, map_url, map_div)
             table.appendChild(new_row);
         }
         
-        // Populate efficiency gap score.
-        var summary_name = which_score_summary_name(plan);
-        clear_element(score_EG);
-    
-        var new_h3 = document.createElement('h3'),
-            new_score = document.createElement('p'),
-            new_words = document.createElement('p');
-    
-        new_h3.innerText = 'Efficiency Gap';
-        new_score.className = 'score'
-
-        if(Math.abs(plan.summary[summary_name]) < .07) {
-            new_score.innerText = 'A';
-        } else {
-            new_score.innerText = 'F';
-        }
-
-        new_words.innerText = nice_gap(plan.summary[summary_name]);
-    
-        score_EG.appendChild(new_h3);
-        score_EG.appendChild(new_score);
-        score_EG.appendChild(new_words);
+        // Populate scores.
+        show_efficiency_gap_score(plan, score_EG);
+        show_demographics_score(plan, score_dem);
         
         // Go on to load the map.
         load_plan_map(map_url, map_div, plan);

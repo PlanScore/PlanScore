@@ -35,7 +35,7 @@
             <p class="score-na">N/A</p>
             <p>Not enough information to calculate this score.</p>
         </li>
-        <li>
+        <li id="score-demographics">
             <h3>Demographics</h3>
             <p class="score-na">N/A</p>
             <p>Not enough information to calculate this score.</p>
@@ -53,6 +53,7 @@
 
 	    load_plan_score(plan_url, fields, document.getElementById('districts'),
 	        document.getElementById('score-efficiency-gap'),
+	        document.getElementById('score-demographics'),
 	        geom_url, document.getElementById('map'));
 	</script>
 {% endblock %}
