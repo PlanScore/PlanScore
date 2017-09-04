@@ -18,16 +18,218 @@ function nice_count(value)
     }
 }
 
+function nice_percent(value)
+{
+    return (100 * value).toFixed(1) + '%';
+}
+
 function nice_gap(value)
 {
     if(value > 0) {
-        return '+' + (100 * value).toFixed(1) + '% for Blue';
+        return '+' + nice_percent(value) + ' for Democrats';
     } else {
-        return '+' + (100 * -value).toFixed(1) + '% for Red';
+        return '+' + nice_percent(-value) + ' for Republicans';
     }
 }
 
-function load_plan_score(url, fields, table, eff_gaps)
+function clear_element(el)
+{
+    while(el.lastChild)
+    {
+        el.removeChild(el.lastChild);
+    }
+}
+
+function which_score_summary_name(plan)
+{
+    var summaries = [
+        'US House Efficiency Gap', 'Efficiency Gap',
+        'SLDL Efficiency Gap', 'SLDU Efficiency Gap'
+        ];
+    
+    for(var i = 0; i < summaries.length; i++)
+    {
+        var name = summaries[i];
+        
+        if(plan.summary[name] !== undefined)
+        {
+            return name;
+        }
+    }
+}
+
+function which_score_column_names(plan)
+{
+    if(plan.summary['US House Efficiency Gap'] !== undefined)
+    {
+        return [
+            'Population', 'Voting-Age Population', 'Black Voting-Age Population',
+            'US House Dem Votes', 'US House Rep Votes'
+        ];
+    }
+    
+    if(plan.summary['Efficiency Gap'] !== undefined)
+    {
+        return ['Voters', 'Blue Votes', 'Red Votes'];
+    }
+    
+    return [];
+}
+
+function which_district_color(district, plan)
+{
+    var totals = district.totals,
+        color_red = '#D45557',
+        color_blue = '#4D90D1';
+    
+    if(plan.summary['US House Efficiency Gap'] !== undefined)
+    {
+        if(totals['US House Dem Votes'] > totals['US House Rep Votes']) {
+            return color_blue;
+        } else {
+            return color_red;
+        }
+    }
+
+    if(plan.summary['Efficiency Gap'] !== undefined)
+    {
+        if(totals['Blue Votes'] > totals['Red Votes']) {
+            return color_blue;
+        } else {
+            return color_red;
+        }
+    }
+    
+    // neutral gray
+    return '#808080';
+}
+
+function show_efficiency_gap_score(plan, score_EG)
+{
+    var summary_name = which_score_summary_name(plan);
+    clear_element(score_EG);
+
+    var new_h3 = document.createElement('h3'),
+        new_score = document.createElement('p'),
+        new_words = document.createElement('p');
+
+    new_h3.innerText = 'Efficiency Gap';
+    new_score.className = 'score'
+
+    if(Math.abs(plan.summary[summary_name]) < .02) {
+        new_score.innerText = 'A';
+        new_words.innerText = (nice_gap(plan.summary[summary_name])
+            + ' is close to zero.');
+    } else if(Math.abs(plan.summary[summary_name]) < .04) {
+        new_score.innerText = 'B';
+        new_words.innerText = (nice_gap(plan.summary[summary_name])
+            + ' is well within 7% threshold.');
+    } else if(Math.abs(plan.summary[summary_name]) < .07) {
+        new_score.innerText = 'C';
+        new_words.innerText = (nice_gap(plan.summary[summary_name])
+            + ' is within 7% threshold.');
+    } else if(Math.abs(plan.summary[summary_name]) < .09) {
+        new_score.innerText = 'D';
+        new_words.innerText = (nice_gap(plan.summary[summary_name])
+            + ' is outside 7% threshold.');
+    } else {
+        new_score.innerText = 'F';
+        new_words.innerText = (nice_gap(plan.summary[summary_name])
+            + ' is far outside 7% threshold.');
+    }
+
+    score_EG.appendChild(new_h3);
+    score_EG.appendChild(new_score);
+    score_EG.appendChild(new_words);
+}
+
+function show_population_score(plan, score_pop)
+{
+    var summary_name = which_score_summary_name(plan);
+
+    var populations = [];
+    
+    for(var i = 0; i < plan.districts.length; i++)
+    {
+        var totals = plan.districts[i].totals;
+        console.log(totals);
+        if(summary_name == 'Efficiency Gap') {
+            populations.push(totals['Voters']);
+        } else if(summary_name == 'US House Efficiency Gap') {
+            populations.push(totals['Population']);
+        } else {
+            return;
+        }
+    }
+    
+    var max_pop = Math.max.apply(null, populations),
+        min_pop = Math.min.apply(null, populations);
+    
+    clear_element(score_pop);
+
+    var new_h3 = document.createElement('h3'),
+        new_score = document.createElement('p'),
+        new_words = document.createElement('p');
+
+    new_h3.innerText = 'Population';
+    new_score.className = 'score'
+
+    if(max_pop / min_pop < 1.02) {
+        new_score.innerText = 'A';
+    } else {
+        new_score.innerText = 'F';
+    }
+
+    new_words.innerText = ('Largest district has ' 
+        + nice_percent(max_pop / min_pop - 1)
+        + ' greater population than smallest district.');
+
+    score_pop.appendChild(new_h3);
+    score_pop.appendChild(new_score);
+    score_pop.appendChild(new_words);
+}
+
+function show_demographics_score(plan, score_dem)
+{
+    var summary_name = which_score_summary_name(plan);
+
+    if(summary_name == 'Efficiency Gap')
+    {
+        return;
+    }
+    
+    var black_shares = [];
+    
+    for(var i = 0; i < plan.districts.length; i++)
+    {
+        var totals = plan.districts[i].totals;
+        black_shares.push(totals['Black Voting-Age Population'] / totals['Voting-Age Population']);
+    }
+    
+    clear_element(score_dem);
+
+    var new_h3 = document.createElement('h3'),
+        new_score = document.createElement('p'),
+        new_words = document.createElement('p');
+
+    new_h3.innerText = 'Demographics';
+    new_score.className = 'score'
+
+    if(Math.max.apply(null, black_shares) > .33) {
+        new_score.innerText = 'A';
+    } else {
+        new_score.innerText = 'F';
+    }
+
+    new_words.innerText = ('One district with ' 
+        + nice_percent(Math.max.apply(null, black_shares)) + ' minority population');
+
+    score_dem.appendChild(new_h3);
+    score_dem.appendChild(new_score);
+    score_dem.appendChild(new_words);
+}
+
+function load_plan_score(url, fields, table, score_EG, score_pop, score_dem, map_url, map_div)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -56,16 +258,14 @@ function load_plan_score(url, fields, table, eff_gaps)
             }
         }
         
-        // Remove any column with empty rows
+        // Remove any column that doesn't belong
+        var column_names = which_score_column_names(plan);
+        
         for(var i = columns.length - 1; i > 0; i--)
         {
-            for(var j = 1; j <= plan.districts.length; j++)
+            if(column_names.indexOf(columns[i][0]) === -1)
             {
-                if(columns[i][j] == undefined)
-                {
-                    columns.splice(i, 1);
-                    break;
-                }
+                columns.splice(i, 1);
             }
         }
         
@@ -99,23 +299,13 @@ function load_plan_score(url, fields, table, eff_gaps)
             table.appendChild(new_row);
         }
         
-        // Note the efficiency gaps
-        var new_term, new_defn;
+        // Populate scores.
+        show_efficiency_gap_score(plan, score_EG);
+        show_population_score(plan, score_pop);
+        show_demographics_score(plan, score_dem);
         
-        for(var name in plan.summary)
-        {
-            if(plan.summary[name] == undefined)
-            {
-                continue;
-            }
-        
-            new_term = document.createElement('dt');
-            new_defn = document.createElement('dd');
-            new_term.innerText = name;
-            new_defn.innerText = nice_gap(plan.summary[name]);
-            new_term.appendChild(new_defn);
-            eff_gaps.appendChild(new_term);
-        }
+        // Go on to load the map.
+        load_plan_map(map_url, map_div, plan);
     }
 
     request.onload = function()
@@ -133,7 +323,7 @@ function load_plan_score(url, fields, table, eff_gaps)
     request.send();
 }
 
-function load_plan_map(url, div, color)
+function load_plan_map(url, div, plan)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -141,7 +331,11 @@ function load_plan_map(url, div, color)
     function on_loaded_geojson(data)
     {
         var geojson = L.geoJSON(data, {
-            style: { color: color, weight: 1, fillOpacity: .1 }
+            style: function(feature)
+            {
+                var district = plan.districts[data.features.indexOf(feature)];
+                return { weight: 2, fillOpacity: .5, color: which_district_color(district, plan) };
+            }
             });
     
         console.log('GeoJSON bounds:', geojson.getBounds());
@@ -152,16 +346,27 @@ function load_plan_map(url, div, color)
             center: [0, 0],
             zoom: 8
         });
+        
+        var pane = map.createPane('labels');
+        pane.style.zIndex = 450; // http://leafletjs.com/reference-1.0.3.html#map-overlaypane
+        pane.style.pointerEvents = 'none';
     
         // Add Toner tiles for base map
-        L.tileLayer('http://{s}.tile.stamen.com/toner-lite/{z}/{x}/{y}@2x.png', {
-            attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://maps.stamen.com/">Map tiles</a> by <a href="http://stamen.com/">Stamen</a>',
+        L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy;<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy;<a href="https://carto.com/attribution">CARTO</a>',
             maxZoom: 18
         }).addTo(map);
         
         // Add a GeoJSON layer and fit it into view
         geojson.addTo(map);
         map.fitBounds(geojson.getBounds());
+
+        // Add Toner label tiles for base map
+        L.tileLayer('http://{s}.tile.stamen.com/toner-labels/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy;<a href="http://stamen.com/">Stamen</a>',
+            pane: 'labels',
+            maxZoom: 18
+        }).addTo(map);
     }
 
     request.onload = function()

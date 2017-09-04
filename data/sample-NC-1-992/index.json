@@ -1,0 +1,207 @@
+{
+  "districts": [
+    {
+      "totals": {
+        "Black Voting-Age Population": 23405.98037674001,
+        "Population": 731891.3310786647,
+        "SLDL Dem Votes": 100087.58375639562,
+        "SLDL Rep Votes": 120366.65112890073,
+        "SLDU Dem Votes": 104785.93557126976,
+        "SLDU Rep Votes": 117416.55336024093,
+        "US House Dem Votes": 93613.23770503915,
+        "US House Rep Votes": 128284.15337554738,
+        "US Senate Dem Votes": 96680.02154920237,
+        "US Senate Rep Votes": 117115.27390019309,
+        "Voting-Age Population": 584531.0395223683
+      }
+    },
+    {
+      "totals": {
+        "Black Voting-Age Population": 48577.02598394071,
+        "Population": 734840.6621940439,
+        "SLDL Dem Votes": 61316.836951669626,
+        "SLDL Rep Votes": 117535.63482804698,
+        "SLDU Dem Votes": 64933.00988124494,
+        "SLDU Rep Votes": 113415.167229898,
+        "US House Dem Votes": 57240.0574674679,
+        "US House Rep Votes": 123900.13589879543,
+        "US Senate Dem Votes": 59622.75523547511,
+        "US Senate Rep Votes": 112740.83880923936,
+        "Voting-Age Population": 567036.2844327542
+      }
+    },
+    {
+      "totals": {
+        "Black Voting-Age Population": 111889.10401050712,
+        "Population": 744491.2109737224,
+        "SLDL Dem Votes": 70062.31519993485,
+        "SLDL Rep Votes": 93061.79896526408,
+        "SLDU Dem Votes": 71746.68607229531,
+        "SLDU Rep Votes": 90564.10441493701,
+        "US House Dem Votes": 65085.909973038826,
+        "US House Rep Votes": 107560.38238740514,
+        "US Senate Dem Votes": 66344.61728242217,
+        "US Senate Rep Votes": 92388.83113046736,
+        "Voting-Age Population": 565908.3808464945
+      }
+    },
+    {
+      "totals": {
+        "Black Voting-Age Population": 101367.21161100251,
+        "Population": 731718.0694394974,
+        "SLDL Dem Votes": 73483.74945551303,
+        "SLDL Rep Votes": 100062.77862454315,
+        "SLDU Dem Votes": 74795.31277253827,
+        "SLDU Rep Votes": 101326.31986583897,
+        "US House Dem Votes": 69172.26508482317,
+        "US House Rep Votes": 104828.60171466586,
+        "US Senate Dem Votes": 75238.01037106213,
+        "US Senate Rep Votes": 95760.98164416672,
+        "Voting-Age Population": 568706.6145366558
+      }
+    },
+    {
+      "totals": {
+        "Black Voting-Age Population": 202081.13721039466,
+        "Population": 728914.5047381745,
+        "SLDL Dem Votes": 77131.4885015414,
+        "SLDL Rep Votes": 73489.8416058663,
+        "SLDU Dem Votes": 78277.90155888995,
+        "SLDU Rep Votes": 74602.62768226312,
+        "US House Dem Votes": 68400.58323592233,
+        "US House Rep Votes": 83649.35934379643,
+        "US Senate Dem Votes": 75035.11094010453,
+        "US Senate Rep Votes": 76971.64089784224,
+        "Voting-Age Population": 564318.495497581
+      }
+    },
+    {
+      "totals": {
+        "Black Voting-Age Population": 80169.75856172762,
+        "Population": 733320.488889127,
+        "SLDL Dem Votes": 76901.05287030982,
+        "SLDL Rep Votes": 124526.41001497842,
+        "SLDU Dem Votes": 82828.05482679661,
+        "SLDU Rep Votes": 120854.53023566277,
+        "US House Dem Votes": 89258.57682754764,
+        "US House Rep Votes": 126917.07162205226,
+        "US Senate Dem Votes": 80382.71007399437,
+        "US Senate Rep Votes": 118853.68103000603,
+        "Voting-Age Population": 564325.0591198682
+      }
+    },
+    {
+      "totals": {
+        "Black Voting-Age Population": 102650.76092975233,
+        "Population": 733833.209559309,
+        "SLDL Dem Votes": 86952.81820479507,
+        "SLDL Rep Votes": 120233.22826979533,
+        "SLDU Dem Votes": 94139.58444648588,
+        "SLDU Rep Votes": 116955.6917272138,
+        "US House Dem Votes": 116591.14927682874,
+        "US House Rep Votes": 131876.50705514438,
+        "US Senate Dem Votes": 92369.51653671563,
+        "US Senate Rep Votes": 115376.10233917504,
+        "Voting-Age Population": 558724.1199631582
+      }
+    },
+    {
+      "totals": {
+        "Black Voting-Age Population": 149602.80262559606,
+        "Population": 732038.9173198681,
+        "SLDL Dem Votes": 107986.11002455764,
+        "SLDL Rep Votes": 78597.31953733168,
+        "SLDU Dem Votes": 112712.89435380262,
+        "SLDU Rep Votes": 75834.54291124844,
+        "US House Dem Votes": 131831.0589297678,
+        "US House Rep Votes": 81550.57957564786,
+        "US Senate Dem Votes": 111346.96399331551,
+        "US Senate Rep Votes": 76399.39044229033,
+        "Voting-Age Population": 569486.5201267495
+      }
+    },
+    {
+      "totals": {
+        "Black Voting-Age Population": 111501.95562526875,
+        "Population": 737276.1732192774,
+        "SLDL Dem Votes": 91860.09125284654,
+        "SLDL Rep Votes": 81090.46966627084,
+        "SLDU Dem Votes": 94458.66736647727,
+        "SLDU Rep Votes": 81834.3340856997,
+        "US House Dem Votes": 96574.17766432995,
+        "US House Rep Votes": 84186.8639668987,
+        "US Senate Dem Votes": 97941.26302138912,
+        "US Senate Rep Votes": 79290.2603768954,
+        "Voting-Age Population": 553181.0032318105
+      }
+    },
+    {
+      "totals": {
+        "Black Voting-Age Population": 154188.29715975115,
+        "Population": 730409.1560117304,
+        "SLDL Dem Votes": 86190.86582528373,
+        "SLDL Rep Votes": 92270.39639411458,
+        "SLDU Dem Votes": 88416.88811011481,
+        "SLDU Rep Votes": 90140.43621527507,
+        "US House Dem Votes": 85452.69521610354,
+        "US House Rep Votes": 95768.36986148133,
+        "US Senate Dem Votes": 87535.72718470336,
+        "US Senate Rep Votes": 91653.71523251165,
+        "Voting-Age Population": 535117.9340955106
+      }
+    },
+    {
+      "totals": {
+        "Black Voting-Age Population": 164927.04812419193,
+        "Population": 729548.9165315954,
+        "SLDL Dem Votes": 65478.439231470955,
+        "SLDL Rep Votes": 59519.41911858634,
+        "SLDU Dem Votes": 65688.46006104951,
+        "SLDU Rep Votes": 63061.77837858031,
+        "US House Dem Votes": 64498.06341392303,
+        "US House Rep Votes": 65224.30810752166,
+        "US Senate Dem Votes": 65101.63408253638,
+        "US Senate Rep Votes": 62571.71420089742,
+        "Voting-Age Population": 536925.9425944318
+      }
+    },
+    {
+      "totals": {
+        "Black Voting-Age Population": 166872.74329583862,
+        "Population": 734605.7378643517,
+        "SLDL Dem Votes": 101215.87715496075,
+        "SLDL Rep Votes": 64621.47532785969,
+        "SLDU Dem Votes": 97816.23995614448,
+        "SLDU Rep Votes": 66075.49883969982,
+        "US House Dem Votes": 153886.93993606875,
+        "US House Rep Votes": 85663.43602859325,
+        "US Senate Dem Votes": 103647.96131506836,
+        "US Senate Rep Votes": 63359.663224005904,
+        "Voting-Age Population": 554039.8591105702
+      }
+    },
+    {
+      "totals": {
+        "Black Voting-Age Population": 95671.36522798201,
+        "Population": 731506.5342091267,
+        "SLDL Dem Votes": 88932.3280823112,
+        "SLDL Rep Votes": 113259.38726418791,
+        "SLDU Dem Votes": 90106.7548274512,
+        "SLDU Rep Votes": 112956.3373440295,
+        "US House Dem Votes": 105827.07746718483,
+        "US House Rep Votes": 132303.92596459194,
+        "US Senate Dem Votes": 93127.12600996715,
+        "US Senate Rep Votes": 110674.42910731887,
+        "Voting-Age Population": 530734.0576536004
+      }
+    }
+  ],
+  "id": "20170611T160839.739395328Z",
+  "key": "uploads/20170611T160839.739395328Z/upload/NC-plan-1-992.geojson",
+  "summary": {
+    "Efficiency Gap": null,
+    "SLDL Efficiency Gap": -0.09074382226675635,
+    "SLDU Efficiency Gap": -0.11006215683289686,
+    "US House Efficiency Gap": -0.19088662738438944
+  }
+}
