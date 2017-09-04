@@ -99,7 +99,8 @@ ul#scores-box
 
     ul#scores-box li
     {
-        width: 25%;
+        width: 23%;
+        margin-right: 2%;
         float: left;
     }
 }

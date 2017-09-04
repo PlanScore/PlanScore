@@ -116,13 +116,27 @@ function show_efficiency_gap_score(plan, score_EG)
     new_h3.innerText = 'Efficiency Gap';
     new_score.className = 'score'
 
-    if(Math.abs(plan.summary[summary_name]) < .07) {
+    if(Math.abs(plan.summary[summary_name]) < .02) {
         new_score.innerText = 'A';
+        new_words.innerText = (nice_gap(plan.summary[summary_name])
+            + ' is close to zero.');
+    } else if(Math.abs(plan.summary[summary_name]) < .04) {
+        new_score.innerText = 'B';
+        new_words.innerText = (nice_gap(plan.summary[summary_name])
+            + ' is well within 7% threshold.');
+    } else if(Math.abs(plan.summary[summary_name]) < .07) {
+        new_score.innerText = 'C';
+        new_words.innerText = (nice_gap(plan.summary[summary_name])
+            + ' is within 7% threshold.');
+    } else if(Math.abs(plan.summary[summary_name]) < .09) {
+        new_score.innerText = 'D';
+        new_words.innerText = (nice_gap(plan.summary[summary_name])
+            + ' is outside 7% threshold.');
     } else {
         new_score.innerText = 'F';
+        new_words.innerText = (nice_gap(plan.summary[summary_name])
+            + ' is far outside 7% threshold.');
     }
-
-    new_words.innerText = nice_gap(plan.summary[summary_name]);
 
     score_EG.appendChild(new_h3);
     score_EG.appendChild(new_score);
