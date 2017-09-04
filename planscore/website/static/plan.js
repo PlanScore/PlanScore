@@ -143,6 +143,52 @@ function show_efficiency_gap_score(plan, score_EG)
     score_EG.appendChild(new_words);
 }
 
+function show_population_score(plan, score_pop)
+{
+    var summary_name = which_score_summary_name(plan);
+
+    var populations = [];
+    
+    for(var i = 0; i < plan.districts.length; i++)
+    {
+        var totals = plan.districts[i].totals;
+        console.log(totals);
+        if(summary_name == 'Efficiency Gap') {
+            populations.push(totals['Voters']);
+        } else if(summary_name == 'US House Efficiency Gap') {
+            populations.push(totals['Population']);
+        } else {
+            return;
+        }
+    }
+    
+    var max_pop = Math.max.apply(null, populations),
+        min_pop = Math.min.apply(null, populations);
+    
+    clear_element(score_pop);
+
+    var new_h3 = document.createElement('h3'),
+        new_score = document.createElement('p'),
+        new_words = document.createElement('p');
+
+    new_h3.innerText = 'Population';
+    new_score.className = 'score'
+
+    if(max_pop / min_pop < 1.02) {
+        new_score.innerText = 'A';
+    } else {
+        new_score.innerText = 'F';
+    }
+
+    new_words.innerText = ('Largest district has ' 
+        + nice_percent(max_pop / min_pop - 1)
+        + ' greater population than smallest district.');
+
+    score_pop.appendChild(new_h3);
+    score_pop.appendChild(new_score);
+    score_pop.appendChild(new_words);
+}
+
 function show_demographics_score(plan, score_dem)
 {
     var summary_name = which_score_summary_name(plan);
@@ -183,7 +229,7 @@ function show_demographics_score(plan, score_dem)
     score_dem.appendChild(new_words);
 }
 
-function load_plan_score(url, fields, table, score_EG, score_dem, map_url, map_div)
+function load_plan_score(url, fields, table, score_EG, score_pop, score_dem, map_url, map_div)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -255,6 +301,7 @@ function load_plan_score(url, fields, table, score_EG, score_dem, map_url, map_d
         
         // Populate scores.
         show_efficiency_gap_score(plan, score_EG);
+        show_population_score(plan, score_pop);
         show_demographics_score(plan, score_dem);
         
         // Go on to load the map.
