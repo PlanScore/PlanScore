@@ -30,11 +30,7 @@ s3 = boto3.client('s3', endpoint_url=ENDPOINT_S3, **AWS_CREDS)
 print('    Create bucket', BUCKETNAME)
 s3.create_bucket(Bucket=BUCKETNAME)
 
-prefix = pp.join('data', 'XX', '001')
-basedir = pp.join(pp.dirname(__file__), 'planscore', 'tests', 'data', 'XX')
-pattern = pp.join(basedir, '12', '*', '*.geojson')
-
-for path in glob.glob(pattern):
+def upload(prefix, basedir, path):
     with open(path, 'rb') as file:
         data = file.read()
         
@@ -43,7 +39,22 @@ for path in glob.glob(pattern):
     s3.put_object(Bucket=BUCKETNAME, Key=key, ACL='public-read',
         Body=data, ContentType='text/json')
         
-    print('    Put object', key)
+    print('    Put object', key, 'from', file.name)
+
+prefix1 = pp.join('data', 'XX', '001')
+basedir1 = pp.join(pp.dirname(__file__), 'planscore', 'tests', 'data', 'XX')
+
+for path in glob.glob(pp.join(basedir1, '12', '*', '*.geojson')):
+    upload(prefix1, basedir1, path)
+
+prefix2 = pp.join('uploads', 'sample-NC-1-992')
+basedir2 = pp.join(pp.dirname(__file__), 'data', 'sample-NC-1-992')
+
+for path in glob.glob(pp.join(basedir2, '*.*')):
+    upload(prefix2, basedir2, path)
+
+for path in glob.glob(pp.join(basedir2, '*', '*.*')):
+    upload(prefix2, basedir2, path)
 
 # Lambda function setup
 
