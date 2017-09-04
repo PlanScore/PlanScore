@@ -16,13 +16,35 @@
     </style>
 {% endblock %}
 {% block content %}
+    <p>Blah blah blah</p>
+    <ul id="scores-box">
+        {# these list items will be populated by load_plan_score() #}
+
+        <li id="score-efficiency-gap">
+            <h3>Efficiency Gap</h3>
+            <p>B+</p>
+            <p>Not enough information to calculate this score.</p>
+        </li>
+        <li>
+            <h3>Population</h3>
+            <p class="score-na">N/A</p>
+            <p>Not enough information to calculate this score.</p>
+        </li>
+        <li>
+            <h3>Compactness</h3>
+            <p class="score-na">N/A</p>
+            <p>Not enough information to calculate this score.</p>
+        </li>
+        <li>
+            <h3>Demographics</h3>
+            <p class="score-na">N/A</p>
+            <p>Not enough information to calculate this score.</p>
+        </li>
+    </ul>
     <p id="map"></p>
     <table id="districts">
         {# this table will be populated by load_plan_score() #}
     </table>
-    <dl id="efficiency-gaps">
-        {# this list will be populated by load_plan_score() #}
-    </dl>
 	<script language="javascript">
 	    var fields = {{ fields|tojson }},
 	        plan_id = location.search.replace('?', ''),
@@ -30,7 +52,7 @@
 	        geom_url = format_url('{{ geom_url_pattern }}', plan_id);
 
 	    load_plan_score(plan_url, fields, document.getElementById('districts'),
-	        document.getElementById('efficiency-gaps'));
+	        document.getElementById('score-efficiency-gap'));
 	    
 	    load_plan_map(geom_url, document.getElementById('map'),
 	        getComputedStyle(document.getElementsByTagName('h1')[0]).color);

@@ -21,13 +21,39 @@ function nice_count(value)
 function nice_gap(value)
 {
     if(value > 0) {
-        return '+' + (100 * value).toFixed(1) + '% for Blue';
+        return '+' + (100 * value).toFixed(1) + '% for Democrats.';
     } else {
-        return '+' + (100 * -value).toFixed(1) + '% for Red';
+        return '+' + (100 * -value).toFixed(1) + '% for Republicans.';
     }
 }
 
-function load_plan_score(url, fields, table, eff_gaps)
+function clear_element(el)
+{
+    while(el.lastChild)
+    {
+        el.removeChild(el.lastChild);
+    }
+}
+
+function which_score_summary(plan)
+{
+    var summaries = [
+        'US House Efficiency Gap', 'Efficiency Gap',
+        'SLDL Efficiency Gap', 'SLDU Efficiency Gap'
+        ];
+    
+    for(var i = 0; i < summaries.length; i++)
+    {
+        var name = summaries[i];
+        
+        if(plan.summary[name] !== undefined)
+        {
+            return name;
+        }
+    }
+}
+
+function load_plan_score(url, fields, table, score_EG)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -99,23 +125,28 @@ function load_plan_score(url, fields, table, eff_gaps)
             table.appendChild(new_row);
         }
         
-        // Note the efficiency gaps
-        var new_term, new_defn;
-        
-        for(var name in plan.summary)
-        {
-            if(plan.summary[name] == undefined)
-            {
-                continue;
-            }
-        
-            new_term = document.createElement('dt');
-            new_defn = document.createElement('dd');
-            new_term.innerText = name;
-            new_defn.innerText = nice_gap(plan.summary[name]);
-            new_term.appendChild(new_defn);
-            eff_gaps.appendChild(new_term);
+        // Populate efficiency gap score.
+        var summary_name = which_score_summary(plan);
+        clear_element(score_EG);
+    
+        var new_h3 = document.createElement('h3'),
+            new_score = document.createElement('p'),
+            new_words = document.createElement('p');
+    
+        new_h3.innerText = 'Efficiency Gap';
+        new_score.className = 'score'
+
+        if(Math.abs(plan.summary[summary_name]) < .07) {
+            new_score.innerText = 'A';
+        } else {
+            new_score.innerText = 'F';
         }
+
+        new_words.innerText = nice_gap(plan.summary[summary_name]);
+    
+        score_EG.appendChild(new_h3);
+        score_EG.appendChild(new_score);
+        score_EG.appendChild(new_words);
     }
 
     request.onload = function()
