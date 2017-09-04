@@ -53,6 +53,24 @@ function which_score_summary(plan)
     }
 }
 
+function which_score_columns(plan)
+{
+    if(plan.summary['US House Efficiency Gap'] !== undefined)
+    {
+        return [
+            'Population', 'Voting-Age Population', 'Black Voting-Age Population',
+            'US House Dem Votes', 'US House Rep Votes'
+        ];
+    }
+    
+    if(plan.summary['Efficiency Gap'] !== undefined)
+    {
+        return ['Voters', 'Blue Votes', 'Red Votes'];
+    }
+    
+    return [];
+}
+
 function load_plan_score(url, fields, table, score_EG)
 {
     var request = new XMLHttpRequest();
@@ -82,16 +100,14 @@ function load_plan_score(url, fields, table, score_EG)
             }
         }
         
-        // Remove any column with empty rows
+        // Remove any column that doesn't belong
+        var column_names = which_score_columns(plan);
+        
         for(var i = columns.length - 1; i > 0; i--)
         {
-            for(var j = 1; j <= plan.districts.length; j++)
+            if(column_names.indexOf(columns[i][0]) === -1)
             {
-                if(columns[i][j] == undefined)
-                {
-                    columns.splice(i, 1);
-                    break;
-                }
+                columns.splice(i, 1);
             }
         }
         

@@ -56,6 +56,15 @@ for path in glob.glob(pp.join(basedir2, '*.*')):
 for path in glob.glob(pp.join(basedir2, '*', '*.*')):
     upload(prefix2, basedir2, path)
 
+prefix2 = pp.join('uploads', 'sample-NC-1-992-simple')
+basedir2 = pp.join(pp.dirname(__file__), 'data', 'sample-NC-1-992-simple')
+
+for path in glob.glob(pp.join(basedir2, '*.*')):
+    upload(prefix2, basedir2, path)
+
+for path in glob.glob(pp.join(basedir2, '*', '*.*')):
+    upload(prefix2, basedir2, path)
+
 # Lambda function setup
 
 print('--> Set up Lambda', ENDPOINT_LAM)
