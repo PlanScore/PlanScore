@@ -35,7 +35,7 @@ function clear_element(el)
     }
 }
 
-function which_score_summary(plan)
+function which_score_summary_name(plan)
 {
     var summaries = [
         'US House Efficiency Gap', 'Efficiency Gap',
@@ -53,7 +53,7 @@ function which_score_summary(plan)
     }
 }
 
-function which_score_columns(plan)
+function which_score_column_names(plan)
 {
     if(plan.summary['US House Efficiency Gap'] !== undefined)
     {
@@ -71,7 +71,35 @@ function which_score_columns(plan)
     return [];
 }
 
-function load_plan_score(url, fields, table, score_EG)
+function which_district_color(district, plan)
+{
+    var totals = district.totals,
+        color_red = '#D45557',
+        color_blue = '#4D90D1';
+    
+    if(plan.summary['US House Efficiency Gap'] !== undefined)
+    {
+        if(totals['US House Dem Votes'] > totals['US House Rep Votes']) {
+            return color_blue;
+        } else {
+            return color_red;
+        }
+    }
+
+    if(plan.summary['Efficiency Gap'] !== undefined)
+    {
+        if(totals['Blue Votes'] > totals['Red Votes']) {
+            return color_blue;
+        } else {
+            return color_red;
+        }
+    }
+    
+    // neutral gray
+    return '#808080';
+}
+
+function load_plan_score(url, fields, table, score_EG, map_url, map_div)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -101,7 +129,7 @@ function load_plan_score(url, fields, table, score_EG)
         }
         
         // Remove any column that doesn't belong
-        var column_names = which_score_columns(plan);
+        var column_names = which_score_column_names(plan);
         
         for(var i = columns.length - 1; i > 0; i--)
         {
@@ -142,7 +170,7 @@ function load_plan_score(url, fields, table, score_EG)
         }
         
         // Populate efficiency gap score.
-        var summary_name = which_score_summary(plan);
+        var summary_name = which_score_summary_name(plan);
         clear_element(score_EG);
     
         var new_h3 = document.createElement('h3'),
@@ -163,6 +191,9 @@ function load_plan_score(url, fields, table, score_EG)
         score_EG.appendChild(new_h3);
         score_EG.appendChild(new_score);
         score_EG.appendChild(new_words);
+        
+        // Go on to load the map.
+        load_plan_map(map_url, map_div, plan);
     }
 
     request.onload = function()
@@ -180,7 +211,7 @@ function load_plan_score(url, fields, table, score_EG)
     request.send();
 }
 
-function load_plan_map(url, div, color)
+function load_plan_map(url, div, plan)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -188,7 +219,11 @@ function load_plan_map(url, div, color)
     function on_loaded_geojson(data)
     {
         var geojson = L.geoJSON(data, {
-            style: { color: color, weight: 1, fillOpacity: .1 }
+            style: function(feature)
+            {
+                var district = plan.districts[data.features.indexOf(feature)];
+                return { weight: 2, fillOpacity: .5, color: which_district_color(district, plan) };
+            }
             });
     
         console.log('GeoJSON bounds:', geojson.getBounds());

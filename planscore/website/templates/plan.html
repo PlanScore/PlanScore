@@ -52,9 +52,7 @@
 	        geom_url = format_url('{{ geom_url_pattern }}', plan_id);
 
 	    load_plan_score(plan_url, fields, document.getElementById('districts'),
-	        document.getElementById('score-efficiency-gap'));
-	    
-	    load_plan_map(geom_url, document.getElementById('map'),
-	        getComputedStyle(document.getElementsByTagName('h1')[0]).color);
+	        document.getElementById('score-efficiency-gap'),
+	        geom_url, document.getElementById('map'));
 	</script>
 {% endblock %}
