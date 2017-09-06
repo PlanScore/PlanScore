@@ -362,7 +362,7 @@ function load_plan_map(url, div, plan)
         map.fitBounds(geojson.getBounds());
 
         // Add Toner label tiles for base map
-        L.tileLayer('http://{s}.tile.stamen.com/toner-labels/{z}/{x}/{y}{r}.png', {
+        L.tileLayer('https://tile.planscore.org/toner-labels/{z}/{x}/{y}{r}.png', {
             attribution: '&copy;<a href="http://stamen.com/">Stamen</a>',
             pane: 'labels',
             maxZoom: 18
