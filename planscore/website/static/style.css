@@ -71,6 +71,11 @@ ul#scores-box
     }
 
 /*
+ * Override writ.css for tile image inside the map.
+ */
+#map img { max-width: none }
+
+/*
  * Larger table typefor medium-sized screens.
  */
 @media only screen and (min-width: 480px)

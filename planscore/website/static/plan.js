@@ -348,7 +348,7 @@ function load_plan_map(url, div, plan)
         });
         
         var pane = map.createPane('labels');
-        pane.style.zIndex = 450; // http://leafletjs.com/reference-1.0.3.html#map-overlaypane
+        pane.style.zIndex = 650; // http://leafletjs.com/examples/map-panes/
         pane.style.pointerEvents = 'none';
     
         // Add Toner tiles for base map
