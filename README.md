@@ -7,7 +7,7 @@ Install for Local Development
 
 PlanScore is a Python 3 application deployed to Amazon Web Services with S3 and
 Lambda. To make local development possible, use Docker and the local AWS
-development stack [`localstack`](https://github.com/localstack/localstack).
+development stack [LocalStack](https://github.com/localstack/localstack).
 
 1.  Clone the PlanScore git repository and prepare a
     [Python virtual environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/#virtualenv).
@@ -35,19 +35,13 @@ development stack [`localstack`](https://github.com/localstack/localstack).
     
         docker pull lambci/lambda:python3.6
     
-6.  In its own Python 3 virtual environment, install `localstack`.
-    For now, use a PlanScore-specific fork from `migurski/localstack`.
+6.  In its own Python 3 virtual environment, install LocalStack.
     
-        pip3 install https://github.com/migurski/localstack/tarball/planscore
+        pip3 install localstack
     
-    The official `localstack` release will be usable once two additions are
-    complete: [#262](https://github.com/localstack/localstack/pull/262) (custom
-    Docker environments) and [#267](https://github.com/localstack/localstack/pull/267)
-    (support for S3 POST uploads).
+7.  In a separate window, run LocalStack.
     
-7.  In a separate window, run `localstack`.
-    
-        env SERVICES=s3,lambda LAMBDA_EXECUTOR=docker localstack --debug start
+        env SERVICES=s3,lambda LAMBDA_EXECUTOR=docker localstack start
     
     Wait for the expected output.
     
@@ -56,7 +50,7 @@ development stack [`localstack`](https://github.com/localstack/localstack).
         Starting mock Lambda service (http port 4574)...
         Ready.
     
-8.  Build PlanScore dependencies, upload functions to `localstack` Lambda,
+8.  Build PlanScore dependencies, upload functions to LocalStack Lambda,
     and run the site in debug mode:
     
         make clean localstack-env && ./debug-site.py
