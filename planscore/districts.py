@@ -1,4 +1,4 @@
-import collections, json, io, gzip, statistics, time, base64, posixpath, pickle
+import collections, json, io, gzip, statistics, time, base64, posixpath, pickle, functools
 from osgeo import ogr
 import boto3, botocore.exceptions, ModestMaps.OpenStreetMap, ModestMaps.Core
 from . import prepare_state, score, data, constants
@@ -18,9 +18,9 @@ class Partial:
         self.totals = totals
         self.precincts = precincts
         self.tiles = tiles
-        self.geometry = geometry
         self.upload = upload
         
+        self._geometry = geometry
         self._tile_geoms = {}
     
     def to_dict(self):
@@ -33,15 +33,30 @@ class Partial:
             geometry=self.geometry.ExportToWkt(), upload=self.upload.to_dict(),
             precincts=Partial.scrunch(self.precincts))
     
+    @property
+    def geometry(self):
+        ''' Treat geometry as read-only so LRU caches behave correctly.
+        '''
+        return self._geometry
+    
+    @functools.lru_cache(maxsize=16)
     def tile_geometry(self, tile_zxy):
+        ''' Return a geometry for the intersection of this district and named tile.
+        '''
         if tile_zxy is None:
             return self.geometry
         
         elif tile_zxy not in self._tile_geoms:
-            tile_geom = tile_geometry(*map(int, tile_zxy.split('/')))
+            tile_geom = tile_geometry(tile_zxy)
             self._tile_geoms[tile_zxy] = tile_geom.Intersection(self.geometry)
         
         return self._tile_geoms[tile_zxy]
+    
+    @functools.lru_cache()
+    def contains_tile(self, tile_zxy):
+        ''' Return true if the named tile is contained entirely within this district.
+        '''
+        return self.geometry.Contains(tile_geometry(tile_zxy))
     
     @staticmethod
     def from_event(event):
@@ -74,7 +89,11 @@ class Partial:
 
         return pickle.loads(gzip.decompress(base64.a85decode(thing)))
 
-def tile_geometry(z, x, y):
+@functools.lru_cache(maxsize=16)
+def tile_geometry(tile_zxy):
+    ''' Get an OGR Geometry for a web mercator tile.
+    '''
+    (z, x, y) = map(int, tile_zxy.split('/'))
     coord = ModestMaps.Core.Coordinate(y, x, z)
     NW = _mercator.coordinateLocation(coord)
     SE = _mercator.coordinateLocation(coord.right().down())
@@ -193,22 +212,28 @@ def score_precinct(partial, precinct, tile_zxy):
         # If there's no geometry or overlap here, don't bother.
         return
 
-    try:
-        overlap_geom = precinct_geom.Intersection(partial.tile_geometry(tile_zxy))
-    except RuntimeError as e:
-        if 'TopologyException' in str(e) and not precinct_geom.IsValid():
-            # Sometimes, a precinct geometry can be invalid
-            # so inflate it by a tiny amount to smooth out problems
-            precinct_geom = precinct_geom.Buffer(0.0000001)
-            overlap_geom = precinct_geom.Intersection(partial.geometry)
-        else:
-            raise
-    if precinct_geom.Area() == 0:
-        # If we're about to divide by zero, don't bother.
-        return
+    if partial.contains_tile(tile_zxy):
+        # Don't laboriously calculate precinct fraction if we know it's all there.
+        # This is safe because precincts are clipped on tile boundaries, so a
+        # fully-contained tile necessarily means the precinct is also contained.
+        precinct_fraction = precinct_frac
+    else:
+        try:
+            overlap_geom = precinct_geom.Intersection(partial.tile_geometry(tile_zxy))
+        except RuntimeError as e:
+            if 'TopologyException' in str(e) and not precinct_geom.IsValid():
+                # Sometimes, a precinct geometry can be invalid
+                # so inflate it by a tiny amount to smooth out problems
+                precinct_geom = precinct_geom.Buffer(0.0000001)
+                overlap_geom = precinct_geom.Intersection(partial.geometry)
+            else:
+                raise
+        if precinct_geom.Area() == 0:
+            # If we're about to divide by zero, don't bother.
+            return
 
-    overlap_area = overlap_geom.Area() / precinct_geom.Area()
-    precinct_fraction = overlap_area * precinct_frac
+        overlap_area = overlap_geom.Area() / precinct_geom.Area()
+        precinct_fraction = overlap_area * precinct_frac
     
     for name in score.FIELD_NAMES:
         if name not in precinct['properties']:
