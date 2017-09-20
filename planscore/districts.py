@@ -28,6 +28,17 @@ class Partial:
             geometry=self.geometry.ExportToWkt(), upload=self.upload.to_dict(),
             precincts=Partial.scrunch(self.precincts))
     
+    def tile_geometry(self, zxy):
+        if zxy is None:
+            return self.geometry
+        geoms = {
+            '12/2047/2047': ogr.CreateGeometryFromWkt('polygon((-1  1,-1 0,0 0,0  1,-1  1))'),
+            '12/2047/2048': ogr.CreateGeometryFromWkt('polygon((-1 -1,-1 0,0 0,0 -1,-1 -1))'),
+            '12/2048/2047': ogr.CreateGeometryFromWkt('polygon(( 1  1, 1 0,0 0,0  1, 1  1))'),
+            '12/2048/2048': ogr.CreateGeometryFromWkt('polygon(( 1 -1, 1 0,0 0,0 -1, 1 -1))'),
+        }
+        return geoms[zxy].Intersection(self.geometry)
+    
     @staticmethod
     def from_event(event):
         totals = event.get('totals')
@@ -145,7 +156,7 @@ def consume_tiles(storage, partial):
     # Start by draining the precincts list, which should be empty anyway.
     while partial.precincts:
         precinct = partial.precincts.pop(0)
-        score_precinct(partial, precinct)
+        score_precinct(partial, precinct, None)
     
     # Yield once with an emptied precincts list.
     yield
@@ -154,12 +165,12 @@ def consume_tiles(storage, partial):
     while partial.tiles:
         tile_zxy = partial.tiles.pop(0)
         for precinct in load_tile_precincts(storage, tile_zxy):
-            score_precinct(partial, precinct)
+            score_precinct(partial, precinct, tile_zxy)
         
         # Yield after each complete tile is processed.
         yield
 
-def score_precinct(partial, precinct):
+def score_precinct(partial, precinct, tile_zxy):
     '''
     '''
     precinct_frac = precinct['properties'][prepare_state.FRACTION_FIELD]
@@ -170,7 +181,7 @@ def score_precinct(partial, precinct):
         return
 
     try:
-        overlap_geom = precinct_geom.Intersection(partial.geometry)
+        overlap_geom = precinct_geom.Intersection(partial.tile_geometry(tile_zxy))
     except RuntimeError as e:
         if 'TopologyException' in str(e) and not precinct_geom.IsValid():
             # Sometimes, a precinct geometry can be invalid
