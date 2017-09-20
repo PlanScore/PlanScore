@@ -89,6 +89,21 @@ class TestDistricts (unittest.TestCase):
                 value, 'Lists and dictionaries should unscrunch cleanly')
             self.assertEqual(districts.Partial.unscrunch(value), value,
                 'Lists and dictionaries should unscrunch to themselves')
+    
+    def test_tile_geometry(self):
+        ''' Correct tile geometries are returned from tile_geometry().
+        '''
+        w1, e1, s1, n1 = districts.tile_geometry(0, 0, 0).GetEnvelope()
+        self.assertAlmostEqual(w1, -180, 9)
+        self.assertAlmostEqual(e1,  180, 9)
+        self.assertAlmostEqual(s1, -85.051128780, 9)
+        self.assertAlmostEqual(n1,  85.051128780, 9)
+
+        w2, e2, s2, n2 = districts.tile_geometry(12, 656, 1582).GetEnvelope()
+        self.assertAlmostEqual(w2, -122.34375, 9)
+        self.assertAlmostEqual(e2, -122.255859375, 9)
+        self.assertAlmostEqual(s2, 37.788081384120, 9)
+        self.assertAlmostEqual(n2, 37.857507156252, 9)
 
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')

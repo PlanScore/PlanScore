@@ -7,6 +7,9 @@ ogr.UseExceptions()
 
 FUNCTION_NAME = 'PlanScore-RunDistrict'
 
+# Borrow some Modest Maps tile math
+_mercator = ModestMaps.OpenStreetMap.Provider().projection
+
 class Partial:
     ''' Partially-calculated district sums, used by consume_tiles().
     '''
@@ -18,8 +21,6 @@ class Partial:
         self.geometry = geometry
         self.upload = upload
         
-        # Borrow some Modest Maps tile math
-        self._merc = ModestMaps.OpenStreetMap.Provider().projection
         self._tile_geoms = {}
     
     def to_dict(self):
@@ -37,14 +38,7 @@ class Partial:
             return self.geometry
         
         elif tile_zxy not in self._tile_geoms:
-            zoom, col, row = map(int, tile_zxy.split('/'))
-            coord = ModestMaps.Core.Coordinate(row, col, zoom)
-            NW = self._merc.coordinateLocation(coord)
-            SE = self._merc.coordinateLocation(coord.right().down())
-            wkt = 'POLYGON(({W} {N},{W} {S},{E} {S},{E} {N},{W} {N}))'.format(
-                N=NW.lat, W=NW.lon, S=SE.lat, E=SE.lon)
-
-            tile_geom = ogr.CreateGeometryFromWkt(wkt)
+            tile_geom = tile_geometry(*map(int, tile_zxy.split('/')))
             self._tile_geoms[tile_zxy] = tile_geom.Intersection(self.geometry)
         
         return self._tile_geoms[tile_zxy]
@@ -79,6 +73,15 @@ class Partial:
             return thing
 
         return pickle.loads(gzip.decompress(base64.a85decode(thing)))
+
+def tile_geometry(z, x, y):
+    coord = ModestMaps.Core.Coordinate(y, x, z)
+    NW = _mercator.coordinateLocation(coord)
+    SE = _mercator.coordinateLocation(coord.right().down())
+    wkt = 'POLYGON(({W} {N},{W} {S},{E} {S},{E} {N},{W} {N}))'.format(
+        N=NW.lat, W=NW.lon, S=SE.lat, E=SE.lon)
+
+    return ogr.CreateGeometryFromWkt(wkt)
 
 def lambda_handler(event, context):
     '''
