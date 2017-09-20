@@ -58,6 +58,9 @@ class TestAfterUpload (unittest.TestCase):
         shp_path = after_upload.unzip_shapefile(zip_path, self.tempdir)
 
         self.assertEqual(shp_path, os.path.join(self.tempdir, 'null-plan.shp'))
+        
+        for filename in ('null-plan.dbf', 'null-plan.prj', 'null-plan.shp', 'null-plan.shx'):
+            self.assertTrue(os.path.exists(os.path.join(self.tempdir, filename)))
     
     @unittest.mock.patch('gzip.compress')
     def test_put_geojson_file(self, compress):
@@ -151,7 +154,7 @@ class TestAfterUpload (unittest.TestCase):
     @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
     @unittest.mock.patch('planscore.after_upload.guess_state')
     def test_get_uploaded_info_zipped_file(self, guess_state, fan_out_district_lambdas, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
-        ''' A valid district plan file is scored and the results posted to S3
+        ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')

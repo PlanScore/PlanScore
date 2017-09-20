@@ -8,7 +8,7 @@ ogr.UseExceptions()
 states_path = os.path.join(os.path.dirname(__file__), 'geodata', 'cb_2013_us_state_20m.geojson')
 
 def unzip_shapefile(zip_path, zip_dir):
-    '''
+    ''' Unzip shapefile found within zip file into named directory.
     '''
     zf = zipfile.ZipFile(zip_path)
     unzipped_path = None
@@ -18,7 +18,6 @@ def unzip_shapefile(zip_path, zip_dir):
         base2, ext2 = os.path.splitext(file2)
         
         if ext1 == '.shp' and base2 == base1:
-            print('zf.extract', file2, zip_dir)
             zf.extract(file2, zip_dir)
             unzipped_path = os.path.join(zip_dir, os.path.basename(file1))
     
@@ -113,7 +112,7 @@ def put_geojson_file(s3, bucket, upload, path):
     geometries = []
     
     if not ds:
-        raise RuntimeError('Could not open file')
+        raise RuntimeError('Could not open "{}"'.format(path))
 
     for (index, feature) in enumerate(ds.GetLayer(0)):
         geometry = feature.GetGeometryRef()
