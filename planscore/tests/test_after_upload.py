@@ -134,6 +134,47 @@ class TestAfterUpload (unittest.TestCase):
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][2].key, upload.key)
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][3], nullplan_path)
     
+    @unittest.mock.patch('planscore.util.temporary_buffer_file')
+    @unittest.mock.patch('planscore.score.put_upload_index')
+    @unittest.mock.patch('planscore.after_upload.put_geojson_file')
+    @unittest.mock.patch('planscore.after_upload.unzip_shapefile')
+    @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
+    @unittest.mock.patch('planscore.after_upload.guess_state')
+    def test_get_uploaded_info_zipped_file(self, guess_state, fan_out_district_lambdas, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
+        ''' A valid district plan file is scored and the results posted to S3
+        '''
+        id = 'ID'
+        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
+        upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.shp.zip'
+        guess_state.return_value = 'XX'
+        
+        @contextlib.contextmanager
+        def nullplan_file(*args):
+            yield nullplan_path
+
+        temporary_buffer_file.side_effect = nullplan_file
+
+        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3.get_object.return_value = {'Body': None}
+
+        info = after_upload.get_uploaded_info(s3, bucket, upload_key, id)
+        unzip_shapefile.assert_called_once_with(nullplan_path)
+        guess_state.assert_called_once_with(unzip_shapefile.return_value)
+
+        temporary_buffer_file.assert_called_once_with('null-plan.shp.zip', None)
+        self.assertIsNone(info)
+    
+        upload = put_geojson_file.mock_calls[0][1][2]
+        put_upload_index.assert_called_once_with(s3, bucket, upload)
+        
+        self.assertEqual(put_geojson_file.mock_calls[0][1][:3], (s3, bucket, upload))
+        self.assertIs(put_geojson_file.mock_calls[0][1][3], unzip_shapefile.return_value)
+        
+        self.assertEqual(len(fan_out_district_lambdas.mock_calls), 1)
+        self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/001'))
+        self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][2].key, upload.key)
+        self.assertIs(fan_out_district_lambdas.mock_calls[0][1][3], unzip_shapefile.return_value)
+    
     def test_get_uploaded_info_bad_file(self):
         ''' An invalid district file fails in an expected way
         '''

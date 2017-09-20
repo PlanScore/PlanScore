@@ -7,19 +7,30 @@ ogr.UseExceptions()
 
 states_path = os.path.join(os.path.dirname(__file__), 'geodata', 'cb_2013_us_state_20m.geojson')
 
+def unzip_shapefile(path):
+    '''
+    '''
+    print('unzip:'*10, path)
+    pass
+
 def get_uploaded_info(s3, bucket, key, id):
     '''
     '''
     object = s3.get_object(Bucket=bucket, Key=key)
     upload = data.Upload(id, key, [])
     
-    with util.temporary_buffer_file(os.path.basename(key), object['Body']) as path:
-        prefix = 'data/{}/001'.format(guess_state(path))
+    with util.temporary_buffer_file(os.path.basename(key), object['Body']) as ul_path:
+        if os.path.splitext(ul_path)[1] == '.zip':
+            # Assume a shapefile
+            ds_path = unzip_shapefile(ul_path)
+        else:
+            ds_path = ul_path
+        prefix = 'data/{}/001'.format(guess_state(ds_path))
         score.put_upload_index(s3, bucket, upload)
-        put_geojson_file(s3, bucket, upload, path)
+        put_geojson_file(s3, bucket, upload, ds_path)
         
         # Do this last - localstack invokes Lambda functions synchronously
-        fan_out_district_lambdas(bucket, prefix, upload, path)
+        fan_out_district_lambdas(bucket, prefix, upload, ds_path)
     
     return None
 
