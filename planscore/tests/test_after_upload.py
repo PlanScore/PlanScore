@@ -1,4 +1,4 @@
-import unittest, unittest.mock, io, os, contextlib
+import unittest, unittest.mock, io, os, contextlib, tempfile, shutil
 from .. import after_upload, data, districts, constants
 
 class TestAfterUpload (unittest.TestCase):
@@ -8,12 +8,14 @@ class TestAfterUpload (unittest.TestCase):
         self.prev_website, constants.WEBSITE_BASE = constants.WEBSITE_BASE, 'https://example.com/'
         self.prev_s3_url, constants.S3_ENDPOINT_URL = constants.S3_ENDPOINT_URL, None
         self.prev_lam_url, constants.LAMBDA_ENDPOINT_URL = constants.LAMBDA_ENDPOINT_URL, None
+        self.tempdir = tempfile.mkdtemp(prefix='TestAfterUpload-')
     
     def tearDown(self):
         constants.SECRET = self.prev_secret
         constants.WEBSITE_BASE = self.prev_website
         constants.S3_ENDPOINT_URL = self.prev_s3_url
         constants.LAMBDA_ENDPOINT_URL = self.prev_lam_url
+        shutil.rmtree(self.tempdir)
 
     @unittest.mock.patch('planscore.after_upload.get_uploaded_info')
     def test_lambda_handler(self, get_uploaded_info):
@@ -48,6 +50,14 @@ class TestAfterUpload (unittest.TestCase):
         self.assertFalse(get_uploaded_info.mock_calls)
         self.assertEqual(response['statusCode'], '400')
         self.assertIn('Bad ID', response['body'])
+    
+    def test_unzip_shapefile(self):
+        ''' Shapefile is found within a zip file.
+        '''
+        zip_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
+        shp_path = after_upload.unzip_shapefile(zip_path, self.tempdir)
+
+        self.assertEqual(shp_path, os.path.join(self.tempdir, 'null-plan.shp'))
     
     @unittest.mock.patch('gzip.compress')
     def test_put_geojson_file(self, compress):
@@ -158,7 +168,7 @@ class TestAfterUpload (unittest.TestCase):
         s3.get_object.return_value = {'Body': None}
 
         info = after_upload.get_uploaded_info(s3, bucket, upload_key, id)
-        unzip_shapefile.assert_called_once_with(nullplan_path)
+        unzip_shapefile.assert_called_once_with(nullplan_path, os.path.dirname(nullplan_path))
         guess_state.assert_called_once_with(unzip_shapefile.return_value)
 
         temporary_buffer_file.assert_called_once_with('null-plan.shp.zip', None)

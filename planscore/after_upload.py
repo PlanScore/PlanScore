@@ -1,4 +1,4 @@
-import boto3, pprint, os, io, json, urllib.parse, gzip, functools
+import boto3, pprint, os, io, json, urllib.parse, gzip, functools, zipfile, itertools
 import itsdangerous
 from osgeo import ogr
 from . import util, data, score, website, prepare_state, districts, constants
@@ -7,11 +7,22 @@ ogr.UseExceptions()
 
 states_path = os.path.join(os.path.dirname(__file__), 'geodata', 'cb_2013_us_state_20m.geojson')
 
-def unzip_shapefile(path):
+def unzip_shapefile(zip_path, zip_dir):
     '''
     '''
-    print('unzip:'*10, path)
-    pass
+    zf = zipfile.ZipFile(zip_path)
+    unzipped_path = None
+    
+    for (file1, file2) in itertools.product(zf.namelist(), zf.namelist()):
+        base1, ext1 = os.path.splitext(file1)
+        base2, ext2 = os.path.splitext(file2)
+        
+        if ext1 == '.shp' and base2 == base1:
+            print('zf.extract', file2, zip_dir)
+            zf.extract(file2, zip_dir)
+            unzipped_path = os.path.join(zip_dir, os.path.basename(file1))
+    
+    return unzipped_path
 
 def get_uploaded_info(s3, bucket, key, id):
     '''
@@ -22,7 +33,7 @@ def get_uploaded_info(s3, bucket, key, id):
     with util.temporary_buffer_file(os.path.basename(key), object['Body']) as ul_path:
         if os.path.splitext(ul_path)[1] == '.zip':
             # Assume a shapefile
-            ds_path = unzip_shapefile(ul_path)
+            ds_path = unzip_shapefile(ul_path, os.path.dirname(ul_path))
         else:
             ds_path = ul_path
         prefix = 'data/{}/001'.format(guess_state(ds_path))
