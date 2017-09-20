@@ -311,6 +311,80 @@ class TestDistricts (unittest.TestCase):
         self.assertAlmostEqual(partial.totals['Red Votes'], 1.69067528)
         self.assertAlmostEqual(partial.totals['Blue Votes'], 0)
     
+    # Precinct score cases:
+    #
+    # 1. precinct from tile within district - 100%
+    # 2. tile overlapping district:
+    #   2a. precinct within district - 100%
+    #   2b. precinct overlaps district - ?%
+    #   2c. precinct touches district - 0%
+    #   2d. precinct outside district - 0%
+    # 3. precinct from tile touching district - 0%
+    # 4. precinct from tile outside district - 0%
+    
+    def test_score_precinct_1_tile_within(self):
+        ''' Correct voter count for a precinct from tile within district.
+        '''
+        geometry = ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,1 1,1 -1,-1 -1))')
+        partial = districts.Partial(None, {'Voters': 0}, None, None, geometry, None)
+        precinct = {"type": "Feature", "properties": {"Voters": 1, "PlanScore:Fraction": 1.0}, "geometry": {"type": "Polygon", "coordinates": [[[.02, .02], [.02, .06], [.06, .06], [.06, .02], [.02, .02]]]}}
+        districts.score_precinct(partial, precinct, '12/2048/2047')
+        self.assertAlmostEqual(partial.totals['Voters'], 1., 9)
+    
+    def test_score_precinct_2a_tile_overlaps_precinct_within(self):
+        ''' Correct voter count for a precinct within district from tile overlapping district.
+        '''
+        geometry = ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,0.17 1,0.17 -1,-1 -1))')
+        partial = districts.Partial(None, {'Voters': 0}, None, None, geometry, None)
+        precinct = {"type": "Feature", "properties": {"Voters": 1, "PlanScore:Fraction": 1.0}, "geometry": {"type": "Polygon", "coordinates": [[[.12, .12], [.12, .16], [.16, .16], [.16, .12], [.12, .12]]]}}
+        districts.score_precinct(partial, precinct, '12/2049/2046')
+        self.assertAlmostEqual(partial.totals['Voters'], 1., 9)
+    
+    def test_score_precinct_2b_tile_overlaps_precinct_overlaps(self):
+        ''' Correct voter count for a precinct overlapping district from tile overlapping district.
+        '''
+        geometry = ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,0.14 1,0.14 -1,-1 -1))')
+        partial = districts.Partial(None, {'Voters': 0}, None, None, geometry, None)
+        precinct = {"type": "Feature", "properties": {"Voters": 1, "PlanScore:Fraction": 1.0}, "geometry": {"type": "Polygon", "coordinates": [[[.12, .12], [.12, .16], [.16, .16], [.16, .12], [.12, .12]]]}}
+        districts.score_precinct(partial, precinct, '12/2049/2046')
+        self.assertAlmostEqual(partial.totals['Voters'], .5, 9)
+    
+    def test_score_precinct_2c_tile_overlaps_precinct_touches(self):
+        ''' Correct voter count for a precinct touching district from tile overlapping district.
+        '''
+        geometry = ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,0.12 1,0.12 -1,-1 -1))')
+        partial = districts.Partial(None, {'Voters': 0}, None, None, geometry, None)
+        precinct = {"type": "Feature", "properties": {"Voters": 1, "PlanScore:Fraction": 1.0}, "geometry": {"type": "Polygon", "coordinates": [[[.12, .12], [.12, .16], [.16, .16], [.16, .12], [.12, .12]]]}}
+        districts.score_precinct(partial, precinct, '12/2049/2046')
+        self.assertAlmostEqual(partial.totals['Voters'], 0., 9)
+    
+    def test_score_precinct_2d_tile_overlaps_precinct_outside(self):
+        ''' Correct voter count for a precinct outside district from tile overlapping district.
+        '''
+        geometry = ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,0.11 1,0.11 -1,-1 -1))')
+        partial = districts.Partial(None, {'Voters': 0}, None, None, geometry, None)
+        precinct = {"type": "Feature", "properties": {"Voters": 1, "PlanScore:Fraction": 1.0}, "geometry": {"type": "Polygon", "coordinates": [[[.12, .12], [.12, .16], [.16, .16], [.16, .12], [.12, .12]]]}}
+        districts.score_precinct(partial, precinct, '12/2049/2046')
+        self.assertAlmostEqual(partial.totals['Voters'], 0., 9)
+    
+    def test_score_precinct_3_tile_touches(self):
+        ''' Correct voter count for a precinct from tile touching district.
+        '''
+        geometry = ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,0.087890625 1,0.087890625 -1,-1 -1))')
+        partial = districts.Partial(None, {'Voters': 0}, None, None, geometry, None)
+        precinct = {"type": "Feature", "properties": {"Voters": 1, "PlanScore:Fraction": 1.0}, "geometry": {"type": "Polygon", "coordinates": [[[.12, .12], [.12, .16], [.16, .16], [.16, .12], [.12, .12]]]}}
+        districts.score_precinct(partial, precinct, '12/2049/2046')
+        self.assertAlmostEqual(partial.totals['Voters'], 0., 9)
+    
+    def test_score_precinct_4_tile_outside(self):
+        ''' Correct voter count for a precinct from tile outside district.
+        '''
+        geometry = ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,1 1,1 -1,-1 -1))')
+        partial = districts.Partial(None, {'Voters': 0}, None, None, geometry, None)
+        precinct = {"type": "Feature", "properties": {"Voters": 1, "PlanScore:Fraction": 1.0}, "geometry": {"type": "Polygon", "coordinates": [[[.02, .02], [.02, .06], [.06, .06], [.06, .02], [.02, .02]]]}}
+        districts.score_precinct(partial, precinct, '12/2059/2047')
+        self.assertAlmostEqual(partial.totals['Voters'], 0., 9)
+    
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
     def test_iterate_precincts(self, load_tile_precincts):
         ''' Expected list of precincts comes back from a pair of lists.
