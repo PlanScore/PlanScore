@@ -32,6 +32,36 @@ class TestDistricts (unittest.TestCase):
         self.assertEqual(partial.tiles, ['12/2048/2047'])
         self.assertEqual(partial.upload.id, 'ID')
     
+    def test_Partial_tile_geometry(self):
+        '''
+        '''
+        # District partial within the western hemisphere, touching the prime meridian
+        partial = districts.Partial(0, {}, None, None, ogr.CreateGeometryFromWkt('POLYGON ((0 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,0 -0.0004693,0 0,0 0.0004532))'), None)
+        
+        g1 = partial.tile_geometry('12/2047/2047')
+        g2 = partial.tile_geometry('12/2047/2048')
+        g3 = g1.Union(g2)
+        
+        self.assertAlmostEqual(g3.Area(), partial.geometry.Area(), 9,
+            'Two larger tiles should pretty much cover district completely')
+        
+        g4 = partial.tile_geometry('20/524287/524287')
+        
+        self.assertTrue(g4.Within(partial.geometry),
+            'Tiny tile should be contained entirely inside district')
+        
+        g5 = partial.tile_geometry('20/524288/524287')
+        
+        self.assertEqual(g5.Area(), 0, 'Tiny tile should just be a line')
+        self.assertTrue(g5.Touches(partial.geometry),
+            'Tiny tile should touch eastern boundary of district')
+        
+        g6 = partial.tile_geometry('20/524289/524287')
+        
+        self.assertEqual(g6.Area(), 0, 'Tiny tile should be completely empty')
+        self.assertTrue(g6.Disjoint(partial.geometry),
+            'Tiny tile should touch no part of district')
+    
     def test_Partial_to_event(self):
         ''' Partial.to_event() and .from_event() work together.
         '''
