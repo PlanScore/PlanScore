@@ -7,12 +7,16 @@ live-lambda: planscore-lambda.zip
 		:::  PlanScore-UploadFields PlanScore-AfterUpload PlanScore-RunDistrict PlanScore-ScoreDistrictPlan \
 		>> /dev/null
 	aws --region us-east-1 lambda update-function-configuration --dead-letter-config TargetArn=$(AWS_LAMBDA_DLQ_ARN) \
+		--environment 'Variables={PLANSCORE_SECRET=$(PLANSCORE_SECRET),WEBSITE_BASE=https://planscore.org/,AWS=amazonaws.com}' \
 	    --function-name PlanScore-UploadFields --handler lambda.upload_fields --timeout 3 >> /dev/null
 	aws --region us-east-1 lambda update-function-configuration --dead-letter-config TargetArn=$(AWS_LAMBDA_DLQ_ARN) \
+		--environment 'Variables={PLANSCORE_SECRET=$(PLANSCORE_SECRET),WEBSITE_BASE=https://planscore.org/,AWS=amazonaws.com}' \
 	    --function-name PlanScore-AfterUpload --handler lambda.after_upload --timeout 30 >> /dev/null
 	aws --region us-east-1 lambda update-function-configuration --dead-letter-config TargetArn=$(AWS_LAMBDA_DLQ_ARN) \
+		--environment 'Variables={PLANSCORE_SECRET=$(PLANSCORE_SECRET),WEBSITE_BASE=https://planscore.org/,AWS=amazonaws.com}' \
 	    --function-name PlanScore-RunDistrict --handler lambda.run_district --timeout 300 >> /dev/null
 	aws --region us-east-1 lambda update-function-configuration --dead-letter-config TargetArn=$(AWS_LAMBDA_DLQ_ARN) \
+		--environment 'Variables={PLANSCORE_SECRET=$(PLANSCORE_SECRET),WEBSITE_BASE=https://planscore.org/,AWS=amazonaws.com}' \
 	    --function-name PlanScore-ScoreDistrictPlan --handler lambda.score_plan --timeout 30 >> /dev/null
 
 live-website: planscore/website/build
