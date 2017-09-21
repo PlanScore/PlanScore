@@ -51,7 +51,7 @@ function which_score_summary_name(plan)
     {
         var name = summaries[i];
         
-        if(plan.summary[name] !== null)
+        if(typeof plan.summary[name] === 'number')
         {
             return name;
         }
@@ -60,7 +60,7 @@ function which_score_summary_name(plan)
 
 function which_score_column_names(plan)
 {
-    if(plan.summary['US House Efficiency Gap'] !== null)
+    if(typeof plan.summary['US House Efficiency Gap'] === 'number')
     {
         return [
             'Population', 'Voting-Age Population', 'Black Voting-Age Population',
@@ -68,7 +68,7 @@ function which_score_column_names(plan)
         ];
     }
     
-    if(plan.summary['Efficiency Gap'] !== null)
+    if(typeof plan.summary['Efficiency Gap'] === 'number')
     {
         return ['Voters', 'Blue Votes', 'Red Votes'];
     }
@@ -82,7 +82,7 @@ function which_district_color(district, plan)
         color_red = '#D45557',
         color_blue = '#4D90D1';
     
-    if(plan.summary['US House Efficiency Gap'] !== null)
+    if(typeof plan.summary['US House Efficiency Gap'] === 'number')
     {
         if(totals['US House Dem Votes'] > totals['US House Rep Votes']) {
             return color_blue;
@@ -91,7 +91,7 @@ function which_district_color(district, plan)
         }
     }
 
-    if(plan.summary['Efficiency Gap'] !== null)
+    if(typeof plan.summary['Efficiency Gap'] === 'number')
     {
         if(totals['Blue Votes'] > totals['Red Votes']) {
             return color_blue;
