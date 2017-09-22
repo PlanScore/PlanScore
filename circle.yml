@@ -14,7 +14,7 @@ dependencies:
 test:
   override:
     - python setup.py test
-    - env NODE_PATH=`pwd` node test.js
+    - env NODE_PATH=`pwd` node tests.js
     - make planscore/website/build
 
 deployment:
