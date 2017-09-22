@@ -56,6 +56,8 @@ function which_score_summary_name(plan)
             return name;
         }
     }
+    
+    return null;
 }
 
 function which_score_column_names(plan)
