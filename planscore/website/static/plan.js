@@ -383,3 +383,15 @@ function load_plan_map(url, div, plan)
     request.onerror = function() { /* There was a connection error of some sort */ };
     request.send();
 }
+
+// Export functions for testing
+if(module !== undefined)
+{
+    module.exports = {
+        format_url: format_url, nice_count: nice_count,
+        nice_percent: nice_percent, nice_gap: nice_gap,
+        which_score_summary_name: which_score_summary_name,
+        which_score_column_names: which_score_column_names,
+        which_district_color: which_district_color
+        };
+}
