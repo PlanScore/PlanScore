@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys, argparse, boto3, glob, socket, posixpath as pp
 import botocore.exceptions
+import deploy
 
 parser = argparse.ArgumentParser(description='Set up localstack environment.')
 parser.add_argument('code_path', help='Path to Lambda code zip file')
@@ -70,9 +71,6 @@ for path in glob.glob(pp.join(basedir2, '*', '*.*')):
 print('--> Set up Lambda', ENDPOINT_LAM)
 lam = boto3.client('lambda', endpoint_url=ENDPOINT_LAM, **AWS_CREDS)
 
-with open(CODE_PATH, 'rb') as code_file:
-    code_bytes = code_file.read()
-
 env = {
     'PLANSCORE_SECRET': 'localstack',
     'WEBSITE_BASE': 'http://127.0.0.1:5000/',
@@ -83,15 +81,4 @@ env = {
 print('    Environment:', ' '.join(['='.join(kv) for kv in env.items()]))
 
 for (function_name, handler, timeout) in FUNCTIONS:
-    print('    Create function', function_name)
-
-    try:
-        lam.delete_function(FunctionName=function_name)
-    except botocore.exceptions.ClientError:
-        pass # don't care, just be sure it's gone
-
-    lam.create_function(FunctionName=function_name, Runtime='python3.6',
-        Handler=handler, Timeout=timeout, Code=dict(ZipFile=code_bytes),
-        Environment=dict(Variables=env), Role='x',
-        # DeadLetterConfig=dict(TargetArn=''),
-        )
+    deploy.publish_function(lam, function_name, CODE_PATH, 'nobody', env)
