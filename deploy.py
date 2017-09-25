@@ -16,11 +16,14 @@ functions = {
     'PlanScore-ScoreDistrictPlan': dict(Handler='lambda.score_plan', Timeout=30, **common),
     }
 
-def publish_function(lam, name, path, role, env):
+def publish_function(lam, name, path, env, role=None):
     ''' Create or update the named function to Lambda.
     '''
     function_kwargs = copy.deepcopy(functions[name])
     function_kwargs['Environment']['Variables'].update(env)
+    
+    if role is not None:
+        function_kwargs.update(Role=role)
 
     with open(path, 'rb') as code_file:
         code_bytes = code_file.read()
@@ -49,5 +52,4 @@ if __name__ == '__main__':
         if k in os.environ}
 
     lam = boto3.client('lambda', region_name='us-east-1')
-    publish_function(lam, args.name, args.path,
-        os.environ.get('AWS_IAM_ROLE', 'nobody'), env)
+    publish_function(lam, args.name, args.path, env)

@@ -81,4 +81,4 @@ env = {
 print('    Environment:', ' '.join(['='.join(kv) for kv in env.items()]))
 
 for (function_name, handler, timeout) in FUNCTIONS:
-    deploy.publish_function(lam, function_name, CODE_PATH, 'nobody', env)
+    deploy.publish_function(lam, function_name, CODE_PATH, env, 'nobody')
