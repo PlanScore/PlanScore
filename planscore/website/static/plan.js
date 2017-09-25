@@ -231,43 +231,73 @@ function show_demographics_score(plan, score_dem)
     score_dem.appendChild(new_words);
 }
 
-function load_plan_score(url, fields, table, score_EG, score_pop, score_dem, map_url, map_div)
+function show_message(text, score_section, message_section)
+{
+    while(message_section.firstChild)
+    {
+        message_section.removeChild(message_section.firstChild);
+    }
+    
+    message_section.appendChild(document.createElement('p'));
+    message_section.firstChild.appendChild(document.createTextNode(text));
+
+    score_section.style.display = 'none';
+    message_section.style.display = 'block';
+}
+
+function hide_message(score_section, message_section)
+{
+    score_section.style.display = 'block';
+    message_section.style.display = 'none';
+}
+
+function load_plan_score(url, fields, score_section, message_section, table, score_EG, score_pop, score_dem, map_url, map_div)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
     
+    show_message('Loading district plan…', score_section, message_section);
+
     function on_loaded_score(plan)
     {
+        if(which_score_summary_name(plan) === null) {
+            show_message('District plan failed to load.', score_section, message_section);
+            return;
+
+        } else {
+            hide_message(score_section, message_section);
+        }
+    
         // Build list of columns
-        var column = ['District'],
-            columns = [column],
+        var current_column = ['District'],
+            all_columns = [current_column],
             field;
         
         for(var j = 0; j < plan.districts.length; j++)
         {
-            column.push(j + 1);
+            current_column.push(j + 1);
         }
         
         for(var i in fields)
         {
             field = fields[i];
-            column = [field];
-            columns.push(column);
+            current_column = [field];
+            all_columns.push(current_column);
             
             for(var j in plan.districts)
             {
-                column.push(plan.districts[j].totals[field]);
+                current_column.push(plan.districts[j].totals[field]);
             }
         }
         
         // Remove any column that doesn't belong
         var column_names = which_score_column_names(plan);
         
-        for(var i = columns.length - 1; i > 0; i--)
+        for(var i = all_columns.length - 1; i > 0; i--)
         {
-            if(column_names.indexOf(columns[i][0]) === -1)
+            if(column_names.indexOf(all_columns[i][0]) === -1)
             {
-                columns.splice(i, 1);
+                all_columns.splice(i, 1);
             }
         }
         
@@ -275,26 +305,26 @@ function load_plan_score(url, fields, table, score_EG, score_pop, score_dem, map
         var new_row = document.createElement('tr'),
             new_cell;
         
-        for(var i in columns)
+        for(var i in all_columns)
         {
             new_cell = document.createElement('th');
-            new_cell.innerText = columns[i][0];
+            new_cell.innerText = all_columns[i][0];
             new_row.appendChild(new_cell);
         }
         
         table.appendChild(new_row);
         
-        for(var j = 1; j < columns[0].length; j++)
+        for(var j = 1; j < all_columns[0].length; j++)
         {
             new_row = document.createElement('tr');
             new_cell = document.createElement('td');
-            new_cell.innerText = columns[0][j];
+            new_cell.innerText = all_columns[0][j];
             new_row.appendChild(new_cell);
         
-            for(var i = 1; i < columns.length; i++)
+            for(var i = 1; i < all_columns.length; i++)
             {
                 new_cell = document.createElement('td');
-                new_cell.innerText = nice_count(columns[i][j]);
+                new_cell.innerText = nice_count(all_columns[i][j]);
                 new_row.appendChild(new_cell);
             }
         
