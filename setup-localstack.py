@@ -31,40 +31,39 @@ s3 = boto3.client('s3', endpoint_url=ENDPOINT_S3, **AWS_CREDS)
 print('    Create bucket', BUCKETNAME)
 s3.create_bucket(Bucket=BUCKETNAME)
 
-def upload(prefix, basedir, path):
-    with open(path, 'rb') as file:
-        data = file.read()
+def upload(prefix, basedir, pattern):
+    for path in glob.glob(pattern):
+        with open(path, 'rb') as file:
+            data = file.read()
         
-    key = pp.join(prefix, pp.relpath(path, basedir))
+        key = pp.join(prefix, pp.relpath(path, basedir))
     
-    s3.put_object(Bucket=BUCKETNAME, Key=key, ACL='public-read',
-        Body=data, ContentType='text/json')
+        s3.put_object(Bucket=BUCKETNAME, Key=key, ACL='public-read',
+            Body=data, ContentType='text/json')
         
-    print('    Put object', key, 'from', file.name)
+        print('    Put object', key, 'from', file.name)
 
 prefix1 = pp.join('data', 'XX', '001')
 basedir1 = pp.join(pp.dirname(__file__), 'planscore', 'tests', 'data', 'XX')
 
-for path in glob.glob(pp.join(basedir1, '12', '*', '*.geojson')):
-    upload(prefix1, basedir1, path)
+upload(prefix1, basedir1, pp.join(basedir1, '12', '*', '*.geojson'))
 
 prefix2 = pp.join('uploads', 'sample-NC-1-992')
 basedir2 = pp.join(pp.dirname(__file__), 'data', 'sample-NC-1-992')
 
-for path in glob.glob(pp.join(basedir2, '*.*')):
-    upload(prefix2, basedir2, path)
+upload(prefix2, basedir2, pp.join(basedir2, '*.*'))
+upload(prefix2, basedir2, pp.join(basedir2, '*', '*.*'))
 
-for path in glob.glob(pp.join(basedir2, '*', '*.*')):
-    upload(prefix2, basedir2, path)
+prefix3 = pp.join('uploads', 'sample-NC-1-992-simple')
+basedir3 = pp.join(pp.dirname(__file__), 'data', 'sample-NC-1-992-simple')
 
-prefix2 = pp.join('uploads', 'sample-NC-1-992-simple')
-basedir2 = pp.join(pp.dirname(__file__), 'data', 'sample-NC-1-992-simple')
+upload(prefix3, basedir3, pp.join(basedir3, '*.*'))
+upload(prefix3, basedir3, pp.join(basedir3, '*', '*.*'))
 
-for path in glob.glob(pp.join(basedir2, '*.*')):
-    upload(prefix2, basedir2, path)
+prefix4 = pp.join('uploads', 'sample-NC-1-992-incomplete')
+basedir4 = pp.join(pp.dirname(__file__), 'data', 'sample-NC-1-992-incomplete')
 
-for path in glob.glob(pp.join(basedir2, '*', '*.*')):
-    upload(prefix2, basedir2, path)
+upload(prefix4, basedir4, pp.join(basedir4, '*.*'))
 
 # Lambda function setup
 
