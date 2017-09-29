@@ -1,4 +1,4 @@
-import flask, os, urllib.parse, markdown, boto3, json
+import flask, os, urllib.parse, markdown, boto3, json, hashlib
 from .. import data, score, constants
 
 MODELS_BASEDIR = os.path.join(os.path.dirname(__file__), 'models')
@@ -20,6 +20,17 @@ def get_function_url(endpoint, relpath):
         return urllib.parse.urljoin(planscore_api_base, relpath)
     else:
         return flask.url_for(endpoint, path=relpath)
+
+@app.template_global()
+def digested_static_url(filename):
+    with open(os.path.join(flask.current_app.static_folder, filename), 'rb') as file:
+        sha1 = hashlib.sha1()
+        sha1.update(file.read())
+    return flask.url_for('get_digested_file', digest=sha1.hexdigest()[:7], filename=filename)
+
+@app.route('/resource-<digest>/<path:filename>')
+def get_digested_file(digest, filename):
+    return flask.send_from_directory(flask.current_app.static_folder, filename)
 
 @app.route('/')
 def get_index():

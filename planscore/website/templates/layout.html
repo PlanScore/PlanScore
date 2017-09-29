@@ -4,7 +4,7 @@
 	<meta charset="utf-8" />
 	<title>{% block title %}{% endblock %} — PlanScore</title>
 	<link rel="stylesheet" href="https://writ.cmcenroe.me/writ.css" />
-	<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+	<link rel="stylesheet" href="{{ digested_static_url('style.css') }}" />
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	{% block head %}{% endblock %}
 </head>
@@ -14,7 +14,7 @@
         <a href="https://github.com/migurski/PlanScore/projects">Under Construction</a>
         🚧
     </p>
-    <h1><a href="{{ url_for('get_index') }}"><img src="{{ url_for('static', filename='logo.png') }}" width="171" height="74" alt="PlanScore"></a></h1>
+    <h1><a href="{{ url_for('get_index') }}"><img src="{{ digested_static_url('logo.png') }}" width="171" height="74" alt="PlanScore"></a></h1>
     {% block content %}{% endblock %}
 </body>
 </html>

@@ -1,7 +1,7 @@
 {% extends "layout.html" %}
 {% block title %}Plan{% endblock %}
 {% block head %}
-    <script src="{{ url_for('static', filename='plan.js') }}"></script>
+    <script src="{{ digested_static_url('plan.js') }}"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
     <style lang="text/css">
