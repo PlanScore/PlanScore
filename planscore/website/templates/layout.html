@@ -9,12 +9,12 @@
 	{% block head %}{% endblock %}
 </head>
 <body>
-    <h1><a href="{{ url_for('get_index') }}">PlanScore</a></h1>
-    <p>
+    <p style="float: right; margin-top: 0">
         🚧
         <a href="https://github.com/migurski/PlanScore/projects">Under Construction</a>
         🚧
     </p>
+    <h1><a href="{{ url_for('get_index') }}"><img src="{{ url_for('static', filename='logo.png') }}" width="171" height="74" alt="PlanScore"></a></h1>
     {% block content %}{% endblock %}
 </body>
 </html>

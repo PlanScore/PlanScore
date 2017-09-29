@@ -21,6 +21,8 @@ a:visited { color: #6D73C2 }
 
 h1 a, h2 a { color: inherit !important; text-decoration: none !important }
 
+h1 a img { width: auto; border: none }
+
 a img
 {
     width: 100%;
