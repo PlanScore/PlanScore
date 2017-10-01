@@ -7,7 +7,7 @@ var NC_index = require('data/sample-NC-1-992/index.json'),
 
 // Old-style red vs. blue plan
 
-assert.equal(plan.what_score_description(NC_simple_index),
+assert.equal(plan.what_score_description_html(NC_simple_index),
     '<i>No description provided</i>', 'Should find the right description');
 
 assert.equal(plan.which_score_summary_name(NC_simple_index),
@@ -24,7 +24,7 @@ assert.equal(plan.which_district_color(NC_simple_index.districts[7], NC_simple_i
 
 // Incomplete plan, seen just after upload but before scoring is complete
 
-assert.equal(plan.what_score_description(NC_incomplete_index),
+assert.equal(plan.what_score_description_html(NC_incomplete_index),
     '<i>No description provided</i>', 'Should find the right description');
 
 assert.strictEqual(plan.which_score_summary_name(NC_incomplete_index),
@@ -35,7 +35,7 @@ assert.deepEqual(plan.which_score_column_names(NC_incomplete_index),
 
 // North Carolina plan with named house and parties
 
-assert.equal(plan.what_score_description(NC_index),
+assert.equal(plan.what_score_description_html(NC_index),
     'This plan is okay.', 'Should find the right description');
 
 assert.equal(plan.which_score_summary_name(NC_index),
