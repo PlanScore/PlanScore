@@ -7,6 +7,9 @@ var NC_index = require('data/sample-NC-1-992/index.json'),
 
 // Old-style red vs. blue plan
 
+assert.equal(plan.what_score_description_html(NC_simple_index),
+    '<i>No description provided</i>', 'Should find the right description');
+
 assert.equal(plan.which_score_summary_name(NC_simple_index),
     'Efficiency Gap', 'Should pick out the right summary name');
 
@@ -21,6 +24,9 @@ assert.equal(plan.which_district_color(NC_simple_index.districts[7], NC_simple_i
 
 // Incomplete plan, seen just after upload but before scoring is complete
 
+assert.equal(plan.what_score_description_html(NC_incomplete_index),
+    '<i>No description provided</i>', 'Should find the right description');
+
 assert.strictEqual(plan.which_score_summary_name(NC_incomplete_index),
     null, 'Should return a null summary name');
 
@@ -28,6 +34,9 @@ assert.deepEqual(plan.which_score_column_names(NC_incomplete_index),
     [], 'Should return an empty list of column names');
 
 // North Carolina plan with named house and parties
+
+assert.equal(plan.what_score_description_html(NC_index),
+    'This plan is okay.', 'Should find the right description');
 
 assert.equal(plan.which_score_summary_name(NC_index),
     'US House Efficiency Gap', 'Should pick out the right summary name');
@@ -46,6 +55,10 @@ assert.equal(plan.which_district_color(NC_index.districts[7], NC_index),
     '#4D90D1', 'Should return the blue district color');
 
 // Assorted functions
+
+assert(plan.date_age(new Date('1970-01-01')) > 86400 * 365);
+assert(plan.date_age(new Date('2017-10-01')) < 86400 * 365 * 5);
+assert(plan.date_age(new Date()) < 1);
 
 assert.equal(plan.nice_count(7654321), '7654.3k', 'Should not have a thousands separator');
 assert.equal(plan.nice_count(4321), '4.3k', 'Should show numbers in thousands');

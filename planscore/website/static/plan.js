@@ -40,6 +40,21 @@ function clear_element(el)
     }
 }
 
+function date_age(date)
+{
+    return (new Date()).getTime() / 1000 - date.getTime() / 1000;
+}
+
+function what_score_description_html(plan)
+{
+    if(typeof plan['description'] === 'string')
+    {
+        return plan['description'];
+    }
+    
+    return '<i>No description provided</i>';
+}
+
 function which_score_summary_name(plan)
 {
     var summaries = [
@@ -251,14 +266,15 @@ function hide_message(score_section, message_section)
     message_section.style.display = 'none';
 }
 
-function load_plan_score(url, fields, score_section, message_section, table, score_EG, score_pop, score_dem, map_url, map_div)
+function load_plan_score(url, fields, message_section, score_section,
+    description, table, score_EG, score_pop, score_dem, map_url, map_div)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
     
     show_message('Loading district plan…', score_section, message_section);
 
-    function on_loaded_score(plan)
+    function on_loaded_score(plan, modified_at)
     {
         if(which_score_summary_name(plan) === null) {
             show_message('District plan failed to load.', score_section, message_section);
@@ -267,7 +283,18 @@ function load_plan_score(url, fields, score_section, message_section, table, sco
         } else {
             hide_message(score_section, message_section);
         }
-    
+        
+        // Clear out and repopulate description.
+        clear_element(description);
+        
+        description.innerHTML = what_score_description_html(plan);
+        description.appendChild(document.createElement('br'));
+        description.appendChild(document.createElement('i'));
+        description.lastChild.appendChild(document.createTextNode(
+            (date_age(modified_at) > 86400)
+                ? 'Uploaded on '+ modified_at.toLocaleDateString()
+                : 'Uploaded at '+ modified_at.toLocaleString()));
+        
         // Build list of columns
         var current_column = ['District'],
             all_columns = [current_column],
@@ -345,9 +372,10 @@ function load_plan_score(url, fields, score_section, message_section, table, sco
         if(request.status >= 200 && request.status < 400)
         {
             // Returns a dictionary with a list of districts
-            var data = JSON.parse(request.responseText);
+            var data = JSON.parse(request.responseText),
+                modified_at = new Date(request.getResponseHeader('Last-Modified'));
             console.log('Loaded plan:', data);
-            on_loaded_score(data);
+            on_loaded_score(data, modified_at);
         }
     };
 
@@ -421,7 +449,8 @@ if(module !== undefined)
 {
     module.exports = {
         format_url: format_url, nice_count: nice_count,
-        nice_percent: nice_percent, nice_gap: nice_gap,
+        nice_percent: nice_percent, nice_gap: nice_gap, date_age: date_age,
+        what_score_description_html: what_score_description_html,
         which_score_summary_name: which_score_summary_name,
         which_score_column_names: which_score_column_names,
         which_district_color: which_district_color

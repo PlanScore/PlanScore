@@ -2,7 +2,7 @@ all: planscore/website/build
 
 live-lambda: planscore-lambda.zip
 	env AWS=amazonaws.com WEBSITE_BASE=https://planscore.org/ \
-		parallel ./deploy.py planscore-lambda.zip \
+		parallel -j4 ./deploy.py planscore-lambda.zip \
 		:::  PlanScore-UploadFields PlanScore-AfterUpload PlanScore-RunDistrict PlanScore-ScoreDistrictPlan
 
 live-website: planscore/website/build
