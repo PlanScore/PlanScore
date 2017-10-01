@@ -40,6 +40,11 @@ function clear_element(el)
     }
 }
 
+function date_age(date)
+{
+    return (new Date()).getTime() / 1000 - date.getTime() / 1000;
+}
+
 function which_score_summary_name(plan)
 {
     var summaries = [
@@ -277,7 +282,7 @@ function load_plan_score(url, fields, message_section, score_section,
         description.appendChild(document.createElement('br'));
         description.appendChild(document.createElement('i'));
         description.lastChild.appendChild(document.createTextNode(
-            ((new Date()).getTime()/1000 - modified_at.getTime()/1000 > 86400)
+            (date_age(modified_at) > 86400)
                 ? 'Uploaded on '+ modified_at.toLocaleDateString()
                 : 'Uploaded at '+ modified_at.toLocaleString()));
         
@@ -435,7 +440,7 @@ if(module !== undefined)
 {
     module.exports = {
         format_url: format_url, nice_count: nice_count,
-        nice_percent: nice_percent, nice_gap: nice_gap,
+        nice_percent: nice_percent, nice_gap: nice_gap, date_age: date_age,
         which_score_summary_name: which_score_summary_name,
         which_score_column_names: which_score_column_names,
         which_district_color: which_district_color
