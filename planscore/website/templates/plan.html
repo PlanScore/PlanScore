@@ -21,7 +21,7 @@
         Loading plan…
     </section>
     <section id="plan-score">
-    <p>Blah blah blah</p>
+    <p id="plan-description">Blah blah blah</p>
     <ul id="scores-box">
         {# these list items will be populated by load_plan_score() #}
 
@@ -58,8 +58,9 @@
 	        geom_url = format_url('{{ geom_url_pattern }}', plan_id);
 
 	    load_plan_score(plan_url, fields,
-	        document.getElementById('plan-score'),
 	        document.getElementById('message'),
+	        document.getElementById('plan-score'),
+	        document.getElementById('plan-description'),
 	        document.getElementById('districts'),
 	        document.getElementById('score-efficiency-gap'),
 	        document.getElementById('score-population'),

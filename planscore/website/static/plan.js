@@ -251,14 +251,15 @@ function hide_message(score_section, message_section)
     message_section.style.display = 'none';
 }
 
-function load_plan_score(url, fields, score_section, message_section, table, score_EG, score_pop, score_dem, map_url, map_div)
+function load_plan_score(url, fields, message_section, score_section,
+    description, table, score_EG, score_pop, score_dem, map_url, map_div)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
     
     show_message('Loading district plan…', score_section, message_section);
 
-    function on_loaded_score(plan)
+    function on_loaded_score(plan, modified_at)
     {
         if(which_score_summary_name(plan) === null) {
             show_message('District plan failed to load.', score_section, message_section);
@@ -267,7 +268,19 @@ function load_plan_score(url, fields, score_section, message_section, table, sco
         } else {
             hide_message(score_section, message_section);
         }
-    
+        
+        // Clear out and repopulation description.
+        clear_element(description);
+        
+        description.innerHTML = 'Nar nar nar';
+
+        description.appendChild(document.createElement('br'));
+        description.appendChild(document.createElement('i'));
+        description.lastChild.appendChild(document.createTextNode(
+            ((new Date()).getTime()/1000 - modified_at.getTime()/1000 > 86400)
+                ? 'Uploaded on '+ modified_at.toLocaleDateString()
+                : 'Uploaded at '+ modified_at.toLocaleString()));
+        
         // Build list of columns
         var current_column = ['District'],
             all_columns = [current_column],
@@ -345,9 +358,10 @@ function load_plan_score(url, fields, score_section, message_section, table, sco
         if(request.status >= 200 && request.status < 400)
         {
             // Returns a dictionary with a list of districts
-            var data = JSON.parse(request.responseText);
+            var data = JSON.parse(request.responseText),
+                modified_at = new Date(request.getResponseHeader('Last-Modified'));
             console.log('Loaded plan:', data);
-            on_loaded_score(data);
+            on_loaded_score(data, modified_at);
         }
     };
 
