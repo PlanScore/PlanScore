@@ -45,6 +45,16 @@ function date_age(date)
     return (new Date()).getTime() / 1000 - date.getTime() / 1000;
 }
 
+function what_score_description(plan)
+{
+    if(typeof plan['description'] === 'string')
+    {
+        return plan['description'];
+    }
+    
+    return '<i>No description provided</i>';
+}
+
 function which_score_summary_name(plan)
 {
     var summaries = [
@@ -277,8 +287,7 @@ function load_plan_score(url, fields, message_section, score_section,
         // Clear out and repopulation description.
         clear_element(description);
         
-        description.innerHTML = 'Nar nar nar';
-
+        description.innerHTML = what_score_description(plan);
         description.appendChild(document.createElement('br'));
         description.appendChild(document.createElement('i'));
         description.lastChild.appendChild(document.createTextNode(
@@ -441,6 +450,7 @@ if(module !== undefined)
     module.exports = {
         format_url: format_url, nice_count: nice_count,
         nice_percent: nice_percent, nice_gap: nice_gap, date_age: date_age,
+        what_score_description: what_score_description,
         which_score_summary_name: which_score_summary_name,
         which_score_column_names: which_score_column_names,
         which_district_color: which_district_color
