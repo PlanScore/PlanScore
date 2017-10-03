@@ -1,4 +1,4 @@
-import unittest, unittest.mock, copy
+import unittest, unittest.mock
 from .. import data
 
 class TestData (unittest.TestCase):
@@ -80,8 +80,8 @@ class TestData (unittest.TestCase):
     def test_upload_clone(self):
         ''' data.Upload.clone() returns a copy with the right properties
         '''
-        districts1, districts2 = unittest.mock.Mock(), unittest.mock.Mock()
-        summary1, summary2 = unittest.mock.Mock(), unittest.mock.Mock()
+        districts1, districts2 = [1, 2, 3], [4, 5, 6]
+        summary1, summary2 = dict(a=1, b=2), dict(c=3, d=4)
         input = data.Upload(id='ID', key='whatever.json', districts=districts1, summary=summary1)
         self.assertIs(input.districts, districts1)
         self.assertIs(input.districts, districts1)
@@ -95,14 +95,18 @@ class TestData (unittest.TestCase):
         output2 = input.clone()
         self.assertEqual(output2.id, input.id)
         self.assertEqual(output2.key, input.key)
-        self.assertIs(output2.districts, input.districts)
-        self.assertIs(output2.summary, input.summary)
+        self.assertIsNot(output2.districts, input.districts)
+        self.assertIsNot(output2.summary, input.summary)
+        self.assertEqual(output2.districts, input.districts)
+        self.assertEqual(output2.summary, input.summary)
 
         output3 = input.clone(districts=None, summary=None)
         self.assertEqual(output3.id, input.id)
         self.assertEqual(output3.key, input.key)
-        self.assertIs(output3.districts, input.districts)
-        self.assertIs(output3.summary, input.summary)
+        self.assertIsNot(output3.districts, input.districts)
+        self.assertIsNot(output3.summary, input.summary)
+        self.assertEqual(output3.districts, input.districts)
+        self.assertEqual(output3.summary, input.summary)
     
     def test_upload_swing(self):
         ''' data.Upload.swing() adjusts votes in the right direction.
@@ -115,8 +119,9 @@ class TestData (unittest.TestCase):
             dict(totals={'Voters': 10, 'SLDL Rep Votes': 2, 'SLDL Dem Votes': 6}, tile=None),
             ]
 
-        bluer = data.Upload(id=None, key=None, districts=copy.deepcopy(districts))
-        redder = data.Upload(id=None, key=None, districts=copy.deepcopy(districts))
+        upload = data.Upload(id=None, key=None, districts=districts)
+        bluer = upload.clone()
+        redder = upload.clone()
 
         bluer.swing(.1)
         redder.swing(-.1)

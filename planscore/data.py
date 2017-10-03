@@ -1,4 +1,4 @@
-import json
+import json, copy
 
 UPLOAD_PREFIX = 'uploads/{id}/upload/'
 UPLOAD_INDEX_KEY = 'uploads/{id}/index.json'
@@ -86,8 +86,8 @@ class Upload:
     
     def clone(self, districts=None, summary=None):
         return Upload(self.id, self.key,
-            districts = districts or self.districts,
-            summary = summary or self.summary)
+            districts = districts or copy.deepcopy(self.districts),
+            summary = summary or copy.deepcopy(self.summary))
     
     @staticmethod
     def from_dict(data):
