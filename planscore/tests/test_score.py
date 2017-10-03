@@ -65,7 +65,7 @@ class TestScore (unittest.TestCase):
         output = score.calculate_gap(input)
         self.assertEqual(output.summary['US House Efficiency Gap'], 0)
 
-    def test_calculate_gap_ushouse(self):
+    def test_calculate_gap_upperhouse(self):
         ''' Efficiency gap can be correctly calculated for a State upper house election
         '''
         input = data.Upload(id=None, key=None,
@@ -79,7 +79,7 @@ class TestScore (unittest.TestCase):
         output = score.calculate_gap(input)
         self.assertEqual(output.summary['SLDU Efficiency Gap'], 0)
 
-    def test_calculate_gap_ushouse(self):
+    def test_calculate_gap_lowerhouse(self):
         ''' Efficiency gap can be correctly calculated for a State lower house election
         '''
         input = data.Upload(id=None, key=None,
