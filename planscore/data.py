@@ -62,7 +62,6 @@ class Upload:
             vote_count = totals[blue_key] + totals[red_key]
             new_blue_votes = (totals[blue_key]/vote_count + amount) * vote_count
             new_red_votes = (totals[red_key]/vote_count - amount) * vote_count
-            print(amount, ':', totals[blue_key], totals[red_key], '->', new_blue_votes, new_red_votes)
             totals[blue_key], totals[red_key] = new_blue_votes, new_red_votes
     
     def index_key(self):
