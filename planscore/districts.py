@@ -235,7 +235,7 @@ def score_precinct(partial, precinct, tile_zxy):
         overlap_area = overlap_geom.Area() / precinct_geom.Area()
         precinct_fraction = overlap_area * precinct_frac
     
-    for name in score.FIELD_NAMES:
+    for name in data.FIELD_NAMES:
         if name not in precinct['properties']:
             continue
         precinct_value = precinct_fraction * (precinct['properties'][name] or 0)

@@ -45,7 +45,7 @@ def get_upload():
 def get_plan():
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     geom_url_pattern = get_geom_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
-    return flask.render_template('plan.html', fields=score.FIELD_NAMES,
+    return flask.render_template('plan.html', fields=data.FIELD_NAMES,
         data_url_pattern=data_url_pattern, geom_url_pattern=geom_url_pattern)
 
 @app.route('/models/')

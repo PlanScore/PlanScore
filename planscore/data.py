@@ -5,6 +5,16 @@ UPLOAD_INDEX_KEY = 'uploads/{id}/index.json'
 UPLOAD_GEOMETRY_KEY = 'uploads/{id}/geometry.json'
 UPLOAD_DISTRICTS_KEY = 'uploads/{id}/districts/{index}.json'
 
+FIELD_NAMES = (
+    # Toy fields
+    'Voters', 'Blue Votes', 'Red Votes',
+
+    # Real fields
+    'Population', 'Voting-Age Population', 'Black Voting-Age Population',
+    'US Senate Rep Votes', 'US Senate Dem Votes', 'US House Rep Votes', 'US House Dem Votes',
+    'SLDU Rep Votes', 'SLDU Dem Votes', 'SLDL Rep Votes', 'SLDL Dem Votes',
+    )
+
 class Storage:
     ''' Wrapper for S3-related details.
     '''
