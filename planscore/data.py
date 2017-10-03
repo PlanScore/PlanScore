@@ -40,6 +40,31 @@ class Upload:
         self.districts = districts or []
         self.summary = summary or {}
     
+    def swing(self, amount):
+        ''' Swing the vote by a given amount (positive = Democratic)
+        '''
+        for district in self.districts:
+            totals = district['totals']
+            
+            if 'Blue Votes' in totals and 'Red Votes' in totals:
+                blue_key, red_key = 'Blue Votes', 'Red Votes'
+            elif 'US Senate Dem Votes' in totals and 'US Senate Rep Votes' in totals:
+                blue_key, red_key = 'US Senate Dem Votes', 'US Senate Rep Votes'
+            elif 'US House Dem Votes' in totals and 'US House Rep Votes' in totals:
+                blue_key, red_key = 'US House Dem Votes', 'US House Rep Votes'
+            elif 'SLDU Dem Votes' in totals and 'SLDU Rep Votes' in totals:
+                blue_key, red_key = 'SLDU Dem Votes', 'SLDU Rep Votes'
+            elif 'SLDL Dem Votes' in totals and 'SLDL Rep Votes' in totals:
+                blue_key, red_key = 'SLDL Dem Votes', 'SLDL Rep Votes'
+            else:
+                raise KeyError('Missing expectedparty votes')
+            
+            vote_count = totals[blue_key] + totals[red_key]
+            new_blue_votes = (totals[blue_key]/vote_count + amount) * vote_count
+            new_red_votes = (totals[red_key]/vote_count - amount) * vote_count
+            print(amount, ':', totals[blue_key], totals[red_key], '->', new_blue_votes, new_red_votes)
+            totals[blue_key], totals[red_key] = new_blue_votes, new_red_votes
+    
     def index_key(self):
         return UPLOAD_INDEX_KEY.format(id=self.id)
     
