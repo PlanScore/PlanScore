@@ -112,7 +112,7 @@ class TestData (unittest.TestCase):
         ''' data.Upload.swing() adjusts votes in the right direction.
         '''
         districts = [
-            dict(totals={'Voters': 10, 'Red Votes': 2, 'Blue Votes': 6}, tile=None),
+            dict(totals={'Voters': 10, 'Red Votes': 0, 'Blue Votes': 0}, tile=None),
             dict(totals={'Voters': 10, 'US Senate Rep Votes': 3, 'US Senate Dem Votes': 5}, tile=None),
             dict(totals={'Voters': 10, 'US House Rep Votes': 5, 'US House Dem Votes': 3}, tile=None),
             dict(totals={'Voters': 10, 'SLDU Rep Votes': 6, 'SLDU Dem Votes': 2}, tile=None),
@@ -123,8 +123,8 @@ class TestData (unittest.TestCase):
         bluer = upload.swing(.1)
         redder = upload.swing(-.1)
         
-        self.assertEqual(bluer.districts[0]['totals']['Red Votes'], 1.2, 'Should now have 1.2 red votes')
-        self.assertEqual(bluer.districts[0]['totals']['Blue Votes'], 6.8, 'Should now have 6.8 blue votes')
+        self.assertEqual(bluer.districts[0]['totals']['Red Votes'], 0, 'Should now have 0 red votes')
+        self.assertEqual(bluer.districts[0]['totals']['Blue Votes'], 0, 'Should now have 0 blue votes')
         self.assertEqual(bluer.districts[1]['totals']['US Senate Rep Votes'], 2.2, 'Should now have 2.2 red votes')
         self.assertEqual(bluer.districts[1]['totals']['US Senate Dem Votes'], 5.8, 'Should now have 5.8 blue votes')
         self.assertEqual(bluer.districts[2]['totals']['US House Rep Votes'], 4.2, 'Should now have 4.2 red votes')
@@ -134,8 +134,8 @@ class TestData (unittest.TestCase):
         self.assertEqual(bluer.districts[4]['totals']['SLDL Rep Votes'], 1.2, 'Should now have 1.2 red votes')
         self.assertEqual(bluer.districts[4]['totals']['SLDL Dem Votes'], 6.8, 'Should now have 6.8 blue votes')
         
-        self.assertEqual(redder.districts[0]['totals']['Red Votes'], 2.8, 'Should now have 2.8 red votes')
-        self.assertEqual(redder.districts[0]['totals']['Blue Votes'], 5.2, 'Should now have 5.2 blue votes')
+        self.assertEqual(redder.districts[0]['totals']['Red Votes'], 0, 'Should now have 0 red votes')
+        self.assertEqual(redder.districts[0]['totals']['Blue Votes'], 0, 'Should now have 0 blue votes')
         self.assertEqual(redder.districts[1]['totals']['US Senate Rep Votes'], 3.8, 'Should now have 3.8 red votes')
         self.assertEqual(redder.districts[1]['totals']['US Senate Dem Votes'], 4.2, 'Should now have 4.2 blue votes')
         self.assertEqual(redder.districts[2]['totals']['US House Rep Votes'], 5.8, 'Should now have 5.8 red votes')

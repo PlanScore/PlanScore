@@ -62,9 +62,11 @@ class Upload:
                 raise KeyError('Missing expected party votes')
             
             vote_count = totals[blue_key] + totals[red_key]
-            new_blue_votes = (totals[blue_key]/vote_count + amount) * vote_count
-            new_red_votes = (totals[red_key]/vote_count - amount) * vote_count
-            totals[blue_key], totals[red_key] = new_blue_votes, new_red_votes
+            
+            if vote_count > 0:
+                new_blue_votes = (totals[blue_key]/vote_count + amount) * vote_count
+                new_red_votes = (totals[red_key]/vote_count - amount) * vote_count
+                totals[blue_key], totals[red_key] = new_blue_votes, new_red_votes
         
         return swung
     
