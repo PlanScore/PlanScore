@@ -1,4 +1,4 @@
-import io, os, gzip, posixpath, json
+import io, os, gzip, posixpath, json, collections
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import prepare_state, util, data, constants
@@ -104,46 +104,66 @@ def score_district(s3, bucket, district_geom, tiles_prefix):
     
     return totals, tile_list, output.getvalue()
 
-def calculate_gap(upload):
+def calculate_gap(original_upload):
+    ''' Return a copied Upload object with populated summary.
     '''
-    '''
-    summary_dict, gaps = {}, {
+    gaps = {
         'Red/Blue': ('Red Votes', 'Blue Votes'),
         'US House': ('US House Rep Votes', 'US House Dem Votes'),
         'SLDU': ('SLDU Rep Votes', 'SLDU Dem Votes'),
         'SLDL': ('SLDL Rep Votes', 'SLDL Dem Votes'),
         }
     
-    for (prefix, (red_field, blue_field)) in gaps.items():
-        election_votes, wasted_red, wasted_blue, red_wins, blue_wins = 0, 0, 0, 0, 0
-
-        for district in upload.districts:
-            red_votes = district['totals'].get(red_field) or 0
-            blue_votes = district['totals'].get(blue_field) or 0
-            district_votes = red_votes + blue_votes
-            election_votes += district_votes
-            win_threshold = district_votes / 2
+    # Prepare dictionary of vote swings
+    swings = {
+        0.: original_upload,
+        -.1: original_upload.swing(-.1),
+        .1: original_upload.swing(.1)
+        }
+        
+    # Collect summaries with a variety of swing amounts
+    swing_summaries = collections.defaultdict(dict)
     
-            if red_votes > blue_votes:
-                red_wins += 1
-                wasted_red += red_votes - win_threshold # surplus
-                wasted_blue += blue_votes # loser
-            elif blue_votes > red_votes:
-                blue_wins += 1
-                wasted_blue += blue_votes - win_threshold # surplus
-                wasted_red += red_votes # loser
+    for (swing, upload) in swings.items():
+        for (prefix, (red_field, blue_field)) in gaps.items():
+            election_votes, wasted_red, wasted_blue, red_wins, blue_wins = 0, 0, 0, 0, 0
+
+            for district in upload.districts:
+                red_votes = district['totals'].get(red_field) or 0
+                blue_votes = district['totals'].get(blue_field) or 0
+                district_votes = red_votes + blue_votes
+                election_votes += district_votes
+                win_threshold = district_votes / 2
+    
+                if red_votes > blue_votes:
+                    red_wins += 1
+                    wasted_red += red_votes - win_threshold # surplus
+                    wasted_blue += blue_votes # loser
+                elif blue_votes > red_votes:
+                    blue_wins += 1
+                    wasted_blue += blue_votes - win_threshold # surplus
+                    wasted_red += red_votes # loser
+                else:
+                    pass # raise ValueError('Unlikely 50/50 split')
+
+            if election_votes > 0:
+                efficiency_gap = (wasted_red - wasted_blue) / election_votes
             else:
-                pass # raise ValueError('Unlikely 50/50 split')
+                efficiency_gap = None
 
-        if election_votes > 0:
-            efficiency_gap = (wasted_red - wasted_blue) / election_votes
-        else:
-            efficiency_gap = None
-
-        key = 'Efficiency Gap' if (prefix == 'Red/Blue') else '{} Efficiency Gap'.format(prefix)
-        summary_dict[key] = efficiency_gap
+            key = 'Efficiency Gap' if (prefix == 'Red/Blue') else '{} Efficiency Gap'.format(prefix)
+            swing_summaries[key][swing] = efficiency_gap
     
-    return upload.clone(summary=summary_dict)
+    summary_dict = dict(
+        # Simple key=number for each non-swing vote count
+        {key: swings[0.] for (key, swings) in swing_summaries.items()},
+
+        # Additional dictionary of gaps at each swing value
+        Swings={key: list(sorted(swings.items()))
+            for (key, swings) in swing_summaries.items()}
+        )
+    
+    return original_upload.clone(summary=summary_dict)
 
 def put_upload_index(s3, bucket, upload):
     ''' Save a JSON index file for this upload.

@@ -36,6 +36,11 @@ class TestScore (unittest.TestCase):
         
         output = score.calculate_gap(input)
         self.assertEqual(output.summary['Efficiency Gap'], 0)
+        
+        swings = dict(output.summary['Swings']['Efficiency Gap'])
+        self.assertAlmostEqual(swings[-.1], .2, msg='Should see slight +blue EG with a +red vote swing')
+        self.assertAlmostEqual(swings[0], 0, msg='Should see identical EG with unchanged vote swing')
+        self.assertAlmostEqual(swings[.1], -.2, msg='Should see slight +red EG with a +blue vote swing')
 
     def test_calculate_gap_unfair(self):
         ''' Efficiency gap can be correctly calculated for an unfair election
@@ -50,6 +55,11 @@ class TestScore (unittest.TestCase):
         
         output = score.calculate_gap(input)
         self.assertEqual(output.summary['Efficiency Gap'], -.25)
+        
+        swings = dict(output.summary['Swings']['Efficiency Gap'])
+        self.assertAlmostEqual(swings[-.1], -.05, msg='Should see lesser +red EG with a +red vote swing')
+        self.assertAlmostEqual(swings[0], -.25, msg='Should see identical EG with unchanged vote swing')
+        self.assertAlmostEqual(swings[.1], -.45, msg='Should see larger +red EG with a +blue vote swing')
 
     def test_calculate_gap_ushouse(self):
         ''' Efficiency gap can be correctly calculated for a U.S. House election
