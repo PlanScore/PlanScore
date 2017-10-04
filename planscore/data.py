@@ -41,9 +41,11 @@ class Upload:
         self.summary = summary or {}
     
     def swing(self, amount):
-        ''' Swing the vote by a given amount (positive = Democratic)
+        ''' Return a clone with the vote swung by a given amount (positive = Democratic).
         '''
-        for district in self.districts:
+        swung = self.clone()
+        
+        for district in swung.districts:
             totals = district['totals']
             
             if 'Blue Votes' in totals and 'Red Votes' in totals:
@@ -57,12 +59,14 @@ class Upload:
             elif 'SLDL Dem Votes' in totals and 'SLDL Rep Votes' in totals:
                 blue_key, red_key = 'SLDL Dem Votes', 'SLDL Rep Votes'
             else:
-                raise KeyError('Missing expectedparty votes')
+                raise KeyError('Missing expected party votes')
             
             vote_count = totals[blue_key] + totals[red_key]
             new_blue_votes = (totals[blue_key]/vote_count + amount) * vote_count
             new_red_votes = (totals[red_key]/vote_count - amount) * vote_count
             totals[blue_key], totals[red_key] = new_blue_votes, new_red_votes
+        
+        return swung
     
     def index_key(self):
         return UPLOAD_INDEX_KEY.format(id=self.id)

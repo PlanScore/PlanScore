@@ -120,11 +120,8 @@ class TestData (unittest.TestCase):
             ]
 
         upload = data.Upload(id=None, key=None, districts=districts)
-        bluer = upload.clone()
-        redder = upload.clone()
-
-        bluer.swing(.1)
-        redder.swing(-.1)
+        bluer = upload.swing(.1)
+        redder = upload.swing(-.1)
         
         self.assertEqual(bluer.districts[0]['totals']['Red Votes'], 1.2, 'Should now have 1.2 red votes')
         self.assertEqual(bluer.districts[0]['totals']['Blue Votes'], 6.8, 'Should now have 6.8 blue votes')
