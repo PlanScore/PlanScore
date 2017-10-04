@@ -114,11 +114,27 @@ def calculate_gap(original_upload):
         'SLDL': ('SLDL Rep Votes', 'SLDL Dem Votes'),
         }
     
-    # Prepare dictionary of vote swings
+    # Prepare dictionary of vote swings for sensitivity testing
     swings = {
         0.: original_upload,
-        -.1: original_upload.swing(-.1),
-        .1: original_upload.swing(.1)
+
+        # +Red vote swings
+        -.01: original_upload.swing(-.01),
+        -.02: original_upload.swing(-.02),
+        -.03: original_upload.swing(-.03),
+        -.04: original_upload.swing(-.04),
+        -.05: original_upload.swing(-.05),
+        -.07: original_upload.swing(-.07),
+        -.10: original_upload.swing(-.10),
+
+        # +Blue vote swings
+        .01: original_upload.swing(.01),
+        .02: original_upload.swing(.02),
+        .03: original_upload.swing(.03),
+        .04: original_upload.swing(.04),
+        .05: original_upload.swing(.05),
+        .07: original_upload.swing(.07),
+        .10: original_upload.swing(.10),
         }
         
     # Collect summaries with a variety of swing amounts
