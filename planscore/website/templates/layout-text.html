@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>{% block title %}{% endblock %} — PlanScore</title>
+	<link rel="stylesheet" href="https://writ.cmcenroe.me/writ.css" />
+	<link rel="stylesheet" href="{{ digested_static_url('columns.css') }}" />
+	<link rel="stylesheet" href="{{ digested_static_url('text.css') }}" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	{% block head %}{% endblock %}
+</head>
+<body>
+    <main class="container">
+      <div class="row clearfix">
+        <section class="column one-quarter">
+            <h1><a href="{{ url_for('get_index') }}"><img src="{{ digested_static_url('logo.png') }}" width="171" height="74" alt="PlanScore"></a></h1>
+        </section>
+        <section class="column three-quarters">
+            {% block content %}{% endblock %}
+        </section>
+      </div>
+    </main>
+</body>
+</html>
