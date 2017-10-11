@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>PlanScore</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="https://writ.cmcenroe.me/writ.css" />
+	<link rel="stylesheet" href="{{ digested_static_url('columns.css') }}" />
+	<link rel="stylesheet" href="{{ digested_static_url('text.css') }}" />
+    <style lang="text/css">
+    
+        body
+        {
+            background-image: url("{{ url_for('static', filename='header-banner.jpg') }}");
+            background-repeat: no-repeat;
+            background-position: center -80px;
+            background-size: 1772.5px 300px;
+        }
+        
+        body header
+        {
+            text-align: left;
+            height: 220px;
+        }
+        
+        body header h1
+        {
+        }
+
+        nav
+        {
+            margin-top: 1.5rem;
+            text-align: right;
+        }
+        
+        nav a
+        {
+            margin-left: 1.5rem;
+            color: #fff !important;
+            text-decoration: none;
+            font-size: 1.5rem;
+        }
+
+        h1 a, h2 a { color: inherit !important; text-decoration: none !important }
+
+    </style>
+</head>
+<body>
+    <header class="container">
+      <div class="row clearfix">
+        <h1 class="column half">
+          <img src="{{ url_for('static', filename='Logo-Home.png') }}" width="256" height="113" alt="PlanScore">
+        </h1>
+        <nav class="column half">
+            <a href="{{ url_for('get_ourplan_page') }}">Our Plan</a>
+            <a href="{{ url_for('get_about_page') }}">About Us</a>
+        </nav>
+      </div>
+    </header>
+    <main class="container">
+      <div class="row clearfix">
+        <section class="column three-quarters flow-opposite">
+            <h2>Measuring Partisan Gerrymandering</h2>
+            <p>
+                Partisan gerrymandering is a deeply undemocratic practice. It produces state legislatures and congressional delegations that look nothing like the voters they are meant to represent. The basic notion that in a democracy, the people rule, is thus subverted. In a gerrymandered state, it is the will of the mapmaking party that governs.
+            </p>
+            <p>
+                Before gerrymandering can be stopped, it must be understood. At PlanScore, we will present detailed comparative and historical information about the partisan asymmetries of past and present district plans. We will also provide a first-of-its-kind scoring service for new plans, allowing users to upload maps and instantly receive projected data about their partisan consequences. Previously, this sort of analysis was available only to the parties’ line-drawers. Now it will be accessible to everyone, in the process transforming the politics, litigation, and coverage of redistricting. Thanks to PlanScore, the 2020 cycle will be the first in which gerrymanders are recognized as soon as they are unveiled.
+            </p>
+            <ul>
+                <li><a href="{{ url_for('get_ourplan_page') }}">Our Plan</a></li>
+                <li><a href="{{ url_for('get_about_page') }}">About Us</a></li>
+            </ul>
+        </section>
+      </div>
+      <footer class="row clearfix">
+        <div class="column three-quarters flow-opposite">
+            Contact us: <a href="mailto:info@planscore.org">info@planscore.org</a>
+        </div>
+      </footer>
+    </main>
+</body>
+</html>

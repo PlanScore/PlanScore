@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>{% block title %}{% endblock %} — PlanScore</title>
+	<link rel="stylesheet" href="https://writ.cmcenroe.me/writ.css" />
+	<link rel="stylesheet" href="{{ digested_static_url('columns.css') }}" />
+	<link rel="stylesheet" href="{{ digested_static_url('text.css') }}" />
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	{% block head %}{% endblock %}
+    <style lang="text/css">
+    
+        nav
+        {
+            margin-top: 1.5rem;
+            text-align: right;
+        }
+        
+        nav a
+        {
+            margin-left: 1.5rem;
+        }
+        
+    </style>
+</head>
+<body>
+    <main class="container">
+      <div class="row clearfix">
+        <section class="column one-quarter">
+            <h1><a href="{{ url_for('get_home_page') }}"><img src="{{ digested_static_url('logo.png') }}" width="171" height="74" alt="PlanScore"></a></h1>
+        </section>
+        <section class="column three-quarters">
+            <nav>
+                <a href="{{ url_for('get_home_page') }}">Home</a>
+                <a href="{{ url_for('get_ourplan_page') }}">Our Plan</a>
+                <a href="{{ url_for('get_about_page') }}">About Us</a>
+            </nav>
+            {% block content %}{% endblock %}
+        </section>
+      </div>
+      <footer class="row clearfix">
+        <div class="column three-quarters flow-opposite">
+            Contact us: <a href="mailto:info@planscore.org">info@planscore.org</a>
+        </div>
+      </footer>
+    </main>
+</body>
+</html>

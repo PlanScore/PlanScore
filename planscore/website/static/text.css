@@ -1,0 +1,29 @@
+body, h4
+{
+    font-family: Georgia, Palatino, Lucida Bright, Book Antiqua, serif;
+    font-size: 16px;
+    color: #606980;
+    background-color: #f6f6f6;
+}
+
+h2, h3
+{
+    font-family: Helvetica, sans-serif;
+    font-weight: normal;
+    font-size: 32px;
+}
+
+h3
+{
+    font-size: 23px;
+}
+
+h4
+{
+    font-weight: bold;
+}
+
+a, a:link { color: #2E8CCF; text-decoration: underline }
+a:visited { color: #6D73C2 }
+
+h1 a, h2 a { color: inherit !important; text-decoration: none !important }
