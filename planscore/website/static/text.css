@@ -22,3 +22,8 @@ h4
 {
     font-weight: bold;
 }
+
+a, a:link { color: #2E8CCF; text-decoration: underline }
+a:visited { color: #6D73C2 }
+
+h1 a, h2 a { color: inherit !important; text-decoration: none !important }

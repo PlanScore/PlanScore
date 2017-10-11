@@ -52,7 +52,6 @@
           <img src="{{ url_for('static', filename='Logo-Home.png') }}" width="256" height="113" alt="PlanScore">
         </h1>
         <nav class="column half">
-            <a href="{{ url_for('get_home_page') }}">Home</a>
             <a href="{{ url_for('get_ourplan_page') }}">Our Plan</a>
             <a href="{{ url_for('get_about_page') }}">About</a>
         </nav>
@@ -74,6 +73,11 @@
             </ul>
         </section>
       </div>
+      <footer class="row clearfix">
+        <div class="column three-quarters flow-opposite">
+            Contact us: <a href="mailto:info@planscore.org">info@planscore.org</a>
+        </div>
+      </footer>
     </main>
 </body>
 </html>

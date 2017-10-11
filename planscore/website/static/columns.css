@@ -5,6 +5,11 @@
 body
 {
     margin: 0;
+}
+
+footer
+{
+    margin-top: 4rem;
     margin-bottom: 4rem;
 }
 
