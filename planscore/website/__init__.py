@@ -32,15 +32,15 @@ def digested_static_url(filename):
 def get_digested_file(digest, filename):
     return flask.send_from_directory(flask.current_app.static_folder, filename)
 
-@app.route('/')
-def get_index():
+@app.route('/old-index.html')
+def get_old_index():
     return flask.render_template('index.html')
 
 @app.route('/our-plan.html')
 def get_ourplan_page():
     return flask.render_template('our-plan.html')
 
-@app.route('/new-home.html')
+@app.route('/')
 def get_home_page():
     return flask.render_template('home.html')
 
