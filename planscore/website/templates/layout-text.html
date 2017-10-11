@@ -25,20 +25,20 @@
         a:visited { color: #6D73C2 }
 
         h1 a, h2 a { color: inherit !important; text-decoration: none !important }
-
+        
     </style>
 </head>
 <body>
     <main class="container">
       <div class="row clearfix">
         <section class="column one-quarter">
-            <h1><a href="{{ url_for('get_index') }}"><img src="{{ digested_static_url('logo.png') }}" width="171" height="74" alt="PlanScore"></a></h1>
+            <h1><a href="{{ url_for('get_home_page') }}"><img src="{{ digested_static_url('logo.png') }}" width="171" height="74" alt="PlanScore"></a></h1>
         </section>
         <section class="column three-quarters">
             <nav>
-                <a href="yo">Home</a>
-                <a href="what">Our Plan</a>
-                <a href="yes">About</a>
+                <a href="{{ url_for('get_home_page') }}">Home</a>
+                <a href="{{ url_for('get_ourplan_page') }}">Our Plan</a>
+                <a href="{{ url_for('get_about_page') }}">About</a>
             </nav>
             {% block content %}{% endblock %}
         </section>

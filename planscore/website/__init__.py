@@ -36,13 +36,17 @@ def get_digested_file(digest, filename):
 def get_index():
     return flask.render_template('index.html')
 
-@app.route('/new-home/')
-def get_home():
+@app.route('/our-plan.html')
+def get_ourplan_page():
+    return flask.render_template('our-plan.html')
+
+@app.route('/new-home.html')
+def get_home_page():
     return flask.render_template('home.html')
 
-@app.route('/text-page/')
-def get_textpage():
-    return flask.render_template('text.html')
+@app.route('/about.html')
+def get_about_page():
+    return flask.render_template('about.html')
 
 @app.route('/upload.html')
 def get_upload():
