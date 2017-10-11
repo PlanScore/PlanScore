@@ -1,13 +1,24 @@
-body
+body, h4
 {
-    font-family: Georgia;
+    font-family: Georgia, Palatino, Lucida Bright, Book Antiqua, serif;
     font-size: 16px;
     color: #606980;
+    background-color: #FDF6E4;
 }
 
-h2
+h2, h3
 {
-    font-family: Helvetica;
+    font-family: Helvetica, sans-serif;
     font-weight: normal;
     font-size: 32px;
+}
+
+h3
+{
+    font-size: 23px;
+}
+
+h4
+{
+    font-weight: bold;
 }

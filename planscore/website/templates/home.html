@@ -11,22 +11,37 @@
     
         body
         {
-            background: url("{{ url_for('static', filename='header-banner.jpg') }}") no-repeat top center;
+            background-image: url("{{ url_for('static', filename='header-banner.jpg') }}");
+            background-repeat: no-repeat;
+            background-position: center -80px;
             background-size: 1772.5px 300px;
         }
         
         body header
         {
             text-align: left;
-            height: 300px;
+            height: 220px;
         }
         
         body header h1
         {
-            position: relative;
-            top: 123px;
-            margin: 0;
         }
+
+        nav
+        {
+            margin-top: 1.5rem;
+            text-align: right;
+        }
+        
+        nav a
+        {
+            margin-left: 1.5rem;
+            color: #fff !important;
+            text-decoration: none;
+            font-size: 1.5rem;
+        }
+
+        h1 a, h2 a { color: inherit !important; text-decoration: none !important }
 
     </style>
 </head>
@@ -36,6 +51,11 @@
         <h1 class="column half">
           <img src="{{ url_for('static', filename='Logo-Home.png') }}" width="256" height="113" alt="PlanScore">
         </h1>
+        <nav class="column half">
+            <a href="yo">Home</a>
+            <a href="what">Our Plan</a>
+            <a href="yes">About</a>
+        </nav>
       </div>
     </header>
     <main class="container">

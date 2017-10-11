@@ -10,13 +10,13 @@ body
 /* Medium screens (640px) */
 @media (min-width: 40rem)
 { 
-  html { font-size: 112%; }
+  
 }
 
 /* Large screens (1024px) */
 @media (min-width: 64rem)
 { 
-  html { font-size: 120%; }
+  
 }
 
 *, *:before, *:after
@@ -33,7 +33,7 @@ body
   width: 90%;
 }
 
-@media (min-width: 40rem)
+@media (min-width: 840px)
 {
   .column {
     float: left;
