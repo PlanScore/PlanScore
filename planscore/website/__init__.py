@@ -33,7 +33,7 @@ def get_digested_file(digest, filename):
     return flask.send_from_directory(flask.current_app.static_folder, filename)
 
 @app.route('/')
-def get_index():
+def get_home_page():
     return flask.render_template('home.html')
 
 @app.route('/old-index.html')
@@ -45,8 +45,8 @@ def get_ourplan_page():
     return flask.render_template('our-plan.html')
 
 @app.route('/new-home.html')
-def get_home_page():
-    return flask.render_template('home.html')
+def get_old_home_page():
+    return '<html><head><meta http-equiv="refresh" content="0; url=https://planscore.org/"></head></html>'
 
 @app.route('/about.html')
 def get_about_page():
