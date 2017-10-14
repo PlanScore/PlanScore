@@ -1,6 +1,16 @@
 # PlanScore
 
-Coming soon.
+Partisan gerrymandering is a deeply undemocratic practice. It produces state
+legislatures and congressional delegations that look nothing like the voters
+they are meant to represent.
+
+At PlanScore, we will present detailed comparative and historical information
+about the partisan asymmetries of past and present district plans. We will also
+provide a first-of-its-kind scoring service for new plans, allowing users to
+upload maps and instantly receive projected data about their partisan
+consequences. Previously, this sort of analysis was available only to the
+parties’ line-drawers. Now it will be accessible to everyone, in the process
+transforming the politics, litigation, and coverage of redistricting.
 
 Install for Local Development
 ---
