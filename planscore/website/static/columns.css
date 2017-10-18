@@ -13,6 +13,12 @@ footer
     margin-bottom: 4rem;
 }
 
+footer a
+{
+    white-space: nowrap;
+    margin-right: .2em;
+}
+
 /* Medium screens (640px) */
 @media (min-width: 40rem)
 { 
