@@ -16,12 +16,6 @@ ENDPOINT_S3 = 'http://{}:4572'.format(host_address)
 ENDPOINT_LAM = 'http://{}:4574'.format(host_address)
 AWS_CREDS = dict(aws_access_key_id='nobody', aws_secret_access_key='nothing')
 CODE_PATH = arguments.code_path
-FUNCTIONS = [
-    ('PlanScore-UploadFields', 'lambda.upload_fields', 3),
-    ('PlanScore-AfterUpload', 'lambda.after_upload', 30),
-    ('PlanScore-RunDistrict', 'lambda.run_district', 300),
-    ('PlanScore-ScoreDistrictPlan', 'lambda.score_plan', 30),
-    ]
 
 # S3 Bucket setup
 
@@ -79,5 +73,5 @@ env = {
 
 print('    Environment:', ' '.join(['='.join(kv) for kv in env.items()]))
 
-for (function_name, handler, timeout) in FUNCTIONS:
+for function_name in deploy.functions.keys():
     deploy.publish_function(lam, function_name, CODE_PATH, env, 'nobody')

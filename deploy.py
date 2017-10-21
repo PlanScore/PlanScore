@@ -11,6 +11,7 @@ if 'AWS_LAMBDA_DLQ_ARN' in os.environ:
 
 functions = {
     'PlanScore-UploadFields': dict(Handler='lambda.upload_fields', Timeout=3, **common),
+    'PlanScore-Callback': dict(Handler='lambda.callback', Timeout=3, **common),
     'PlanScore-AfterUpload': dict(Handler='lambda.after_upload', Timeout=30, **common),
     'PlanScore-RunDistrict': dict(Handler='lambda.run_district', Timeout=300, **common),
     'PlanScore-ScoreDistrictPlan': dict(Handler='lambda.score_plan', Timeout=30, **common),
