@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys, argparse, boto3, os, copy
+import sys, argparse, boto3, os, copy, time
 import botocore.exceptions
 
 common = dict(
@@ -19,6 +19,7 @@ functions = {
 def publish_function(lam, name, path, env, role=None):
     ''' Create or update the named function to Lambda.
     '''
+    start_time = time.time()
     function_kwargs = copy.deepcopy(functions[name])
     function_kwargs['Environment']['Variables'].update(env)
     
@@ -41,6 +42,8 @@ def publish_function(lam, name, path, env, role=None):
         lam.update_function_code(FunctionName=name, ZipFile=code_bytes)
         print('    * update function configuration', name, file=sys.stderr)
         lam.update_function_configuration(FunctionName=name, **function_kwargs)
+    
+    print('      done in {:.1f} seconds'.format(time.time() - start_time), file=sys.stderr)
 
 parser = argparse.ArgumentParser(description='Update Lambda function.')
 parser.add_argument('path', help='Function code path')
