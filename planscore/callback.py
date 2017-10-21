@@ -1,10 +1,12 @@
 import boto3, itsdangerous, urllib.parse
-from . import constants, util, website
+from . import after_upload, constants, util, website, data, score
 
-def get_uploaded_info(s3, bucket, key, id):
+def create_upload(s3, bucket, key, id):
     '''
     '''
-    pass
+    upload = data.Upload(id, key, [])
+    score.put_upload_index(s3, bucket, upload)
+    return upload
 
 def get_redirect_url(website_base, id):
     '''
@@ -18,6 +20,7 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
+    lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
     query = util.event_query_args(event)
     website_base = constants.WEBSITE_BASE
 
@@ -29,13 +32,17 @@ def lambda_handler(event, context):
             'headers': {'Access-Control-Allow-Origin': '*'},
             'body': 'Bad ID'
             }
-    
-    summary = get_uploaded_info(s3, query['bucket'], query['key'], id)
+
+    upload = create_upload(s3, query['bucket'], query['key'], id)
     redirect_url = get_redirect_url(website_base, id)
+
+    lam.invoke(FunctionName=after_upload.FUNCTION_NAME, InvocationType='Event',
+        Payload=upload.to_json().encode('utf8'))
+    
     return {
         'statusCode': '302',
         'headers': {'Location': redirect_url},
-        'body': summary
+        'body': ''
         }
 
 if __name__ == '__main__':

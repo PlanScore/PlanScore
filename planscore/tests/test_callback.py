@@ -15,21 +15,28 @@ class TestCallback (unittest.TestCase):
         constants.S3_ENDPOINT_URL = self.prev_s3_url
         constants.LAMBDA_ENDPOINT_URL = self.prev_lam_url
 
-    @unittest.mock.patch('planscore.callback.get_uploaded_info')
-    def test_lambda_handler(self, get_uploaded_info):
-        ''' Lambda event triggers the right call to get_uploaded_info()
+    @unittest.mock.patch('planscore.callback.create_upload')
+    @unittest.mock.patch('boto3.client')
+    def test_lambda_handler(self, boto3_client, create_upload):
+        ''' Lambda event triggers the right call to create_upload()
         '''
         query = {'id': 'id.k0_XwbOLGLUdv241zsPluNc3HYs', 'bucket': 'planscore',
             'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson'}
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
 
-        get_uploaded_info.return_value = 'get_uploaded_info.return_value'
+        create_upload.return_value = data.Upload(query['id'], query['key'])
         response = callback.lambda_handler({'queryStringParameters': query}, None)
         
         self.assertEqual(response['statusCode'], '302')
-        self.assertIn(get_uploaded_info.return_value, response['body'])
         self.assertEqual(response['headers']['Location'], 'https://example.com/plan.html?id')
         
-        self.assertEqual(get_uploaded_info.mock_calls[0][1][1:],
+        self.assertEqual(create_upload.mock_calls[0][1][1:],
             (query['bucket'], query['key'], 'id'))
+        
+        lambda_dict = boto3_client.return_value.invoke.mock_calls[0][2]
+        
+        self.assertEqual(lambda_dict['FunctionName'], 'PlanScore-AfterUpload')
+        self.assertEqual(lambda_dict['InvocationType'], 'Event')
+        self.assertIn(b'"id": "id.k0_XwbOLGLUdv241zsPluNc3HYs"', lambda_dict['Payload'])
+        self.assertIn(b'"key": "uploads/id/upload/file.geojson"', lambda_dict['Payload'])

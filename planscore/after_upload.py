@@ -3,6 +3,8 @@ import itsdangerous
 from osgeo import ogr
 from . import util, data, score, website, prepare_state, districts, constants
 
+FUNCTION_NAME = 'PlanScore-AfterUpload'
+
 ogr.UseExceptions()
 
 states_path = os.path.join(os.path.dirname(__file__), 'geodata', 'cb_2013_us_state_20m.geojson')
