@@ -98,7 +98,7 @@ class TestAfterUpload (unittest.TestCase):
     @unittest.mock.patch('planscore.after_upload.put_geojson_file')
     @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
     @unittest.mock.patch('planscore.after_upload.guess_state')
-    def test_get_uploaded_info_good_file(self, guess_state, fan_out_district_lambdas, put_geojson_file, put_upload_index, temporary_buffer_file):
+    def test_commence_upload_scoring_good_file(self, guess_state, fan_out_district_lambdas, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
@@ -115,13 +115,13 @@ class TestAfterUpload (unittest.TestCase):
         s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
-        info = after_upload.get_uploaded_info(s3, bucket, upload_key, id)
+        upload = data.Upload(id, upload_key)
+        info = after_upload.commence_upload_scoring(s3, bucket, upload)
         guess_state.assert_called_once_with(nullplan_path)
 
         temporary_buffer_file.assert_called_once_with('null-plan.geojson', None)
         self.assertIsNone(info)
     
-        upload = put_geojson_file.mock_calls[0][1][2]
         put_upload_index.assert_called_once_with(s3, bucket, upload)
         put_geojson_file.assert_called_once_with(s3, bucket, upload, nullplan_path)
         
@@ -136,7 +136,7 @@ class TestAfterUpload (unittest.TestCase):
     @unittest.mock.patch('planscore.after_upload.unzip_shapefile')
     @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
     @unittest.mock.patch('planscore.after_upload.guess_state')
-    def test_get_uploaded_info_zipped_file(self, guess_state, fan_out_district_lambdas, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
+    def test_commence_upload_scoring_zipped_file(self, guess_state, fan_out_district_lambdas, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'
@@ -153,14 +153,14 @@ class TestAfterUpload (unittest.TestCase):
         s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
-        info = after_upload.get_uploaded_info(s3, bucket, upload_key, id)
+        upload = data.Upload(id, upload_key)
+        info = after_upload.commence_upload_scoring(s3, bucket, upload)
         unzip_shapefile.assert_called_once_with(nullplan_path, os.path.dirname(nullplan_path))
         guess_state.assert_called_once_with(unzip_shapefile.return_value)
 
         temporary_buffer_file.assert_called_once_with('null-plan.shp.zip', None)
         self.assertIsNone(info)
     
-        upload = put_geojson_file.mock_calls[0][1][2]
         put_upload_index.assert_called_once_with(s3, bucket, upload)
         
         self.assertEqual(put_geojson_file.mock_calls[0][1][:3], (s3, bucket, upload))
@@ -171,13 +171,14 @@ class TestAfterUpload (unittest.TestCase):
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][2].key, upload.key)
         self.assertIs(fan_out_district_lambdas.mock_calls[0][1][3], unzip_shapefile.return_value)
     
-    def test_get_uploaded_info_bad_file(self):
+    def test_commence_upload_scoring_bad_file(self):
         ''' An invalid district file fails in an expected way
         '''
         s3, bucket = unittest.mock.Mock(), unittest.mock.Mock()
         s3.get_object.return_value = {'Body': io.BytesIO(b'Bad data')}
 
         with self.assertRaises(RuntimeError) as error:
-            after_upload.get_uploaded_info(s3, bucket, 'uploads/id/null-plan.geojson', 'id')
+            after_upload.commence_upload_scoring(s3, bucket,
+                data.Upload('id', 'uploads/id/null-plan.geojson'))
 
         self.assertEqual(str(error.exception), 'Failed to read GeoJSON data')
