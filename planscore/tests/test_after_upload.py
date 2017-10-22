@@ -17,39 +17,22 @@ class TestAfterUpload (unittest.TestCase):
         constants.LAMBDA_ENDPOINT_URL = self.prev_lam_url
         shutil.rmtree(self.tempdir)
 
-    @unittest.mock.patch('planscore.after_upload.get_uploaded_info')
-    def test_lambda_handler(self, get_uploaded_info):
-        ''' Lambda event triggers the right call to get_uploaded_info()
+    @unittest.mock.patch('planscore.after_upload.commence_upload_scoring')
+    def test_lambda_handler(self, commence_upload_scoring):
+        ''' Lambda event triggers the right call to commence_upload_scoring()
         '''
-        query = {'id': 'id.k0_XwbOLGLUdv241zsPluNc3HYs', 'bucket': 'planscore',
+        event = {'id': 'id', 'bucket': 'planscore',
             'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson'}
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
 
-        get_uploaded_info.return_value = 'get_uploaded_info.return_value'
-        response = after_upload.lambda_handler({'queryStringParameters': query}, None)
+        after_upload.lambda_handler(event, None)
         
-        self.assertEqual(response['statusCode'], '302')
-        self.assertIn(get_uploaded_info.return_value, response['body'])
-        self.assertEqual(response['headers']['Location'], 'https://example.com/plan.html?id')
+        self.assertEqual(commence_upload_scoring.mock_calls[0][1][1], event['bucket'])
         
-        self.assertEqual(get_uploaded_info.mock_calls[0][1][1:],
-            (query['bucket'], query['key'], 'id'))
-    
-    @unittest.mock.patch('planscore.after_upload.get_uploaded_info')
-    def test_lambda_handler_bad_id(self, get_uploaded_info):
-        ''' Lambda event with an incorrectly-signed ID fails as expected
-        '''
-        event = {
-            'queryStringParameters': {'id': 'id.WRONG'}
-            }
-
-        os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
-        response = after_upload.lambda_handler(event, None)
-        
-        self.assertFalse(get_uploaded_info.mock_calls)
-        self.assertEqual(response['statusCode'], '400')
-        self.assertIn('Bad ID', response['body'])
+        upload = commence_upload_scoring.mock_calls[0][1][2]
+        self.assertEqual(upload.id, event['id'])
+        self.assertEqual(upload.key, event['key'])
     
     def test_unzip_shapefile(self):
         ''' Shapefile is found within a zip file.

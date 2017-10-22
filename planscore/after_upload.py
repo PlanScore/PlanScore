@@ -46,6 +46,24 @@ def get_uploaded_info(s3, bucket, key, id):
     
     return None
 
+def commence_upload_scoring(s3, bucket, upload):
+    '''
+    '''
+    object = s3.get_object(Bucket=bucket, Key=upload.key)
+    
+    with util.temporary_buffer_file(os.path.basename(upload.key), object['Body']) as ul_path:
+        if os.path.splitext(ul_path)[1] == '.zip':
+            # Assume a shapefile
+            ds_path = unzip_shapefile(ul_path, os.path.dirname(ul_path))
+        else:
+            ds_path = ul_path
+        prefix = 'data/{}/001'.format(guess_state(ds_path))
+        score.put_upload_index(s3, bucket, upload)
+        put_geojson_file(s3, bucket, upload, ds_path)
+        
+        # Do this last - localstack invokes Lambda functions synchronously
+        fan_out_district_lambdas(bucket, prefix, upload, ds_path)
+
 def fan_out_district_lambdas(bucket, prefix, upload, path):
     '''
     '''
@@ -147,7 +165,12 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
-    query = util.event_query_args(event)
+    upload = data.Upload.from_dict(event)
+    
+    commence_upload_scoring(s3, event['bucket'], upload)
+    
+    return
+
     website_base = constants.WEBSITE_BASE
 
     try:

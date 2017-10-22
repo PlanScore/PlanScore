@@ -40,3 +40,18 @@ class TestCallback (unittest.TestCase):
         self.assertEqual(lambda_dict['InvocationType'], 'Event')
         self.assertIn(b'"id": "id.k0_XwbOLGLUdv241zsPluNc3HYs"', lambda_dict['Payload'])
         self.assertIn(b'"key": "uploads/id/upload/file.geojson"', lambda_dict['Payload'])
+    
+    @unittest.mock.patch('planscore.callback.create_upload')
+    def test_lambda_handler_bad_id(self, create_upload):
+        ''' Lambda event with an incorrectly-signed ID fails as expected
+        '''
+        event = {
+            'queryStringParameters': {'id': 'id.WRONG'}
+            }
+
+        os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
+        response = callback.lambda_handler(event, None)
+        
+        self.assertFalse(create_upload.mock_calls)
+        self.assertEqual(response['statusCode'], '400')
+        self.assertIn('Bad ID', response['body'])
