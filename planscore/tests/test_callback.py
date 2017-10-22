@@ -14,6 +14,20 @@ class TestCallback (unittest.TestCase):
         constants.WEBSITE_BASE = self.prev_website
         constants.S3_ENDPOINT_URL = self.prev_s3_url
         constants.LAMBDA_ENDPOINT_URL = self.prev_lam_url
+    
+    @unittest.mock.patch('planscore.score.put_upload_index')
+    def test_create_upload(self, put_upload_index):
+        ''' create_upload() makes the right call to put_upload_index().
+        '''
+        s3, bucket = unittest.mock.Mock(), unittest.mock.Mock()
+        callback.create_upload(s3, bucket, 'example-key', 'example-id')
+        
+        self.assertEqual(len(put_upload_index.mock_calls), 1)
+        self.assertEqual(len(put_upload_index.mock_calls[0][1]), 3)
+        
+        self.assertEqual(put_upload_index.mock_calls[0][1][:2], (s3, bucket))
+        self.assertEqual(put_upload_index.mock_calls[0][1][2].id, 'example-id')
+        self.assertEqual(put_upload_index.mock_calls[0][1][2].key, 'example-key')
 
     @unittest.mock.patch('planscore.callback.create_upload')
     @unittest.mock.patch('boto3.client')
