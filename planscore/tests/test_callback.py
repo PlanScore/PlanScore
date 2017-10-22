@@ -20,8 +20,8 @@ class TestCallback (unittest.TestCase):
     def test_lambda_handler(self, boto3_client, create_upload):
         ''' Lambda event triggers the right call to create_upload()
         '''
-        query = {'id': 'id.k0_XwbOLGLUdv241zsPluNc3HYs', 'bucket': 'planscore',
-            'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson'}
+        query = {'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson',
+            'id': 'id.k0_XwbOLGLUdv241zsPluNc3HYs', 'bucket': 'planscore-bucket'}
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
 
@@ -40,6 +40,7 @@ class TestCallback (unittest.TestCase):
         self.assertEqual(lambda_dict['InvocationType'], 'Event')
         self.assertIn(b'"id": "id.k0_XwbOLGLUdv241zsPluNc3HYs"', lambda_dict['Payload'])
         self.assertIn(b'"key": "uploads/id/upload/file.geojson"', lambda_dict['Payload'])
+        self.assertIn(b'"bucket": "planscore-bucket"', lambda_dict['Payload'])
     
     @unittest.mock.patch('planscore.callback.create_upload')
     def test_lambda_handler_bad_id(self, create_upload):

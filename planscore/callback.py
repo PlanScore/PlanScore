@@ -1,4 +1,4 @@
-import boto3, itsdangerous, urllib.parse
+import boto3, itsdangerous, urllib.parse, json
 from . import after_upload, constants, util, website, data, score
 
 def create_upload(s3, bucket, key, id):
@@ -34,10 +34,13 @@ def lambda_handler(event, context):
 
     upload = create_upload(s3, query['bucket'], query['key'], id)
     redirect_url = get_redirect_url(website_base, id)
+    
+    event = dict(bucket=query['bucket'])
+    event.update(upload.to_dict())
 
     lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
     lam.invoke(FunctionName=after_upload.FUNCTION_NAME, InvocationType='Event',
-        Payload=upload.to_json().encode('utf8'))
+        Payload=json.dumps(event).encode('utf8'))
     
     return {
         'statusCode': '302',
