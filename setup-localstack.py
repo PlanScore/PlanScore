@@ -35,12 +35,12 @@ def upload(prefix, basedir, pattern):
     for path in glob.glob(pattern):
         with open(path, 'rb') as file:
             data = file.read()
-        
+
         key = pp.join(prefix, pp.relpath(path, basedir))
-    
+
         s3.put_object(Bucket=BUCKETNAME, Key=key, ACL='public-read',
             Body=data, ContentType='text/json')
-        
+
         print('    Put object', key, 'from', file.name)
 
 prefix1 = pp.join('data', 'XX', '001')
@@ -68,7 +68,7 @@ upload(prefix4, basedir4, pp.join(basedir4, '*.*'))
 # Lambda function setup
 
 print('--> Set up Lambda', ENDPOINT_LAM)
-lam = boto3.client('lambda', endpoint_url=ENDPOINT_LAM, **AWS_CREDS)
+lam = boto3.client('lambda', endpoint_url=ENDPOINT_LAM, region_name='us-east-1', **AWS_CREDS)
 
 env = {
     'PLANSCORE_SECRET': 'localstack',
