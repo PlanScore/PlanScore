@@ -56,5 +56,4 @@ if __name__ == '__main__':
         if k in os.environ}
     
     lam = boto3.client('lambda', region_name='us-east-1')
-    role = env['AWS_IAM_ROLE'] if ('AWS_IAM_ROLE' in env) else None
-    publish_function(lam, args.name, args.path, env, role)
+    publish_function(lam, args.name, args.path, env, os.environ.get('AWS_IAM_ROLE'))
