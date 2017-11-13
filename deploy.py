@@ -17,7 +17,7 @@ functions = {
     'PlanScore-ScoreDistrictPlan': dict(Handler='lambda.score_plan', Timeout=30, **common),
     }
 
-def publish_function(lam, name, path, env, role=None):
+def publish_function(lam, name, path, env, role):
     ''' Create or update the named function to Lambda.
     '''
     start_time = time.time()
@@ -54,6 +54,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     env = {k: os.environ[k] for k in ('PLANSCORE_SECRET', 'WEBSITE_BASE', 'AWS')
         if k in os.environ}
-
+    
     lam = boto3.client('lambda', region_name='us-east-1')
-    publish_function(lam, args.name, args.path, env)
+    role = env['AWS_IAM_ROLE'] if ('AWS_IAM_ROLE' in env) else None
+    publish_function(lam, args.name, args.path, env, role)
