@@ -19,8 +19,13 @@ using older computers or mobile devices, site performance should
 > critical-path resources, depending on composition — the more JS you include,
 > the smaller the bundle must be.
 
-Code
+Maintenance
 --
 
+PlanScore may have numerous maintainers over time, so all decisions
+should be visibly recorded within Github using standard Github features.
 [Use Projects](https://github.com/PlanScore/PlanScore/projects), if applicable.
 Don’t commit directly to `master`, [use a pull request](https://github.com/PlanScore/PlanScore/pulls).
+
+Keep [the local use instructions working](README.md#install-for-local-development)
+so that future developers and maintainers can run PlanScore for development.
