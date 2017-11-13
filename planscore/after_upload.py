@@ -1,7 +1,8 @@
 import boto3, pprint, os, io, json, urllib.parse, gzip, functools, zipfile, itertools
-import itsdangerous
 from osgeo import ogr
 from . import util, data, score, website, prepare_state, districts, constants
+
+FUNCTION_NAME = 'PlanScore-AfterUpload'
 
 ogr.UseExceptions()
 
@@ -23,13 +24,12 @@ def unzip_shapefile(zip_path, zip_dir):
     
     return unzipped_path
 
-def get_uploaded_info(s3, bucket, key, id):
+def commence_upload_scoring(s3, bucket, upload):
     '''
     '''
-    object = s3.get_object(Bucket=bucket, Key=key)
-    upload = data.Upload(id, key, [])
+    object = s3.get_object(Bucket=bucket, Key=upload.key)
     
-    with util.temporary_buffer_file(os.path.basename(key), object['Body']) as ul_path:
+    with util.temporary_buffer_file(os.path.basename(upload.key), object['Body']) as ul_path:
         if os.path.splitext(ul_path)[1] == '.zip':
             # Assume a shapefile
             ds_path = unzip_shapefile(ul_path, os.path.dirname(ul_path))
@@ -41,8 +41,6 @@ def get_uploaded_info(s3, bucket, key, id):
         
         # Do this last - localstack invokes Lambda functions synchronously
         fan_out_district_lambdas(bucket, prefix, upload, ds_path)
-    
-    return None
 
 def fan_out_district_lambdas(bucket, prefix, upload, path):
     '''
@@ -145,25 +143,9 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
-    query = util.event_query_args(event)
-    website_base = constants.WEBSITE_BASE
-
-    try:
-        id = itsdangerous.Signer(constants.SECRET).unsign(query['id']).decode('utf8')
-    except itsdangerous.BadSignature:
-        return {
-            'statusCode': '400',
-            'headers': {'Access-Control-Allow-Origin': '*'},
-            'body': 'Bad ID'
-            }
+    upload = data.Upload.from_dict(event)
     
-    summary = get_uploaded_info(s3, query['bucket'], query['key'], id)
-    redirect_url = get_redirect_url(website_base, id)
-    return {
-        'statusCode': '302',
-        'headers': {'Location': redirect_url},
-        'body': summary
-        }
+    commence_upload_scoring(s3, event['bucket'], upload)
 
 if __name__ == '__main__':
     pass
