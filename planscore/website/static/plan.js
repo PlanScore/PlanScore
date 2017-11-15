@@ -51,7 +51,7 @@ function what_score_description_html(plan)
     {
         return plan['description'];
     }
-    
+
     return '<i>No description provided</i>';
 }
 
@@ -61,17 +61,17 @@ function which_score_summary_name(plan)
         'US House Efficiency Gap', 'Efficiency Gap',
         'SLDL Efficiency Gap', 'SLDU Efficiency Gap'
         ];
-    
+
     for(var i = 0; i < summaries.length; i++)
     {
         var name = summaries[i];
-        
+
         if(typeof plan.summary[name] === 'number')
         {
             return name;
         }
     }
-    
+
     return null;
 }
 
@@ -84,12 +84,12 @@ function which_score_column_names(plan)
             'US House Dem Votes', 'US House Rep Votes'
         ];
     }
-    
+
     if(typeof plan.summary['Efficiency Gap'] === 'number')
     {
         return ['Voters', 'Blue Votes', 'Red Votes'];
     }
-    
+
     return [];
 }
 
@@ -98,7 +98,7 @@ function which_district_color(district, plan)
     var totals = district.totals,
         color_red = '#D45557',
         color_blue = '#4D90D1';
-    
+
     if(typeof plan.summary['US House Efficiency Gap'] === 'number')
     {
         if(totals['US House Dem Votes'] > totals['US House Rep Votes']) {
@@ -116,7 +116,7 @@ function which_district_color(district, plan)
             return color_red;
         }
     }
-    
+
     // neutral gray
     return '#808080';
 }
@@ -165,7 +165,7 @@ function show_population_score(plan, score_pop)
     var summary_name = which_score_summary_name(plan);
 
     var populations = [];
-    
+
     for(var i = 0; i < plan.districts.length; i++)
     {
         var totals = plan.districts[i].totals;
@@ -178,10 +178,10 @@ function show_population_score(plan, score_pop)
             return;
         }
     }
-    
+
     var max_pop = Math.max.apply(null, populations),
         min_pop = Math.min.apply(null, populations);
-    
+
     clear_element(score_pop);
 
     var new_h3 = document.createElement('h3'),
@@ -197,7 +197,7 @@ function show_population_score(plan, score_pop)
         new_score.innerText = 'F';
     }
 
-    new_words.innerText = ('Largest district has ' 
+    new_words.innerText = ('Largest district has '
         + nice_percent(max_pop / min_pop - 1)
         + ' greater population than smallest district.');
 
@@ -214,15 +214,15 @@ function show_demographics_score(plan, score_dem)
     {
         return;
     }
-    
+
     var black_shares = [];
-    
+
     for(var i = 0; i < plan.districts.length; i++)
     {
         var totals = plan.districts[i].totals;
         black_shares.push(totals['Black Voting-Age Population'] / totals['Voting-Age Population']);
     }
-    
+
     clear_element(score_dem);
 
     var new_h3 = document.createElement('h3'),
@@ -238,7 +238,7 @@ function show_demographics_score(plan, score_dem)
         new_score.innerText = 'F';
     }
 
-    new_words.innerText = ('One district with ' 
+    new_words.innerText = ('One district with '
         + nice_percent(Math.max.apply(null, black_shares)) + ' minority population');
 
     score_dem.appendChild(new_h3);
@@ -252,7 +252,7 @@ function show_message(text, score_section, message_section)
     {
         message_section.removeChild(message_section.firstChild);
     }
-    
+
     message_section.appendChild(document.createElement('p'));
     message_section.firstChild.appendChild(document.createTextNode(text));
 
@@ -271,7 +271,7 @@ function load_plan_score(url, fields, message_section, score_section,
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
-    
+
     show_message('Loading district plan…', score_section, message_section);
 
     function on_loaded_score(plan, modified_at)
@@ -283,10 +283,10 @@ function load_plan_score(url, fields, message_section, score_section,
         } else {
             hide_message(score_section, message_section);
         }
-        
+
         // Clear out and repopulate description.
         clear_element(description);
-        
+
         description.innerHTML = what_score_description_html(plan);
         description.appendChild(document.createElement('br'));
         description.appendChild(document.createElement('i'));
@@ -294,32 +294,32 @@ function load_plan_score(url, fields, message_section, score_section,
             (date_age(modified_at) > 86400)
                 ? 'Uploaded on '+ modified_at.toLocaleDateString()
                 : 'Uploaded at '+ modified_at.toLocaleString()));
-        
+
         // Build list of columns
         var current_column = ['District'],
             all_columns = [current_column],
             field;
-        
+
         for(var j = 0; j < plan.districts.length; j++)
         {
             current_column.push(j + 1);
         }
-        
+
         for(var i in fields)
         {
             field = fields[i];
             current_column = [field];
             all_columns.push(current_column);
-            
+
             for(var j in plan.districts)
             {
                 current_column.push(plan.districts[j].totals[field]);
             }
         }
-        
+
         // Remove any column that doesn't belong
         var column_names = which_score_column_names(plan);
-        
+
         for(var i = all_columns.length - 1; i > 0; i--)
         {
             if(column_names.indexOf(all_columns[i][0]) === -1)
@@ -327,42 +327,42 @@ function load_plan_score(url, fields, message_section, score_section,
                 all_columns.splice(i, 1);
             }
         }
-        
+
         // Write table out to page
         var new_row = document.createElement('tr'),
             new_cell;
-        
+
         for(var i in all_columns)
         {
             new_cell = document.createElement('th');
             new_cell.innerText = all_columns[i][0];
             new_row.appendChild(new_cell);
         }
-        
+
         table.appendChild(new_row);
-        
+
         for(var j = 1; j < all_columns[0].length; j++)
         {
             new_row = document.createElement('tr');
             new_cell = document.createElement('td');
             new_cell.innerText = all_columns[0][j];
             new_row.appendChild(new_cell);
-        
+
             for(var i = 1; i < all_columns.length; i++)
             {
                 new_cell = document.createElement('td');
                 new_cell.innerText = nice_count(all_columns[i][j]);
                 new_row.appendChild(new_cell);
             }
-        
+
             table.appendChild(new_row);
         }
-        
+
         // Populate scores.
         show_efficiency_gap_score(plan, score_EG);
         show_population_score(plan, score_pop);
         show_demographics_score(plan, score_dem);
-        
+
         // Go on to load the map.
         load_plan_map(map_url, map_div, plan);
     }
@@ -397,7 +397,7 @@ function load_plan_map(url, div, plan)
                 return { weight: 2, fillOpacity: .5, color: which_district_color(district, plan) };
             }
             });
-    
+
         console.log('GeoJSON bounds:', geojson.getBounds());
 
         // Initialize the map on the passed div in the middle of the ocean
@@ -406,17 +406,17 @@ function load_plan_map(url, div, plan)
             center: [0, 0],
             zoom: 8
         });
-        
+
         var pane = map.createPane('labels');
         pane.style.zIndex = 650; // http://leafletjs.com/examples/map-panes/
         pane.style.pointerEvents = 'none';
-    
+
         // Add Toner tiles for base map
         L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}{r}.png', {
             attribution: '&copy;<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy;<a href="https://carto.com/attribution">CARTO</a>',
             maxZoom: 18
         }).addTo(map);
-        
+
         // Add a GeoJSON layer and fit it into view
         geojson.addTo(map);
         map.fitBounds(geojson.getBounds());
@@ -445,7 +445,7 @@ function load_plan_map(url, div, plan)
 }
 
 // Export functions for testing
-if(module !== undefined)
+if(typeof module !== 'undefined' && module.exports)
 {
     module.exports = {
         format_url: format_url, nice_count: nice_count,

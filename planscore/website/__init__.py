@@ -67,17 +67,17 @@ def get_plan():
 @app.route('/models/')
 def get_models():
     model_names = list()
-    
+
     for (base, _, files) in os.walk(MODELS_BASEDIR):
         if 'README.md' in files:
             model_names.append(os.path.relpath(base, MODELS_BASEDIR))
-    
+
     return flask.render_template('models.html', models=model_names)
 
 @app.route('/models/<name>/')
 def get_model(name):
     model_basedir = os.path.join(MODELS_BASEDIR, name)
-    
+
     with open(os.path.join(model_basedir, 'README.md')) as file:
         model_readme = markdown.markdown(file.read())
 
@@ -86,7 +86,7 @@ def get_model(name):
         model_files.extend([
             os.path.relpath(os.path.join(base, file), model_basedir)
             for file in files if file != 'README.md'])
-    
+
     return flask.render_template('model.html', name=name,
         readme=model_readme, files=model_files)
 
@@ -98,7 +98,7 @@ def get_model_file(name, path):
 @app.route('/_localstack/<path:path>')
 def get_localstack_lambda(path):
     ''' Proxy requests to Lambda functions running under localstack.
-    
+
         Provided for local development only. In production, these requests
         would be handled by AWS Cloudfront using Lambda proxy integration:
         http://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-create-api-as-simple-proxy-for-lambda.html#api-gateway-create-api-as-simple-proxy-for-lambda-test
@@ -114,11 +114,11 @@ def get_localstack_lambda(path):
         }[path]
 
     lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL,
-        aws_access_key_id='nobody', aws_secret_access_key='nothing')
+        aws_access_key_id='nobody', aws_secret_access_key='nothing', region_name='us-east-1')
 
     resp = lam.invoke(Payload=json.dumps(event).encode('utf8'),
         FunctionName=function_name, InvocationType='RequestResponse')
-    
+
     try:
         resp_data = json.load(resp['Payload'])
     except:
