@@ -2,7 +2,7 @@ import os, socket, urllib.parse
 
 def _local_url(port):
     ''' Generate a local URL with a given port number.
-        
+
         Host addresses will be different from localhost or 127.0.0.1, so that
         localstack S3 can be accessible from localstack Lambda in Docker.
     '''

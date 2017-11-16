@@ -9,7 +9,7 @@ class TestAfterUpload (unittest.TestCase):
         self.prev_s3_url, constants.S3_ENDPOINT_URL = constants.S3_ENDPOINT_URL, None
         self.prev_lam_url, constants.LAMBDA_ENDPOINT_URL = constants.LAMBDA_ENDPOINT_URL, None
         self.tempdir = tempfile.mkdtemp(prefix='TestAfterUpload-')
-    
+
     def tearDown(self):
         constants.SECRET = self.prev_secret
         constants.WEBSITE_BASE = self.prev_website
@@ -27,13 +27,13 @@ class TestAfterUpload (unittest.TestCase):
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
 
         after_upload.lambda_handler(event, None)
-        
+
         self.assertEqual(commence_upload_scoring.mock_calls[0][1][1], event['bucket'])
-        
+
         upload = commence_upload_scoring.mock_calls[0][1][2]
         self.assertEqual(upload.id, event['id'])
         self.assertEqual(upload.key, event['key'])
-    
+
     def test_unzip_shapefile(self):
         ''' Shapefile is found within a zip file.
         '''
@@ -41,10 +41,10 @@ class TestAfterUpload (unittest.TestCase):
         shp_path = after_upload.unzip_shapefile(zip_path, self.tempdir)
 
         self.assertEqual(shp_path, os.path.join(self.tempdir, 'null-plan.shp'))
-        
+
         for filename in ('null-plan.dbf', 'null-plan.prj', 'null-plan.shp', 'null-plan.shx'):
             self.assertTrue(os.path.exists(os.path.join(self.tempdir, filename)))
-    
+
     @unittest.mock.patch('gzip.compress')
     def test_put_geojson_file(self, compress):
         ''' Geometry GeoJSON file is posted to S3
@@ -57,13 +57,13 @@ class TestAfterUpload (unittest.TestCase):
             Key=upload.geometry_key.return_value,
             Body=compress.return_value, ContentEncoding='gzip',
             ACL='public-read', ContentType='text/json')
-    
+
     def test_get_redirect_url(self):
         ''' Expected redirect URL is returned from get_redirect_url()
         '''
         redirect_url = after_upload.get_redirect_url('https://planscore.org/', 'ID')
         self.assertEqual(redirect_url, 'https://planscore.org/plan.html?ID')
-    
+
     def test_guess_state(self):
         ''' Test that guess_state() guesses the correct U.S. state.
         '''
@@ -72,7 +72,7 @@ class TestAfterUpload (unittest.TestCase):
 
         nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
         self.assertEqual(after_upload.guess_state(nc_plan_path), 'NC')
-    
+
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
     def test_fan_out_district_lambdas(self, boto3_client, stdout):
@@ -81,7 +81,7 @@ class TestAfterUpload (unittest.TestCase):
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         after_upload.fan_out_district_lambdas('bucket-name', 'data/XX', upload, null_plan_path)
-        
+
         for (index, call) in enumerate(boto3_client.return_value.mock_calls):
             kwargs = call[2]
             self.assertEqual(kwargs['FunctionName'], districts.FUNCTION_NAME)
@@ -92,7 +92,7 @@ class TestAfterUpload (unittest.TestCase):
             self.assertIn(b'"id": "ID"', kwargs['Payload'])
             self.assertIn(b'"districts": [null, null]', kwargs['Payload'],
                 'Should have the right number of districts even though they are blanks')
-    
+
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.score.put_upload_index')
     @unittest.mock.patch('planscore.after_upload.put_geojson_file')
@@ -105,7 +105,7 @@ class TestAfterUpload (unittest.TestCase):
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
         guess_state.return_value = 'XX'
-        
+
         @contextlib.contextmanager
         def nullplan_file(*args):
             yield nullplan_path
@@ -121,15 +121,15 @@ class TestAfterUpload (unittest.TestCase):
 
         temporary_buffer_file.assert_called_once_with('null-plan.geojson', None)
         self.assertIsNone(info)
-    
+
         put_upload_index.assert_called_once_with(s3, bucket, upload)
         put_geojson_file.assert_called_once_with(s3, bucket, upload, nullplan_path)
-        
+
         self.assertEqual(len(fan_out_district_lambdas.mock_calls), 1)
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/001'))
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][2].key, upload.key)
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][3], nullplan_path)
-    
+
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.score.put_upload_index')
     @unittest.mock.patch('planscore.after_upload.put_geojson_file')
@@ -143,7 +143,7 @@ class TestAfterUpload (unittest.TestCase):
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.shp.zip'
         guess_state.return_value = 'XX'
-        
+
         @contextlib.contextmanager
         def nullplan_file(*args):
             yield nullplan_path
@@ -160,17 +160,17 @@ class TestAfterUpload (unittest.TestCase):
 
         temporary_buffer_file.assert_called_once_with('null-plan.shp.zip', None)
         self.assertIsNone(info)
-    
+
         put_upload_index.assert_called_once_with(s3, bucket, upload)
-        
+
         self.assertEqual(put_geojson_file.mock_calls[0][1][:3], (s3, bucket, upload))
         self.assertIs(put_geojson_file.mock_calls[0][1][3], unzip_shapefile.return_value)
-        
+
         self.assertEqual(len(fan_out_district_lambdas.mock_calls), 1)
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/001'))
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][2].key, upload.key)
         self.assertIs(fan_out_district_lambdas.mock_calls[0][1][3], unzip_shapefile.return_value)
-    
+
     def test_commence_upload_scoring_bad_file(self):
         ''' An invalid district file fails in an expected way
         '''

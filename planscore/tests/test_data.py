@@ -41,7 +41,7 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload2.key, upload1.key)
         self.assertEqual(upload2.districts, upload1.districts)
         self.assertEqual(upload2.summary, upload1.summary)
-    
+
         upload3 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json', districts=['yo', 'yo', 'yo'])
         upload4 = data.Upload.from_json(upload3.to_json())
 
@@ -49,7 +49,7 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload4.key, upload3.key)
         self.assertEqual(upload4.districts, upload3.districts)
         self.assertEqual(upload4.summary, upload3.summary)
-    
+
         upload5 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
             districts=['yo', 'yo', 'yo'], summary=['oi', 'oi', 'oi'])
         upload6 = data.Upload.from_json(upload5.to_json())
@@ -64,19 +64,19 @@ class TestData (unittest.TestCase):
         '''
         upload = data.Upload(id='ID', key='uploads/ID/upload/whatever.json')
         self.assertEqual(upload.index_key(), 'uploads/ID/index.json')
-    
+
     def test_upload_geometry_key(self):
         ''' data.Upload.geometry_key() correctly munges Upload.key
         '''
         upload = data.Upload(id='ID', key='uploads/ID/upload/whatever.json')
         self.assertEqual(upload.geometry_key(), 'uploads/ID/geometry.json')
-    
+
     def test_upload_district_key(self):
         ''' data.Upload.district_key() correctly munges Upload.key
         '''
         upload = data.Upload(id='ID', key='uploads/ID/upload/whatever.json')
         self.assertEqual(upload.district_key(999), 'uploads/ID/districts/999.json')
-    
+
     def test_upload_clone(self):
         ''' data.Upload.clone() returns a copy with the right properties
         '''
