@@ -23,7 +23,9 @@ development stack [LocalStack](https://github.com/localstack/localstack).
     [Python virtual environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/#virtualenv).
 
 2.  Install GDAL 2.1.3, a binary dependency required by PlanScore.
-    
+
+    ##### Mac OSX
+
     On Mac, [GDAL is gettable from KyngChaos](http://www.kyngchaos.com/software:frameworks).
     After installing the framework to `/Library/Frameworks/GDAL.framework/Versions/2.1`,
     install GDAL with [custom library and include directories](https://stackoverflow.com/questions/18783390/python-pip-specify-a-library-directory-and-an-include-directory).
@@ -33,7 +35,42 @@ development stack [LocalStack](https://github.com/localstack/localstack).
             --global-option="-I/Library/Frameworks/GDAL.framework/Versions/2.1/Headers" \
             --global-option="-L/Library/Frameworks/GDAL.framework/Versions/2.1/unix/lib" \
             GDAL==2.1.3
-    
+
+    ##### Ubuntu 17 (Artful Aardvark)
+
+    Repositories already offer GDAL 2
+
+    ```
+    # GDAL 2 utilities and headers
+    sudo apt install gdal-bin libgdal-dev python3-gdal
+    ```
+
+    ##### Ubuntu 16 (Xenial Xerus)
+
+    Ubuntu 16 repositories offer GDAL 1, but GDAL 2 is in Unstable PPA. As such, you would add the unstable PPA and upgrade.
+
+    ```
+    # GDAL 2 utilities and headers
+    sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable
+    sudo apt update
+    sudo apt upgrade
+    sudo apt install gdal-bin libgdal-dev python3-gdal
+
+    # within the virtualenv, you will need to set these environment variables
+    # when pip tries to compile the new GDAL these will tell it where to find your headers + libs
+    export CPLUS_INCLUDE_PATH=/usr/include/gdal
+    export C_INCLUDE_PATH=/usr/include/gdal
+    pip3 install gdal==2.1.3
+    ```
+
+    ##### GDAL From Source
+
+    Alternately, you may install GDAL from source and into some specific subdirectory. That usually includes a bunch of other libraries depending on the formats you want to support.
+
+    This technique could be attractive if you are running an OS whose repositories do not offer GDAL 2, but you're reluctant to update to unstable packages.
+
+    Once that is done, within the virtualenv you will need to export some environment variables, as described in Ubuntu 16.
+
 3.  Install the rest of PlanScore, keeping it editable, and run the test suite.
     
         pip3 install --editable .
@@ -64,3 +101,5 @@ development stack [LocalStack](https://github.com/localstack/localstack).
     and run the site in debug mode:
     
         make clean localstack-env && ./debug-site.py
+
+
