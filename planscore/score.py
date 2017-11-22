@@ -80,7 +80,7 @@ def score_district(s3, bucket, district_geom, tiles_prefix):
         else:
             object['Body'] = object['Body'].read()
         
-        with util.temporary_string_file('tile.geojson', object['Body']) as path:
+        with util.temporary_bytes_file('tile.geojson', object['Body']) as path:
             ds = ogr.Open(path)
             defn = ds.GetLayer(0).GetLayerDefn()
             fields = [defn.GetFieldDefn(i).name for i in range(defn.GetFieldCount())]

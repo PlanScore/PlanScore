@@ -12,9 +12,9 @@ def temporary_buffer_file(filename, buffer):
         shutil.rmtree(dirname)
 
 @contextlib.contextmanager
-def temporary_string_file(filename, contents):
+def temporary_bytes_file(filename, contents):
     try:
-        dirname = tempfile.mkdtemp(prefix='temporary_string_file-')
+        dirname = tempfile.mkdtemp(prefix='temporary_bytes_file-')
         filepath = os.path.join(dirname, filename)
         with open(filepath, 'wb') as file:
             file.write(contents)  # expects bytes not string, e.g. "hello".encode()
