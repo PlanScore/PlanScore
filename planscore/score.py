@@ -178,7 +178,7 @@ def lambda_handler(event, context):
     existing_keys = [obj.get('Key') for obj in listed_objects.get('Contents', [])]
     
     new_districts = []
-    
+
     for key in existing_keys:
         try:
             object = storage.s3.get_object(Bucket=storage.bucket, Key=key)
@@ -187,10 +187,14 @@ def lambda_handler(event, context):
                 continue
             raise
 
+        # decode the body into a plain JSON string, gzippped or not
         if object.get('ContentEncoding') == 'gzip':
-            object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
-        
-        new_districts.append(json.load(object['Body']))
+            object['Body'] = gzip.decompress(object['Body'].read()).decode()
+        else:
+            object['Body'] = object['Body'].read().decode()
+
+        geojson = json.loads(object['Body'])
+        new_districts.append(geojson)
 
     output_upload = calculate_gap(input_upload.clone(districts=new_districts))
     put_upload_index(storage.s3, storage.bucket, output_upload)

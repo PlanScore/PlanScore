@@ -252,10 +252,13 @@ def load_tile_precincts(storage, tile_zxy):
             return []
         raise
 
+    # decode the body into a plain JSON string, gzippped or not
     if object.get('ContentEncoding') == 'gzip':
-        object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
-    
-    geojson = json.load(object['Body'])
+        object['Body'] = gzip.decompress(object['Body'].read()).decode()
+    else:
+        object['Body'] = object['Body'].read().decode()
+
+    geojson = json.loads(object['Body'])
     return geojson['features']
 
 def iterate_precincts(storage, precincts, tiles):
