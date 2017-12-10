@@ -107,7 +107,7 @@ def score_district(s3, bucket, district_geom, tiles_prefix):
                     totals[name] += precinct_value
                 
         tile_list.append(tile_zxy)
-        print(' ', prepare_state.KEY_FORMAT.format(state='XX', version='.',
+        print(' ', prepare_state.KEY_FORMAT.format(directory='XX',
             zxy=tile_zxy), file=output)
     
     print('>', totals, file=output)

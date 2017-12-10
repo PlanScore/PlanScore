@@ -1,10 +1,10 @@
-import argparse, math, itertools, io, gzip
+import argparse, math, itertools, io, gzip, os
 from osgeo import ogr, osr
 import boto3, ModestMaps.Geo, ModestMaps.Core
 
 TILE_ZOOM = 12
 FRACTION_FIELD = 'PlanScore:Fraction'
-KEY_FORMAT = 'data/{state}/{version}/{zxy}.geojson'
+KEY_FORMAT = 'data/{directory}/{zxy}.geojson'
 
 EPSG4326 = osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)
 
@@ -43,14 +43,16 @@ def iter_extent_tiles(xxyy_extent, zoom):
 parser = argparse.ArgumentParser(description='YESS')
 
 parser.add_argument('filename', help='Name of geographic file with precinct data')
-parser.add_argument('--state', default='XX',
-    help='State abbreviation. Default {}.'.format('XX'))
+parser.add_argument('directory', default='XX/000',
+    help='Model directory infix. Default {}.'.format('XX/000'))
 parser.add_argument('--zoom', type=int, default=TILE_ZOOM,
     help='Zoom level. Default {}.'.format(TILE_ZOOM))
+parser.add_argument('--s3', action='store_true',
+    help='Upload to S3 instead of local directory')
 
 def main():
     args = parser.parse_args()
-    s3 = boto3.client('s3')
+    s3 = boto3.client('s3') if args.s3 else None
 
     ds = ogr.Open(args.filename)
     layer = ds.GetLayer(0)
@@ -84,9 +86,17 @@ def main():
         print(']}', file=buffer)
         
         tile_zxy = '{zoom}/{column}/{row}'.format(**tile.__dict__)
-        key = KEY_FORMAT.format(state=args.state, zxy=tile_zxy, version='001')
-        body = gzip.compress(buffer.getvalue().encode('utf8'))
-        print(key, '-', '{:.1f}KB'.format(len(body) / 1024))
+        key = KEY_FORMAT.format(directory=args.directory, zxy=tile_zxy)
+        
+        if args.s3:
+            body = gzip.compress(buffer.getvalue().encode('utf8'))
+            print(key, '-', '{:.1f}KB'.format(len(body) / 1024))
     
-        s3.put_object(Bucket='planscore', Key=key, Body=body,
-            ContentEncoding='gzip', ContentType='text/json', ACL='public-read')
+            s3.put_object(Bucket='planscore', Key=key, Body=body,
+                ContentEncoding='gzip', ContentType='text/json', ACL='public-read')
+        else:
+            os.makedirs(os.path.dirname(key), exist_ok=True)
+            print(key)
+    
+            with open(key, 'w') as file:
+                file.write(buffer.getvalue())
