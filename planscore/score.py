@@ -155,6 +155,48 @@ def calculate_gap(upload):
     
     return upload.clone(summary=summary_dict)
 
+def calculate_gaps(upload):
+    '''
+    '''
+    summary_dict = {}
+    first_totals = upload.districts[0]['totals']
+    
+    if f'REP000' not in first_totals or f'DEM000' not in first_totals:
+        return upload.clone()
+
+    for sim in range(1000):
+        if f'REP{sim:03d}' not in first_totals or f'DEM{sim:03d}' not in first_totals:
+            continue
+    
+        election_votes, wasted_red, wasted_blue, red_wins, blue_wins = 0, 0, 0, 0, 0
+
+        for district in upload.districts:
+            red_votes = district['totals'].get(f'REP{sim:03d}') or 0
+            blue_votes = district['totals'].get(f'DEM{sim:03d}') or 0
+            district_votes = red_votes + blue_votes
+            election_votes += district_votes
+            win_threshold = district_votes / 2
+    
+            if red_votes > blue_votes:
+                red_wins += 1
+                wasted_red += red_votes - win_threshold # surplus
+                wasted_blue += blue_votes # loser
+            elif blue_votes > red_votes:
+                blue_wins += 1
+                wasted_blue += blue_votes - win_threshold # surplus
+                wasted_red += red_votes # loser
+            else:
+                pass # raise ValueError('Unlikely 50/50 split')
+
+        if election_votes > 0:
+            efficiency_gap = (wasted_red - wasted_blue) / election_votes
+        else:
+            efficiency_gap = None
+        
+        summary_dict[f'EG{sim:03d}'] = efficiency_gap
+    
+    return upload.clone(summary=summary_dict)
+
 def put_upload_index(s3, bucket, upload):
     ''' Save a JSON index file for this upload.
     '''
