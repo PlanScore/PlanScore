@@ -1,4 +1,4 @@
-import io, os, gzip, posixpath, json
+import io, os, gzip, posixpath, json, statistics
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import prepare_state, util, data, constants
@@ -14,6 +14,10 @@ FIELD_NAMES = (
     'US Senate Rep Votes', 'US Senate Dem Votes', 'US House Rep Votes', 'US House Dem Votes',
     'SLDU Rep Votes', 'SLDU Dem Votes', 'SLDL Rep Votes', 'SLDL Dem Votes',
     )
+
+# Fields for simulated election vote totals
+FIELD_NAMES += tuple([f'REP{sim:03d}' for sim in range(1000)])
+FIELD_NAMES += tuple([f'DEM{sim:03d}' for sim in range(1000)])
 
 FUNCTION_NAME = 'PlanScore-ScoreDistrictPlan'
 
@@ -107,7 +111,7 @@ def score_district(s3, bucket, district_geom, tiles_prefix):
                     totals[name] += precinct_value
                 
         tile_list.append(tile_zxy)
-        print(' ', prepare_state.KEY_FORMAT.format(state='XX', version='.',
+        print(' ', prepare_state.KEY_FORMAT.format(directory='XX',
             zxy=tile_zxy), file=output)
     
     print('>', totals, file=output)
@@ -155,6 +159,51 @@ def calculate_gap(upload):
     
     return upload.clone(summary=summary_dict)
 
+def calculate_gaps(upload):
+    '''
+    '''
+    summary_dict, EGs = dict(), list()
+    first_totals = upload.districts[0]['totals']
+    
+    if f'REP000' not in first_totals or f'DEM000' not in first_totals:
+        return upload.clone()
+
+    for sim in range(1000):
+        if f'REP{sim:03d}' not in first_totals or f'DEM{sim:03d}' not in first_totals:
+            continue
+    
+        election_votes, wasted_red, wasted_blue, red_wins, blue_wins = 0, 0, 0, 0, 0
+
+        for district in upload.districts:
+            red_votes = district['totals'].get(f'REP{sim:03d}') or 0
+            blue_votes = district['totals'].get(f'DEM{sim:03d}') or 0
+            district_votes = red_votes + blue_votes
+            election_votes += district_votes
+            win_threshold = district_votes / 2
+    
+            if red_votes > blue_votes:
+                red_wins += 1
+                wasted_red += red_votes - win_threshold # surplus
+                wasted_blue += blue_votes # loser
+            elif blue_votes > red_votes:
+                blue_wins += 1
+                wasted_blue += blue_votes - win_threshold # surplus
+                wasted_red += red_votes # loser
+            else:
+                pass # raise ValueError('Unlikely 50/50 split')
+
+        if election_votes > 0:
+            efficiency_gap = (wasted_red - wasted_blue) / election_votes
+        else:
+            efficiency_gap = None
+        
+        EGs.append(efficiency_gap)
+
+    summary_dict['Efficiency Gap'] = statistics.mean(EGs)
+    summary_dict['Efficiency Gap SD'] = statistics.stdev(EGs)
+    
+    return upload.clone(summary=summary_dict)
+
 def put_upload_index(s3, bucket, upload):
     ''' Save a JSON index file for this upload.
     '''
@@ -192,5 +241,6 @@ def lambda_handler(event, context):
         
         new_districts.append(json.load(object['Body']))
 
-    output_upload = calculate_gap(input_upload.clone(districts=new_districts))
+    interim_upload = calculate_gap(input_upload.clone(districts=new_districts))
+    output_upload = calculate_gaps(interim_upload)
     put_upload_index(storage.s3, storage.bucket, output_upload)

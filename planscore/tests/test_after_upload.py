@@ -126,7 +126,7 @@ class TestAfterUpload (unittest.TestCase):
         put_geojson_file.assert_called_once_with(s3, bucket, upload, nullplan_path)
         
         self.assertEqual(len(fan_out_district_lambdas.mock_calls), 1)
-        self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/001'))
+        self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/002'))
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][2].key, upload.key)
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][3], nullplan_path)
     
@@ -167,7 +167,7 @@ class TestAfterUpload (unittest.TestCase):
         self.assertIs(put_geojson_file.mock_calls[0][1][3], unzip_shapefile.return_value)
         
         self.assertEqual(len(fan_out_district_lambdas.mock_calls), 1)
-        self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/001'))
+        self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/002'))
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][2].key, upload.key)
         self.assertIs(fan_out_district_lambdas.mock_calls[0][1][3], unzip_shapefile.return_value)
     

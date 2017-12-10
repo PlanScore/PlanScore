@@ -35,7 +35,9 @@ def commence_upload_scoring(s3, bucket, upload):
             ds_path = unzip_shapefile(ul_path, os.path.dirname(ul_path))
         else:
             ds_path = ul_path
-        prefix = 'data/{}/001'.format(guess_state(ds_path))
+        state_abbr = guess_state(ds_path)
+        state_version = constants.MODEL_VERSION.get(state_abbr, '001')
+        prefix = f'data/{state_abbr}/{state_version}'
         score.put_upload_index(s3, bucket, upload)
         put_geojson_file(s3, bucket, upload, ds_path)
         

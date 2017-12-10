@@ -34,7 +34,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={'Voters': 10, 'Red Votes': 6, 'Blue Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_gap(input)
+        output = score.calculate_gaps(score.calculate_gap(input))
         self.assertEqual(output.summary['Efficiency Gap'], 0)
 
     def test_calculate_gap_unfair(self):
@@ -48,7 +48,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={'Voters': 10, 'Red Votes': 5, 'Blue Votes': 3}, tile=None),
                 ])
         
-        output = score.calculate_gap(input)
+        output = score.calculate_gaps(score.calculate_gap(input))
         self.assertEqual(output.summary['Efficiency Gap'], -.25)
 
     def test_calculate_gap_ushouse(self):
@@ -62,10 +62,10 @@ class TestScore (unittest.TestCase):
                 dict(totals={'US House Rep Votes': 6, 'US House Dem Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_gap(input)
+        output = score.calculate_gaps(score.calculate_gap(input))
         self.assertEqual(output.summary['US House Efficiency Gap'], 0)
 
-    def test_calculate_gap_ushouse(self):
+    def test_calculate_gap_upperhouse(self):
         ''' Efficiency gap can be correctly calculated for a State upper house election
         '''
         input = data.Upload(id=None, key=None,
@@ -76,10 +76,10 @@ class TestScore (unittest.TestCase):
                 dict(totals={'SLDU Rep Votes': 6, 'SLDU Dem Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_gap(input)
+        output = score.calculate_gaps(score.calculate_gap(input))
         self.assertEqual(output.summary['SLDU Efficiency Gap'], 0)
 
-    def test_calculate_gap_ushouse(self):
+    def test_calculate_gap_lowerhouse(self):
         ''' Efficiency gap can be correctly calculated for a State lower house election
         '''
         input = data.Upload(id=None, key=None,
@@ -90,8 +90,23 @@ class TestScore (unittest.TestCase):
                 dict(totals={'SLDL Rep Votes': 6, 'SLDL Dem Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_gap(input)
+        output = score.calculate_gaps(score.calculate_gap(input))
         self.assertEqual(output.summary['SLDL Efficiency Gap'], 0)
+
+    def test_calculate_gap_sims(self):
+        ''' Efficiency gap can be correctly calculated using input sims.
+        '''
+        input = data.Upload(id=None, key=None,
+            districts = [
+                dict(totals={"REP000": 2, "DEM000": 6, "REP001": 1, "DEM001": 7}, tile=None),
+                dict(totals={"REP000": 3, "DEM000": 5, "REP001": 5, "DEM001": 3}, tile=None),
+                dict(totals={"REP000": 5, "DEM000": 3, "REP001": 5, "DEM001": 3}, tile=None),
+                dict(totals={"REP000": 6, "DEM000": 2, "REP001": 5, "DEM001": 3}, tile=None),
+                ])
+        
+        output = score.calculate_gaps(score.calculate_gap(input))
+        self.assertEqual(output.summary['Efficiency Gap'], -.125)
+        self.assertAlmostEqual(output.summary['Efficiency Gap SD'], .1767767)
 
     def test_score_district(self):
         ''' District scores are correctly read from input GeoJSON
@@ -226,9 +241,10 @@ class TestScore (unittest.TestCase):
     
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
+    @unittest.mock.patch('planscore.score.calculate_gaps')
     @unittest.mock.patch('planscore.score.calculate_gap')
     @unittest.mock.patch('planscore.score.put_upload_index')
-    def test_lambda_handler(self, put_upload_index, calculate_gap, boto3_client, stdout):
+    def test_lambda_handler(self, put_upload_index, calculate_gap, calculate_gaps, boto3_client, stdout):
         '''
         '''
         s3 = boto3_client.return_value
@@ -253,5 +269,8 @@ class TestScore (unittest.TestCase):
         self.assertIn('totals', input_upload.districts[0])
         self.assertIn('totals', input_upload.districts[1])
         
-        output_upload = calculate_gap.return_value
+        interim_upload = calculate_gap.return_value
+        calculate_gaps.assert_called_once_with(interim_upload)
+        
+        output_upload = calculate_gaps.return_value
         put_upload_index.assert_called_once_with(s3, 'bucket-name', output_upload)
