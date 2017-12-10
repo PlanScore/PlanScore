@@ -49,3 +49,7 @@ S3_URL_PATTERN = urllib.parse.urljoin(S3_ENDPOINT_URL, '/{b}/{k}')
 if os.environ.get('AWS', 'localstack') == 'amazonaws.com':
     S3_ENDPOINT_URL, LAMBDA_ENDPOINT_URL = None, None
     S3_URL_PATTERN = 'https://{b}.s3.amazonaws.com/{k}'
+
+# Active version of each state model
+
+MODEL_VERSION = { 'XX': '002', 'NC': '001' }
