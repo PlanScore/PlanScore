@@ -1,4 +1,4 @@
-import io, os, gzip, posixpath, json
+import io, os, gzip, posixpath, json, statistics
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import prepare_state, util, data, constants
@@ -162,7 +162,7 @@ def calculate_gap(upload):
 def calculate_gaps(upload):
     '''
     '''
-    summary_dict = {}
+    summary_dict, EGs = dict(), list()
     first_totals = upload.districts[0]['totals']
     
     if f'REP000' not in first_totals or f'DEM000' not in first_totals:
@@ -197,7 +197,10 @@ def calculate_gaps(upload):
         else:
             efficiency_gap = None
         
-        summary_dict[f'EG{sim:03d}'] = efficiency_gap
+        EGs.append(efficiency_gap)
+
+    summary_dict['Efficiency Gap'] = statistics.mean(EGs)
+    summary_dict['Efficiency Gap SD'] = statistics.stdev(EGs)
     
     return upload.clone(summary=summary_dict)
 

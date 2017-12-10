@@ -105,8 +105,8 @@ class TestScore (unittest.TestCase):
                 ])
         
         output = score.calculate_gaps(score.calculate_gap(input))
-        self.assertEqual(output.summary['EG000'], 0.0)
-        self.assertEqual(output.summary['EG001'], -.25)
+        self.assertEqual(output.summary['Efficiency Gap'], -.125)
+        self.assertAlmostEqual(output.summary['Efficiency Gap SD'], .1767767)
 
     def test_score_district(self):
         ''' District scores are correctly read from input GeoJSON
