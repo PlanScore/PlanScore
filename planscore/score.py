@@ -15,6 +15,10 @@ FIELD_NAMES = (
     'SLDU Rep Votes', 'SLDU Dem Votes', 'SLDL Rep Votes', 'SLDL Dem Votes',
     )
 
+# Fields for simulated election vote totals
+FIELD_NAMES += tuple([f'REP{sim:03d}' for sim in range(1000)])
+FIELD_NAMES += tuple([f'DEM{sim:03d}' for sim in range(1000)])
+
 FUNCTION_NAME = 'PlanScore-ScoreDistrictPlan'
 
 def score_plan(s3, bucket, input_upload, plan_path, tiles_prefix):
@@ -234,5 +238,6 @@ def lambda_handler(event, context):
         
         new_districts.append(json.load(object['Body']))
 
-    output_upload = calculate_gap(input_upload.clone(districts=new_districts))
+    interim_upload = calculate_gap(input_upload.clone(districts=new_districts))
+    output_upload = calculate_gaps(interim_upload)
     put_upload_index(storage.s3, storage.bucket, output_upload)
