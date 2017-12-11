@@ -3,7 +3,8 @@ plan = require('planscore/website/static/plan.js');
 
 var NC_index = require('data/sample-NC-1-992/index.json'),
     NC_incomplete_index = require('data/sample-NC-1-992-incomplete/index.json'),
-    NC_simple_index = require('data/sample-NC-1-992-simple/index.json');
+    NC_simple_index = require('data/sample-NC-1-992-simple/index.json'),
+    NC_multisim_index = require('data/sample-NC-simulations/index.json');
 
 // Old-style red vs. blue plan
 
@@ -52,6 +53,23 @@ assert.equal(plan.which_district_color(NC_index.districts[0], NC_index),
     '#D45557', 'Should return the red district color');
 
 assert.equal(plan.which_district_color(NC_index.districts[7], NC_index),
+    '#4D90D1', 'Should return the blue district color');
+
+// New-style North Carolina plan with confidence intervals from simulations
+
+assert.equal(plan.what_score_description_html(NC_multisim_index),
+    '<i>No description provided</i>', 'Should find the right description');
+
+assert.equal(plan.which_score_summary_name(NC_multisim_index),
+    'Efficiency Gap', 'Should pick out the right summary name');
+
+assert.deepEqual(plan.which_score_column_names(NC_multisim_index),
+    ['Voters', 'Democratic Votes', 'Republican Votes'], 'Should pick out the right column names');
+
+assert.equal(plan.which_district_color(NC_multisim_index.districts[0], NC_multisim_index),
+    '#D45557', 'Should return the red district color');
+
+assert.equal(plan.which_district_color(NC_multisim_index.districts[7], NC_multisim_index),
     '#4D90D1', 'Should return the blue district color');
 
 // Assorted functions

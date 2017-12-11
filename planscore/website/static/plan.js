@@ -77,6 +77,11 @@ function which_score_summary_name(plan)
 
 function which_score_column_names(plan)
 {
+    if(typeof plan.summary['Efficiency Gap SD'] === 'number')
+    {
+        return ['Voters', 'Democratic Votes', 'Republican Votes'];
+    }
+
     if(typeof plan.summary['US House Efficiency Gap'] === 'number')
     {
         return [
@@ -98,6 +103,15 @@ function which_district_color(district, plan)
     var totals = district.totals,
         color_red = '#D45557',
         color_blue = '#4D90D1';
+
+    if(typeof plan.summary['Efficiency Gap SD'] === 'number')
+    {
+        if(totals['Democratic Votes'] > totals['Republican Votes']) {
+            return color_blue;
+        } else {
+            return color_red;
+        }
+    }
 
     if(typeof plan.summary['US House Efficiency Gap'] === 'number')
     {
