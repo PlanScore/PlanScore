@@ -2,7 +2,7 @@
 
 Performs complete scoring of district plan and uploads summary JSON file.
 '''
-import io, os, gzip, posixpath, json, statistics
+import io, os, gzip, posixpath, json, statistics, copy
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import prepare_state, util, data, constants
@@ -168,15 +168,14 @@ def calculate_gaps(upload):
     '''
     '''
     summary_dict, EGs = dict(), list()
-    import copy, collections
-    district_totals = copy.deepcopy(upload.districts)
-    first_totals = district_totals[0]['totals']
+    copied_districts = copy.deepcopy(upload.districts)
+    first_totals = copied_districts[0]['totals']
     
     if f'REP000' not in first_totals or f'DEM000' not in first_totals:
         return upload.clone()
     
     # Prepare place for simulation vote totals in each district
-    for district in district_totals:
+    for district in copied_districts:
         district['totals']['Democratic Votes'] = list()
         district['totals']['Republican Votes'] = list()
 
@@ -187,7 +186,7 @@ def calculate_gaps(upload):
     
         election_votes, wasted_red, wasted_blue, red_wins, blue_wins = 0, 0, 0, 0, 0
 
-        for district in district_totals:
+        for district in copied_districts:
             red_votes = district['totals'].pop(f'REP{sim:03d}')
             blue_votes = district['totals'].pop(f'DEM{sim:03d}')
             district_votes = red_votes + blue_votes
@@ -216,7 +215,7 @@ def calculate_gaps(upload):
         EGs.append(efficiency_gap)
     
     # Finalize per-district vote totals and confidence intervals
-    for district in district_totals:
+    for district in copied_districts:
         blue_votes = district['totals'].pop('Democratic Votes')
         red_votes = district['totals'].pop('Republican Votes')
         district['totals']['Democratic Votes'] = statistics.mean(blue_votes)
@@ -227,7 +226,7 @@ def calculate_gaps(upload):
     summary_dict['Efficiency Gap'] = statistics.mean(EGs)
     summary_dict['Efficiency Gap SD'] = statistics.stdev(EGs)
     
-    return upload.clone(districts=district_totals, summary=summary_dict)
+    return upload.clone(districts=copied_districts, summary=summary_dict)
 
 def put_upload_index(s3, bucket, upload):
     ''' Save a JSON index file for this upload.
