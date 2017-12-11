@@ -1,3 +1,7 @@
+''' After successful upload, divides up districts into planscore.district calls.
+
+Fans out asynchronous parallel calls to planscore.district function.
+'''
 import boto3, pprint, os, io, json, urllib.parse, gzip, functools, zipfile, itertools
 from osgeo import ogr
 from . import util, data, score, website, prepare_state, districts, constants

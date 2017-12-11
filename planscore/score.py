@@ -1,3 +1,7 @@
+''' Called from final planscore.district when all districts are added up.
+
+Performs complete scoring of district plan and uploads summary JSON file.
+'''
 import io, os, gzip, posixpath, json, statistics
 from osgeo import ogr
 import boto3, botocore.exceptions

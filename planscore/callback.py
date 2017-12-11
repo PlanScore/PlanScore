@@ -1,3 +1,10 @@
+''' Called via HTTP from S3 redirect, redirects to plan page in turn.
+
+Also asynchronously invokes planscore.after_upload function.
+More details on "success_action_redirect" in browser-based S3 uploads:
+
+    http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-post-example.html
+'''
 import boto3, itsdangerous, urllib.parse, json
 from . import after_upload, constants, util, website, data, score
 

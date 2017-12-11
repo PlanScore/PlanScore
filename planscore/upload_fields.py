@@ -1,3 +1,9 @@
+''' Called via HTTP from upload page, returns a dictionary of S3 parameters.
+
+More details on browser-based S3 uploads using HTTP POST:
+
+    http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-post-example.html
+'''
 import json, pprint, urllib.parse, datetime, random, os
 import boto3, itsdangerous
 from . import util, data, constants
