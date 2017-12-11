@@ -107,6 +107,19 @@ class TestScore (unittest.TestCase):
         output = score.calculate_gaps(score.calculate_gap(input))
         self.assertEqual(output.summary['Efficiency Gap'], -.125)
         self.assertAlmostEqual(output.summary['Efficiency Gap SD'], .1767767)
+        
+        for field in ('REP000', 'DEM000', 'REP001', 'DEM001'):
+            for district in output.districts:
+                self.assertNotIn(field, district['totals'])
+
+        self.assertEqual(output.districts[0]['totals']['Republican Votes'], 3/2)
+        self.assertEqual(output.districts[0]['totals']['Democratic Votes'], 13/2)
+        self.assertEqual(output.districts[1]['totals']['Republican Votes'], 8/2)
+        self.assertEqual(output.districts[1]['totals']['Democratic Votes'], 8/2)
+        self.assertEqual(output.districts[2]['totals']['Republican Votes'], 10/2)
+        self.assertEqual(output.districts[2]['totals']['Democratic Votes'], 6/2)
+        self.assertEqual(output.districts[3]['totals']['Republican Votes'], 11/2)
+        self.assertEqual(output.districts[3]['totals']['Democratic Votes'], 5/2)
 
     def test_score_district(self):
         ''' District scores are correctly read from input GeoJSON
