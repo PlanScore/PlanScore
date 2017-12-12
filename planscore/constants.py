@@ -52,4 +52,4 @@ if os.environ.get('AWS', 'localstack') == 'amazonaws.com':
 
 # Active version of each state model
 
-MODEL_VERSION = { 'XX': '002', 'NC': '001' }
+MODEL_VERSION = { 'XX': '002', 'NC': '002' }
