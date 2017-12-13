@@ -54,24 +54,25 @@ def put_district_geometries(s3, bucket, upload, path):
     '''
     print('put_district_geometries:', (bucket, path))
     ds = ogr.Open(path)
-    urls = []
+    keys = []
 
     if not ds:
         raise RuntimeError('Could not open file to fan out district invocations')
 
-    for feature in ds.GetLayer(0):
+    for (index, feature) in enumerate(ds.GetLayer(0)):
         geometry = feature.GetGeometryRef()
 
         if geometry.GetSpatialReference():
             geometry.TransformTo(prepare_state.EPSG4326)
         
-        s3.put_object(Bucket=bucket, Key='poof.what', Body='HELLO',
-            ContentType='text/wkt', ACL='public-read')
+        key = data.UPLOAD_GEOMETRIES_KEY.format(id=upload.id, index=index)
         
-        urls.append(None)
+        s3.put_object(Bucket=bucket, Key=key,
+            Body=geometry.ExportToWkt(), ContentType='text/plain')
+        
+        keys.append(key)
     
-    raise NotImplementedError(bucket, upload.key, path)
-    return urls
+    return keys
 
 def fan_out_district_lambdas(bucket, prefix, upload, geometry_urls):
     '''
