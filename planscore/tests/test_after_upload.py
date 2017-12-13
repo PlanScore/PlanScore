@@ -80,7 +80,7 @@ class TestAfterUpload (unittest.TestCase):
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         keys = after_upload.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
-        self.assertEqual(keys, ['uploads/ID/districts/0.wkt', 'uploads/ID/districts/1.wkt'])
+        self.assertEqual(keys, ['uploads/ID/geometries/0.wkt', 'uploads/ID/geometries/1.wkt'])
     
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
@@ -89,7 +89,7 @@ class TestAfterUpload (unittest.TestCase):
         '''
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         after_upload.fan_out_district_lambdas('bucket-name', 'data/XX', upload,
-            ['uploads/ID/districts/0.wkt', 'uploads/ID/districts/1.wkt'])
+            ['uploads/ID/geometries/0.wkt', 'uploads/ID/geometries/1.wkt'])
         
         for (index, call) in enumerate(boto3_client.return_value.mock_calls):
             kwargs = call[2]
@@ -99,7 +99,7 @@ class TestAfterUpload (unittest.TestCase):
             self.assertIn(b'bucket-name', kwargs['Payload'])
             self.assertIn(b'data/XX', kwargs['Payload'])
             self.assertIn(b'"id": "ID"', kwargs['Payload'])
-            self.assertIn(f'"geometry": "uploads/ID/districts/{index}.wkt"'.encode('utf8'), kwargs['Payload'])
+            self.assertIn(f'"geometry": "uploads/ID/geometries/{index}.wkt"'.encode('utf8'), kwargs['Payload'])
             self.assertIn(b'"districts": [null, null]', kwargs['Payload'],
                 'Should have the right number of districts even though they are blanks')
     
