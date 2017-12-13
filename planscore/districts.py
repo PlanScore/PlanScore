@@ -66,7 +66,7 @@ class Partial:
         return self.geometry.Contains(tile_geometry(tile_zxy))
     
     @staticmethod
-    def from_event(event):
+    def from_event(event, s3):
         totals = event.get('totals')
         precincts = event.get('precincts')
         tiles = event.get('tiles')
@@ -113,7 +113,7 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
-    partial = Partial.from_event(event)
+    partial = Partial.from_event(event, s3)
     storage = data.Storage.from_event(event, s3)
 
     start_time, times = time.time(), []
