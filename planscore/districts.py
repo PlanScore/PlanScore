@@ -87,6 +87,7 @@ class Partial:
             # Newer-style geometry S3 key
             object = storage.s3.get_object(Bucket=storage.bucket, Key=event['geometry'])
             geometry = ogr.CreateGeometryFromWkt(object['Body'].read().decode('utf8'))
+            raise NotImplementedError('Uh oh')
         
         if totals is None or precincts is None or tiles is None:
             totals, precincts, tiles = collections.defaultdict(int), [], get_geometry_tile_zxys(geometry)
