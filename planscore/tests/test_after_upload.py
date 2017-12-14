@@ -73,14 +73,23 @@ class TestAfterUpload (unittest.TestCase):
         nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
         self.assertEqual(after_upload.guess_state(nc_plan_path), 'NC')
     
+    def test_put_district_geometries(self):
+        '''
+        '''
+        s3 = unittest.mock.Mock()
+        upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
+        null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
+        keys = after_upload.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
+        self.assertEqual(keys, ['uploads/ID/geometries/0.wkt', 'uploads/ID/geometries/1.wkt'])
+    
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
     def test_fan_out_district_lambdas(self, boto3_client, stdout):
         ''' Test that district Lambda fan-out is invoked correctly.
         '''
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
-        null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
-        after_upload.fan_out_district_lambdas('bucket-name', 'data/XX', upload, null_plan_path)
+        after_upload.fan_out_district_lambdas('bucket-name', 'data/XX', upload,
+            ['uploads/ID/geometries/0.wkt', 'uploads/ID/geometries/1.wkt'])
         
         for (index, call) in enumerate(boto3_client.return_value.mock_calls):
             kwargs = call[2]
@@ -90,15 +99,17 @@ class TestAfterUpload (unittest.TestCase):
             self.assertIn(b'bucket-name', kwargs['Payload'])
             self.assertIn(b'data/XX', kwargs['Payload'])
             self.assertIn(b'"id": "ID"', kwargs['Payload'])
+            self.assertIn(f'"geometry": "uploads/ID/geometries/{index}.wkt"'.encode('utf8'), kwargs['Payload'])
             self.assertIn(b'"districts": [null, null]', kwargs['Payload'],
                 'Should have the right number of districts even though they are blanks')
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.score.put_upload_index')
     @unittest.mock.patch('planscore.after_upload.put_geojson_file')
+    @unittest.mock.patch('planscore.after_upload.put_district_geometries')
     @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
     @unittest.mock.patch('planscore.after_upload.guess_state')
-    def test_commence_upload_scoring_good_file(self, guess_state, fan_out_district_lambdas, put_geojson_file, put_upload_index, temporary_buffer_file):
+    def test_commence_upload_scoring_good_file(self, guess_state, fan_out_district_lambdas, put_district_geometries, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
@@ -125,18 +136,22 @@ class TestAfterUpload (unittest.TestCase):
         put_upload_index.assert_called_once_with(s3, bucket, upload)
         put_geojson_file.assert_called_once_with(s3, bucket, upload, nullplan_path)
         
+        self.assertEqual(len(put_district_geometries.mock_calls), 1)
+        self.assertEqual(put_district_geometries.mock_calls[0][1][3], nullplan_path)
+
         self.assertEqual(len(fan_out_district_lambdas.mock_calls), 1)
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/002'))
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][2].key, upload.key)
-        self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][3], nullplan_path)
+        self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][3], put_district_geometries.return_value)
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.score.put_upload_index')
     @unittest.mock.patch('planscore.after_upload.put_geojson_file')
     @unittest.mock.patch('planscore.after_upload.unzip_shapefile')
+    @unittest.mock.patch('planscore.after_upload.put_district_geometries')
     @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
     @unittest.mock.patch('planscore.after_upload.guess_state')
-    def test_commence_upload_scoring_zipped_file(self, guess_state, fan_out_district_lambdas, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
+    def test_commence_upload_scoring_zipped_file(self, guess_state, fan_out_district_lambdas, put_district_geometries, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'
@@ -166,10 +181,13 @@ class TestAfterUpload (unittest.TestCase):
         self.assertEqual(put_geojson_file.mock_calls[0][1][:3], (s3, bucket, upload))
         self.assertIs(put_geojson_file.mock_calls[0][1][3], unzip_shapefile.return_value)
         
+        self.assertEqual(len(put_district_geometries.mock_calls), 1)
+        self.assertEqual(put_district_geometries.mock_calls[0][1][3], unzip_shapefile.return_value)
+        
         self.assertEqual(len(fan_out_district_lambdas.mock_calls), 1)
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/002'))
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][2].key, upload.key)
-        self.assertIs(fan_out_district_lambdas.mock_calls[0][1][3], unzip_shapefile.return_value)
+        self.assertIs(fan_out_district_lambdas.mock_calls[0][1][3], put_district_geometries.return_value)
     
     def test_commence_upload_scoring_bad_file(self):
         ''' An invalid district file fails in an expected way

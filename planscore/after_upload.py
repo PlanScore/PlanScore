@@ -44,32 +44,49 @@ def commence_upload_scoring(s3, bucket, upload):
         prefix = f'data/{state_abbr}/{state_version}'
         score.put_upload_index(s3, bucket, upload)
         put_geojson_file(s3, bucket, upload, ds_path)
+        geometry_urls = put_district_geometries(s3, bucket, upload, ds_path)
         
         # Do this last - localstack invokes Lambda functions synchronously
-        fan_out_district_lambdas(bucket, prefix, upload, ds_path)
+        fan_out_district_lambdas(bucket, prefix, upload, geometry_urls)
 
-def fan_out_district_lambdas(bucket, prefix, upload, path):
+def put_district_geometries(s3, bucket, upload, path):
     '''
     '''
-    print('fan_out_district_lambdas:', (bucket, prefix, path))
+    print('put_district_geometries:', (bucket, path))
+    ds = ogr.Open(path)
+    keys = []
+
+    if not ds:
+        raise RuntimeError('Could not open file to fan out district invocations')
+
+    for (index, feature) in enumerate(ds.GetLayer(0)):
+        geometry = feature.GetGeometryRef()
+
+        if geometry.GetSpatialReference():
+            geometry.TransformTo(prepare_state.EPSG4326)
+        
+        key = data.UPLOAD_GEOMETRIES_KEY.format(id=upload.id, index=index)
+        
+        s3.put_object(Bucket=bucket, Key=key,
+            Body=geometry.ExportToWkt(), ContentType='text/plain')
+        
+        keys.append(key)
+    
+    return keys
+
+def fan_out_district_lambdas(bucket, prefix, upload, geometry_urls):
+    '''
+    '''
+    print('fan_out_district_lambdas:', (bucket, prefix))
     try:
         lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
-        ds = ogr.Open(path)
-    
-        if not ds:
-            raise RuntimeError('Could not open file to fan out district invocations')
         
         # Used so that the length of the upload districts array is correct
-        district_blanks = [None] * ds.GetLayer(0).GetFeatureCount()
+        district_blanks = [None] * len(geometry_urls)
         payload_upload = upload.clone(districts=district_blanks)
         
-        for (index, feature) in enumerate(ds.GetLayer(0)):
-            geometry = feature.GetGeometryRef()
-
-            if geometry.GetSpatialReference():
-                geometry.TransformTo(prepare_state.EPSG4326)
-    
-            payload = dict(index=index, geometry=geometry.ExportToWkt(),
+        for (index, geometry_url) in enumerate(geometry_urls):
+            payload = dict(index=index, geometry=geometry_url,
                 bucket=bucket, prefix=prefix, upload=payload_upload.to_dict())
 
             lam.invoke(FunctionName=districts.FUNCTION_NAME, InvocationType='Event',

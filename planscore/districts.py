@@ -29,6 +29,13 @@ class Partial:
         
         self._geometry = geometry
         self._tile_geoms = {}
+        
+        if hasattr(geometry, 'ExportToWkt'):
+            # Old-style OGR geometry object
+            self._event_geometry = geometry.ExportToWkt()
+        else:
+            # Newer-style geometry S3 key
+            self._event_geometry = geometry
     
     def to_dict(self):
         return dict(index=self.index, totals=self.totals,
@@ -37,7 +44,7 @@ class Partial:
     
     def to_event(self):
         return dict(index=self.index, totals=self.totals, tiles=self.tiles,
-            geometry=self.geometry.ExportToWkt(), upload=self.upload.to_dict(),
+            geometry=self._event_geometry, upload=self.upload.to_dict(),
             precincts=Partial.scrunch(self.precincts))
     
     @property
@@ -66,13 +73,20 @@ class Partial:
         return self.geometry.Contains(tile_geometry(tile_zxy))
     
     @staticmethod
-    def from_event(event):
+    def from_event(event, storage):
         totals = event.get('totals')
         precincts = event.get('precincts')
         tiles = event.get('tiles')
-        geometry = ogr.CreateGeometryFromWkt(event['geometry'])
         index = event['index']
         upload = data.Upload.from_dict(event['upload'])
+        
+        try:
+            # Old-style WKT literal value
+            geometry = ogr.CreateGeometryFromWkt(event['geometry'])
+        except:
+            # Newer-style geometry S3 key
+            object = storage.s3.get_object(Bucket=storage.bucket, Key=event['geometry'])
+            geometry = ogr.CreateGeometryFromWkt(object['Body'].read().decode('utf8'))
         
         if totals is None or precincts is None or tiles is None:
             totals, precincts, tiles = collections.defaultdict(int), [], get_geometry_tile_zxys(geometry)
@@ -113,8 +127,8 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
-    partial = Partial.from_event(event)
     storage = data.Storage.from_event(event, s3)
+    partial = Partial.from_event(event, storage)
 
     start_time, times = time.time(), []
     

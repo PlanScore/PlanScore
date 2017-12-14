@@ -4,6 +4,7 @@ UPLOAD_PREFIX = 'uploads/{id}/upload/'
 UPLOAD_INDEX_KEY = 'uploads/{id}/index.json'
 UPLOAD_GEOMETRY_KEY = 'uploads/{id}/geometry.json'
 UPLOAD_DISTRICTS_KEY = 'uploads/{id}/districts/{index}.json'
+UPLOAD_GEOMETRIES_KEY = 'uploads/{id}/geometries/{index}.wkt'
 
 class Storage:
     ''' Wrapper for S3-related details.
