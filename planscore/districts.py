@@ -20,22 +20,16 @@ _mercator = ModestMaps.OpenStreetMap.Provider().projection
 class Partial:
     ''' Partially-calculated district sums, used by consume_tiles().
     '''
-    def __init__(self, index, totals, precincts, tiles, geometry, upload):
+    def __init__(self, index, totals, precincts, tiles, geometry_key, upload, ogr_geometry):
         self.index = index
         self.totals = totals
         self.precincts = precincts
+        self.geometry_key = geometry_key
         self.tiles = tiles
         self.upload = upload
         
-        self._geometry = geometry
+        self._ogr_geometry = ogr_geometry
         self._tile_geoms = {}
-        
-        if hasattr(geometry, 'ExportToWkt'):
-            # Old-style OGR geometry object
-            self._event_geometry = geometry.ExportToWkt()
-        else:
-            # Newer-style geometry S3 key
-            self._event_geometry = geometry
     
     def to_dict(self):
         return dict(index=self.index, totals=self.totals,
@@ -44,14 +38,14 @@ class Partial:
     
     def to_event(self):
         return dict(index=self.index, totals=self.totals, tiles=self.tiles,
-            geometry=self._event_geometry, upload=self.upload.to_dict(),
+            geometry_key=self.geometry_key, upload=self.upload.to_dict(),
             precincts=Partial.scrunch(self.precincts))
     
     @property
     def geometry(self):
         ''' Treat geometry as read-only so LRU caches behave correctly.
         '''
-        return self._geometry
+        return self._ogr_geometry
     
     @functools.lru_cache(maxsize=16)
     def tile_geometry(self, tile_zxy):
@@ -79,20 +73,15 @@ class Partial:
         tiles = event.get('tiles')
         index = event['index']
         upload = data.Upload.from_dict(event['upload'])
+        geometry_key = event['geometry_key']
         
-        try:
-            # Old-style WKT literal value
-            geometry = ogr.CreateGeometryFromWkt(event['geometry'])
-        except:
-            # Newer-style geometry S3 key
-            object = storage.s3.get_object(Bucket=storage.bucket, Key=event['geometry'])
-            geometry = ogr.CreateGeometryFromWkt(object['Body'].read().decode('utf8'))
-            raise NotImplementedError('Uh oh')
+        object = storage.s3.get_object(Bucket=storage.bucket, Key=geometry_key)
+        geometry = ogr.CreateGeometryFromWkt(object['Body'].read().decode('utf8'))
         
         if totals is None or precincts is None or tiles is None:
             totals, precincts, tiles = collections.defaultdict(int), [], get_geometry_tile_zxys(geometry)
         
-        return Partial(index, totals, Partial.unscrunch(precincts), tiles, geometry, upload)
+        return Partial(index, totals, Partial.unscrunch(precincts), tiles, geometry_key, upload, geometry)
     
     @staticmethod
     def scrunch(thing):
