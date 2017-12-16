@@ -83,10 +83,13 @@ def score_district(s3, bucket, district_geom, tiles_prefix):
                 continue
             raise
 
+        # decode the body into a JSON byte string, gzippped or not
         if object.get('ContentEncoding') == 'gzip':
-            object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
+            object['Body'] = gzip.decompress(object['Body'].read())
+        else:
+            object['Body'] = object['Body'].read()
         
-        with util.temporary_buffer_file('tile.geojson', object['Body']) as path:
+        with util.temporary_bytes_file('tile.geojson', object['Body']) as path:
             ds = ogr.Open(path)
             defn = ds.GetLayer(0).GetLayerDefn()
             fields = [defn.GetFieldDefn(i).name for i in range(defn.GetFieldCount())]
@@ -251,7 +254,7 @@ def lambda_handler(event, context):
     existing_keys = [obj.get('Key') for obj in listed_objects.get('Contents', [])]
     
     new_districts = []
-    
+
     for key in existing_keys:
         try:
             object = storage.s3.get_object(Bucket=storage.bucket, Key=key)
@@ -260,10 +263,14 @@ def lambda_handler(event, context):
                 continue
             raise
 
+        # decode the body into a plain JSON string, gzippped or not
         if object.get('ContentEncoding') == 'gzip':
-            object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
-        
-        new_districts.append(json.load(object['Body']))
+            object['Body'] = gzip.decompress(object['Body'].read()).decode()
+        else:
+            object['Body'] = object['Body'].read().decode()
+
+        geojson = json.loads(object['Body'])
+        new_districts.append(geojson)
 
     interim_upload = calculate_gap(input_upload.clone(districts=new_districts))
     output_upload = calculate_gaps(interim_upload)
