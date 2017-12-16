@@ -44,10 +44,10 @@ def commence_upload_scoring(s3, bucket, upload):
         prefix = f'data/{state_abbr}/{state_version}'
         score.put_upload_index(s3, bucket, upload)
         put_geojson_file(s3, bucket, upload, ds_path)
-        geometry_urls = put_district_geometries(s3, bucket, upload, ds_path)
+        geometry_keys = put_district_geometries(s3, bucket, upload, ds_path)
         
         # Do this last - localstack invokes Lambda functions synchronously
-        fan_out_district_lambdas(bucket, prefix, upload, geometry_urls)
+        fan_out_district_lambdas(bucket, prefix, upload, geometry_keys)
 
 def put_district_geometries(s3, bucket, upload, path):
     '''
@@ -74,7 +74,7 @@ def put_district_geometries(s3, bucket, upload, path):
     
     return keys
 
-def fan_out_district_lambdas(bucket, prefix, upload, geometry_urls):
+def fan_out_district_lambdas(bucket, prefix, upload, geometry_keys):
     '''
     '''
     print('fan_out_district_lambdas:', (bucket, prefix))
@@ -82,12 +82,12 @@ def fan_out_district_lambdas(bucket, prefix, upload, geometry_urls):
         lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
         
         # Used so that the length of the upload districts array is correct
-        district_blanks = [None] * len(geometry_urls)
+        district_blanks = [None] * len(geometry_keys)
         payload_upload = upload.clone(districts=district_blanks)
         
-        for (index, geometry_url) in enumerate(geometry_urls):
-            payload = dict(index=index, geometry=geometry_url,
-                bucket=bucket, prefix=prefix, upload=payload_upload.to_dict())
+        for (index, geometry_key) in enumerate(geometry_keys):
+            partial = districts.Partial(index, None, None, None, geometry_key, payload_upload, None)
+            payload = dict(partial.to_event(), bucket=bucket, prefix=prefix)
 
             lam.invoke(FunctionName=districts.FUNCTION_NAME, InvocationType='Event',
                 Payload=json.dumps(payload).encode('utf8'))
