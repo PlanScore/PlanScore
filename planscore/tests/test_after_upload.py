@@ -99,7 +99,7 @@ class TestAfterUpload (unittest.TestCase):
             self.assertIn(b'bucket-name', kwargs['Payload'])
             self.assertIn(b'data/XX', kwargs['Payload'])
             self.assertIn(b'"id": "ID"', kwargs['Payload'])
-            self.assertIn(f'"geometry": "uploads/ID/geometries/{index}.wkt"'.encode('utf8'), kwargs['Payload'])
+            self.assertIn(f'"geometry_key": "uploads/ID/geometries/{index}.wkt"'.encode('utf8'), kwargs['Payload'])
             self.assertIn(b'"districts": [null, null]', kwargs['Payload'],
                 'Should have the right number of districts even though they are blanks')
     
