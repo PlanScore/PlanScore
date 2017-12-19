@@ -1,6 +1,0 @@
----
-title: PlanScore
----
-
-Hello world.
-
