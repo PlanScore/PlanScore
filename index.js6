@@ -14,6 +14,10 @@ require('./index.src.html');
 // CONSTANTS
 //
 
+// the currently-visible state: boundary type + year, e.g. US House districts for 1984
+// these are affected by window.selectXXX() family of functions which ultimately are all wrappers over loadDataForSelectedBoundaryAndYear()
+const CURRENT_VIEW = {};
+
 // the list of years to offer; used by the year picker so the user may choose dates
 // note that not every state has data at all levels for every year
 const PLAN_YEARS = [
@@ -24,9 +28,59 @@ const PLAN_YEARS = [
     2010, 2012, 2014, 2016,
 ];
 
-// the currently-visible state: boundary type + year, e.g. US House districts for 1984
-// these are affected by window.selectXXX() family of functions which ultimately are all wrappers over loadDataForSelectedBoundaryAndYear()
-const CURRENT_VIEW = {};
+// the list of states, for mapping ABBR => NAME, for populating selectors, ...
+const STATES = {
+    'Alabama': 'AL',
+    'Alaska': 'AK',
+    'Arizona': 'AZ',
+    'Arkansas': 'AR',
+    'California': 'CA',
+    'Colorado': 'CO',
+    'Connecticut': 'CT',
+    'Delaware': 'DE',
+    'Florida': 'FL',
+    'Georgia': 'GA',
+    'Hawaii': 'HI',
+    'Idaho': 'ID',
+    'Illinois': 'IL',
+    'Indiana': 'IN',
+    'Iowa': 'IA',
+    'Kansas': 'KS',
+    'Kentucky': 'KY',
+    'Louisiana': 'LA',
+    'Maine': 'ME',
+    'Maryland': 'MD',
+    'Massachusetts': 'MA',
+    'Michigan': 'MI',
+    'Minnesota': 'MN',
+    'Mississippi': 'MS',
+    'Missouri': 'MO',
+    'Montana': 'MT',
+    'Nebraska': 'NE',
+    'Nevada': 'NV',
+    'New Hampshire': 'NH',
+    'New Jersey': 'NJ',
+    'New Mexico': 'NM',
+    'New York': 'NY',
+    'North Carolina': 'NC',
+    'North Dakota': 'ND',
+    'Ohio': 'OH',
+    'Oklahoma': 'OK',
+    'Oregon': 'OR',
+    'Pennsylvania': 'PA',
+    'Rhode Island': 'RI',
+    'South Carolina': 'SC',
+    'South Dakota': 'SD',
+    'Tennessee': 'TN',
+    'Texas': 'TX',
+    'Utah': 'UT',
+    'Vermont': 'VT',
+    'Virginia': 'VA',
+    'Washington': 'WA',
+    'West Virginia': 'WV',
+    'Wisconsin': 'WI',
+    'Wyoming': 'WY',
+};
 
 //
 // PAGE STARTUP / INIT FUNCTIONS
@@ -76,6 +130,17 @@ window.initYearPickers = () => {
 };
 
 window.initStatePicker = () => {
+    // state picker is the UI for selectState() to show a popup for the given state
+    const $picker = $('#statepicker');
+    $('<option></option>').text('(select state)').prop('value', '').appendTo($picker);
+    for (const [statename, stateabbr] of Object.entries(STATES)) {
+        $('<option></option>').text(statename).prop('value', stateabbr).appendTo($picker);
+    }
+
+    $picker.change(function () {
+        const stateabbr = $(this).val();
+        selectState(stateabbr);
+    });
 };
 
 window.initBoundaryPicker = () => {
@@ -110,7 +175,7 @@ window.handleResize = () => {
 
 
 //
-// RUNTIME FUNCTIONS FOR CHANGING YEAR + DISTRICT TYPE
+// RUNTIME FUNCTIONS FOR CHANGING YEAR + DISTRICT TYPE + STATE INFO
 // loadDataForSelectedBoundaryAndYear() is the real worker here; the others are basically convenience functions
 //
 
@@ -138,12 +203,20 @@ window.selectBoundaryType = (boundtype) => {
     loadDataForSelectedBoundaryAndYear();
 };
 
-//
-// RUNTIME FUNCTIONS FOR THE TOP MAP
-//
+window.selectState = (stateabbr) => {
+    // note that blank is an acceptable option to select no state at all
+    if (! stateabbr) stateabbr = '';
 
-window.selectState = (state) => {
-    console.log([ 'selectState', state ]);
+    // UI update: set the selector
+    $('#statepicker select').val(stateabbr);
+
+    //gda
+    // show the popup
+    console.log([ 'selectState', stateabbr ]);
+    if (stateabbr) {
+    }
+    else {
+    }
 };
 
 //

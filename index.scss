@@ -1,9 +1,18 @@
 @import 'sitewide';
 
+#map {
+    height: 400px;
+    width: 100%;
+}
+
 #yearpicker-small {
+    select {
+    }
 }
 
 #yearpicker-big {
+    margin-bottom: 15px;
+
     a {
         display: inline-block;
         vertical-align: middle;
@@ -71,13 +80,7 @@
     }
 }
 
-.tab-content {
-    .tab-pane {
-        padding: 1em 1em 1em 1em;
-
-        p {
-            font-size: 16px;
-            color: #333333;
-        }
-    }
+#statepicker, #yearpicker-small {
+    padding: 5px;
+    border-radius: 5px;
 }

@@ -59,3 +59,29 @@ p {
     font-size: 20px;
     color: #666666;
 }
+
+ul.nav.nav-tabs {
+    border-bottom: 1px solid #333;
+
+    a {
+        font-size: 18px;
+        border-radius: 0;
+    }
+
+    li.active a {
+        border: 1px solid #333;
+        border-bottom-color: transparent;
+        border-top-width: 3px;
+    }
+}
+
+.tab-content {
+    .tab-pane {
+        padding: 1em 1em 1em 1em;
+
+        p {
+            font-size: 16px;
+            color: #333333;
+        }
+    }
+}
