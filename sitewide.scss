@@ -1,0 +1,61 @@
+/*
+ * DEFINITIONS
+ */
+
+html, body, td {
+    font-family: 'Roboto', sans-serif !important;
+}
+
+nav.navbar-fixed-bottom {
+    a {
+        font-size: 14px;
+        line-height: 36px;
+    }
+
+    #greeninfo-credits li a {
+        font-size: 13px;
+        line-height: 18px;
+        img {
+            float: right;
+        }
+    }
+}
+
+.container-mainbody { /* the navbar-fixed-bottom will obscure text at the bottom, unless we add padding so the text never reaches that far */
+    padding-bottom: 100px;
+}
+
+.center { text-align:center; }
+.right { text-align:right; }
+.left { text-align:left; }
+.bold { font-weight:bold; }
+.nowrap { white-space:nowrap; }
+
+.rightfloat { float: right; }
+
+.pointer { cursor: pointer; }
+
+label { font-weight:normal; }
+
+label input[type="checkbox"] { vertical-align:text-top; }
+
+h1 {
+    font-size: 36px;
+    color: #666666;
+}
+
+h2 {
+    font-size: 30px;
+    color: #666666;
+}
+
+h3 {
+    font-size: 24px;
+    color: #666666;
+}
+
+p {
+    font-family: 'Roboto';
+    font-size: 20px;
+    color: #666666;
+}

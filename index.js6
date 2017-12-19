@@ -1,0 +1,151 @@
+// this page's HTML template with the [hash] cache-buster
+// and the only stylesheet
+require('./index.scss');
+require('./index.src.html');
+
+// polyfills
+//require('core-js/fn/array/includes');
+
+// bundle some local/vendor libraries
+//require('./js/leaflet-control-basemapbar.js');
+//require('./js/leaflet-control-basemapbar.css');
+
+//
+// CONSTANTS
+//
+
+// the list of years to offer; used by the year picker so the user may choose dates
+// note that not every state has data at all levels for every year
+const PLAN_YEARS = [
+    1972, 1974, 1976, 1978,
+    1980, 1982, 1984, 1986, 1988, 
+    1990, 1992, 1994, 1996, 1998,
+    2000, 2002, 2004, 2006, 2008, 
+    2010, 2012, 2014, 2016,
+];
+
+// the currently-visible state: boundary type + year, e.g. US House districts for 1984
+// these are affected by window.selectXXX() family of functions which ultimately are all wrappers over loadDataForSelectedBoundaryAndYear()
+const CURRENT_VIEW = {};
+
+//
+// PAGE STARTUP / INIT FUNCTIONS
+//
+
+$(document).ready(function () {
+    initNationalMap();
+    initYearPickers();
+    initStatePicker();
+    initBoundaryPicker();
+    initLoadStartingConditions();
+
+    $(window).on('resize', handleResize);
+    handleResize();
+});
+
+window.initNationalMap = () => {
+};
+
+window.initYearPickers = () => {
+    // there are 2 year pickers: mobile and full-size
+    // mobile is a simple SELECT element and changing it selects a year
+    // desktop is a fancy series of HTML/CSS dots which can be clicked to select a year
+    // both of these connect to selectYear()
+
+    const $picker_small = $('#yearpicker-small');
+    PLAN_YEARS.slice().reverse().forEach((year) => {
+        $('<option></option>').text(year).prop('value', year).appendTo($picker_small);
+    });
+    $picker_small.change(function () {
+        const year = $(this).val();
+        selectYear(year);
+    });
+
+    const $picker_big = $('#yearpicker-big');
+    PLAN_YEARS.forEach((year) => {
+        // each button has some utility classes so we can call out certain landmark years
+        // also relevant is resizeWindow() which adjusts the full-width spacing behavior
+        const $button = $('<a></a>').attr('data-year', year).prop('href', '#').prop('title', `Show partisan bias analysis for ${year}`).appendTo($picker_big);
+        if (year % 10 === 0) $button.addClass('decade');
+        if (year % 4 === 0) $button.addClass('presidential');
+    });
+    $picker_big.on('click', 'a', function () {
+        const year = $(this).attr('data-year');
+        selectYear(year);
+    });
+};
+
+window.initStatePicker = () => {
+};
+
+window.initBoundaryPicker = () => {
+    $('#boundarypicker div').click(function () {
+        const boundarytype = $(this).attr('data-boundary');
+        selectBoundaryType(boundarytype);
+    });
+};
+
+window.initLoadStartingConditions = () => {
+    // the most recent year and the first listed district type; select them for us
+    selectYear(PLAN_YEARS[PLAN_YEARS.length - 1]);
+    selectBoundaryType('ushouse');
+    loadDataForSelectedBoundaryAndYear();
+};
+
+window.handleResize = () => {
+    // various things that don't gracefully handle being resized, so we need to help them out
+
+    // the big year picker is a series of dots, and we want it to span the screen
+    const $picker_big = $('#yearpicker-big');
+    const $picker_big_buttons = $picker_big.find('a');
+    let usable_width = $picker_big.width();
+    $picker_big_buttons.each(function () {
+        usable_width -= ( 5 + $(this).width());
+    });
+    const rightspace = Math.floor(usable_width / ($picker_big_buttons.length));
+    $picker_big_buttons.css({
+        'margin-right': `${rightspace}px`,
+    });
+};
+
+
+//
+// RUNTIME FUNCTIONS FOR CHANGING YEAR + DISTRICT TYPE
+// loadDataForSelectedBoundaryAndYear() is the real worker here; the others are basically convenience functions
+//
+
+window.loadDataForSelectedBoundaryAndYear = () => {
+    if (! CURRENT_VIEW.year || ! CURRENT_VIEW.boundtype) return;  // need both; during startup one will be blank, so avoid an error
+
+    console.log([ 'loadDataForSelectedBoundaryAndYear', CURRENT_VIEW.year, CURRENT_VIEW.boundtype ]);
+};
+
+window.selectYear = (year) => {
+    // UI update: highlight this button
+    $('#yearpicker-big a').removeClass('active').filter(`[data-year="${year}"]`).addClass('active');
+
+    // save to the state and refresh the map + data
+    CURRENT_VIEW.year = year;
+    loadDataForSelectedBoundaryAndYear();
+};
+
+window.selectBoundaryType = (boundtype) => {
+    // UI update: highlight this button
+    $('#boundarypicker div').removeClass('active').filter(`[data-boundary="${boundtype}"]`).addClass('active');
+
+    // save to the state and refresh the map + data
+    CURRENT_VIEW.boundtype = boundtype;
+    loadDataForSelectedBoundaryAndYear();
+};
+
+//
+// RUNTIME FUNCTIONS FOR THE TOP MAP
+//
+
+window.selectState = (state) => {
+    console.log([ 'selectState', state ]);
+};
+
+//
+// RUNTIME FUNCTIONS FOR THE BOTTOM MAP
+//
