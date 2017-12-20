@@ -155,6 +155,11 @@ window.initStatePicker = () => {
         const stateabbr = $(this).val();
         selectState(stateabbr);
     });
+
+    // when the modal closes, also explicitly select no state so as to reset the UI
+    $('#stateinfo-modal').on('hidden.bs.modal', function (e) {
+        selectState(null);
+    });
 };
 
 window.initBoundaryPicker = () => {
@@ -168,7 +173,6 @@ window.initLoadStartingConditions = () => {
     // the most recent year and the first listed district type; select them for us
     selectYear(PLAN_YEARS[PLAN_YEARS.length - 1]);
     selectBoundaryType('ushouse');
-    loadDataForSelectedBoundaryAndYear();
 };
 
 window.handleResize = () => {
@@ -196,105 +200,87 @@ window.handleResize = () => {
 window.loadDataForSelectedBoundaryAndYear = () => {
     if (! CURRENT_VIEW.year || ! CURRENT_VIEW.boundtype) return;  // need both; during startup one will be blank, so avoid an error
 
-    console.log([ 'loadDataForSelectedBoundaryAndYear', CURRENT_VIEW.year, CURRENT_VIEW.boundtype ]);
+    // if there's a map already, destroy it
+    const existing_map = $('#map').data('mapchart');
+    if (existing_map) {
+        existing_map.destroy();
+        $('#map').data('mapchart', null);
+    }
 
-    //gda
+    // initialize the bias score statistics to -999999 No Data all around
     // expected data structure: list of states and their bias ratings
-    // <0 = R bias, >0 = D bias, -999999 = No Data
-    const data = [
-    { "value": 0.07, "abbr": "NJ" },
-    { "value": -0.03,  "abbr": "RI" },
-    { "value": 0.35,  "abbr": "MA" },
-    { "value": 0.10,  "abbr": "CT" },
-    { "value": -0.07,  "abbr": "MD" },
-    { "value": 0.18,  "abbr": "NY" },
-    { "value": 0.22,  "abbr": "DE" },
-    { "value": 0.01,  "abbr": "FL" },
-    { "value": 0.05,  "abbr": "OH" },
-    { "value": -0.01,  "abbr": "PA" },
-    { "value": -0.04,  "abbr": "IL" },
-    { "value": -0.05,  "abbr": "CA" },
-    { "value": 0.03,  "abbr": "HI" },
-    { "value": 0.06,  "abbr": "VA" },
-    { "value": -0.10,  "abbr": "MI" },
-    { "value": -0.15,  "abbr": "IN" },
-    { "value": 0.14,  "abbr": "NC" },
-    { "value": 0.18,  "abbr": "GA" },
-    { "value": 0.03,  "abbr": "TN" },
-    { "value": -0.04,  "abbr": "NH" },
-    { "value": -999999,  "abbr": "SC" },
-    { "value": -0.04,  "abbr": "LA" },
-    { "value": -0.05,  "abbr": "KY" },
-    { "value": 0.12,  "abbr": "WI" },
-    { "value": 0.13,  "abbr": "WA" },
-    { "value": -0.13,  "abbr": "AL" },
-    { "value": -0.09,  "abbr": "MO" },
-    { "value": -0.10,  "abbr": "TX" },
-    { "value": 0.11,  "abbr": "WV" },
-    { "value": 0.21,  "abbr": "VT" },
-    { "value": -0.11,  "abbr": "MN" },
-    { "value": 0.21,  "abbr": "MS" },
-    { "value": 0.07,  "abbr": "IA" },
-    { "value": -0.03,  "abbr": "AR" },
-    { "value": 0.04,  "abbr": "OK" },
-    { "value": 0.02,  "abbr": "AZ" },
-    { "value": 0.01,  "abbr": "CO" },
-    { "value": -0.01,  "abbr": "ME" },
-    { "value": -0.02,  "abbr": "OR" },
-    { "value": 0.03,  "abbr": "KS" },
-    { "value": 0.01,  "abbr": "UT" },
-    { "value": 0.11,  "abbr": "NE" },
-    { "value": -999999,  "abbr": "NV" },
-    { "value": 0.06,  "abbr": "ID" },
-    { "value": 0.15,  "abbr": "NM" },
-    { "value": -0.14,  "abbr": "SD" },
-    { "value": 0.07,  "abbr": "ND" },
-    { "value": -0.07,  "abbr": "MT" },
-    { "value": -0.09,  "abbr": "WY" },
-    { "value": 0.14,  "abbr": "AK" }
-];
+    const chartdata = [];
+    for (const [stateabbr, statename] of Object.entries(STATES)) {
+        chartdata.push({
+            abbr: stateabbr,
+            name: statename,
+            value: -999999,
+        });
+    }
 
-    // attach this raw data into the chart DIV s we can access it later
-    // see also selectState() which needs to access the compiled data
-    $('#map').data('biasdata', data);
-
-    // render the map chart
-    Highcharts.mapChart('map', {
-        chart: {
-            borderWidth: 0,
+    // fetch the CSV file
+    const url = `data/bias_${CURRENT_VIEW.boundtype}.csv`;
+    Papa.parse(url, {
+        download: true,
+        header: true,
+        complete: function (results) {
+            // filter by the year (geography is implicit by which CSV was fetched)
+            // and for each row assign the bias score to the state's row in the above
+            // this is loop-within-loop as we match arrays to arrays, but P=50 and Q=20ish so it's affordable
+            results = results.data.forEach(function (row) {
+                if (row.year != CURRENT_VIEW.year) return;  // wrong year; next
+                chartdata.filter((datarow) => { return datarow.abbr == row.stpost; })[0].value = parseFloat(row.bias);
+            });
+            renderMapWithNewData(chartdata);
         },
-        title: {
-            text: '',  // no big title
-        },
-        legend: {
-            enabled: false,  // we have a custom-crafted label
-        },
-
-        colorAxis: {
-            dataClasses: MAP_CHOROPLETH_BREAKS,
-        },
-
-        tooltip: {  // the tooltips are kept minimal, as most info is in a popup when clicked and mobile folks can't use tooltips effectively
-            formatter: function() {
-                if (this.point.value === -999999) return `${this.key}: No data`;
-                return `${this.key}: Click for details`;
-            },
-        },
-
-        series: [{
-            // use the Highcharts-provided US states, joining on their "postal-code" to our "abbr"
-            data: data,
-            mapData: Highcharts.maps['countries/us/us-all'],
-            joinBy: ['postal-code', 'abbr'],
-
-            // click events: call the popup maker
-            events: {
-                click: function (e) {
-                    selectState(e.point.abbr);
-                }
-            },
-        }]
     });
+
+    function renderMapWithNewData(data) {
+        // attach this raw data into the chart DIV so we can access it later
+        // see also selectState() which needs to access the compiled data
+        $('#map').data('biasdata', data);
+
+        // render the map chart
+        const newmapchart = Highcharts.mapChart('map', {
+            chart: {
+                borderWidth: 0,
+            },
+            title: {
+                text: '',  // no big title
+            },
+            legend: {
+                enabled: false,  // we have a custom-crafted label
+            },
+
+            colorAxis: {
+                dataClasses: MAP_CHOROPLETH_BREAKS,
+            },
+
+            tooltip: {  // the tooltips are kept minimal, as most info is in a popup when clicked and mobile folks can't use tooltips effectively
+                formatter: function() {
+                    if (this.point.value === -999999) return `${this.key}: No data`;
+                    return `${this.key}: Click for details`;
+                },
+            },
+
+            series: [{
+                // use the Highcharts-provided US states, joining on their "postal-code" to our "abbr"
+                data: data,
+                mapData: Highcharts.maps['countries/us/us-all'],
+                joinBy: ['postal-code', 'abbr'],
+
+                // click events: call the popup maker
+                events: {
+                    click: function (e) {
+                        selectState(e.point.abbr);
+                    }
+                },
+            }]
+        });
+
+        // stow that reference so we can destroy it on next data load
+        $('#map').data('mapchart', newmapchart);
+    }
 };
 
 window.selectYear = (year) => {
@@ -322,14 +308,11 @@ window.selectState = (stateabbr) => {
     // UI update: set the selector
     $('#statepicker').val(stateabbr);
 
-    //gda
-    // show the popup
-    
+    // show/hide the popup
     if (stateabbr) {
         // fetch the info from the map, and attach some attributes for the popup
         // tip: shallow copy via slice() so as not to mutate the existing one
         const biasinfo = $('#map').data('biasdata').filter((statedata) => { return statedata.abbr === stateabbr; }).slice(0, 1)[0];
-        biasinfo.name = STATES[biasinfo.abbr];
 
         // add to the info, an analysis
         if (biasinfo.value === -999999) {
@@ -339,10 +322,10 @@ window.selectState = (stateabbr) => {
             biasinfo.analysis = `This plan shows no statistically significant skew toward either party.`;
         }
         else if (biasinfo.value < 0) {  // R bias
-            biasinfo.analysis = `This plan is <b>${Math.round(Math.abs(biasinfo.value) * 100)}%</b> biased in favor of <b>Republican</b> outcomes`;
+            biasinfo.analysis = `This plan is more biased than <b>${50 + Math.round(Math.abs(biasinfo.value) * 100)}%</b> plans analyzed.<br/>This plan is biased in favor of <b>Republican</b> voters.`;
         }
-        else {  // must be + bias
-            biasinfo.analysis = `This plan is <b>${Math.round(Math.abs(biasinfo.value) * 100)}%</b> biased in favor of <b>Democrat</b> outcomes`;
+        else {  // must be D bias
+            biasinfo.analysis = `This plan is more biased than <b>${50 + Math.round(Math.abs(biasinfo.value) * 100)}%</b> of plans analyzed.<br/>This plan is biased in favor of <b>Democrat</b> voters.`;
         }
 
         // open the modal and do the string replacements
