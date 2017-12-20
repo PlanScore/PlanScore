@@ -171,7 +171,9 @@ var STATES = {
 // used for the map choropleth, for the legend, other charts, ...
 // the from/to/color are specifically for Highcharts, so don't rename them, but you could add more fields to suit other consumers
 // the magical value -999999 represents No Data and will always be the first in this series
-var MAP_CHOROPLETH_BREAKS = [{ from: -999999, to: -100, color: '#FFFFFF', name: 'No Data' }, { from: -100, to: -0.20, color: '#C71C36', name: 'Highest R' }, { from: -0.20, to: -0.10, color: '#D95F72', name: 'High R' }, { from: -0.10, to: -0.05, color: '#E8A2AD', name: 'Somewhat R' }, { from: -0.05, to: -0.02, color: '#F5D7DC', name: 'Slightly R' }, { from: -0.02, to: 0.02, color: '#F2E5FA', name: 'Balanced' }, { from: 0.02, to: 0.05, color: '#D7E4F5', name: 'Slightly D' }, { from: 0.05, to: 0.10, color: '#99B7DE', name: 'Somewhat D' }, { from: 0.10, to: 0.20, color: '#4C7FC2', name: 'High D' }, { from: 0.20, to: 100, color: '#0049A8', name: 'Highest D' }];
+// see also renderMapLegend() which generates the legend
+// see also loadDataForSelectedBoundaryAndYear() which assigns the color ramp for choropleth
+var MAP_CHOROPLETH_BREAKS = [{ from: -999999, to: -100, color: '#FFFFFF', title: 'No Data' }, { from: -100, to: -0.20, color: '#C71C36', title: 'Most Biased Toward Republican' }, { from: -0.20, to: -0.10, color: '#D95F72', title: 'More Biased Toward Republican' }, { from: -0.10, to: -0.05, color: '#E8A2AD', title: 'Somewhat Biased Toward Republican' }, { from: -0.05, to: -0.02, color: '#F5D7DC', title: 'Slightly Biased Toward Republican' }, { from: -0.02, to: 0.02, color: '#F2E5FA', title: 'Balanced' }, { from: 0.02, to: 0.05, color: '#D7E4F5', title: 'Slightly Biased Toward Democrat' }, { from: 0.05, to: 0.10, color: '#99B7DE', title: 'Somewhat Biased Toward Democrat' }, { from: 0.10, to: 0.20, color: '#4C7FC2', title: 'More Biased Toward Democrat' }, { from: 0.20, to: 100, color: '#0049A8', title: 'Most Biased Toward Democrat' }];
 
 // when generating tooltips, a certain skew will be considered balanced and below statistical significance
 // this would correspond to the Balanced choropleth break defined above (+X to -X is still balanced)
@@ -209,10 +211,18 @@ window.initYearPickers = function () {
     var $picker_big = $('#yearpicker-big');
     PLAN_YEARS.forEach(function (year) {
         // each button has some utility classes so we can call out certain landmark years
-        // also relevant is resizeWindow() which adjusts the full-width spacing behavior
+        // see also handleResize() which adjusts the full-width spacing behavior
         var $button = $('<a></a>').attr('data-year', year).prop('href', '#').prop('title', 'Show partisan bias analysis for ' + year).appendTo($picker_big);
         if (year % 10 === 0) $button.addClass('decade');
         if (year % 4 === 0) $button.addClass('presidential');
+    });
+    $('<br/>').appendTo($picker_big);
+    PLAN_YEARS.filter(function (year) {
+        return year % 10 === 0;
+    }).forEach(function (year) {
+        // now add the decade years
+        // see also handleResize() which adjusts the full-width spacing behavior
+        $('<span class="yearlabel"></span>').text(year).attr('data-year', year).appendTo($picker_big);
     });
     $picker_big.on('click', 'a', function () {
         var year = $(this).attr('data-year');
@@ -279,15 +289,28 @@ window.handleResize = function () {
     // various things that don't gracefully handle being resized, so we need to help them out
 
     // the big year picker is a series of dots, and we want it to span the screen
+    // calculate the usable width by subtracting the width of each dot
+    // then the right-margin per dot, by diviging space by number of dots
     var $picker_big = $('#yearpicker-big');
     var $picker_big_buttons = $picker_big.find('a');
+
     var usable_width = $picker_big.width();
     $picker_big_buttons.each(function () {
-        usable_width -= 5 + $(this).width();
+        var consumed_width = $(this).width() + 4; // width() doesn't include border; we know these have 2px border
+        usable_width -= consumed_width;
     });
-    var rightspace = Math.floor(usable_width / $picker_big_buttons.length);
+
+    var rightspace = usable_width / ($picker_big_buttons.length - 1);
     $picker_big_buttons.css({
-        'margin-right': rightspace + 'px'
+        'margin-right': rightspace + 'px' // CSS enforces 0 for the last dot-button
+    });
+
+    // the big year picker has SPAN items with the years, which we want aligned to the decade dots we just positioned above
+    $picker_big.find('span.yearlabel').each(function () {
+        var year = $(this).text();
+        var $button = $picker_big_buttons.filter('[data-year="' + year + '"]');
+        var left = $button.position().left - $button.width() / 3;
+        $(this).css({ left: left + 'px', top: '40px' });
     });
 };
 
@@ -416,11 +439,18 @@ window.loadDataForSelectedBoundaryAndYear = function () {
         $('<h1>Most biased plan in our data</h1>').appendTo($legend);
         $('<h2>(based on efficiency gap)</h2>').appendTo($legend);
 
-        legend_slices.forEach(function (legendentry) {
-            var $slice = $('<div class="slice"></div>').css({ 'background-color': legendentry.color }).appendTo($legend);
+        legend_slices.forEach(function (legendentry, i, allslices) {
+            var $slice = $('<div class="slice"></div>').css({ 'background-color': legendentry.color }).prop('title', legendentry.title).appendTo($legend);
+            if (i === 0) {
+                // first real slice = R
+                $slice.append('<span>R</span>');
+            } else if (i === allslices.length - 2) {
+                // last real slice = D
+                $slice.append('<span>D</span>');
+            }
         });
 
-        $('<h5>No Data</h5>').appendTo($legend);
+        $('<h5>No Data</h5>').appendTo($legend); // last slice will be the No Data, here are the words to go with it
     }
 };
 

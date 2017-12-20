@@ -18,6 +18,14 @@
             width: 15px;
             height: 15px;
             /* border: 1px solid black; */
+
+            text-align: center;
+            span {
+                color: #fff;
+                font-size: 15px;
+                position: relative;
+                top: -2px;
+            }
         }
         div.slice:last-of-type { /* No Data comes last */
             margin-left: 15px;
@@ -68,7 +76,7 @@
         height: 20px;
     }
 
-    a:last-child {
+    a:last-of-type {
         margin-right: 0 !important; /* see the resizeWindow() handler where we space them out; the final one shouldn't get space after it though */
     }
 
@@ -81,6 +89,13 @@
         height: 2px;
         background-color: #AAA;
         z-index: -1;
+    }
+
+    position: relative;
+    span.yearlabel {
+        color: #666666;
+        font-size: 12px;
+        position: absolute;
     }
 }
 
