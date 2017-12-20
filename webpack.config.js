@@ -52,8 +52,9 @@
 // you could have a .js6 file which effectively only serves to create a bundle of third-party code or a shared stylesheet
 
 const JS6_FILES = [
-    './index.js6',
-    './state.js6',
+    './home/index.js6',
+    './about/index.js6',
+    './scoreyours/index.js6',
 ];
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
