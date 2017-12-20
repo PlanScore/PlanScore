@@ -87,6 +87,8 @@ module.exports = __webpack_require__.p + "index.html";
 
 var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 // this page's HTML template with the [hash] cache-buster
 // and the only stylesheet
 __webpack_require__(0);
@@ -165,7 +167,10 @@ var STATES = {
     'WY': 'Wyoming'
 };
 
-// for the map choropleth, the bias numbers fitting into each colorful bucket
+// the bias numbers fitting into each colorful bucket
+// used for the map choropleth, for the legend, other charts, ...
+// the from/to/color are specifically for Highcharts, so don't rename them, but you could add more fields to suit other consumers
+// the magical value -999999 represents No Data and will always be the first in this series
 var MAP_CHOROPLETH_BREAKS = [{ from: -999999, to: -100, color: '#FFFFFF', name: 'No Data' }, { from: -100, to: -0.20, color: '#C71C36', name: 'Highest R' }, { from: -0.20, to: -0.10, color: '#D95F72', name: 'High R' }, { from: -0.10, to: -0.05, color: '#E8A2AD', name: 'Somewhat R' }, { from: -0.05, to: -0.02, color: '#F5D7DC', name: 'Slightly R' }, { from: -0.02, to: 0.02, color: '#F2E5FA', name: 'Balanced' }, { from: 0.02, to: 0.05, color: '#D7E4F5', name: 'Slightly D' }, { from: 0.05, to: 0.10, color: '#99B7DE', name: 'Somewhat D' }, { from: 0.10, to: 0.20, color: '#4C7FC2', name: 'High D' }, { from: 0.20, to: 100, color: '#0049A8', name: 'Highest D' }];
 
 // when generating tooltips, a certain skew will be considered balanced and below statistical significance
@@ -180,7 +185,7 @@ $(document).ready(function () {
     initYearPickers();
     initStatePicker();
     initBoundaryPicker();
-    initLoadStartingConditions();
+    initLoadStartingConditions(); // this will implicitly call loadDataForSelectedBoundaryAndYear() after setup, loading the map
 
     $(window).on('resize', handleResize);
     handleResize();
@@ -348,10 +353,11 @@ window.loadDataForSelectedBoundaryAndYear = function () {
             results = results.data.forEach(function (row) {
                 if (row.year != CURRENT_VIEW.year) return; // wrong year; next
                 chartdata.filter(function (datarow) {
-                    return datarow.abbr == row.stpost;
+                    return datarow.abbr == row.state;
                 })[0].value = parseFloat(row.bias);
             });
             renderMapWithNewData(chartdata);
+            renderMapLegend();
         }
     });
 
@@ -400,6 +406,21 @@ window.loadDataForSelectedBoundaryAndYear = function () {
 
         // stow that reference so we can destroy it on next data load
         $('#map').data('mapchart', newmapchart);
+    }
+
+    function renderMapLegend() {
+        var $legend = $('<div class="legend"></div>').appendTo('#map');
+
+        var legend_slices = [].concat(_toConsumableArray(MAP_CHOROPLETH_BREAKS.slice(1)), [MAP_CHOROPLETH_BREAKS[0]]);
+
+        $('<h1>Most biased plan in our data</h1>').appendTo($legend);
+        $('<h2>(based on efficiency gap)</h2>').appendTo($legend);
+
+        legend_slices.forEach(function (legendentry) {
+            var $slice = $('<div class="slice"></div>').css({ 'background-color': legendentry.color }).appendTo($legend);
+        });
+
+        $('<h5>No Data</h5>').appendTo($legend);
     }
 };
 
