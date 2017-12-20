@@ -1,5 +1,5 @@
 // the list of .js6 entry point files
-// in addition to being ES2015 JavaScript code, these may require() the .src.html and .scss files to also be compiled into their own outputs
+// in addition to being ES2015 JavaScript code, these may require() the .src.html and .less files to also be compiled into their own outputs
 // tip: require()ing other stuff, or even having JavaScript code in the file, is typical but optional
 // you could have a .js6 file which effectively only serves to create a bundle of third-party code or a shared stylesheet
 
@@ -12,8 +12,13 @@ const JS6_FILES = [
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const StringReplacePlugin = require("string-replace-webpack-plugin");
 
-var StringReplacePlugin = require("string-replace-webpack-plugin");
+const HTML_PARTIALS = {
+    footer: require("./htmlpartials/footer"),
+    navbar: require("./htmlpartials/navbar"),
+    headtags: require("./htmlpartials/head"),
+};
 
 module.exports = {
     /*
@@ -100,7 +105,31 @@ module.exports = {
                                 }
                             },
                         ]})
-                    }
+                    },
+                    {
+                        loader: StringReplacePlugin.replace({
+                        replacements: [
+                            // a series of HTML partials to be interpolated
+                            {
+                                pattern: /\<!--\[include_footer\]-->/g,
+                                replacement: function (match, p1, offset, string) {
+                                    return HTML_PARTIALS.footer;
+                                }
+                            },
+                            {
+                                pattern: /\<!--\[include_navbar\]-->/g,
+                                replacement: function (match, p1, offset, string) {
+                                    return HTML_PARTIALS.navbar;
+                                },
+                            },
+                            {
+                                pattern: /\<!--\[include_head\]-->/g,
+                                replacement: function (match, p1, offset, string) {
+                                    return HTML_PARTIALS.headtags;
+                                },
+                            },
+                        ]})
+                    },
                 ]
             },
 

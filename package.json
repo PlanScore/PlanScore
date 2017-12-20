@@ -14,7 +14,7 @@
     "babel-polyfill": "^6.23.0",
     "interpolate-html-plugin": "^2.0.0",
     "node-less": "^1.0.0",
-    "webpack-dev-server": "^2.9.1"
+    "webpack-dev-server": "^2.9.7"
   },
   "devDependencies": {
     "babel-core": "^6.25.0",

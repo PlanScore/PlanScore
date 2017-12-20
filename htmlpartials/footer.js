@@ -1,3 +1,4 @@
+const htmlblock = `
     <nav class="navbar navbar-default navbar-fixed-bottom">
         <div class="container-fluid">
             <div class="col-xs-12 col-sm-6 left">
@@ -12,6 +13,5 @@
             </div>
         </div>
     </nav>
-
-</body>
-</html>
+`;
+module.exports = htmlblock;
