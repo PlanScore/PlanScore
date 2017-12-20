@@ -1,53 +1,5 @@
-/*
- * Webpack configuration and build scripts for use with Django applications
- * Version 1, July 2017
- * Greg "Gregor" Allensworth, GreenInfo Network   gregor@greeninfo.org
- *
- * Basic usage:
- * - yarn install -- Initial setup of dependencies for build/watch tasks
- * - npm run build -- Analyze files, generate output files.
- * - npm run watch -- Watches for file changes, recompiles as needed.
- *
- * Design goals:
- *
- * - Retain directory structure for ease of management
- * - Target output is ready-to-run HTMl/JS/CSS files, no build service after deployment
- *   since target environment may or may not have this ability.
- * - Continued use of SCRIPT tags and CDNs for loading third-party libraries
- *   for superior delivery speed compared to bundling.
- * - Compile ES2015 and LESS for developers, into vanilla JS and CSS files for browsers
- * - Interpolation of cache-busting hash into HTML script/css tags
- *
- * Presumed structure:
- *
- * - Typical Django multi-page app structure, in which view methods render() a HTML template
- *
- * - The .js6 files will require() the .less and .src.html files relevant to that page
- *
- * - The .js6 and .less files exist in a subdirectory structure such as static/
- *   and will be compiled to .js and .css files in the same folder as those source files
- *   these form client-delivered JS and CSS for each page
- *
- * - The .src.html files exist in a subdirectory structure such as templates/
- *   and will be compiled to .html files in the same folder as those source files
- *   these .html outputs are the templates to be used by Django
- *   though the .src.html sources would also work with Django and may be more expedient during development
- *
- * - For organization, it is recommended that these files follow naming conventions
- *   fitting their target page, e.g. about.js6   about.less   about.src.html
- *
- * - The .js6 files may require() additional .css and .js files from third-party libraries
- *   and will bundle them into the page's .css and .js outputs
- *   However, SCRIPT tags calling CDNs tend to give faster loading times than bundling and should usually
- *   be preferred for loading of third-party materials, unless there's a compelling reason to bundle.
- *
- * - The output .js .less .html files should be included in version control as browser deliverables,
- *   OR ELSE the deployment environment should include a mechanism to run the build. Up to you.
- *
- */
-
 // the list of .js6 entry point files
-// in addition to being ES2015 JavaScript code, these may require() the .src.html and .less files to also be compiled into their own outputs
+// in addition to being ES2015 JavaScript code, these may require() the .src.html and .scss files to also be compiled into their own outputs
 // tip: require()ing other stuff, or even having JavaScript code in the file, is typical but optional
 // you could have a .js6 file which effectively only serves to create a bundle of third-party code or a shared stylesheet
 

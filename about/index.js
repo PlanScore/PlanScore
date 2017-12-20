@@ -63,18 +63,48 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 2);
+/******/ 	return __webpack_require__(__webpack_require__.s = 6);
 /******/ })
 /************************************************************************/
-/******/ ({
+/******/ ([
+/* 0 */
+/***/ (function(module, exports) {
 
-/***/ 2:
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+/* 1 */,
+/* 2 */,
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__.p + "about/index.html";
+
+/***/ }),
+/* 4 */,
+/* 5 */,
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-/***/ })
+// this page's HTML template with the [hash] cache-buster
+// and the only stylesheet
+__webpack_require__(0);
+__webpack_require__(3);
 
-/******/ });
+// polyfills
+//require('core-js/fn/array/includes');
+
+// bundle some local/vendor libraries
+//require('./js/leaflet-control-basemapbar.js');
+//require('./js/leaflet-control-basemapbar.css');
+
+//
+// begin page-specific JS code
+//
+
+/***/ })
+/******/ ]);
 //# sourceMappingURL=index.js.map

@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "babel-polyfill": "^6.23.0",
+    "interpolate-html-plugin": "^2.0.0",
     "node-less": "^1.0.0",
     "webpack-dev-server": "^2.9.1"
   },

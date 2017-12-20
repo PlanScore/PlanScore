@@ -63,16 +63,46 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 4);
+/******/ 	return __webpack_require__(__webpack_require__.s = 8);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 4:
+/***/ 2:
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+
+/***/ 5:
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__.p + "scoreyours/index.html";
+
+/***/ }),
+
+/***/ 8:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+
+// this page's HTML template with the [hash] cache-buster
+// and the only stylesheet
+__webpack_require__(2);
+__webpack_require__(5);
+
+// polyfills
+//require('core-js/fn/array/includes');
+
+// bundle some local/vendor libraries
+//require('./js/leaflet-control-basemapbar.js');
+//require('./js/leaflet-control-basemapbar.css');
+
+//
+// begin page-specific JS code
+//
 
 /***/ })
 

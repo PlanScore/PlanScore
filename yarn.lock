@@ -2022,6 +2022,12 @@ internal-ip@1.2.0:
   dependencies:
     meow "^3.3.0"
 
+interpolate-html-plugin@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/interpolate-html-plugin/-/interpolate-html-plugin-2.0.0.tgz#721fd3e995e7270024daf733d297a1b83a907e9a"
+  dependencies:
+    escape-string-regexp "^1.0.5"
+
 interpret@^1.0.0:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/interpret/-/interpret-1.0.3.tgz#cbc35c62eeee73f19ab7b10a801511401afc0f90"
