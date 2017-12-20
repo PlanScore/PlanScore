@@ -63,16 +63,73 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 55);
+/******/ 	return __webpack_require__(__webpack_require__.s = 155);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 55:
+/***/ 102:
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__.p + "washington/index.html";
+
+/***/ }),
+
+/***/ 155:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
+
+// this page's HTML template with the [hash] cache-buster
+// and the only stylesheet
+__webpack_require__(49);
+__webpack_require__(102);
+
+// polyfills
+//require('core-js/fn/array/includes');
+
+// bundle some local/vendor libraries
+//require('./js/leaflet-control-basemapbar.js');
+//require('./js/leaflet-control-basemapbar.css');
+
+
+//
+// CONSTANTS
+//
+
+// the list of years to offer; used by the year picker so the user may choose dates
+// note that not every state has data at all levels for every year
+var PLAN_YEARS = [1972, 1974, 1976, 1978, 1980, 1982, 1984, 1986, 1988, 1990, 1992, 1994, 1996, 1998, 2000, 2002, 2004, 2006, 2008, 2010, 2012, 2014, 2016];
+
+// the bias numbers fitting into each colorful bucket
+// used for the map choropleth, for the legend, other charts, ...
+// the from/to/color are specifically for Highcharts, so don't rename them, but you could add more fields to suit other consumers
+// the magical value -999999 represents No Data and will always be the first in this series
+// see also renderMapLegend() which generates the legend
+// see also loadDataForSelectedBoundaryAndYear() which assigns the color ramp for choropleth
+var MAP_CHOROPLETH_BREAKS = [{ from: -999999, to: -100, color: '#FFFFFF', title: 'No Data' }, { from: -100, to: -0.20, color: '#C71C36', title: 'Most Biased Toward Republican' }, { from: -0.20, to: -0.10, color: '#D95F72', title: 'More Biased Toward Republican' }, { from: -0.10, to: -0.05, color: '#E8A2AD', title: 'Somewhat Biased Toward Republican' }, { from: -0.05, to: -0.02, color: '#F5D7DC', title: 'Slightly Biased Toward Republican' }, { from: -0.02, to: 0.02, color: '#F2E5FA', title: 'Balanced' }, { from: 0.02, to: 0.05, color: '#D7E4F5', title: 'Slightly Biased Toward Democrat' }, { from: 0.05, to: 0.10, color: '#99B7DE', title: 'Somewhat Biased Toward Democrat' }, { from: 0.10, to: 0.20, color: '#4C7FC2', title: 'More Biased Toward Democrat' }, { from: 0.20, to: 100, color: '#0049A8', title: 'Most Biased Toward Democrat' }];
+
+//
+// PAGE STARTUP / INIT FUNCTIONS
+//
+
+$(document).ready(function () {
+
+    $(window).on('resize', handleResize);
+    handleResize();
+});
+
+window.handleResize = function () {
+    // various things that don't gracefully handle being resized, so we need to help them out
+};
+
+/***/ }),
+
+/***/ 49:
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
 
 /***/ })
 

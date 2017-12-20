@@ -63,27 +63,19 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 106);
 /******/ })
 /************************************************************************/
-/******/ ([
-/* 0 */
+/******/ ({
+
+/***/ 0:
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 1 */,
-/* 2 */,
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__.p + "about/index.html";
-
-/***/ }),
-/* 4 */,
-/* 5 */,
-/* 6 */
+/***/ 106:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -92,7 +84,7 @@ module.exports = __webpack_require__.p + "about/index.html";
 // this page's HTML template with the [hash] cache-buster
 // and the only stylesheet
 __webpack_require__(0);
-__webpack_require__(3);
+__webpack_require__(53);
 
 // polyfills
 //require('core-js/fn/array/includes');
@@ -105,6 +97,14 @@ __webpack_require__(3);
 // begin page-specific JS code
 //
 
+/***/ }),
+
+/***/ 53:
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__.p + "about/index.html";
+
 /***/ })
-/******/ ]);
+
+/******/ });
 //# sourceMappingURL=index.js.map

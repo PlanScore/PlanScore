@@ -63,19 +63,12 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 47);
+/******/ 	return __webpack_require__(__webpack_require__.s = 147);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 2:
-/***/ (function(module, exports) {
-
-// removed by extract-text-webpack-plugin
-
-/***/ }),
-
-/***/ 47:
+/***/ 147:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -83,8 +76,8 @@
 
 // this page's HTML template with the [hash] cache-buster
 // and the only stylesheet
-__webpack_require__(2);
-__webpack_require__(5);
+__webpack_require__(41);
+__webpack_require__(94);
 
 // polyfills
 //require('core-js/fn/array/includes');
@@ -99,7 +92,14 @@ __webpack_require__(5);
 
 /***/ }),
 
-/***/ 5:
+/***/ 41:
+/***/ (function(module, exports) {
+
+// removed by extract-text-webpack-plugin
+
+/***/ }),
+
+/***/ 94:
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__.p + "scoreyours/index.html";
