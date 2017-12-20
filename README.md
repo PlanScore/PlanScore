@@ -21,6 +21,6 @@ Running `npm run build` will compile the browser-consumable files **index.html**
 
 `npm run serve` will run a HTTP server, as well as watching and rebuilding (below).
 
-`npm run watch` will watch for changes and re-run `npm rin build` upon detecting changes.
+`npm run watch` will watch for changes and re-run `npm run build` upon detecting changes.
 
-Deployment: This is run from thre `gh-pages` branch of the `PlanScore/PlanScore` repository. Simply commiting the new built files, and then pushing, will cause the GH Pages site to be updated. (though it can take a few minutes)
+Deployment: This is run from the `gh-pages` branch of the `PlanScore/PlanScore` repository. Simply commiting the new built files, and then pushing, will cause the GH Pages site to be updated. (though it can take a few minutes)
