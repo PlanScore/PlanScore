@@ -18,6 +18,16 @@ FIELD_NAMES = (
     'US Senate Rep Votes', 'US Senate Dem Votes', 'US House Rep Votes', 'US House Dem Votes',
     'SLDU Rep Votes', 'SLDU Dem Votes', 'SLDL Rep Votes', 'SLDL Dem Votes',
     'Democratic Votes', 'Republican Votes',
+    
+    # ACS 2015 fields
+    'Black Population 2015', 'Black Population 2015, Error',
+    'Hispanic Population 2015', 'Hispanic Population 2015, Error',
+    'Population 2015', 'Population 2015, Error',
+    'Voting-Age Population 2015', 'Voting-Age Population 2015, Error',
+    
+    # Extra fields
+    'US President 2016 - DEM', 'US President 2016 - REP',
+    'US Senate 2016 - DEM', 'US Senate 2016 - REP'
     )
 
 # Fields for simulated election vote totals
