@@ -6,17 +6,38 @@
 
     margin-bottom: 30px;
 
-    .states :hover {
-        fill: red;
-    }
+    /* the legend is a custom graphic beyond what Highcharts can do, here are contgrivances to position it; see renderMapLegend() */
+    position: relative;
+    div.legend {
+        position: absolute;
+        bottom: 0;
+        right: 0;
 
-    .state-borders {
-        fill: none;
-        stroke: #fff;
-        stroke-width: 0.5px;
-        stroke-linejoin: round;
-        stroke-linecap: round;
-        pointer-events: none;
+        div.slice {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            /* border: 1px solid black; */
+        }
+        div.slice:last-of-type { /* No Data comes last */
+            margin-left: 15px;
+            border: 1px solid silver;
+            margin-right: 5px;
+        }
+
+        h1 { /* title */
+            font-size: 13px;
+            margin: 0;
+        }
+        h2 { /* subtitle */
+            font-size: 11px;
+            margin: 0 0 5px 0;
+        }
+        h5 { /* No Data */
+            display: inline;
+            font-size: 12px;
+            vertical-align: text-top;
+        }
     }
 }
 

@@ -82,7 +82,10 @@ const STATES = {
     'WY': 'Wyoming',
 };
 
-// for the map choropleth, the bias numbers fitting into each colorful bucket
+// the bias numbers fitting into each colorful bucket
+// used for the map choropleth, for the legend, other charts, ...
+// the from/to/color are specifically for Highcharts, so don't rename them, but you could add more fields to suit other consumers
+// the magical value -999999 represents No Data and will always be the first in this series
 const MAP_CHOROPLETH_BREAKS = [
     { from: -999999, to: -100, color: '#FFFFFF', name: 'No Data' },
     { from: -100, to: -0.20, color: '#C71C36', name: 'Highest R' },
@@ -108,7 +111,7 @@ $(document).ready(function () {
     initYearPickers();
     initStatePicker();
     initBoundaryPicker();
-    initLoadStartingConditions();
+    initLoadStartingConditions();  // this will implicitly call loadDataForSelectedBoundaryAndYear() after setup, loading the map
 
     $(window).on('resize', handleResize);
     handleResize();
@@ -232,6 +235,7 @@ window.loadDataForSelectedBoundaryAndYear = () => {
                 chartdata.filter((datarow) => { return datarow.abbr == row.stpost; })[0].value = parseFloat(row.bias);
             });
             renderMapWithNewData(chartdata);
+            renderMapLegend();
         },
     });
 
@@ -280,6 +284,21 @@ window.loadDataForSelectedBoundaryAndYear = () => {
 
         // stow that reference so we can destroy it on next data load
         $('#map').data('mapchart', newmapchart);
+    }
+
+    function renderMapLegend() {
+        const $legend = $('<div class="legend"></div>').appendTo('#map');
+
+        const legend_slices = [ ...MAP_CHOROPLETH_BREAKS.slice(1), MAP_CHOROPLETH_BREAKS[0] ];
+
+        $('<h1>Most biased plan in our data</h1>').appendTo($legend);
+        $('<h2>(based on efficiency gap)</h2>').appendTo($legend);
+
+        legend_slices.forEach((legendentry) => {
+            const $slice = $('<div class="slice"></div>').css({ 'background-color':legendentry.color }).appendTo($legend);
+        });
+
+        $('<h5>No Data</h5>').appendTo($legend);
     }
 };
 
