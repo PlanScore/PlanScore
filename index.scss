@@ -6,6 +6,8 @@
 
     margin-bottom: 30px;
 
+    z-index: -1; /* year+state picker overlaps this; make sure they get priority so they can be clicked */
+
     /* the legend is a custom graphic beyond what Highcharts can do, here are contgrivances to position it; see renderMapLegend() */
     position: relative;
     div.legend {
