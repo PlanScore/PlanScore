@@ -232,7 +232,7 @@ window.loadDataForSelectedBoundaryAndYear = () => {
             // this is loop-within-loop as we match arrays to arrays, but P=50 and Q=20ish so it's affordable
             results = results.data.forEach(function (row) {
                 if (row.year != CURRENT_VIEW.year) return;  // wrong year; next
-                chartdata.filter((datarow) => { return datarow.abbr == row.stpost; })[0].value = parseFloat(row.bias);
+                chartdata.filter((datarow) => { return datarow.abbr == row.state; })[0].value = parseFloat(row.bias);
             });
             renderMapWithNewData(chartdata);
             renderMapLegend();
