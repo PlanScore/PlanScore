@@ -6,7 +6,7 @@
   "scripts": {
     "serve": "webpack-dev-server --config webpack.config.js --open",
     "build": "webpack --config webpack.config.js --hide-modules=true --display-origins=false --display-provided-exports=false --colors --progress",
-    "watch": "webpack --config webpack.config.js --hide-modules=true --display-origins=false --display-provided-exports=false --colors --progress --watch"
+    "states": "for state in alabama alaska arizona arkansas california colorado connecticut delaware florida georgia hawaii idaho illinois iowa kansas kentucky louisiana maine maryland massachusetts michigan minnesota mississippi missouri montana nebraska nevada new_hampshire new_jersey new_mexico new_york north_carolina north_dakota ohio oklahoma oregon pennsylvania rhode_island south_carolina south_dakota tennessee texas utah vermont virginia washington west_virginia wisconsin wyoming indiana; do STATE_NAME=`echo $state | sed 's@_@ @g' | sed 's/\\(^\\| \\)\\([a-z]\\)/\\1\\u\\2/g'` ; cat _statetemplate/state_template.src.html | sed -e \"s@STATE_NAME@$STATE_NAME@\" > $state/index.src.html ; cp _statetemplate/state_template.scss $state/index.scss ; cp _statetemplate/state_template.js6 $state/index.js6 ; done"
   },
   "author": "",
   "license": "ISC",

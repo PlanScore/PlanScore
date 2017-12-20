@@ -22,6 +22,19 @@ Running `npm run build` will compile the browser-consumable files **index.html**
 `npm run serve` will run a HTTP server, as well as watching and rebuilding (below).
 
 
+### The State Pages Are Special
+
+There are 50 directories and thus pages for Alabama, Alaska, ... etc. But we do not maintain 50 separate **index.js6** **index.scss** **index.src.html** files!
+
+Do not edit the `index.*` files for the 50 states. Instead, you'll want to make edits to the `_statetemplate` files (**state_template.js6**, **state_template.scss**, **state_template.src.html**).
+
+Then you would `npm run states` to copy these template files into the 50 target folders.
+
+If you are running *webpack-dev-server*, it will automagically detect the files having changed, and will trigger a rebuild and reload as usual. Note that this takes a moment; be patient.
+
+The usual `npm run build` step is required for state pages if you expect to depploy to the site, same as with other pages.
+
+
 ### Shared Content / Partial Views
 
 Some content is shared between pages, such as the sitewide navbar, the footer, and some of the HTML HEAD content. These are called "partial views".

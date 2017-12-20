@@ -63,28 +63,19 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 7);
+/******/ 	return __webpack_require__(__webpack_require__.s = 18);
 /******/ })
 /************************************************************************/
-/******/ ([
-/* 0 */,
-/* 1 */
+/******/ ({
+
+/***/ 1:
 /***/ (function(module, exports) {
 
 // removed by extract-text-webpack-plugin
 
 /***/ }),
-/* 2 */,
-/* 3 */,
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__.p + "home/index.html";
-
-/***/ }),
-/* 5 */,
-/* 6 */,
-/* 7 */
+/***/ 18:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -505,10 +496,14 @@ window.selectState = function (stateabbr) {
             biasinfo.analysis = 'This plan is more biased than <b>' + (50 + Math.round(Math.abs(biasinfo.value) * 100)) + '%</b> of plans analyzed.<br/>This plan is biased in favor of <b>Democrat</b> voters.';
         }
 
+        // the URL for more info: the state name, mangled for URLs e.g. south_carolina
+        var moreinfourl = '../' + biasinfo.name.toLowerCase().replace(/\W/g, '_') + '/';
+
         // open the modal and do the string replacements
         var $modal = $('#stateinfo-modal').modal('show');
         $modal.find('span[data-field="statename"]').html(biasinfo.name);
         $modal.find('span[data-field="analysis"]').html(biasinfo.analysis);
+        $modal.find('.modal-footer a').prop('href', moreinfourl);
     } else {
         // nothing to do, except I guess close the modal if it happens to be open
         $('#stateinfo-modal').modal('hide');
@@ -519,6 +514,14 @@ window.selectState = function (stateabbr) {
 // OTHER RUNTIME FUNCTIONS
 //
 
+/***/ }),
+
+/***/ 4:
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__.p + "home/index.html";
+
 /***/ })
-/******/ ]);
+
+/******/ });
 //# sourceMappingURL=index.js.map
