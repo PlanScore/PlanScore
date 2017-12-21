@@ -161,9 +161,11 @@
 #stateinfo-modal {
 }
 
-#states-listing {
-    div {
+.states-listing {
+    div {  /* any of the "columns" */
+        white-space: nowrap;
     }
+
     a {
         font-family: 'Roboto';
         font-size: 18px;

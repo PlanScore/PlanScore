@@ -347,7 +347,7 @@ window.loadDataForSelectedBoundaryAndYear = () => {
     }
 
     function updateStateListingSwatches(data) {
-        const $swatches = $('#states-listing span.swatch');
+        const $swatches = $('.states-listing span.swatch');
         $swatches.each(function () {
             // find this swatch's state name, and fetch that state info from the raw data
             const state_name = $(this).closest('a').text().trim();
