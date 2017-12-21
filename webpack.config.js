@@ -81,7 +81,7 @@ module.exports = {
     entry: JS6_FILES.reduce((o, key) => { o[key.replace(/\.js6$/, '')] = key; return o; }, {}),
     output: {
         path: __dirname,
-        filename: '[name].js'
+        filename: 'WEBSITE_OUTPUT/[name].js'
     },
 
     module: {
@@ -142,7 +142,7 @@ module.exports = {
                         loader: 'file-loader',
                         options: {
                             // replace .src.html with just .html
-                            name: '[path][1].html',
+                            name: 'WEBSITE_OUTPUT/[path][1].html',
                             regExp: '([\\w\\-\.]+)\\.src\\.html$',
                         },
                     },
@@ -215,7 +215,7 @@ module.exports = {
         // CSS output from the CSS + LESS handlers above
         new ExtractTextPlugin({
             disable: false,
-            filename: '[name].css'
+            filename: 'WEBSITE_OUTPUT/[name].css'
         }),
         // for doing string replacements on files
         new StringReplacePlugin(),
@@ -225,7 +225,7 @@ module.exports = {
      * plugins for the above
      */
     devServer: {
-      contentBase: '.',
+      contentBase: './WEBSITE_OUTPUT',
       host: '0.0.0.0',
       port: 8000,
       disableHostCheck: true
