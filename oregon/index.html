@@ -27,8 +27,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.3.6/papaparse.min.js"></script>
 
     <!-- local config -->
-    <link href="index.css?Wed Dec 20 2017 16:50:27 GMT-0800 (PST)" rel="stylesheet" />
-    <script src="index.js?Wed Dec 20 2017 16:50:27 GMT-0800 (PST)"></script>
+    <link href="index.css?Thu Dec 21 2017 09:26:53 GMT-0800 (PST)" rel="stylesheet" />
+    <script src="index.js?Thu Dec 21 2017 09:26:53 GMT-0800 (PST)"></script>
 </head>
 <body>
 
@@ -55,7 +55,66 @@
 
 
     <div class="container container-mainbody">
-        <h1>Oregon</h1>
+        <div class="row">
+            <div class="col-xs-12 col-sm-3">
+                <h1 class="state_name">Oregon</h1>
+
+                <select id="yearpicker-small"></select>
+            </div>
+            <div class="col-xs-12 col-sm-9" id="maincontent">
+                <!--
+                be robust against a year+district that has no data
+                the appropriate '#maincontent span[data-hasdata]' will be shown when loadDataForSelectedBoundaryAndYear() finds data... or does not
+                -->
+                <span data-hasdata="true">
+                    <p>We have data about <span data-metric="plancount" class="bold big">0</span> plans, covering <span data-metric="electioncount" class="bold big">0</span> elections.</p>
+                    <p>Oregon's elected state legislators drew the borders of U.S. Congressional and STATE_NAME state legislative districts to create the maps for these <span data-metric="plancount">0</span> plans.</p>
+
+                    <div class="row" id="boundarypicker">
+                        <div class="col-xs-4 center" data-boundary="ushouse" title="Show partisan bias analysis for US House district plans">
+                            <a href="javascript:void(0);">US House</a>
+                        </div>
+                        <div class="col-xs-4 center" data-boundary="statesenate" title="Show partisan bias analysis for State Senate district plans">
+                            <a href="javascript:void(0);">State Senate</a>
+                        </div>
+                        <div class="col-xs-4 center" data-boundary="statehouse" title="Show partisan bias analysis for State House district plans">
+                            <a href="javascript:void(0);">State House</a>
+                        </div>
+                    </div>
+
+                    <br/>
+
+                    <p>We used three metrics to examine the bias in these plans. These are the three metrics, and <span data-metric="biasstatement">the analysis is as follows</span>:</p>
+
+                    <ul class="nav nav-tabs">
+                        <li class="active"><a href="#tab-efficiencygap" data-toggle="tab">Efficiency Gap <span class="biasicon biasicon-neutral"></span></a></li>
+                        <li><a href="#tab-meanmedian" data-toggle="tab">Mean/Median <span class="biasicon biasicon-neutral"></span></a></li>
+                        <li><a href="#tab-partisanbias" data-toggle="tab">Partisan Bias <span class="biasicon biasicon-neutral"></span></a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane fade in active" id="tab-efficiencygap">
+                            <p>Nullam feugiat nibh non est scelerisque pellentesque. Suspendisse potenti. Vivamus augue nisl, cursus id ante sit amet, feugiat consequat tortor. Curabitur id sodales ante. Donec a ante non nibh placerat ultrices. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Integer at justo rhoncus, fermentum augue vel, rhoncus massa. Integer maximus hendrerit turpis, vel faucibus diam finibus a. Ut vestibulum enim ut tellus aliquam iaculis. Sed hendrerit luctus ligula ut iaculis. Morbi semper dolor eget lacinia aliquet. Mauris massa tortor, tristique nec arcu vel, convallis suscipit dolor.</p>
+                            <p>Vestibulum nec dolor eros. Sed eget blandit nulla. Donec efficitur orci et euismod blandit. Donec quis vulputate ligula, ac feugiat tellus. Pellentesque in tellus mi. Aliquam convallis vulputate neque, ac dignissim magna pellentesque vel. In hac habitasse platea dictumst.</p>
+                            <p>Duis consectetur tellus diam, et commodo enim egestas non. Integer lacinia blandit egestas. Interdum et malesuada fames ac ante ipsum primis in faucibus. Nulla a posuere sem. Ut tincidunt blandit odio vitae efficitur. Cras mollis blandit mattis. Pellentesque quis rutrum enim. Phasellus rhoncus massa a augue ullamcorper varius. Proin aliquam risus et condimentum semper. Quisque id sem ac purus hendrerit tempor.</p>
+                        </div>
+                        <div class="tab-pane fade" id="tab-meanmedian">
+                            <p>Fusce venenatis pharetra nisi. Donec dapibus, arcu rutrum posuere porttitor, erat neque convallis nibh, at rhoncus neque metus non enim. Nunc iaculis ante mauris, vitae aliquet dui tempor a. Aliquam sed nibh finibus, lobortis ex a, consectetur turpis. Aliquam erat volutpat. Pellentesque sed semper felis, eu tincidunt erat. Maecenas vulputate, mi eget porttitor condimentum, elit massa sollicitudin elit, at laoreet justo est at purus. Praesent semper nulla non odio sollicitudin iaculis. Ut in purus ex. Quisque dolor lacus, tempor id nisl sit amet, volutpat convallis tellus. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Integer quis maximus magna. Aenean gravida, lorem id lacinia finibus, nisl est lobortis turpis, in bibendum nisl orci non elit. Aliquam id enim tortor.</p>
+                            <p>Nam in mauris vel nulla tempor blandit sit amet ac nisi. Pellentesque semper semper elementum. Phasellus ullamcorper dui lacus, at tempus urna hendrerit lacinia. Maecenas ante arcu, ultricies eget posuere sit amet, eleifend a massa. Fusce id magna ut ante finibus euismod ullamcorper ut ligula. Proin vitae nunc tortor. Mauris nec ullamcorper nulla, nec consequat ipsum.</p>
+                            <p>In interdum erat mi, et faucibus diam posuere id. Nulla facilisi. Vivamus a porta enim. Fusce varius sed lacus quis tempor. Donec eu vehicula urna. In vel sem lacus. Quisque eu blandit lacus, ac tempus justo. Nullam egestas magna ac commodo suscipit. Duis rhoncus fringilla diam, sed posuere purus suscipit a.</p>
+                        </div>
+                        <div class="tab-pane fade" id="tab-partisanbias">
+                            <p>Donec vel rhoncus erat. Nulla efficitur fringilla risus. Morbi massa tellus, porttitor congue ex eget, tristique viverra nisl. Integer dapibus, orci ut scelerisque facilisis, metus velit convallis est, in pharetra elit turpis ullamcorper urna. Vestibulum sit amet lectus consequat, vehicula augue vitae, dictum augue. Mauris pharetra leo in justo maximus, in ultrices mi posuere. Sed fermentum felis augue, at dapibus eros suscipit et. Curabitur finibus, turpis feugiat semper fermentum, elit nibh mattis dui, eu lacinia massa augue eget massa. Aliquam ultricies in mi a eleifend.</p>
+                            <p>Interdum et malesuada fames ac ante ipsum primis in faucibus. Etiam cursus tellus in quam vehicula, eget volutpat nibh efficitur. Proin iaculis elementum ex id scelerisque. Fusce varius eros ligula, a porttitor leo vestibulum varius. Maecenas sollicitudin diam ex, vitae volutpat magna mattis eu. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Morbi ex magna, venenatis non ultrices vel, eleifend sed nisl.</p>
+                        </div>
+                    </div>
+                </span>
+
+                <span data-hasdata="false" style="display: none;">
+                    <p>No election plan data are available for the selected district and year.</p>
+                    <p>Try a different district type or year.</p>
+                </span>
+            </div>
+        </div>
 
     </div><!--/container-mainbody-->
 

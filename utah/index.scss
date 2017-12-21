@@ -1,2 +1,77 @@
 @import 'sitewide';
 
+$republican-color: #C71C36;
+$democrat-color: #0049A8;
+
+h1.state_name {
+    margin-top: 0;
+
+    font-size: 26px;
+
+    padding: 5px;
+
+    background-color: #cccccc;
+    color: white;
+}
+
+#boundarypicker {
+    div {
+        border:1px solid black;
+        cursor: pointer;
+
+        a {
+            text-decoration: none !important;
+            color: black;
+        }
+
+        background-color: #CCC;
+
+        padding-bottom: 15px;
+        padding-top: 15px;
+
+        font-size: 18px;
+    }
+    div.active {
+        background-color: black;
+        color: white;
+        a {
+            color: white;
+        }
+    }
+    div[data-boundary="ushouse"] {
+    }
+    div[data-boundary="statesenate"] {
+    }
+    div[data-boundary="statehouse"] {
+    }
+}
+
+
+#yearpicker-small {
+    padding: 5px;
+    border-radius: 5px;
+}
+
+ul.nav-tabs a span.biasicon {
+    display: inline-block;
+    height: 18px;
+    width: 18px;
+
+    text-align: center;
+    font-size: 15px;
+
+    background-color: transparent; /* unless assigned a specific bias class below, they're effectively invisible */
+    color: transparent;
+}
+ul.nav-tabs a span.biasicon.biasicon-neutral {
+    background-color: transparent;
+    color: transparent;
+}
+ul.nav-tabs a span.biasicon.biasicon-republican {
+    background-color: $republican-color;
+    color: white;
+}
+ul.nav-tabs a span.biasicon.biasicon-democrat {
+    background-color: $democrat-color;
+    color: white;
+}
