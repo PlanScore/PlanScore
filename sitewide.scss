@@ -2,22 +2,14 @@
  * DEFINITIONS
  */
 
-html, body, td {
-    font-family: 'Roboto', sans-serif !important;
-}
+$behind-background-color: #CCCCCC;
 
-nav.navbar-fixed-bottom {
-    a {
-        font-size: 14px;
-        line-height: 50px;
-        text-decoration: none;
-        white-space:nowrap; /* prevent a single link (logo+words) from wrapping internally */
-    }
-}
+$navbar-background-color: white;
+$navbar-text-color: #333;
 
-.container-mainbody { /* the navbar-fixed-bottom will obscure text at the bottom, unless we add padding so the text never reaches that far */
-    padding-bottom: 200px; /* mobile = footer wraps and becomes taller than on desktop = leave more space */
-}
+/*
+ * UTILITY CLASSES
+ */
 
 .center { text-align:center; }
 .right { text-align:right; }
@@ -28,6 +20,49 @@ nav.navbar-fixed-bottom {
 .rightfloat { float: right; }
 
 .pointer { cursor: pointer; }
+
+
+
+/*
+ * GLOBAL GENERAL STYLES
+ */
+
+html, body, td {
+    font-family: 'Roboto', sans-serif !important;
+}
+
+html {
+    background-color: $behind-background-color;
+}
+
+.navbar-default {
+    background-image: none;
+    background-color: $navbar-background-color;
+
+    box-shadow: none;
+    border-bottom: 0 none transparent;
+
+    color: $navbar-text-color;
+
+    .navbar-nav > li > a {
+        color: $navbar-text-color;
+    }
+}
+
+div.footer {
+    background-color: $behind-background-color;
+
+    a {
+        font-size: 14px;
+        line-height: 50px;
+        text-decoration: none;
+        white-space:nowrap; /* prevent a single link (logo+words) from wrapping internally */
+    }
+}
+
+.container-mainbody {
+    padding-bottom: 100px;
+}
 
 label { font-weight:normal; }
 

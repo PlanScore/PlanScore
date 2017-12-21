@@ -24,15 +24,17 @@ Running `npm run build` will compile the browser-consumable files **index.html**
 
 ### The State Pages Are Special
 
-There are 50 directories and thus pages for Alabama, Alaska, ... etc. But we do not maintain 50 separate **index.js6** **index.scss** **index.src.html** files!
+**Do not edit the `index.*` files for the 50 states.** There are 50 directories and thus pages for Alabama, Alaska, ... etc. But we do not maintain 50 separate **index.js6** **index.scss** **index.src.html** files!
 
-Do not edit the `index.*` files for the 50 states. Instead, you'll want to make edits to the `_statetemplate` files (**state_template.js6**, **state_template.scss**, **state_template.src.html**).
-
-Then you would `npm run states` to copy these template files into the 50 target folders.
+Instead, you'll want to make edits to the `_statetemplate` files (**state_template.js6**, **state_template.scss**, **state_template.src.html**). Then you would `npm run states` to copy these template files into the 50 target folders.
 
 If you are running *webpack-dev-server*, it will automagically detect the files having changed, and will trigger a rebuild and reload as usual. Note that this takes a moment; be patient.
 
 The usual `npm run build` step is required for state pages if you expect to depploy to the site, same as with other pages.
+
+While working within the `_statetemplate/` content, some notes of interest:
+* **state_template.src.html** -- You may insert the phrase **STATE_NAME** into the HTML. When the template is copied into the state folder, this will be replaced with the state's Properly Capitalized Name.
+* All states will receive exactly the same programming, stylesheet, and HTML template (except for the STATE_NAME tag), so they should "detect" their state based on the URL string, if they will need to filter data or otherwise configure custom behavior.
 
 
 ### Shared Content / Partial Views
