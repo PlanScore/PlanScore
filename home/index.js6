@@ -277,6 +277,19 @@ window.loadDataForSelectedBoundaryAndYear = () => {
         // see also selectState() which needs to access the compiled data
         $('#map').data('biasdata', data);
 
+        // Highcharts trick: load up the us-small data which includes breakout boxes for the small New England States (issue 78)
+        // preprocess it to add the state's ABBR as the label for the boxes
+        const polygons = Highcharts.geojson(Highcharts.maps['countries/us/custom/us-small']);
+        $.each(polygons, function () {
+            var path = this.path, copy = { path: path };
+
+            if (path[1] === 9727) {
+                Highcharts.seriesTypes.map.prototype.getBox.call({}, [copy]);
+                this.middleX = ((path[1] + path[4]) / 2 - copy._minX) / (copy._maxX - copy._minX); // eslint-disable-line no-underscore-dangle
+                this.middleY = ((path[2] + path[7]) / 2 - copy._minY) / (copy._maxY - copy._minY); // eslint-disable-line no-underscore-dangle
+            }
+        });
+
         // render the map chart
         const newmapchart = Highcharts.mapChart('map', {
             chart: {
@@ -288,24 +301,38 @@ window.loadDataForSelectedBoundaryAndYear = () => {
             legend: {
                 enabled: false,  // we have a custom-crafted label
             },
-
             colorAxis: {
                 dataClasses: MAP_CHOROPLETH_BREAKS,
             },
-
             tooltip: {  // the tooltips are kept minimal, as most info is in a popup when clicked and mobile folks can't use tooltips effectively
                 formatter: function() {
-                    if (this.point.value === -999999) return `${this.key}: No data`;
-                    return `${this.key}: Click for details`;
+                    return this.key;  // the state name
+                },
+                positioner: function (labelWidth, labelHeight, point) {  // center the tooltip on the state, instead of using the mouse; issue 78
+                    const width = this.chart.chartWidth;
+                    const height = this.chart.chartHeight;
+
+                    const x = (width / 2) - 30;  //could use (labelWidth/2) but then the box "jumps around"
+                    const y = height - labelHeight - 5;
+                    return { x, y };
                 },
             },
-
             series: [{
                 // use the Highcharts-provided US states, joining on their "postal-code" to our "abbr"
                 data: data,
-                mapData: Highcharts.maps['countries/us/us-all'],
+                mapData: polygons,
                 joinBy: ['postal-code', 'abbr'],
-
+                // labels make small states easier to see, cursor makes it obvious to click
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    formatter: function () {
+                        return this.point.abbr;
+                    },
+                    style: {
+                        fontSize: '9px',
+                    }
+                },
                 // click events: call the popup maker
                 events: {
                     click: function (e) {

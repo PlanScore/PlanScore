@@ -1,5 +1,13 @@
 @import 'sitewide';
 
+#map path.highcharts-key-us-dc {
+    display: none !important;  /* issue 78 adds small-states legend, this hides DC which we don't have */
+}
+
+#map g.highcharts-tooltip {
+    z-index: 100;
+}
+
 #map {
     height: 400px;
     width: 100%;
