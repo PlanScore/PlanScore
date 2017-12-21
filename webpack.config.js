@@ -65,6 +65,7 @@ const JS6_FILES = [
 
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const StringReplacePlugin = require("string-replace-webpack-plugin");
+const WriteFilePlugin = require("write-file-webpack-plugin");
 
 const HTML_PARTIALS = {
     footer: require("./htmlpartials/footer"),
@@ -212,6 +213,8 @@ module.exports = {
      * plugins for the above
      */
     plugins: [
+        // so webpack-dev-server will ALSO write files to disk in addition to in-memory
+        new WriteFilePlugin(),
         // CSS output from the CSS + LESS handlers above
         new ExtractTextPlugin({
             disable: false,
