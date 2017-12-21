@@ -7,6 +7,14 @@ Totally separate from the back-end code, this is the public-facing website. This
 https://planscore.github.io/PlanScore/home/
 
 
+
+## Data CSVs
+
+The datasets which power the site, are under the `data/` folder.
+
+Data dictionary for bias CSVs: https://docs.google.com/spreadsheets/d/1eMwwL8eaxD3aAyiy410yt79Cik2GV31WrXWyzFsiSTs/edit#gid=1340292617
+
+
 ## Development and Code Layout
 
 Babel, SASS/SCSS, Webpack.
