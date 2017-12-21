@@ -108,27 +108,30 @@ p {
 }
 
 ul.nav.nav-tabs {
-    border-bottom: 1px solid #333;
+    border-bottom: 1px solid #B3B3B3;
 
     a {
         font-size: 18px;
         border-radius: 0;
+        color: #95989A;
     }
 
     li.active a {
-        border: 1px solid #333;
+        border: 1px solid #B3B3B3;
+        border-top-width: 3px solid #4D599E;
         border-bottom-color: transparent;
-        border-top-width: 3px;
     }
 }
 
 .tab-content {
     .tab-pane {
         padding: 1em 1em 1em 1em;
+        border: 1px solid #B3B3B3;
+        border-top-color: transparent;
 
         p {
             font-size: 16px;
-            color: #333333;
+            color: #121212;
         }
     }
 }
