@@ -268,6 +268,7 @@ window.loadDataForSelectedBoundaryAndYear = () => {
             });
             renderMapWithNewData(chartdata);
             renderMapLegend();
+            updateStateListingSwatches(chartdata);
         },
     });
 
@@ -337,6 +338,23 @@ window.loadDataForSelectedBoundaryAndYear = () => {
         });
 
         $('<h5>No Data</h5>').appendTo($legend);  // last slice will be the No Data, here are the words to go with it
+    }
+
+    function updateStateListingSwatches(data) {
+        const $swatches = $('#states-listing span.swatch');
+        $swatches.each(function () {
+            // find this swatch's state name, and fetch that state info from the raw data
+            const state_name = $(this).closest('a').text().trim();
+            const state_info = data.filter((stateinfo) => { return stateinfo.name === state_name; }).slice(0, 1)[0];
+
+            // figure out the state's color based on the bias rating
+            const bias_color = MAP_CHOROPLETH_BREAKS.filter((rampentry) => {
+                return state_info.value >= rampentry.from && state_info.value <= rampentry.to;
+            })[0];
+
+            // apply it
+            $(this).css({ 'background-color': bias_color.color }).prop('title', bias_color.title);
+        });
     }
 
     // update URL params to show the current search
