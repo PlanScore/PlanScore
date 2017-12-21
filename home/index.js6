@@ -138,17 +138,15 @@ window.initYearPickers = () => {
     PLAN_YEARS.forEach((year) => {
         // each button has some utility classes so we can call out certain landmark years
         // see also handleResize() which adjusts the full-width spacing behavior
-        const $button = $('<a></a>').attr('data-year', year).prop('title', `Show partisan bias analysis for ${year}`).appendTo($picker_big);
+        const $button = $('<div><a></a></div>').attr('data-year', year).prop('title', `Show partisan bias analysis for ${year}`).appendTo($picker_big);
         if (year % 10 === 0) $button.addClass('decade');
         if (year % 4 === 0) $button.addClass('presidential');
+
+        if (year % 10 === 0) {
+            $('<span></span>').text(year).appendTo($button);
+        }
     });
-    $('<br/>').appendTo($picker_big);
-    PLAN_YEARS.filter((year) => { return year % 10 === 0; }).forEach((year) => {
-        // now add the decade years
-        // see also handleResize() which adjusts the full-width spacing behavior
-        $('<span class="yearlabel"></span>').text(year).attr('data-year', year).appendTo($picker_big);
-    });
-    $picker_big.on('click', 'a', function () {
+    $picker_big.on('click', 'div', function () {
         const year = $(this).attr('data-year');
         selectYear(year);
     });
@@ -200,30 +198,11 @@ window.initLoadStartingConditions = () => {
 window.handleResize = () => {
     // various things that don't gracefully handle being resized, so we need to help them out
 
-    // the big year picker is a series of dots, and we want it to span the screen
-    // calculate the usable width by subtracting the width of each dot
-    // then the right-margin per dot, by diviging space by number of dots
-    const $picker_big = $('#yearpicker-big');
-    const $picker_big_buttons = $picker_big.find('a');
+    // the desktop "bead string" yearpicker; stretch the DIVs to fill the width
+    const $picker_buttons = $('#yearpicker-big').find('div');
+    const width = `${100 / $picker_buttons.length}%`;
+    $picker_buttons.css({ width });
 
-    let usable_width = $picker_big.width();
-    $picker_big_buttons.each(function () {
-        const consumed_width = $(this).width() + 4;  // width() doesn't include border; we know these have 2px border
-        usable_width -= consumed_width;
-    });
-
-    const rightspace = usable_width / ($picker_big_buttons.length - 1);
-    $picker_big_buttons.css({
-        'margin-right': `${rightspace}px`,  // CSS enforces 0 for the last dot-button
-    });
-
-    // the big year picker has SPAN items with the years, which we want aligned to the decade dots we just positioned above
-    $picker_big.find('span.yearlabel').each(function () {
-        const year = $(this).text();
-        const $button = $picker_big_buttons.filter(`[data-year="${year}"]`);
-        const left = $button.position().left - ($button.width() / 3);
-        $(this).css({ left:`${left}px`, top: '40px' });
-    });
 };
 
 
@@ -392,7 +371,7 @@ window.loadDataForSelectedBoundaryAndYear = () => {
 
 window.selectYear = (year) => {
     // UI update: highlight this button
-    $('#yearpicker-big a').removeClass('active').filter(`[data-year="${year}"]`).addClass('active');
+    $('#yearpicker-big div').removeClass('active').filter(`[data-year="${year}"]`).addClass('active');
 
     // save to the state and refresh the map + data
     CURRENT_VIEW.year = year;
