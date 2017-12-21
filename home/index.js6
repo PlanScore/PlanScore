@@ -174,7 +174,7 @@ window.initStatePicker = () => {
 };
 
 window.initBoundaryPicker = () => {
-    $('#boundarypicker div').click(function () {
+    $('#boundarypicker div[data-boundary]').click(function () {
         const boundarytype = $(this).attr('data-boundary');
         selectBoundaryType(boundarytype);
     });
@@ -356,7 +356,7 @@ window.selectYear = (year) => {
 
 window.selectBoundaryType = (boundtype) => {
     // UI update: highlight this button
-    $('#boundarypicker div').removeClass('active').filter(`[data-boundary="${boundtype}"]`).addClass('active');
+    $('#boundarypicker div[data-boundary]').removeClass('active').filter(`[data-boundary="${boundtype}"]`).addClass('active');
 
     // save to the state and refresh the map + data
     CURRENT_VIEW.boundtype = boundtype;

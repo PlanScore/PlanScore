@@ -101,7 +101,7 @@
 }
 
 #boundarypicker {
-    .col-xs-4 {
+    div[data-boundary] {
         cursor: pointer;
 
         a {
@@ -118,18 +118,18 @@
         border-radius: 2px;
         box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, .16);
     }
-    .col-xs-4.active {
+    div[data-boundary].active {
         background-color: #4D599E;
         color: white;
         a {
             color: white;
         }
     }
-    .col-xs-4[data-boundary="ushouse"] {
+    div[data-boundary="ushouse"] {
     }
-    .col-xs-4[data-boundary="statesenate"] {
+    div[data-boundary="statesenate"] {
     }
-    .col-xs-4[data-boundary="statehouse"] {
+    div[data-boundary="statehouse"] {
     }
 }
 
