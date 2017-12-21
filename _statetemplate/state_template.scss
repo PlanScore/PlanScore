@@ -15,6 +15,17 @@ h1.state_name {
 }
 
 #boundarypicker {
+    /* small-enough screens, force these to 100% as they will linewrap before Bootstrap will "xs" them to stack */
+    @media screen and (max-width: 550px) {
+        > div {
+          width: 100%;
+        }
+
+        > div {  /* when stacked, give them a tiny bit of bottom margin so they do't blur together */
+            margin-bottom: 3px;
+        }
+    }
+
     div {
         border:1px solid black;
         cursor: pointer;
