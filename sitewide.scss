@@ -47,6 +47,20 @@ html {
     .navbar-nav > li > a {
         color: $navbar-text-color;
     }
+    
+    @media (min-width: 768px) {
+        #brand-logo {
+            height: 40px;
+            width: auto;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        #brand-logo {
+            height: 30px;
+            width: auto;
+        }
+    }
 }
 
 div.footer {
