@@ -39,7 +39,7 @@ While working within the `_statetemplate/` content, some notes of interest:
 * All states will receive exactly the same programming, stylesheet, and HTML template (except for the STATE_NAME tag), so they should "detect" their state based on the URL string, if they will need to filter data or otherwise configure custom behavior.
 
 
-###Static Content
+### Static Content
 
 The `WEBSITE_OUTPUT/` directory is where the compiled website output will be placed (see Deployment section).
 
@@ -78,3 +78,12 @@ The result is:
   * These were there all along, and are in version control.
 * The `index.html` file which redirects visitors from **/** to **/home/** when they land on the site.
   * This was there all along, and is in version control.
+
+
+## Adding New Pages To The Site
+
+To add a new page to the site:
+* Copy the `_pagestarter` folder as your new page-folder, e.g. `cp -rp _pagestarter/ voting/`
+* List the new folder's `index.js6` file in the `webpack.config.js` file.
+  * If you are using webpack-dev-server, you will need to restart it for it pick up the newly-listed page-folder.
+* Get hacking on the three files, as described in the Development section. Fill in HTML content, JavaScript code, and page-specific SCSS.
