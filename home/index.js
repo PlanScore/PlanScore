@@ -201,7 +201,7 @@ window.initYearPickers = function () {
     PLAN_YEARS.forEach(function (year) {
         // each button has some utility classes so we can call out certain landmark years
         // see also handleResize() which adjusts the full-width spacing behavior
-        var $button = $('<a></a>').attr('data-year', year).prop('href', '#').prop('title', 'Show partisan bias analysis for ' + year).appendTo($picker_big);
+        var $button = $('<a></a>').attr('data-year', year).prop('title', 'Show partisan bias analysis for ' + year).appendTo($picker_big);
         if (year % 10 === 0) $button.addClass('decade');
         if (year % 4 === 0) $button.addClass('presidential');
     });
@@ -269,9 +269,20 @@ window.initBoundaryPicker = function () {
 };
 
 window.initLoadStartingConditions = function () {
-    // the most recent year and the first listed district type; select them for us
-    selectYear(PLAN_YEARS[PLAN_YEARS.length - 1]);
-    selectBoundaryType('ushouse');
+    // analyze the #year-polytype hash to see what year + type we should load
+    // provide some defaults
+    var year = PLAN_YEARS[PLAN_YEARS.length - 1];
+    var type = 'ushouse';
+
+    var year_and_type = /^#(\d\d\d\d)\-(\w+)$/.exec(window.location.hash);
+    if (year_and_type) {
+        year = year_and_type[1];
+        type = year_and_type[2];
+    }
+
+    // ready, set, go
+    selectYear(year);
+    selectBoundaryType(type);
 };
 
 window.handleResize = function () {
@@ -338,7 +349,7 @@ window.loadDataForSelectedBoundaryAndYear = function () {
             });
         }
 
-        // fetch the CSV file
+        // fetch the CSV file and then use the callbacks to update the map
     } catch (err) {
         _didIteratorError2 = true;
         _iteratorError2 = err;
@@ -441,6 +452,11 @@ window.loadDataForSelectedBoundaryAndYear = function () {
 
         $('<h5>No Data</h5>').appendTo($legend); // last slice will be the No Data, here are the words to go with it
     }
+
+    // update URL params to show the current search
+    // see also initLoadStartingConditions() which will load such a state
+    var hash = '#' + CURRENT_VIEW.year + '-' + CURRENT_VIEW.boundtype;
+    window.location.replace(hash);
 };
 
 window.selectYear = function (year) {
