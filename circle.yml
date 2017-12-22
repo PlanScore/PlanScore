@@ -1,7 +1,6 @@
 dependencies:
   override:
-    # Stop Circle from trying to set up all the NPM dependencies
-    - echo No Worries
+    - npm run build
 
 test:
   override:
