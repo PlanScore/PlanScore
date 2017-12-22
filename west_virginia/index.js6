@@ -80,7 +80,7 @@ window.initYearPickers = () => {
 };
 
 window.initBoundaryPicker = () => {
-    $('#boundarypicker div').click(function () {
+    $('#boundarypicker div[data-boundary]').click(function () {
         const boundarytype = $(this).attr('data-boundary');
         selectBoundaryType(boundarytype);
     });
@@ -92,7 +92,7 @@ window.initLoadStartingConditions = () => {
     let year = PLAN_YEARS[PLAN_YEARS.length - 1];
     let type = 'ushouse';
 
-    const year_and_type = /^#(\d\d\d\d)\-(\w+)$/.exec(window.location.hash);
+    const year_and_type = /^#!(\d\d\d\d)\-(\w+)$/.exec(window.location.hash);
     if (year_and_type) {
         year = year_and_type[1];
         type = year_and_type[2];
@@ -134,7 +134,7 @@ console.log(CURRENT_VIEW);
 
     // update URL params to show the current search
     // see also initLoadStartingConditions() which will load such a state
-    const hash = `#${CURRENT_VIEW.year}-${CURRENT_VIEW.boundtype}`;
+    const hash = `#!${CURRENT_VIEW.year}-${CURRENT_VIEW.boundtype}`;
     window.location.replace(hash);
 };
 

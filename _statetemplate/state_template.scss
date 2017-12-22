@@ -26,24 +26,25 @@ h1.state_name {
         }
     }
 
-    div {
-        border:1px solid black;
+    div[data-boundary] {
         cursor: pointer;
 
         a {
             text-decoration: none !important;
-            color: black;
+            color: #95989A;
         }
 
-        background-color: #CCC;
+        background-color: #F2F2F2;
 
         padding-bottom: 15px;
         padding-top: 15px;
 
         font-size: 18px;
+        border-radius: 2px;
+        box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, .16);
     }
-    div.active {
-        background-color: black;
+    div[data-boundary].active {
+        background-color: #4D599E;
         color: white;
         a {
             color: white;

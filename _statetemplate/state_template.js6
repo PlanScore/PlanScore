@@ -80,7 +80,7 @@ window.initYearPickers = () => {
 };
 
 window.initBoundaryPicker = () => {
-    $('#boundarypicker div').click(function () {
+    $('#boundarypicker div[data-boundary]').click(function () {
         const boundarytype = $(this).attr('data-boundary');
         selectBoundaryType(boundarytype);
     });
