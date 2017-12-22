@@ -1,4 +1,11 @@
+# build stuff and debug output
 node_modules/
 yarn-error.log
 npm-debug.log
 
+# web build artifacts don't need version control
+# except the static/data files
+WEBSITE_OUTPUT/
+!WEBSITE_OUTPUT/index.html
+!WEBSITE_OUTPUT/data/
+!WEBSITE_OUTPUT/images/
