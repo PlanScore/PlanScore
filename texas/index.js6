@@ -43,14 +43,26 @@ window.handleResize = () => {
 };
 
 window.initYearPickers = () => {
+    // mobile
     // a simple SELECT to choose a year, and trigger selectYear()
-
     const $picker_small = $('#yearpicker-small');
     PLAN_YEARS.slice().reverse().forEach((year) => {
         $('<option></option>').text(year).prop('value', year).appendTo($picker_small);
     });
     $picker_small.change(function () {
         const year = $(this).val();
+        selectYear(year);
+    });
+
+    // desktop
+    // the list of "year beads" running down the side
+    // the left-most background for plan start/continue bead-bar, is specific to the chosen district type; see updateStatsFromCsvContent()
+    const $picker_big = $('#yearpicker-big');
+    PLAN_YEARS.slice().reverse().forEach((year) => {
+        const $button = $(`<div class="year"><a></a> ${year}</div>`).attr('data-year', year).appendTo($picker_big);
+    });
+    $('#yearpicker-big').on('click', 'div.year', function () {
+        const year = $(this).attr('data-year');
         selectYear(year);
     });
 };
@@ -109,8 +121,10 @@ window.loadDataForSelectedBoundaryAndYear = () => {
 };
 
 window.selectYear = (year) => {
-    // UI update: highlight this button
+    // UI update: highlight this button or select this option
     $('#yearpicker-small').val(year);
+
+    $('#yearpicker-big div.year').removeClass('active').filter(`[data-year="${year}"]`).addClass('active');
 
     // save to the state and refresh the map + data
     CURRENT_VIEW.year = year;
@@ -127,6 +141,15 @@ window.selectBoundaryType = (boundtype) => {
 };
 
 window.updateStatsFromCsvContent = (allcsvdata) => {
+    // handle a condition of no data at all for this whole district type, for any year
+    if (allcsvdata.length) {
+        $('#maincontent span[data-hasdata-atall]').hide().filter('[data-hasdata-atall="true"]').show();
+    }
+    else {
+        $('#maincontent span[data-hasdata-atall]').hide().filter('[data-hasdata-atall="false"]').show();
+        return;  // nothing else we can do until they select a district type with data
+    }
+
     // general info not related to any specific year
     // how many distinct plans and years are listed for this district type?
     const distinct_years = {};
@@ -138,16 +161,30 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     $('span[data-metric="electioncount"]').text(Object.keys(distinct_years).length.toLocaleString());
     $('span[data-metric="plancount"]').text(Object.keys(distinct_plans).length.toLocaleString());
 
-    // handle a condition of no data at all for this whole district type, for any year
-    if (allcsvdata.length) {
-        $('#maincontent span[data-hasdata-atall]').hide().filter('[data-hasdata-atall="true"]').show();
-    }
-    else {
-        $('#maincontent span[data-hasdata-atall]').hide().filter('[data-hasdata-atall="false"]').show();
-        return;  // nothing else we can do until they select a district type with data
+    // general info not related to any specific year
+    // regarding the large yearpicker, figure out what plans were effective in each year, and refresh the left-side showing plan continuity
+    // that is to say:
+    // a year which is the first year in which the given plan was in effect, gets an icon indicating that a plan has started
+    // otherwise, the year continues a plan and gets an alternate icon
+    {
+        const yearplans = {};
+        allcsvdata.forEach((row) => { yearplans[row.year] = row.plan; });
+
+        let current_plan = null;
+
+        const $yearpicker_buttons = $('#yearpicker-big div.year');
+        PLAN_YEARS.forEach((year) => {
+            const $button = $yearpicker_buttons.filter(`[data-year="${year}"]`);
+            const thisyearplan = yearplans[year];
+
+            if (current_plan == thisyearplan) $button.removeClass('plan-begin').addClass('plan-continue').prop('title', '');
+            else                              $button.removeClass('plan-continue').addClass('plan-begin').prop('title', `A new district plan was implemented in ${year}`);
+
+            current_plan = thisyearplan;
+        });
     }
 
-    // filter to the data for the selected year, to get the specific planin effect that year
+    // filter to the data for the selected year, to get the specific plan in effect that year
     // then show the "no data for this year" content if we have data for this district, but not this year
     const thisplan = allcsvdata.filter((row) => { return row.year == CURRENT_VIEW.year; })[0];
     if (thisplan) {
