@@ -1,3 +1,7 @@
+//
+// SHARED CONSTANTS
+//
+
 // the list of years to offer; used by the year picker so the user may choose dates
 // note that not every state has data at all levels for every year
 export const PLAN_YEARS = [
@@ -8,33 +12,17 @@ export const PLAN_YEARS = [
     2010, 2012, 2014, 2016,
 ];
 
-// the bias numbers fitting into each colorful bucket
-// used for the map choropleth, for the legend, other charts, ...
-// the from/to/color are specifically for Highcharts, so don't rename them, but you could add more fields to suit other consumers
-// the magical value -999999 represents No Data and will always be the first in this series
-// see also renderMapLegend() which generates the legend
-// see also loadDataForSelectedBoundaryAndYear() which assigns the color ramp for choropleth
-//gda to be removed per #83
-export const MAP_CHOROPLETH_BREAKS = [
-    { from: -999999, to: -100, color: '#FFFFFF', title: 'No Data' },
-    { from: -100, to: -0.20, color: '#C71C36', title: 'Most Biased Toward Republican' },
-    { from: -0.20, to: -0.10, color: '#D95F72', title: 'More Biased Toward Republican' },
-    { from: -0.10, to: -0.05, color: '#E8A2AD', title: 'Somewhat Biased Toward Republican' },
-    { from: -0.05, to: -0.02, color: '#F5D7DC', title: 'Slightly Biased Toward Republican' },
-    { from: -0.02, to: 0.02, color: '#F2E5FA', title: 'Balanced' },
-    { from: 0.02, to: 0.05, color: '#D7E4F5', title: 'Slightly Biased Toward Democrat' },
-    { from: 0.05, to: 0.10, color: '#99B7DE', title: 'Somewhat Biased Toward Democrat' },
-    { from: 0.10, to: 0.20, color: '#4C7FC2', title: 'More Biased Toward Democrat' },
-    { from: 0.20, to: 100, color: '#0049A8', title: 'Most Biased Toward Democrat' },
-];
-
 // the color gradient from Republican red to Democrat blue
-// see also the shared function lookupBiasColor() which resolves a score (-1 to +1) into a color from this gradient
-// see also the shared function lookupBiasDescription()which resolves a score (-1 to +1) into a descriptive phrase
-export const COLOR_GRADIENT = require('tinygradient').rgb(['red', 'blue'], 30).map((tinycolor) => { return tinycolor.toHexString(); });
+// see also lookupBiasColor() lookupBiasDescription() et al, which resolves a score (-1 to +1) into colors & descriptions
+export const COLOR_GRADIENT = require('tinygradient').rgb(['red', 'white', 'blue'], 30).map((tinycolor) => { return tinycolor.toHexString(); });
 
-// when generating tooltips, a certain skew will be considered balanced and below statistical significance
-// this would correspond to the Balanced choropleth break defined above (+X to -X is still balanced)
+// technically bias scores range -1 to +1, but realistically we scale to a narrower band (25% bias is a lot!)
+// this defines the spread to consider when scaling a score onto a color ramp or similar
+// see also lookupBiasColor() lookupBiasDescription() et al, which resolves a score (-1 to +1) into colors & descriptions
+export const BIAS_SPREAD_SCALING = 0.25;
+
+// a bias <= this value will be considered balanced and below statistical significance
+// see also lookupBiasColor() lookupBiasDescription() et al, which resolves a score (-1 to +1) into colors & descriptions
 export const BIAS_BALANCED_THRESHOLD = 0.02;
 
 // for remapping state name to a short code
@@ -143,4 +131,53 @@ export const STATE_CODE_TO_NAME = {
     'WV': 'West Virginia',
     'WI': 'Wisconsin',
     'WY': 'Wyoming',
+};
+
+
+//
+// SHARED UTILITY FUNCTIONS
+//
+
+export const lookupBiasColor = (score) => {
+    // for swatches, map a bias score onto the color ramp
+
+    if (score === undefined || score === null) return '#FFFFFF';  // No Data
+
+    // normalize the score onto an absolute scale from 0 (-max) to 1 (+max)
+    // that gives us the index of the color gradient entry
+    const bias_spread = BIAS_SPREAD_SCALING;
+    let p_value = 0.5 + (0.5 * (score / bias_spread));
+    if (p_value < 0) p_value = 0;
+    else if (p_value > 1) p_value = 1;
+
+    const i = Math.round((COLOR_GRADIENT.length - 1) * p_value);
+    return COLOR_GRADIENT[i];
+};
+
+export const lookupBiasDescription = (score) => {
+    // for swatches and titles, map a bias score onto some words describing it
+    if (score === undefined || score === null) return 'No Data';
+
+    const abscore = Math.abs(score);
+    const whichparty = score > 0 ? 'Democrats' : 'Republicans';
+
+    if (abscore >= 0.20) return `Most Biased In Favor of ${whichparty}`;
+    if (abscore >= 0.14) return `More Biased In Favor of ${whichparty}`;
+    if (abscore >= 0.07) return `Biased In Favor of ${whichparty}`;
+    if (abscore >= BIAS_BALANCED_THRESHOLD) return `Slightly Biased In Favor of ${whichparty}`;
+    return 'No Significant Bias';
+};
+
+export const lookupBiasPercentile = (score) => {
+    // this plan is more biased than X% of the plans analyzed
+    // return the percentile rating of this plan; or a 0 if it's not statistically biased
+    if (Math.abs(score) <= BIAS_BALANCED_THRESHOLD) return 0;
+    return 50 + Math.round(Math.abs(score)) * 100;      // TODO: we never did touch upon the math here, need to confirm
+};
+
+export const lookupBiasFavorParty = (score) => {
+    // just return the name of the party who is favored by this plan; or empty if it's balanced
+    if (score === null || score === undefined) return '';
+    if (Math.abs(score) <= BIAS_BALANCED_THRESHOLD) return '';
+    return score > 0 ? 'Democrat' : 'Republican';
 };
