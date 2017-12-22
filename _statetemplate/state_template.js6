@@ -195,54 +195,90 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
         return;  // nothing else we can do until they select a year which has data
     }
 
+    //
+    // we have a year which means we have isolated a specific year/plan
+    // we have a lot of little things to fill in
+    //
+
     // cast a few fields as floats
     [ 'eg_adj_avg', 'bias_avg', 'mmd_avg'
     ].forEach((fieldname) => {
             thisplan[fieldname] = parseFloat(thisplan[fieldname]);
         });
 
-    // for the selected plan
+    // for the selected year/plan
     // the 3 plan-bias metrics: do any of them show a bias toward D or R?
     // tag the biasicon icons in the metrics' tabs
     const favor_party_eg = lookupBiasFavorParty(thisplan.eg_adj_avg);
     const favor_color_eg = lookupBiasColor(thisplan.eg_adj_avg);
+    const percent_eg     = favor_party_eg ? `+${Math.round(100 * Math.abs(thisplan.eg_adj_avg))}%` : '';
+    const hadseats       = favor_party_eg == 'Republican' ? thisplan.seats_r : thisplan.seats_dem;
+    const statement_eg   = favor_party_eg ? `${favor_party_eg}s needed ${(100 * Math.abs(thisplan.eg_adj_avg)).toFixed(1)}% fewer votes to win their ${hadseats} of ${thisplan.seats} seats.` : 'This metric indicates a balanced plan.';
 
     const favor_party_pb = lookupBiasFavorParty(thisplan.bias_avg);
     const favor_color_pb = lookupBiasColor(thisplan.bias_avg);
+    const percent_pb     = favor_party_pb ? `+${Math.round(100 * Math.abs(thisplan.bias_avg))}%` : '';
+    const statement_pb   = favor_party_pb ? '' : 'This metric indicates a balanced plan.';
 
     const favor_party_mm = lookupBiasFavorParty(thisplan.mmd_avg);
     const favor_color_mm = lookupBiasColor(thisplan.mmd_avg);
+    const percent_mm     = favor_party_mm ? `+${Math.round(100 * Math.abs(thisplan.mmd_avg))}%` : '';
+    const statement_mm   = favor_party_mm ? '' : 'This metric indicates a balanced plan.';
 
+    // color the tab-swatches for the three metrics
     {
         let $swatch = $('#maincontent ul.nav-tabs a[href="#tab-efficiencygap"] span.biasicon');
-        $swatch.removeClass('biasicon-republican').removeClass('biasicon-democrat').text(' ');
-        if (favor_party_eg) $swatch.addClass(`biasicon-${favor_party_eg.toLowerCase()}`).text(favor_party_eg.substr(0,1).toUpperCase());
+        $swatch.removeClass('republican').removeClass('democrat').text(' ');
+        if (favor_party_eg) $swatch.addClass(`${favor_party_eg.toLowerCase()}`).text(favor_party_eg.substr(0,1).toUpperCase());
     }
-
     {
         let $swatch = $('#maincontent ul.nav-tabs a[href="#tab-partisanbias"] span.biasicon');
-        $swatch.removeClass('biasicon-republican').removeClass('biasicon-democrat').text(' ');
-        if (favor_party_pb) $swatch.addClass(`biasicon-${favor_party_pb.toLowerCase()}`).text(favor_party_pb.substr(0,1).toUpperCase());
+        $swatch.removeClass('republican').removeClass('democrat').text(' ');
+        if (favor_party_pb) $swatch.addClass(`${favor_party_pb.toLowerCase()}`).text(favor_party_pb.substr(0,1).toUpperCase());
     }
-
     {
         let $swatch = $('#maincontent ul.nav-tabs a[href="#tab-meanmedian"] span.biasicon');
-        $swatch.removeClass('biasicon-republican').removeClass('biasicon-democrat').text(' ');
-        if (favor_party_mm) $swatch.addClass(`biasicon-${favor_party_mm.toLowerCase()}`).text(favor_party_mm.substr(0,1).toUpperCase());
+        $swatch.removeClass('republican').removeClass('democrat').text(' ');
+        if (favor_party_mm) $swatch.addClass(`${favor_party_mm.toLowerCase()}`).text(favor_party_mm.substr(0,1).toUpperCase());
     }
 
-    // continuing the three-metric bias work above,
-    // compose a sentence summarizing the biases if there are 2/3, 3/3, ...
+    // fill in those +DR% numbers and the summary texts, at the top of the metric tabs
+    $('#tab-efficiencygap span[data-field="percent_eg"]').text(percent_eg);
+    $('#tab-efficiencygap span[data-field="egparty"]').text(favor_party_eg);
+    $('#tab-efficiencygap span[data-field="egstatement"]').text(statement_eg);
+
+    $('#tab-partisanbias span[data-field="percent_pb"]').text(percent_pb);
+    $('#tab-partisanbias span[data-field="pbparty"]').text(favor_party_pb);
+    $('#tab-partisanbias span[data-field="metricstatement"]').text(statement_pb);
+
+    $('#tab-meanmedian span[data-field="percent_mm"]').text(percent_mm);
+    $('#tab-meanmedian span[data-field="mmparty"]').text(favor_party_mm);
+    $('#tab-meanmedian span[data-field="metricstatement"]').text(statement_mm);
+
+    // color those +DR% boxes
+    {
+        const $sumbox = $('#tab-efficiencygap div.metricdrsum').removeClass('republican').removeClass('democrat').hide();
+        if      (favor_party_eg == 'Republican') $sumbox.addClass('republican').show();
+        else if (favor_party_eg == 'Democrat')   $sumbox.addClass('democrat').show();
+    }
+    {
+        const $sumbox = $('#tab-partisanbias div.metricdrsum').removeClass('republican').removeClass('democrat').hide();
+        if      (favor_party_pb == 'Republican') $sumbox.addClass('republican').show();
+        else if (favor_party_pb == 'Democrat')   $sumbox.addClass('democrat').show();
+    }
+    {
+        const $sumbox = $('#tab-meanmedian div.metricdrsum').removeClass('republican').removeClass('democrat').hide();
+        if      (favor_party_mm == 'Republican') $sumbox.addClass('republican').show();
+        else if (favor_party_mm == 'Democrat')   $sumbox.addClass('democrat').show();
+    }
+
+    // compose a sentence summarizing the "favor party" biases
     const metrics_favor_d = [ favor_party_eg, favor_party_pb, favor_party_mm ].filter((party) => { return party == 'Democrat'; }).length;
     const metrics_favor_r = [ favor_party_eg, favor_party_pb, favor_party_mm ].filter((party) => { return party == 'Republican'; }).length;
     let biasstatement = "No consistent statistical bias was found among the three metrics.";
     if      (metrics_favor_d == 3) biasstatement = "All three metrics agree that there is a bias in favor of Democrat voters.";
     else if (metrics_favor_r == 3) biasstatement = "All three metrics agree that there is a bias in favor of Republican voters.";
-    else if (metrics_favor_d == 2) biasstatement = "Two of the three metrics indicate a bias in favor of Democrat voters.";
-    else if (metrics_favor_r == 2) biasstatement = "Two of the three metrics indicate a bias in favor of Reublican voters.";
+    else if (metrics_favor_d == 2 && metrics_favor_r == 0) biasstatement = "Two of the three metrics indicate a bias in favor of Democrat voters.";
+    else if (metrics_favor_r == 2 && metrics_favor_d == 0) biasstatement = "Two of the three metrics indicate a bias in favor of Reublican voters.";
     $('span[data-metric="biasstatement"]').text(biasstatement);
-
-//gda
-console.log(thisplan);
-
 };

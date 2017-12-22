@@ -1,8 +1,5 @@
 @import 'sitewide';
 
-$republican-color: #C71C36;
-$democrat-color: #0049A8;
-
 h1.state_name {
     margin-top: 0;
 
@@ -118,15 +115,20 @@ ul.nav-tabs a span.biasicon {
     font-size: 15px;
 
     background-color: transparent; /* unless assigned a specific bias class below, they're effectively invisible */
-    color: transparent;
-}
-ul.nav-tabs a span.biasicon.biasicon-neutral {
-}
-ul.nav-tabs a span.biasicon.biasicon-republican {
-    background-color: $republican-color;
     color: white;
 }
-ul.nav-tabs a span.biasicon.biasicon-democrat {
-    background-color: $democrat-color;
-    color: white;
+
+div.tab-content {
+    div.metricdrsum {
+        float: left;
+        font-size: 18px;
+        padding: 5px 5px 5px 5px;
+        color: white;
+
+        margin-right: 1em;
+    }
+    div.metricdrblurb {
+        float: left;
+        padding-top: 0.5em;
+    }
 }

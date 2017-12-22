@@ -7,6 +7,11 @@ $behind-background-color: #CCCCCC;
 $navbar-background-color: white;
 $navbar-text-color: #333;
 
+$republican-color: #C71C36;
+$democrat-color: #0049A8;
+
+
+
 /*
  * UTILITY CLASSES
  */
@@ -24,6 +29,13 @@ $navbar-text-color: #333;
 .rightfloat { float: right; }
 
 .pointer { cursor: pointer; }
+
+.democrat {
+    background-color: $democrat-color !important;
+}
+.republican {
+    background-color: $republican-color !important;
+}
 
 
 
