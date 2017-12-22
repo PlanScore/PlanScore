@@ -14,6 +14,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.3.6/papaparse.min.js"></script>
 
     <!-- local config -->
+    <script>
+    var SELECTED_STATE = 'Vermont';
+    </script>
     <link href="index.css?[hash]" rel="stylesheet" />
     <script src="index.js?[hash]"></script>
 </head>
@@ -31,33 +34,35 @@
             <div class="col-xs-12 col-sm-9" id="maincontent">
                 <!--
                 be robust against a year+district that has no data
-                the appropriate '#maincontent span[data-hasdata]' will be shown when loadDataForSelectedBoundaryAndYear() finds data... or does not
+                the appropriate '#maincontent span[data-hasdata-atall]' will be shown when loadDataForSelectedBoundaryAndYear() finds data... or does not
                 -->
-                <span data-hasdata="true">
+                <span data-hasdata-atall="true">
                     <p>We have data about <span data-metric="plancount" class="bold big">0</span> plans, covering <span data-metric="electioncount" class="bold big">0</span> elections.</p>
                     <p>Vermont's elected state legislators drew the borders of U.S. Congressional and Vermont state legislative districts to create the maps for these <span data-metric="plancount">0</span> plans.</p>
+                </span>
 
-                    <div class="row" id="boundarypicker">
-                        <div class="col-xs-4">
-                            <div class="col-xs-12 center" data-boundary="ushouse" title="Show partisan bias analysis for US House district plans">
-                                <a href="javascript:void(0);">US House</a>
-                            </div>
-                        </div>
-                        <div class="col-xs-4">
-                            <div class="col-xs-12 center" data-boundary="statesenate" title="Show partisan bias analysis for State Senate district plans">
-                                <a href="javascript:void(0);">State Senate</a>
-                            </div>
-                        </div>
-                        <div class="col-xs-4">
-                            <div class="col-xs-12 center" data-boundary="statehouse" title="Show partisan bias analysis for State House district plans">
-                                <a href="javascript:void(0);">State House</a>
-                            </div>
+                <div class="row" id="boundarypicker">
+                    <div class="col-xs-4">
+                        <div class="col-xs-12 center" data-boundary="ushouse" title="Show partisan bias analysis for US House district plans">
+                            <a href="javascript:void(0);">US House</a>
                         </div>
                     </div>
+                    <div class="col-xs-4">
+                        <div class="col-xs-12 center" data-boundary="statesenate" title="Show partisan bias analysis for State Senate district plans">
+                            <a href="javascript:void(0);">State Senate</a>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="col-xs-12 center" data-boundary="statehouse" title="Show partisan bias analysis for State House district plans">
+                            <a href="javascript:void(0);">State House</a>
+                        </div>
+                    </div>
+                </div>
 
-                    <br/>
+                <br/>
 
-                    <p>We used three metrics to examine the bias in these plans. These are the three metrics, and <span data-metric="biasstatement">the analysis is as follows</span>:</p>
+                <span data-hasdata-atall="true" data-hasdata-thisyear="true">
+                    <p>We used three metrics to examine the bias in these plans. <span data-metric="biasstatement"></span></p>
 
                     <ul class="nav nav-tabs">
                         <li class="active"><a href="#tab-efficiencygap" data-toggle="tab">Efficiency Gap <span class="biasicon biasicon-neutral"></span></a></li>
@@ -82,9 +87,13 @@
                     </div>
                 </span>
 
-                <span data-hasdata="false" style="display: none;">
-                    <p>No election plan data are available for the selected district and year.</p>
-                    <p>Try a different district type or year.</p>
+                <span data-hasdata-atall="false" style="display: none;">
+                    <p>No plan data are available for the selected district type.</p>
+                    <p>Try a different district type.</p>
+                </span>
+                <span data-hasdata-atall="true" data-hasdata-thisyear="false" style="display: none;">
+                    <p>No plan data are available for the selected year for this district type.</p>
+                    <p>Try a different district type or a different year.</p>
                 </span>
             </div>
         </div>
