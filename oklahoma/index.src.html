@@ -6,9 +6,7 @@
     <!--[include_head]-->
 
     <!-- Highcharts does charts and also maps -->
-    <script src="https://code.highcharts.com/maps/highmaps.js"></script>
-    <script src="https://code.highcharts.com/maps/modules/data.js"></script>
-    <script src="https://code.highcharts.com/mapdata/countries/us/us-all.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
 
     <!-- PapaParse CSV reader -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.3.6/papaparse.min.js"></script>
@@ -80,39 +78,59 @@
                             <div class="metricdrsum">
                                 <span data-field="egpercent"></span> <span data-field="egparty"></span>
                             </div>
-                            <div class="metricdrblurb big">
-                                <span data-field="egstatement"></span>
+                            <div class="metricdrblurb">
+                                <span data-field="metricstatement" class="big"></span>
                             </div>
                             <br style="clear: both;" />
                             <br/>
-                            <div>
-                                Additional content here describing this metric.
+                            <div class="row">
+                                <div class="col-xs-12 col-sm-6">
+                                    <h2>How Does This Plan Compare?</h2>
+                                    <p class="big">This plan is more biased toward <span data-field="planbiasparty"></span> than <span data-field="planbiaspercentile"></span>% all of the enacted plans we've analyzed nationwide.</p>
+                                </div>
+                                <div class="col-xs-12 col-sm-6">
+                                    <p>Efficiency Gap (EG) shows relative wasted votes between parties, comparing the total statewide number of superfluous and losing votes for each party. <a href="http://www.google.com/">Learn more: What is the efficiency gap and how do we calculate it?</a></p>
+
+                                    <div id="chart-egvoteswasted"></div>
+                                </div>
                             </div>
                         </div>
                         <div class="tab-pane fade" id="tab-meanmedian">
                             <div class="metricdrsum">
                                 <span data-field="mmpercent"></span> <span data-field="mmparty"></span>
                             </div>
-                            <div class="metricdrblurb big">
-                                <span data-field="metricstatement"></span>
+                            <div class="metricdrblurb">
+                                <span data-field="metricstatement" class="big"></span>
                             </div>
                             <br style="clear: both;" />
                             <br/>
-                            <div>
-                                Additional content here describing this metric.
+                            <div class="row">
+                                <div class="col-xs-12 col-sm-6">
+                                    <h2>How Does This Plan Compare?</h2>
+                                    <p class="big">This plan is more biased toward <span data-field="planbiasparty"></span> than <span data-field="planbiaspercentile"></span>% all of the enacted plans we've analyzed nationwide.</p>
+                                </div>
+                                <div class="col-xs-12 col-sm-6">
+                                    <p>Mean/Median (MM) shows partisan packing by a majority party, comparing the party’s vote share in the state’s deciding median district to its overall state share. <a href="http://www.google.com/">Learn More</a></p>
+                                </div>
                             </div>
                         </div>
                         <div class="tab-pane fade" id="tab-partisanbias">
                             <div class="metricdrsum">
                                 <span data-field="pbpercent"></span> <span data-field="pbparty"></span>
                             </div>
-                            <div class="metricdrblurb big">
-                                <span data-field="metricstatement"></span>
+                            <div class="metricdrblurb">
+                                <span data-field="metricstatement" class="big"></span>
                             </div>
                             <br style="clear: both;" />
                             <br/>
-                            <div>
-                                Additional content here describing this metric.
+                            <div class="row">
+                                <div class="col-xs-12 col-sm-6">
+                                    <h2>How Does This Plan Compare?</h2>
+                                    <p class="big">This plan is more biased toward <span data-field="planbiasparty"></span> than <span data-field="planbiaspercentile"></span>% all of the enacted plans we've analyzed nationwide.</p>
+                                </div>
+                                <div class="col-xs-12 col-sm-6">
+                                    <p>Partisan Bias (PB) shows how much a system unfairly favors a single party, comparing the number of votes cast in an election to the number of legislative seats won. <a href="http://www.google.com/">Learn More</a></p>
+                                </div>
                             </div>
                         </div>
                     </div>

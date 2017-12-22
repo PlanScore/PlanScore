@@ -22,6 +22,12 @@ import { lookupBiasColor, lookupBiasFavorParty, lookupBiasPercentile } from "./.
 // these are affected by window.selectXXX() family of functions which ultimately are all wrappers over loadDataForSelectedBoundaryAndYear()
 const CURRENT_VIEW = {};
 
+// Efficiency Gap wasted vote chart; colors
+const WASTEDVOTE_CHART_WASTED_D = 'blue';
+const WASTEDVOTE_CHART_WASTED_R = 'red';
+const WASTEDVOTE_CHART_USEFUL_D = 'lightblue';
+const WASTEDVOTE_CHART_USEFUL_R = 'pink';
+
 
 //
 // PAGE STARTUP / INIT FUNCTIONS
@@ -214,17 +220,19 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     const percent_eg     = favor_party_eg ? `+${Math.round(100 * Math.abs(thisplan.eg_adj_avg))}%` : '';
     const hadseats       = favor_party_eg == 'Republican' ? thisplan.seats_r : thisplan.seats_dem;
     const statement_eg   = favor_party_eg ? `${favor_party_eg}s needed ${(100 * Math.abs(thisplan.eg_adj_avg)).toFixed(1)}% fewer votes to win their ${hadseats} of ${thisplan.seats} seats.` : 'This metric indicates a balanced plan.';
+    const percentile_eg  = 100;  // TODO find out what this is
 
-thisplan.bias_avg = 0.014;
     const favor_party_pb = lookupBiasFavorParty(thisplan.bias_avg);
     const favor_color_pb = lookupBiasColor(thisplan.bias_avg);
     const percent_pb     = favor_party_pb ? `+${Math.round(100 * Math.abs(thisplan.bias_avg))}%` : '';
     const statement_pb   = favor_party_pb ? '' : 'This metric indicates a balanced plan.';
+    const percentile_pb  = 100;  // TODO find out what this is
 
     const favor_party_mm = lookupBiasFavorParty(thisplan.mmd_avg);
     const favor_color_mm = lookupBiasColor(thisplan.mmd_avg);
     const percent_mm     = favor_party_mm ? `+${Math.round(100 * Math.abs(thisplan.mmd_avg))}%` : '';
     const statement_mm   = favor_party_mm ? '' : 'This metric indicates a balanced plan.';
+    const percentile_mm  = 100;  // TODO find out what this is
 
     // color the tab-swatches for the three metrics
     {
@@ -244,17 +252,20 @@ thisplan.bias_avg = 0.014;
     }
 
     // fill in those +DR% numbers and the summary texts, at the top of the metric tabs
-    $('#tab-efficiencygap span[data-field="percent_eg"]').text(percent_eg);
+    $('#tab-efficiencygap span[data-field="egpercent"]').text(percent_eg);
     $('#tab-efficiencygap span[data-field="egparty"]').text(favor_party_eg);
-    $('#tab-efficiencygap span[data-field="egstatement"]').text(statement_eg);
+    $('#tab-efficiencygap span[data-field="metricstatement"]').text(statement_eg);
+    $('#tab-efficiencygap span[data-field="plancompare"]').text('This plan is more biased toward X than 100% all of the enacted plans we have analyzed nationwide.');
 
-    $('#tab-partisanbias span[data-field="percent_pb"]').text(percent_pb);
+    $('#tab-partisanbias span[data-field="pbpercent"]').text(percent_pb);
     $('#tab-partisanbias span[data-field="pbparty"]').text(favor_party_pb);
     $('#tab-partisanbias span[data-field="metricstatement"]').text(statement_pb);
+    $('#tab-partisanbias span[data-field="plancompare"]').text('This plan is more biased toward X than 100% all of the enacted plans we have analyzed nationwide.');
 
-    $('#tab-meanmedian span[data-field="percent_mm"]').text(percent_mm);
+    $('#tab-meanmedian span[data-field="mmpercent"]').text(percent_mm);
     $('#tab-meanmedian span[data-field="mmparty"]').text(favor_party_mm);
     $('#tab-meanmedian span[data-field="metricstatement"]').text(statement_mm);
+    $('#tab-meanmedian span[data-field="plancompare"]').text('This plan is more biased toward X than 100% all of the enacted plans we have analyzed nationwide.');
 
     // color those +DR% boxes
     {
@@ -282,4 +293,68 @@ thisplan.bias_avg = 0.014;
     else if (metrics_favor_d == 2 && metrics_favor_r == 0) biasstatement = "Two of the three metrics indicate a bias in favor of Democrat voters.";
     else if (metrics_favor_r == 2 && metrics_favor_d == 0) biasstatement = "Two of the three metrics indicate a bias in favor of Reublican voters.";
     $('span[data-metric="biasstatement"]').text(biasstatement);
+
+    // Efficiency Gap: refresh the Wasted Votes chart
+    // try to cope with broken data by hiding the chart
+    if (thisplan.votes_twop) {
+        const votechartdata = [
+            {
+                name: 'Votes Wasted',
+                data: [0, 0],
+                colors: [ WASTEDVOTE_CHART_WASTED_D, WASTEDVOTE_CHART_WASTED_R ],
+            },
+            {
+                name: 'Votes Needed',
+                data: [0, 0],
+                colors: [ WASTEDVOTE_CHART_USEFUL_D, WASTEDVOTE_CHART_USEFUL_R ],
+            }
+        ];
+        votechartdata[0].data[0] = parseInt(thisplan.wasted_dem);
+        votechartdata[0].data[1] = parseInt(thisplan.wasted_rep);
+        votechartdata[1].data[0] = parseInt(thisplan.votes_dem) - parseInt(thisplan.wasted_dem);
+        votechartdata[1].data[1] = (parseInt(thisplan.votes_twop) - parseInt(thisplan.votes_dem)) - parseInt(thisplan.wasted_rep);  // they didn't calculate R votes separately; R=total-dem
+
+        $('#chart-egvoteswasted').show();
+        Highcharts.chart('chart-egvoteswasted', {
+            chart: {
+                type: 'bar'
+            },
+            title: {
+                text: 'Votes Needed and Wasted',
+                margin:0,
+            },
+            xAxis: {
+                categories: ['D', 'R']
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    enabled: false,
+                }
+            },
+            legend: {
+                enabled: false,
+            },
+            tooltip: {
+                formatter: function () {
+                    const party = this.point.category == 'D' ? 'Democrat' : 'Republican';
+                    return `${party}<br/>${this.y.toLocaleString()} ${this.series.name}`;
+                },
+            },
+            plotOptions: {
+                series: {
+                    stacking: 'normal',
+                    pointPadding: 0,
+                    groupPadding: 0,
+                    pointWidth: 25,
+                    colorByPoint: true,  // use the cvustom-assigned colors
+                }
+            },
+            series: votechartdata,
+        });
+    }
+    else {
+        // no data on votes + wasted votes
+        $('#chart-egvoteswasted').hide();
+    }
 };

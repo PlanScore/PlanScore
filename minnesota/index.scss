@@ -131,4 +131,18 @@ div.tab-content {
         float: left;
         padding-top: 0.5em;
     }
+
+    h2 {
+        font-size: 18px;
+        margin-top: 0;
+    }
+
+    .tab-pane p {
+        font-size: 13px;
+    }
+}
+
+#chart-egvoteswasted {
+    height: 150px;
+    width: 100%;
 }
