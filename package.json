@@ -14,6 +14,8 @@
     "babel-polyfill": "^6.23.0",
     "interpolate-html-plugin": "^2.0.0",
     "node-less": "^1.0.0",
+    "tinycolor": "^0.0.1",
+    "tinygradient": "^0.3.1",
     "webpack-dev-server": "^2.9.7"
   },
   "devDependencies": {
