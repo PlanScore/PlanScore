@@ -357,4 +357,59 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
         // no data on votes + wasted votes
         $('#chart-egvoteswasted').hide();
     }
+
+    // the bell charts indicating this plan's relative bias rating for each metric
+    loadPlanBiasBellChart('eg', 0.75);  // TODO same as the "percentile" items above, this is yet to be defined
+    loadPlanBiasBellChart('mm', 0.30);  // TODO same as the "percentile" items above, this is yet to be defined
+    loadPlanBiasBellChart('pb', 0.10);  // TODO same as the "percentile" items above, this is yet to be defined
+};
+
+window.loadPlanBiasBellChart = (whichone, percentile) => {
+    // this set of Highcharts categories, effectively forms 100 "slots" 0-99
+    // take the floor() of our percentile score, and voila; that's which slot gets a 1 instead of a 0
+    const roundpercentile = Math.floor(100 * percentile);
+    const markerslots     = Array.apply(null, {length: 100}).map(Number.call, Number);
+    const markerdataset   = Array.apply(null, {length: 100}).map(() => 0);
+    markerdataset[roundpercentile] = roundpercentile;  // the actual data value, which is also the chart's "max", so it stretches to the top AND we can mouse-over it for tooltip
+
+    // the bell charts are a bit of a trick, in that the real bellchart libs won't do what we need
+    // this is a column chart with a single non-0 data point,
+    // and the CSS has a background-image on the .metric-bellchart to give the colorful visual reference
+    const divid = `metric-bellchart-${whichone}`;
+    Highcharts.chart(divid, {
+        chart: {
+            type: 'column',
+            backgroundColor: null,
+        },
+        title: {
+            text: null,
+        },
+        legend: {
+            enabled:false,
+        },
+        xAxis: {
+            categories: markerslots,
+            visible: false
+        },
+        yAxis: {
+            min: 0,
+            max: roundpercentile,
+            visible: false,
+        },
+        tooltip: {
+            formatter: function () {
+                return `According to this metric, this plan is more biased than ${this.y}% of other plans analyzed.`;
+            },
+        },
+        plotOptions: {
+            column: {
+                pointWidth: 5,
+            }
+        },
+        series: [{
+            name: 'This One',
+            data: markerdataset,
+            color: 'black',
+        }]
+    });
 };
