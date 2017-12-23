@@ -1,5 +1,10 @@
+machine:
+  node:
+    version: 8.2.0
+
 dependencies:
   override:
+    - yarn install
     - npm run build
 
 test:
