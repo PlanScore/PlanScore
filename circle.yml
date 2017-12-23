@@ -1,5 +1,6 @@
 dependencies:
   override:
+    - yarn install
     - npm run build
 
 test:
