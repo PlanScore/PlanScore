@@ -8,6 +8,10 @@ const JS6_FILES = [
     './home/index.js6',
     './about/index.js6',
     './scoreyours/index.js6',
+    './efficiencygap/index.js6',
+    './meanmedian/index.js6',
+    './partisanbias/index.js6',
+
     // per state pages, which really just use the same _statetemplate template
     './alabama/index.js6',
     './alaska/index.js6',
