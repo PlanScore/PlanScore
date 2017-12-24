@@ -79,7 +79,7 @@ function which_score_column_names(plan)
 {
     if(typeof plan.summary['Efficiency Gap SD'] === 'number')
     {
-        return ['Voters', 'Democratic Votes', 'Republican Votes'];
+        return ['Population 2015', 'Black Population 2015', 'Democratic Votes', 'Republican Votes'];
     }
 
     if(typeof plan.summary['US House Efficiency Gap'] === 'number')
