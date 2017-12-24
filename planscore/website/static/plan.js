@@ -346,6 +346,9 @@ function load_plan_score(url, fields, message_section, score_section,
                 all_columns.splice(i, 1);
             }
         }
+        
+        // Sort columns in table
+        all_columns.sort(function(a, b) { return column_names.indexOf(a[0]) - column_names.indexOf(b[0]) });
 
         // Write table out to page
         var new_row = document.createElement('tr'),
