@@ -1,3 +1,4 @@
 {
-    "totals": {"Voters": 600.6907822573452, "Blue Votes": 140.91376204910148, "Red Votes": 339.63886375677475}
+    "totals": {"Voters": 600.6907822573452, "Blue Votes": 140.91376204910148, "Red Votes": 339.63886375677475},
+    "geometry_key": "uploads/sample-plan/geometries/0.wkt"
 }

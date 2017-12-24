@@ -259,6 +259,9 @@ def lambda_handler(event, context):
     prefix = posixpath.dirname(input_upload.district_key(-1))
     listed_objects = storage.s3.list_objects(Bucket=storage.bucket, Prefix=prefix)
     existing_keys = [obj.get('Key') for obj in listed_objects.get('Contents', [])]
+    existing_keys.sort(key=lambda k: int(posixpath.splitext(posixpath.basename(k))[0]))
+
+    print('existing_keys:', json.dumps(existing_keys))
     
     new_districts = []
     

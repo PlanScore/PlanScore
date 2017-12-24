@@ -262,8 +262,9 @@ class TestScore (unittest.TestCase):
         '''
         s3 = boto3_client.return_value
         s3.list_objects.return_value = {'Contents': [
-            {'Key': 'uploads/sample-plan/districts/0.json'},
-            {'Key': 'uploads/sample-plan/districts/1.json'}
+            # Return these out of order to check sorting in score.lambda_handler()
+            {'Key': 'uploads/sample-plan/districts/1.json'},
+            {'Key': 'uploads/sample-plan/districts/0.json'}
             ]}
         
         s3.get_object.side_effect = mock_s3_get_object
@@ -281,6 +282,8 @@ class TestScore (unittest.TestCase):
         self.assertEqual(len(input_upload.districts), 2)
         self.assertIn('totals', input_upload.districts[0])
         self.assertIn('totals', input_upload.districts[1])
+        self.assertEqual(input_upload.districts[0]['geometry_key'], 'uploads/sample-plan/geometries/0.wkt')
+        self.assertEqual(input_upload.districts[1]['geometry_key'], 'uploads/sample-plan/geometries/1.wkt')
         
         interim_upload = calculate_gap.return_value
         calculate_gaps.assert_called_once_with(interim_upload)
