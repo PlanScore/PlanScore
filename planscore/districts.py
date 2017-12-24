@@ -172,7 +172,7 @@ def post_score_results(storage, partial):
     '''
     '''
     key = partial.upload.district_key(partial.index)
-    body = json.dumps(dict(totals=partial.totals)).encode('utf8')
+    body = json.dumps(dict(totals=partial.totals, geometry_key=partial.geometry_key)).encode('utf8')
     
     print('Uploading', len(body), 'bytes to', key)
     

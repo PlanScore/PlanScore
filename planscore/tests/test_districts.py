@@ -237,7 +237,7 @@ class TestDistricts (unittest.TestCase):
     def test_post_score_results(self, stdout):
         ''' Expected results are posted to S3.
         '''
-        partial = districts.Partial(-1, {"Voters": 1}, [], [], None,
+        partial = districts.Partial(-1, {"Voters": 1}, [], [], 'uploads/ID/geometries/-1.wkt',
             data.Upload('ID', 'uploads/ID/upload/file.geojson', districts=[None, None]), None)
         
         # First time through, there's only one district noted on the server
@@ -252,8 +252,8 @@ class TestDistricts (unittest.TestCase):
             Bucket='bucket-name', Prefix='uploads/ID/districts')
 
         storage.s3.put_object.assert_called_once_with(
-            ACL='private', Body=b'{"totals": {"Voters": 1}}', Bucket='bucket-name',
-            ContentType='text/json', Key='uploads/ID/districts/-1.json')
+            ACL='private', Body=b'{"totals": {"Voters": 1}, "geometry_key": "uploads/ID/geometries/-1.wkt"}',
+            Bucket='bucket-name', ContentType='text/json', Key='uploads/ID/districts/-1.json')
         
         # Second time through, both expected districts are there
         storage.s3 = unittest.mock.Mock()
