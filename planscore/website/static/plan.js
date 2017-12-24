@@ -185,13 +185,18 @@ function show_population_score(plan, score_pop)
         var totals = plan.districts[i].totals;
         console.log(totals);
         if(summary_name == 'Efficiency Gap') {
-            populations.push(totals['Voters']);
+            if(typeof totals['Population 2015'] === 'number') {
+                populations.push(totals['Population 2015']);
+            } else {
+                populations.push(totals['Voters']);
+            }
         } else if(summary_name == 'US House Efficiency Gap') {
             populations.push(totals['Population']);
         } else {
             return;
         }
     }
+    console.log(populations);
 
     var max_pop = Math.max.apply(null, populations),
         min_pop = Math.min.apply(null, populations);
