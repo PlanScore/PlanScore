@@ -1,7 +1,8 @@
-import json
+import json, csv, io
 
 UPLOAD_PREFIX = 'uploads/{id}/upload/'
 UPLOAD_INDEX_KEY = 'uploads/{id}/index.json'
+UPLOAD_PLAINTEXT_KEY = 'uploads/{id}/index.txt'
 UPLOAD_GEOMETRY_KEY = 'uploads/{id}/geometry.json'
 UPLOAD_DISTRICTS_KEY = 'uploads/{id}/districts/{index}.json'
 UPLOAD_GEOMETRIES_KEY = 'uploads/{id}/geometries/{index}.wkt'
@@ -34,11 +35,39 @@ class Upload:
     def index_key(self):
         return UPLOAD_INDEX_KEY.format(id=self.id)
     
+    def plaintext_key(self):
+        return UPLOAD_PLAINTEXT_KEY.format(id=self.id)
+    
     def geometry_key(self):
         return UPLOAD_GEOMETRY_KEY.format(id=self.id)
     
     def district_key(self, index):
         return UPLOAD_DISTRICTS_KEY.format(id=self.id, index=index)
+    
+    def to_plaintext(self):
+        ''' Export district totals to a tab-delimited plaintext file
+        '''
+        sorting_hints = dict({k: i for (i, k) in enumerate((
+            'District', 'Democratic Votes', 'Democratic Votes SD',
+            'Republican Votes', 'Republican Votes, SD', 'Population 2015',
+            'US President 2016 - DEM', 'US President 2016 - REP',
+            'US Senate 2016 - DEM', 'US Senate 2016 - REP'))})
+        
+        try:
+            column_names = sorted(self.districts[0]['totals'].keys(),
+                key=lambda k: (sorting_hints.get(k, 999), k))
+        
+            out = io.StringIO()
+            rows = csv.DictWriter(out, ['District'] + column_names, dialect='excel-tab')
+            rows.writeheader()
+            for (index, district) in enumerate(self.districts):
+                rows.writerow(dict(District=index+1, **district['totals']))
+        
+        except Exception as e:
+            return f'Error: {e}\n'
+
+        else:
+            return out.getvalue()
     
     def to_dict(self):
         return dict(

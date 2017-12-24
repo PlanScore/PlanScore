@@ -58,12 +58,43 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload6.key, upload5.key)
         self.assertEqual(upload6.districts, upload5.districts)
         self.assertEqual(upload6.summary, upload5.summary)
+    
+    def test_upload_plaintext(self):
+        ''' data.Upload instances can be converted to plaintext
+        '''
+        upload1 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
+            districts=[
+                { "totals": { "Democratic Votes": 100, "Population 2015": 200, "Republican Votes": 300 } },
+                { "totals": { "Democratic Votes": 400, "Population 2015": 500, "Republican Votes": 600 } },
+                { "totals": { "Democratic Votes": 700, "Population 2015": 800, "Republican Votes": 900 } }
+              ])
+        
+        plaintext1 = upload1.to_plaintext()
+        head, row1, row2, row3, tail = plaintext1.split('\r\n', 4)
+        
+        self.assertEqual(head, 'District\tDemocratic Votes\tRepublican Votes\tPopulation 2015')
+        self.assertEqual(row1, '1\t100\t300\t200')
+        self.assertEqual(row2, '2\t400\t600\t500')
+        self.assertEqual(row3, '3\t700\t900\t800')
+        self.assertEqual(tail, '')
+
+        upload2 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
+            districts=[ { "garbage": True } ])
+        
+        plaintext2 = upload2.to_plaintext()
+        self.assertEqual(plaintext2, "Error: 'totals'\n")
 
     def test_upload_index_key(self):
         ''' data.Upload.index_key() correctly munges Upload.key
         '''
         upload = data.Upload(id='ID', key='uploads/ID/upload/whatever.json')
         self.assertEqual(upload.index_key(), 'uploads/ID/index.json')
+    
+    def test_upload_plaintext_key(self):
+        ''' data.Upload.plaintext_key() correctly munges Upload.key
+        '''
+        upload = data.Upload(id='ID', key='uploads/ID/upload/whatever.json')
+        self.assertEqual(upload.plaintext_key(), 'uploads/ID/index.txt')
     
     def test_upload_geometry_key(self):
         ''' data.Upload.geometry_key() correctly munges Upload.key

@@ -239,13 +239,19 @@ def calculate_gaps(upload):
     return upload.clone(districts=copied_districts, summary=summary_dict)
 
 def put_upload_index(s3, bucket, upload):
-    ''' Save a JSON index file for this upload.
+    ''' Save a JSON index and a plaintext file for this upload.
     '''
-    key = upload.index_key()
-    body = upload.to_json().encode('utf8')
+    key1 = upload.index_key()
+    body1 = upload.to_json().encode('utf8')
 
-    s3.put_object(Bucket=bucket, Key=key, Body=body,
+    s3.put_object(Bucket=bucket, Key=key1, Body=body1,
         ContentType='text/json', ACL='public-read')
+
+    key2 = upload.plaintext_key()
+    body2 = upload.to_plaintext().encode('utf8')
+
+    s3.put_object(Bucket=bucket, Key=key2, Body=body2,
+        ContentType='text/plain', ACL='public-read')
 
 def lambda_handler(event, context):
     '''
