@@ -53,16 +53,21 @@ class Upload:
             'US President 2016 - DEM', 'US President 2016 - REP',
             'US Senate 2016 - DEM', 'US Senate 2016 - REP'))})
         
-        column_names = sorted(self.districts[0]['totals'].keys(),
-            key=lambda k: (sorting_hints.get(k, 999), k))
+        try:
+            column_names = sorted(self.districts[0]['totals'].keys(),
+                key=lambda k: (sorting_hints.get(k, 999), k))
         
-        out = io.StringIO()
-        rows = csv.DictWriter(out, ['District'] + column_names, dialect='excel-tab')
-        rows.writeheader()
-        for (index, district) in enumerate(self.districts):
-            rows.writerow(dict(District=index+1, **district['totals']))
+            out = io.StringIO()
+            rows = csv.DictWriter(out, ['District'] + column_names, dialect='excel-tab')
+            rows.writeheader()
+            for (index, district) in enumerate(self.districts):
+                rows.writerow(dict(District=index+1, **district['totals']))
         
-        return out.getvalue()
+        except Exception as e:
+            return f'Error: {e}\n'
+
+        else:
+            return out.getvalue()
     
     def to_dict(self):
         return dict(
