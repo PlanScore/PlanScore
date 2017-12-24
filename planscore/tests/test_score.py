@@ -247,10 +247,18 @@ class TestScore (unittest.TestCase):
         '''
         s3, bucket, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
         score.put_upload_index(s3, bucket, upload)
-        s3.put_object.assert_called_once_with(Bucket=bucket,
+        
+        put_call1, put_call2 = s3.put_object.mock_calls
+        
+        self.assertEqual(put_call1[2], dict(Bucket=bucket,
             Key=upload.index_key.return_value,
             Body=upload.to_json.return_value.encode.return_value,
-            ACL='public-read', ContentType='text/json')
+            ACL='public-read', ContentType='text/json'))
+        
+        self.assertEqual(put_call2[2], dict(Bucket=bucket,
+            Key=upload.plaintext_key.return_value,
+            Body=upload.to_plaintext.return_value.encode.return_value,
+            ACL='public-read', ContentType='text/plain'))
     
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
