@@ -179,6 +179,9 @@ def post_score_results(storage, partial):
     storage.s3.put_object(Bucket=storage.bucket, Key=key, Body=body,
         ContentType='text/json', ACL='private')
     
+    # Prevent the final invocation of score.FUNCTION_NAME
+    return False
+    
     # Look for the other expected districts.
     prefix = posixpath.dirname(key)
     listed_objects = storage.s3.list_objects(Bucket=storage.bucket, Prefix=prefix)
