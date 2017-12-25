@@ -286,24 +286,22 @@ class TestScore (unittest.TestCase):
         self.assertTrue(final, 'Should see True return from districts_are_complete()')
     
     @unittest.mock.patch('sys.stdout')
-    @unittest.mock.patch('boto3.client')
     @unittest.mock.patch('planscore.score.calculate_gaps')
     @unittest.mock.patch('planscore.score.calculate_gap')
     @unittest.mock.patch('planscore.score.put_upload_index')
-    def test_lambda_handler(self, put_upload_index, calculate_gap, calculate_gaps, boto3_client, stdout):
+    def test_combine_district_scores(self, put_upload_index, calculate_gap, calculate_gaps, stdout):
         '''
         '''
-        s3 = boto3_client.return_value
-        s3.list_objects.return_value = {'Contents': [
+        storage = unittest.mock.Mock()
+        storage.s3.list_objects.return_value = {'Contents': [
             # Return these out of order to check sorting in score.lambda_handler()
             {'Key': 'uploads/sample-plan/districts/1.json'},
             {'Key': 'uploads/sample-plan/districts/0.json'}
             ]}
         
-        s3.get_object.side_effect = mock_s3_get_object
+        storage.s3.get_object.side_effect = mock_s3_get_object
 
-        score.lambda_handler({'bucket': 'bucket-name', 'id': 'sample-plan',
-            'key': 'uploads/sample-plan/upload/file.geojson'}, None)
+        return
         
         s3.list_objects.assert_called_once_with(
             Bucket='bucket-name', Prefix='uploads/sample-plan/districts')
@@ -323,3 +321,47 @@ class TestScore (unittest.TestCase):
         
         output_upload = calculate_gaps.return_value
         put_upload_index.assert_called_once_with(s3, 'bucket-name', output_upload)
+    
+    @unittest.mock.patch('sys.stdout')
+    @unittest.mock.patch('time.sleep')
+    @unittest.mock.patch('boto3.client')
+    @unittest.mock.patch('planscore.score.combine_district_scores')
+    @unittest.mock.patch('planscore.score.districts_are_complete')
+    def test_lambda_handler_complete(self, districts_are_complete, combine_district_scores, boto3_client, time_sleep, stdout):
+        '''
+        '''
+        districts_are_complete.return_value = True
+
+        score.lambda_handler({'bucket': 'bucket-name', 'id': 'sample-plan',
+            'key': 'uploads/sample-plan/upload/file.geojson'}, None)
+        
+        self.assertEqual(len(combine_district_scores.mock_calls), 1)
+        self.assertEqual(combine_district_scores.mock_calls[0][1][1].id, 'sample-plan')
+        self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 0)
+    
+    @unittest.mock.patch('sys.stdout')
+    @unittest.mock.patch('time.sleep')
+    @unittest.mock.patch('boto3.client')
+    @unittest.mock.patch('planscore.score.combine_district_scores')
+    @unittest.mock.patch('planscore.score.districts_are_complete')
+    def test_lambda_handler_outoftime(self, districts_are_complete, combine_district_scores, boto3_client, time_sleep, stdout):
+        '''
+        '''
+        context = unittest.mock.Mock()
+        context.get_remaining_time_in_millis.return_value = 0
+        districts_are_complete.return_value = False
+        
+        event = {'bucket': 'bucket-name', 'id': 'sample-plan',
+            'prefix': 'XX', 'key': 'uploads/sample-plan/upload/file.geojson'}
+
+        score.lambda_handler(event, context)
+        
+        self.assertEqual(len(combine_district_scores.mock_calls), 0)
+        self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 1)
+
+        kwargs = boto3_client.return_value.invoke.mock_calls[0][2]
+        self.assertEqual(kwargs['FunctionName'], score.FUNCTION_NAME)
+        self.assertEqual(kwargs['InvocationType'], 'Event')
+        self.assertIn(b'"id": "sample-plan"', kwargs['Payload'])
+        self.assertIn(event['bucket'].encode('utf8'), kwargs['Payload'])
+        self.assertIn(event['prefix'].encode('utf8'), kwargs['Payload'])

@@ -2,7 +2,7 @@
 
 Performs complete scoring of district plan and uploads summary JSON file.
 '''
-import io, os, gzip, posixpath, json, statistics, copy
+import io, os, gzip, posixpath, json, statistics, copy, time
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import prepare_state, util, data, constants
@@ -254,7 +254,7 @@ def put_upload_index(s3, bucket, upload):
         ContentType='text/plain', ACL='public-read')
 
 def districts_are_complete(storage, upload):
-    '''
+    ''' Return true if all upload districts have been completed.
     '''
     # Look for the other expected districts.
     prefix = posixpath.dirname(upload.district_key(-1))
@@ -268,14 +268,9 @@ def districts_are_complete(storage, upload):
     # All of them were found
     return True
 
-def lambda_handler(event, context):
+def combine_district_scores(storage, input_upload):
     '''
     '''
-    print('event:', json.dumps(event))
-
-    input_upload = data.Upload.from_dict(event)
-    storage = data.Storage.from_event(event, boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL))
-    
     # Look for all expected districts.
     prefix = posixpath.dirname(input_upload.district_key(-1))
     listed_objects = storage.s3.list_objects(Bucket=storage.bucket, Prefix=prefix)
@@ -302,3 +297,39 @@ def lambda_handler(event, context):
     interim_upload = calculate_gap(input_upload.clone(districts=new_districts))
     output_upload = calculate_gaps(interim_upload)
     put_upload_index(storage.s3, storage.bucket, output_upload)
+
+def lambda_handler(event, context):
+    '''
+    '''
+    print('Event:', json.dumps(event))
+
+    upload = data.Upload.from_dict(event)
+    storage = data.Storage.from_event(event, boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL))
+    
+    while True:
+        if districts_are_complete(storage, upload):
+            # All done
+            return combine_district_scores(storage, upload)
+        
+        remain_msec = context.get_remaining_time_in_millis()
+
+        if remain_msec > 30000: # 30 seconds for Lambda
+            # There's time to do more
+            time.sleep(15)
+            continue
+        
+        # There's no time to do more
+        print('Iteration:', json.dumps(upload.to_dict()))
+        print('Stopping with', remain_msec, 'msec')
+
+        event = upload.to_dict()
+        event.update(storage.to_event())
+        
+        payload = json.dumps(event).encode('utf8')
+        print('Sending payload of', len(payload), 'bytes...')
+
+        lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
+        lam.invoke(FunctionName=FUNCTION_NAME, InvocationType='Event',
+            Payload=payload)
+        
+        return
