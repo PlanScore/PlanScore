@@ -108,8 +108,9 @@ class TestAfterUpload (unittest.TestCase):
     @unittest.mock.patch('planscore.after_upload.put_geojson_file')
     @unittest.mock.patch('planscore.after_upload.put_district_geometries')
     @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
+    @unittest.mock.patch('planscore.after_upload.start_observer_score_lambda')
     @unittest.mock.patch('planscore.after_upload.guess_state')
-    def test_commence_upload_scoring_good_file(self, guess_state, fan_out_district_lambdas, put_district_geometries, put_geojson_file, put_upload_index, temporary_buffer_file):
+    def test_commence_upload_scoring_good_file(self, guess_state, start_observer_score_lambda, fan_out_district_lambdas, put_district_geometries, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
@@ -143,6 +144,9 @@ class TestAfterUpload (unittest.TestCase):
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/002'))
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][2].key, upload.key)
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][3], put_district_geometries.return_value)
+        
+        self.assertEqual(len(start_observer_score_lambda.mock_calls), 1)
+        self.assertEqual(start_observer_score_lambda.mock_calls[0][1][1], upload)
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.score.put_upload_index')
@@ -150,8 +154,9 @@ class TestAfterUpload (unittest.TestCase):
     @unittest.mock.patch('planscore.after_upload.unzip_shapefile')
     @unittest.mock.patch('planscore.after_upload.put_district_geometries')
     @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
+    @unittest.mock.patch('planscore.after_upload.start_observer_score_lambda')
     @unittest.mock.patch('planscore.after_upload.guess_state')
-    def test_commence_upload_scoring_zipped_file(self, guess_state, fan_out_district_lambdas, put_district_geometries, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
+    def test_commence_upload_scoring_zipped_file(self, guess_state, start_observer_score_lambda, fan_out_district_lambdas, put_district_geometries, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'
@@ -188,6 +193,9 @@ class TestAfterUpload (unittest.TestCase):
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/002'))
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][2].key, upload.key)
         self.assertIs(fan_out_district_lambdas.mock_calls[0][1][3], put_district_geometries.return_value)
+        
+        self.assertEqual(len(start_observer_score_lambda.mock_calls), 1)
+        self.assertEqual(start_observer_score_lambda.mock_calls[0][1][1], upload)
     
     def test_commence_upload_scoring_bad_file(self):
         ''' An invalid district file fails in an expected way

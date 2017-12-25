@@ -46,8 +46,11 @@ def commence_upload_scoring(s3, bucket, upload):
         put_geojson_file(s3, bucket, upload, ds_path)
         geometry_keys = put_district_geometries(s3, bucket, upload, ds_path)
         
-        # Do this last - localstack invokes Lambda functions synchronously
+        # Do this second-to-last - localstack invokes Lambda functions synchronously
         fan_out_district_lambdas(bucket, prefix, upload, geometry_keys)
+        
+        # Do this last.
+        start_observer_score_lambda(data.Storage(s3, bucket, prefix), upload)
 
 def put_district_geometries(s3, bucket, upload, path):
     '''
@@ -94,6 +97,16 @@ def fan_out_district_lambdas(bucket, prefix, upload, geometry_keys):
 
     except Exception as e:
         print('Exception in fan_out_district_lambdas:', e)
+
+def start_observer_score_lambda(storage, upload):
+    '''
+    '''
+    event = upload.to_dict()
+    event.update(storage.to_event())
+
+    lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
+    lam.invoke(FunctionName=score.FUNCTION_NAME, InvocationType='Event',
+        Payload=json.dumps(event).encode('utf8'))
 
 def guess_state(path):
     ''' Guess state postal abbreviation for the given input path.
