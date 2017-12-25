@@ -259,6 +259,31 @@ class TestScore (unittest.TestCase):
             Key=upload.plaintext_key.return_value,
             Body=upload.to_plaintext.return_value.encode.return_value,
             ACL='public-read', ContentType='text/plain'))
+
+    @unittest.mock.patch('sys.stdout')
+    def test_districts_are_complete(self, stdout):
+        ''' Expected results are posted to S3.
+        '''
+        upload = data.Upload('ID', 'uploads/ID/upload/file.geojson', districts=[None, None])
+        
+        # First time through, there's only one district noted on the server
+        storage = data.Storage(unittest.mock.Mock(), 'bucket-name', 'data/XX')
+        storage.s3.list_objects.return_value = {
+            'Contents': [{'Key': 'uploads/ID/districts/0.json'}]}
+        
+        final = score.districts_are_complete(storage, upload)
+        self.assertFalse(final, 'Should see False return from districts_are_complete()')
+
+        storage.s3.list_objects.assert_called_once_with(
+            Bucket='bucket-name', Prefix='uploads/ID/districts')
+
+        # Second time through, both expected districts are there
+        storage.s3 = unittest.mock.Mock()
+        storage.s3.list_objects.return_value = {'Contents': [
+            {'Key': 'uploads/ID/districts/0.json'}, {'Key': 'uploads/ID/districts/1.json'}]}
+
+        final = score.districts_are_complete(storage, upload)
+        self.assertTrue(final, 'Should see True return from districts_are_complete()')
     
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
