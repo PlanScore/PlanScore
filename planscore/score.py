@@ -1,6 +1,7 @@
-''' Called from final planscore.district when all districts are added up.
+''' Called from final planscore.after_upload to observe process.
 
-Performs complete scoring of district plan and uploads summary JSON file.
+When all districts are added up and present on S3, performs complete scoring
+of district plan and uploads summary JSON file.
 '''
 import io, os, gzip, posixpath, json, statistics, copy, time
 from osgeo import ogr
@@ -305,11 +306,16 @@ def lambda_handler(event, context):
 
     upload = data.Upload.from_dict(event)
     storage = data.Storage.from_event(event, boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL))
+    due_time = event.get('due_time', time.time() + constants.UPLOAD_TIME_LIMIT)
     
     while True:
         if districts_are_complete(storage, upload):
             # All done
             return combine_district_scores(storage, upload)
+        
+        if time.time() > due_time:
+            # Out of time, generally
+            raise RuntimeError('Out of time')
         
         remain_msec = context.get_remaining_time_in_millis()
 
@@ -324,6 +330,7 @@ def lambda_handler(event, context):
 
         event = upload.to_dict()
         event.update(storage.to_event())
+        event.update(due_time=due_time)
         
         payload = json.dumps(event).encode('utf8')
         print('Sending payload of', len(payload), 'bytes...')

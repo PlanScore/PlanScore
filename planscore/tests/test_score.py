@@ -365,3 +365,20 @@ class TestScore (unittest.TestCase):
         self.assertIn(b'"id": "sample-plan"', kwargs['Payload'])
         self.assertIn(event['bucket'].encode('utf8'), kwargs['Payload'])
         self.assertIn(event['prefix'].encode('utf8'), kwargs['Payload'])
+    
+    @unittest.mock.patch('sys.stdout')
+    @unittest.mock.patch('boto3.client')
+    @unittest.mock.patch('planscore.score.districts_are_complete')
+    def test_lambda_handler_overdue(self, districts_are_complete, boto3_client, stdout):
+        '''
+        '''
+        context = unittest.mock.Mock()
+        context.get_remaining_time_in_millis.return_value = 0
+        districts_are_complete.return_value = False
+        
+        event = {'bucket': 'bucket-name', 'id': 'sample-plan',
+            'prefix': 'XX', 'key': 'uploads/sample-plan/upload/file.geojson',
+            'due_time': 0}
+
+        with self.assertRaises(RuntimeError) as _:
+            score.lambda_handler(event, context)

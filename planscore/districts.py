@@ -1,9 +1,7 @@
 ''' Adds up vote totals for a single district.
 
 Performs as many tile-based accumulations of district votes as possible within
-AWS Lambda time limit before recursively calling for remaining tiles. When
-complete, checks if all other parallel districts have finished and calls
-planscore.score if so.
+AWS Lambda time limit before recursively calling for remaining tiles.
 '''
 import collections, json, io, gzip, statistics, time, base64, posixpath, pickle, functools
 from osgeo import ogr

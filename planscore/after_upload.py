@@ -1,8 +1,9 @@
 ''' After successful upload, divides up districts into planscore.district calls.
 
-Fans out asynchronous parallel calls to planscore.district function.
+Fans out asynchronous parallel calls to planscore.district function, then
+starts and observer process with planscore.score function.
 '''
-import boto3, pprint, os, io, json, urllib.parse, gzip, functools, zipfile, itertools
+import boto3, pprint, os, io, json, urllib.parse, gzip, functools, zipfile, itertools, time
 from osgeo import ogr
 from . import util, data, score, website, prepare_state, districts, constants
 
@@ -103,6 +104,7 @@ def start_observer_score_lambda(storage, upload):
     '''
     event = upload.to_dict()
     event.update(storage.to_event())
+    event.update(due_time=time.time() + constants.UPLOAD_TIME_LIMIT)
 
     lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
     lam.invoke(FunctionName=score.FUNCTION_NAME, InvocationType='Event',
