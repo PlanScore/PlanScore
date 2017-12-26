@@ -3,7 +3,7 @@
 When all districts are added up and present on S3, performs complete scoring
 of district plan and uploads summary JSON file.
 '''
-import io, os, gzip, posixpath, json, statistics, copy, time
+import io, os, gzip, posixpath, json, statistics, copy, time, fractions
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import prepare_state, util, data, constants
@@ -268,7 +268,7 @@ def district_completeness(storage, upload):
         if upload.district_key(index) in existing_keys:
             completed += 1
     
-    return completed, expected
+    return fractions.Fraction(completed, expected)
 
 def combine_district_scores(storage, input_upload):
     '''
@@ -310,9 +310,9 @@ def lambda_handler(event, context):
     due_time = event.get('due_time', time.time() + constants.UPLOAD_TIME_LIMIT)
     
     while True:
-        completed, expected = district_completeness(storage, upload)
+        completeness = district_completeness(storage, upload)
     
-        if completed == expected:
+        if completeness == 1:
             # All done
             return combine_district_scores(storage, upload)
         
