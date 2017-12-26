@@ -104,7 +104,6 @@ def start_observer_score_lambda(storage, upload):
     '''
     event = upload.to_dict()
     event.update(storage.to_event())
-    event.update(due_time=time.time() + constants.UPLOAD_TIME_LIMIT)
 
     lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
     lam.invoke(FunctionName=score.FUNCTION_NAME, InvocationType='Event',

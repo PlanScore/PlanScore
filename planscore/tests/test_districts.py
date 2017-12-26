@@ -234,6 +234,26 @@ class TestDistricts (unittest.TestCase):
         self.assertIn(b'"id": "ID"', kwargs['Payload'])
 
     @unittest.mock.patch('sys.stdout')
+    @unittest.mock.patch('boto3.client')
+    @unittest.mock.patch('planscore.districts.consume_tiles')
+    def test_lambda_handler_overdue(self, consume_tiles, boto3_client, stdout):
+        ''' Lambda event for an overdue upload errors out.
+        '''
+        s3 = boto3_client.return_value
+        s3.get_object.return_value = {'Body': io.BytesIO(b'POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))')}
+
+        event = {'index': -1, 'bucket': 'bucket-name', 'prefix': 'data/XX',
+            'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson', 'start_time': 1},
+            'geometry_key': 'geom.wkt'}
+
+        context = unittest.mock.Mock()
+        context.get_remaining_time_in_millis.return_value = 0
+        consume_tiles.return_value = [None]
+
+        with self.assertRaises(RuntimeError) as _:
+            districts.lambda_handler(event, context)
+
+    @unittest.mock.patch('sys.stdout')
     def test_post_score_results(self, stdout):
         ''' Expected results are posted to S3.
         '''

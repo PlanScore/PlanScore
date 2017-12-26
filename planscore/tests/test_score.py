@@ -382,7 +382,7 @@ class TestScore (unittest.TestCase):
         
         event = {'bucket': 'bucket-name', 'id': 'sample-plan',
             'prefix': 'XX', 'key': 'uploads/sample-plan/upload/file.geojson',
-            'due_time': 0}
+            'start_time': 1}
 
         with self.assertRaises(RuntimeError) as _:
             score.lambda_handler(event, context)

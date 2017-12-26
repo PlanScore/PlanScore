@@ -111,13 +111,12 @@ class TestAfterUpload (unittest.TestCase):
         '''
         storage, upload = unittest.mock.Mock(), unittest.mock.Mock()
         storage.to_event.return_value = dict()
-        upload.to_dict.return_value = dict()
-        time_time.return_value = 0
+        upload.to_dict.return_value = dict(start_time=1)
         
         after_upload.start_observer_score_lambda(storage, upload)
         
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 1)
-        self.assertIn(b'"due_time": 900', boto3_client.return_value.invoke.mock_calls[0][2]['Payload'])
+        self.assertIn(b'"start_time": 1', boto3_client.return_value.invoke.mock_calls[0][2]['Payload'])
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.score.put_upload_index')

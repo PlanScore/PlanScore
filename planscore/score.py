@@ -307,7 +307,6 @@ def lambda_handler(event, context):
 
     upload = data.Upload.from_dict(event)
     storage = data.Storage.from_event(event, boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL))
-    due_time = event.get('due_time', time.time() + constants.UPLOAD_TIME_LIMIT)
     
     while True:
         upload = upload.clone(progress=district_completeness(storage, upload))
@@ -319,7 +318,7 @@ def lambda_handler(event, context):
         # Let them know there's more to be done
         put_upload_index(storage.s3, storage.bucket, upload)
 
-        if time.time() > due_time:
+        if upload.is_overdue():
             # Out of time, generally
             raise RuntimeError('Out of time')
         
@@ -336,7 +335,6 @@ def lambda_handler(event, context):
 
         event = upload.to_dict()
         event.update(storage.to_event())
-        event.update(due_time=due_time)
         
         payload = json.dumps(event).encode('utf8')
         print('Sending payload of', len(payload), 'bytes...')

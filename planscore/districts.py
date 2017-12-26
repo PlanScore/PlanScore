@@ -131,6 +131,10 @@ def lambda_handler(event, context):
         cutoff_msec = 1000 * (statistics.mean(times) + 3 * stdev)
         remain_msec = context.get_remaining_time_in_millis() - 30000 # 30 seconds for Lambda
         
+        if partial.upload.is_overdue():
+            # Out of time, generally
+            raise RuntimeError('Out of time')
+        
         if remain_msec > cutoff_msec:
             # There's time to do more
             continue

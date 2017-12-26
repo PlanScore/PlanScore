@@ -1,4 +1,5 @@
-import json, csv, io
+import json, csv, io, time
+from . import constants
 
 UPLOAD_PREFIX = 'uploads/{id}/upload/'
 UPLOAD_INDEX_KEY = 'uploads/{id}/index.json'
@@ -44,12 +45,16 @@ class Progress:
 
 class Upload:
 
-    def __init__(self, id, key, districts=None, summary=None, progress=None, **kwargs):
+    def __init__(self, id, key, districts=None, summary=None, progress=None, start_time=None, **ignored):
         self.id = id
         self.key = key
         self.districts = districts or []
         self.summary = summary or {}
         self.progress = progress
+        self.start_time = start_time or time.time()
+    
+    def is_overdue(self):
+        return bool(time.time() > (self.start_time + constants.UPLOAD_TIME_LIMIT))
     
     def index_key(self):
         return UPLOAD_INDEX_KEY.format(id=self.id)
@@ -97,16 +102,18 @@ class Upload:
             districts = self.districts,
             summary = self.summary,
             progress = progress,
+            start_time = self.start_time,
             )
     
     def to_json(self):
         return json.dumps(self.to_dict(), sort_keys=True, indent=2)
     
-    def clone(self, districts=None, summary=None, progress=None):
+    def clone(self, districts=None, summary=None, progress=None, start_time=None):
         return Upload(self.id, self.key,
             districts = districts or self.districts,
             summary = summary or self.summary,
             progress = progress if (progress is not None) else self.progress,
+            start_time = start_time or self.start_time,
             )
     
     @staticmethod
@@ -119,6 +126,7 @@ class Upload:
             districts = data.get('districts'),
             summary = data.get('summary'),
             progress = progress,
+            start_time = data.get('start_time'),
             )
     
     @staticmethod
