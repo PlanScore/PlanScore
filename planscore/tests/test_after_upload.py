@@ -88,7 +88,7 @@ class TestAfterUpload (unittest.TestCase):
     def test_fan_out_district_lambdas(self, boto3_client, stdout):
         ''' Test that district Lambda fan-out is invoked correctly.
         '''
-        upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
+        upload = data.Upload('ID', 'uploads/ID/upload/file.geojson', [None, None])
         after_upload.fan_out_district_lambdas('bucket-name', 'data/XX', upload,
             ['uploads/ID/geometries/0.wkt', 'uploads/ID/geometries/1.wkt'])
         
@@ -139,6 +139,7 @@ class TestAfterUpload (unittest.TestCase):
             yield nullplan_path
 
         temporary_buffer_file.side_effect = nullplan_file
+        put_district_geometries.return_value = [unittest.mock.Mock()] * 2
 
         s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
@@ -162,7 +163,7 @@ class TestAfterUpload (unittest.TestCase):
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][3], put_district_geometries.return_value)
         
         self.assertEqual(len(start_observer_score_lambda.mock_calls), 1)
-        self.assertEqual(start_observer_score_lambda.mock_calls[0][1][1], upload)
+        self.assertEqual(start_observer_score_lambda.mock_calls[0][1][1].id, upload.id)
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.score.put_upload_index')
@@ -185,6 +186,7 @@ class TestAfterUpload (unittest.TestCase):
             yield nullplan_path
 
         temporary_buffer_file.side_effect = nullplan_file
+        put_district_geometries.return_value = [unittest.mock.Mock()] * 2
 
         s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
@@ -211,7 +213,7 @@ class TestAfterUpload (unittest.TestCase):
         self.assertIs(fan_out_district_lambdas.mock_calls[0][1][3], put_district_geometries.return_value)
         
         self.assertEqual(len(start_observer_score_lambda.mock_calls), 1)
-        self.assertEqual(start_observer_score_lambda.mock_calls[0][1][1], upload)
+        self.assertEqual(start_observer_score_lambda.mock_calls[0][1][1].id, upload.id)
     
     def test_commence_upload_scoring_bad_file(self):
         ''' An invalid district file fails in an expected way

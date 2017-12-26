@@ -1,4 +1,4 @@
-import unittest, unittest.mock, io, os, contextlib, json, gzip, itertools, fractions
+import unittest, unittest.mock, io, os, contextlib, json, gzip, itertools
 from .. import score, data
 import botocore.exceptions
 from osgeo import ogr, gdal
@@ -272,7 +272,7 @@ class TestScore (unittest.TestCase):
             'Contents': [{'Key': 'uploads/ID/districts/0.json'}]}
         
         completeness = score.district_completeness(storage, upload)
-        self.assertEqual(completeness, .5, 'Should see accurate return from district_completeness()')
+        self.assertFalse(completeness.is_complete(), 'Should see accurate return from district_completeness()')
 
         storage.s3.list_objects.assert_called_once_with(
             Bucket='bucket-name', Prefix='uploads/ID/districts')
@@ -283,7 +283,7 @@ class TestScore (unittest.TestCase):
             {'Key': 'uploads/ID/districts/0.json'}, {'Key': 'uploads/ID/districts/1.json'}]}
 
         completeness = score.district_completeness(storage, upload)
-        self.assertEqual(completeness, 1., 'Should see accurate return from district_completeness()')
+        self.assertTrue(completeness.is_complete(), 'Should see accurate return from district_completeness()')
     
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('planscore.score.calculate_gaps')
@@ -330,7 +330,7 @@ class TestScore (unittest.TestCase):
     def test_lambda_handler_complete(self, district_completeness, combine_district_scores, boto3_client, time_sleep, stdout):
         '''
         '''
-        district_completeness.return_value = fractions.Fraction(2, 2)
+        district_completeness.return_value = data.Progress(2, 2)
 
         score.lambda_handler({'bucket': 'bucket-name', 'id': 'sample-plan',
             'key': 'uploads/sample-plan/upload/file.geojson'}, None)
@@ -350,7 +350,7 @@ class TestScore (unittest.TestCase):
         '''
         context = unittest.mock.Mock()
         context.get_remaining_time_in_millis.return_value = 0
-        district_completeness.return_value = fractions.Fraction(1, 2)
+        district_completeness.return_value = data.Progress(1, 2)
         
         event = {'bucket': 'bucket-name', 'id': 'sample-plan',
             'prefix': 'XX', 'key': 'uploads/sample-plan/upload/file.geojson'}
@@ -378,7 +378,7 @@ class TestScore (unittest.TestCase):
         '''
         context = unittest.mock.Mock()
         context.get_remaining_time_in_millis.return_value = 0
-        district_completeness.return_value = fractions.Fraction(1, 2)
+        district_completeness.return_value = data.Progress(1, 2)
         
         event = {'bucket': 'bucket-name', 'id': 'sample-plan',
             'prefix': 'XX', 'key': 'uploads/sample-plan/upload/file.geojson',

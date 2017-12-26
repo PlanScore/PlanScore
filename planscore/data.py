@@ -1,4 +1,4 @@
-import json, csv, io, fractions
+import json, csv, io
 
 UPLOAD_PREFIX = 'uploads/{id}/upload/'
 UPLOAD_INDEX_KEY = 'uploads/{id}/index.json'
@@ -23,6 +23,24 @@ class Storage:
         bucket = event['bucket']
         prefix = event.get('prefix')
         return Storage(s3, bucket, prefix)
+
+class Progress:
+    ''' Fraction-like value representing number of completed districts.
+    
+        Not using fractions.Fraction because it reduces to lowest terms.
+    '''
+    def __init__(self, completed, expected):
+        self.completed = completed
+        self.expected = expected
+    
+    def to_list(self):
+        return [self.completed, self.expected]
+    
+    def is_complete(self):
+        return bool(self.completed >= self.expected)
+    
+    def __eq__(self, other):
+        return (self.completed / self.expected) == (other.completed / other.expected)
 
 class Upload:
 
@@ -71,8 +89,7 @@ class Upload:
             return out.getvalue()
     
     def to_dict(self):
-        progress = ((self.progress.numerator, self.progress.denominator)
-            if (self.progress is not None) else None)
+        progress = self.progress.to_list() if (self.progress is not None) else None
 
         return dict(
             id = self.id,
@@ -94,7 +111,7 @@ class Upload:
     
     @staticmethod
     def from_dict(data):
-        progress = fractions.Fraction(*data['progress']) if data.get('progress') else None
+        progress = Progress(*data['progress']) if data.get('progress') else None
     
         return Upload(
             id = data['id'], 

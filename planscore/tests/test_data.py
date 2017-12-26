@@ -1,4 +1,4 @@
-import unittest, unittest.mock, fractions
+import unittest, unittest.mock
 from .. import data
 
 class TestData (unittest.TestCase):
@@ -11,6 +11,16 @@ class TestData (unittest.TestCase):
         self.assertEqual(storage.s3, s3)
         self.assertEqual(storage.bucket, 'bucket')
         self.assertEqual(storage.prefix, 'XX')
+    
+    def test_Progress(self):
+        ''' data.Progress works like a fraction
+        '''
+        p1 = data.Progress(1, 2)
+        p2 = data.Progress(2, 2)
+        p3 = data.Progress(3, 3)
+        self.assertFalse(p1.is_complete())
+        self.assertTrue(p2.is_complete())
+        self.assertTrue(p3.is_complete())
 
     def test_upload_storage(self):
         ''' Past and future data.Upload instances are readable
@@ -34,7 +44,7 @@ class TestData (unittest.TestCase):
         upload4 = data.Upload.from_json('{"id": "ID", "key": "KEY", "progress": [1, 2]}')
         self.assertEqual(upload4.id, 'ID')
         self.assertEqual(upload4.key, 'KEY')
-        self.assertEqual(upload4.progress, fractions.Fraction(1, 2))
+        self.assertEqual(upload4.progress, data.Progress(1, 2))
 
     def test_upload_json(self):
         ''' data.Upload instances can be converted to and from JSON
@@ -65,7 +75,7 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload6.summary, upload5.summary)
     
         upload7 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
-            progress=fractions.Fraction(1, 2))
+            progress=data.Progress(1, 2))
         upload8 = data.Upload.from_json(upload7.to_json())
 
         self.assertEqual(upload8.id, upload7.id)
