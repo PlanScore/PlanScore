@@ -1,4 +1,4 @@
-import json, csv, io
+import json, csv, io, fractions
 
 UPLOAD_PREFIX = 'uploads/{id}/upload/'
 UPLOAD_INDEX_KEY = 'uploads/{id}/index.json'
@@ -26,11 +26,12 @@ class Storage:
 
 class Upload:
 
-    def __init__(self, id, key, districts=None, summary=None, **kwargs):
+    def __init__(self, id, key, districts=None, summary=None, progress=None, **kwargs):
         self.id = id
         self.key = key
         self.districts = districts or []
         self.summary = summary or {}
+        self.progress = progress
     
     def index_key(self):
         return UPLOAD_INDEX_KEY.format(id=self.id)
@@ -70,28 +71,37 @@ class Upload:
             return out.getvalue()
     
     def to_dict(self):
+        progress = ((self.progress.numerator, self.progress.denominator)
+            if (self.progress is not None) else None)
+
         return dict(
             id = self.id,
             key = self.key,
             districts = self.districts,
             summary = self.summary,
+            progress = progress,
             )
     
     def to_json(self):
         return json.dumps(self.to_dict(), sort_keys=True, indent=2)
     
-    def clone(self, districts=None, summary=None):
+    def clone(self, districts=None, summary=None, progress=None):
         return Upload(self.id, self.key,
             districts = districts or self.districts,
-            summary = summary or self.summary)
+            summary = summary or self.summary,
+            progress = progress if (progress is not None) else self.progress,
+            )
     
     @staticmethod
     def from_dict(data):
+        progress = fractions.Fraction(*data['progress']) if data.get('progress') else None
+    
         return Upload(
             id = data['id'], 
             key = data['key'],
             districts = data.get('districts'),
             summary = data.get('summary'),
+            progress = progress,
             )
     
     @staticmethod

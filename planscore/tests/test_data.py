@@ -1,4 +1,4 @@
-import unittest, unittest.mock
+import unittest, unittest.mock, fractions
 from .. import data
 
 class TestData (unittest.TestCase):
@@ -31,6 +31,11 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload3.districts, ['yo'])
         self.assertEqual(upload3.summary, ['oi'])
 
+        upload4 = data.Upload.from_json('{"id": "ID", "key": "KEY", "progress": [1, 2]}')
+        self.assertEqual(upload4.id, 'ID')
+        self.assertEqual(upload4.key, 'KEY')
+        self.assertEqual(upload4.progress, fractions.Fraction(1, 2))
+
     def test_upload_json(self):
         ''' data.Upload instances can be converted to and from JSON
         '''
@@ -58,6 +63,14 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload6.key, upload5.key)
         self.assertEqual(upload6.districts, upload5.districts)
         self.assertEqual(upload6.summary, upload5.summary)
+    
+        upload7 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
+            progress=fractions.Fraction(1, 2))
+        upload8 = data.Upload.from_json(upload7.to_json())
+
+        self.assertEqual(upload8.id, upload7.id)
+        self.assertEqual(upload8.key, upload7.key)
+        self.assertEqual(upload8.progress, upload7.progress)
     
     def test_upload_plaintext(self):
         ''' data.Upload instances can be converted to plaintext
@@ -113,9 +126,13 @@ class TestData (unittest.TestCase):
         '''
         districts1, districts2 = unittest.mock.Mock(), unittest.mock.Mock()
         summary1, summary2 = unittest.mock.Mock(), unittest.mock.Mock()
-        input = data.Upload(id='ID', key='whatever.json', districts=districts1, summary=summary1)
+        progress1, progress2 = unittest.mock.Mock(), unittest.mock.Mock()
+        input = data.Upload(id='ID', key='whatever.json',
+            districts=districts1, summary=summary1, progress=progress1)
+
         self.assertIs(input.districts, districts1)
-        self.assertIs(input.districts, districts1)
+        self.assertIs(input.summary, summary1)
+        self.assertIs(input.progress, progress1)
 
         output1 = input.clone(districts=districts2, summary=summary2)
         self.assertEqual(output1.id, input.id)
@@ -128,9 +145,16 @@ class TestData (unittest.TestCase):
         self.assertEqual(output2.key, input.key)
         self.assertIs(output2.districts, input.districts)
         self.assertIs(output2.summary, input.summary)
+        self.assertIs(output2.progress, input.progress)
 
         output3 = input.clone(districts=None, summary=None)
         self.assertEqual(output3.id, input.id)
         self.assertEqual(output3.key, input.key)
         self.assertIs(output3.districts, input.districts)
         self.assertIs(output3.summary, input.summary)
+        self.assertIs(output3.progress, input.progress)
+
+        output4 = input.clone(progress=progress2)
+        self.assertEqual(output4.id, input.id)
+        self.assertEqual(output4.key, input.key)
+        self.assertIs(output4.progress, progress2)

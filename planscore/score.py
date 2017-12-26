@@ -310,9 +310,12 @@ def lambda_handler(event, context):
     due_time = event.get('due_time', time.time() + constants.UPLOAD_TIME_LIMIT)
     
     while True:
-        completeness = district_completeness(storage, upload)
+        upload = upload.clone(progress=district_completeness(storage, upload))
     
-        if completeness == 1:
+        if upload.progress < 1.:
+            # Let them know there's more to be done
+            put_upload_index(storage.s3, storage.bucket, upload)
+        else:
             # All done
             return combine_district_scores(storage, upload)
         

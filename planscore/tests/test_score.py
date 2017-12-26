@@ -343,8 +343,9 @@ class TestScore (unittest.TestCase):
     @unittest.mock.patch('time.sleep')
     @unittest.mock.patch('boto3.client')
     @unittest.mock.patch('planscore.score.combine_district_scores')
+    @unittest.mock.patch('planscore.score.put_upload_index')
     @unittest.mock.patch('planscore.score.district_completeness')
-    def test_lambda_handler_outoftime(self, district_completeness, combine_district_scores, boto3_client, time_sleep, stdout):
+    def test_lambda_handler_outoftime(self, district_completeness, put_upload_index, combine_district_scores, boto3_client, time_sleep, stdout):
         '''
         '''
         context = unittest.mock.Mock()
@@ -358,18 +359,21 @@ class TestScore (unittest.TestCase):
         
         self.assertEqual(len(combine_district_scores.mock_calls), 0)
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 1)
+        self.assertEqual(len(put_upload_index.mock_calls), 1)
 
         kwargs = boto3_client.return_value.invoke.mock_calls[0][2]
         self.assertEqual(kwargs['FunctionName'], score.FUNCTION_NAME)
         self.assertEqual(kwargs['InvocationType'], 'Event')
         self.assertIn(b'"id": "sample-plan"', kwargs['Payload'])
+        self.assertIn(b'"progress": [1, 2]', kwargs['Payload'])
         self.assertIn(event['bucket'].encode('utf8'), kwargs['Payload'])
         self.assertIn(event['prefix'].encode('utf8'), kwargs['Payload'])
     
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
+    @unittest.mock.patch('planscore.score.put_upload_index')
     @unittest.mock.patch('planscore.score.district_completeness')
-    def test_lambda_handler_overdue(self, district_completeness, boto3_client, stdout):
+    def test_lambda_handler_overdue(self, district_completeness, put_upload_index, boto3_client, stdout):
         '''
         '''
         context = unittest.mock.Mock()
@@ -382,3 +386,5 @@ class TestScore (unittest.TestCase):
 
         with self.assertRaises(RuntimeError) as _:
             score.lambda_handler(event, context)
+
+        self.assertEqual(len(put_upload_index.mock_calls), 1)
