@@ -261,8 +261,8 @@ class TestScore (unittest.TestCase):
             ACL='public-read', ContentType='text/plain'))
 
     @unittest.mock.patch('sys.stdout')
-    def test_districts_are_complete(self, stdout):
-        ''' Expected results are posted to S3.
+    def test_district_completeness(self, stdout):
+        ''' Correct number of completed districts is found.
         '''
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson', districts=[None, None])
         
@@ -271,8 +271,8 @@ class TestScore (unittest.TestCase):
         storage.s3.list_objects.return_value = {
             'Contents': [{'Key': 'uploads/ID/districts/0.json'}]}
         
-        final = score.districts_are_complete(storage, upload)
-        self.assertFalse(final, 'Should see False return from districts_are_complete()')
+        completeness = score.district_completeness(storage, upload)
+        self.assertEqual(completeness, (1, 2), 'Should see accurate return from district_completeness()')
 
         storage.s3.list_objects.assert_called_once_with(
             Bucket='bucket-name', Prefix='uploads/ID/districts')
@@ -282,8 +282,8 @@ class TestScore (unittest.TestCase):
         storage.s3.list_objects.return_value = {'Contents': [
             {'Key': 'uploads/ID/districts/0.json'}, {'Key': 'uploads/ID/districts/1.json'}]}
 
-        final = score.districts_are_complete(storage, upload)
-        self.assertTrue(final, 'Should see True return from districts_are_complete()')
+        completeness = score.district_completeness(storage, upload)
+        self.assertEqual(completeness, (2, 2), 'Should see accurate return from district_completeness()')
     
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('planscore.score.calculate_gaps')
@@ -326,11 +326,11 @@ class TestScore (unittest.TestCase):
     @unittest.mock.patch('time.sleep')
     @unittest.mock.patch('boto3.client')
     @unittest.mock.patch('planscore.score.combine_district_scores')
-    @unittest.mock.patch('planscore.score.districts_are_complete')
-    def test_lambda_handler_complete(self, districts_are_complete, combine_district_scores, boto3_client, time_sleep, stdout):
+    @unittest.mock.patch('planscore.score.district_completeness')
+    def test_lambda_handler_complete(self, district_completeness, combine_district_scores, boto3_client, time_sleep, stdout):
         '''
         '''
-        districts_are_complete.return_value = True
+        district_completeness.return_value = (2, 2)
 
         score.lambda_handler({'bucket': 'bucket-name', 'id': 'sample-plan',
             'key': 'uploads/sample-plan/upload/file.geojson'}, None)
@@ -343,13 +343,13 @@ class TestScore (unittest.TestCase):
     @unittest.mock.patch('time.sleep')
     @unittest.mock.patch('boto3.client')
     @unittest.mock.patch('planscore.score.combine_district_scores')
-    @unittest.mock.patch('planscore.score.districts_are_complete')
-    def test_lambda_handler_outoftime(self, districts_are_complete, combine_district_scores, boto3_client, time_sleep, stdout):
+    @unittest.mock.patch('planscore.score.district_completeness')
+    def test_lambda_handler_outoftime(self, district_completeness, combine_district_scores, boto3_client, time_sleep, stdout):
         '''
         '''
         context = unittest.mock.Mock()
         context.get_remaining_time_in_millis.return_value = 0
-        districts_are_complete.return_value = False
+        district_completeness.return_value = (1, 2)
         
         event = {'bucket': 'bucket-name', 'id': 'sample-plan',
             'prefix': 'XX', 'key': 'uploads/sample-plan/upload/file.geojson'}
@@ -368,13 +368,13 @@ class TestScore (unittest.TestCase):
     
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
-    @unittest.mock.patch('planscore.score.districts_are_complete')
-    def test_lambda_handler_overdue(self, districts_are_complete, boto3_client, stdout):
+    @unittest.mock.patch('planscore.score.district_completeness')
+    def test_lambda_handler_overdue(self, district_completeness, boto3_client, stdout):
         '''
         '''
         context = unittest.mock.Mock()
         context.get_remaining_time_in_millis.return_value = 0
-        districts_are_complete.return_value = False
+        district_completeness.return_value = (1, 2)
         
         event = {'bucket': 'bucket-name', 'id': 'sample-plan',
             'prefix': 'XX', 'key': 'uploads/sample-plan/upload/file.geojson',

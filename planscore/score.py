@@ -254,20 +254,21 @@ def put_upload_index(s3, bucket, upload):
     s3.put_object(Bucket=bucket, Key=key2, Body=body2,
         ContentType='text/plain', ACL='public-read')
 
-def districts_are_complete(storage, upload):
-    ''' Return true if all upload districts have been completed.
+def district_completeness(storage, upload):
+    ''' Return number of upload districts completed vs. number expected.
     '''
     # Look for the other expected districts.
     prefix = posixpath.dirname(upload.district_key(-1))
     listed_objects = storage.s3.list_objects(Bucket=storage.bucket, Prefix=prefix)
     existing_keys = [obj.get('Key') for obj in listed_objects.get('Contents', [])]
     
-    for index in range(len(upload.districts)):
-        if upload.district_key(index) not in existing_keys:
-            return False
+    completed, expected = 0, len(upload.districts)
     
-    # All of them were found
-    return True
+    for index in range(len(upload.districts)):
+        if upload.district_key(index) in existing_keys:
+            completed += 1
+    
+    return completed, expected
 
 def combine_district_scores(storage, input_upload):
     '''
@@ -309,7 +310,9 @@ def lambda_handler(event, context):
     due_time = event.get('due_time', time.time() + constants.UPLOAD_TIME_LIMIT)
     
     while True:
-        if districts_are_complete(storage, upload):
+        completed, expected = district_completeness(storage, upload)
+    
+        if completed == expected:
             # All done
             return combine_district_scores(storage, upload)
         
