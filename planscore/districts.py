@@ -1,9 +1,7 @@
 ''' Adds up vote totals for a single district.
 
 Performs as many tile-based accumulations of district votes as possible within
-AWS Lambda time limit before recursively calling for remaining tiles. When
-complete, checks if all other parallel districts have finished and calls
-planscore.score if so.
+AWS Lambda time limit before recursively calling for remaining tiles.
 '''
 import collections, json, io, gzip, statistics, time, base64, posixpath, pickle, functools
 from osgeo import ogr
@@ -133,6 +131,10 @@ def lambda_handler(event, context):
         cutoff_msec = 1000 * (statistics.mean(times) + 3 * stdev)
         remain_msec = context.get_remaining_time_in_millis() - 30000 # 30 seconds for Lambda
         
+        if partial.upload.is_overdue():
+            # Out of time, generally
+            raise RuntimeError('Out of time')
+        
         if remain_msec > cutoff_msec:
             # There's time to do more
             continue
@@ -154,22 +156,11 @@ def lambda_handler(event, context):
 
         return
     
-    final = post_score_results(storage, partial)
-    
-    if not final:
-        return
-    
-    print('All done, invoking', score.FUNCTION_NAME)
-    
-    event = partial.upload.to_dict()
-    event.update(storage.to_event())
-
-    lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
-    lam.invoke(FunctionName=score.FUNCTION_NAME, InvocationType='Event',
-        Payload=json.dumps(event).encode('utf8'))
+    # If we reached here, we are all done
+    post_score_results(storage, partial)
 
 def post_score_results(storage, partial):
-    '''
+    ''' Post single-district counts.
     '''
     key = partial.upload.district_key(partial.index)
     body = json.dumps(dict(totals=partial.totals, geometry_key=partial.geometry_key)).encode('utf8')
@@ -178,18 +169,6 @@ def post_score_results(storage, partial):
     
     storage.s3.put_object(Bucket=storage.bucket, Key=key, Body=body,
         ContentType='text/json', ACL='private')
-    
-    # Look for the other expected districts.
-    prefix = posixpath.dirname(key)
-    listed_objects = storage.s3.list_objects(Bucket=storage.bucket, Prefix=prefix)
-    existing_keys = [obj.get('Key') for obj in listed_objects.get('Contents', [])]
-    
-    for index in range(len(partial.upload.districts)):
-        if partial.upload.district_key(index) not in existing_keys:
-            return False
-    
-    # All of them were found
-    return True
 
 def consume_tiles(storage, partial):
     ''' Generate a stream of steps, updating totals from precincts and tiles.

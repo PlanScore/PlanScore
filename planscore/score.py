@@ -1,8 +1,9 @@
-''' Called from final planscore.district when all districts are added up.
+''' Called from final planscore.after_upload to observe process.
 
-Performs complete scoring of district plan and uploads summary JSON file.
+When all districts are added up and present on S3, performs complete scoring
+of district plan and uploads summary JSON file.
 '''
-import io, os, gzip, posixpath, json, statistics, copy
+import io, os, gzip, posixpath, json, statistics, copy, time, itertools
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import prepare_state, util, data, constants
@@ -253,14 +254,25 @@ def put_upload_index(s3, bucket, upload):
     s3.put_object(Bucket=bucket, Key=key2, Body=body2,
         ContentType='text/plain', ACL='public-read')
 
-def lambda_handler(event, context):
+def district_completeness(storage, upload):
+    ''' Return number of upload districts completed vs. number expected.
     '''
-    '''
-    print('event:', json.dumps(event))
-
-    input_upload = data.Upload.from_dict(event)
-    storage = data.Storage.from_event(event, boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL))
+    # Look for the other expected districts.
+    prefix = posixpath.dirname(upload.district_key(-1))
+    listed_objects = storage.s3.list_objects(Bucket=storage.bucket, Prefix=prefix)
+    existing_keys = [obj.get('Key') for obj in listed_objects.get('Contents', [])]
     
+    completed, expected = 0, len(upload.districts)
+    
+    for index in range(len(upload.districts)):
+        if upload.district_key(index) in existing_keys:
+            completed += 1
+    
+    return data.Progress(completed, expected)
+
+def combine_district_scores(storage, input_upload):
+    '''
+    '''
     # Look for all expected districts.
     prefix = posixpath.dirname(input_upload.district_key(-1))
     listed_objects = storage.s3.list_objects(Bucket=storage.bucket, Prefix=prefix)
@@ -287,3 +299,49 @@ def lambda_handler(event, context):
     interim_upload = calculate_gap(input_upload.clone(districts=new_districts))
     output_upload = calculate_gaps(interim_upload)
     put_upload_index(storage.s3, storage.bucket, output_upload)
+
+def lambda_handler(event, context):
+    '''
+    '''
+    print('Event:', json.dumps(event))
+
+    upload = data.Upload.from_dict(event)
+    storage = data.Storage.from_event(event, boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL))
+    delays = itertools.chain(range(15), itertools.repeat(15))
+    
+    for delay in delays:
+        upload = upload.clone(progress=district_completeness(storage, upload))
+    
+        if upload.progress.is_complete():
+            # All done
+            return combine_district_scores(storage, upload)
+        
+        # Let them know there's more to be done
+        put_upload_index(storage.s3, storage.bucket, upload)
+
+        if upload.is_overdue():
+            # Out of time, generally
+            raise RuntimeError('Out of time')
+        
+        remain_msec = context.get_remaining_time_in_millis()
+
+        if remain_msec > 30000: # 30 seconds for Lambda
+            # There's time to do more
+            time.sleep(delay)
+            continue
+        
+        # There's no time to do more
+        print('Iteration:', json.dumps(upload.to_dict()))
+        print('Stopping with', remain_msec, 'msec')
+
+        event = upload.to_dict()
+        event.update(storage.to_event())
+        
+        payload = json.dumps(event).encode('utf8')
+        print('Sending payload of', len(payload), 'bytes...')
+
+        lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
+        lam.invoke(FunctionName=FUNCTION_NAME, InvocationType='Event',
+            Payload=payload)
+        
+        return

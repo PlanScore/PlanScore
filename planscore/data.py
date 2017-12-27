@@ -1,4 +1,5 @@
-import json, csv, io
+import json, csv, io, time
+from . import constants
 
 UPLOAD_PREFIX = 'uploads/{id}/upload/'
 UPLOAD_INDEX_KEY = 'uploads/{id}/index.json'
@@ -24,13 +25,36 @@ class Storage:
         prefix = event.get('prefix')
         return Storage(s3, bucket, prefix)
 
+class Progress:
+    ''' Fraction-like value representing number of completed districts.
+    
+        Not using fractions.Fraction because it reduces to lowest terms.
+    '''
+    def __init__(self, completed, expected):
+        self.completed = completed
+        self.expected = expected
+    
+    def to_list(self):
+        return [self.completed, self.expected]
+    
+    def is_complete(self):
+        return bool(self.completed >= self.expected)
+    
+    def __eq__(self, other):
+        return (self.completed / self.expected) == (other.completed / other.expected)
+
 class Upload:
 
-    def __init__(self, id, key, districts=None, summary=None, **kwargs):
+    def __init__(self, id, key, districts=None, summary=None, progress=None, start_time=None, **ignored):
         self.id = id
         self.key = key
         self.districts = districts or []
         self.summary = summary or {}
+        self.progress = progress
+        self.start_time = start_time or time.time()
+    
+    def is_overdue(self):
+        return bool(time.time() > (self.start_time + constants.UPLOAD_TIME_LIMIT))
     
     def index_key(self):
         return UPLOAD_INDEX_KEY.format(id=self.id)
@@ -70,28 +94,39 @@ class Upload:
             return out.getvalue()
     
     def to_dict(self):
+        progress = self.progress.to_list() if (self.progress is not None) else None
+
         return dict(
             id = self.id,
             key = self.key,
             districts = self.districts,
             summary = self.summary,
+            progress = progress,
+            start_time = self.start_time,
             )
     
     def to_json(self):
         return json.dumps(self.to_dict(), sort_keys=True, indent=2)
     
-    def clone(self, districts=None, summary=None):
+    def clone(self, districts=None, summary=None, progress=None, start_time=None):
         return Upload(self.id, self.key,
             districts = districts or self.districts,
-            summary = summary or self.summary)
+            summary = summary or self.summary,
+            progress = progress if (progress is not None) else self.progress,
+            start_time = start_time or self.start_time,
+            )
     
     @staticmethod
     def from_dict(data):
+        progress = Progress(*data['progress']) if data.get('progress') else None
+    
         return Upload(
             id = data['id'], 
             key = data['key'],
             districts = data.get('districts'),
             summary = data.get('summary'),
+            progress = progress,
+            start_time = data.get('start_time'),
             )
     
     @staticmethod

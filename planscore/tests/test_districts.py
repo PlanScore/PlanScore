@@ -138,7 +138,6 @@ class TestDistricts (unittest.TestCase):
         s3 = boto3_client.return_value
         s3.get_object.return_value = {'Body': io.BytesIO(b'POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))')}
 
-        post_score_results.return_value = False
         event = {'index': -1, 'bucket': 'bucket-name',
             'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
             'geometry_key': 'geom.wkt'}
@@ -191,7 +190,6 @@ class TestDistricts (unittest.TestCase):
         s3 = boto3_client.return_value
         s3.get_object.return_value = {'Body': io.BytesIO(b'POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))')}
 
-        post_score_results.return_value = False
         event = {'index': -1, 'bucket': 'bucket-name', 'totals': {},
             'precincts': [{'Totals': 1}], 'tiles': ['12/2047/2048'],
             'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
@@ -209,12 +207,11 @@ class TestDistricts (unittest.TestCase):
     @unittest.mock.patch('planscore.districts.post_score_results')
     @unittest.mock.patch('planscore.districts.consume_tiles')
     def test_lambda_handler_final(self, consume_tiles, post_score_results, boto3_client, stdout):
-        ''' Lambda event for the final district hands off to the score function.
+        ''' Lambda event for the final district does not hand off to the score function.
         '''
         s3 = boto3_client.return_value
         s3.get_object.return_value = {'Body': io.BytesIO(b'POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))')}
 
-        post_score_results.return_value = True
         event = {'index': -1, 'bucket': 'bucket-name',
             'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
             'geometry_key': 'geom.wkt'}
@@ -224,14 +221,26 @@ class TestDistricts (unittest.TestCase):
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
             (-1, {}, [], ['12/2047/2047', '12/2047/2048'], 'ID'))
         post_score_results.assert_called_once_with(storage, partial)
-        self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 1)
 
-        kwargs = boto3_client.return_value.invoke.mock_calls[0][2]
-        self.assertEqual(kwargs['FunctionName'], score.FUNCTION_NAME)
-        self.assertEqual(kwargs['InvocationType'], 'Event')
-        self.assertIn(b'"bucket": "bucket-name"', kwargs['Payload'])
-        self.assertIn(b'"key": "uploads/ID/upload/file.geojson"', kwargs['Payload'])
-        self.assertIn(b'"id": "ID"', kwargs['Payload'])
+    @unittest.mock.patch('sys.stdout')
+    @unittest.mock.patch('boto3.client')
+    @unittest.mock.patch('planscore.districts.consume_tiles')
+    def test_lambda_handler_overdue(self, consume_tiles, boto3_client, stdout):
+        ''' Lambda event for an overdue upload errors out.
+        '''
+        s3 = boto3_client.return_value
+        s3.get_object.return_value = {'Body': io.BytesIO(b'POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))')}
+
+        event = {'index': -1, 'bucket': 'bucket-name', 'prefix': 'data/XX',
+            'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson', 'start_time': 1},
+            'geometry_key': 'geom.wkt'}
+
+        context = unittest.mock.Mock()
+        context.get_remaining_time_in_millis.return_value = 0
+        consume_tiles.return_value = [None]
+
+        with self.assertRaises(RuntimeError):
+            districts.lambda_handler(event, context)
 
     @unittest.mock.patch('sys.stdout')
     def test_post_score_results(self, stdout):
@@ -242,14 +251,14 @@ class TestDistricts (unittest.TestCase):
         
         # First time through, there's only one district noted on the server
         storage = data.Storage(unittest.mock.Mock(), 'bucket-name', 'data/XX')
-        storage.s3.list_objects.return_value = {
-            'Contents': [{'Key': 'uploads/ID/districts/0.json'}]}
+        #storage.s3.list_objects.return_value = {
+        #    'Contents': [{'Key': 'uploads/ID/districts/0.json'}]}
         
         final = districts.post_score_results(storage, partial)
         self.assertFalse(final, 'Should see False return from post_score_results()')
 
-        storage.s3.list_objects.assert_called_once_with(
-            Bucket='bucket-name', Prefix='uploads/ID/districts')
+        #storage.s3.list_objects.assert_called_once_with(
+        #    Bucket='bucket-name', Prefix='uploads/ID/districts')
 
         storage.s3.put_object.assert_called_once_with(
             ACL='private', Body=b'{"totals": {"Voters": 1}, "geometry_key": "uploads/ID/geometries/-1.wkt"}',
@@ -261,7 +270,7 @@ class TestDistricts (unittest.TestCase):
             {'Key': 'uploads/ID/districts/0.json'}, {'Key': 'uploads/ID/districts/1.json'}]}
 
         final = districts.post_score_results(storage, partial)
-        self.assertTrue(final, 'Should see True return from post_score_results()')
+        #self.assertTrue(final, 'Should see True return from post_score_results()')
     
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
     @unittest.mock.patch('planscore.districts.score_precinct')

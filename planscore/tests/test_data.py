@@ -11,6 +11,16 @@ class TestData (unittest.TestCase):
         self.assertEqual(storage.s3, s3)
         self.assertEqual(storage.bucket, 'bucket')
         self.assertEqual(storage.prefix, 'XX')
+    
+    def test_Progress(self):
+        ''' data.Progress works like a fraction
+        '''
+        p1 = data.Progress(1, 2)
+        p2 = data.Progress(2, 2)
+        p3 = data.Progress(3, 3)
+        self.assertFalse(p1.is_complete())
+        self.assertTrue(p2.is_complete())
+        self.assertTrue(p3.is_complete())
 
     def test_upload_storage(self):
         ''' Past and future data.Upload instances are readable
@@ -30,6 +40,25 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload3.key, 'KEY')
         self.assertEqual(upload3.districts, ['yo'])
         self.assertEqual(upload3.summary, ['oi'])
+
+        upload4 = data.Upload.from_json('{"id": "ID", "key": "KEY", "progress": [1, 2]}')
+        self.assertEqual(upload4.id, 'ID')
+        self.assertEqual(upload4.key, 'KEY')
+        self.assertEqual(upload4.progress, data.Progress(1, 2))
+
+        upload5 = data.Upload.from_json('{"id": "ID", "key": "KEY", "start_time": 999}')
+        self.assertEqual(upload5.id, 'ID')
+        self.assertEqual(upload5.key, 'KEY')
+        self.assertEqual(upload5.start_time, 999)
+    
+    def test_upload_overdue(self):
+        ''' data.Upload self-reports correct overdue state
+        '''
+        upload1 = data.Upload('ID', 'Key', start_time=1000000000)
+        upload2 = data.Upload('ID', 'Key', start_time=9000000000)
+        
+        self.assertTrue(upload1.is_overdue(), '15 year old Upload should be overdue')
+        self.assertFalse(upload2.is_overdue(), 'Star Trek era Upload should not be overdue')
 
     def test_upload_json(self):
         ''' data.Upload instances can be converted to and from JSON
@@ -58,6 +87,15 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload6.key, upload5.key)
         self.assertEqual(upload6.districts, upload5.districts)
         self.assertEqual(upload6.summary, upload5.summary)
+    
+        upload7 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
+            progress=data.Progress(1, 2), start_time=999)
+        upload8 = data.Upload.from_json(upload7.to_json())
+
+        self.assertEqual(upload8.id, upload7.id)
+        self.assertEqual(upload8.key, upload7.key)
+        self.assertEqual(upload8.progress, upload7.progress)
+        self.assertEqual(upload8.start_time, upload7.start_time)
     
     def test_upload_plaintext(self):
         ''' data.Upload instances can be converted to plaintext
@@ -113,9 +151,14 @@ class TestData (unittest.TestCase):
         '''
         districts1, districts2 = unittest.mock.Mock(), unittest.mock.Mock()
         summary1, summary2 = unittest.mock.Mock(), unittest.mock.Mock()
-        input = data.Upload(id='ID', key='whatever.json', districts=districts1, summary=summary1)
+        progress1, progress2 = unittest.mock.Mock(), unittest.mock.Mock()
+        start_time1, start_time2 = unittest.mock.Mock(), unittest.mock.Mock()
+        input = data.Upload(id='ID', key='whatever.json', districts=districts1,
+            summary=summary1, progress=progress1, start_time=start_time1)
+
         self.assertIs(input.districts, districts1)
-        self.assertIs(input.districts, districts1)
+        self.assertIs(input.summary, summary1)
+        self.assertIs(input.progress, progress1)
 
         output1 = input.clone(districts=districts2, summary=summary2)
         self.assertEqual(output1.id, input.id)
@@ -128,9 +171,21 @@ class TestData (unittest.TestCase):
         self.assertEqual(output2.key, input.key)
         self.assertIs(output2.districts, input.districts)
         self.assertIs(output2.summary, input.summary)
+        self.assertIs(output2.progress, input.progress)
 
         output3 = input.clone(districts=None, summary=None)
         self.assertEqual(output3.id, input.id)
         self.assertEqual(output3.key, input.key)
         self.assertIs(output3.districts, input.districts)
         self.assertIs(output3.summary, input.summary)
+        self.assertIs(output3.progress, input.progress)
+
+        output4 = input.clone(progress=progress2)
+        self.assertEqual(output4.id, input.id)
+        self.assertEqual(output4.key, input.key)
+        self.assertIs(output4.progress, progress2)
+
+        output5 = input.clone(start_time=start_time2)
+        self.assertEqual(output5.id, input.id)
+        self.assertEqual(output5.key, input.key)
+        self.assertIs(output5.start_time, start_time2)
