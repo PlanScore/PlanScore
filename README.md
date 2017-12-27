@@ -38,6 +38,8 @@ While working within the `_statetemplate/` content, some notes of interest:
 * **state_template.src.html** -- You may insert the phrase **STATE_NAME** into the HTML. When the template is copied into the state folder, this will be replaced with the state's Properly Capitalized Name.
 * All states will receive exactly the same programming, stylesheet, and HTML template (except for the STATE_NAME tag), so they should "detect" their state based on the URL string, if they will need to filter data or otherwise configure custom behavior.
 
+**NOTE FOR MAC USERS**
+If you run `npm run states` out of the box without making a single change to the code, you may see git changes with all your user-visible state names showing as lowercase. This breaks the site since data keys are assuming proper capitalization of state names. The cause is that the `sed` REGEX commands in `npm run states` rely on GNU utilities that are not present in MacOS's default BSD version of `sed`. Here's [some info on that](https://unix.stackexchange.com/questions/13711/differences-between-sed-on-mac-osx-and-other-standard-sed). You can solve the issue by installing `gnu-sed` as outlined in [this StackOverflow post](https://stackoverflow.com/questions/30003570/how-to-use-gnu-sed-on-mac-os-x). If you do `npm run states` after that install and before making changes, you should see no uncommitted changes in your repo, which is expected. Now you can edit the template files and do `npm run states` and see only the changes you meant to make.
 
 ### Static Content
 
