@@ -10,7 +10,7 @@ https://planscore.github.io/PlanScore/home/
 
 ## Data CSVs
 
-The datasets which power the site, are under the `data/` folder.
+The datasets which power the site, are under the `WEBSITE_OUTPUT/data/` folder. Most of `WEBSITE_OUTPUT` is gitignored, with the exception of this folder and static images.
 
 Data dictionary for bias CSVs: https://docs.google.com/spreadsheets/d/1eMwwL8eaxD3aAyiy410yt79Cik2GV31WrXWyzFsiSTs/edit#gid=1340292617
 

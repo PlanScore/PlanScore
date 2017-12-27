@@ -1,513 +1,513 @@
-state,year,code,plan,eg_adj_avg,eg_adj,bias,bias_avg,mmd,mmd_avg,wasted_dem,wasted_rep,votes_dem,votes_twop,seats,seats_dem,seats_r,eg_sentence_state,bias_sentence,mmd_sentence
-AL,1972,AL1972,AL1,-0.052,-0.058,0.056,0.044,0.134,0.093,272265,221877,558363,988286,7,4,3,Republicans needed 5.8% fewer votes to win their 3 of 7 seats.,,
-AL,1974,AL1974,AL1,-0.052,0.070,0.062,0.044,0.049,0.093,137571,204525,342569,684191,7,4,3,Democrats needed 7.0% fewer votes to win their 4 of 7 seats.,,
-AL,1976,AL1976,AL1,-0.052,-0.119,0.037,0.044,0.105,0.093,343345,211017,660196,1108721,7,4,3,Republicans needed 11.9% fewer votes to win their 3 of 7 seats.,,
-AL,1978,AL1978,AL1,-0.052,-0.080,0.016,0.044,0.057,0.093,220803,159138,437794,759880,7,4,3,Republicans needed 8.0% fewer votes to win their 3 of 7 seats.,,
-AL,1980,AL1980,AL1,-0.052,-0.075,0.048,0.044,0.118,0.093,345811,231363,661758,1154347,7,4,3,Republicans needed 7.5% fewer votes to win their 3 of 7 seats.,,
-AL,1982,AL1982,AL2,0.018,-0.033,0.024,0.106,0.096,0.080,281608,236008,645519,1035232,7,5,2,Republicans needed 3.3% fewer votes to win their 2 of 7 seats.,,
-AL,1984,AL1984,AL2,0.018,0.103,0.132,0.106,0.043,0.080,277592,440834,798723,1436854,7,5,2,Democrats needed 10.3% fewer votes to win their 5 of 7 seats.,,
-AL,1986,AL1986,AL2,0.018,-0.036,0.087,0.106,0.104,0.080,301071,277985,723938,1158112,7,5,2,Republicans needed 3.6% fewer votes to win their 2 of 7 seats.,,
-AL,1988,AL1988,AL2,0.018,0.076,0.153,0.106,0.078,0.080,310005,394259,801563,1408528,7,5,2,Democrats needed 7.6% fewer votes to win their 5 of 7 seats.,,
-AL,1990,AL1990,AL2,0.018,-0.022,0.132,0.106,0.078,0.080,293251,284272,713744,1155045,7,5,2,Republicans needed 2.2% fewer votes to win their 2 of 7 seats.,,
-AL,1992,AL1992,AL3,-0.052,-0.093,0.071,-0.034,0.036,0.000,477484,291892,895601,1538751,7,4,3,Republicans needed 9.3% fewer votes to win their 3 of 7 seats.,,
-AL,1994,AL1994,AL3,-0.052,0.149,0.070,-0.034,0.044,0.000,214008,369424,537993,1166864,7,4,3,Democrats needed 14.9% fewer votes to win their 4 of 7 seats.,,
-AL,1996,AL1996,AL3,-0.052,-0.124,0.071,-0.034,0.029,0.000,461067,259714,656047,1441560,7,2,5,Republicans needed 12.4% fewer votes to win their 5 of 7 seats.,,
-AL,1998,AL1998,AL3,-0.052,-0.133,-0.197,-0.034,-0.041,0.000,421455,240025,607881,1322961,7,2,5,Republicans needed 13.3% fewer votes to win their 5 of 7 seats.,,
-AL,2000,AL2000,AL3,-0.052,-0.060,-0.187,-0.034,-0.071,0.000,441692,351853,671181,1587089,7,2,5,Republicans needed 6.0% fewer votes to win their 5 of 7 seats.,,
-AL,2002,AL2002,AL4,-0.066,-0.103,-0.075,-0.087,-0.060,-0.039,393245,247542,569368,1281574,7,2,5,Republicans needed 10.3% fewer votes to win their 5 of 7 seats.,,
-AL,2004,AL2004,AL4,-0.066,-0.071,-0.212,-0.087,-0.060,-0.039,512879,388770,772665,1803299,7,2,5,Republicans needed 7.1% fewer votes to win their 5 of 7 seats.,,
-AL,2006,AL2006,AL4,-0.066,-0.042,-0.209,-0.087,-0.096,-0.039,327267,296686,516736,1247904,7,2,5,Republicans needed 4.2% fewer votes to win their 5 of 7 seats.,,
-AL,2008,AL2008,AL4,-0.066,0.034,0.048,-0.087,0.012,-0.039,430006,531497,860055,1923006,7,3,4,Democrats needed 3.4% fewer votes to win their 3 of 7 seats.,,
-AL,2010,AL2010,AL4,-0.066,-0.149,0.012,-0.087,0.009,-0.039,476444,244694,570737,1442276,7,1,6,Republicans needed 14.9% fewer votes to win their 6 of 7 seats.,,
-AL,2012,AL2012,AL5,-0.117,-0.149,-0.353,-0.273,-0.037,-0.045,639830,361554,793008,2002768,7,1,6,Republicans needed 14.9% fewer votes to win their 6 of 7 seats.,,
-AL,2014,AL2014,AL5,-0.117,-0.088,-0.307,-0.273,-0.048,-0.045,331950,260483,432970,1184867,7,1,6,Republicans needed 8.8% fewer votes to win their 6 of 7 seats.,,
-AL,2016,AL2016,AL5,-0.117,-0.115,-0.158,-0.273,-0.049,-0.045,612473,407002,772433,2038951,7,1,6,Republicans needed 11.5% fewer votes to win their 6 of 7 seats.,,
-AZ,2002,AZ2002,AZ4,-0.003,-0.068,-0.125,-0.051,-0.034,0.002,390821,186209,472135,1154057,8,2,6,Republicans needed 6.8% fewer votes to win their 6 of 8 seats.,,
-AZ,2004,AZ2004,AZ4,-0.003,-0.086,-0.246,-0.051,-0.031,0.002,627331,286807,763992,1828278,8,2,6,Republicans needed 8.6% fewer votes to win their 6 of 8 seats.,,
-AZ,2006,AZ2006,AZ4,-0.003,0.037,-0.009,-0.051,0.007,0.002,390252,348044,711272,1476588,8,4,4,Democrats needed 3.7% fewer votes to win their 4 of 8 seats.,,
-AZ,2008,AZ2008,AZ4,-0.003,0.109,0.125,-0.051,0.047,0.002,474315,564236,1055305,2077103,8,5,3,Democrats needed 10.9% fewer votes to win their 5 of 8 seats.,,
-AZ,2010,AZ2010,AZ4,-0.003,-0.008,0.000,-0.051,0.019,0.002,457063,349110,711837,1612347,8,3,5,Republicans needed 0.8% fewer votes to win their 5 of 8 seats.,,
-AZ,2012,AZ2012,AZ5,0.087,0.158,0.056,0.019,0.055,0.031,417234,643148,952151,2120768,9,5,4,Democrats needed 15.8% fewer votes to win their 5 of 9 seats.,,
-AZ,2014,AZ2014,AZ5,0.087,0.082,0.056,0.019,0.068,0.031,374349,376854,648192,1502409,9,4,5,Democrats needed 8.2% fewer votes to win their 4 of 9 seats.,,
-AZ,2016,AZ2016,AZ5,0.087,0.022,-0.056,0.019,-0.031,0.031,679011,553505,1136764,2465034,9,4,5,Democrats needed 2.2% fewer votes to win their 4 of 9 seats.,,
-CA,1972,CA1972,CA1,-0.011,-0.011,0.011,0.011,0.029,0.029,2224611,1778935,4185445,8007096,43,23,20,Republicans needed 1.1% fewer votes to win their 20 of 43 seats.,,
-CA,1974,CA1974,CA1.1,0.053,0.013,-0.010,0.036,0.020,0.053,1554942,1340371,3295277,5790634,43,28,15,Democrats needed 1.3% fewer votes to win their 28 of 43 seats.,,
-CA,1976,CA1976,CA1.1,0.053,0.053,0.081,0.036,0.075,0.053,1871216,1824899,4146554,7392234,43,29,14,Democrats needed 5.3% fewer votes to win their 29 of 43 seats.,,
-CA,1978,CA1978,CA1.1,0.053,0.068,0.062,0.036,0.068,0.053,1605567,1646402,3370976,6503931,43,26,17,Democrats needed 6.8% fewer votes to win their 26 of 43 seats.,,
-CA,1980,CA1980,CA1.1,0.053,0.077,0.012,0.036,0.050,0.053,1939417,1982655,3665518,7844144,43,22,21,Democrats needed 7.7% fewer votes to win their 22 of 43 seats.,,
-CA,1982,CA1982,CA2,0.109,0.109,0.100,0.100,0.053,0.053,1590349,2139900,3777810,7460505,45,28,17,Democrats needed 10.9% fewer votes to win their 28 of 45 seats.,,
-CA,1984,CA1984,CA2.1,0.057,0.102,0.100,0.087,0.104,0.101,1982496,2496317,4470979,8957624,45,27,18,Democrats needed 10.2% fewer votes to win their 27 of 45 seats.,,
-CA,1986,CA1986,CA2.1,0.057,0.048,0.100,0.087,0.124,0.101,1762952,1778633,3727386,7083165,45,27,18,Democrats needed 4.8% fewer votes to win their 27 of 45 seats.,,
-CA,1988,CA1988,CA2.1,0.057,0.042,0.097,0.087,0.115,0.101,2385731,2209376,4863080,9190217,45,27,18,Democrats needed 4.2% fewer votes to win their 27 of 45 seats.,,
-CA,1990,CA1990,CA2.1,0.057,0.034,0.051,0.087,0.062,0.101,1879043,1650617,3685948,7059327,45,26,19,Democrats needed 3.4% fewer votes to win their 26 of 45 seats.,,
-CA,1992,CA1992,CA3,-0.002,-0.013,-0.024,-0.021,-0.005,0.005,2673163,2262994,5378977,9872314,52,30,22,Republicans needed 1.3% fewer votes to win their 22 of 52 seats.,,
-CA,1994,CA1994,CA3,-0.002,0.038,-0.014,-0.021,0.015,0.005,2072064,1961193,3959063,8066523,52,27,25,Democrats needed 3.8% fewer votes to win their 27 of 52 seats.,,
-CA,1996,CA1996,CA3,-0.002,0.012,-0.038,-0.021,-0.008,0.005,2389006,2110228,4706819,8998466,52,29,23,Democrats needed 1.2% fewer votes to win their 29 of 52 seats.,,
-CA,1998,CA1998,CA3,-0.002,-0.054,-0.004,-0.021,0.024,0.005,2347367,1560184,4269268,7815097,52,28,24,Republicans needed 5.4% fewer votes to win their 24 of 52 seats.,,
-CA,2000,CA2000,CA3,-0.002,0.009,-0.021,-0.021,0.001,0.005,2661963,2329651,5524344,9983229,52,32,20,Democrats needed 0.9% fewer votes to win their 32 of 52 seats.,,
-CA,2002,CA2002,CA4,-0.003,0.056,0.104,0.102,0.102,0.092,1779568,1743966,3758339,7047070,53,33,20,Democrats needed 5.6% fewer votes to win their 33 of 53 seats.,,
-CA,2004,CA2004,CA4,-0.003,0.013,0.104,0.102,0.097,0.092,3128359,2582430,6336704,11421580,53,33,20,Democrats needed 1.3% fewer votes to win their 33 of 53 seats.,,
-CA,2006,CA2006,CA4,-0.003,-0.023,0.099,0.102,0.086,0.092,2401672,1709131,4710233,8221603,53,33,20,Republicans needed 2.3% fewer votes to win their 20 of 53 seats.,,
-CA,2008,CA2008,CA4,-0.003,-0.082,0.119,0.102,0.102,0.092,3948435,2193476,7515410,12283822,53,34,19,Republicans needed 8.2% fewer votes to win their 19 of 53 seats.,,
-CA,2010,CA2010,CA4,-0.003,0.020,0.085,0.102,0.071,0.092,2567767,2135253,5273909,9406046,53,34,19,Democrats needed 2.0% fewer votes to win their 34 of 53 seats.,,
-CA,2012,CA2012,CA5,0.038,0.015,0.015,0.033,0.031,0.033,3055281,3130856,7437880,12372284,53,38,15,Democrats needed 1.5% fewer votes to win their 38 of 53 seats.,,
-CA,2014,CA2014,CA5,0.038,0.104,0.025,0.033,0.025,0.033,1510651,2144360,4135938,7310026,53,39,14,Democrats needed 10.4% fewer votes to win their 39 of 53 seats.,,
-CA,2016,CA2016,CA5,0.038,-0.006,0.061,0.033,0.043,0.033,3508393,3294782,8448582,13606351,53,39,14,Republicans needed 0.6% fewer votes to win their 14 of 53 seats.,,
-CO,2002,CO2002,CO4,-0.029,-0.092,-0.071,-0.036,-0.008,0.005,409128,262104,589463,1342461,7,2,5,Republicans needed 9.2% fewer votes to win their 5 of 7 seats.,,
-CO,2004,CO2004,CO4,-0.029,-0.073,-0.071,-0.036,-0.034,0.005,578947,414612,995283,1987118,7,3,4,Republicans needed 7.3% fewer votes to win their 4 of 7 seats.,,
-CO,2006,CO2006,CO4,-0.029,-0.051,-0.037,-0.036,0.005,0.005,435834,315605,843779,1502878,7,4,3,Republicans needed 5.1% fewer votes to win their 3 of 7 seats.,,
-CO,2008,CO2008,CO4,-0.029,0.095,0.071,-0.036,0.056,0.005,489311,636008,1259768,2250638,7,5,2,Democrats needed 9.5% fewer votes to win their 5 of 7 seats.,,
-CO,2010,CO2010,CO4,-0.029,-0.023,-0.071,-0.036,0.004,0.005,480332,364731,804069,1690126,7,3,4,Republicans needed 2.3% fewer votes to win their 4 of 7 seats.,,
-CO,2012,CO2012,CO5,-0.064,-0.092,-0.066,-0.070,-0.021,-0.030,675333,500279,1200192,2351226,7,3,4,Republicans needed 9.2% fewer votes to win their 4 of 7 seats.,,
-CO,2014,CO2014,CO5,-0.064,-0.038,-0.071,-0.070,-0.030,-0.030,496891,471414,936417,1936614,7,3,4,Republicans needed 3.8% fewer votes to win their 4 of 7 seats.,,
-CO,2016,CO2016,CO5,-0.064,-0.062,-0.071,-0.070,-0.040,-0.030,695649,580519,1263791,2552334,7,3,4,Republicans needed 6.2% fewer votes to win their 4 of 7 seats.,,
-FL,1972,FL1972,FL1,0.112,0.187,0.188,0.126,0.055,0.074,423554,773150,1252276,2393405,15,11,4,Democrats needed 18.7% fewer votes to win their 11 of 15 seats.,,
-FL,1974,FL1974,FL1,0.112,0.119,0.090,0.126,0.097,0.074,376799,456518,872808,1666633,15,10,5,Democrats needed 11.9% fewer votes to win their 10 of 15 seats.,,
-FL,1976,FL1976,FL1,0.112,0.047,0.103,0.126,0.091,0.074,706713,683507,1556601,2780440,15,10,5,Democrats needed 4.7% fewer votes to win their 10 of 15 seats.,,
-FL,1978,FL1978,FL1,0.112,0.118,0.090,0.126,0.042,0.074,516398,655655,1384894,2344107,15,12,3,Democrats needed 11.8% fewer votes to win their 12 of 15 seats.,,
-FL,1980,FL1980,FL1,0.112,0.091,0.158,0.126,0.087,0.074,808296,858203,1903102,3332997,15,11,4,Democrats needed 9.1% fewer votes to win their 11 of 15 seats.,,
-FL,1982,FL1982,FL2,0.054,0.005,0.078,0.063,0.061,0.058,737288,583469,1557697,2641516,19,13,6,Democrats needed 0.5% fewer votes to win their 13 of 19 seats.,,
-FL,1984,FL1984,FL2,0.054,0.178,0.131,0.063,0.096,0.058,661214,1227811,1801993,3778048,19,12,7,Democrats needed 17.8% fewer votes to win their 12 of 19 seats.,,
-FL,1986,FL1986,FL2,0.054,0.049,0.106,0.063,0.126,0.058,796538,849025,1781144,3291127,19,12,7,Democrats needed 4.9% fewer votes to win their 12 of 19 seats.,,
-FL,1988,FL1988,FL2,0.054,0.047,0.041,0.063,0.059,0.058,1079908,1121631,2155963,4403082,19,10,9,Democrats needed 4.7% fewer votes to win their 10 of 19 seats.,,
-FL,1990,FL1990,FL2,0.054,-0.009,-0.042,0.063,-0.050,0.058,965138,779133,1714081,3488544,19,9,10,Republicans needed 0.9% fewer votes to win their 10 of 19 seats.,,
-FL,1992,FL1992,FL3,-0.031,-0.030,-0.063,-0.076,-0.047,-0.051,1404457,1133932,2449804,5076778,23,10,13,Republicans needed 3.0% fewer votes to win their 13 of 23 seats.,,
-FL,1994,FL1994,FL3,-0.031,-0.031,-0.089,-0.076,-0.056,-0.051,1187417,912293,1845932,4199418,23,8,15,Republicans needed 3.1% fewer votes to win their 15 of 23 seats.,,
-FL,1996,FL1996,FL3.1,-0.057,-0.036,-0.129,-0.108,-0.062,-0.069,1429316,1117369,2250410,5093365,23,8,15,Republicans needed 3.6% fewer votes to win their 15 of 23 seats.,,
-FL,1998,FL1998,FL3.1,-0.057,-0.040,-0.105,-0.108,-0.088,-0.069,1107254,818097,1709968,3850704,23,8,15,Republicans needed 4.0% fewer votes to win their 15 of 23 seats.,,
-FL,2000,FL2000,FL3.1,-0.057,-0.096,-0.091,-0.108,-0.057,-0.069,1734975,985191,2568395,5440330,23,8,15,Republicans needed 9.6% fewer votes to win their 15 of 23 seats.,,
-FL,2002,FL2002,FL4,-0.091,-0.102,-0.144,-0.139,-0.060,-0.061,1565586,901160,2176347,4933497,25,7,18,Republicans needed 10.2% fewer votes to win their 18 of 25 seats.,,
-FL,2004,FL2004,FL4,-0.091,-0.089,-0.181,-0.139,-0.079,-0.061,2229504,1397723,3151785,7254454,25,7,18,Republicans needed 8.9% fewer votes to win their 18 of 25 seats.,,
-FL,2006,FL2006,FL4,-0.091,-0.131,-0.159,-0.139,-0.059,-0.061,1567279,839510,2386399,4813580,25,9,16,Republicans needed 13.1% fewer votes to win their 16 of 25 seats.,,
-FL,2008,FL2008,FL4,-0.091,-0.082,-0.101,-0.139,-0.066,-0.061,2388142,1503360,3821494,7783005,25,10,15,Republicans needed 8.2% fewer votes to win their 15 of 25 seats.,,
-FL,2010,FL2010,FL4,-0.091,-0.049,-0.109,-0.139,-0.042,-0.061,1652127,1061663,2142456,5427579,25,6,19,Republicans needed 4.9% fewer votes to win their 19 of 25 seats.,,
-FL,2012,FL2012,FL5,-0.071,-0.103,-0.133,-0.109,-0.059,-0.058,2565492,1487655,3945312,8106299,27,10,17,Republicans needed 10.3% fewer votes to win their 17 of 27 seats.,,
-FL,2014,FL2014,FL5,-0.071,-0.039,-0.084,-0.109,-0.057,-0.058,1692201,1223069,2649768,5830534,27,10,17,Republicans needed 3.9% fewer votes to win their 17 of 27 seats.,,
-FL,2016,FL2016,FL5.1,-0.067,-0.067,-0.093,-0.093,-0.031,-0.031,2460960,2050171,4229277,9022255,27,10,17,Republicans needed 6.7% fewer votes to win their 17 of 27 seats.,,
-GA,1972,GA1972,GA1,0.106,0.264,0.052,0.052,0.060,0.035,144213,415394,635876,1119213,10,9,1,Democrats needed 26.4% fewer votes to win their 9 of 10 seats.,,
-GA,1974,GA1974,GA1,0.106,0.156,0.039,0.052,0.020,0.035,148524,282642,579691,862333,10,10,0,Democrats needed 15.6% fewer votes to win their 10 of 10 seats.,,
-GA,1976,GA1976,GA1,0.106,0.116,-0.049,0.052,0.017,0.035,257023,411800,925847,1337647,10,10,0,Democrats needed 11.6% fewer votes to win their 10 of 10 seats.,,
-GA,1978,GA1978,GA1,0.106,-0.034,0.109,0.052,0.042,0.035,183611,139968,463925,647158,10,9,1,Republicans needed 3.4% fewer votes to win their 1 of 10 seats.,,
-GA,1980,GA1980,GA1,0.106,0.029,0.108,0.052,0.036,0.035,345804,366379,976649,1424366,10,9,1,Democrats needed 2.9% fewer votes to win their 9 of 10 seats.,,
-GA,1982,GA1982,GA2,0.082,0.042,-0.013,0.024,0.045,0.030,205498,210737,565327,832470,10,9,1,Democrats needed 4.2% fewer votes to win their 9 of 10 seats.,,
-GA,1984,GA1984,GA2,0.082,0.034,0.042,0.024,0.049,0.030,419389,414282,1055285,1667341,10,8,2,Democrats needed 3.4% fewer votes to win their 8 of 10 seats.,,
-GA,1986,GA1986,GA2,0.082,0.021,0.070,0.024,0.038,0.030,306143,272699,740390,1157686,10,8,2,Democrats needed 2.1% fewer votes to win their 8 of 10 seats.,,
-GA,1988,GA1988,GA2,0.082,0.140,0.023,0.024,0.014,0.030,324615,565687,1121419,1780602,10,9,1,Democrats needed 14.0% fewer votes to win their 9 of 10 seats.,,
-GA,1990,GA1990,GA2,0.082,0.173,0.000,0.024,0.003,0.030,236239,460584,854784,1393649,10,9,1,Democrats needed 17.3% fewer votes to win their 9 of 10 seats.,,
-GA,1992,GA1992,GA3,-0.004,0.039,-0.045,-0.045,0.008,-0.013,564501,542488,1214792,2213974,11,7,4,Democrats needed 3.9% fewer votes to win their 7 of 11 seats.,,
-GA,1994,GA1994,GA3,-0.004,-0.046,-0.045,-0.045,-0.033,-0.013,447197,301572,681051,1497535,11,4,7,Republicans needed 4.6% fewer votes to win their 7 of 11 seats.,,
-GA,1996,GA1996,GA3.1,-0.090,-0.145,-0.055,-0.107,-0.037,-0.041,730516,374552,1014108,2210133,11,3,8,Republicans needed 14.5% fewer votes to win their 8 of 11 seats.,,
-GA,1998,GA1998,GA3.1,-0.090,-0.091,-0.145,-0.107,-0.050,-0.041,530514,338975,751054,1738981,11,3,8,Republicans needed 9.1% fewer votes to win their 8 of 11 seats.,,
-GA,2000,GA2000,GA3.1,-0.090,-0.034,-0.122,-0.107,-0.036,-0.041,700653,531983,994701,2465275,11,3,8,Republicans needed 3.4% fewer votes to win their 8 of 11 seats.,,
-GA,2002,GA2002,GA4,0.086,0.084,0.038,0.005,0.048,0.018,463791,536605,800533,2000797,13,5,8,Democrats needed 8.4% fewer votes to win their 5 of 13 seats.,,
-GA,2004,GA2004,GA4,0.086,0.087,-0.027,0.005,-0.011,0.018,729125,834783,1368276,3127817,13,6,7,Democrats needed 8.7% fewer votes to win their 6 of 13 seats.,,
-GA,2006,GA2006,GA4.1,0.025,0.074,-0.038,-0.038,-0.118,-0.106,495218,552426,930231,2095284,13,6,7,Democrats needed 7.4% fewer votes to win their 6 of 13 seats.,,
-GA,2008,GA2008,GA4.1,0.025,-0.020,-0.038,-0.038,-0.098,-0.106,1038651,810138,1814077,3697580,13,6,7,Republicans needed 2.0% fewer votes to win their 7 of 13 seats.,,
-GA,2010,GA2010,GA4.1,0.025,0.021,-0.038,-0.038,-0.103,-0.106,664313,618671,1108075,2565969,13,5,8,Democrats needed 2.1% fewer votes to win their 5 of 13 seats.,,
-GA,2012,GA2012,GA5,-0.083,-0.070,-0.143,-0.165,-0.101,-0.087,1034317,812473,1713009,3693574,14,5,9,Republicans needed 7.0% fewer votes to win their 9 of 14 seats.,,
-GA,2014,GA2014,GA5,-0.083,-0.075,-0.139,-0.165,-0.087,-0.087,716234,535564,1077279,2503596,14,4,10,Republicans needed 7.5% fewer votes to win their 10 of 14 seats.,,
-GA,2016,GA2016,GA5,-0.083,-0.103,-0.214,-0.165,-0.071,-0.087,1219503,784586,1781401,4008178,14,4,10,Republicans needed 10.3% fewer votes to win their 10 of 14 seats.,,
-IL,1972,IL1972,IL1,-0.042,-0.067,-0.084,-0.075,-0.044,-0.053,1348245,921619,2232886,4539733,24,10,14,Republicans needed 6.7% fewer votes to win their 14 of 24 seats.,,
-IL,1974,IL1974,IL1,-0.042,-0.088,-0.084,-0.075,-0.048,-0.053,842705,582322,1610453,2850055,24,13,11,Republicans needed 8.8% fewer votes to win their 11 of 24 seats.,,
-IL,1976,IL1976,IL1,-0.042,-0.031,-0.042,-0.075,-0.035,-0.053,1218825,960916,2246614,4359482,24,12,12,Republicans needed 3.1% fewer votes to win their 12 of 24 seats.,,
-IL,1978,IL1978,IL1,-0.042,-0.022,-0.083,-0.075,-0.066,-0.053,852384,691096,1513523,3086965,24,11,13,Republicans needed 2.2% fewer votes to win their 13 of 24 seats.,,
-IL,1980,IL1980,IL1,-0.042,-0.001,-0.083,-0.075,-0.073,-0.053,1286401,946800,2048658,4466405,24,10,14,Republicans needed 0.1% fewer votes to win their 14 of 24 seats.,,
-IL,1982,IL1982,IL2,0.014,-0.113,-0.045,0.019,-0.063,0.029,1069447,722463,2076428,3583820,22,12,10,Republicans needed 11.3% fewer votes to win their 10 of 22 seats.,,
-IL,1984,IL1984,IL2,0.014,0.057,0.011,0.019,0.028,0.029,1034457,1259610,2370892,4588140,22,13,9,Democrats needed 5.7% fewer votes to win their 13 of 22 seats.,,
-IL,1986,IL1986,IL2,0.014,-0.008,-0.003,0.019,-0.005,0.029,742768,769404,1661005,3024344,22,13,9,Republicans needed 0.8% fewer votes to win their 9 of 22 seats.,,
-IL,1988,IL1988,IL2,0.014,0.073,0.045,0.019,0.086,0.029,997874,1185069,2321265,4365888,22,14,8,Democrats needed 7.3% fewer votes to win their 14 of 22 seats.,,
-IL,1990,IL1990,IL2,0.014,0.061,0.084,0.019,0.098,0.029,731253,843215,1765394,3148936,22,15,7,Democrats needed 6.1% fewer votes to win their 15 of 22 seats.,,
-IL,1992,IL1992,IL3,-0.042,-0.022,0.000,-0.031,0.019,-0.017,1280928,1106273,2677685,4774402,20,12,8,Republicans needed 2.2% fewer votes to win their 8 of 20 seats.,,
-IL,1994,IL1994,IL3,-0.042,0.042,0.000,-0.031,0.020,-0.017,723955,821746,1480382,3091408,20,10,10,Democrats needed 4.2% fewer votes to win their 10 of 20 seats.,,
-IL,1996,IL1996,IL3,-0.042,-0.095,-0.050,-0.031,-0.037,-0.017,1292229,775232,2263434,4134927,20,10,10,Republicans needed 9.5% fewer votes to win their 10 of 20 seats.,,
-IL,1998,IL1998,IL3,-0.042,-0.060,-0.050,-0.031,-0.066,-0.017,983194,671988,1754502,3310364,20,10,10,Republicans needed 6.0% fewer votes to win their 10 of 20 seats.,,
-IL,2000,IL2000,IL3,-0.042,-0.075,-0.053,-0.031,-0.019,-0.017,1413762,783951,2363192,4395433,20,10,10,Republicans needed 7.5% fewer votes to win their 10 of 20 seats.,,
-IL,2002,IL2002,IL4,-0.081,-0.052,-0.033,-0.042,-0.061,-0.024,1012889,692234,1748261,3410243,19,9,10,Republicans needed 5.2% fewer votes to win their 10 of 19 seats.,,
-IL,2004,IL2004,IL4,-0.081,-0.052,-0.026,-0.042,-0.022,-0.024,1502032,999433,2697409,5002930,19,10,9,Republicans needed 5.2% fewer votes to win their 9 of 19 seats.,,
-IL,2006,IL2006,IL4,-0.081,-0.102,-0.084,-0.042,-0.028,-0.024,1138309,598358,1958781,3473340,19,10,9,Republicans needed 10.2% fewer votes to win their 9 of 19 seats.,,
-IL,2008,IL2008,IL4,-0.081,-0.078,0.011,-0.042,0.024,-0.024,1584220,1019422,3148006,5207275,19,12,7,Republicans needed 7.8% fewer votes to win their 7 of 19 seats.,,
-IL,2010,IL2010,IL4,-0.081,-0.122,-0.079,-0.042,-0.033,-0.024,1236153,562011,1876316,3596332,19,8,11,Republicans needed 12.2% fewer votes to win their 11 of 19 seats.,,
-IL,2012,IL2012,IL5,0.036,0.058,-0.056,0.017,-0.007,0.024,1180346,1295415,2743702,4951520,18,12,6,Democrats needed 5.8% fewer votes to win their 12 of 18 seats.,,
-IL,2014,IL2014,IL5,0.036,0.027,0.056,0.017,0.030,0.024,921529,850793,1822779,3544644,18,10,8,Democrats needed 2.7% fewer votes to win their 10 of 18 seats.,,
-IL,2016,IL2016,IL5,0.036,0.022,0.052,0.017,0.048,0.024,1391184,1317339,2950699,5417046,18,11,7,Democrats needed 2.2% fewer votes to win their 11 of 18 seats.,,
-IN,1972,IN1972,IN1,0.089,-0.060,-0.045,0.008,-0.009,0.006,601857,451818,973706,2107352,11,4,7,Republicans needed 6.0% fewer votes to win their 7 of 11 seats.,,
-IN,1974,IN1974,IN1,0.089,0.210,-0.136,0.008,-0.020,0.006,264511,598904,956675,1726829,11,9,2,Democrats needed 21.0% fewer votes to win their 9 of 11 seats.,,
-IN,1976,IN1976,IN1,0.089,0.156,0.130,0.008,0.016,0.006,381988,701269,1160504,2166515,11,8,3,Democrats needed 15.6% fewer votes to win their 8 of 11 seats.,,
-IN,1978,IN1978,IN1,0.089,0.087,0.045,0.008,0.037,0.006,324360,391869,751940,1432453,11,7,4,Democrats needed 8.7% fewer votes to win their 7 of 11 seats.,,
-IN,1980,IN1980,IN1,0.089,0.051,0.045,0.008,0.005,0.006,503404,590148,1087115,2187106,11,6,5,Democrats needed 5.1% fewer votes to win their 6 of 11 seats.,,
-IN,1982,IN1982,IN2,0.064,0.015,0.000,0.040,0.010,0.018,436781,459273,882378,1792109,10,5,5,Democrats needed 1.5% fewer votes to win their 5 of 10 seats.,,
-IN,1984,IN1984,IN2,0.064,-0.042,0.000,0.040,0.016,0.018,603000,478979,1019666,2163959,10,4,6,Republicans needed 4.2% fewer votes to win their 6 of 10 seats.,,
-IN,1986,IN1986,IN2,0.064,0.079,0.100,0.040,0.014,0.018,326800,445477,788419,1544554,10,6,4,Democrats needed 7.9% fewer votes to win their 6 of 10 seats.,,
-IN,1988,IN1988,IN2,0.064,0.065,0.100,0.040,0.030,0.018,488268,571709,1096834,2119958,10,6,4,Democrats needed 6.5% fewer votes to win their 6 of 10 seats.,,
-IN,1990,IN1990,IN2,0.064,0.202,0.000,0.040,0.022,0.018,242621,513923,830500,1513093,10,8,2,Democrats needed 20.2% fewer votes to win their 8 of 10 seats.,,
-IN,1992,IN1992,IN3,0.028,0.106,0.100,0.040,0.036,0.009,451822,650279,1205869,2204203,10,7,3,Democrats needed 10.6% fewer votes to win their 7 of 10 seats.,,
-IN,1994,IN1994,IN3,0.028,0.035,0.200,0.040,0.033,0.009,398327,372939,667454,1542536,10,4,6,Democrats needed 3.5% fewer votes to win their 4 of 10 seats.,,
-IN,1996,IN1996,IN3,0.028,-0.012,0.000,0.040,-0.006,0.009,546777,473732,930919,2041016,10,4,6,Republicans needed 1.2% fewer votes to win their 6 of 10 seats.,,
-IN,1998,IN1998,IN3,0.028,0.023,0.000,0.040,-0.012,0.009,388686,378950,673322,1535273,10,4,6,Democrats needed 2.3% fewer votes to win their 4 of 10 seats.,,
-IN,2000,IN2000,IN3,0.028,-0.011,-0.100,0.040,-0.008,0.009,556314,490545,953167,2093721,10,4,6,Republicans needed 1.1% fewer votes to win their 6 of 10 seats.,,
-IN,2002,IN2002,IN4,-0.014,-0.032,0.056,0.033,0.040,0.031,411552,329078,640568,1481262,9,3,6,Republicans needed 3.2% fewer votes to win their 6 of 9 seats.,,
-IN,2004,IN2004,IN4,-0.014,-0.117,0.056,0.033,0.032,0.031,759053,431338,999082,2380781,9,2,7,Republicans needed 11.7% fewer votes to win their 7 of 9 seats.,,
-IN,2006,IN2006,IN4,-0.014,0.067,0.056,0.033,0.030,0.031,362045,460095,812496,1644281,9,5,4,Democrats needed 6.7% fewer votes to win their 5 of 9 seats.,,
-IN,2008,IN2008,IN4,-0.014,-0.001,0.056,0.033,0.072,0.031,685443,629327,1388963,2629540,9,5,4,Republicans needed 0.1% fewer votes to win their 4 of 9 seats.,,
-IN,2010,IN2010,IN4,-0.014,0.011,-0.056,0.033,-0.017,0.031,436306,389760,679462,1652133,9,3,6,Democrats needed 1.1% fewer votes to win their 3 of 9 seats.,,
-IN,2012,IN2012,IN5,-0.107,-0.194,-0.167,-0.204,-0.013,-0.029,874062,373094,1142554,2494314,9,2,7,Republicans needed 19.4% fewer votes to win their 7 of 9 seats.,,
-IN,2014,IN2014,IN5,-0.107,-0.053,-0.278,-0.204,-0.036,-0.029,379149,268783,502104,1295863,9,2,7,Republicans needed 5.3% fewer votes to win their 7 of 9 seats.,,
-IN,2016,IN2016,IN5,-0.107,-0.073,-0.167,-0.204,-0.040,-0.029,755471,525211,1018565,2561367,9,2,7,Republicans needed 7.3% fewer votes to win their 7 of 9 seats.,,
-KY,1972,KY1972,KY1,0.043,0.208,0.214,0.117,0.112,0.102,152387,338421,493795,981615,7,5,2,Democrats needed 20.8% fewer votes to win their 5 of 7 seats.,,
-KY,1974,KY1974,KY1,0.043,-0.067,0.214,0.117,0.109,0.102,202717,129237,425272,663909,7,5,2,Republicans needed 6.7% fewer votes to win their 2 of 7 seats.,,
-KY,1976,KY1976,KY1,0.043,0.032,0.024,0.117,0.013,0.102,255143,257190,605561,1024668,7,5,2,Democrats needed 3.2% fewer votes to win their 5 of 7 seats.,,
-KY,1978,KY1978,KY1,0.043,0.012,0.063,0.117,0.148,0.102,150023,107246,272651,514539,7,4,3,Democrats needed 1.2% fewer votes to win their 4 of 7 seats.,,
-KY,1980,KY1980,KY1,0.043,0.028,0.068,0.117,0.126,0.102,290149,260190,574410,1100678,7,4,3,Democrats needed 2.8% fewer votes to win their 4 of 7 seats.,,
-KY,1982,KY1982,KY2,0.018,-0.108,0.068,0.062,0.080,0.081,234560,138261,439621,745639,7,4,3,Republicans needed 10.8% fewer votes to win their 3 of 7 seats.,,
-KY,1984,KY1984,KY2,0.018,0.014,0.070,0.062,0.092,0.081,307489,314289,657681,1243555,7,4,3,Democrats needed 1.4% fewer votes to win their 4 of 7 seats.,,
-KY,1986,KY1986,KY2,0.018,-0.044,0.047,0.062,0.094,0.081,206440,166697,416259,746274,7,4,3,Republicans needed 4.4% fewer votes to win their 3 of 7 seats.,,
-KY,1988,KY1988,KY2,0.018,0.118,0.072,0.062,0.111,0.081,237169,364625,573700,1203590,7,4,3,Democrats needed 11.8% fewer votes to win their 4 of 7 seats.,,
-KY,1990,KY1990,KY2,0.018,0.111,0.051,0.062,0.028,0.081,175445,269190,427156,889272,7,4,3,Democrats needed 11.1% fewer votes to win their 4 of 7 seats.,,
-MA,1972,MA1972,MA1,0.050,-0.025,0.021,0.080,0.063,0.074,525327,630222,1376919,2311096,12,8,4,Republicans needed 2.5% fewer votes to win their 4 of 12 seats.,,
-MA,1974,MA1974,MA1,0.050,0.026,0.075,0.080,0.124,0.074,390421,381586,1009091,1544013,12,10,2,Democrats needed 2.6% fewer votes to win their 10 of 12 seats.,,
-MA,1976,MA1976,MA1,0.050,0.059,0.086,0.080,0.066,0.074,541885,648746,1516903,2381258,12,10,2,Democrats needed 5.9% fewer votes to win their 10 of 12 seats.,,
-MA,1978,MA1978,MA1,0.050,0.075,0.117,0.080,0.046,0.074,406937,524887,1172113,1863647,12,10,2,Democrats needed 7.5% fewer votes to win their 10 of 12 seats.,,
-MA,1980,MA1980,MA1,0.050,0.115,0.103,0.080,0.074,0.074,470488,708300,1436129,2357578,12,10,2,Democrats needed 11.5% fewer votes to win their 10 of 12 seats.,,
-MA,1982,MA1982,MA2,0.101,0.080,0.028,0.100,0.017,0.042,365468,637918,1333474,2006774,11,10,1,Democrats needed 8.0% fewer votes to win their 10 of 11 seats.,,
-MA,1984,MA1984,MA2,0.101,0.132,0.158,0.100,0.049,0.042,447970,768095,1552525,2432129,11,10,1,Democrats needed 13.2% fewer votes to win their 10 of 11 seats.,,
-MA,1986,MA1986,MA2,0.101,0.058,0.100,0.100,0.042,0.042,368856,473036,1137724,1683784,11,10,1,Democrats needed 5.8% fewer votes to win their 10 of 11 seats.,,
-MA,1988,MA1988,MA2,0.101,0.061,0.135,0.100,0.033,0.042,557828,721973,1724994,2559599,11,10,1,Democrats needed 6.1% fewer votes to win their 10 of 11 seats.,,
-MA,1990,MA1990,MA2,0.101,0.176,0.080,0.100,0.069,0.042,358595,762722,1382730,2242631,11,10,1,Democrats needed 17.6% fewer votes to win their 10 of 11 seats.,,
-MA,1992,MA1992,MA3,0.081,0.043,0.026,0.038,0.032,0.026,577210,626886,1513066,2408193,10,8,2,Democrats needed 4.3% fewer votes to win their 8 of 10 seats.,,
-MA,1994,MA1994,MA3,0.081,0.031,0.098,0.038,0.043,0.026,506872,553384,1345164,2120513,10,8,2,Democrats needed 3.1% fewer votes to win their 8 of 10 seats.,,
-MA,1996,MA1996,MA3,0.081,0.205,0.068,0.038,0.050,0.026,356336,850663,1563333,2413996,10,10,0,Democrats needed 20.5% fewer votes to win their 10 of 10 seats.,,
-MA,1998,MA1998,MA3,0.081,0.120,0.043,0.038,0.017,0.026,344393,562325,1251116,1813442,10,10,0,Democrats needed 12.0% fewer votes to win their 10 of 10 seats.,,
-MA,2000,MA2000,MA3,0.081,0.007,-0.044,0.038,-0.012,0.026,622846,639328,1885021,2524350,10,10,0,Democrats needed 0.7% fewer votes to win their 10 of 10 seats.,,
-MA,2002,MA2002,MA4,0.095,0.095,-0.122,-0.099,-0.013,-0.015,429616,632377,1491610,2123987,10,10,0,Democrats needed 9.5% fewer votes to win their 10 of 10 seats.,,
-MA,2004,MA2004,MA4,0.095,0.054,-0.091,-0.099,-0.007,-0.015,630706,783068,2044480,2827549,10,10,0,Democrats needed 5.4% fewer votes to win their 10 of 10 seats.,,
-MA,2006,MA2006,MA4,0.095,0.001,-0.038,-0.099,-0.007,-0.015,537564,539392,1614521,2153913,10,10,0,Democrats needed 0.1% fewer votes to win their 10 of 10 seats.,,
-MA,2008,MA2008,MA4,0.095,0.050,-0.144,-0.099,-0.019,-0.015,660392,807324,2128109,2935433,10,10,0,Democrats needed 5.0% fewer votes to win their 10 of 10 seats.,,
-MA,2010,MA2010,MA4,0.095,0.277,-0.102,-0.099,-0.030,-0.015,245206,852858,1343271,2196129,10,10,0,Democrats needed 27.7% fewer votes to win their 10 of 10 seats.,,
-MA,2012,MA2012,MA5,0.140,0.125,-0.042,-0.074,0.001,-0.007,571661,952228,2095550,3047778,9,9,0,Democrats needed 12.5% fewer votes to win their 9 of 9 seats.,,
-MA,2014,MA2014,MA5,0.140,0.213,-0.069,-0.074,-0.002,-0.007,313479,777926,1404885,2182811,9,9,0,Democrats needed 21.3% fewer votes to win their 9 of 9 seats.,,
-MA,2016,MA2016,MA5,0.140,0.083,-0.113,-0.074,-0.021,-0.007,672300,938622,2283223,3221844,9,9,0,Democrats needed 8.3% fewer votes to win their 9 of 9 seats.,,
-MD,1972,MD1972,MD1,-0.018,-0.040,0.000,0.010,0.007,0.030,338504,270970,634087,1218946,8,4,4,Republicans needed 4.0% fewer votes to win their 4 of 8 seats.,,
-MD,1974,MD1974,MD1,-0.018,-0.089,-0.003,0.010,0.025,0.030,285351,169427,551890,909557,8,5,3,Republicans needed 8.9% fewer votes to win their 3 of 8 seats.,,
-MD,1976,MD1976,MD1,-0.018,-0.106,-0.005,0.010,0.027,0.030,415021,223659,785927,1277357,8,5,3,Republicans needed 10.6% fewer votes to win their 3 of 8 seats.,,
-MD,1978,MD1978,MD1,-0.018,0.004,0.056,0.010,0.061,0.030,238243,239783,595602,956051,8,6,2,Democrats needed 0.4% fewer votes to win their 6 of 8 seats.,,
-MD,1980,MD1980,MD1,-0.018,0.141,0.000,0.010,0.029,0.030,248625,452898,865969,1403047,8,7,1,Democrats needed 14.1% fewer votes to win their 7 of 8 seats.,,
-MD,1982,MD1982,MD2,0.024,0.014,0.250,0.149,0.047,0.071,258801,286779,742600,1091161,8,7,1,Democrats needed 1.4% fewer votes to win their 7 of 8 seats.,,
-MD,1984,MD1984,MD2,0.024,-0.027,0.125,0.149,0.033,0.071,406090,356432,973696,1525043,8,6,2,Republicans needed 2.7% fewer votes to win their 2 of 8 seats.,,
-MD,1986,MD1986,MD2,0.024,-0.008,0.125,0.149,0.066,0.071,307480,224058,668673,1063074,8,6,2,Republicans needed 0.8% fewer votes to win their 2 of 8 seats.,,
-MD,1988,MD1988,MD2,0.024,0.063,0.123,0.149,0.112,0.071,396791,396969,942466,1587518,8,6,2,Democrats needed 6.3% fewer votes to win their 6 of 8 seats.,,
-MD,1990,MD1990,MD2,0.024,0.080,0.125,0.149,0.099,0.071,264654,276874,565669,1083055,8,5,3,Democrats needed 8.0% fewer votes to win their 5 of 8 seats.,,
-MD,1992,MD1992,MD3,-0.059,-0.063,-0.125,-0.025,-0.016,-0.013,556163,343207,955952,1798741,8,4,4,Republicans needed 6.3% fewer votes to win their 4 of 8 seats.,,
-MD,1994,MD1994,MD3,-0.059,0.015,0.000,-0.025,-0.012,-0.013,374092,298352,662312,1344890,8,4,4,Democrats needed 1.5% fewer votes to win their 4 of 8 seats.,,
-MD,1996,MD1996,MD3,-0.059,-0.070,0.000,-0.025,-0.035,-0.013,520652,298758,876658,1638821,8,4,4,Republicans needed 7.0% fewer votes to win their 4 of 8 seats.,,
-MD,1998,MD1998,MD3,-0.059,-0.069,0.000,-0.025,-0.010,-0.013,465664,275244,792280,1481812,8,4,4,Republicans needed 6.9% fewer votes to win their 4 of 8 seats.,,
-MD,2000,MD2000,MD3,-0.059,-0.107,0.000,-0.025,0.006,-0.013,645927,312654,1060857,1917163,8,4,4,Republicans needed 10.7% fewer votes to win their 4 of 8 seats.,,
-MD,2002,MD2002,MD4,0.046,0.159,0.000,0.166,0.055,0.064,312364,516216,904250,1657161,8,6,2,Democrats needed 15.9% fewer votes to win their 6 of 8 seats.,,
-MD,2004,MD2004,MD4,0.046,0.062,0.250,0.166,0.099,0.064,516881,586630,1310791,2207023,8,6,2,Democrats needed 6.2% fewer votes to win their 6 of 8 seats.,,
-MD,2006,MD2006,MD4,0.046,0.001,0.204,0.166,0.073,0.064,465378,394340,1074021,1719434,8,6,2,Democrats needed 0.1% fewer votes to win their 6 of 8 seats.,,
-MD,2008,MD2008,MD4,0.046,0.000,0.250,0.166,0.061,0.064,616915,602973,1677238,2439777,8,7,1,Democrats needed 0.0% fewer votes to win their 7 of 8 seats.,,
-MD,2010,MD2010,MD4,0.046,0.008,0.125,0.166,0.033,0.064,467301,421849,1104056,1778302,8,6,2,Democrats needed 0.8% fewer votes to win their 6 of 8 seats.,,
-MD,2012,MD2012,MD5,0.131,0.066,0.250,0.250,0.031,0.030,537741,704898,1626872,2485278,8,7,1,Democrats needed 6.6% fewer votes to win their 7 of 8 seats.,,
-MD,2014,MD2014,MD5,0.131,0.212,0.250,0.250,0.039,0.030,262026,579308,978267,1682667,8,7,1,Democrats needed 21.2% fewer votes to win their 7 of 8 seats.,,
-MD,2016,MD2016,MD5,0.131,0.116,0.250,0.250,0.022,0.030,510153,788990,1636200,2598288,8,7,1,Democrats needed 11.6% fewer votes to win their 7 of 8 seats.,,
-MI,1972,MI1972,MI1,-0.006,-0.078,-0.079,-0.060,-0.037,-0.017,993828,629115,1535707,3245884,19,7,12,Republicans needed 7.8% fewer votes to win their 12 of 19 seats.,,
-MI,1974,MI1974,MI1,-0.006,-0.048,-0.079,-0.060,-0.032,-0.017,718147,524257,1465259,2484803,19,12,7,Republicans needed 4.8% fewer votes to win their 7 of 19 seats.,,
-MI,1976,MI1976,MI1,-0.006,-0.037,-0.026,-0.060,-0.027,-0.017,995781,704899,1898241,3401355,19,11,8,Republicans needed 3.7% fewer votes to win their 8 of 19 seats.,,
-MI,1978,MI1978,MI1,-0.006,0.064,-0.038,-0.060,0.007,-0.017,641144,718127,1523051,2718541,19,13,6,Democrats needed 6.4% fewer votes to win their 13 of 19 seats.,,
-MI,1980,MI1980,MI1,-0.006,0.070,-0.078,-0.060,0.005,-0.017,870368,947642,1929501,3636022,19,12,7,Democrats needed 7.0% fewer votes to win their 12 of 19 seats.,,
-MI,1982,MI1982,MI2,0.031,0.010,0.034,0.053,0.055,0.060,732913,695439,1652090,2856705,18,12,6,Democrats needed 1.0% fewer votes to win their 12 of 18 seats.,,
-MI,1984,MI1984,MI2,0.031,0.075,0.024,0.053,0.041,0.060,808553,968778,1841122,3554662,18,11,7,Democrats needed 7.5% fewer votes to win their 11 of 18 seats.,,
-MI,1986,MI1986,MI2,0.031,-0.046,0.056,0.053,0.055,0.060,669966,489612,1342034,2319156,18,11,7,Republicans needed 4.6% fewer votes to win their 7 of 18 seats.,,
-MI,1988,MI1988,MI2,0.031,0.071,0.054,0.053,0.066,0.060,832865,910992,1813746,3487719,18,11,7,Democrats needed 7.1% fewer votes to win their 11 of 18 seats.,,
-MI,1990,MI1990,MI2,0.031,0.043,0.098,0.053,0.085,0.060,635029,594051,1312560,2458163,18,11,7,Democrats needed 4.3% fewer votes to win their 11 of 18 seats.,,
-MI,1992,MI1992,MI3,0.055,0.083,0.063,0.065,0.019,0.040,831750,1103243,2016524,3869987,16,10,6,Democrats needed 8.3% fewer votes to win their 10 of 16 seats.,,
-MI,1994,MI1994,MI3,0.055,0.101,0.063,0.065,0.044,0.040,610230,864883,1418142,2950226,16,9,7,Democrats needed 10.1% fewer votes to win their 9 of 16 seats.,,
-MI,1996,MI1996,MI3,0.055,0.051,0.063,0.065,0.030,0.040,845968,965959,1945116,3623851,16,10,6,Democrats needed 5.1% fewer votes to win their 10 of 16 seats.,,
-MI,1998,MI1998,MI3,0.055,0.078,0.076,0.065,0.048,0.040,647709,825453,1542258,2946328,16,10,6,Democrats needed 7.8% fewer votes to win their 10 of 16 seats.,,
-MI,2000,MI2000,MI3,0.055,-0.036,0.063,0.065,0.061,0.040,1125640,856695,2177678,3964669,16,9,7,Republicans needed 3.6% fewer votes to win their 7 of 16 seats.,,
-MI,2002,MI2002,MI4,-0.076,-0.064,-0.100,-0.097,-0.075,-0.054,906001,618367,1469182,3048735,15,6,9,Republicans needed 6.4% fewer votes to win their 9 of 15 seats.,,
-MI,2004,MI2004,MI4,-0.076,-0.090,-0.100,-0.097,-0.091,-0.054,1400114,865401,2242435,4531029,15,6,9,Republicans needed 9.0% fewer votes to win their 9 of 15 seats.,,
-MI,2006,MI2006,MI4,-0.076,-0.164,-0.100,-0.097,-0.059,-0.054,1282288,534564,1932912,3633701,15,6,9,Republicans needed 16.4% fewer votes to win their 9 of 15 seats.,,
-MI,2008,MI2008,MI4,-0.076,-0.046,-0.085,-0.097,-0.028,-0.054,1341233,992972,2519683,4668413,15,8,7,Republicans needed 4.6% fewer votes to win their 7 of 15 seats.,,
-MI,2010,MI2010,MI4,-0.076,-0.017,-0.100,-0.097,-0.018,-0.054,860387,683070,1415212,3086919,15,6,9,Republicans needed 1.7% fewer votes to win their 9 of 15 seats.,,
-MI,2012,MI2012,MI5,-0.163,-0.197,-0.143,-0.143,-0.066,-0.071,1554299,653096,2327985,4414789,14,5,9,Republicans needed 19.7% fewer votes to win their 9 of 14 seats.,,
-MI,2014,MI2014,MI5,-0.163,-0.160,-0.143,-0.143,-0.074,-0.071,1018383,474506,1519030,2985779,14,5,9,Republicans needed 16.0% fewer votes to win their 9 of 14 seats.,,
-MI,2016,MI2016,MI5,-0.163,-0.132,-0.143,-0.143,-0.073,-0.071,1451475,767210,2193980,4437369,14,5,9,Republicans needed 13.2% fewer votes to win their 9 of 14 seats.,,
-MN,1972,MN1972,MN1,-0.041,-0.082,0.000,0.000,-0.001,0.026,489511,339226,896854,1657474,8,4,4,Republicans needed 8.2% fewer votes to win their 4 of 8 seats.,,
-MN,1974,MN1974,MN1,-0.041,-0.053,0.000,0.000,0.039,0.026,334524,263996,705139,1197042,8,5,3,Republicans needed 5.3% fewer votes to win their 3 of 8 seats.,,
-MN,1976,MN1976,MN1,-0.041,0.006,0.123,0.000,0.085,0.026,453074,433789,992098,1773725,8,5,3,Democrats needed 0.6% fewer votes to win their 5 of 8 seats.,,
-MN,1978,MN1978,MN1,-0.041,0.008,0.000,0.000,0.010,0.026,393077,365085,752068,1516324,8,4,4,Democrats needed 0.8% fewer votes to win their 4 of 8 seats.,,
-MN,1980,MN1980,MN1,-0.041,-0.082,-0.125,0.000,-0.003,0.026,590318,356151,905793,1892940,8,3,5,Republicans needed 8.2% fewer votes to win their 5 of 8 seats.,,
-MN,1982,MN1982,MN2,0.005,0.022,-0.125,0.075,-0.039,0.051,424343,442608,956321,1733905,8,5,3,Democrats needed 2.2% fewer votes to win their 5 of 8 seats.,,
-MN,1984,MN1984,MN2,0.005,0.044,0.125,0.075,0.047,0.051,461185,520349,1060800,1963068,8,5,3,Democrats needed 4.4% fewer votes to win their 5 of 8 seats.,,
-MN,1986,MN1986,MN2,0.005,-0.072,0.125,0.075,0.092,0.051,418948,275781,831715,1389456,8,5,3,Republicans needed 7.2% fewer votes to win their 3 of 8 seats.,,
-MN,1988,MN1988,MN2,0.005,-0.048,0.125,0.075,0.093,0.051,552114,427046,1148700,1958324,8,5,3,Republicans needed 4.8% fewer votes to win their 3 of 8 seats.,,
-MN,1990,MN1990,MN2,0.005,0.078,0.125,0.075,0.062,0.051,401118,488232,1042201,1778698,8,6,2,Democrats needed 7.8% fewer votes to win their 6 of 8 seats.,,
-MN,1992,MN1992,MN3,0.133,0.133,0.000,0.000,0.000,0.000,392841,661601,1178072,2108886,8,6,2,Democrats needed 13.3% fewer votes to win their 6 of 8 seats.,,
-MN,1994,MN1994,MN3.1,0.123,0.229,0.000,0.031,0.014,0.017,242665,622763,883905,1730855,8,6,2,Democrats needed 22.9% fewer votes to win their 6 of 8 seats.,,
-MN,1996,MN1996,MN3.1,0.123,0.113,0.000,0.031,0.021,0.017,419431,618035,1179926,2074929,8,6,2,Democrats needed 11.3% fewer votes to win their 6 of 8 seats.,,
-MN,1998,MN1998,MN3.1,0.123,0.134,0.125,0.031,0.029,0.017,368703,608028,1090488,1953460,8,6,2,Democrats needed 13.4% fewer votes to win their 6 of 8 seats.,,
-MN,2000,MN2000,MN3.1,0.123,0.017,0.000,0.031,0.004,0.017,558581,555206,1234204,2227575,8,5,3,Democrats needed 1.7% fewer votes to win their 5 of 8 seats.,,
-MN,2002,MN2002,MN4,-0.035,-0.032,0.000,0.025,0.029,0.029,579759,484002,1097911,2127523,8,4,4,Republicans needed 3.2% fewer votes to win their 4 of 8 seats.,,
-MN,2004,MN2004,MN4,-0.035,-0.062,0.000,0.025,0.016,0.029,780552,537307,1399624,2635718,8,4,4,Republicans needed 6.2% fewer votes to win their 4 of 8 seats.,,
-MN,2006,MN2006,MN4,-0.035,0.015,0.000,0.025,0.034,0.029,534956,503674,1152621,2077257,8,5,3,Democrats needed 1.5% fewer votes to win their 5 of 8 seats.,,
-MN,2008,MN2008,MN4,-0.035,-0.078,0.125,0.025,0.065,0.029,810902,529845,1612480,2681495,8,5,3,Republicans needed 7.8% fewer votes to win their 3 of 8 seats.,,
-MN,2010,MN2010,MN4,-0.035,-0.016,0.000,0.025,0.002,0.029,560876,425507,1002026,1972767,8,4,4,Republicans needed 1.6% fewer votes to win their 4 of 8 seats.,,
-MN,2012,MN2012,MN5,0.058,-0.001,0.000,-0.042,-0.003,-0.004,722477,663219,1560984,2771393,8,5,3,Republicans needed 0.1% fewer votes to win their 3 of 8 seats.,,
-MN,2014,MN2014,MN5,0.058,0.087,0.000,-0.042,0.006,-0.004,399590,550060,985760,1899299,8,5,3,Democrats needed 8.7% fewer votes to win their 5 of 8 seats.,,
-MN,2016,MN2016,MN5,0.058,0.089,-0.125,-0.042,-0.015,-0.004,595948,788690,1434590,2769276,8,5,3,Democrats needed 8.9% fewer votes to win their 5 of 8 seats.,,
-MO,1972,MO1972,MO1,0.097,0.206,0.200,0.120,0.039,0.038,281711,633181,1092405,1829782,10,9,1,Democrats needed 20.6% fewer votes to win their 9 of 10 seats.,,
-MO,1974,MO1974,MO1,0.097,0.058,0.200,0.120,0.020,0.038,282770,320397,809719,1206336,10,9,1,Democrats needed 5.8% fewer votes to win their 9 of 10 seats.,,
-MO,1976,MO1976,MO1,0.097,0.158,0.000,0.120,0.027,0.038,344399,602124,1080807,1893045,10,8,2,Democrats needed 15.8% fewer votes to win their 8 of 10 seats.,,
-MO,1978,MO1978,MO1,0.097,0.046,0.100,0.120,0.040,0.038,367264,403802,966553,1542131,10,8,2,Democrats needed 4.6% fewer votes to win their 8 of 10 seats.,,
-MO,1980,MO1980,MO1,0.097,0.017,0.100,0.120,0.063,0.038,526725,498561,1110060,2050570,10,6,4,Democrats needed 1.7% fewer votes to win their 6 of 10 seats.,,
-MO,1982,MO1982,MO2,0.030,0.024,-0.056,0.040,-0.006,0.028,369552,393022,871682,1525150,9,6,3,Democrats needed 2.4% fewer votes to win their 6 of 9 seats.,,
-MO,1984,MO1984,MO2,0.030,0.132,0.122,0.040,0.011,0.028,373575,663257,1073167,2073660,9,6,3,Democrats needed 13.2% fewer votes to win their 6 of 9 seats.,,
-MO,1986,MO1986,MO2,0.030,-0.035,0.025,0.040,0.029,0.028,408288,318191,792397,1452959,9,5,4,Republicans needed 3.5% fewer votes to win their 4 of 9 seats.,,
-MO,1988,MO1988,MO2,0.030,-0.060,0.056,0.040,0.076,0.028,593692,435252,1148292,2057891,9,5,4,Republicans needed 6.0% fewer votes to win their 4 of 9 seats.,,
-MO,1990,MO1990,MO2,0.030,0.090,0.056,0.040,0.030,0.028,278970,397373,728020,1352686,9,6,3,Democrats needed 9.0% fewer votes to win their 6 of 9 seats.,,
-MO,1992,MO1992,MO3,0.016,0.066,0.056,0.078,0.004,0.034,516867,636010,1269486,2305754,9,6,3,Democrats needed 6.6% fewer votes to win their 6 of 9 seats.,,
-MO,1994,MO1994,MO3,0.016,0.132,0.167,0.078,0.048,0.034,326530,537589,893783,1728239,9,6,3,Democrats needed 13.2% fewer votes to win their 6 of 9 seats.,,
-MO,1996,MO1996,MO3,0.016,-0.090,0.167,0.078,0.080,0.034,516256,458440,1116201,1949391,9,5,4,Republicans needed 9.0% fewer votes to win their 4 of 9 seats.,,
-MO,1998,MO1998,MO3,0.016,0.030,0.056,0.078,0.058,0.034,380008,388036,787655,1536087,9,5,4,Democrats needed 3.0% fewer votes to win their 5 of 9 seats.,,
-MO,2000,MO2000,MO3,0.016,-0.056,-0.056,0.078,-0.021,0.034,670322,465550,1136020,2271744,9,4,5,Republicans needed 5.6% fewer votes to win their 5 of 9 seats.,,
-MO,2002,MO2002,MO4,-0.007,0.031,-0.056,-0.054,-0.099,-0.085,440188,467353,829177,1815082,9,4,5,Democrats needed 3.1% fewer votes to win their 4 of 9 seats.,,
-MO,2004,MO2004,MO4,-0.007,0.035,-0.056,-0.054,-0.102,-0.085,632646,678574,1192674,2622441,9,4,5,Democrats needed 3.5% fewer votes to win their 4 of 9 seats.,,
-MO,2006,MO2006,MO4,-0.007,-0.028,-0.056,-0.054,-0.112,-0.085,573240,447562,992258,2041604,9,4,5,Republicans needed 2.8% fewer votes to win their 5 of 9 seats.,,
-MO,2008,MO2008,MO4,-0.007,-0.072,-0.055,-0.054,-0.021,-0.085,811569,569971,1403928,2763082,9,4,5,Republicans needed 7.2% fewer votes to win their 5 of 9 seats.,,
-MO,2010,MO2010,MO4,-0.007,0.000,-0.050,-0.054,-0.093,-0.085,496999,435208,777182,1864415,9,3,6,Republicans needed 0.0% fewer votes to win their 6 of 9 seats.,,
-MO,2012,MO2012,MO5,-0.055,-0.117,-0.250,-0.250,-0.078,-0.083,793954,497615,1119554,2583140,8,2,6,Republicans needed 11.7% fewer votes to win their 6 of 8 seats.,,
-MO,2014,MO2014,MO5,-0.055,-0.010,-0.250,-0.250,-0.070,-0.083,362142,313800,513600,1351883,8,2,6,Republicans needed 1.0% fewer votes to win their 6 of 8 seats.,,
-MO,2016,MO2016,MO5,-0.055,-0.038,-0.250,-0.250,-0.101,-0.083,734184,586731,1041306,2641830,8,2,6,Republicans needed 3.8% fewer votes to win their 6 of 8 seats.,,
-NC,1972,NC1972,NC1,0.106,0.114,0.028,0.009,0.085,0.048,301776,415157,733065,1433868,11,7,4,Democrats needed 11.4% fewer votes to win their 7 of 11 seats.,,
-NC,1974,NC1974,NC1,0.106,0.117,0.030,0.009,0.042,0.048,211207,319350,637297,1061114,11,9,2,Democrats needed 11.7% fewer votes to win their 9 of 11 seats.,,
-NC,1976,NC1976,NC1,0.106,0.103,0.016,0.009,0.059,0.048,333725,471631,978971,1610710,11,9,2,Democrats needed 10.3% fewer votes to win their 9 of 11 seats.,,
-NC,1978,NC1978,NC1,0.106,0.132,0.018,0.009,0.059,0.048,204617,340238,646471,1089713,11,9,2,Democrats needed 13.2% fewer votes to win their 9 of 11 seats.,,
-NC,1980,NC1980,NC1,0.106,0.062,-0.048,0.009,-0.003,0.048,415285,467303,948663,1765181,11,7,4,Democrats needed 6.2% fewer votes to win their 7 of 11 seats.,,
-NC,1982,NC1982,NC2,0.106,0.179,-0.022,-0.012,0.008,0.007,211366,454814,759185,1332362,11,9,2,Democrats needed 17.9% fewer votes to win their 9 of 11 seats.,,
-NC,1984,NC1984,NC2,0.106,-0.003,-0.136,-0.012,-0.017,0.007,586905,491781,1130979,2157370,11,6,5,Republicans needed 0.3% fewer votes to win their 5 of 11 seats.,,
-NC,1986,NC1986,NC2,0.106,0.095,-0.045,-0.012,-0.009,0.007,327359,458893,890058,1572505,11,8,3,Democrats needed 9.5% fewer votes to win their 8 of 11 seats.,,
-NC,1988,NC1988,NC2,0.106,0.192,0.006,-0.012,0.008,0.007,328548,729242,1095451,2115582,11,8,3,Democrats needed 19.2% fewer votes to win their 8 of 11 seats.,,
-NC,1990,NC1990,NC2,0.106,0.066,0.136,-0.012,0.046,0.007,457874,547824,1076340,2011394,11,7,4,Democrats needed 6.6% fewer votes to win their 7 of 11 seats.,,
-NC,1992,NC1992,NC3,0.056,0.135,0.167,0.056,0.037,0.021,501573,741656,1282474,2486457,12,8,4,Democrats needed 13.5% fewer votes to win their 8 of 12 seats.,,
-NC,1994,NC1994,NC3,0.056,-0.050,0.000,0.056,0.014,0.021,514013,315748,733273,1659520,12,4,8,Republicans needed 5.0% fewer votes to win their 8 of 12 seats.,,
-NC,1996,NC1996,NC3,0.056,0.082,0.000,0.056,0.012,0.021,546124,691501,1135731,2475246,12,6,6,Democrats needed 8.2% fewer votes to win their 6 of 12 seats.,,
-NC,1998,NC1998,NC3.1,-0.003,-0.003,0.003,0.003,-0.003,-0.003,495665,502482,918260,1996298,12,5,7,Republicans needed 0.3% fewer votes to win their 7 of 12 seats.,,
-NC,2000,NC2000,NC3.2,-0.042,-0.042,-0.083,-0.083,-0.041,-0.041,770909,652472,1365020,2846762,12,5,7,Republicans needed 4.2% fewer votes to win their 7 of 12 seats.,,
-NC,2002,NC2002,NC4,0.027,0.001,-0.038,0.038,-0.026,0.024,582048,542373,1079995,2248841,13,6,7,Democrats needed 0.1% fewer votes to win their 6 of 13 seats.,,
-NC,2004,NC2004,NC4,0.027,-0.017,-0.038,0.038,-0.038,0.024,900274,806224,1669864,3412995,13,6,7,Republicans needed 1.7% fewer votes to win their 7 of 13 seats.,,
-NC,2006,NC2006,NC4,0.027,-0.001,0.035,0.038,0.018,0.024,488452,496150,1023141,1969206,13,7,6,Republicans needed 0.1% fewer votes to win their 6 of 13 seats.,,
-NC,2008,NC2008,NC4,0.027,0.022,0.115,0.038,0.086,0.024,1016780,1080962,2293971,4195488,13,8,5,Democrats needed 2.2% fewer votes to win their 8 of 13 seats.,,
-NC,2010,NC2010,NC4,0.027,0.128,0.115,0.038,0.081,0.024,489803,832972,1204635,2645548,13,7,6,Democrats needed 12.8% fewer votes to win their 7 of 13 seats.,,
-NC,2012,NC2012,NC5,-0.203,-0.211,-0.269,-0.268,-0.077,-0.075,1554327,623436,2218357,4355524,13,4,9,Republicans needed 21.1% fewer votes to win their 9 of 13 seats.,,
-NC,2014,NC2014,NC5,-0.203,-0.194,-0.267,-0.268,-0.072,-0.075,1019700,413289,1324875,2865978,13,3,10,Republicans needed 19.4% fewer votes to win their 10 of 13 seats.,,
-NC,2016,NC2016,NC5.1,-0.203,-0.203,-0.269,-0.269,-0.051,-0.051,1592127,702868,2142661,4589987,13,3,10,Republicans needed 20.3% fewer votes to win their 10 of 13 seats.,,
-NJ,1972,NJ1972,NJ1,0.070,0.042,0.033,0.007,0.028,0.032,683356,720296,1390819,2807304,15,8,7,Democrats needed 4.2% fewer votes to win their 8 of 15 seats.,,
-NJ,1974,NJ1974,NJ1,0.070,0.081,0.033,0.007,0.052,0.032,442366,575449,1240933,2035631,15,12,3,Democrats needed 8.1% fewer votes to win their 12 of 15 seats.,,
-NJ,1976,NJ1976,NJ1,0.070,0.117,0.033,0.007,0.059,0.032,558720,819577,1538658,2756590,15,11,4,Democrats needed 11.7% fewer votes to win their 11 of 15 seats.,,
-NJ,1978,NJ1978,NJ1,0.070,0.057,-0.033,0.007,0.008,0.032,449940,490826,1043747,1881530,15,10,5,Democrats needed 5.7% fewer votes to win their 10 of 15 seats.,,
-NJ,1980,NJ1980,NJ1,0.070,0.053,-0.033,0.007,0.015,0.032,653480,689062,1316100,2685081,15,8,7,Democrats needed 5.3% fewer votes to win their 8 of 15 seats.,,
-NJ,1982,NJ1982,NJ2,0.006,0.006,0.071,0.071,0.072,0.072,557076,503867,1206416,2121888,14,9,5,Democrats needed 0.6% fewer votes to win their 9 of 14 seats.,,
-NJ,1984,NJ1984,NJ2.1,0.094,0.059,0.071,0.071,0.046,0.073,712583,776994,1508320,2979156,14,8,6,Democrats needed 5.9% fewer votes to win their 8 of 14 seats.,,
-NJ,1986,NJ1986,NJ2.1,0.094,0.034,0.071,0.071,0.089,0.073,390620,381338,801007,1543914,14,8,6,Democrats needed 3.4% fewer votes to win their 8 of 14 seats.,,
-NJ,1988,NJ1988,NJ2.1,0.094,0.116,0.071,0.071,0.091,0.073,620747,789959,1347328,2821412,14,8,6,Democrats needed 11.6% fewer votes to win their 8 of 14 seats.,,
-NJ,1990,NJ1990,NJ2.1,0.094,0.165,0.071,0.071,0.065,0.073,371621,545319,831596,1833884,14,8,6,Democrats needed 16.5% fewer votes to win their 8 of 14 seats.,,
-NJ,1992,NJ1992,NJ3,0.012,0.090,0.038,-0.038,0.059,-0.005,673377,755651,1354915,2858060,13,7,6,Democrats needed 9.0% fewer votes to win their 7 of 13 seats.,,
-NJ,1994,NJ1994,NJ3,0.012,-0.008,-0.038,-0.038,-0.052,-0.005,560150,425401,879855,1971106,13,5,8,Republicans needed 0.8% fewer votes to win their 8 of 13 seats.,,
-NJ,1996,NJ1996,NJ3,0.012,-0.021,-0.115,-0.038,-0.011,-0.005,806304,569029,1351774,2750662,13,6,7,Republicans needed 2.1% fewer votes to win their 7 of 13 seats.,,
-NJ,1998,NJ1998,NJ3,0.012,0.013,-0.038,-0.038,0.002,-0.005,464617,415752,902374,1760741,13,7,6,Democrats needed 1.3% fewer votes to win their 7 of 13 seats.,,
-NJ,2000,NJ2000,NJ3,0.012,-0.012,-0.038,-0.038,-0.024,-0.005,830268,627939,1532240,2916410,13,7,6,Republicans needed 1.2% fewer votes to win their 6 of 13 seats.,,
-NJ,2002,NJ2002,NJ4,-0.003,0.033,0.030,0.037,0.109,0.081,546283,457228,1009142,2007021,13,7,6,Democrats needed 3.3% fewer votes to win their 7 of 13 seats.,,
-NJ,2004,NJ2004,NJ4,-0.003,-0.016,0.038,0.037,0.071,0.081,947176,682959,1719350,3260271,13,7,6,Republicans needed 1.6% fewer votes to win their 6 of 13 seats.,,
-NJ,2006,NJ2006,NJ4,-0.003,-0.073,0.037,0.037,0.101,0.081,705163,381386,1207920,2173096,13,7,6,Republicans needed 7.3% fewer votes to win their 6 of 13 seats.,,
-NJ,2008,NJ2008,NJ4,-0.003,-0.010,0.038,0.037,0.079,0.081,943807,756036,1912714,3399687,13,8,5,Republicans needed 1.0% fewer votes to win their 5 of 13 seats.,,
-NJ,2010,NJ2010,NJ4,-0.003,0.053,0.038,0.037,0.043,0.081,534095,505920,1024730,2080029,13,7,6,Democrats needed 5.3% fewer votes to win their 7 of 13 seats.,,
-NJ,2012,NJ2012,NJ5,-0.045,-0.113,0.000,0.000,-0.008,0.011,1086321,526077,1794407,3224793,12,6,6,Republicans needed 11.3% fewer votes to win their 6 of 12 seats.,,
-NJ,2014,NJ2014,NJ5,-0.045,-0.021,0.000,0.000,0.012,0.011,550997,344722,914172,1791437,12,6,6,Republicans needed 2.1% fewer votes to win their 6 of 12 seats.,,
-NJ,2016,NJ2016,NJ5,-0.045,0.000,0.000,0.000,0.030,0.011,935655,745971,1821620,3363251,12,7,5,Democrats needed 0.0% fewer votes to win their 7 of 12 seats.,,
-NY,1972,NY1972,NY1,0.046,0.046,-0.011,-0.011,0.039,0.039,1635014,1564355,3257600,6398734,39,22,17,Democrats needed 4.6% fewer votes to win their 22 of 39 seats.,,
-NY,1974,NY1974,NY1.1,-0.058,-0.075,-0.039,-0.009,0.013,0.042,1334648,1113455,2852348,4896206,39,23,16,Republicans needed 7.5% fewer votes to win their 16 of 39 seats.,,
-NY,1976,NY1976,NY1.1,-0.058,-0.086,0.048,-0.009,0.078,0.042,1556765,1438194,3522213,5989922,39,23,16,Republicans needed 8.6% fewer votes to win their 16 of 39 seats.,,
-NY,1978,NY1978,NY1.1,-0.058,-0.034,-0.042,-0.009,0.019,0.042,1152807,1062310,2432370,4430240,39,22,17,Republicans needed 3.4% fewer votes to win their 17 of 39 seats.,,
-NY,1980,NY1980,NY1.1,-0.058,-0.035,-0.001,-0.009,0.057,0.042,1490026,1284137,2765037,5548320,39,18,21,Republicans needed 3.5% fewer votes to win their 21 of 39 seats.,,
-NY,1982,NY1982,NY2,-0.030,-0.114,-0.027,0.009,0.031,0.056,1337554,976758,2510789,4628619,34,16,18,Republicans needed 11.4% fewer votes to win their 18 of 34 seats.,,
-NY,1984,NY1984,NY2,-0.030,-0.019,-0.029,0.009,0.012,0.056,1656737,1428120,3144272,6169714,34,17,17,Republicans needed 1.9% fewer votes to win their 17 of 34 seats.,,
-NY,1986,NY1986,NY2,-0.030,-0.047,-0.001,0.009,0.085,0.056,1107301,861041,2118872,3936682,34,18,16,Republicans needed 4.7% fewer votes to win their 16 of 34 seats.,,
-NY,1988,NY1988,NY2,-0.030,0.010,0.036,0.009,0.061,0.056,1511065,1410067,3151036,5842269,34,20,14,Democrats needed 1.0% fewer votes to win their 20 of 34 seats.,,
-NY,1990,NY1990,NY2,-0.030,0.018,0.066,0.009,0.092,0.056,958996,819257,1903268,3556504,34,20,14,Democrats needed 1.8% fewer votes to win their 20 of 34 seats.,,
-NY,1992,NY1992,NY3,0.017,0.034,-0.114,-0.038,-0.004,0.029,1558006,1377978,3073440,5871974,31,18,13,Democrats needed 3.4% fewer votes to win their 18 of 31 seats.,,
-NY,1994,NY1994,NY3,0.017,0.063,0.015,-0.038,0.067,0.029,1178242,1115854,2261334,4588188,31,17,14,Democrats needed 6.3% fewer votes to win their 17 of 31 seats.,,
-NY,1996,NY1996,NY3,0.017,-0.046,-0.016,-0.038,0.023,0.029,1646119,1053076,3040840,5398393,31,18,13,Republicans needed 4.6% fewer votes to win their 13 of 31 seats.,,
-NY,1998,NY1998,NY3.1,-0.018,-0.023,0.013,0.047,0.111,0.087,1232622,876908,2328228,4219056,31,18,13,Republicans needed 2.3% fewer votes to win their 13 of 31 seats.,,
-NY,2000,NY2000,NY3.1,-0.018,-0.012,0.081,0.047,0.064,0.087,1621566,1212067,3186171,5667272,31,19,12,Republicans needed 1.2% fewer votes to win their 12 of 31 seats.,,
-NY,2002,NY2002,NY4,0.029,0.078,0.092,0.024,0.099,0.053,841422,885847,1860704,3454538,29,19,10,Democrats needed 7.8% fewer votes to win their 19 of 29 seats.,,
-NY,2004,NY2004,NY4,0.029,-0.023,0.086,0.024,0.091,0.053,1810720,1320629,3798685,6262702,29,20,9,Republicans needed 2.3% fewer votes to win their 9 of 29 seats.,,
-NY,2006,NY2006,NY4,0.029,-0.024,0.073,0.024,0.048,0.053,1218116,904174,2795843,4244576,29,23,6,Republicans needed 2.4% fewer votes to win their 6 of 29 seats.,,
-NY,2008,NY2008,NY4,0.029,0.056,-0.043,0.024,-0.001,0.053,1463298,1737996,4290883,6402590,29,26,3,Democrats needed 5.6% fewer votes to win their 26 of 29 seats.,,
-NY,2010,NY2010,NY4,0.029,0.058,-0.086,0.024,0.025,0.053,1150520,1079323,2600900,4459684,29,21,8,Democrats needed 5.8% fewer votes to win their 21 of 29 seats.,,
-NY,2012,NY2012,NY5,-0.005,-0.013,-0.019,-0.013,0.011,0.027,1711172,1478799,4118343,6379944,27,21,6,Republicans needed 1.3% fewer votes to win their 6 of 27 seats.,,
-NY,2014,NY2014,NY5,-0.005,0.064,-0.031,-0.013,0.013,0.027,962073,979797,2141545,3883740,27,18,9,Democrats needed 6.4% fewer votes to win their 18 of 27 seats.,,
-NY,2016,NY2016,NY5,-0.005,-0.065,0.010,-0.013,0.055,0.027,2086026,1471677,4382270,7115402,27,18,9,Republicans needed 6.5% fewer votes to win their 9 of 27 seats.,,
-OH,1972,OH1972,OH1,-0.051,-0.127,-0.112,-0.069,-0.063,-0.040,1222305,699908,1789586,3844427,23,7,16,Republicans needed 12.7% fewer votes to win their 16 of 23 seats.,,
-OH,1974,OH1974,OH1,-0.051,-0.152,-0.152,-0.069,-0.028,-0.040,976524,467082,1443626,2887216,23,8,15,Republicans needed 15.2% fewer votes to win their 15 of 23 seats.,,
-OH,1976,OH1976,OH1,-0.051,-0.028,-0.026,-0.069,-0.049,-0.040,1022962,869096,1821595,3784116,23,10,13,Republicans needed 2.8% fewer votes to win their 13 of 23 seats.,,
-OH,1978,OH1978,OH1,-0.051,-0.005,-0.022,-0.069,-0.039,-0.040,751532,644484,1311637,2792040,23,10,13,Republicans needed 0.5% fewer votes to win their 13 of 23 seats.,,
-OH,1980,OH1980,OH1,-0.051,0.057,-0.035,-0.069,-0.019,-0.040,924448,1080067,1758547,4009032,23,10,13,Democrats needed 5.7% fewer votes to win their 10 of 23 seats.,,
-OH,1982,OH1982,OH2,-0.010,-0.092,-0.025,-0.001,-0.051,0.006,991081,670264,1775041,3322692,21,10,11,Republicans needed 9.2% fewer votes to win their 11 of 21 seats.,,
-OH,1984,OH1984,OH2,-0.010,0.073,0.024,-0.001,0.063,0.006,925688,1264362,2081480,4380100,21,11,10,Democrats needed 7.3% fewer votes to win their 11 of 21 seats.,,
-OH,1986,OH1986,OH2.1,0.009,0.036,0.024,0.007,0.043,0.030,741393,809128,1532386,3101036,21,11,10,Democrats needed 3.6% fewer votes to win their 11 of 21 seats.,,
-OH,1988,OH1988,OH2.1,0.009,0.008,0.024,0.007,0.057,0.030,1049581,1058740,2140701,4216644,21,11,10,Democrats needed 0.8% fewer votes to win their 11 of 21 seats.,,
-OH,1990,OH1990,OH2.1,0.009,-0.017,-0.025,0.007,-0.009,0.030,898818,821667,1790406,3440972,21,11,10,Republicans needed 1.7% fewer votes to win their 10 of 21 seats.,,
-OH,1992,OH1992,OH3,-0.024,0.014,-0.007,-0.040,0.001,-0.024,1100652,1156439,2285674,4514180,19,10,9,Democrats needed 1.4% fewer votes to win their 10 of 19 seats.,,
-OH,1994,OH1994,OH3,-0.024,-0.067,-0.009,-0.040,-0.002,-0.024,956958,715123,1476861,3344161,19,6,13,Republicans needed 6.7% fewer votes to win their 13 of 19 seats.,,
-OH,1996,OH1996,OH3,-0.024,-0.014,-0.028,-0.040,-0.023,-0.024,1106369,1014557,1983814,4241850,19,8,11,Republicans needed 1.4% fewer votes to win their 11 of 19 seats.,,
-OH,1998,OH1998,OH3,-0.024,-0.032,-0.079,-0.040,-0.079,-0.024,921241,751918,1593873,3346316,19,8,11,Republicans needed 3.2% fewer votes to win their 11 of 19 seats.,,
-OH,2000,OH2000,OH3,-0.024,-0.021,-0.079,-0.040,-0.018,-0.024,1168980,983086,2027455,4304130,19,8,11,Republicans needed 2.1% fewer votes to win their 11 of 19 seats.,,
-OH,2002,OH2002,OH4,-0.083,-0.047,-0.166,-0.122,-0.097,-0.047,866709,702487,1381636,3138396,18,6,12,Republicans needed 4.7% fewer votes to win their 12 of 18 seats.,,
-OH,2004,OH2004,OH4,-0.083,-0.105,-0.167,-0.122,-0.079,-0.047,1625067,1018011,2480766,5286154,18,6,12,Republicans needed 10.5% fewer votes to win their 12 of 18 seats.,,
-OH,2006,OH2006,OH4,-0.083,-0.165,-0.111,-0.122,-0.041,-0.047,1354464,621601,2081737,3952127,18,7,11,Republicans needed 16.5% fewer votes to win their 11 of 18 seats.,,
-OH,2008,OH2008,OH4,-0.083,0.006,-0.056,-0.122,-0.010,-0.047,1345746,1276060,2752111,5243609,18,10,8,Democrats needed 0.6% fewer votes to win their 10 of 18 seats.,,
-OH,2010,OH2010,OH4,-0.083,-0.102,-0.111,-0.122,-0.009,-0.047,1145050,687045,1611112,3664187,18,5,13,Republicans needed 10.2% fewer votes to win their 13 of 18 seats.,,
-OH,2012,OH2012,OH5,-0.132,-0.230,-0.249,-0.250,-0.074,-0.076,1925464,648827,2522889,5148579,16,4,12,Republicans needed 23.0% fewer votes to win their 12 of 16 seats.,,
-OH,2014,OH2014,OH5,-0.132,-0.080,-0.249,-0.250,-0.074,-0.076,915939,579650,1241863,2991179,16,4,12,Republicans needed 8.0% fewer votes to win their 12 of 16 seats.,,
-OH,2016,OH2016,OH5,-0.132,-0.087,-0.250,-0.250,-0.080,-0.076,1562314,1012953,2154523,5150540,16,4,12,Republicans needed 8.7% fewer votes to win their 12 of 16 seats.,,
-PA,1972,PA1972,PA1,0.013,0.044,0.020,0.024,0.071,0.026,1018526,1208638,2172844,4454328,25,13,12,Democrats needed 4.4% fewer votes to win their 13 of 25 seats.,,
-PA,1974,PA1974,PA1,0.013,-0.080,0.011,0.024,0.011,0.026,991157,705832,1935030,3393976,25,14,11,Republicans needed 8.0% fewer votes to win their 11 of 25 seats.,,
-PA,1976,PA1976,PA1,0.013,0.064,0.009,0.024,0.007,0.026,991976,1229346,2479621,4442641,25,17,8,Democrats needed 6.4% fewer votes to win their 17 of 25 seats.,,
-PA,1978,PA1978,PA1,0.013,0.076,0.060,0.024,0.017,0.026,767108,995801,1805498,3525816,25,15,10,Democrats needed 7.6% fewer votes to win their 15 of 25 seats.,,
-PA,1980,PA1980,PA1,0.013,-0.038,0.020,0.024,0.022,0.026,1134687,1064737,2239156,4398843,25,12,13,Republicans needed 3.8% fewer votes to win their 13 of 25 seats.,,
-PA,1982,PA1982,PA2,-0.015,-0.015,-0.032,-0.007,-0.033,0.003,873904,931346,1950381,3610494,23,13,10,Republicans needed 1.5% fewer votes to win their 10 of 23 seats.,,
-PA,1984,PA1984,PA2,-0.015,0.011,-0.026,-0.007,-0.018,0.003,1074042,1246738,2446404,4641556,23,13,10,Democrats needed 1.1% fewer votes to win their 13 of 23 seats.,,
-PA,1986,PA1986,PA2,-0.015,-0.041,0.021,-0.007,0.019,0.003,905278,788011,1799320,3386579,23,12,11,Republicans needed 4.1% fewer votes to win their 11 of 23 seats.,,
-PA,1988,PA1988,PA2,-0.015,0.009,0.022,-0.007,0.071,0.003,1083306,1127789,2239463,4422196,23,12,11,Democrats needed 0.9% fewer votes to win their 12 of 23 seats.,,
-PA,1990,PA1990,PA2,-0.015,-0.039,-0.022,-0.007,-0.023,0.003,822190,677327,1524793,2999031,23,11,12,Republicans needed 3.9% fewer votes to win their 12 of 23 seats.,,
-PA,1992,PA1992,PA3,-0.006,0.004,-0.061,-0.008,-0.007,-0.001,1158860,1164712,2369538,4647147,21,11,10,Democrats needed 0.4% fewer votes to win their 11 of 21 seats.,,
-PA,1994,PA1994,PA3,-0.006,0.032,0.011,-0.008,0.006,-0.001,788853,886098,1662013,3349906,21,11,10,Democrats needed 3.2% fewer votes to win their 11 of 21 seats.,,
-PA,1996,PA1996,PA3,-0.006,-0.020,0.024,-0.008,0.017,-0.001,1149287,980899,2222863,4260371,21,11,10,Republicans needed 2.0% fewer votes to win their 10 of 21 seats.,,
-PA,1998,PA1998,PA3,-0.006,0.009,0.018,-0.008,0.018,-0.001,758532,734786,1515976,2986636,21,11,10,Democrats needed 0.9% fewer votes to win their 11 of 21 seats.,,
-PA,2000,PA2000,PA3,-0.006,-0.053,-0.033,-0.008,-0.040,-0.001,1360907,979676,2407945,4681168,21,10,11,Republicans needed 5.3% fewer votes to win their 11 of 21 seats.,,
-PA,2002,PA2002,PA4,-0.055,-0.074,-0.095,-0.088,-0.073,-0.043,1037446,707632,1644240,3490155,19,7,12,Republicans needed 7.4% fewer votes to win their 12 of 19 seats.,,
-PA,2004,PA2004,PA4,-0.055,-0.120,-0.127,-0.088,-0.087,-0.043,1748027,985397,2701491,5466846,19,7,12,Republicans needed 12.0% fewer votes to win their 12 of 19 seats.,,
-PA,2006,PA2006,PA4,-0.055,-0.033,-0.111,-0.088,-0.036,-0.043,1064020,941172,2228704,4010387,19,11,8,Republicans needed 3.3% fewer votes to win their 8 of 19 seats.,,
-PA,2008,PA2008,PA4,-0.055,0.032,0.024,-0.088,0.009,-0.043,1361473,1515651,3164711,5754250,19,12,7,Democrats needed 3.2% fewer votes to win their 12 of 19 seats.,,
-PA,2010,PA2010,PA4,-0.055,-0.082,-0.132,-0.088,-0.027,-0.043,1172353,801958,1875448,3948622,19,7,12,Republicans needed 8.2% fewer votes to win their 12 of 19 seats.,,
-PA,2012,PA2012,PA5,-0.190,-0.237,-0.222,-0.221,-0.079,-0.078,2029682,722124,2793538,5503608,18,5,13,Republicans needed 23.7% fewer votes to win their 13 of 18 seats.,,
-PA,2014,PA2014,PA5,-0.190,-0.149,-0.219,-0.221,-0.075,-0.078,1150962,584569,1607785,3471057,18,5,13,Republicans needed 14.9% fewer votes to win their 13 of 18 seats.,,
-PA,2016,PA2016,PA5,-0.190,-0.183,-0.222,-0.221,-0.080,-0.078,2049833,923998,2856901,5947661,18,5,13,Republicans needed 18.3% fewer votes to win their 13 of 18 seats.,,
-SC,2012,SC2012,SC5,-0.188,-0.233,-0.128,-0.238,-0.072,-0.045,701345,257450,839517,1917589,7,1,6,Republicans needed 23.3% fewer votes to win their 6 of 7 seats.,,
-SC,2014,SC2014,SC5,-0.188,-0.172,-0.230,-0.238,-0.047,-0.045,413447,197940,498476,1222774,7,1,6,Republicans needed 17.2% fewer votes to win their 6 of 7 seats.,,
-SC,2016,SC2016,SC5,-0.188,-0.160,-0.357,-0.238,-0.015,-0.045,666280,317555,790303,1967668,7,1,6,Republicans needed 16.0% fewer votes to win their 6 of 7 seats.,,
-TN,1972,TN1972,TN1,0.023,-0.088,-0.125,-0.053,-0.041,-0.011,349975,218291,547224,1136529,8,3,5,Republicans needed 8.8% fewer votes to win their 5 of 8 seats.,,
-TN,1974,TN1974,TN1,0.023,0.133,0.019,-0.053,0.019,-0.011,185395,270978,452764,912746,8,5,3,Democrats needed 13.3% fewer votes to win their 5 of 8 seats.,,
-TN,1976,TN1976,TN1.1,0.047,-0.007,0.090,0.110,0.082,0.102,355945,310198,754408,1332286,8,5,3,Republicans needed 0.7% fewer votes to win their 3 of 8 seats.,,
-TN,1978,TN1978,TN1.1,0.047,0.103,0.120,0.110,0.132,0.102,236161,293713,541411,1059748,8,5,3,Democrats needed 10.3% fewer votes to win their 5 of 8 seats.,,
-TN,1980,TN1980,TN1.1,0.047,0.044,0.122,0.110,0.092,0.102,367023,364633,791122,1463310,8,5,3,Democrats needed 4.4% fewer votes to win their 5 of 8 seats.,,
-TN,1982,TN1982,TN2,0.062,-0.055,0.162,0.116,0.050,0.079,335951,287765,762052,1247434,9,6,3,Republicans needed 5.5% fewer votes to win their 3 of 9 seats.,,
-TN,1984,TN1984,TN2,0.062,0.131,0.097,0.116,0.110,0.079,294039,463902,784725,1515881,9,6,3,Democrats needed 13.1% fewer votes to win their 6 of 9 seats.,,
-TN,1986,TN1986,TN2,0.062,0.052,0.056,0.116,0.034,0.079,251718,314980,631960,1133400,9,6,3,Democrats needed 5.2% fewer votes to win their 6 of 9 seats.,,
-TN,1988,TN1988,TN2,0.062,0.079,0.135,0.116,0.080,0.079,317747,433840,817621,1503176,9,6,3,Democrats needed 7.9% fewer votes to win their 6 of 9 seats.,,
-TN,1990,TN1990,TN2,0.062,0.102,0.130,0.116,0.121,0.079,189420,238041,455217,854923,9,6,3,Democrats needed 10.2% fewer votes to win their 6 of 9 seats.,,
-TN,1992,TN1992,TN3,0.009,0.134,0.054,-0.021,0.066,-0.043,308041,523962,859529,1664008,9,6,3,Democrats needed 13.4% fewer votes to win their 6 of 9 seats.,,
-TN,1994,TN1994,TN3,0.009,0.008,0.004,-0.021,-0.002,-0.043,339150,372412,666596,1423124,9,4,5,Democrats needed 0.8% fewer votes to win their 4 of 9 seats.,,
-TN,1996,TN1996,TN3,0.009,-0.037,-0.056,-0.021,-0.060,-0.043,471033,401486,856487,1745033,9,4,5,Republicans needed 3.7% fewer votes to win their 5 of 9 seats.,,
-TN,1998,TN1998,TN3,0.009,-0.005,-0.055,-0.021,-0.070,-0.043,267761,240162,482207,1015846,9,4,5,Republicans needed 0.5% fewer votes to win their 5 of 9 seats.,,
-TN,2000,TN2000,TN3,0.009,-0.053,-0.055,-0.021,-0.147,-0.043,541331,436193,974696,1955050,9,4,5,Republicans needed 5.3% fewer votes to win their 5 of 9 seats.,,
-TN,2002,TN2002,TN4,0.055,0.088,0.054,0.033,0.045,0.069,325194,447824,747674,1546037,9,5,4,Democrats needed 8.8% fewer votes to win their 5 of 9 seats.,,
-TN,2004,TN2004,TN4,0.055,0.066,0.056,0.033,0.062,0.069,506797,617777,1113334,2249147,9,5,4,Democrats needed 6.6% fewer votes to win their 5 of 9 seats.,,
-TN,2006,TN2006,TN4,0.055,0.019,0.056,0.033,0.146,0.069,431040,399164,860861,1660408,9,5,4,Democrats needed 1.9% fewer votes to win their 5 of 9 seats.,,
-TN,2008,TN2008,TN4,0.055,0.103,0.055,0.033,0.123,0.069,490372,677245,1112225,2335237,9,5,4,Democrats needed 10.3% fewer votes to win their 5 of 9 seats.,,
-TN,2010,TN2010,TN4,0.055,-0.001,-0.056,0.033,-0.032,0.069,387991,360309,541527,1496605,9,2,7,Republicans needed 0.1% fewer votes to win their 7 of 9 seats.,,
-TN,2012,TN2012,TN5,-0.015,-0.053,-0.156,-0.217,-0.094,-0.089,612260,503512,865272,2231543,9,2,7,Republicans needed 5.3% fewer votes to win their 7 of 9 seats.,,
-TN,2014,TN2014,TN5,-0.015,-0.008,-0.218,-0.217,-0.089,-0.089,348204,310259,481091,1316927,9,2,7,Republicans needed 0.8% fewer votes to win their 7 of 9 seats.,,
-TN,2016,TN2016,TN5,-0.015,0.017,-0.278,-0.217,-0.085,-0.089,571032,582930,814181,2307921,9,2,7,Democrats needed 1.7% fewer votes to win their 2 of 9 seats.,,
-TX,1972,TX1972,TX1,0.129,0.129,0.101,0.101,0.054,0.054,683963,1026089,2059486,3420106,24,20,4,Democrats needed 12.9% fewer votes to win their 20 of 24 seats.,,
-TX,1974,TX1974,TX1.1,0.167,0.079,0.096,0.072,0.064,0.062,342179,405838,969380,1496036,24,21,3,Democrats needed 7.9% fewer votes to win their 21 of 24 seats.,,
-TX,1976,TX1976,TX1.1,0.167,0.173,-0.018,0.072,0.029,0.062,691123,1222391,2380283,3827032,24,22,2,Democrats needed 17.3% fewer votes to win their 22 of 24 seats.,,
-TX,1978,TX1978,TX1.1,0.167,0.193,0.139,0.072,0.086,0.062,454506,674501,1287366,2258012,24,20,4,Democrats needed 19.3% fewer votes to win their 20 of 24 seats.,,
-TX,1980,TX1980,TX1.1,0.167,0.221,0.070,0.072,0.068,0.062,736867,1449195,2341523,4372126,24,19,5,Democrats needed 22.1% fewer votes to win their 19 of 24 seats.,,
-TX,1982,TX1982,TX2,0.124,0.124,0.124,0.124,0.080,0.080,581367,876671,1736319,2916078,27,22,5,Democrats needed 12.4% fewer votes to win their 22 of 27 seats.,,
-TX,1984,TX1984,TX2.1,0.136,0.138,0.104,0.116,0.076,0.079,1076186,1585204,2638050,5322779,27,17,10,Democrats needed 13.8% fewer votes to win their 17 of 27 seats.,,
-TX,1986,TX1986,TX2.1,0.136,0.066,0.092,0.116,0.074,0.079,795267,871668,1773073,3333878,27,17,10,Democrats needed 6.6% fewer votes to win their 17 of 27 seats.,,
-TX,1988,TX1988,TX2.1,0.136,0.149,0.105,0.116,0.095,0.079,1047388,1551339,2739620,5197453,27,19,8,Democrats needed 14.9% fewer votes to win their 19 of 27 seats.,,
-TX,1990,TX1990,TX2.1,0.136,0.192,0.165,0.116,0.071,0.079,694851,1211321,1929207,3812344,27,19,8,Democrats needed 19.2% fewer votes to win their 19 of 27 seats.,,
-TX,1992,TX1992,TX3,0.203,0.197,0.177,0.155,0.099,0.092,1006034,1834290,2849964,5680649,30,21,9,Democrats needed 19.7% fewer votes to win their 21 of 30 seats.,,
-TX,1994,TX1994,TX3,0.203,0.208,0.133,0.155,0.084,0.092,739822,1343940,1927262,4167525,30,19,11,Democrats needed 20.8% fewer votes to win their 19 of 30 seats.,,
-TX,1996,TX1996,TX3.1,0.125,0.134,0.067,0.067,0.060,0.087,1075939,1429463,2337508,5010812,30,17,13,Democrats needed 13.4% fewer votes to win their 17 of 30 seats.,,
-TX,1998,TX1998,TX3.1,0.125,0.119,0.067,0.067,0.103,0.087,787749,1073060,1764228,3721621,30,17,13,Democrats needed 11.9% fewer votes to win their 17 of 30 seats.,,
-TX,2000,TX2000,TX3.1,0.125,0.121,0.066,0.067,0.097,0.087,1364381,1667516,2866082,6063796,30,17,13,Democrats needed 12.1% fewer votes to win their 17 of 30 seats.,,
-TX,2002,TX2002,TX4,0.112,0.112,0.041,0.041,0.062,0.062,1002934,1290791,2108144,4587451,32,17,15,Democrats needed 11.2% fewer votes to win their 17 of 32 seats.,,
-TX,2004,TX2004,TX4.1,-0.019,-0.019,-0.144,-0.144,-0.038,-0.038,2109938,1463606,3084158,7147089,32,11,21,Republicans needed 1.9% fewer votes to win their 21 of 32 seats.,,
-TX,2006,TX2006,TX4.2,0.009,0.001,-0.094,-0.125,-0.054,-0.043,1219205,828577,1854485,4095560,32,13,19,Democrats needed 0.1% fewer votes to win their 13 of 32 seats.,,
-TX,2008,TX2008,TX4.2,0.009,-0.030,-0.125,-0.125,-0.033,-0.043,2367628,1497673,3497722,7730604,32,12,20,Republicans needed 3.0% fewer votes to win their 20 of 32 seats.,,
-TX,2010,TX2010,TX4.2,0.009,0.056,-0.155,-0.125,-0.042,-0.043,1242510,1132645,1721584,4750313,32,9,23,Democrats needed 5.6% fewer votes to win their 9 of 32 seats.,,
-TX,2012,TX2012,TX5,-0.010,-0.010,-0.139,-0.155,-0.047,-0.039,2244032,1566990,3212530,7622039,36,12,24,Republicans needed 1.0% fewer votes to win their 24 of 36 seats.,,
-TX,2014,TX2014,TX5,-0.010,0.032,-0.165,-0.155,-0.037,-0.039,1289193,1020572,1786881,4619527,36,11,25,Democrats needed 3.2% fewer votes to win their 11 of 36 seats.,,
-TX,2016,TX2016,TX5,-0.010,-0.052,-0.161,-0.155,-0.032,-0.039,2729445,1566038,3684226,8590967,36,11,25,Republicans needed 5.2% fewer votes to win their 25 of 36 seats.,,
-VA,1972,VA1972,VA1,-0.083,-0.128,-0.159,-0.035,-0.024,-0.027,405122,224899,584461,1260042,10,3,7,Republicans needed 12.8% fewer votes to win their 7 of 10 seats.,,
-VA,1974,VA1974,VA1,-0.083,-0.028,-0.001,-0.035,0.003,-0.027,252019,236826,502459,977691,10,5,5,Republicans needed 2.8% fewer votes to win their 5 of 10 seats.,,
-VA,1976,VA1976,VA1,-0.083,-0.082,-0.007,-0.035,-0.009,-0.027,405462,331303,723780,1473528,10,4,6,Republicans needed 8.2% fewer votes to win their 6 of 10 seats.,,
-VA,1978,VA1978,VA1,-0.083,0.006,-0.041,-0.035,-0.065,-0.027,274967,295486,510241,1140905,10,4,6,Democrats needed 0.6% fewer votes to win their 4 of 10 seats.,,
-VA,1980,VA1980,VA1,-0.083,-0.181,0.035,-0.035,-0.039,-0.027,546947,266878,635231,1627650,10,1,9,Republicans needed 18.1% fewer votes to win their 9 of 10 seats.,,
-VA,1982,VA1982,VA2,0.005,-0.065,0.007,-0.014,-0.003,0.002,399964,310386,685672,1420704,10,4,6,Republicans needed 6.5% fewer votes to win their 6 of 10 seats.,,
-VA,1984,VA1984,VA2,0.005,-0.010,-0.089,-0.014,-0.029,0.002,540721,492600,940614,2066642,10,4,6,Republicans needed 1.0% fewer votes to win their 6 of 10 seats.,,
-VA,1986,VA1986,VA2,0.005,-0.018,-0.011,-0.014,-0.018,0.002,340223,294102,645579,1268650,10,5,5,Republicans needed 1.8% fewer votes to win their 5 of 10 seats.,,
-VA,1988,VA1988,VA2,0.005,0.088,0.002,-0.014,0.009,0.002,468273,560925,938120,2058398,10,5,5,Democrats needed 8.8% fewer votes to win their 5 of 10 seats.,,
-VA,1990,VA1990,VA2,0.005,0.032,0.019,-0.014,0.052,0.002,325284,363707,736297,1377981,10,6,4,Democrats needed 3.2% fewer votes to win their 6 of 10 seats.,,
-VA,1992,VA1992,VA3,0.080,0.080,0.053,0.053,0.032,0.032,508008,647066,1220047,2310150,11,7,4,Democrats needed 8.0% fewer votes to win their 7 of 11 seats.,,
-VA,1994,VA1994,VA3.1,0.078,0.108,0.054,0.049,0.064,0.097,402483,567662,909889,1940291,11,6,5,Democrats needed 10.8% fewer votes to win their 6 of 11 seats.,,
-VA,1996,VA1996,VA3.1,0.078,0.048,0.045,0.049,0.130,0.097,546487,552947,1096913,2198869,11,6,5,Democrats needed 4.8% fewer votes to win their 6 of 11 seats.,,
-VA,1998,VA1998,VA3.2,-0.002,0.108,0.045,-0.015,0.124,0.052,354599,459910,763883,1629017,11,6,5,Democrats needed 10.8% fewer votes to win their 6 of 11 seats.,,
-VA,2000,VA2000,VA3.2,-0.002,-0.111,-0.074,-0.015,-0.020,0.052,714952,511171,1195532,2452249,11,4,7,Republicans needed 11.1% fewer votes to win their 7 of 11 seats.,,
-VA,2002,VA2002,VA4,-0.081,-0.056,-0.163,-0.114,-0.074,-0.041,482948,376490,712176,1718876,11,3,8,Republicans needed 5.6% fewer votes to win their 8 of 11 seats.,,
-VA,2004,VA2004,VA4,-0.081,-0.085,-0.140,-0.114,-0.066,-0.041,925065,594597,1303226,3039322,11,3,8,Republicans needed 8.5% fewer votes to win their 8 of 11 seats.,,
-VA,2006,VA2006,VA4,-0.081,-0.177,-0.179,-0.114,-0.058,-0.041,812341,345941,1099509,2316568,11,3,8,Republicans needed 17.7% fewer votes to win their 8 of 11 seats.,,
-VA,2008,VA2008,VA4,-0.081,0.041,-0.044,-0.114,-0.001,-0.041,876526,903682,1788108,3560416,11,6,5,Democrats needed 4.1% fewer votes to win their 6 of 11 seats.,,
-VA,2010,VA2010,VA4,-0.081,-0.129,-0.043,-0.114,-0.007,-0.041,681978,390122,966636,2144197,11,3,8,Republicans needed 12.9% fewer votes to win their 8 of 11 seats.,,
-VA,2012,VA2012,VA5,-0.165,-0.208,-0.227,-0.225,-0.061,-0.062,1319598,521794,1806025,3682786,11,3,8,Republicans needed 20.8% fewer votes to win their 8 of 11 seats.,,
-VA,2014,VA2014,VA5,-0.165,-0.121,-0.223,-0.225,-0.063,-0.062,673920,392800,953736,2133439,11,3,8,Republicans needed 12.1% fewer votes to win their 8 of 11 seats.,,
-VA,2016,VA2016,VA5.1,-0.111,-0.111,-0.136,-0.136,-0.064,-0.064,1179034,707910,1839937,3773890,11,4,7,Republicans needed 11.1% fewer votes to win their 7 of 11 seats.,,
-WA,1972,WA1972,WA1,0.181,0.034,-0.071,0.043,0.001,0.013,315740,332413,857621,1296304,7,6,1,Democrats needed 3.4% fewer votes to win their 6 of 7 seats.,,
-WA,1974,WA1974,WA1,0.181,0.179,0.214,0.043,0.026,0.013,163272,324034,574055,974612,7,6,1,Democrats needed 17.9% fewer votes to win their 6 of 7 seats.,,
-WA,1976,WA1976,WA1,0.181,0.192,-0.071,0.043,0.006,0.013,225795,476039,817948,1403667,7,6,1,Democrats needed 19.2% fewer votes to win their 6 of 7 seats.,,
-WA,1978,WA1978,WA1,0.181,0.298,-0.071,0.043,0.004,0.013,104527,374523,507252,958099,7,6,1,Democrats needed 29.8% fewer votes to win their 6 of 7 seats.,,
-WA,1980,WA1980,WA1,0.181,0.200,0.214,0.043,0.029,0.013,240203,564282,816133,1608969,7,5,2,Democrats needed 20.0% fewer votes to win their 5 of 7 seats.,,
-WA,1982,WA1982,WA2,0.059,0.059,0.125,0.125,0.075,0.075,283235,363631,689811,1293727,8,5,3,Democrats needed 5.9% fewer votes to win their 5 of 8 seats.,,
-WA,1984,WA1984,WA2.1,0.010,0.015,0.125,0.061,0.083,0.064,446531,451726,996950,1796515,8,5,3,Democrats needed 1.5% fewer votes to win their 5 of 8 seats.,,
-WA,1986,WA1986,WA2.1,0.010,-0.061,0.125,0.061,0.124,0.064,372929,274490,767678,1294836,8,5,3,Republicans needed 6.1% fewer votes to win their 3 of 8 seats.,,
-WA,1988,WA1988,WA2.1,0.010,0.038,-0.005,0.061,0.045,0.064,434618,461592,974048,1792421,8,5,3,Democrats needed 3.8% fewer votes to win their 5 of 8 seats.,,
-WA,1990,WA1990,WA2.1,0.010,0.048,0.000,0.061,0.006,0.064,307397,338944,696275,1292682,8,5,3,Democrats needed 4.8% fewer votes to win their 5 of 8 seats.,,
-WA,1992,WA1992,WA3,-0.035,0.238,-0.278,-0.127,-0.022,-0.010,284120,790171,1236665,2148578,9,8,1,Democrats needed 23.8% fewer votes to win their 8 of 9 seats.,,
-WA,1994,WA1994,WA3,-0.035,-0.262,-0.167,-0.127,-0.010,-0.010,637630,202602,826753,1680465,9,2,7,Republicans needed 26.2% fewer votes to win their 7 of 9 seats.,,
-WA,1996,WA1996,WA3,-0.035,-0.217,-0.278,-0.127,-0.029,-0.010,784442,290637,1129609,2150162,9,3,6,Republicans needed 21.7% fewer votes to win their 6 of 9 seats.,,
-WA,1998,WA1998,WA3,-0.035,-0.003,0.037,-0.127,0.001,-0.010,454521,468683,977664,1846408,9,5,4,Republicans needed 0.3% fewer votes to win their 4 of 9 seats.,,
-WA,2000,WA2000,WA3,-0.035,0.069,0.050,-0.127,0.012,-0.010,494171,672544,1280493,2333429,9,6,3,Democrats needed 6.9% fewer votes to win their 6 of 9 seats.,,
-WA,2002,WA2002,WA4,0.005,0.090,0.056,0.114,0.036,0.031,339906,503274,907440,1686362,9,6,3,Democrats needed 9.0% fewer votes to win their 6 of 9 seats.,,
-WA,2004,WA2004,WA4,0.005,-0.023,0.167,0.114,0.039,0.031,695875,656248,1608751,2704244,9,6,3,Republicans needed 2.3% fewer votes to win their 3 of 9 seats.,,
-WA,2006,WA2006,WA4,0.005,-0.052,0.167,0.114,0.032,0.031,564550,456501,1244095,2042100,9,6,3,Republicans needed 5.2% fewer votes to win their 3 of 9 seats.,,
-WA,2008,WA2008,WA4,0.005,-0.017,0.167,0.114,0.048,0.031,746076,711155,1725316,2914463,9,6,3,Republicans needed 1.7% fewer votes to win their 3 of 9 seats.,,
-WA,2010,WA2010,WA4,0.005,0.029,0.013,0.114,-0.002,0.031,586873,657958,1277499,2489661,9,5,4,Democrats needed 2.9% fewer votes to win their 5 of 9 seats.,,
-WA,2012,WA2012,WA5,0.009,0.011,0.100,0.095,0.018,0.015,702713,800420,1636726,3006266,10,6,4,Democrats needed 1.1% fewer votes to win their 6 of 10 seats.,,
-WA,2014,WA2014,WA5,0.009,0.005,0.089,0.095,0.001,0.015,482699,529818,1108561,2025038,10,6,4,Democrats needed 0.5% fewer votes to win their 6 of 10 seats.,,
-WA,2016,WA2016,WA5,0.009,0.010,0.096,0.095,0.026,0.015,747177,824572,1712681,3143497,10,6,4,Democrats needed 1.0% fewer votes to win their 6 of 10 seats.,,
-WI,1972,WI1972,WI1,0.053,-0.082,0.056,0.078,0.059,0.055,524564,365416,1012821,1779960,9,5,4,Republicans needed 8.2% fewer votes to win their 4 of 9 seats.,,
-WI,1974,WI1974,WI1,0.053,0.084,0.056,0.078,0.051,0.055,255363,334278,703992,1179284,9,7,2,Democrats needed 8.4% fewer votes to win their 7 of 9 seats.,,
-WI,1976,WI1976,WI1,0.053,0.112,0.057,0.078,0.073,0.055,397794,590612,1151821,1976809,9,7,2,Democrats needed 11.2% fewer votes to win their 7 of 9 seats.,,
-WI,1978,WI1978,WI1,0.053,0.103,0.167,0.078,0.050,0.055,312741,409503,768536,1444489,9,6,3,Democrats needed 10.3% fewer votes to win their 6 of 9 seats.,,
-WI,1980,WI1980,WI1,0.053,0.048,0.056,0.078,0.039,0.055,515874,547852,1071978,2127450,9,5,4,Democrats needed 4.8% fewer votes to win their 5 of 9 seats.,,
-WI,1982,WI1982,WI2,0.008,-0.079,0.056,0.032,0.043,0.043,456732,318604,879881,1550676,9,5,4,Republicans needed 7.9% fewer votes to win their 4 of 9 seats.,,
-WI,1984,WI1984,WI2,0.008,0.096,0.056,0.032,0.082,0.043,427079,619619,1004913,2093394,9,5,4,Democrats needed 9.6% fewer votes to win their 5 of 9 seats.,,
-WI,1986,WI1986,WI2,0.008,0.024,0.048,0.032,0.041,0.043,361633,392456,777826,1508180,9,5,4,Democrats needed 2.4% fewer votes to win their 5 of 9 seats.,,
-WI,1988,WI1988,WI2,0.008,0.077,0.056,0.032,0.096,0.043,447903,589917,1015222,2075640,9,5,4,Democrats needed 7.7% fewer votes to win their 5 of 9 seats.,,
-WI,1990,WI1990,WI2,0.008,-0.080,-0.057,0.032,-0.044,0.043,443410,252298,712548,1391415,9,4,5,Republicans needed 8.0% fewer votes to win their 5 of 9 seats.,,
-WI,1992,WI1992,WI3,0.033,-0.031,-0.056,0.024,-0.017,0.014,653061,529283,1153862,2364689,9,4,5,Republicans needed 3.1% fewer votes to win their 5 of 9 seats.,,
-WI,1994,WI1994,WI3,0.033,-0.020,-0.024,0.024,-0.003,0.014,409792,357694,654720,1534972,9,3,6,Republicans needed 2.0% fewer votes to win their 6 of 9 seats.,,
-WI,1996,WI1996,WI3,0.033,0.106,0.167,0.024,0.046,0.014,439665,626909,1012327,2133146,9,5,4,Democrats needed 10.6% fewer votes to win their 5 of 9 seats.,,
-WI,1998,WI1998,WI3,0.033,0.005,-0.021,0.024,0.004,0.014,439883,419905,903366,1719579,9,5,4,Democrats needed 0.5% fewer votes to win their 5 of 9 seats.,,
-WI,2000,WI2000,WI3,0.033,0.105,0.056,0.024,0.039,0.014,512214,737443,1187866,2499313,9,5,4,Democrats needed 10.5% fewer votes to win their 5 of 9 seats.,,
-WI,2002,WI2002,WI4,0.045,0.040,0.001,0.020,-0.001,0.016,392617,470459,828923,1726151,8,4,4,Democrats needed 4.0% fewer votes to win their 4 of 8 seats.,,
-WI,2004,WI2004,WI4,0.045,0.061,0.000,0.020,-0.021,0.016,637569,801841,1352194,2878820,8,4,4,Democrats needed 6.1% fewer votes to win their 4 of 8 seats.,,
-WI,2006,WI2006,WI4,0.045,0.077,0.003,0.020,0.046,0.016,461913,588384,1100741,2100589,8,5,3,Democrats needed 7.7% fewer votes to win their 5 of 8 seats.,,
-WI,2008,WI2008,WI4,0.045,0.066,0.094,0.020,0.045,0.016,636405,789822,1510343,2852455,8,5,3,Democrats needed 6.6% fewer votes to win their 5 of 8 seats.,,
-WI,2010,WI2010,WI4,0.045,-0.017,0.000,0.020,0.010,0.016,559898,492328,938690,2104451,8,3,5,Republicans needed 1.7% fewer votes to win their 5 of 8 seats.,,
-WI,2012,WI2012,WI5,-0.099,-0.140,-0.125,-0.125,-0.067,-0.074,922229,501279,1445015,2847010,8,3,5,Republicans needed 14.0% fewer votes to win their 5 of 8 seats.,,
-WI,2014,WI2014,WI5,-0.099,-0.069,-0.125,-0.125,-0.063,-0.074,677089,490868,1102581,2335917,8,3,5,Republicans needed 6.9% fewer votes to win their 5 of 8 seats.,,
-WI,2016,WI2016,WI5,-0.099,-0.087,-0.125,-0.125,-0.092,-0.074,833030,611074,1389578,2888209,8,3,5,Republicans needed 8.7% fewer votes to win their 5 of 8 seats.,,
+state,year,code,plan,eg_adj_avg,eg_avg_percentrank,eg_adj,bias,bias_avg,bias_avg_percentrank,mmd,mmd_avg,mmd_avg_percentrank,wasted_dem,wasted_rep,votes_dem,votes_twop,seats,seats_dem,seats_r
+AL,1972,AL1972,AL1,-0.052,0.184,-0.058,0.056,0.044,0.714,0.134,0.093,0.965,272265,221877,558363,988286,7,4,3
+AL,1974,AL1974,AL1,-0.052,0.184,0.070,0.062,0.044,0.716,0.049,0.093,0.967,137571,204525,342569,684191,7,4,3
+AL,1976,AL1976,AL1,-0.052,0.185,-0.119,0.037,0.044,0.717,0.105,0.093,0.969,343345,211017,660196,1108721,7,4,3
+AL,1978,AL1978,AL1,-0.052,0.185,-0.080,0.016,0.044,0.719,0.057,0.093,0.97,220803,159138,437794,759880,7,4,3
+AL,1980,AL1980,AL1,-0.052,0.185,-0.075,0.048,0.044,0.72,0.118,0.093,0.972,345811,231363,661758,1154347,7,4,3
+AL,1982,AL1982,AL2,0.018,0.557,-0.033,0.024,0.106,0.895,0.096,0.080,0.921,281608,236008,645519,1035232,7,5,2
+AL,1984,AL1984,AL2,0.018,0.558,0.103,0.132,0.106,0.897,0.043,0.080,0.923,277592,440834,798723,1436854,7,5,2
+AL,1986,AL1986,AL2,0.018,0.56,-0.036,0.087,0.106,0.899,0.104,0.080,0.925,301071,277985,723938,1158112,7,5,2
+AL,1988,AL1988,AL2,0.018,0.561,0.076,0.153,0.106,0.901,0.078,0.080,0.926,310005,394259,801563,1408528,7,5,2
+AL,1990,AL1990,AL2,0.018,0.562,-0.022,0.132,0.106,0.902,0.078,0.080,0.928,293251,284272,713744,1155045,7,5,2
+AL,1992,AL1992,AL3,-0.052,0.188,-0.093,0.071,-0.034,0.327,0.036,0.000,0.343,477484,291892,895601,1538751,7,4,3
+AL,1994,AL1994,AL3,-0.052,0.188,0.149,0.070,-0.034,0.328,0.044,0.000,0.344,214008,369424,537993,1166864,7,4,3
+AL,1996,AL1996,AL3,-0.052,0.188,-0.124,0.071,-0.034,0.329,0.029,0.000,0.345,461067,259714,656047,1441560,7,2,5
+AL,1998,AL1998,AL3,-0.052,0.189,-0.133,-0.197,-0.034,0.329,-0.041,0.000,0.345,421455,240025,607881,1322961,7,2,5
+AL,2000,AL2000,AL3,-0.052,0.189,-0.060,-0.187,-0.034,0.33,-0.071,0.000,0.346,441692,351853,671181,1587089,7,2,5
+AL,2002,AL2002,AL4,-0.066,0.133,-0.103,-0.075,-0.087,0.175,-0.060,-0.039,0.192,393245,247542,569368,1281574,7,2,5
+AL,2004,AL2004,AL4,-0.066,0.133,-0.071,-0.212,-0.087,0.176,-0.060,-0.039,0.192,512879,388770,772665,1803299,7,2,5
+AL,2006,AL2006,AL4,-0.066,0.134,-0.042,-0.209,-0.087,0.176,-0.096,-0.039,0.192,327267,296686,516736,1247904,7,2,5
+AL,2008,AL2008,AL4,-0.066,0.134,0.034,0.048,-0.087,0.176,0.012,-0.039,0.193,430006,531497,860055,1923006,7,3,4
+AL,2010,AL2010,AL4,-0.066,0.134,-0.149,0.012,-0.087,0.177,0.009,-0.039,0.193,476444,244694,570737,1442276,7,1,6
+AL,2012,AL2012,AL5,-0.117,0.035,-0.149,-0.353,-0.273,0,-0.037,-0.045,0.132,639830,361554,793008,2002768,7,1,6
+AL,2014,AL2014,AL5,-0.117,0.035,-0.088,-0.307,-0.273,0,-0.048,-0.045,0.133,331950,260483,432970,1184867,7,1,6
+AL,2016,AL2016,AL5,-0.117,0.035,-0.115,-0.158,-0.273,0,-0.049,-0.045,0.133,612473,407002,772433,2038951,7,1,6
+AZ,2002,AZ2002,AZ4,-0.003,0.377,-0.068,-0.125,-0.051,0.236,-0.034,0.002,0.338,390821,186209,472135,1154057,8,2,6
+AZ,2004,AZ2004,AZ4,-0.003,0.378,-0.086,-0.246,-0.051,0.236,-0.031,0.002,0.339,627331,286807,763992,1828278,8,2,6
+AZ,2006,AZ2006,AZ4,-0.003,0.379,0.037,-0.009,-0.051,0.237,0.007,0.002,0.34,390252,348044,711272,1476588,8,4,4
+AZ,2008,AZ2008,AZ4,-0.003,0.379,0.109,0.125,-0.051,0.237,0.047,0.002,0.34,474315,564236,1055305,2077103,8,5,3
+AZ,2010,AZ2010,AZ4,-0.003,0.38,-0.008,0.000,-0.051,0.238,0.019,0.002,0.341,457063,349110,711837,1612347,8,3,5
+AZ,2012,AZ2012,AZ5,0.087,0.836,0.158,0.056,0.019,0.522,0.055,0.031,0.627,417234,643148,952151,2120768,9,5,4
+AZ,2014,AZ2014,AZ5,0.087,0.838,0.082,0.056,0.019,0.523,0.068,0.031,0.629,374349,376854,648192,1502409,9,4,5
+AZ,2016,AZ2016,AZ5,0.087,0.84,0.022,-0.056,0.019,0.524,-0.031,0.031,0.63,679011,553505,1136764,2465034,9,4,5
+CA,1972,CA1972,CA1,-0.011,0.329,-0.011,0.011,0.011,0.506,0.029,0.029,0.585,2224611,1778935,4185445,8007096,43,23,20
+CA,1974,CA1974,CA1.1,0.053,0.706,0.013,-0.010,0.036,0.633,0.020,0.053,0.77,1554942,1340371,3295277,5790634,43,28,15
+CA,1976,CA1976,CA1.1,0.053,0.707,0.053,0.081,0.036,0.634,0.075,0.053,0.772,1871216,1824899,4146554,7392234,43,29,14
+CA,1978,CA1978,CA1.1,0.053,0.709,0.068,0.062,0.036,0.635,0.068,0.053,0.774,1605567,1646402,3370976,6503931,43,26,17
+CA,1980,CA1980,CA1.1,0.053,0.71,0.077,0.012,0.036,0.637,0.050,0.053,0.775,1939417,1982655,3665518,7844144,43,22,21
+CA,1982,CA1982,CA2,0.109,0.922,0.109,0.100,0.100,0.884,0.053,0.053,0.775,1590349,2139900,3777810,7460505,45,28,17
+CA,1984,CA1984,CA2.1,0.057,0.762,0.102,0.100,0.087,0.861,0.104,0.101,0.977,1982496,2496317,4470979,8957624,45,27,18
+CA,1986,CA1986,CA2.1,0.057,0.763,0.048,0.100,0.087,0.863,0.124,0.101,0.979,1762952,1778633,3727386,7083165,45,27,18
+CA,1988,CA1988,CA2.1,0.057,0.765,0.042,0.097,0.087,0.864,0.115,0.101,0.981,2385731,2209376,4863080,9190217,45,27,18
+CA,1990,CA1990,CA2.1,0.057,0.766,0.034,0.051,0.087,0.866,0.062,0.101,0.983,1879043,1650617,3685948,7059327,45,26,19
+CA,1992,CA1992,CA3,-0.002,0.413,-0.013,-0.024,-0.021,0.353,-0.005,0.005,0.383,2673163,2262994,5378977,9872314,52,30,22
+CA,1994,CA1994,CA3,-0.002,0.414,0.038,-0.014,-0.021,0.354,0.015,0.005,0.384,2072064,1961193,3959063,8066523,52,27,25
+CA,1996,CA1996,CA3,-0.002,0.415,0.012,-0.038,-0.021,0.355,-0.008,0.005,0.385,2389006,2110228,4706819,8998466,52,29,23
+CA,1998,CA1998,CA3,-0.002,0.415,-0.054,-0.004,-0.021,0.355,0.024,0.005,0.385,2347367,1560184,4269268,7815097,52,28,24
+CA,2000,CA2000,CA3,-0.002,0.416,0.009,-0.021,-0.021,0.356,0.001,0.005,0.386,2661963,2329651,5524344,9983229,52,32,20
+CA,2002,CA2002,CA4,-0.003,0.394,0.056,0.104,0.102,0.886,0.102,0.092,0.97,1779568,1743966,3758339,7047070,53,33,20
+CA,2004,CA2004,CA4,-0.003,0.394,0.013,0.104,0.102,0.888,0.097,0.092,0.972,3128359,2582430,6336704,11421580,53,33,20
+CA,2006,CA2006,CA4,-0.003,0.395,-0.023,0.099,0.102,0.89,0.086,0.092,0.974,2401672,1709131,4710233,8221603,53,33,20
+CA,2008,CA2008,CA4,-0.003,0.396,-0.082,0.119,0.102,0.892,0.102,0.092,0.976,3948435,2193476,7515410,12283822,53,34,19
+CA,2010,CA2010,CA4,-0.003,0.397,0.020,0.085,0.102,0.894,0.071,0.092,0.978,2567767,2135253,5273909,9406046,53,34,19
+CA,2012,CA2012,CA5,0.038,0.654,0.015,0.015,0.033,0.641,0.031,0.033,0.67,3055281,3130856,7437880,12372284,53,38,15
+CA,2014,CA2014,CA5,0.038,0.656,0.104,0.025,0.033,0.643,0.025,0.033,0.671,1510651,2144360,4135938,7310026,53,39,14
+CA,2016,CA2016,CA5,0.038,0.657,-0.006,0.061,0.033,0.644,0.043,0.033,0.672,3508393,3294782,8448582,13606351,53,39,14
+CO,2002,CO2002,CO4,-0.029,0.278,-0.092,-0.071,-0.036,0.309,-0.008,0.005,0.383,409128,262104,589463,1342461,7,2,5
+CO,2004,CO2004,CO4,-0.029,0.279,-0.073,-0.071,-0.036,0.309,-0.034,0.005,0.384,578947,414612,995283,1987118,7,3,4
+CO,2006,CO2006,CO4,-0.029,0.279,-0.051,-0.037,-0.036,0.31,0.005,0.005,0.385,435834,315605,843779,1502878,7,4,3
+CO,2008,CO2008,CO4,-0.029,0.28,0.095,0.071,-0.036,0.311,0.056,0.005,0.385,489311,636008,1259768,2250638,7,5,2
+CO,2010,CO2010,CO4,-0.029,0.28,-0.023,-0.071,-0.036,0.311,0.004,0.005,0.386,480332,364731,804069,1690126,7,3,4
+CO,2012,CO2012,CO5,-0.064,0.139,-0.092,-0.066,-0.070,0.21,-0.021,-0.030,0.215,675333,500279,1200192,2351226,7,3,4
+CO,2014,CO2014,CO5,-0.064,0.14,-0.038,-0.071,-0.070,0.211,-0.030,-0.030,0.215,496891,471414,936417,1936614,7,3,4
+CO,2016,CO2016,CO5,-0.064,0.14,-0.062,-0.071,-0.070,0.211,-0.040,-0.030,0.216,695649,580519,1263791,2552334,7,3,4
+FL,1972,FL1972,FL1,0.112,0.92,0.187,0.188,0.126,0.958,0.055,0.074,0.906,423554,773150,1252276,2393405,15,11,4
+FL,1974,FL1974,FL1,0.112,0.922,0.119,0.090,0.126,0.96,0.097,0.074,0.908,376799,456518,872808,1666633,15,10,5
+FL,1976,FL1976,FL1,0.112,0.924,0.047,0.103,0.126,0.962,0.091,0.074,0.911,706713,683507,1556601,2780440,15,10,5
+FL,1978,FL1978,FL1,0.112,0.926,0.118,0.090,0.126,0.964,0.042,0.074,0.913,516398,655655,1384894,2344107,15,12,3
+FL,1980,FL1980,FL1,0.112,0.928,0.091,0.158,0.126,0.966,0.087,0.074,0.915,808296,858203,1903102,3332997,15,11,4
+FL,1982,FL1982,FL2,0.054,0.725,0.005,0.078,0.063,0.788,0.061,0.058,0.818,737288,583469,1557697,2641516,19,13,6
+FL,1984,FL1984,FL2,0.054,0.727,0.178,0.131,0.063,0.79,0.096,0.058,0.819,661214,1227811,1801993,3778048,19,12,7
+FL,1986,FL1986,FL2,0.054,0.729,0.049,0.106,0.063,0.792,0.126,0.058,0.821,796538,849025,1781144,3291127,19,12,7
+FL,1988,FL1988,FL2,0.054,0.73,0.047,0.041,0.063,0.794,0.059,0.058,0.823,1079908,1121631,2155963,4403082,19,10,9
+FL,1990,FL1990,FL2,0.054,0.732,-0.009,-0.042,0.063,0.795,-0.050,0.058,0.825,965138,779133,1714081,3488544,19,9,10
+FL,1992,FL1992,FL3,-0.031,0.267,-0.030,-0.063,-0.076,0.194,-0.047,-0.051,0.123,1404457,1133932,2449804,5076778,23,10,13
+FL,1994,FL1994,FL3,-0.031,0.267,-0.031,-0.089,-0.076,0.194,-0.056,-0.051,0.123,1187417,912293,1845932,4199418,23,8,15
+FL,1996,FL1996,FL3.1,-0.057,0.165,-0.036,-0.129,-0.108,0.142,-0.062,-0.069,0.071,1429316,1117369,2250410,5093365,23,8,15
+FL,1998,FL1998,FL3.1,-0.057,0.165,-0.040,-0.105,-0.108,0.142,-0.088,-0.069,0.071,1107254,818097,1709968,3850704,23,8,15
+FL,2000,FL2000,FL3.1,-0.057,0.166,-0.096,-0.091,-0.108,0.143,-0.057,-0.069,0.071,1734975,985191,2568395,5440330,23,8,15
+FL,2002,FL2002,FL4,-0.091,0.055,-0.102,-0.144,-0.139,0.076,-0.060,-0.061,0.078,1565586,901160,2176347,4933497,25,7,18
+FL,2004,FL2004,FL4,-0.091,0.055,-0.089,-0.181,-0.139,0.076,-0.079,-0.061,0.079,2229504,1397723,3151785,7254454,25,7,18
+FL,2006,FL2006,FL4,-0.091,0.056,-0.131,-0.159,-0.139,0.076,-0.059,-0.061,0.079,1567279,839510,2386399,4813580,25,9,16
+FL,2008,FL2008,FL4,-0.091,0.056,-0.082,-0.101,-0.139,0.077,-0.066,-0.061,0.079,2388142,1503360,3821494,7783005,25,10,15
+FL,2010,FL2010,FL4,-0.091,0.056,-0.049,-0.109,-0.139,0.077,-0.042,-0.061,0.079,1652127,1061663,2142456,5427579,25,6,19
+FL,2012,FL2012,FL5,-0.071,0.128,-0.103,-0.133,-0.109,0.128,-0.059,-0.058,0.079,2565492,1487655,3945312,8106299,27,10,17
+FL,2014,FL2014,FL5,-0.071,0.129,-0.039,-0.084,-0.109,0.129,-0.057,-0.058,0.079,1692201,1223069,2649768,5830534,27,10,17
+FL,2016,FL2016,FL5.1,-0.067,0.129,-0.067,-0.093,-0.093,0.159,-0.031,-0.031,0.197,2460960,2050171,4229277,9022255,27,10,17
+GA,1972,GA1972,GA1,0.106,0.892,0.264,0.052,0.052,0.737,0.060,0.035,0.685,144213,415394,635876,1119213,10,9,1
+GA,1974,GA1974,GA1,0.106,0.894,0.156,0.039,0.052,0.739,0.020,0.035,0.687,148524,282642,579691,862333,10,10,0
+GA,1976,GA1976,GA1,0.106,0.896,0.116,-0.049,0.052,0.741,0.017,0.035,0.689,257023,411800,925847,1337647,10,10,0
+GA,1978,GA1978,GA1,0.106,0.898,-0.034,0.109,0.052,0.742,0.042,0.035,0.69,183611,139968,463925,647158,10,9,1
+GA,1980,GA1980,GA1,0.106,0.9,0.029,0.108,0.052,0.744,0.036,0.035,0.692,345804,366379,976649,1424366,10,9,1
+GA,1982,GA1982,GA2,0.082,0.829,0.042,-0.013,0.024,0.582,0.045,0.030,0.606,205498,210737,565327,832470,10,9,1
+GA,1984,GA1984,GA2,0.082,0.831,0.034,0.042,0.024,0.583,0.049,0.030,0.607,419389,414282,1055285,1667341,10,8,2
+GA,1986,GA1986,GA2,0.082,0.833,0.021,0.070,0.024,0.585,0.038,0.030,0.609,306143,272699,740390,1157686,10,8,2
+GA,1988,GA1988,GA2,0.082,0.835,0.140,0.023,0.024,0.586,0.014,0.030,0.61,324615,565687,1121419,1780602,10,9,1
+GA,1990,GA1990,GA2,0.082,0.837,0.173,0.000,0.024,0.588,0.003,0.030,0.612,236239,460584,854784,1393649,10,9,1
+GA,1992,GA1992,GA3,-0.004,0.385,0.039,-0.045,-0.045,0.238,0.008,-0.013,0.293,564501,542488,1214792,2213974,11,7,4
+GA,1994,GA1994,GA3,-0.004,0.386,-0.046,-0.045,-0.045,0.239,-0.033,-0.013,0.294,447197,301572,681051,1497535,11,4,7
+GA,1996,GA1996,GA3.1,-0.090,0.058,-0.145,-0.055,-0.107,0.133,-0.037,-0.041,0.171,730516,374552,1014108,2210133,11,3,8
+GA,1998,GA1998,GA3.1,-0.090,0.058,-0.091,-0.145,-0.107,0.133,-0.050,-0.041,0.172,530514,338975,751054,1738981,11,3,8
+GA,2000,GA2000,GA3.1,-0.090,0.058,-0.034,-0.122,-0.107,0.133,-0.036,-0.041,0.172,700653,531983,994701,2465275,11,3,8
+GA,2002,GA2002,GA4,0.086,0.837,0.084,0.038,0.005,0.443,0.048,0.018,0.477,463791,536605,800533,2000797,13,5,8
+GA,2004,GA2004,GA4,0.086,0.839,0.087,-0.027,0.005,0.444,-0.011,0.018,0.478,729125,834783,1368276,3127817,13,6,7
+GA,2006,GA2006,GA4.1,0.025,0.584,0.074,-0.038,-0.038,0.279,-0.118,-0.106,0,495218,552426,930231,2095284,13,6,7
+GA,2008,GA2008,GA4.1,0.025,0.586,-0.020,-0.038,-0.038,0.279,-0.098,-0.106,0,1038651,810138,1814077,3697580,13,6,7
+GA,2010,GA2010,GA4.1,0.025,0.587,0.021,-0.038,-0.038,0.28,-0.103,-0.106,0,664313,618671,1108075,2565969,13,5,8
+GA,2012,GA2012,GA5,-0.083,0.059,-0.070,-0.143,-0.165,0.057,-0.101,-0.087,0.007,1034317,812473,1713009,3693574,14,5,9
+GA,2014,GA2014,GA5,-0.083,0.059,-0.075,-0.139,-0.165,0.057,-0.087,-0.087,0.007,716234,535564,1077279,2503596,14,4,10
+GA,2016,GA2016,GA5,-0.083,0.059,-0.103,-0.214,-0.165,0.057,-0.071,-0.087,0.007,1219503,784586,1781401,4008178,14,4,10
+IL,1972,IL1972,IL1,-0.042,0.184,-0.067,-0.084,-0.075,0.169,-0.044,-0.053,0.082,1348245,921619,2232886,4539733,24,10,14
+IL,1974,IL1974,IL1,-0.042,0.184,-0.088,-0.084,-0.075,0.169,-0.048,-0.053,0.082,842705,582322,1610453,2850055,24,13,11
+IL,1976,IL1976,IL1,-0.042,0.185,-0.031,-0.042,-0.075,0.17,-0.035,-0.053,0.082,1218825,960916,2246614,4359482,24,12,12
+IL,1978,IL1978,IL1,-0.042,0.185,-0.022,-0.083,-0.075,0.17,-0.066,-0.053,0.083,852384,691096,1513523,3086965,24,11,13
+IL,1980,IL1980,IL1,-0.042,0.185,-0.001,-0.083,-0.075,0.17,-0.073,-0.053,0.083,1286401,946800,2048658,4466405,24,10,14
+IL,1982,IL1982,IL2,0.014,0.518,-0.113,-0.045,0.019,0.508,-0.063,0.029,0.57,1069447,722463,2076428,3583820,22,12,10
+IL,1984,IL1984,IL2,0.014,0.519,0.057,0.011,0.019,0.509,0.028,0.029,0.572,1034457,1259610,2370892,4588140,22,13,9
+IL,1986,IL1986,IL2,0.014,0.52,-0.008,-0.003,0.019,0.51,-0.005,0.029,0.573,742768,769404,1661005,3024344,22,13,9
+IL,1988,IL1988,IL2,0.014,0.522,0.073,0.045,0.019,0.511,0.086,0.029,0.575,997874,1185069,2321265,4365888,22,14,8
+IL,1990,IL1990,IL2,0.014,0.523,0.061,0.084,0.019,0.513,0.098,0.029,0.576,731253,843215,1765394,3148936,22,15,7
+IL,1992,IL1992,IL3,-0.042,0.188,-0.022,0.000,-0.031,0.29,0.019,-0.017,0.224,1280928,1106273,2677685,4774402,20,12,8
+IL,1994,IL1994,IL3,-0.042,0.189,0.042,0.000,-0.031,0.291,0.020,-0.017,0.224,723955,821746,1480382,3091408,20,10,10
+IL,1996,IL1996,IL3,-0.042,0.189,-0.095,-0.050,-0.031,0.292,-0.037,-0.017,0.225,1292229,775232,2263434,4134927,20,10,10
+IL,1998,IL1998,IL3,-0.042,0.19,-0.060,-0.050,-0.031,0.292,-0.066,-0.017,0.226,983194,671988,1754502,3310364,20,10,10
+IL,2000,IL2000,IL3,-0.042,0.19,-0.075,-0.053,-0.031,0.293,-0.019,-0.017,0.226,1413762,783951,2363192,4395433,20,10,10
+IL,2002,IL2002,IL4,-0.081,0.088,-0.052,-0.033,-0.042,0.227,-0.061,-0.024,0.214,1012889,692234,1748261,3410243,19,9,10
+IL,2004,IL2004,IL4,-0.081,0.088,-0.052,-0.026,-0.042,0.227,-0.022,-0.024,0.214,1502032,999433,2697409,5002930,19,10,9
+IL,2006,IL2006,IL4,-0.081,0.088,-0.102,-0.084,-0.042,0.228,-0.028,-0.024,0.215,1138309,598358,1958781,3473340,19,10,9
+IL,2008,IL2008,IL4,-0.081,0.088,-0.078,0.011,-0.042,0.229,0.024,-0.024,0.216,1584220,1019422,3148006,5207275,19,12,7
+IL,2010,IL2010,IL4,-0.081,0.089,-0.122,-0.079,-0.042,0.229,-0.033,-0.024,0.216,1236153,562011,1876316,3596332,19,8,11
+IL,2012,IL2012,IL5,0.036,0.642,0.058,-0.056,0.017,0.493,-0.007,0.024,0.478,1180346,1295415,2743702,4951520,18,12,6
+IL,2014,IL2014,IL5,0.036,0.644,0.027,0.056,0.017,0.495,0.030,0.024,0.479,921529,850793,1822779,3544644,18,10,8
+IL,2016,IL2016,IL5,0.036,0.646,0.022,0.052,0.017,0.496,0.048,0.024,0.48,1391184,1317339,2950699,5417046,18,11,7
+IN,1972,IN1972,IN1,0.089,0.829,-0.060,-0.045,0.008,0.445,-0.009,0.006,0.35,601857,451818,973706,2107352,11,4,7
+IN,1974,IN1974,IN1,0.089,0.831,0.210,-0.136,0.008,0.446,-0.020,0.006,0.351,264511,598904,956675,1726829,11,9,2
+IN,1976,IN1976,IN1,0.089,0.833,0.156,0.130,0.008,0.447,0.016,0.006,0.352,381988,701269,1160504,2166515,11,8,3
+IN,1978,IN1978,IN1,0.089,0.836,0.087,0.045,0.008,0.448,0.037,0.006,0.353,324360,391869,751940,1432453,11,7,4
+IN,1980,IN1980,IN1,0.089,0.838,0.051,0.045,0.008,0.449,0.005,0.006,0.354,503404,590148,1087115,2187106,11,6,5
+IN,1982,IN1982,IN2,0.064,0.792,0.015,0.000,0.040,0.648,0.010,0.018,0.453,436781,459273,882378,1792109,10,5,5
+IN,1984,IN1984,IN2,0.064,0.794,-0.042,0.000,0.040,0.65,0.016,0.018,0.455,603000,478979,1019666,2163959,10,4,6
+IN,1986,IN1986,IN2,0.064,0.796,0.079,0.100,0.040,0.651,0.014,0.018,0.456,326800,445477,788419,1544554,10,6,4
+IN,1988,IN1988,IN2,0.064,0.798,0.065,0.100,0.040,0.653,0.030,0.018,0.457,488268,571709,1096834,2119958,10,6,4
+IN,1990,IN1990,IN2,0.064,0.801,0.202,0.000,0.040,0.655,0.022,0.018,0.458,242621,513923,830500,1513093,10,8,2
+IN,1992,IN1992,IN3,0.028,0.597,0.106,0.100,0.040,0.657,0.036,0.009,0.378,451822,650279,1205869,2204203,10,7,3
+IN,1994,IN1994,IN3,0.028,0.599,0.035,0.200,0.040,0.659,0.033,0.009,0.379,398327,372939,667454,1542536,10,4,6
+IN,1996,IN1996,IN3,0.028,0.601,-0.012,0.000,0.040,0.66,-0.006,0.009,0.38,546777,473732,930919,2041016,10,4,6
+IN,1998,IN1998,IN3,0.028,0.602,0.023,0.000,0.040,0.662,-0.012,0.009,0.381,388686,378950,673322,1535273,10,4,6
+IN,2000,IN2000,IN3,0.028,0.604,-0.011,-0.100,0.040,0.664,-0.008,0.009,0.383,556314,490545,953167,2093721,10,4,6
+IN,2002,IN2002,IN4,-0.014,0.304,-0.032,0.056,0.033,0.611,0.040,0.031,0.603,411552,329078,640568,1481262,9,3,6
+IN,2004,IN2004,IN4,-0.014,0.305,-0.117,0.056,0.033,0.613,0.032,0.031,0.604,759053,431338,999082,2380781,9,2,7
+IN,2006,IN2006,IN4,-0.014,0.306,0.067,0.056,0.033,0.614,0.030,0.031,0.606,362045,460095,812496,1644281,9,5,4
+IN,2008,IN2008,IN4,-0.014,0.307,-0.001,0.056,0.033,0.616,0.072,0.031,0.608,685443,629327,1388963,2629540,9,5,4
+IN,2010,IN2010,IN4,-0.014,0.307,0.011,-0.056,0.033,0.618,-0.017,0.031,0.609,436306,389760,679462,1652133,9,3,6
+IN,2012,IN2012,IN5,-0.107,0.05,-0.194,-0.167,-0.204,0.056,-0.013,-0.029,0.194,874062,373094,1142554,2494314,9,2,7
+IN,2014,IN2014,IN5,-0.107,0.05,-0.053,-0.278,-0.204,0.056,-0.036,-0.029,0.195,379149,268783,502104,1295863,9,2,7
+IN,2016,IN2016,IN5,-0.107,0.05,-0.073,-0.167,-0.204,0.056,-0.040,-0.029,0.196,755471,525211,1018565,2561367,9,2,7
+KY,1972,KY1972,KY1,0.043,0.653,0.208,0.214,0.117,0.927,0.112,0.102,0.98,152387,338421,493795,981615,7,5,2
+KY,1974,KY1974,KY1,0.043,0.654,-0.067,0.214,0.117,0.93,0.109,0.102,0.983,202717,129237,425272,663909,7,5,2
+KY,1976,KY1976,KY1,0.043,0.656,0.032,0.024,0.117,0.932,0.013,0.102,0.986,255143,257190,605561,1024668,7,5,2
+KY,1978,KY1978,KY1,0.043,0.658,0.012,0.063,0.117,0.935,0.148,0.102,0.989,150023,107246,272651,514539,7,4,3
+KY,1980,KY1980,KY1,0.043,0.66,0.028,0.068,0.117,0.938,0.126,0.102,0.992,290149,260190,574410,1100678,7,4,3
+KY,1982,KY1982,KY2,0.018,0.557,-0.108,0.068,0.062,0.747,0.080,0.081,0.955,234560,138261,439621,745639,7,4,3
+KY,1984,KY1984,KY2,0.018,0.558,0.014,0.070,0.062,0.749,0.092,0.081,0.957,307489,314289,657681,1243555,7,4,3
+KY,1986,KY1986,KY2,0.018,0.56,-0.044,0.047,0.062,0.751,0.094,0.081,0.96,206440,166697,416259,746274,7,4,3
+KY,1988,KY1988,KY2,0.018,0.562,0.118,0.072,0.062,0.754,0.111,0.081,0.963,237169,364625,573700,1203590,7,4,3
+KY,1990,KY1990,KY2,0.018,0.563,0.111,0.051,0.062,0.756,0.028,0.081,0.966,175445,269190,427156,889272,7,4,3
+MA,1972,MA1972,MA1,0.050,0.697,-0.025,0.021,0.080,0.85,0.063,0.074,0.908,525327,630222,1376919,2311096,12,8,4
+MA,1974,MA1974,MA1,0.050,0.699,0.026,0.075,0.080,0.853,0.124,0.074,0.91,390421,381586,1009091,1544013,12,10,2
+MA,1976,MA1976,MA1,0.050,0.701,0.059,0.086,0.080,0.855,0.066,0.074,0.913,541885,648746,1516903,2381258,12,10,2
+MA,1978,MA1978,MA1,0.050,0.703,0.075,0.117,0.080,0.858,0.046,0.074,0.916,406937,524887,1172113,1863647,12,10,2
+MA,1980,MA1980,MA1,0.050,0.706,0.115,0.103,0.080,0.86,0.074,0.074,0.918,470488,708300,1436129,2357578,12,10,2
+MA,1982,MA1982,MA2,0.101,0.865,0.080,0.028,0.100,0.871,0.017,0.042,0.711,365468,637918,1333474,2006774,11,10,1
+MA,1984,MA1984,MA2,0.101,0.868,0.132,0.158,0.100,0.874,0.049,0.042,0.713,447970,768095,1552525,2432129,11,10,1
+MA,1986,MA1986,MA2,0.101,0.871,0.058,0.100,0.100,0.876,0.042,0.042,0.715,368856,473036,1137724,1683784,11,10,1
+MA,1988,MA1988,MA2,0.101,0.873,0.061,0.135,0.100,0.879,0.033,0.042,0.717,557828,721973,1724994,2559599,11,10,1
+MA,1990,MA1990,MA2,0.101,0.876,0.176,0.080,0.100,0.882,0.069,0.042,0.719,358595,762722,1382730,2242631,11,10,1
+MA,1992,MA1992,MA3,0.081,0.822,0.043,0.026,0.038,0.682,0.032,0.026,0.519,577210,626886,1513066,2408193,10,8,2
+MA,1994,MA1994,MA3,0.081,0.824,0.031,0.098,0.038,0.685,0.043,0.026,0.521,506872,553384,1345164,2120513,10,8,2
+MA,1996,MA1996,MA3,0.081,0.827,0.205,0.068,0.038,0.687,0.050,0.026,0.522,356336,850663,1563333,2413996,10,10,0
+MA,1998,MA1998,MA3,0.081,0.829,0.120,0.043,0.038,0.689,0.017,0.026,0.524,344393,562325,1251116,1813442,10,10,0
+MA,2000,MA2000,MA3,0.081,0.832,0.007,-0.044,0.038,0.691,-0.012,0.026,0.526,622846,639328,1885021,2524350,10,10,0
+MA,2002,MA2002,MA4,0.095,0.846,0.095,-0.122,-0.099,0.148,-0.013,-0.015,0.256,429616,632377,1491610,2123987,10,10,0
+MA,2004,MA2004,MA4,0.095,0.849,0.054,-0.091,-0.099,0.148,-0.007,-0.015,0.257,630706,783068,2044480,2827549,10,10,0
+MA,2006,MA2006,MA4,0.095,0.852,0.001,-0.038,-0.099,0.148,-0.007,-0.015,0.258,537564,539392,1614521,2153913,10,10,0
+MA,2008,MA2008,MA4,0.095,0.854,0.050,-0.144,-0.099,0.149,-0.019,-0.015,0.258,660392,807324,2128109,2935433,10,10,0
+MA,2010,MA2010,MA4,0.095,0.857,0.277,-0.102,-0.099,0.149,-0.030,-0.015,0.259,245206,852858,1343271,2196129,10,10,0
+MA,2012,MA2012,MA5,0.140,0.96,0.125,-0.042,-0.074,0.183,0.001,-0.007,0.297,571661,952228,2095550,3047778,9,9,0
+MA,2014,MA2014,MA5,0.140,0.963,0.213,-0.069,-0.074,0.184,-0.002,-0.007,0.298,313479,777926,1404885,2182811,9,9,0
+MA,2016,MA2016,MA5,0.140,0.966,0.083,-0.113,-0.074,0.185,-0.021,-0.007,0.298,672300,938622,2283223,3221844,9,9,0
+MD,1972,MD1972,MD1,-0.018,0.287,-0.040,0.000,0.010,0.519,0.007,0.030,0.58,338504,270970,634087,1218946,8,4,4
+MD,1974,MD1974,MD1,-0.018,0.288,-0.089,-0.003,0.010,0.52,0.025,0.030,0.582,285351,169427,551890,909557,8,5,3
+MD,1976,MD1976,MD1,-0.018,0.289,-0.106,-0.005,0.010,0.522,0.027,0.030,0.584,415021,223659,785927,1277357,8,5,3
+MD,1978,MD1978,MD1,-0.018,0.29,0.004,0.056,0.010,0.523,0.061,0.030,0.586,238243,239783,595602,956051,8,6,2
+MD,1980,MD1980,MD1,-0.018,0.291,0.141,0.000,0.010,0.525,0.029,0.030,0.588,248625,452898,865969,1403047,8,7,1
+MD,1982,MD1982,MD2,0.024,0.605,0.014,0.250,0.149,0.956,0.047,0.071,0.884,258801,286779,742600,1091161,8,7,1
+MD,1984,MD1984,MD2,0.024,0.607,-0.027,0.125,0.149,0.959,0.033,0.071,0.887,406090,356432,973696,1525043,8,6,2
+MD,1986,MD1986,MD2,0.024,0.609,-0.008,0.125,0.149,0.962,0.066,0.071,0.89,307480,224058,668673,1063074,8,6,2
+MD,1988,MD1988,MD2,0.024,0.611,0.063,0.123,0.149,0.965,0.112,0.071,0.892,396791,396969,942466,1587518,8,6,2
+MD,1990,MD1990,MD2,0.024,0.613,0.080,0.125,0.149,0.968,0.099,0.071,0.895,264654,276874,565669,1083055,8,5,3
+MD,1992,MD1992,MD3,-0.059,0.131,-0.063,-0.125,-0.025,0.312,-0.016,-0.013,0.271,556163,343207,955952,1798741,8,4,4
+MD,1994,MD1994,MD3,-0.059,0.131,0.015,0.000,-0.025,0.313,-0.012,-0.013,0.272,374092,298352,662312,1344890,8,4,4
+MD,1996,MD1996,MD3,-0.059,0.131,-0.070,0.000,-0.025,0.314,-0.035,-0.013,0.272,520652,298758,876658,1638821,8,4,4
+MD,1998,MD1998,MD3,-0.059,0.132,-0.069,0.000,-0.025,0.315,-0.010,-0.013,0.273,465664,275244,792280,1481812,8,4,4
+MD,2000,MD2000,MD3,-0.059,0.132,-0.107,0.000,-0.025,0.316,0.006,-0.013,0.274,645927,312654,1060857,1917163,8,4,4
+MD,2002,MD2002,MD4,0.046,0.706,0.159,0.000,0.166,0.977,0.055,0.064,0.851,312364,516216,904250,1657161,8,6,2
+MD,2004,MD2004,MD4,0.046,0.708,0.062,0.250,0.166,0.981,0.099,0.064,0.854,516881,586630,1310791,2207023,8,6,2
+MD,2006,MD2006,MD4,0.046,0.71,0.001,0.204,0.166,0.984,0.073,0.064,0.857,465378,394340,1074021,1719434,8,6,2
+MD,2008,MD2008,MD4,0.046,0.712,0.000,0.250,0.166,0.987,0.061,0.064,0.859,616915,602973,1677238,2439777,8,7,1
+MD,2010,MD2010,MD4,0.046,0.715,0.008,0.125,0.166,0.99,0.033,0.064,0.862,467301,421849,1104056,1778302,8,6,2
+MD,2012,MD2012,MD5,0.131,0.941,0.066,0.250,0.250,0.993,0.031,0.030,0.612,537741,704898,1626872,2485278,8,7,1
+MD,2014,MD2014,MD5,0.131,0.944,0.212,0.250,0.250,0.997,0.039,0.030,0.614,262026,579308,978267,1682667,8,7,1
+MD,2016,MD2016,MD5,0.131,0.947,0.116,0.250,0.250,1,0.022,0.030,0.616,510153,788990,1636200,2598288,8,7,1
+MI,1972,MI1972,MI1,-0.006,0.359,-0.078,-0.079,-0.060,0.216,-0.037,-0.017,0.266,993828,629115,1535707,3245884,19,7,12
+MI,1974,MI1974,MI1,-0.006,0.36,-0.048,-0.079,-0.060,0.217,-0.032,-0.017,0.267,718147,524257,1465259,2484803,19,12,7
+MI,1976,MI1976,MI1,-0.006,0.361,-0.037,-0.026,-0.060,0.217,-0.027,-0.017,0.268,995781,704899,1898241,3401355,19,11,8
+MI,1978,MI1978,MI1,-0.006,0.362,0.064,-0.038,-0.060,0.218,0.007,-0.017,0.268,641144,718127,1523051,2718541,19,13,6
+MI,1980,MI1980,MI1,-0.006,0.364,0.070,-0.078,-0.060,0.219,0.005,-0.017,0.269,870368,947642,1929501,3636022,19,12,7
+MI,1982,MI1982,MI2,0.031,0.669,0.010,0.034,0.053,0.753,0.055,0.060,0.828,732913,695439,1652090,2856705,18,12,6
+MI,1984,MI1984,MI2,0.031,0.671,0.075,0.024,0.053,0.756,0.041,0.060,0.831,808553,968778,1841122,3554662,18,11,7
+MI,1986,MI1986,MI2,0.031,0.673,-0.046,0.056,0.053,0.759,0.055,0.060,0.833,669966,489612,1342034,2319156,18,11,7
+MI,1988,MI1988,MI2,0.031,0.676,0.071,0.054,0.053,0.761,0.066,0.060,0.836,832865,910992,1813746,3487719,18,11,7
+MI,1990,MI1990,MI2,0.031,0.678,0.043,0.098,0.053,0.764,0.085,0.060,0.839,635029,594051,1312560,2458163,18,11,7
+MI,1992,MI1992,MI3,0.055,0.746,0.083,0.063,0.065,0.79,0.019,0.040,0.698,831750,1103243,2016524,3869987,16,10,6
+MI,1994,MI1994,MI3,0.055,0.748,0.101,0.063,0.065,0.793,0.044,0.040,0.7,610230,864883,1418142,2950226,16,9,7
+MI,1996,MI1996,MI3,0.055,0.751,0.051,0.063,0.065,0.796,0.030,0.040,0.702,845968,965959,1945116,3623851,16,10,6
+MI,1998,MI1998,MI3,0.055,0.753,0.078,0.076,0.065,0.799,0.048,0.040,0.705,647709,825453,1542258,2946328,16,10,6
+MI,2000,MI2000,MI3,0.055,0.756,-0.036,0.063,0.065,0.801,0.061,0.040,0.707,1125640,856695,2177678,3964669,16,9,7
+MI,2002,MI2002,MI4,-0.076,0.126,-0.064,-0.100,-0.097,0.171,-0.075,-0.054,0.098,906001,618367,1469182,3048735,15,6,9
+MI,2004,MI2004,MI4,-0.076,0.126,-0.090,-0.100,-0.097,0.172,-0.091,-0.054,0.098,1400114,865401,2242435,4531029,15,6,9
+MI,2006,MI2006,MI4,-0.076,0.127,-0.164,-0.100,-0.097,0.173,-0.059,-0.054,0.099,1282288,534564,1932912,3633701,15,6,9
+MI,2008,MI2008,MI4,-0.076,0.127,-0.046,-0.085,-0.097,0.173,-0.028,-0.054,0.099,1341233,992972,2519683,4668413,15,8,7
+MI,2010,MI2010,MI4,-0.076,0.128,-0.017,-0.100,-0.097,0.174,-0.018,-0.054,0.099,860387,683070,1415212,3086919,15,6,9
+MI,2012,MI2012,MI5,-0.163,0.039,-0.197,-0.143,-0.143,0.085,-0.066,-0.071,0.078,1554299,653096,2327985,4414789,14,5,9
+MI,2014,MI2014,MI5,-0.163,0.039,-0.160,-0.143,-0.143,0.086,-0.074,-0.071,0.079,1018383,474506,1519030,2985779,14,5,9
+MI,2016,MI2016,MI5,-0.163,0.039,-0.132,-0.143,-0.143,0.086,-0.073,-0.071,0.079,1451475,767210,2193980,4437369,14,5,9
+MN,1972,MN1972,MN1,-0.041,0.194,-0.082,0.000,0.000,0.439,-0.001,0.026,0.536,489511,339226,896854,1657474,8,4,4
+MN,1974,MN1974,MN1,-0.041,0.195,-0.053,0.000,0.000,0.44,0.039,0.026,0.538,334524,263996,705139,1197042,8,5,3
+MN,1976,MN1976,MN1,-0.041,0.196,0.006,0.123,0.000,0.442,0.085,0.026,0.54,453074,433789,992098,1773725,8,5,3
+MN,1978,MN1978,MN1,-0.041,0.196,0.008,0.000,0.000,0.444,0.010,0.026,0.542,393077,365085,752068,1516324,8,4,4
+MN,1980,MN1980,MN1,-0.041,0.197,-0.082,-0.125,0.000,0.445,-0.003,0.026,0.544,590318,356151,905793,1892940,8,3,5
+MN,1982,MN1982,MN2,0.005,0.407,0.022,-0.125,0.075,0.839,-0.039,0.051,0.747,424343,442608,956321,1733905,8,5,3
+MN,1984,MN1984,MN2,0.005,0.408,0.044,0.125,0.075,0.842,0.047,0.051,0.75,461185,520349,1060800,1963068,8,5,3
+MN,1986,MN1986,MN2,0.005,0.41,-0.072,0.125,0.075,0.845,0.092,0.051,0.753,418948,275781,831715,1389456,8,5,3
+MN,1988,MN1988,MN2,0.005,0.411,-0.048,0.125,0.075,0.848,0.093,0.051,0.756,552114,427046,1148700,1958324,8,5,3
+MN,1990,MN1990,MN2,0.005,0.413,0.078,0.125,0.075,0.851,0.062,0.051,0.758,401118,488232,1042201,1778698,8,6,2
+MN,1992,MN1992,MN3,0.133,0.944,0.133,0.000,0.000,0.455,0.000,0.000,0.347,392841,661601,1178072,2108886,8,6,2
+MN,1994,MN1994,MN3.1,0.123,0.914,0.229,0.000,0.031,0.633,0.014,0.017,0.491,242665,622763,883905,1730855,8,6,2
+MN,1996,MN1996,MN3.1,0.123,0.917,0.113,0.000,0.031,0.635,0.021,0.017,0.492,419431,618035,1179926,2074929,8,6,2
+MN,1998,MN1998,MN3.1,0.123,0.921,0.134,0.125,0.031,0.638,0.029,0.017,0.494,368703,608028,1090488,1953460,8,6,2
+MN,2000,MN2000,MN3.1,0.123,0.924,0.017,0.000,0.031,0.64,0.004,0.017,0.496,558581,555206,1234204,2227575,8,5,3
+MN,2002,MN2002,MN4,-0.035,0.205,-0.032,0.000,0.025,0.624,0.029,0.029,0.589,579759,484002,1097911,2127523,8,4,4
+MN,2004,MN2004,MN4,-0.035,0.206,-0.062,0.000,0.025,0.626,0.016,0.029,0.592,780552,537307,1399624,2635718,8,4,4
+MN,2006,MN2006,MN4,-0.035,0.207,0.015,0.000,0.025,0.628,0.034,0.029,0.594,534956,503674,1152621,2077257,8,5,3
+MN,2008,MN2008,MN4,-0.035,0.208,-0.078,0.125,0.025,0.631,0.065,0.029,0.596,810902,529845,1612480,2681495,8,5,3
+MN,2010,MN2010,MN4,-0.035,0.208,-0.016,0.000,0.025,0.633,0.002,0.029,0.598,560876,425507,1002026,1972767,8,4,4
+MN,2012,MN2012,MN5,0.058,0.783,-0.001,0.000,-0.042,0.248,-0.003,-0.004,0.326,722477,663219,1560984,2771393,8,5,3
+MN,2014,MN2014,MN5,0.058,0.786,0.087,0.000,-0.042,0.249,0.006,-0.004,0.327,399590,550060,985760,1899299,8,5,3
+MN,2016,MN2016,MN5,0.058,0.789,0.089,-0.125,-0.042,0.25,-0.015,-0.004,0.328,595948,788690,1434590,2769276,8,5,3
+MO,1972,MO1972,MO1,0.097,0.863,0.206,0.200,0.120,0.969,0.039,0.038,0.671,281711,633181,1092405,1829782,10,9,1
+MO,1974,MO1974,MO1,0.097,0.866,0.058,0.200,0.120,0.972,0.020,0.038,0.673,282770,320397,809719,1206336,10,9,1
+MO,1976,MO1976,MO1,0.097,0.87,0.158,0.000,0.120,0.976,0.027,0.038,0.676,344399,602124,1080807,1893045,10,8,2
+MO,1978,MO1978,MO1,0.097,0.873,0.046,0.100,0.120,0.98,0.040,0.038,0.679,367264,403802,966553,1542131,10,8,2
+MO,1980,MO1980,MO1,0.097,0.876,0.017,0.100,0.120,0.984,0.063,0.038,0.681,526725,498561,1110060,2050570,10,6,4
+MO,1982,MO1982,MO2,0.030,0.68,0.024,-0.056,0.040,0.724,-0.006,0.028,0.576,369552,393022,871682,1525150,9,6,3
+MO,1984,MO1984,MO2,0.030,0.683,0.132,0.122,0.040,0.727,0.011,0.028,0.578,373575,663257,1073167,2073660,9,6,3
+MO,1986,MO1986,MO2,0.030,0.685,-0.035,0.025,0.040,0.73,0.029,0.028,0.581,408288,318191,792397,1452959,9,5,4
+MO,1988,MO1988,MO2,0.030,0.688,-0.060,0.056,0.040,0.733,0.076,0.028,0.583,593692,435252,1148292,2057891,9,5,4
+MO,1990,MO1990,MO2,0.030,0.691,0.090,0.056,0.040,0.736,0.030,0.028,0.585,278970,397373,728020,1352686,9,6,3
+MO,1992,MO1992,MO3,0.016,0.612,0.066,0.056,0.078,0.861,0.004,0.034,0.657,516867,636010,1269486,2305754,9,6,3
+MO,1994,MO1994,MO3,0.016,0.615,0.132,0.167,0.078,0.865,0.048,0.034,0.66,326530,537589,893783,1728239,9,6,3
+MO,1996,MO1996,MO3,0.016,0.617,-0.090,0.167,0.078,0.868,0.080,0.034,0.663,516256,458440,1116201,1949391,9,5,4
+MO,1998,MO1998,MO3,0.016,0.62,0.030,0.056,0.078,0.872,0.058,0.034,0.665,380008,388036,787655,1536087,9,5,4
+MO,2000,MO2000,MO3,0.016,0.622,-0.056,-0.056,0.078,0.876,-0.021,0.034,0.668,670322,465550,1136020,2271744,9,4,5
+MO,2002,MO2002,MO4,-0.007,0.354,0.031,-0.056,-0.054,0.238,-0.099,-0.085,0.013,440188,467353,829177,1815082,9,4,5
+MO,2004,MO2004,MO4,-0.007,0.356,0.035,-0.056,-0.054,0.238,-0.102,-0.085,0.013,632646,678574,1192674,2622441,9,4,5
+MO,2006,MO2006,MO4,-0.007,0.357,-0.028,-0.056,-0.054,0.239,-0.112,-0.085,0.013,573240,447562,992258,2041604,9,4,5
+MO,2008,MO2008,MO4,-0.007,0.359,-0.072,-0.055,-0.054,0.241,-0.021,-0.085,0.013,811569,569971,1403928,2763082,9,4,5
+MO,2010,MO2010,MO4,-0.007,0.36,0.000,-0.050,-0.054,0.242,-0.093,-0.085,0.013,496999,435208,777182,1864415,9,3,6
+MO,2012,MO2012,MO5,-0.055,0.157,-0.117,-0.250,-0.250,0.013,-0.078,-0.083,0.013,793954,497615,1119554,2583140,8,2,6
+MO,2014,MO2014,MO5,-0.055,0.158,-0.010,-0.250,-0.250,0.013,-0.070,-0.083,0.013,362142,313800,513600,1351883,8,2,6
+MO,2016,MO2016,MO5,-0.055,0.159,-0.038,-0.250,-0.250,0.013,-0.101,-0.083,0.013,734184,586731,1041306,2641830,8,2,6
+NC,1972,NC1972,NC1,0.106,0.871,0.114,0.028,0.009,0.53,0.085,0.048,0.703,301776,415157,733065,1433868,11,7,4
+NC,1974,NC1974,NC1,0.106,0.874,0.117,0.030,0.009,0.532,0.042,0.048,0.706,211207,319350,637297,1061114,11,9,2
+NC,1976,NC1976,NC1,0.106,0.878,0.103,0.016,0.009,0.535,0.059,0.048,0.709,333725,471631,978971,1610710,11,9,2
+NC,1978,NC1978,NC1,0.106,0.882,0.132,0.018,0.009,0.537,0.059,0.048,0.712,204617,340238,646471,1089713,11,9,2
+NC,1980,NC1980,NC1,0.106,0.886,0.062,-0.048,0.009,0.539,-0.003,0.048,0.715,415285,467303,948663,1765181,11,7,4
+NC,1982,NC1982,NC2,0.106,0.89,0.179,-0.022,-0.012,0.392,0.008,0.007,0.414,211366,454814,759185,1332362,11,9,2
+NC,1984,NC1984,NC2,0.106,0.894,-0.003,-0.136,-0.012,0.394,-0.017,0.007,0.416,586905,491781,1130979,2157370,11,6,5
+NC,1986,NC1986,NC2,0.106,0.898,0.095,-0.045,-0.012,0.396,-0.009,0.007,0.418,327359,458893,890058,1572505,11,8,3
+NC,1988,NC1988,NC2,0.106,0.902,0.192,0.006,-0.012,0.397,0.008,0.007,0.42,328548,729242,1095451,2115582,11,8,3
+NC,1990,NC1990,NC2,0.106,0.906,0.066,0.136,-0.012,0.399,0.046,0.007,0.422,457874,547824,1076340,2011394,11,7,4
+NC,1992,NC1992,NC3,0.056,0.815,0.135,0.167,0.056,0.784,0.037,0.021,0.518,501573,741656,1282474,2486457,12,8,4
+NC,1994,NC1994,NC3,0.056,0.819,-0.050,0.000,0.056,0.787,0.014,0.021,0.52,514013,315748,733273,1659520,12,4,8
+NC,1996,NC1996,NC3,0.056,0.823,0.082,0.000,0.056,0.791,0.012,0.021,0.523,546124,691501,1135731,2475246,12,6,6
+NC,1998,NC1998,NC3.1,-0.003,0.411,-0.003,0.003,0.003,0.498,-0.003,-0.003,0.347,495665,502482,918260,1996298,12,5,7
+NC,2000,NC2000,NC3.2,-0.042,0.229,-0.042,-0.083,-0.083,0.22,-0.041,-0.041,0.202,770909,652472,1365020,2846762,12,5,7
+NC,2002,NC2002,NC4,0.027,0.668,0.001,-0.038,0.038,0.719,-0.026,0.024,0.521,582048,542373,1079995,2248841,13,6,7
+NC,2004,NC2004,NC4,0.027,0.671,-0.017,-0.038,0.038,0.722,-0.038,0.024,0.523,900274,806224,1669864,3412995,13,6,7
+NC,2006,NC2006,NC4,0.027,0.674,-0.001,0.035,0.038,0.726,0.018,0.024,0.526,488452,496150,1023141,1969206,13,7,6
+NC,2008,NC2008,NC4,0.027,0.678,0.022,0.115,0.038,0.729,0.086,0.024,0.528,1016780,1080962,2293971,4195488,13,8,5
+NC,2010,NC2010,NC4,0.027,0.681,0.128,0.115,0.038,0.732,0.081,0.024,0.531,489803,832972,1204635,2645548,13,7,6
+NC,2012,NC2012,NC5,-0.203,0,-0.211,-0.269,-0.268,0.005,-0.077,-0.075,0.042,1554327,623436,2218357,4355524,13,4,9
+NC,2014,NC2014,NC5,-0.203,0,-0.194,-0.267,-0.268,0.005,-0.072,-0.075,0.043,1019700,413289,1324875,2865978,13,3,10
+NC,2016,NC2016,NC5.1,-0.203,0,-0.203,-0.269,-0.269,0,-0.051,-0.051,0.071,1592127,702868,2142661,4589987,13,3,10
+NJ,1972,NJ1972,NJ1,0.070,0.847,0.042,0.033,0.007,0.502,0.028,0.032,0.617,683356,720296,1390819,2807304,15,8,7
+NJ,1974,NJ1974,NJ1,0.070,0.851,0.081,0.033,0.007,0.505,0.052,0.032,0.62,442366,575449,1240933,2035631,15,12,3
+NJ,1976,NJ1976,NJ1,0.070,0.855,0.117,0.033,0.007,0.507,0.059,0.032,0.623,558720,819577,1538658,2756590,15,11,4
+NJ,1978,NJ1978,NJ1,0.070,0.859,0.057,-0.033,0.007,0.51,0.008,0.032,0.626,449940,490826,1043747,1881530,15,10,5
+NJ,1980,NJ1980,NJ1,0.070,0.863,0.053,-0.033,0.007,0.512,0.015,0.032,0.629,653480,689062,1316100,2685081,15,8,7
+NJ,1982,NJ1982,NJ2,0.006,0.505,0.006,0.071,0.071,0.833,0.072,0.072,0.843,557076,503867,1206416,2121888,14,9,5
+NJ,1984,NJ1984,NJ2.1,0.094,0.882,0.059,0.071,0.071,0.818,0.046,0.073,0.847,712583,776994,1508320,2979156,14,8,6
+NJ,1986,NJ1986,NJ2.1,0.094,0.886,0.034,0.071,0.071,0.822,0.089,0.073,0.851,390620,381338,801007,1543914,14,8,6
+NJ,1988,NJ1988,NJ2.1,0.094,0.891,0.116,0.071,0.071,0.826,0.091,0.073,0.856,620747,789959,1347328,2821412,14,8,6
+NJ,1990,NJ1990,NJ2.1,0.094,0.895,0.165,0.071,0.071,0.83,0.065,0.073,0.86,371621,545319,831596,1833884,14,8,6
+NJ,1992,NJ1992,NJ3,0.012,0.633,0.090,0.038,-0.038,0.286,0.059,-0.005,0.337,673377,755651,1354915,2858060,13,7,6
+NJ,1994,NJ1994,NJ3,0.012,0.636,-0.008,-0.038,-0.038,0.288,-0.052,-0.005,0.338,560150,425401,879855,1971106,13,5,8
+NJ,1996,NJ1996,NJ3,0.012,0.64,-0.021,-0.115,-0.038,0.289,-0.011,-0.005,0.34,806304,569029,1351774,2750662,13,6,7
+NJ,1998,NJ1998,NJ3,0.012,0.643,0.013,-0.038,-0.038,0.291,0.002,-0.005,0.342,464617,415752,902374,1760741,13,7,6
+NJ,2000,NJ2000,NJ3,0.012,0.646,-0.012,-0.038,-0.038,0.292,-0.024,-0.005,0.344,830268,627939,1532240,2916410,13,7,6
+NJ,2002,NJ2002,NJ4,-0.003,0.443,0.033,0.030,0.037,0.711,0.109,0.081,0.918,546283,457228,1009142,2007021,13,7,6
+NJ,2004,NJ2004,NJ4,-0.003,0.446,-0.016,0.038,0.037,0.715,0.071,0.081,0.922,947176,682959,1719350,3260271,13,7,6
+NJ,2006,NJ2006,NJ4,-0.003,0.448,-0.073,0.037,0.037,0.719,0.101,0.081,0.927,705163,381386,1207920,2173096,13,7,6
+NJ,2008,NJ2008,NJ4,-0.003,0.45,-0.010,0.038,0.037,0.723,0.079,0.081,0.932,943807,756036,1912714,3399687,13,8,5
+NJ,2010,NJ2010,NJ4,-0.003,0.453,0.053,0.038,0.037,0.726,0.043,0.081,0.937,534095,505920,1024730,2080029,13,7,6
+NJ,2012,NJ2012,NJ5,-0.045,0.233,-0.113,0.000,0.000,0.513,-0.008,0.011,0.444,1086321,526077,1794407,3224793,12,6,6
+NJ,2014,NJ2014,NJ5,-0.045,0.234,-0.021,0.000,0.000,0.516,0.012,0.011,0.447,550997,344722,914172,1791437,12,6,6
+NJ,2016,NJ2016,NJ5,-0.045,0.235,0.000,0.000,0.000,0.519,0.030,0.011,0.449,935655,745971,1821620,3363251,12,7,5
+NY,1972,NY1972,NY1,0.046,0.769,0.046,-0.011,-0.011,0.43,0.039,0.039,0.656,1635014,1564355,3257600,6398734,39,22,17
+NY,1974,NY1974,NY1.1,-0.058,0.162,-0.075,-0.039,-0.009,0.432,0.013,0.042,0.659,1334648,1113455,2852348,4896206,39,23,16
+NY,1976,NY1976,NY1.1,-0.058,0.163,-0.086,0.048,-0.009,0.435,0.078,0.042,0.663,1556765,1438194,3522213,5989922,39,23,16
+NY,1978,NY1978,NY1.1,-0.058,0.164,-0.034,-0.042,-0.009,0.437,0.019,0.042,0.667,1152807,1062310,2432370,4430240,39,22,17
+NY,1980,NY1980,NY1.1,-0.058,0.165,-0.035,-0.001,-0.009,0.44,0.057,0.042,0.67,1490026,1284137,2765037,5548320,39,18,21
+NY,1982,NY1982,NY2,-0.030,0.249,-0.114,-0.027,0.009,0.525,0.031,0.056,0.773,1337554,976758,2510789,4628619,34,16,18
+NY,1984,NY1984,NY2,-0.030,0.25,-0.019,-0.029,0.009,0.528,0.012,0.056,0.778,1656737,1428120,3144272,6169714,34,17,17
+NY,1986,NY1986,NY2,-0.030,0.251,-0.047,-0.001,0.009,0.531,0.085,0.056,0.782,1107301,861041,2118872,3936682,34,18,16
+NY,1988,NY1988,NY2,-0.030,0.253,0.010,0.036,0.009,0.534,0.061,0.056,0.787,1511065,1410067,3151036,5842269,34,20,14
+NY,1990,NY1990,NY2,-0.030,0.254,0.018,0.066,0.009,0.537,0.092,0.056,0.791,958996,819257,1903268,3556504,34,20,14
+NY,1992,NY1992,NY3,0.017,0.648,0.034,-0.114,-0.038,0.324,-0.004,0.029,0.625,1558006,1377978,3073440,5871974,31,18,13
+NY,1994,NY1994,NY3,0.017,0.651,0.063,0.015,-0.038,0.326,0.067,0.029,0.629,1178242,1115854,2261334,4588188,31,17,14
+NY,1996,NY1996,NY3,0.017,0.655,-0.046,-0.016,-0.038,0.328,0.023,0.029,0.632,1646119,1053076,3040840,5398393,31,18,13
+NY,1998,NY1998,NY3.1,-0.018,0.295,-0.023,0.013,0.047,0.74,0.111,0.087,0.954,1232622,876908,2328228,4219056,31,18,13
+NY,2000,NY2000,NY3.1,-0.018,0.297,-0.012,0.081,0.047,0.744,0.064,0.087,0.959,1621566,1212067,3186171,5667272,31,19,12
+NY,2002,NY2002,NY4,0.029,0.667,0.078,0.092,0.024,0.626,0.099,0.053,0.737,841422,885847,1860704,3454538,29,19,10
+NY,2004,NY2004,NY4,0.029,0.671,-0.023,0.086,0.024,0.629,0.091,0.053,0.741,1810720,1320629,3798685,6262702,29,20,9
+NY,2006,NY2006,NY4,0.029,0.675,-0.024,0.073,0.024,0.633,0.048,0.053,0.746,1218116,904174,2795843,4244576,29,23,6
+NY,2008,NY2008,NY4,0.029,0.679,0.056,-0.043,0.024,0.637,-0.001,0.053,0.75,1463298,1737996,4290883,6402590,29,26,3
+NY,2010,NY2010,NY4,0.029,0.683,0.058,-0.086,0.024,0.641,0.025,0.053,0.754,1150520,1079323,2600900,4459684,29,21,8
+NY,2012,NY2012,NY5,-0.005,0.416,-0.013,-0.019,-0.013,0.446,0.011,0.027,0.645,1711172,1478799,4118343,6379944,27,21,6
+NY,2014,NY2014,NY5,-0.005,0.418,0.064,-0.031,-0.013,0.448,0.013,0.027,0.648,962073,979797,2141545,3883740,27,18,9
+NY,2016,NY2016,NY5,-0.005,0.421,-0.065,0.010,-0.013,0.451,0.055,0.027,0.652,2086026,1471677,4382270,7115402,27,18,9
+OH,1972,OH1972,OH1,-0.051,0.215,-0.127,-0.112,-0.069,0.276,-0.063,-0.040,0.252,1222305,699908,1789586,3844427,23,7,16
+OH,1974,OH1974,OH1,-0.051,0.216,-0.152,-0.152,-0.069,0.278,-0.028,-0.040,0.253,976524,467082,1443626,2887216,23,8,15
+OH,1976,OH1976,OH1,-0.051,0.217,-0.028,-0.026,-0.069,0.28,-0.049,-0.040,0.255,1022962,869096,1821595,3784116,23,10,13
+OH,1978,OH1978,OH1,-0.051,0.219,-0.005,-0.022,-0.069,0.281,-0.039,-0.040,0.256,751532,644484,1311637,2792040,23,10,13
+OH,1980,OH1980,OH1,-0.051,0.22,0.057,-0.035,-0.069,0.283,-0.019,-0.040,0.258,924448,1080067,1758547,4009032,23,10,13
+OH,1982,OH1982,OH2,-0.010,0.342,-0.092,-0.025,-0.001,0.5,-0.051,0.006,0.487,991081,670264,1775041,3322692,21,10,11
+OH,1984,OH1984,OH2,-0.010,0.344,0.073,0.024,-0.001,0.503,0.063,0.006,0.49,925688,1264362,2081480,4380100,21,11,10
+OH,1986,OH1986,OH2.1,0.009,0.506,0.036,0.024,0.007,0.506,0.043,0.030,0.641,741393,809128,1532386,3101036,21,11,10
+OH,1988,OH1988,OH2.1,0.009,0.51,0.008,0.024,0.007,0.51,0.057,0.030,0.645,1049581,1058740,2140701,4216644,21,11,10
+OH,1990,OH1990,OH2.1,0.009,0.513,-0.017,-0.025,0.007,0.513,-0.009,0.030,0.649,898818,821667,1790406,3440972,21,11,10
+OH,1992,OH1992,OH3,-0.024,0.261,0.014,-0.007,-0.040,0.307,0.001,-0.024,0.327,1100652,1156439,2285674,4514180,19,10,9
+OH,1994,OH1994,OH3,-0.024,0.263,-0.067,-0.009,-0.040,0.309,-0.002,-0.024,0.329,956958,715123,1476861,3344161,19,6,13
+OH,1996,OH1996,OH3,-0.024,0.265,-0.014,-0.028,-0.040,0.311,-0.023,-0.024,0.331,1106369,1014557,1983814,4241850,19,8,11
+OH,1998,OH1998,OH3,-0.024,0.267,-0.032,-0.079,-0.040,0.313,-0.079,-0.024,0.333,921241,751918,1593873,3346316,19,8,11
+OH,2000,OH2000,OH3,-0.024,0.268,-0.021,-0.079,-0.040,0.315,-0.018,-0.024,0.336,1168980,983086,2027455,4304130,19,8,11
+OH,2002,OH2002,OH4,-0.083,0.101,-0.047,-0.166,-0.122,0.203,-0.097,-0.047,0.101,866709,702487,1381636,3138396,18,6,12
+OH,2004,OH2004,OH4,-0.083,0.102,-0.105,-0.167,-0.122,0.204,-0.079,-0.047,0.102,1625067,1018011,2480766,5286154,18,6,12
+OH,2006,OH2006,OH4,-0.083,0.103,-0.165,-0.111,-0.122,0.205,-0.041,-0.047,0.103,1354464,621601,2081737,3952127,18,7,11
+OH,2008,OH2008,OH4,-0.083,0.103,0.006,-0.056,-0.122,0.207,-0.010,-0.047,0.103,1345746,1276060,2752111,5243609,18,10,8
+OH,2010,OH2010,OH4,-0.083,0.104,-0.102,-0.111,-0.122,0.208,-0.009,-0.047,0.104,1145050,687045,1611112,3664187,18,5,13
+OH,2012,OH2012,OH5,-0.132,0.056,-0.230,-0.249,-0.250,0,-0.074,-0.076,0.042,1925464,648827,2522889,5148579,16,4,12
+OH,2014,OH2014,OH5,-0.132,0.056,-0.080,-0.249,-0.250,0,-0.074,-0.076,0.042,915939,579650,1241863,2991179,16,4,12
+OH,2016,OH2016,OH5,-0.132,0.057,-0.087,-0.250,-0.250,0,-0.080,-0.076,0.043,1562314,1012953,2154523,5150540,16,4,12
+PA,1972,PA1972,PA1,0.013,0.579,0.044,0.020,0.024,0.507,0.071,0.026,0.586,1018526,1208638,2172844,4454328,25,13,12
+PA,1974,PA1974,PA1,0.013,0.583,-0.080,0.011,0.024,0.511,0.011,0.026,0.59,991157,705832,1935030,3393976,25,14,11
+PA,1976,PA1976,PA1,0.013,0.587,0.064,0.009,0.024,0.514,0.007,0.026,0.594,991976,1229346,2479621,4442641,25,17,8
+PA,1978,PA1978,PA1,0.013,0.591,0.076,0.060,0.024,0.518,0.017,0.026,0.599,767108,995801,1805498,3525816,25,15,10
+PA,1980,PA1980,PA1,0.013,0.596,-0.038,0.020,0.024,0.522,0.022,0.026,0.603,1134687,1064737,2239156,4398843,25,12,13
+PA,1982,PA1982,PA2,-0.015,0.244,-0.015,-0.032,-0.007,0.452,-0.033,0.003,0.437,873904,931346,1950381,3610494,23,13,10
+PA,1984,PA1984,PA2,-0.015,0.246,0.011,-0.026,-0.007,0.455,-0.018,0.003,0.44,1074042,1246738,2446404,4641556,23,13,10
+PA,1986,PA1986,PA2,-0.015,0.248,-0.041,0.021,-0.007,0.459,0.019,0.003,0.444,905278,788011,1799320,3386579,23,12,11
+PA,1988,PA1988,PA2,-0.015,0.25,0.009,0.022,-0.007,0.462,0.071,0.003,0.447,1083306,1127789,2239463,4422196,23,12,11
+PA,1990,PA1990,PA2,-0.015,0.252,-0.039,-0.022,-0.007,0.466,-0.023,0.003,0.45,822190,677327,1524793,2999031,23,11,12
+PA,1992,PA1992,PA3,-0.006,0.3,0.004,-0.061,-0.008,0.431,-0.007,-0.001,0.377,1158860,1164712,2369538,4647147,21,11,10
+PA,1994,PA1994,PA3,-0.006,0.302,0.032,0.011,-0.008,0.434,0.006,-0.001,0.38,788853,886098,1662013,3349906,21,11,10
+PA,1996,PA1996,PA3,-0.006,0.305,-0.020,0.024,-0.008,0.438,0.017,-0.001,0.383,1149287,980899,2222863,4260371,21,11,10
+PA,1998,PA1998,PA3,-0.006,0.307,0.009,0.018,-0.008,0.441,0.018,-0.001,0.386,758532,734786,1515976,2986636,21,11,10
+PA,2000,PA2000,PA3,-0.006,0.31,-0.053,-0.033,-0.008,0.444,-0.040,-0.001,0.389,1360907,979676,2407945,4681168,21,10,11
+PA,2002,PA2002,PA4,-0.055,0.176,-0.074,-0.095,-0.088,0.256,-0.073,-0.043,0.184,1037446,707632,1644240,3490155,19,7,12
+PA,2004,PA2004,PA4,-0.055,0.177,-0.120,-0.127,-0.088,0.258,-0.087,-0.043,0.185,1748027,985397,2701491,5466846,19,7,12
+PA,2006,PA2006,PA4,-0.055,0.179,-0.033,-0.111,-0.088,0.26,-0.036,-0.043,0.187,1064020,941172,2228704,4010387,19,11,8
+PA,2008,PA2008,PA4,-0.055,0.18,0.032,0.024,-0.088,0.262,0.009,-0.043,0.189,1361473,1515651,3164711,5754250,19,12,7
+PA,2010,PA2010,PA4,-0.055,0.182,-0.082,-0.132,-0.088,0.264,-0.027,-0.043,0.19,1172353,801958,1875448,3948622,19,7,12
+PA,2012,PA2012,PA5,-0.190,0,-0.237,-0.222,-0.221,0.042,-0.079,-0.078,0.025,2029682,722124,2793538,5503608,18,5,13
+PA,2014,PA2014,PA5,-0.190,0,-0.149,-0.219,-0.221,0.042,-0.075,-0.078,0.025,1150962,584569,1607785,3471057,18,5,13
+PA,2016,PA2016,PA5,-0.190,0,-0.183,-0.222,-0.221,0.042,-0.080,-0.078,0.025,2049833,923998,2856901,5947661,18,5,13
+SC,2012,SC2012,SC5,-0.188,0,-0.233,-0.128,-0.238,0,-0.072,-0.045,0.077,701345,257450,839517,1917589,7,1,6
+SC,2014,SC2014,SC5,-0.188,0,-0.172,-0.230,-0.238,0,-0.047,-0.045,0.078,413447,197940,498476,1222774,7,1,6
+SC,2016,SC2016,SC5,-0.188,0,-0.160,-0.357,-0.238,0,-0.015,-0.045,0.078,666280,317555,790303,1967668,7,1,6
+TN,1972,TN1972,TN1,0.023,0.526,-0.088,-0.125,-0.053,0.228,-0.041,-0.011,0.272,349975,218291,547224,1136529,8,3,5
+TN,1974,TN1974,TN1,0.023,0.531,0.133,0.019,-0.053,0.23,0.019,-0.011,0.274,185395,270978,452764,912746,8,5,3
+TN,1976,TN1976,TN1.1,0.047,0.625,-0.007,0.090,0.110,0.821,0.082,0.102,0.982,355945,310198,754408,1332286,8,5,3
+TN,1978,TN1978,TN1.1,0.047,0.631,0.103,0.120,0.110,0.829,0.132,0.102,0.991,236161,293713,541411,1059748,8,5,3
+TN,1980,TN1980,TN1.1,0.047,0.636,0.044,0.122,0.110,0.836,0.092,0.102,1,367023,364633,791122,1463310,8,5,3
+TN,1982,TN1982,TN2,0.062,0.743,-0.055,0.162,0.116,0.89,0.050,0.079,0.89,335951,287765,762052,1247434,9,6,3
+TN,1984,TN1984,TN2,0.062,0.75,0.131,0.097,0.116,0.898,0.110,0.079,0.898,294039,463902,784725,1515881,9,6,3
+TN,1986,TN1986,TN2,0.062,0.757,0.052,0.056,0.116,0.907,0.034,0.079,0.907,251718,314980,631960,1133400,9,6,3
+TN,1988,TN1988,TN2,0.062,0.764,0.079,0.135,0.116,0.915,0.080,0.079,0.915,317747,433840,817621,1503176,9,6,3
+TN,1990,TN1990,TN2,0.062,0.771,0.102,0.130,0.116,0.924,0.121,0.079,0.924,189420,238041,455217,854923,9,6,3
+TN,1992,TN1992,TN3,0.009,0.433,0.134,0.054,-0.021,0.298,0.066,-0.043,0.115,308041,523962,859529,1664008,9,6,3
+TN,1994,TN1994,TN3,0.009,0.437,0.008,0.004,-0.021,0.301,-0.002,-0.043,0.117,339150,372412,666596,1423124,9,4,5
+TN,1996,TN1996,TN3,0.009,0.441,-0.037,-0.056,-0.021,0.304,-0.060,-0.043,0.118,471033,401486,856487,1745033,9,4,5
+TN,1998,TN1998,TN3,0.009,0.446,-0.005,-0.055,-0.021,0.307,-0.070,-0.043,0.119,267761,240162,482207,1015846,9,4,5
+TN,2000,TN2000,TN3,0.009,0.45,-0.053,-0.055,-0.021,0.31,-0.147,-0.043,0.12,541331,436193,974696,1955050,9,4,5
+TN,2002,TN2002,TN4,0.055,0.707,0.088,0.054,0.033,0.535,0.045,0.069,0.828,325194,447824,747674,1546037,9,5,4
+TN,2004,TN2004,TN4,0.055,0.714,0.066,0.056,0.033,0.541,0.062,0.069,0.837,506797,617777,1113334,2249147,9,5,4
+TN,2006,TN2006,TN4,0.055,0.722,0.019,0.056,0.033,0.546,0.146,0.069,0.845,431040,399164,860861,1660408,9,5,4
+TN,2008,TN2008,TN4,0.055,0.729,0.103,0.055,0.033,0.552,0.123,0.069,0.854,490372,677245,1112225,2335237,9,5,4
+TN,2010,TN2010,TN4,0.055,0.737,-0.001,-0.056,0.033,0.558,-0.032,0.069,0.863,387991,360309,541527,1496605,9,2,7
+TN,2012,TN2012,TN5,-0.015,0.234,-0.053,-0.156,-0.217,0.021,-0.094,-0.089,0,612260,503512,865272,2231543,9,2,7
+TN,2014,TN2014,TN5,-0.015,0.237,-0.008,-0.218,-0.217,0.022,-0.089,-0.089,0,348204,310259,481091,1316927,9,2,7
+TN,2016,TN2016,TN5,-0.015,0.239,0.017,-0.278,-0.217,0.022,-0.085,-0.089,0,571032,582930,814181,2307921,9,2,7
+TX,1972,TX1972,TX1,0.129,0.835,0.129,0.101,0.101,0.857,0.054,0.054,0.703,683963,1026089,2059486,3420106,24,20,4
+TX,1974,TX1974,TX1.1,0.167,0.889,0.079,0.096,0.072,0.733,0.064,0.062,0.778,342179,405838,969380,1496036,24,21,3
+TX,1976,TX1976,TX1.1,0.167,0.899,0.173,-0.018,0.072,0.742,0.029,0.062,0.787,691123,1222391,2380283,3827032,24,22,2
+TX,1978,TX1978,TX1.1,0.167,0.909,0.193,0.139,0.072,0.75,0.086,0.062,0.795,454506,674501,1287366,2258012,24,20,4
+TX,1980,TX1980,TX1.1,0.167,0.92,0.221,0.070,0.072,0.759,0.068,0.062,0.805,736867,1449195,2341523,4372126,24,19,5
+TX,1982,TX1982,TX2,0.124,0.837,0.124,0.124,0.124,0.965,0.080,0.080,0.919,581367,876671,1736319,2916078,27,22,5
+TX,1984,TX1984,TX2.1,0.136,0.882,0.138,0.104,0.116,0.929,0.076,0.079,0.882,1076186,1585204,2638050,5322779,27,17,10
+TX,1986,TX1986,TX2.1,0.136,0.893,0.066,0.092,0.116,0.94,0.074,0.079,0.893,795267,871668,1773073,3333878,27,17,10
+TX,1988,TX1988,TX2.1,0.136,0.904,0.149,0.105,0.116,0.952,0.095,0.079,0.904,1047388,1551339,2739620,5197453,27,19,8
+TX,1990,TX1990,TX2.1,0.136,0.915,0.192,0.165,0.116,0.963,0.071,0.079,0.915,694851,1211321,1929207,3812344,27,19,8
+TX,1992,TX1992,TX3,0.203,0.988,0.197,0.177,0.155,0.988,0.099,0.092,0.963,1006034,1834290,2849964,5680649,30,21,9
+TX,1994,TX1994,TX3,0.203,1,0.208,0.133,0.155,1,0.084,0.092,0.975,739822,1343940,1927262,4167525,30,19,11
+TX,1996,TX1996,TX3.1,0.125,0.911,0.134,0.067,0.067,0.797,0.060,0.087,0.949,1075939,1429463,2337508,5010812,30,17,13
+TX,1998,TX1998,TX3.1,0.125,0.923,0.119,0.067,0.067,0.808,0.103,0.087,0.962,787749,1073060,1764228,3721621,30,17,13
+TX,2000,TX2000,TX3.1,0.125,0.935,0.121,0.066,0.067,0.818,0.097,0.087,0.974,1364381,1667516,2866082,6063796,30,17,13
+TX,2002,TX2002,TX4,0.112,0.934,0.112,0.041,0.041,0.658,0.062,0.062,0.908,1002934,1290791,2108144,4587451,32,17,15
+TX,2004,TX2004,TX4.1,-0.019,0.28,-0.019,-0.144,-0.144,0.067,-0.038,-0.038,0.227,2109938,1463606,3084158,7147089,32,11,21
+TX,2006,TX2006,TX4.2,0.009,0.554,0.001,-0.094,-0.125,0.189,-0.054,-0.043,0.081,1219205,828577,1854485,4095560,32,13,19
+TX,2008,TX2008,TX4.2,0.009,0.562,-0.030,-0.125,-0.125,0.192,-0.033,-0.043,0.082,2367628,1497673,3497722,7730604,32,12,20
+TX,2010,TX2010,TX4.2,0.009,0.569,0.056,-0.155,-0.125,0.194,-0.042,-0.043,0.083,1242510,1132645,1721584,4750313,32,9,23
+TX,2012,TX2012,TX5,-0.010,0.296,-0.010,-0.139,-0.155,0.028,-0.047,-0.039,0.155,2244032,1566990,3212530,7622039,36,12,24
+TX,2014,TX2014,TX5,-0.010,0.3,0.032,-0.165,-0.155,0.029,-0.037,-0.039,0.157,1289193,1020572,1786881,4619527,36,11,25
+TX,2016,TX2016,TX5,-0.010,0.304,-0.052,-0.161,-0.155,0.029,-0.032,-0.039,0.159,2729445,1566038,3684226,8590967,36,11,25
+VA,1972,VA1972,VA1,-0.083,0.088,-0.128,-0.159,-0.035,0.235,-0.024,-0.027,0.162,405122,224899,584461,1260042,10,3,7
+VA,1974,VA1974,VA1,-0.083,0.09,-0.028,-0.001,-0.035,0.239,0.003,-0.027,0.164,252019,236826,502459,977691,10,5,5
+VA,1976,VA1976,VA1,-0.083,0.091,-0.082,-0.007,-0.035,0.242,-0.009,-0.027,0.167,405462,331303,723780,1473528,10,4,6
+VA,1978,VA1978,VA1,-0.083,0.092,0.006,-0.041,-0.035,0.246,-0.065,-0.027,0.169,274967,295486,510241,1140905,10,4,6
+VA,1980,VA1980,VA1,-0.083,0.094,-0.181,0.035,-0.035,0.25,-0.039,-0.027,0.172,546947,266878,635231,1627650,10,1,9
+VA,1982,VA1982,VA2,0.005,0.286,-0.065,0.007,-0.014,0.286,-0.003,0.002,0.254,399964,310386,685672,1420704,10,4,6
+VA,1984,VA1984,VA2,0.005,0.29,-0.010,-0.089,-0.014,0.29,-0.029,0.002,0.258,540721,492600,940614,2066642,10,4,6
+VA,1986,VA1986,VA2,0.005,0.295,-0.018,-0.011,-0.014,0.295,-0.018,0.002,0.262,340223,294102,645579,1268650,10,5,5
+VA,1988,VA1988,VA2,0.005,0.3,0.088,0.002,-0.014,0.3,0.009,0.002,0.267,468273,560925,938120,2058398,10,5,5
+VA,1990,VA1990,VA2,0.005,0.305,0.032,0.019,-0.014,0.305,0.052,0.002,0.271,325284,363707,736297,1377981,10,6,4
+VA,1992,VA1992,VA3,0.080,0.914,0.080,0.053,0.053,0.69,0.032,0.032,0.672,508008,647066,1220047,2310150,11,7,4
+VA,1994,VA1994,VA3.1,0.078,0.895,0.108,0.054,0.049,0.667,0.064,0.097,0.982,402483,567662,909889,1940291,11,6,5
+VA,1996,VA1996,VA3.1,0.078,0.911,0.048,0.045,0.049,0.679,0.130,0.097,1,546487,552947,1096913,2198869,11,6,5
+VA,1998,VA1998,VA3.2,-0.002,0.291,0.108,0.045,-0.015,0.291,0.124,0.052,0.8,354599,459910,763883,1629017,11,6,5
+VA,2000,VA2000,VA3.2,-0.002,0.296,-0.111,-0.074,-0.015,0.296,-0.020,0.052,0.815,714952,511171,1195532,2452249,11,4,7
+VA,2002,VA2002,VA4,-0.081,0.113,-0.056,-0.163,-0.114,0.208,-0.074,-0.041,0.113,482948,376490,712176,1718876,11,3,8
+VA,2004,VA2004,VA4,-0.081,0.115,-0.085,-0.140,-0.114,0.212,-0.066,-0.041,0.115,925065,594597,1303226,3039322,11,3,8
+VA,2006,VA2006,VA4,-0.081,0.118,-0.177,-0.179,-0.114,0.216,-0.058,-0.041,0.118,812341,345941,1099509,2316568,11,3,8
+VA,2008,VA2008,VA4,-0.081,0.12,0.041,-0.044,-0.114,0.22,-0.001,-0.041,0.12,876526,903682,1788108,3560416,11,6,5
+VA,2010,VA2010,VA4,-0.081,0.122,-0.129,-0.043,-0.114,0.224,-0.007,-0.041,0.122,681978,390122,966636,2144197,11,3,8
+VA,2012,VA2012,VA5,-0.165,0,-0.208,-0.227,-0.225,0,-0.061,-0.062,0.083,1319598,521794,1806025,3682786,11,3,8
+VA,2014,VA2014,VA5,-0.165,0,-0.121,-0.223,-0.225,0,-0.063,-0.062,0.085,673920,392800,953736,2133439,11,3,8
+VA,2016,VA2016,VA5.1,-0.111,0,-0.111,-0.136,-0.136,0,-0.064,-0.064,0.065,1179034,707910,1839937,3773890,11,4,7
+WA,1972,WA1972,WA1,0.181,0.911,0.034,-0.071,0.043,0.511,0.001,0.013,0.178,315740,332413,857621,1296304,7,6,1
+WA,1974,WA1974,WA1,0.181,0.932,0.179,0.214,0.043,0.523,0.026,0.013,0.182,163272,324034,574055,974612,7,6,1
+WA,1976,WA1976,WA1,0.181,0.953,0.192,-0.071,0.043,0.535,0.006,0.013,0.186,225795,476039,817948,1403667,7,6,1
+WA,1978,WA1978,WA1,0.181,0.976,0.298,-0.071,0.043,0.548,0.004,0.013,0.19,104527,374523,507252,958099,7,6,1
+WA,1980,WA1980,WA1,0.181,1,0.200,0.214,0.043,0.561,0.029,0.013,0.195,240203,564282,816133,1608969,7,5,2
+WA,1982,WA1982,WA2,0.059,1,0.059,0.125,0.125,1,0.075,0.075,1,283235,363631,689811,1293727,8,5,3
+WA,1984,WA1984,WA2.1,0.010,0.538,0.015,0.125,0.061,0.59,0.083,0.064,0.923,446531,451726,996950,1796515,8,5,3
+WA,1986,WA1986,WA2.1,0.010,0.553,-0.061,0.125,0.061,0.605,0.124,0.064,0.947,372929,274490,767678,1294836,8,5,3
+WA,1988,WA1988,WA2.1,0.010,0.568,0.038,-0.005,0.061,0.622,0.045,0.064,0.973,434618,461592,974048,1792421,8,5,3
+WA,1990,WA1990,WA2.1,0.010,0.583,0.048,0.000,0.061,0.639,0.006,0.064,1,307397,338944,696275,1292682,8,5,3
+WA,1992,WA1992,WA3,-0.035,0.086,0.238,-0.278,-0.127,0,-0.022,-0.010,0.086,284120,790171,1236665,2148578,9,8,1
+WA,1994,WA1994,WA3,-0.035,0.088,-0.262,-0.167,-0.127,0,-0.010,-0.010,0.088,637630,202602,826753,1680465,9,2,7
+WA,1996,WA1996,WA3,-0.035,0.091,-0.217,-0.278,-0.127,0,-0.029,-0.010,0.091,784442,290637,1129609,2150162,9,3,6
+WA,1998,WA1998,WA3,-0.035,0.094,-0.003,0.037,-0.127,0,0.001,-0.010,0.094,454521,468683,977664,1846408,9,5,4
+WA,2000,WA2000,WA3,-0.035,0.097,0.069,0.050,-0.127,0,0.012,-0.010,0.097,494171,672544,1280493,2333429,9,6,3
+WA,2002,WA2002,WA4,0.005,0.1,0.090,0.056,0.114,0.867,0.036,0.031,0.533,339906,503274,907440,1686362,9,6,3
+WA,2004,WA2004,WA4,0.005,0.103,-0.023,0.167,0.114,0.897,0.039,0.031,0.552,695875,656248,1608751,2704244,9,6,3
+WA,2006,WA2006,WA4,0.005,0.107,-0.052,0.167,0.114,0.929,0.032,0.031,0.571,564550,456501,1244095,2042100,9,6,3
+WA,2008,WA2008,WA4,0.005,0.111,-0.017,0.167,0.114,0.963,0.048,0.031,0.593,746076,711155,1725316,2914463,9,6,3
+WA,2010,WA2010,WA4,0.005,0.115,0.029,0.013,0.114,1,-0.002,0.031,0.615,586873,657958,1277499,2489661,9,5,4
+WA,2012,WA2012,WA5,0.009,0.32,0.011,0.100,0.095,0.92,0.018,0.015,0.32,702713,800420,1636726,3006266,10,6,4
+WA,2014,WA2014,WA5,0.009,0.333,0.005,0.089,0.095,0.958,0.001,0.015,0.333,482699,529818,1108561,2025038,10,6,4
+WA,2016,WA2016,WA5,0.009,0.348,0.010,0.096,0.095,1,0.026,0.015,0.348,747177,824572,1712681,3143497,10,6,4
+WI,1972,WI1972,WI1,0.053,0.818,-0.082,0.056,0.078,0.818,0.059,0.055,0.818,524564,365416,1012821,1779960,9,5,4
+WI,1974,WI1974,WI1,0.053,0.857,0.084,0.056,0.078,0.857,0.051,0.055,0.857,255363,334278,703992,1179284,9,7,2
+WI,1976,WI1976,WI1,0.053,0.9,0.112,0.057,0.078,0.9,0.073,0.055,0.9,397794,590612,1151821,1976809,9,7,2
+WI,1978,WI1978,WI1,0.053,0.947,0.103,0.167,0.078,0.947,0.050,0.055,0.947,312741,409503,768536,1444489,9,6,3
+WI,1980,WI1980,WI1,0.053,1,0.048,0.056,0.078,1,0.039,0.055,1,515874,547852,1071978,2127450,9,5,4
+WI,1982,WI1982,WI2,0.008,0.176,-0.079,0.056,0.032,0.765,0.043,0.043,0.765,456732,318604,879881,1550676,9,5,4
+WI,1984,WI1984,WI2,0.008,0.188,0.096,0.056,0.032,0.813,0.082,0.043,0.813,427079,619619,1004913,2093394,9,5,4
+WI,1986,WI1986,WI2,0.008,0.2,0.024,0.048,0.032,0.867,0.041,0.043,0.867,361633,392456,777826,1508180,9,5,4
+WI,1988,WI1988,WI2,0.008,0.214,0.077,0.056,0.032,0.929,0.096,0.043,0.929,447903,589917,1015222,2075640,9,5,4
+WI,1990,WI1990,WI2,0.008,0.231,-0.080,-0.057,0.032,1,-0.044,0.043,1,443410,252298,712548,1391415,9,4,5
+WI,1992,WI1992,WI3,0.033,0.25,-0.031,-0.056,0.024,0.667,-0.017,0.014,0.25,653061,529283,1153862,2364689,9,4,5
+WI,1994,WI1994,WI3,0.033,0.273,-0.020,-0.024,0.024,0.727,-0.003,0.014,0.273,409792,357694,654720,1534972,9,3,6
+WI,1996,WI1996,WI3,0.033,0.3,0.106,0.167,0.024,0.8,0.046,0.014,0.3,439665,626909,1012327,2133146,9,5,4
+WI,1998,WI1998,WI3,0.033,0.333,0.005,-0.021,0.024,0.889,0.004,0.014,0.333,439883,419905,903366,1719579,9,5,4
+WI,2000,WI2000,WI3,0.033,0.375,0.105,0.056,0.024,1,0.039,0.014,0.375,512214,737443,1187866,2499313,9,5,4
+WI,2002,WI2002,WI4,0.045,0.429,0.040,0.001,0.020,0.429,-0.001,0.016,0.429,392617,470459,828923,1726151,8,4,4
+WI,2004,WI2004,WI4,0.045,0.5,0.061,0.000,0.020,0.5,-0.021,0.016,0.5,637569,801841,1352194,2878820,8,4,4
+WI,2006,WI2006,WI4,0.045,0.6,0.077,0.003,0.020,0.6,0.046,0.016,0.6,461913,588384,1100741,2100589,8,5,3
+WI,2008,WI2008,WI4,0.045,0.75,0.066,0.094,0.020,0.75,0.045,0.016,0.75,636405,789822,1510343,2852455,8,5,3
+WI,2010,WI2010,WI4,0.045,1,-0.017,0.000,0.020,1,0.010,0.016,1,559898,492328,938690,2104451,8,3,5
+WI,2012,WI2012,WI5,-0.099,0,-0.140,-0.125,-0.125,0,-0.067,-0.074,0,922229,501279,1445015,2847010,8,3,5
+WI,2014,WI2014,WI5,-0.099,0,-0.069,-0.125,-0.125,0,-0.063,-0.074,0,677089,490868,1102581,2335917,8,3,5
+WI,2016,WI2016,WI5,-0.099,1,-0.087,-0.125,-0.125,1,-0.092,-0.074,1,833030,611074,1389578,2888209,8,3,5
