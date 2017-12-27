@@ -3,7 +3,7 @@
 When all districts are added up and present on S3, performs complete scoring
 of district plan and uploads summary JSON file.
 '''
-import io, os, gzip, posixpath, json, statistics, copy, time
+import io, os, gzip, posixpath, json, statistics, copy, time, itertools
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import prepare_state, util, data, constants
@@ -307,8 +307,9 @@ def lambda_handler(event, context):
 
     upload = data.Upload.from_dict(event)
     storage = data.Storage.from_event(event, boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL))
+    delays = itertools.chain(range(15), itertools.repeat(15))
     
-    while True:
+    for delay in delays:
         upload = upload.clone(progress=district_completeness(storage, upload))
     
         if upload.progress.is_complete():
@@ -326,7 +327,7 @@ def lambda_handler(event, context):
 
         if remain_msec > 30000: # 30 seconds for Lambda
             # There's time to do more
-            time.sleep(15)
+            time.sleep(delay)
             continue
         
         # There's no time to do more
