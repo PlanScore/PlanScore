@@ -14,7 +14,7 @@ functions = {
     'PlanScore-Callback': dict(Handler='lambda.callback', Timeout=3, **common),
     'PlanScore-AfterUpload': dict(Handler='lambda.after_upload', Timeout=90, **common),
     'PlanScore-RunDistrict': dict(Handler='lambda.run_district', Timeout=300, **common),
-    'PlanScore-ScoreDistrictPlan': dict(Handler='lambda.score_plan', Timeout=30, **common),
+    'PlanScore-ScoreDistrictPlan': dict(Handler='lambda.score_plan', Timeout=300, **common),
     }
 
 def publish_function(lam, name, path, env, role):
