@@ -3,13 +3,13 @@
 Fans out asynchronous parallel calls to planscore.district function, then
 starts and observer process with planscore.score function.
 '''
-import boto3, pprint, os, io, json, urllib.parse, gzip, functools, zipfile, itertools, time
-from osgeo import ogr
+import boto3, pprint, os, io, json, urllib.parse, gzip, functools, zipfile, itertools, time, math
+import osgeo.ogr
 from . import util, data, score, website, prepare_state, districts, constants
 
 FUNCTION_NAME = 'PlanScore-AfterUpload'
 
-ogr.UseExceptions()
+osgeo.ogr.UseExceptions()
 
 states_path = os.path.join(os.path.dirname(__file__), 'geodata', 'cb_2013_us_state_20m.geojson')
 
@@ -40,8 +40,7 @@ def commence_upload_scoring(s3, bucket, upload):
             ds_path = unzip_shapefile(ul_path, os.path.dirname(ul_path))
         else:
             ds_path = ul_path
-        state_abbr = guess_state(ds_path)
-        state_version = constants.MODEL_VERSION.get(state_abbr, '001')
+        state_abbr, state_version = guess_state_house(ds_path)
         prefix = f'data/{state_abbr}/{state_version}'
         score.put_upload_index(s3, bucket, upload)
         put_geojson_file(s3, bucket, upload, ds_path)
@@ -61,7 +60,7 @@ def put_district_geometries(s3, bucket, upload, path):
     '''
     '''
     print('put_district_geometries:', (bucket, path))
-    ds = ogr.Open(path)
+    ds = osgeo.ogr.Open(path)
     keys = []
 
     if not ds:
@@ -109,10 +108,10 @@ def start_observer_score_lambda(storage, upload):
     lam.invoke(FunctionName=score.FUNCTION_NAME, InvocationType='Event',
         Payload=json.dumps(event).encode('utf8'))
 
-def guess_state(path):
-    ''' Guess state postal abbreviation for the given input path.
+def guess_state_house(path):
+    ''' Guess state postal abbreviation and house for the given input path.
     '''
-    ds = ogr.Open(path)
+    ds = osgeo.ogr.Open(path)
     
     if not ds:
         raise RuntimeError('Could not open file to guess U.S. state')
@@ -124,7 +123,7 @@ def guess_state(path):
     if footprint.GetSpatialReference():
         footprint.TransformTo(prepare_state.EPSG4326)
     
-    states_ds = ogr.Open(states_path)
+    states_ds = osgeo.ogr.Open(states_path)
     states_layer = states_ds.GetLayer(0)
     states_layer.SetSpatialFilter(footprint)
     state_guesses = []
@@ -133,17 +132,26 @@ def guess_state(path):
         overlap = state_feature.GetGeometryRef().Intersection(footprint)
         state_guesses.append((overlap.Area(), state_feature.GetField('STUSPS')))
     
-    if not state_guesses:
-        return 'XX'
+    if state_guesses:
+        # Sort by area to findest largest overlap
+        state_abbr = [abbr for (_, abbr) in sorted(state_guesses)][-1]
+    else:
+        # Fall back to Null Island
+        state_abbr = 'XX'
+
+    # Sort by log(seats) to findest smallest difference
+    house_guesses = [(abs(math.log(len(features) / seats)), path)
+        for (seats, path) in constants.MODEL_VERSION[state_abbr].items()]
     
-    abbrs = [abbr for (area, abbr) in sorted(state_guesses, reverse=True)]
-    return abbrs[0]
+    house_path = [path for (_, path) in sorted(house_guesses)][0]
+    
+    return state_abbr, house_path
 
 def put_geojson_file(s3, bucket, upload, path):
     ''' Save a property-less GeoJSON file for this upload.
     '''
     key = upload.geometry_key()
-    ds = ogr.Open(path)
+    ds = osgeo.ogr.Open(path)
     geometries = []
     
     if not ds:

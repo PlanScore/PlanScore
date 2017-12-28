@@ -52,7 +52,11 @@ if os.environ.get('AWS', 'localstack') == 'amazonaws.com':
 
 # Active version of each state model
 
-MODEL_VERSION = { 'XX': '002', 'NC': '003-county-parts' }
+MODEL_VERSION = {
+    'XX': {2: '002'},
+    'NC': { 13: '003-county-parts' },
+    'WI': { 8: '001-us-house', 33: '001-state-senate', 99: '001-state-assembly' },
+    }
 
 # Time limit to process an upload, in seconds
 
