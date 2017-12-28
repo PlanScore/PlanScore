@@ -280,7 +280,7 @@ window.loadDataForSelectedBoundaryAndYear = () => {
             else if (i === allslices.length - 1) $slice.append('<span>D</span>');  // last real slice = D
         });
 
-        $('<div class="slice"></div>').css({ 'background-color': 'white' }).prop('title', 'No Data').appendTo($legend);
+        $('<div class="slice"></div>').css({ 'background-color': 'white', 'border': '1px solid #95989A' }).prop('title', 'No Data').appendTo($legend);
         $('<h5>No Data</h5>').appendTo($legend);  // last slice will be the No Data, here are the words to go with it
     }
 
