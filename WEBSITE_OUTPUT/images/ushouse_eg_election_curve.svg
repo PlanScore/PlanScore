@@ -1,1 +1,86 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 492 198.8"><defs><style>.cls-1{fill:url(#New_Gradient_Swatch_1);}</style><linearGradient id="New_Gradient_Swatch_1" y1="99.4" x2="492" y2="99.4" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#295475"/><stop offset="0.5" stop-color="#f2e5fa"/><stop offset="1" stop-color="#cc5839"/></linearGradient></defs><title>ushouse_eg_election_curve</title><g id="Layer_2" data-name="Layer 2"><g id="Final_Items" data-name="Final Items"><path class="cls-1" d="M0,195.8l36-3a35.11,35.11,0,0,0,27,2c15-5,27-37,38-35s17,8.59,27,6c5.73-1.5,31.44-47.57,63-88s54.5-70.5,80-77c34.32-8.75,74.67,56.87,93,88,28.9,49.08,52.93,89.43,74,91,27,2,18,1,22,2s32,6,32,6l-3,10-488,1Z"/></g></g></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   viewBox="0 0 492 198.8"
+   id="svg4159"
+   version="1.1"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="ushouse_eg_election_curve.svg">
+  <metadata
+     id="metadata4180">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1536"
+     inkscape:window-height="801"
+     id="namedview4178"
+     showgrid="false"
+     inkscape:zoom="2.0264228"
+     inkscape:cx="246"
+     inkscape:cy="99.400002"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="Final_Items" />
+  <defs
+     id="defs4161">
+    <style
+       id="style4163">.cls-1{fill:url(#New_Gradient_Swatch_1);}</style>
+    <linearGradient
+       id="New_Gradient_Swatch_1"
+       y1="99.4"
+       x2="492"
+       y2="99.4"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0"
+         stop-color="#295475"
+         id="stop4166"
+         style="stop-color:#0049a8;stop-opacity:1" />
+      <stop
+         offset="0.5"
+         stop-color="#f2e5fa"
+         id="stop4168" />
+      <stop
+         offset="1"
+         stop-color="#cc5839"
+         id="stop4170"
+         style="stop-color:#c71c36;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <title
+     id="title4172">ushouse_eg_election_curve</title>
+  <g
+     id="Layer_2"
+     data-name="Layer 2">
+    <g
+       id="Final_Items"
+       data-name="Final Items">
+      <path
+         class="cls-1"
+         d="M0,195.8l36-3a35.11,35.11,0,0,0,27,2c15-5,27-37,38-35s17,8.59,27,6c5.73-1.5,31.44-47.57,63-88s54.5-70.5,80-77c34.32-8.75,74.67,56.87,93,88,28.9,49.08,52.93,89.43,74,91,27,2,18,1,22,2s32,6,32,6l-3,10-488,1Z"
+         id="path4176" />
+    </g>
+  </g>
+</svg>
