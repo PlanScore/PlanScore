@@ -347,7 +347,8 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
                     pointPadding: 0,
                     groupPadding: 0,
                     pointWidth: 25,
-                    colorByPoint: true,  // use the cvustom-assigned colors
+                    colorByPoint: true,  // use the cvustom-assigned colors,
+                    animation: false,
                 }
             },
             series: votechartdata,
@@ -410,6 +411,7 @@ window.loadPlanBiasBellChart = (whichone, percentile) => {
             name: 'This One',
             data: markerdataset,
             color: 'black',
+            animation: false,
         }]
     });
 };
