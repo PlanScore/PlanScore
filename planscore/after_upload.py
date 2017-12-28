@@ -3,7 +3,7 @@
 Fans out asynchronous parallel calls to planscore.district function, then
 starts and observer process with planscore.score function.
 '''
-import boto3, pprint, os, io, json, urllib.parse, gzip, functools, zipfile, itertools, time
+import boto3, pprint, os, io, json, urllib.parse, gzip, functools, zipfile, itertools, time, math
 from osgeo import ogr
 from . import util, data, score, website, prepare_state, districts, constants
 
@@ -138,6 +138,42 @@ def guess_state(path):
     
     abbrs = [abbr for (area, abbr) in sorted(state_guesses, reverse=True)]
     return abbrs[0]
+
+def guess_state_house(path):
+    ''' Guess state postal abbreviation and house for the given input path.
+    '''
+    ds = ogr.Open(path)
+    
+    if not ds:
+        raise RuntimeError('Could not open file to guess U.S. state')
+    
+    features = list(ds.GetLayer(0))
+    geometries = [feature.GetGeometryRef() for feature in features]
+    footprint = functools.reduce(lambda a, b: a.Union(b), geometries)
+    
+    if footprint.GetSpatialReference():
+        footprint.TransformTo(prepare_state.EPSG4326)
+    
+    states_ds = ogr.Open(states_path)
+    states_layer = states_ds.GetLayer(0)
+    states_layer.SetSpatialFilter(footprint)
+    state_guesses = []
+    
+    for state_feature in states_layer:
+        overlap = state_feature.GetGeometryRef().Intersection(footprint)
+        state_guesses.append((overlap.Area(), state_feature.GetField('STUSPS')))
+    
+    if state_guesses:
+        state_abbr = [abbr for (_, abbr) in sorted(state_guesses)][-1]
+    else:
+        state_abbr = 'XX'
+
+    house_guesses = [(abs(math.log(len(features) / seats)), path)
+        for (seats, path) in constants.MODEL_PATHS[state_abbr].items()]
+    
+    house_path = [path for (_, path) in sorted(house_guesses)][0]
+    
+    return state_abbr, house_path
 
 def put_geojson_file(s3, bucket, upload, path):
     ''' Save a property-less GeoJSON file for this upload.

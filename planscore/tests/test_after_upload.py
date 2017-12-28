@@ -73,6 +73,15 @@ class TestAfterUpload (unittest.TestCase):
         nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
         self.assertEqual(after_upload.guess_state(nc_plan_path), 'NC')
     
+    def test_guess_state_house(self):
+        ''' Test that guess_state_house() guesses the correct U.S. state and house.
+        '''
+        null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
+        self.assertEqual(after_upload.guess_state_house(null_plan_path), ('XX', '002'))
+
+        nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
+        self.assertEqual(after_upload.guess_state_house(nc_plan_path), ('NC', '003-county-parts'))
+    
     @unittest.mock.patch('sys.stdout')
     def test_put_district_geometries(self, stdout):
         '''

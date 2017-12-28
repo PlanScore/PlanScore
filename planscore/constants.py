@@ -54,6 +54,15 @@ if os.environ.get('AWS', 'localstack') == 'amazonaws.com':
 
 MODEL_VERSION = { 'XX': '002', 'NC': '003-county-parts' }
 
+MODEL_PATHS = {
+    'XX': {2: '002'},
+    'NC': {
+        13: '003-county-parts',
+        50: 'senate',
+        120: 'assembly'
+        }
+    }
+
 # Time limit to process an upload, in seconds
 
 UPLOAD_TIME_LIMIT = 15 * 60
