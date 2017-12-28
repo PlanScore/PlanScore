@@ -56,11 +56,8 @@ MODEL_VERSION = { 'XX': '002', 'NC': '003-county-parts' }
 
 MODEL_PATHS = {
     'XX': {2: '002'},
-    'NC': {
-        13: '003-county-parts',
-        50: 'senate',
-        120: 'assembly'
-        }
+    'NC': { 13: '003-county-parts' },
+    'WI': { 8: '001-us-house', 33: '001-state-senate', 99: '001-state-assembly' },
     }
 
 # Time limit to process an upload, in seconds

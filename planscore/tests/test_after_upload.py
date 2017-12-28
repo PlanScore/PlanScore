@@ -73,7 +73,7 @@ class TestAfterUpload (unittest.TestCase):
         nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
         self.assertEqual(after_upload.guess_state(nc_plan_path), 'NC')
     
-    def test_guess_state_house(self):
+    def test_guess_state_house_knowns(self):
         ''' Test that guess_state_house() guesses the correct U.S. state and house.
         '''
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
@@ -81,6 +81,48 @@ class TestAfterUpload (unittest.TestCase):
 
         nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
         self.assertEqual(after_upload.guess_state_house(nc_plan_path), ('NC', '003-county-parts'))
+    
+    @unittest.mock.patch('osgeo.ogr')
+    def test_guess_state_house_imagined(self, osgeo_ogr):
+        ''' Test that guess_state_house() guesses the correct U.S. state and house.
+        '''
+        # Mock OGR boilerplate
+        ogr_feature = unittest.mock.Mock()
+        ogr_geometry = ogr_feature.GetGeometryRef.return_value
+        ogr_geometry.Intersection.return_value.Area.return_value = 0
+        feature_iter = osgeo_ogr.Open.return_value.GetLayer.return_value.__iter__
+        state_field = ogr_feature.GetField
+
+        # Real tests
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 2, 'XX'
+        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('XX', '002'))
+
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 5, 'WI'
+        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('WI', '001-us-house'))
+
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 8, 'WI'
+        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('WI', '001-us-house'))
+
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 9, 'WI'
+        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('WI', '001-us-house'))
+
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 30, 'WI'
+        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('WI', '001-state-senate'))
+
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 33, 'WI'
+        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('WI', '001-state-senate'))
+
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 40, 'WI'
+        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('WI', '001-state-senate'))
+
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 90, 'WI'
+        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('WI', '001-state-assembly'))
+
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 99, 'WI'
+        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('WI', '001-state-assembly'))
+
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 110, 'WI'
+        self.assertEqual(after_upload.guess_state_house('file.gpkg'), ('WI', '001-state-assembly'))
     
     @unittest.mock.patch('sys.stdout')
     def test_put_district_geometries(self, stdout):
