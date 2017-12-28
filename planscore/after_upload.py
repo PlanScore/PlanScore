@@ -141,7 +141,7 @@ def guess_state_house(path):
 
     # Sort by log(seats) to findest smallest difference
     house_guesses = [(abs(math.log(len(features) / seats)), path)
-        for (seats, path) in constants.MODEL_PATHS[state_abbr].items()]
+        for (seats, path) in constants.MODEL_VERSION[state_abbr].items()]
     
     house_path = [path for (_, path) in sorted(house_guesses)][0]
     
