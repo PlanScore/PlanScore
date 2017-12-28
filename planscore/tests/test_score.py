@@ -66,8 +66,15 @@ class TestScore (unittest.TestCase):
                 ])
         
         output = score.calculate_gaps(score.calculate_gap(input))
+
         self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
-        calculate_EG.assert_called_once_with([2, 3, 5, 6], [6, 5, 3, 2])
+        self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
+
+        self.assertEqual(output.summary['Efficiency Gap +1 Blue'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[1][1], ([2, 3, 5, 6], [6, 5, 3, 2], .01))
+
+        self.assertEqual(output.summary['Efficiency Gap +1 Red'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
 
     @unittest.mock.patch('planscore.score.calculate_EG')
     def test_calculate_gap_ushouse(self, calculate_EG):
@@ -82,8 +89,15 @@ class TestScore (unittest.TestCase):
                 ])
         
         output = score.calculate_gaps(score.calculate_gap(input))
+
         self.assertEqual(output.summary['US House Efficiency Gap'], calculate_EG.return_value)
-        calculate_EG.assert_called_once_with([2, 3, 5, 6], [6, 5, 3, 2])
+        self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
+
+        self.assertEqual(output.summary['US House Efficiency Gap +1 Dem'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[1][1], ([2, 3, 5, 6], [6, 5, 3, 2], .01))
+
+        self.assertEqual(output.summary['US House Efficiency Gap +1 Rep'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
 
     @unittest.mock.patch('planscore.score.calculate_EG')
     def test_calculate_gap_upperhouse(self, calculate_EG):
@@ -98,8 +112,15 @@ class TestScore (unittest.TestCase):
                 ])
         
         output = score.calculate_gaps(score.calculate_gap(input))
+
         self.assertEqual(output.summary['SLDU Efficiency Gap'], calculate_EG.return_value)
-        calculate_EG.assert_called_once_with([2, 3, 5, 6], [6, 5, 3, 2])
+        self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
+
+        self.assertEqual(output.summary['SLDU Efficiency Gap +1 Dem'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[1][1], ([2, 3, 5, 6], [6, 5, 3, 2], .01))
+
+        self.assertEqual(output.summary['SLDU Efficiency Gap +1 Rep'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
 
     @unittest.mock.patch('planscore.score.calculate_EG')
     def test_calculate_gap_lowerhouse(self, calculate_EG):
@@ -114,8 +135,15 @@ class TestScore (unittest.TestCase):
                 ])
         
         output = score.calculate_gaps(score.calculate_gap(input))
+
         self.assertEqual(output.summary['SLDL Efficiency Gap'], calculate_EG.return_value)
-        calculate_EG.assert_called_once_with([2, 3, 5, 6], [6, 5, 3, 2])
+        self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
+
+        self.assertEqual(output.summary['SLDL Efficiency Gap +1 Dem'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[1][1], ([2, 3, 5, 6], [6, 5, 3, 2], .01))
+
+        self.assertEqual(output.summary['SLDL Efficiency Gap +1 Rep'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
 
     @unittest.mock.patch('planscore.score.calculate_EG')
     def test_calculate_gap_sims(self, calculate_EG):
