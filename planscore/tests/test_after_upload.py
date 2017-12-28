@@ -64,15 +64,6 @@ class TestAfterUpload (unittest.TestCase):
         redirect_url = after_upload.get_redirect_url('https://planscore.org/', 'ID')
         self.assertEqual(redirect_url, 'https://planscore.org/plan.html?ID')
     
-    def test_guess_state(self):
-        ''' Test that guess_state() guesses the correct U.S. state.
-        '''
-        null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
-        self.assertEqual(after_upload.guess_state(null_plan_path), 'XX')
-
-        nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
-        self.assertEqual(after_upload.guess_state(nc_plan_path), 'NC')
-    
     def test_guess_state_house_knowns(self):
         ''' Test that guess_state_house() guesses the correct U.S. state and house.
         '''
@@ -175,14 +166,14 @@ class TestAfterUpload (unittest.TestCase):
     @unittest.mock.patch('planscore.after_upload.put_district_geometries')
     @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
     @unittest.mock.patch('planscore.after_upload.start_observer_score_lambda')
-    @unittest.mock.patch('planscore.after_upload.guess_state')
-    def test_commence_upload_scoring_good_file(self, guess_state, start_observer_score_lambda, fan_out_district_lambdas, put_district_geometries, put_geojson_file, put_upload_index, temporary_buffer_file):
+    @unittest.mock.patch('planscore.after_upload.guess_state_house')
+    def test_commence_upload_scoring_good_file(self, guess_state_house, start_observer_score_lambda, fan_out_district_lambdas, put_district_geometries, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
-        guess_state.return_value = 'XX'
+        guess_state_house.return_value = 'XX', '002'
         
         @contextlib.contextmanager
         def nullplan_file(*args):
@@ -196,7 +187,7 @@ class TestAfterUpload (unittest.TestCase):
 
         upload = data.Upload(id, upload_key)
         info = after_upload.commence_upload_scoring(s3, bucket, upload)
-        guess_state.assert_called_once_with(nullplan_path)
+        guess_state_house.assert_called_once_with(nullplan_path)
 
         temporary_buffer_file.assert_called_once_with('null-plan.geojson', None)
         self.assertIsNone(info)
@@ -222,14 +213,14 @@ class TestAfterUpload (unittest.TestCase):
     @unittest.mock.patch('planscore.after_upload.put_district_geometries')
     @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
     @unittest.mock.patch('planscore.after_upload.start_observer_score_lambda')
-    @unittest.mock.patch('planscore.after_upload.guess_state')
-    def test_commence_upload_scoring_zipped_file(self, guess_state, start_observer_score_lambda, fan_out_district_lambdas, put_district_geometries, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
+    @unittest.mock.patch('planscore.after_upload.guess_state_house')
+    def test_commence_upload_scoring_zipped_file(self, guess_state_house, start_observer_score_lambda, fan_out_district_lambdas, put_district_geometries, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.shp.zip'
-        guess_state.return_value = 'XX'
+        guess_state_house.return_value = 'XX', '002'
         
         @contextlib.contextmanager
         def nullplan_file(*args):
@@ -244,7 +235,7 @@ class TestAfterUpload (unittest.TestCase):
         upload = data.Upload(id, upload_key)
         info = after_upload.commence_upload_scoring(s3, bucket, upload)
         unzip_shapefile.assert_called_once_with(nullplan_path, os.path.dirname(nullplan_path))
-        guess_state.assert_called_once_with(unzip_shapefile.return_value)
+        guess_state_house.assert_called_once_with(unzip_shapefile.return_value)
 
         temporary_buffer_file.assert_called_once_with('null-plan.shp.zip', None)
         self.assertIsNone(info)

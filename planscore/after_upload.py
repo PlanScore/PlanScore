@@ -40,8 +40,7 @@ def commence_upload_scoring(s3, bucket, upload):
             ds_path = unzip_shapefile(ul_path, os.path.dirname(ul_path))
         else:
             ds_path = ul_path
-        state_abbr = guess_state(ds_path)
-        state_version = constants.MODEL_VERSION.get(state_abbr, '001')
+        state_abbr, state_version = guess_state_house(ds_path)
         prefix = f'data/{state_abbr}/{state_version}'
         score.put_upload_index(s3, bucket, upload)
         put_geojson_file(s3, bucket, upload, ds_path)
@@ -108,36 +107,6 @@ def start_observer_score_lambda(storage, upload):
     lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
     lam.invoke(FunctionName=score.FUNCTION_NAME, InvocationType='Event',
         Payload=json.dumps(event).encode('utf8'))
-
-def guess_state(path):
-    ''' Guess state postal abbreviation for the given input path.
-    '''
-    ds = osgeo.ogr.Open(path)
-    
-    if not ds:
-        raise RuntimeError('Could not open file to guess U.S. state')
-    
-    features = list(ds.GetLayer(0))
-    geometries = [feature.GetGeometryRef() for feature in features]
-    footprint = functools.reduce(lambda a, b: a.Union(b), geometries)
-    
-    if footprint.GetSpatialReference():
-        footprint.TransformTo(prepare_state.EPSG4326)
-    
-    states_ds = osgeo.ogr.Open(states_path)
-    states_layer = states_ds.GetLayer(0)
-    states_layer.SetSpatialFilter(footprint)
-    state_guesses = []
-    
-    for state_feature in states_layer:
-        overlap = state_feature.GetGeometryRef().Intersection(footprint)
-        state_guesses.append((overlap.Area(), state_feature.GetField('STUSPS')))
-    
-    if not state_guesses:
-        return 'XX'
-    
-    abbrs = [abbr for (area, abbr) in sorted(state_guesses, reverse=True)]
-    return abbrs[0]
 
 def guess_state_house(path):
     ''' Guess state postal abbreviation and house for the given input path.
