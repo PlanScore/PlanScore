@@ -244,6 +244,7 @@ window.loadDataForSelectedBoundaryAndYear = () => {
                 nullColor: 'white',
                 states: {
                     hover: {
+                        brightness: 0,
                         borderColor: '#333333',
                         borderWidth: 2
                     }
