@@ -23,8 +23,39 @@ def mock_s3_get_object(Bucket, Key):
 
 class TestScore (unittest.TestCase):
 
-    def test_calculate_gap_fair(self):
+    def test_calculate_EG_fair(self):
         ''' Efficiency gap can be correctly calculated for a fair election
+        '''
+        gap1 = score.calculate_EG((2, 3, 5, 6), (6, 5, 3, 2))
+        self.assertAlmostEqual(gap1, 0)
+
+        gap2 = score.calculate_EG((2, 3, 5, 6), (6, 5, 3, 2), -.1)
+        self.assertAlmostEqual(gap2, .2, msg='Should see slight +blue EG with a +red vote swing')
+
+        gap3 = score.calculate_EG((2, 3, 5, 6), (6, 5, 3, 2), .1)
+        self.assertAlmostEqual(gap3, -.2, msg='Should see slight +red EG with a +blue vote swing')
+
+        gap4 = score.calculate_EG((2, 3, 5, 6), (6, 5, 3, 2), 0)
+        self.assertAlmostEqual(gap4, gap1, msg='Should see identical EG with unchanged vote swing')
+
+    def test_calculate_EG_unfair(self):
+        ''' Efficiency gap can be correctly calculated for an unfair election
+        '''
+        gap1 = score.calculate_EG((1, 5, 5, 5), (7, 3, 3, 3))
+        self.assertAlmostEqual(gap1, -.25)
+
+        gap2 = score.calculate_EG((1, 5, 5, 5), (7, 3, 3, 3), -.1)
+        self.assertAlmostEqual(gap2, -.05, msg='Should see lesser +red EG with a +red vote swing')
+
+        gap3 = score.calculate_EG((1, 5, 5, 5), (7, 3, 3, 3), .1)
+        self.assertAlmostEqual(gap3, -.45, msg='Should see larger +red EG with a +blue vote swing')
+
+        gap4 = score.calculate_EG((1, 5, 5, 5), (7, 3, 3, 3), 0)
+        self.assertAlmostEqual(gap4, gap1, msg='Should see identical EG with unchanged vote swing')
+
+    @unittest.mock.patch('planscore.score.calculate_EG')
+    def test_calculate_gap(self, calculate_EG):
+        ''' Efficiency gap can be correctly calculated for an election
         '''
         input = data.Upload(id=None, key=None,
             districts = [
@@ -35,23 +66,18 @@ class TestScore (unittest.TestCase):
                 ])
         
         output = score.calculate_gaps(score.calculate_gap(input))
-        self.assertEqual(output.summary['Efficiency Gap'], 0)
 
-    def test_calculate_gap_unfair(self):
-        ''' Efficiency gap can be correctly calculated for an unfair election
-        '''
-        input = data.Upload(id=None, key=None,
-            districts = [
-                dict(totals={'Voters': 10, 'Red Votes': 1, 'Blue Votes': 7}, tile=None),
-                dict(totals={'Voters': 10, 'Red Votes': 5, 'Blue Votes': 3}, tile=None),
-                dict(totals={'Voters': 10, 'Red Votes': 5, 'Blue Votes': 3}, tile=None),
-                dict(totals={'Voters': 10, 'Red Votes': 5, 'Blue Votes': 3}, tile=None),
-                ])
-        
-        output = score.calculate_gaps(score.calculate_gap(input))
-        self.assertEqual(output.summary['Efficiency Gap'], -.25)
+        self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
-    def test_calculate_gap_ushouse(self):
+        self.assertEqual(output.summary['Efficiency Gap +1 Blue'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[1][1], ([2, 3, 5, 6], [6, 5, 3, 2], .01))
+
+        self.assertEqual(output.summary['Efficiency Gap +1 Red'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
+
+    @unittest.mock.patch('planscore.score.calculate_EG')
+    def test_calculate_gap_ushouse(self, calculate_EG):
         ''' Efficiency gap can be correctly calculated for a U.S. House election
         '''
         input = data.Upload(id=None, key=None,
@@ -63,9 +89,18 @@ class TestScore (unittest.TestCase):
                 ])
         
         output = score.calculate_gaps(score.calculate_gap(input))
-        self.assertEqual(output.summary['US House Efficiency Gap'], 0)
 
-    def test_calculate_gap_upperhouse(self):
+        self.assertEqual(output.summary['US House Efficiency Gap'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
+
+        self.assertEqual(output.summary['US House Efficiency Gap +1 Dem'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[1][1], ([2, 3, 5, 6], [6, 5, 3, 2], .01))
+
+        self.assertEqual(output.summary['US House Efficiency Gap +1 Rep'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
+
+    @unittest.mock.patch('planscore.score.calculate_EG')
+    def test_calculate_gap_upperhouse(self, calculate_EG):
         ''' Efficiency gap can be correctly calculated for a State upper house election
         '''
         input = data.Upload(id=None, key=None,
@@ -77,9 +112,18 @@ class TestScore (unittest.TestCase):
                 ])
         
         output = score.calculate_gaps(score.calculate_gap(input))
-        self.assertEqual(output.summary['SLDU Efficiency Gap'], 0)
 
-    def test_calculate_gap_lowerhouse(self):
+        self.assertEqual(output.summary['SLDU Efficiency Gap'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
+
+        self.assertEqual(output.summary['SLDU Efficiency Gap +1 Dem'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[1][1], ([2, 3, 5, 6], [6, 5, 3, 2], .01))
+
+        self.assertEqual(output.summary['SLDU Efficiency Gap +1 Rep'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
+
+    @unittest.mock.patch('planscore.score.calculate_EG')
+    def test_calculate_gap_lowerhouse(self, calculate_EG):
         ''' Efficiency gap can be correctly calculated for a State lower house election
         '''
         input = data.Upload(id=None, key=None,
@@ -91,9 +135,18 @@ class TestScore (unittest.TestCase):
                 ])
         
         output = score.calculate_gaps(score.calculate_gap(input))
-        self.assertEqual(output.summary['SLDL Efficiency Gap'], 0)
 
-    def test_calculate_gap_sims(self):
+        self.assertEqual(output.summary['SLDL Efficiency Gap'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
+
+        self.assertEqual(output.summary['SLDL Efficiency Gap +1 Dem'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[1][1], ([2, 3, 5, 6], [6, 5, 3, 2], .01))
+
+        self.assertEqual(output.summary['SLDL Efficiency Gap +1 Rep'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
+
+    @unittest.mock.patch('planscore.score.calculate_EG')
+    def test_calculate_gap_sims(self, calculate_EG):
         ''' Efficiency gap can be correctly calculated using input sims.
         '''
         input = data.Upload(id=None, key=None,
@@ -104,9 +157,20 @@ class TestScore (unittest.TestCase):
                 dict(totals={"REP000": 6, "DEM000": 2, "REP001": 5, "DEM001": 3}, tile=None),
                 ])
         
+        calculate_EG.return_value = 0
         output = score.calculate_gaps(score.calculate_gap(input))
-        self.assertEqual(output.summary['Efficiency Gap'], -.125)
-        self.assertAlmostEqual(output.summary['Efficiency Gap SD'], .1767767)
+        self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
+        self.assertEqual(output.summary['Efficiency Gap SD'], 0)
+        self.assertIn('Efficiency Gap +1 Dem', output.summary)
+        self.assertIn('Efficiency Gap +1 Dem SD', output.summary)
+        self.assertIn('Efficiency Gap +1 Rep', output.summary)
+        self.assertIn('Efficiency Gap +1 Rep SD', output.summary)
+        self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2], 0))
+        self.assertEqual(calculate_EG.mock_calls[1][1], ([2, 3, 5, 6], [6, 5, 3, 2], .01))
+        self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
+        self.assertEqual(calculate_EG.mock_calls[11][1], ([1, 5, 5, 5], [7, 3, 3, 3], 0))
+        self.assertEqual(calculate_EG.mock_calls[12][1], ([1, 5, 5, 5], [7, 3, 3, 3], .01))
+        self.assertEqual(calculate_EG.mock_calls[13][1], ([1, 5, 5, 5], [7, 3, 3, 3], -.01))
         
         for field in ('REP000', 'DEM000', 'REP001', 'DEM001'):
             for district in output.districts:

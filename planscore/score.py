@@ -134,6 +134,42 @@ def score_district(s3, bucket, district_geom, tiles_prefix):
     
     return totals, tile_list, output.getvalue()
 
+def calculate_EG(red_districts, blue_districts, vote_swing=0):
+    ''' Convert two lists of district vote counts into an EG score.
+    
+        Vote swing is positive toward blue and negative toward red.
+    '''
+    election_votes, wasted_red, wasted_blue, red_wins, blue_wins = 0, 0, 0, 0, 0
+    
+    # Swing the vote, if necessary
+    if vote_swing != 0:
+        districts = [(R, B, R + B) for (R, B) in zip(red_districts, blue_districts)]
+        red_districts = [((R/T - vote_swing) * T) for (R, B, T) in districts if T > 0]
+        blue_districts = [((B/T + vote_swing) * T) for (R, B, T) in districts if T > 0]
+    
+    # Calculate Efficiency Gap using swung vote
+    for (red_votes, blue_votes) in zip(red_districts, blue_districts):
+        district_votes = red_votes + blue_votes
+        election_votes += district_votes
+        win_threshold = district_votes / 2
+        
+        if red_votes > blue_votes:
+            red_wins += 1
+            wasted_red += red_votes - win_threshold # surplus
+            wasted_blue += blue_votes # loser
+        elif blue_votes > red_votes:
+            blue_wins += 1
+            wasted_blue += blue_votes - win_threshold # surplus
+            wasted_red += red_votes # loser
+        else:
+            pass # raise ValueError('Unlikely 50/50 split')
+
+    # Return an efficiency gap
+    if election_votes == 0:
+        return
+    
+    return (wasted_red - wasted_blue) / election_votes
+
 def calculate_gap(upload):
     '''
     '''
@@ -144,98 +180,82 @@ def calculate_gap(upload):
         'SLDL': ('SLDL Rep Votes', 'SLDL Dem Votes'),
         }
     
+    first_totals = upload.districts[0]['totals']
+
     for (prefix, (red_field, blue_field)) in gaps.items():
-        election_votes, wasted_red, wasted_blue, red_wins, blue_wins = 0, 0, 0, 0, 0
-
-        for district in upload.districts:
-            red_votes = district['totals'].get(red_field) or 0
-            blue_votes = district['totals'].get(blue_field) or 0
-            district_votes = red_votes + blue_votes
-            election_votes += district_votes
-            win_threshold = district_votes / 2
+        if red_field not in first_totals or blue_field not in first_totals:
+            continue
     
-            if red_votes > blue_votes:
-                red_wins += 1
-                wasted_red += red_votes - win_threshold # surplus
-                wasted_blue += blue_votes # loser
-            elif blue_votes > red_votes:
-                blue_wins += 1
-                wasted_blue += blue_votes - win_threshold # surplus
-                wasted_red += red_votes # loser
-            else:
-                pass # raise ValueError('Unlikely 50/50 split')
+        red_districts = [d['totals'].get(red_field) or 0 for d in upload.districts]
+        blue_districts = [d['totals'].get(blue_field) or 0 for d in upload.districts]
 
-        if election_votes > 0:
-            efficiency_gap = (wasted_red - wasted_blue) / election_votes
+        if prefix == 'Red/Blue':
+            summary_dict['Efficiency Gap'] = calculate_EG(red_districts, blue_districts)
+
+            # Calculate -5 to +5 point swings
+            swings = itertools.product([1, 2, 3, 4, 5], [(.01, 'Blue'), (-.01, 'Red')])
+            for (points, (swing, party)) in swings:
+                gap = calculate_EG(red_districts, blue_districts, swing * points)
+                summary_dict[f'Efficiency Gap +{points:.0f} {party}'] = gap
         else:
-            efficiency_gap = None
+            summary_dict[f'{prefix} Efficiency Gap'] = calculate_EG(red_districts, blue_districts)
 
-        key = 'Efficiency Gap' if (prefix == 'Red/Blue') else '{} Efficiency Gap'.format(prefix)
-        summary_dict[key] = efficiency_gap
+            # Calculate -5 to +5 point swings
+            swings = itertools.product([1, 2, 3, 4, 5], [(.01, 'Dem'), (-.01, 'Rep')])
+            for (points, (swing, party)) in swings:
+                gap = calculate_EG(red_districts, blue_districts, swing * points)
+                summary_dict[f'{prefix} Efficiency Gap +{points:.0f} {party}'] = gap
     
     return upload.clone(summary=summary_dict)
 
 def calculate_gaps(upload):
     '''
     '''
-    summary_dict, EGs = dict(), list()
-    copied_districts = copy.deepcopy(upload.districts)
+    EGs = {swing: list() for swing in (0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5)}
+    summary_dict, copied_districts = dict(), copy.deepcopy(upload.districts)
     first_totals = copied_districts[0]['totals']
     
     if f'REP000' not in first_totals or f'DEM000' not in first_totals:
         return upload.clone()
     
     # Prepare place for simulation vote totals in each district
-    for district in copied_districts:
-        district['totals']['Democratic Votes'] = list()
-        district['totals']['Republican Votes'] = list()
+    all_red_districts = [list() for d in copied_districts]
+    all_blue_districts = [list() for d in copied_districts]
 
     # Iterate over all simulations, tracking EG and vote totals
     for sim in range(1000):
         if f'REP{sim:03d}' not in first_totals or f'DEM{sim:03d}' not in first_totals:
             continue
-    
-        election_votes, wasted_red, wasted_blue, red_wins, blue_wins = 0, 0, 0, 0, 0
+        
+        sim_red_districts, sim_blue_districts = list(), list()
 
-        for district in copied_districts:
+        for (i, district) in enumerate(copied_districts):
             red_votes = district['totals'].pop(f'REP{sim:03d}')
             blue_votes = district['totals'].pop(f'DEM{sim:03d}')
-            district_votes = red_votes + blue_votes
-            election_votes += district_votes
-            win_threshold = district_votes / 2
+            sim_red_districts.append(red_votes)
+            sim_blue_districts.append(blue_votes)
+            all_red_districts[i].append(red_votes)
+            all_blue_districts[i].append(blue_votes)
     
-            if red_votes > blue_votes:
-                red_wins += 1
-                wasted_red += red_votes - win_threshold # surplus
-                wasted_blue += blue_votes # loser
-            elif blue_votes > red_votes:
-                blue_wins += 1
-                wasted_blue += blue_votes - win_threshold # surplus
-                wasted_red += red_votes # loser
-            else:
-                pass # raise ValueError('Unlikely 50/50 split')
-            
-            district['totals']['Republican Votes'].append(red_votes)
-            district['totals']['Democratic Votes'].append(blue_votes)
-
-        if election_votes > 0:
-            efficiency_gap = (wasted_red - wasted_blue) / election_votes
-        else:
-            efficiency_gap = None
-        
-        EGs.append(efficiency_gap)
+        for swing in EGs:
+            EGs[swing].append(calculate_EG(sim_red_districts, sim_blue_districts, swing/100))
     
     # Finalize per-district vote totals and confidence intervals
-    for district in copied_districts:
-        blue_votes = district['totals'].pop('Democratic Votes')
-        red_votes = district['totals'].pop('Republican Votes')
+    for (i, district) in enumerate(copied_districts):
+        red_votes, blue_votes = all_red_districts[i], all_blue_districts[i]
         district['totals']['Democratic Votes'] = statistics.mean(blue_votes)
         district['totals']['Republican Votes'] = statistics.mean(red_votes)
         district['totals']['Democratic Votes SD'] = statistics.stdev(blue_votes)
         district['totals']['Republican Votes SD'] = statistics.stdev(red_votes)
 
-    summary_dict['Efficiency Gap'] = statistics.mean(EGs)
-    summary_dict['Efficiency Gap SD'] = statistics.stdev(EGs)
+    summary_dict['Efficiency Gap'] = statistics.mean(EGs[0])
+    summary_dict['Efficiency Gap SD'] = statistics.stdev(EGs[0])
+    
+    for swing in (1, 2, 3, 4, 5):
+        summary_dict[f'Efficiency Gap +{swing} Dem'] = statistics.mean(EGs[swing])
+        summary_dict[f'Efficiency Gap +{swing} Rep'] = statistics.mean(EGs[-swing])
+        summary_dict[f'Efficiency Gap +{swing} Dem SD'] = statistics.stdev(EGs[swing])
+        summary_dict[f'Efficiency Gap +{swing} Rep SD'] = statistics.stdev(EGs[-swing])
     
     return upload.clone(districts=copied_districts, summary=summary_dict)
 
