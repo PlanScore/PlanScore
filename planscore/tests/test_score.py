@@ -161,8 +161,16 @@ class TestScore (unittest.TestCase):
         output = score.calculate_gaps(score.calculate_gap(input))
         self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
         self.assertEqual(output.summary['Efficiency Gap SD'], 0)
-        self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
-        self.assertEqual(calculate_EG.mock_calls[1][1], ([1, 5, 5, 5], [7, 3, 3, 3]))
+        self.assertIn('Efficiency Gap +1 Dem', output.summary)
+        self.assertIn('Efficiency Gap +1 Dem SD', output.summary)
+        self.assertIn('Efficiency Gap +1 Rep', output.summary)
+        self.assertIn('Efficiency Gap +1 Rep SD', output.summary)
+        self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2], 0))
+        self.assertEqual(calculate_EG.mock_calls[1][1], ([2, 3, 5, 6], [6, 5, 3, 2], .01))
+        self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
+        self.assertEqual(calculate_EG.mock_calls[11][1], ([1, 5, 5, 5], [7, 3, 3, 3], 0))
+        self.assertEqual(calculate_EG.mock_calls[12][1], ([1, 5, 5, 5], [7, 3, 3, 3], .01))
+        self.assertEqual(calculate_EG.mock_calls[13][1], ([1, 5, 5, 5], [7, 3, 3, 3], -.01))
         
         for field in ('REP000', 'DEM000', 'REP001', 'DEM001'):
             for district in output.districts:

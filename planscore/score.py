@@ -211,8 +211,8 @@ def calculate_gap(upload):
 def calculate_gaps(upload):
     '''
     '''
-    summary_dict, EGs = dict(), list()
-    copied_districts = copy.deepcopy(upload.districts)
+    EGs = {swing: list() for swing in (0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5)}
+    summary_dict, copied_districts = dict(), copy.deepcopy(upload.districts)
     first_totals = copied_districts[0]['totals']
     
     if f'REP000' not in first_totals or f'DEM000' not in first_totals:
@@ -237,7 +237,8 @@ def calculate_gaps(upload):
             all_red_districts[i].append(red_votes)
             all_blue_districts[i].append(blue_votes)
     
-        EGs.append(calculate_EG(sim_red_districts, sim_blue_districts))
+        for swing in EGs:
+            EGs[swing].append(calculate_EG(sim_red_districts, sim_blue_districts, swing/100))
     
     # Finalize per-district vote totals and confidence intervals
     for (i, district) in enumerate(copied_districts):
@@ -247,8 +248,14 @@ def calculate_gaps(upload):
         district['totals']['Democratic Votes SD'] = statistics.stdev(blue_votes)
         district['totals']['Republican Votes SD'] = statistics.stdev(red_votes)
 
-    summary_dict['Efficiency Gap'] = statistics.mean(EGs)
-    summary_dict['Efficiency Gap SD'] = statistics.stdev(EGs)
+    summary_dict['Efficiency Gap'] = statistics.mean(EGs[0])
+    summary_dict['Efficiency Gap SD'] = statistics.stdev(EGs[0])
+    
+    for swing in (1, 2, 3, 4, 5):
+        summary_dict[f'Efficiency Gap +{swing} Dem'] = statistics.mean(EGs[swing])
+        summary_dict[f'Efficiency Gap +{swing} Rep'] = statistics.mean(EGs[-swing])
+        summary_dict[f'Efficiency Gap +{swing} Dem SD'] = statistics.stdev(EGs[swing])
+        summary_dict[f'Efficiency Gap +{swing} Rep SD'] = statistics.stdev(EGs[-swing])
     
     return upload.clone(districts=copied_districts, summary=summary_dict)
 
