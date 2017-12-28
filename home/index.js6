@@ -242,6 +242,12 @@ window.loadDataForSelectedBoundaryAndYear = () => {
                     }
                 },
                 nullColor: 'white',
+                states: {
+                    hover: {
+                        borderColor: '#333333',
+                        borderWidth: 2
+                    }
+                },
                 // click events: call the popup maker
                 events: {
                     click: function (e) {
