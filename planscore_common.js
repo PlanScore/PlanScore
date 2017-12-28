@@ -14,7 +14,7 @@ export const PLAN_YEARS = [
 
 // the color gradient from Republican red to Democrat blue
 // see also lookupBiasColor() lookupBiasDescription() et al, which resolves a score (-1 to +1) into colors & descriptions
-export const COLOR_GRADIENT = require('tinygradient').rgb(['red', 'white', 'blue'], 30).map((tinycolor) => { return tinycolor.toHexString(); });
+export const COLOR_GRADIENT = require('tinygradient').rgb(['#C71C36', '#F2E5FA', '#0049A8'], 100).map((tinycolor) => { return tinycolor.toHexString(); });
 
 // technically bias scores range -1 to +1, but realistically we scale to a narrower band (25% bias is a lot!)
 // this defines the spread to consider when scaling a score onto a color ramp or similar
