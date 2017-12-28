@@ -294,7 +294,9 @@ window.loadDataForSelectedBoundaryAndYear = () => {
             // find bias color and apply CSS
             const words = lookupBiasDescription(state_info.value);
             const color = lookupBiasColor(state_info.value);
-            $(this) .prop('title', words) .css({ 'background-color': color });
+            if (state_info.value === null) $(this) .prop('title', words) .css({ 'background-color': color, 'border':'1px solid #95989A' });
+            else if (state_info.value === undefined) $(this) .prop('title', words) .css({ 'background-color': color, 'border':'1px solid #95989A' });
+            else $(this) .prop('title', words) .css({ 'background-color': color });
         });
     }
 
