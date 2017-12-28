@@ -134,16 +134,25 @@ def score_district(s3, bucket, district_geom, tiles_prefix):
     
     return totals, tile_list, output.getvalue()
 
-def calculate_EG(red_districts, blue_districts):
+def calculate_EG(red_districts, blue_districts, vote_swing=0):
     ''' Convert two lists of district vote counts into an EG score.
+    
+        Vote swing is positive toward blue and negative toward red.
     '''
     election_votes, wasted_red, wasted_blue, red_wins, blue_wins = 0, 0, 0, 0, 0
     
+    # Swing the vote, if necessary
+    if vote_swing != 0:
+        districts = [(R, B, R + B) for (R, B) in zip(red_districts, blue_districts)]
+        red_districts = [((R/T - vote_swing) * T) for (R, B, T) in districts]
+        blue_districts = [((B/T + vote_swing) * T) for (R, B, T) in districts]
+    
+    # Calculate Efficiency Gap using swung vote
     for (red_votes, blue_votes) in zip(red_districts, blue_districts):
         district_votes = red_votes + blue_votes
         election_votes += district_votes
         win_threshold = district_votes / 2
-
+        
         if red_votes > blue_votes:
             red_wins += 1
             wasted_red += red_votes - win_threshold # surplus

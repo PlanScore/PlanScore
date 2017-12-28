@@ -26,14 +26,32 @@ class TestScore (unittest.TestCase):
     def test_calculate_EG_fair(self):
         ''' Efficiency gap can be correctly calculated for a fair election
         '''
-        gap = score.calculate_EG((2, 3, 5, 6), (6, 5, 3, 2))
-        self.assertEqual(gap, 0)
+        gap1 = score.calculate_EG((2, 3, 5, 6), (6, 5, 3, 2))
+        self.assertAlmostEqual(gap1, 0)
+
+        gap2 = score.calculate_EG((2, 3, 5, 6), (6, 5, 3, 2), -.1)
+        self.assertAlmostEqual(gap2, .2, msg='Should see slight +blue EG with a +red vote swing')
+
+        gap3 = score.calculate_EG((2, 3, 5, 6), (6, 5, 3, 2), .1)
+        self.assertAlmostEqual(gap3, -.2, msg='Should see slight +red EG with a +blue vote swing')
+
+        gap4 = score.calculate_EG((2, 3, 5, 6), (6, 5, 3, 2), 0)
+        self.assertAlmostEqual(gap4, gap1, msg='Should see identical EG with unchanged vote swing')
 
     def test_calculate_EG_unfair(self):
         ''' Efficiency gap can be correctly calculated for an unfair election
         '''
-        gap = score.calculate_EG((1, 5, 5, 5), (7, 3, 3, 3))
-        self.assertEqual(gap, -.25)
+        gap1 = score.calculate_EG((1, 5, 5, 5), (7, 3, 3, 3))
+        self.assertAlmostEqual(gap1, -.25)
+
+        gap2 = score.calculate_EG((1, 5, 5, 5), (7, 3, 3, 3), -.1)
+        self.assertAlmostEqual(gap2, -.05, msg='Should see lesser +red EG with a +red vote swing')
+
+        gap3 = score.calculate_EG((1, 5, 5, 5), (7, 3, 3, 3), .1)
+        self.assertAlmostEqual(gap3, -.45, msg='Should see larger +red EG with a +blue vote swing')
+
+        gap4 = score.calculate_EG((1, 5, 5, 5), (7, 3, 3, 3), 0)
+        self.assertAlmostEqual(gap4, gap1, msg='Should see identical EG with unchanged vote swing')
 
     @unittest.mock.patch('planscore.score.calculate_EG')
     def test_calculate_gap(self, calculate_EG):
