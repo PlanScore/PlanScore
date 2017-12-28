@@ -23,8 +23,8 @@ import { lookupBiasColor, lookupBiasFavorParty, lookupBiasPercentile } from "./.
 const CURRENT_VIEW = {};
 
 // Efficiency Gap wasted vote chart; colors
-const WASTEDVOTE_CHART_WASTED_D = '#004aa7';
-const WASTEDVOTE_CHART_WASTED_R = '#c61c35';
+const WASTEDVOTE_CHART_WASTED_D = '#0049A8';
+const WASTEDVOTE_CHART_WASTED_R = '#C71C36';
 const WASTEDVOTE_CHART_USEFUL_D = '#99b7dc';
 const WASTEDVOTE_CHART_USEFUL_R = '#e8a4ad';
 
