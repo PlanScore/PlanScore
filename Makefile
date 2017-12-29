@@ -7,8 +7,8 @@ live-lambda: planscore-lambda.zip
 
 live-website: planscore/website/build
 	# Two-part sync with deletion after to maintain consistency for web visitors
-	aws s3 sync --acl public-read --cache-control 'public, max-age=300' $</ s3://planscore-website/
-	aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete $</ s3://planscore-website/
+	aws s3 sync --acl public-read --cache-control 'public, max-age=300' $</ s3://planscore.org-website/
+	aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete $</ s3://planscore.org-website/
 
 localstack-env: planscore-lambda.zip
 	./setup-localstack.py planscore-lambda.zip
