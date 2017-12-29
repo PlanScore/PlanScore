@@ -367,7 +367,7 @@ window.selectState = (stateabbr) => {
         const $modal = $('#stateinfo-modal').modal('show');
         $modal.find('span[data-field="statename"]').html(biasinfo.name);
         $modal.find('span[data-field="analysis"]').html(biasinfo.analysis);
-        $modal.find('.modal-footer a').prop('href', moreinfourl);
+        $modal.find('.modal-content a').prop('href', moreinfourl);
     }
     else {
         // nothing to do, except I guess close the modal if it happens to be open

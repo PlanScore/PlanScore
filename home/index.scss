@@ -162,6 +162,35 @@
 #stateinfo-modal {
 }
 
+.modal-backdrop {
+    background-color: rgba(0,0,0,0);
+}
+
+.modal-dialog {
+    position: relative;
+    width: 80%;
+    margin: 50px auto;
+}
+
+@media (min-width: 768px) {
+    .modal-dialog {
+        width: 400px;
+        margin: 200px auto;
+    }
+}
+
+.modal-content {
+    position: relative;
+    background-color: #fff;
+    -webkit-background-clip: padding-box;
+    background-clip: padding-box;
+    border: 1px solid #95989A;
+    border-radius: 0px;
+    outline: 0;
+    -webkit-box-shadow: 0 3px 9px rgba(0,0,0,.2);
+    box-shadow: 0 3px 9px rgba(0,0,0,.2);
+}
+
 .states-listing {
     div {  /* any of the "columns" */
         white-space: nowrap;
