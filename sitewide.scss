@@ -61,9 +61,13 @@ html {
 
     color: $navbar-text-color;
 
+    .navbar-toggle {
+        border-color: white;
+    }
+    
     .navbar-nav > li > a {
         color: $navbar-text-color;
-        padding-bottom: 5px;
+        padding-bottom: 4px;
     }
     
     .navbar-nav > li > a:before {
