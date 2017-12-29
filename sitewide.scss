@@ -63,6 +63,28 @@ html {
 
     .navbar-nav > li > a {
         color: $navbar-text-color;
+        padding-bottom: 5px;
+    }
+    
+    .navbar-nav > li > a:before {
+        content: "";
+        position: absolute;
+        width: 100%;
+        height: 1px;
+        bottom: 0;
+        left: 0;
+        background-color: $navbar-text-color;
+        visibility: hidden;
+        -webkit-transform: scaleX(0);
+        transform: scaleX(0);
+        -webkit-transition: all 0.1s ease-in-out 0s;
+        transition: all 0.1s ease-in-out 0s;
+    }
+    
+    .navbar-nav > li > a:hover:before {
+        visibility: visible;
+        -webkit-transform: scaleX(1);
+        transform: scaleX(1);
     }
     
     @media (min-width: 768px) {
