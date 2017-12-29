@@ -9,6 +9,7 @@ $navbar-text-color: #333;
 
 $republican-color: #C71C36;
 $democrat-color: #0049A8;
+$dark-purple-color: #4D599E;
 
 
 
@@ -126,12 +127,32 @@ ul.nav.nav-tabs {
         font-size: 18px;
         border-radius: 0;
         color: #95989A;
+        text-align: center;
     }
 
+    li {
+        width: 33.3333%;
+    }
+    
+    li a {
+        margin-right: 0;
+        border: 1px solid #B3B3B3;
+        background-color: #F2F2F2;
+    }
+    
+    li a:hover {
+        border: 1px solid #B3B3B3;
+        background-color: #F2F2F2;
+        color: #95989a;
+    }
+    
     li.active a {
         border: 1px solid #B3B3B3;
-        border-top-width: 3px solid #4D599E;
+        border-top: 3px solid $dark-purple-color;
         border-bottom-color: transparent;
+        margin-top: -1.5px;
+        background-color:white;
+        color: #95989a;
     }
 }
 
