@@ -26,6 +26,9 @@ FIELD_NAMES = (
     'Population 2015', 'Population 2015, Error',
     'Voting-Age Population 2015', 'Voting-Age Population 2015, Error',
     
+    # Census 2010 fields
+    'Population 2010',
+    
     # Extra fields
     'US President 2016 - DEM', 'US President 2016 - REP',
     'US Senate 2016 - DEM', 'US Senate 2016 - REP'
