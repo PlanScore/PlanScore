@@ -18,9 +18,10 @@ _mercator = ModestMaps.OpenStreetMap.Provider().projection
 class Partial:
     ''' Partially-calculated district sums, used by consume_tiles().
     '''
-    def __init__(self, index, totals, precincts, tiles, geometry_key, upload, ogr_geometry):
+    def __init__(self, index, totals, compactness, precincts, tiles, geometry_key, upload, ogr_geometry):
         self.index = index
         self.totals = totals
+        self.compactness = compactness
         self.precincts = precincts
         self.geometry_key = geometry_key
         self.tiles = tiles
@@ -31,13 +32,13 @@ class Partial:
     
     def to_dict(self):
         return dict(index=self.index, totals=self.totals,
-            precincts=len(self.precincts), tiles=self.tiles,
-            upload=self.upload.to_dict())
+            compactness=self.compactness, precincts=len(self.precincts),
+            tiles=self.tiles, upload=self.upload.to_dict())
     
     def to_event(self):
         return dict(index=self.index, totals=self.totals, tiles=self.tiles,
-            geometry_key=self.geometry_key, upload=self.upload.to_dict(),
-            precincts=Partial.scrunch(self.precincts))
+            compactness=self.compactness, geometry_key=self.geometry_key,
+            upload=self.upload.to_dict(), precincts=Partial.scrunch(self.precincts))
     
     @property
     def geometry(self):
@@ -67,6 +68,7 @@ class Partial:
     @staticmethod
     def from_event(event, storage):
         totals = event.get('totals')
+        compactness = event.get('compactness')
         precincts = event.get('precincts')
         tiles = event.get('tiles')
         index = event['index']
@@ -76,10 +78,12 @@ class Partial:
         object = storage.s3.get_object(Bucket=storage.bucket, Key=geometry_key)
         geometry = ogr.CreateGeometryFromWkt(object['Body'].read().decode('utf8'))
         
-        if totals is None or precincts is None or tiles is None:
-            totals, precincts, tiles = collections.defaultdict(int), [], get_geometry_tile_zxys(geometry)
+        if totals is None or compactness is None or precincts is None or tiles is None:
+            totals, compactness = collections.defaultdict(int), {}
+            precincts, tiles = [], get_geometry_tile_zxys(geometry)
         
-        return Partial(index, totals, Partial.unscrunch(precincts), tiles, geometry_key, upload, geometry)
+        return Partial(index, totals, compactness, Partial.unscrunch(precincts),
+            tiles, geometry_key, upload, geometry)
     
     @staticmethod
     def scrunch(thing):
@@ -163,7 +167,7 @@ def post_score_results(storage, partial):
     ''' Post single-district counts.
     '''
     key = partial.upload.district_key(partial.index)
-    body = json.dumps(dict(totals=partial.totals, geometry_key=partial.geometry_key)).encode('utf8')
+    body = json.dumps(dict(totals=partial.totals), indent=2).encode('utf8')
     
     print('Uploading', len(body), 'bytes to', key)
     
