@@ -531,7 +531,7 @@ class TestDistricts (unittest.TestCase):
 
         precincts1 = districts.load_tile_precincts(storage, '12/2047/2047')
         s3.get_object.assert_called_once_with(Bucket='bucket-name', Key='XX/12/2047/2047.geojson')
-        self.assertEqual(len(precincts1), 3)
+        self.assertEqual(len(precincts1), 4)
 
         precincts2 = districts.load_tile_precincts(storage, '12/-1/-1')
         self.assertEqual(len(precincts2), 0)
