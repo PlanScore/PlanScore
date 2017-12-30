@@ -195,11 +195,22 @@ def consume_tiles(storage, partial):
 def score_precinct(partial, precinct, tile_zxy):
     '''
     '''
-    precinct_frac = precinct['properties'][prepare_state.FRACTION_FIELD]
     precinct_geom = ogr.CreateGeometryFromJson(json.dumps(precinct['geometry']))
+    
+    if precinct_geom is None:
+        # If there's no geometry here, don't bother.
+        return
+    elif precinct_geom.GetGeometryType() in (ogr.wkbPoint,
+        ogr.wkbPoint25D, ogr.wkbMultiPoint, ogr.wkbMultiPoint25D):
+        # Points have no area
+        precinct_is_point = True
+        precinct_frac = 1
+    else:
+        precinct_is_point = False
+        precinct_frac = precinct['properties'][prepare_state.FRACTION_FIELD]
 
-    if precinct_frac == 0 or precinct_geom is None:
-        # If there's no geometry or overlap here, don't bother.
+    if precinct_frac == 0:
+        # If there's no overlap here, don't bother.
         return
 
     if partial.contains_tile(tile_zxy):
@@ -207,6 +218,10 @@ def score_precinct(partial, precinct, tile_zxy):
         # This is safe because precincts are clipped on tile boundaries, so a
         # fully-contained tile necessarily means the precinct is also contained.
         precinct_fraction = precinct_frac
+    elif precinct_is_point:
+        # Do simple inside/outside check for points
+        tile_geom = partial.tile_geometry(tile_zxy)
+        precinct_fraction = precinct_frac if precinct_geom.Within(tile_geom) else 0
     else:
         try:
             overlap_geom = precinct_geom.Intersection(partial.tile_geometry(tile_zxy))

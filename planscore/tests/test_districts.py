@@ -360,7 +360,7 @@ class TestDistricts (unittest.TestCase):
         self.assertAlmostEqual(partial.totals['Blue Votes'], 0)
         self.assertAlmostEqual(partial.totals['DEM999'], 0)
     
-    # Precinct score cases:
+    # Precinct and Census block (represented as points) score cases:
     #
     # 1. precinct from tile within district - 100%
     # 2. tile overlapping district:
@@ -368,8 +368,12 @@ class TestDistricts (unittest.TestCase):
     #   2b. precinct overlaps district - ?%
     #   2c. precinct touches district - 0%
     #   2d. precinct outside district - 0%
+    #   2e. block-point within district - 100%
+    #   2f. block-point outside district - 0%
     # 3. precinct from tile touching district - 0%
     # 4. precinct from tile outside district - 0%
+    # 5. block-point from tile within district - 100%
+    # 6. block-point from tile outside district - 0%
     
     def test_score_precinct_1_tile_within(self):
         ''' Correct voter count for a precinct from tile within district.
@@ -426,6 +430,28 @@ class TestDistricts (unittest.TestCase):
         districts.score_precinct(partial, precinct, '12/2049/2046')
         self.assertAlmostEqual(partial.totals['Voters'], 0., 9)
     
+    def test_score_precinct_2e_tile_overlaps_blockpoint_within(self):
+        ''' Correct voter count for a block-point within district from tile overlapping district.
+        '''
+        geometry = ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,0.17 1,0.17 -1,-1 -1))')
+        partial = districts.Partial(None, {'Voters': 0}, None, None, None, None, geometry)
+        self.assertFalse(partial.contains_tile('12/2049/2046'))
+
+        blockpoint = {"type": "Feature", "properties": {"Voters": 1}, "geometry": {"type": "Point", "coordinates": [.14, .14]}}
+        districts.score_precinct(partial, blockpoint, '12/2049/2046')
+        self.assertAlmostEqual(partial.totals['Voters'], 1, 9)
+    
+    def test_score_precinct_2f_tile_overlaps_blockpoint_outside(self):
+        ''' Correct voter count for a block-point outside district from tile overlapping district.
+        '''
+        geometry = ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,0.11 1,0.11 -1,-1 -1))')
+        partial = districts.Partial(None, {'Voters': 0}, None, None, None, None, geometry)
+        self.assertFalse(partial.contains_tile('12/2049/2046'))
+
+        blockpoint = {"type": "Feature", "properties": {"Voters": 1}, "geometry": {"type": "Point", "coordinates": [.14, .14]}}
+        districts.score_precinct(partial, blockpoint, '12/2049/2046')
+        self.assertAlmostEqual(partial.totals['Voters'], 0., 9)
+    
     def test_score_precinct_3_tile_touches(self):
         ''' Correct voter count for a precinct from tile touching district.
         '''
@@ -446,6 +472,28 @@ class TestDistricts (unittest.TestCase):
 
         precinct = {"type": "Feature", "properties": {"Voters": 1, "PlanScore:Fraction": 0.5}, "geometry": {"type": "Polygon", "coordinates": [[[.02, .02], [.02, .06], [.06, .06], [.06, .02], [.02, .02]]]}}
         districts.score_precinct(partial, precinct, '12/2059/2047')
+        self.assertAlmostEqual(partial.totals['Voters'], 0., 9)
+    
+    def test_score_precinct_5_blockpoint_within(self):
+        ''' Correct voter count for a block-point from tile within district.
+        '''
+        geometry = ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,1 1,1 -1,-1 -1))')
+        partial = districts.Partial(None, {'Voters': 0}, None, None, None, None, geometry)
+        self.assertTrue(partial.contains_tile('12/2048/2047'))
+
+        blockpoint = {"type": "Feature", "properties": {"Voters": 1}, "geometry": {"type": "Point", "coordinates": [.04, .04]}}
+        districts.score_precinct(partial, blockpoint, '12/2048/2047')
+        self.assertAlmostEqual(partial.totals['Voters'], 1, 9)
+    
+    def test_score_precinct_6_blockpoint_outside(self):
+        ''' Correct voter count for a block-point from tile outside district.
+        '''
+        geometry = ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,1 1,1 -1,-1 -1))')
+        partial = districts.Partial(None, {'Voters': 0}, None, None, None, None, geometry)
+        self.assertFalse(partial.contains_tile('12/2059/2047'))
+
+        blockpoint = {"type": "Feature", "properties": {"Voters": 1}, "geometry": {"type": "Point", "coordinates": [1.00, 0.05]}}
+        districts.score_precinct(partial, blockpoint, '12/2059/2047')
         self.assertAlmostEqual(partial.totals['Voters'], 0., 9)
     
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
@@ -483,7 +531,7 @@ class TestDistricts (unittest.TestCase):
 
         precincts1 = districts.load_tile_precincts(storage, '12/2047/2047')
         s3.get_object.assert_called_once_with(Bucket='bucket-name', Key='XX/12/2047/2047.geojson')
-        self.assertEqual(len(precincts1), 3)
+        self.assertEqual(len(precincts1), 4)
 
         precincts2 = districts.load_tile_precincts(storage, '12/-1/-1')
         self.assertEqual(len(precincts2), 0)
