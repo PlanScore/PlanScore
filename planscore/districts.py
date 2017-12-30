@@ -6,7 +6,7 @@ AWS Lambda time limit before recursively calling for remaining tiles.
 import collections, json, io, gzip, statistics, time, base64, posixpath, pickle, functools
 from osgeo import ogr
 import boto3, botocore.exceptions, ModestMaps.OpenStreetMap, ModestMaps.Core
-from . import prepare_state, score, data, constants
+from . import prepare_state, score, data, constants, compactness
 
 ogr.UseExceptions()
 
@@ -126,6 +126,10 @@ def lambda_handler(event, context):
     
     print('Starting with', len(partial.precincts),
         'precincts and', len(partial.tiles), 'tiles remaining')
+    
+    if not partial.compactness:
+        # Before running through tiles, record district compactness measures
+        partial.compactness.update(compactness.get_scores(partial.geometry))
 
     for (index, _) in enumerate(consume_tiles(storage, partial)):
         times.append(time.time() - start_time)

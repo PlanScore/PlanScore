@@ -134,13 +134,16 @@ class TestDistricts (unittest.TestCase):
 
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
+    @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.post_score_results')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_init(self, consume_tiles, post_score_results, boto3_client, stdout):
+    def test_lambda_handler_init(self, consume_tiles, post_score_results, get_scores, boto3_client, stdout):
         ''' Lambda event data with just geometry starts the process.
         '''
         s3 = boto3_client.return_value
         s3.get_object.return_value = {'Body': io.BytesIO(b'POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))')}
+        
+        get_scores.return_value = {'Reock': -1}
 
         event = {'index': -1, 'bucket': 'bucket-name',
             'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
@@ -153,11 +156,15 @@ class TestDistricts (unittest.TestCase):
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 0)
         post_score_results.assert_called_once_with(storage, partial)
 
+        get_scores.assert_called_once_with(partial.geometry)
+        self.assertEqual(partial.compactness, get_scores.return_value)
+
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
+    @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.post_score_results')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_timeout(self, consume_tiles, post_score_results, boto3_client, stdout):
+    def test_lambda_handler_timeout(self, consume_tiles, post_score_results, get_scores, boto3_client, stdout):
         ''' Lambda event hands off the process when no time is left.
         '''
         s3 = boto3_client.return_value
@@ -186,9 +193,10 @@ class TestDistricts (unittest.TestCase):
 
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
+    @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.post_score_results')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_continue(self, consume_tiles, post_score_results, boto3_client, stdout):
+    def test_lambda_handler_continue(self, consume_tiles, post_score_results, get_scores, boto3_client, stdout):
         ''' Lambda event data with existing totals continues the process.
         '''
         s3 = boto3_client.return_value
@@ -197,7 +205,7 @@ class TestDistricts (unittest.TestCase):
         event = {'index': -1, 'bucket': 'bucket-name', 'totals': {},
             'precincts': [{'Totals': 1}], 'tiles': ['12/2047/2048'],
             'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
-            'geometry_key': 'geom.wkt', 'compactness': {}}
+            'geometry_key': 'geom.wkt', 'compactness': {'Reock': -1}}
 
         districts.lambda_handler(event, None)
         storage, partial = consume_tiles.mock_calls[0][1]
@@ -205,12 +213,16 @@ class TestDistricts (unittest.TestCase):
             (-1, {}, [{'Totals': 1}], ['12/2047/2048'], 'ID'))
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 0)
         post_score_results.assert_called_once_with(storage, partial)
+        
+        self.assertEqual(len(get_scores.mock_calls), 0,
+            'Should not calculate compactness scores if they are provided')
 
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
+    @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.post_score_results')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_final(self, consume_tiles, post_score_results, boto3_client, stdout):
+    def test_lambda_handler_final(self, consume_tiles, post_score_results, get_scores, boto3_client, stdout):
         ''' Lambda event for the final district does not hand off to the score function.
         '''
         s3 = boto3_client.return_value
@@ -228,8 +240,9 @@ class TestDistricts (unittest.TestCase):
 
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
+    @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_overdue(self, consume_tiles, boto3_client, stdout):
+    def test_lambda_handler_overdue(self, consume_tiles, get_scores, boto3_client, stdout):
         ''' Lambda event for an overdue upload errors out.
         '''
         s3 = boto3_client.return_value
