@@ -2,6 +2,10 @@ machine:
   node:
     version: 8.2.0
 
+general:
+  artifacts:
+    - "WEBSITE_OUTPUT"
+
 dependencies:
   override:
     - yarn install
@@ -14,7 +18,7 @@ test:
 
 deployment:
   production:
-    branch: [gh-pages]
+    branch: [static-site]
     commands:
       # Two-part sync with deletion after to maintain consistency for web visitors
       - aws s3 sync --acl public-read --cache-control 'public, max-age=300' WEBSITE_OUTPUT/ s3://planscore.org-static-site/
