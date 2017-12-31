@@ -5,7 +5,9 @@ setup(
     url = 'https://github.com/migurski/PlanScore',
     author = 'Michal Migurski',
     description = '',
-    packages = ['planscore', 'planscore.website', 'planscore.tests'],
+    packages = [
+        'planscore', 'planscore.website', 'planscore.tests', 'planscore.compactness'
+        ],
     test_suite = 'planscore.tests',
     package_data = {
         'planscore': ['geodata/*.*'],

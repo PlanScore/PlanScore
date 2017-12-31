@@ -220,7 +220,11 @@ def combine_district_scores(storage, input_upload):
         if object.get('ContentEncoding') == 'gzip':
             object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
         
-        new_districts.append(json.load(object['Body']))
+        new_district = {key: value for (key, value)
+            in json.load(object['Body']).items()
+            if key in ('totals', 'compactness')}
+        
+        new_districts.append(new_district)
 
     interim_upload = calculate_gap(input_upload.clone(districts=new_districts))
     output_upload = calculate_gaps(interim_upload)

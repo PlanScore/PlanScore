@@ -134,7 +134,9 @@ class TestAfterUpload (unittest.TestCase):
         after_upload.fan_out_district_lambdas('bucket-name', 'data/XX', upload,
             ['uploads/ID/geometries/0.wkt', 'uploads/ID/geometries/1.wkt'])
         
-        for (index, call) in enumerate(boto3_client.return_value.mock_calls):
+        self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 2)
+        
+        for (index, call) in enumerate(boto3_client.return_value.invoke.mock_calls):
             kwargs = call[2]
             self.assertEqual(kwargs['FunctionName'], districts.FUNCTION_NAME)
             self.assertEqual(kwargs['InvocationType'], 'Event')

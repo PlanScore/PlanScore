@@ -89,7 +89,7 @@ def fan_out_district_lambdas(bucket, prefix, upload, geometry_keys):
         lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
         
         for (index, geometry_key) in enumerate(geometry_keys):
-            partial = districts.Partial(index, None, None, None, geometry_key, upload, None)
+            partial = districts.Partial(index, None, None, None, None, geometry_key, upload, None)
             payload = dict(partial.to_event(), bucket=bucket, prefix=prefix)
 
             lam.invoke(FunctionName=districts.FUNCTION_NAME, InvocationType='Event',
