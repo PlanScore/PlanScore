@@ -171,7 +171,7 @@ def post_score_results(storage, partial):
     ''' Post single-district counts.
     '''
     key = partial.upload.district_key(partial.index)
-    body = json.dumps(dict(totals=partial.totals), indent=2).encode('utf8')
+    body = json.dumps(partial.to_dict(), indent=2).encode('utf8')
     
     print('Uploading', len(body), 'bytes to', key)
     

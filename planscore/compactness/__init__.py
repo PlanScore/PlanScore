@@ -8,7 +8,16 @@ EPSG3857 = osr.SpatialReference(); EPSG3857.ImportFromEPSG(3857)
 projection = osr.CoordinateTransformation(EPSG4326, EPSG3857)
 
 def get_scores(geometry):
-    return {}
+    ''' Return dictionary of compactness scores for a geographic area.
+    '''
+    scores = dict()
+    
+    try:
+        scores['Reock'] = get_reock_score(geometry)
+    except Exception:
+        scores['Reock'] = None
+    
+    return scores
 
 def get_reock_score(geometry):
     ''' Return area ratio of geometry to minimum bounding circle
