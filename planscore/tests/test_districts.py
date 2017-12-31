@@ -260,34 +260,21 @@ class TestDistricts (unittest.TestCase):
             districts.lambda_handler(event, context)
 
     @unittest.mock.patch('sys.stdout')
-    def test_post_score_results(self, stdout):
+    @unittest.mock.patch('time.time')
+    def test_post_score_results(self, time_time, stdout):
         ''' Expected results are posted to S3.
         '''
+        time_time.return_value = -1
+        
+        storage = data.Storage(unittest.mock.Mock(), 'bucket-name', 'data/XX')
         partial = districts.Partial(-1, {"Voters": 1}, {}, [], [], 'uploads/ID/geometries/-1.wkt',
             data.Upload('ID', 'uploads/ID/upload/file.geojson', districts=[None, None]), None)
         
-        # First time through, there's only one district noted on the server
-        storage = data.Storage(unittest.mock.Mock(), 'bucket-name', 'data/XX')
-        #storage.s3.list_objects.return_value = {
-        #    'Contents': [{'Key': 'uploads/ID/districts/0.json'}]}
-        
-        final = districts.post_score_results(storage, partial)
-        self.assertFalse(final, 'Should see False return from post_score_results()')
-
-        #storage.s3.list_objects.assert_called_once_with(
-        #    Bucket='bucket-name', Prefix='uploads/ID/districts')
+        districts.post_score_results(storage, partial)
 
         storage.s3.put_object.assert_called_once_with(
-            ACL='private', Body=b'{\n  "totals": {\n    "Voters": 1\n  }\n}',
+            ACL='private', Body=b'{\n  "index": -1,\n  "totals": {\n    "Voters": 1\n  },\n  "compactness": {},\n  "precincts": 0,\n  "tiles": [],\n  "upload": {\n    "id": "ID",\n    "key": "uploads/ID/upload/file.geojson",\n    "districts": [\n      null,\n      null\n    ],\n    "summary": {},\n    "progress": null,\n    "start_time": -1\n  }\n}',
             Bucket='bucket-name', ContentType='text/json', Key='uploads/ID/districts/-1.json')
-        
-        # Second time through, both expected districts are there
-        storage.s3 = unittest.mock.Mock()
-        storage.s3.list_objects.return_value = {'Contents': [
-            {'Key': 'uploads/ID/districts/0.json'}, {'Key': 'uploads/ID/districts/1.json'}]}
-
-        final = districts.post_score_results(storage, partial)
-        #self.assertTrue(final, 'Should see True return from post_score_results()')
     
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
     @unittest.mock.patch('planscore.districts.score_precinct')

@@ -236,6 +236,7 @@ class TestScore (unittest.TestCase):
         '''
         '''
         storage = unittest.mock.Mock()
+        storage.bucket = 'bucket-name'
         storage.s3.list_objects.return_value = {'Contents': [
             # Return these out of order to check sorting in score.lambda_handler()
             {'Key': 'uploads/sample-plan/districts/1.json'},
@@ -243,27 +244,30 @@ class TestScore (unittest.TestCase):
             ]}
         
         storage.s3.get_object.side_effect = mock_s3_get_object
-
-        return
         
-        s3.list_objects.assert_called_once_with(
+        score.combine_district_scores(storage,
+            data.Upload('sample-plan', 'uploads/sample-plan/upload/file.geojson'))
+        
+        storage.s3.list_objects.assert_called_once_with(
             Bucket='bucket-name', Prefix='uploads/sample-plan/districts')
         
-        self.assertEqual(len(s3.get_object.mock_calls), 2, 'Should have asked for each district in turn')
+        self.assertEqual(len(storage.s3.get_object.mock_calls), 2, 'Should have asked for each district in turn')
         
         input_upload = calculate_gap.mock_calls[0][1][0]
         self.assertEqual(input_upload.id, 'sample-plan')
         self.assertEqual(len(input_upload.districts), 2)
         self.assertIn('totals', input_upload.districts[0])
         self.assertIn('totals', input_upload.districts[1])
-        self.assertEqual(input_upload.districts[0]['geometry_key'], 'uploads/sample-plan/geometries/0.wkt')
-        self.assertEqual(input_upload.districts[1]['geometry_key'], 'uploads/sample-plan/geometries/1.wkt')
+        self.assertNotIn('upload', input_upload.districts[0])
+        self.assertNotIn('upload', input_upload.districts[1])
+        self.assertEqual(input_upload.districts[0]['compactness']['Reock'], 0.58986716)
+        self.assertEqual(input_upload.districts[1]['compactness']['Reock'], 0.53540118)
         
         interim_upload = calculate_gap.return_value
         calculate_gaps.assert_called_once_with(interim_upload)
         
         output_upload = calculate_gaps.return_value
-        put_upload_index.assert_called_once_with(s3, 'bucket-name', output_upload)
+        put_upload_index.assert_called_once_with(storage.s3, 'bucket-name', output_upload)
     
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('time.sleep')
