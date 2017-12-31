@@ -1,7 +1,10 @@
 {
   "districts": [
     {
-      "geometry_key": "uploads/20171224T043308.882216319Z/geometries/0.wkt",
+      "compactness": {
+        "Polsby-Popper": 0.19917549626718048,
+        "Reock": 0.3468851262010655
+      },
       "totals": {
         "Black Population 2015": 339971.61939275515,
         "Black Population 2015, Error": 56711.29135056279,
@@ -22,7 +25,10 @@
       }
     },
     {
-      "geometry_key": "uploads/20171224T043308.882216319Z/geometries/1.wkt",
+      "compactness": {
+        "Polsby-Popper": 0.15283740214520225,
+        "Reock": 0.31523334841559386
+      },
       "totals": {
         "Black Population 2015": 167303.90311985582,
         "Black Population 2015, Error": 43250.232209947724,
@@ -43,7 +49,10 @@
       }
     },
     {
-      "geometry_key": "uploads/20171224T043308.882216319Z/geometries/2.wkt",
+      "compactness": {
+        "Polsby-Popper": 0.3678829829941627,
+        "Reock": 0.46469401760336954
+      },
       "totals": {
         "Black Population 2015": 171068.67334770618,
         "Black Population 2015, Error": 42637.60772241781,
@@ -64,7 +73,10 @@
       }
     },
     {
-      "geometry_key": "uploads/20171224T043308.882216319Z/geometries/3.wkt",
+      "compactness": {
+        "Polsby-Popper": 0.18784280675267365,
+        "Reock": 0.3095452814649036
+      },
       "totals": {
         "Black Population 2015": 185341.36548639406,
         "Black Population 2015, Error": 45540.60017126612,
@@ -85,7 +97,10 @@
       }
     },
     {
-      "geometry_key": "uploads/20171224T043308.882216319Z/geometries/4.wkt",
+      "compactness": {
+        "Polsby-Popper": 0.32701542044927584,
+        "Reock": 0.35658060574502515
+      },
       "totals": {
         "Black Population 2015": 112811.19888240882,
         "Black Population 2015, Error": 30077.977528265394,
@@ -106,7 +121,10 @@
       }
     },
     {
-      "geometry_key": "uploads/20171224T043308.882216319Z/geometries/5.wkt",
+      "compactness": {
+        "Polsby-Popper": 0.3210621756903492,
+        "Reock": 0.49952373824533697
+      },
       "totals": {
         "Black Population 2015": 158937.36763868135,
         "Black Population 2015, Error": 39183.80391613709,
@@ -127,7 +145,10 @@
       }
     },
     {
-      "geometry_key": "uploads/20171224T043308.882216319Z/geometries/6.wkt",
+      "compactness": {
+        "Polsby-Popper": 0.30929379952292585,
+        "Reock": 0.4657959320935258
+      },
       "totals": {
         "Black Population 2015": 159678.02387526416,
         "Black Population 2015, Error": 42291.45673982651,
@@ -148,7 +169,10 @@
       }
     },
     {
-      "geometry_key": "uploads/20171224T043308.882216319Z/geometries/7.wkt",
+      "compactness": {
+        "Polsby-Popper": 0.2026121406747897,
+        "Reock": 0.24800688946949545
+      },
       "totals": {
         "Black Population 2015": 187289.64931175773,
         "Black Population 2015, Error": 40342.21160415004,
@@ -169,7 +193,10 @@
       }
     },
     {
-      "geometry_key": "uploads/20171224T043308.882216319Z/geometries/8.wkt",
+      "compactness": {
+        "Polsby-Popper": 0.18017307400604896,
+        "Reock": 0.23116946687032947
+      },
       "totals": {
         "Black Population 2015": 157118.54006995042,
         "Black Population 2015, Error": 38390.707325832765,
@@ -190,7 +217,10 @@
       }
     },
     {
-      "geometry_key": "uploads/20171224T043308.882216319Z/geometries/9.wkt",
+      "compactness": {
+        "Polsby-Popper": 0.259418766093512,
+        "Reock": 0.3512127911299599
+      },
       "totals": {
         "Black Population 2015": 97202.24809741555,
         "Black Population 2015, Error": 34849.4823374816,
@@ -211,7 +241,10 @@
       }
     },
     {
-      "geometry_key": "uploads/20171224T043308.882216319Z/geometries/10.wkt",
+      "compactness": {
+        "Polsby-Popper": 0.20749491827158836,
+        "Reock": 0.2562186151167831
+      },
       "totals": {
         "Black Population 2015": 30424.43623651368,
         "Black Population 2015, Error": 18202.020569355078,
@@ -232,7 +265,10 @@
       }
     },
     {
-      "geometry_key": "uploads/20171224T043308.882216319Z/geometries/11.wkt",
+      "compactness": {
+        "Polsby-Popper": 0.26465732974164397,
+        "Reock": 0.44182421847836434
+      },
       "totals": {
         "Black Population 2015": 304166.01122984116,
         "Black Population 2015, Error": 60634.1507987031,
@@ -253,7 +289,10 @@
       }
     },
     {
-      "geometry_key": "uploads/20171224T043308.882216319Z/geometries/12.wkt",
+      "compactness": {
+        "Polsby-Popper": 0.2273741828325102,
+        "Reock": 0.3557468965332566
+      },
       "totals": {
         "Black Population 2015": 170567.2557956505,
         "Black Population 2015, Error": 43458.742607247405,
@@ -274,10 +313,35 @@
       }
     }
   ],
-  "id": "20171224T043308.882216319Z",
-  "key": "uploads/20171224T043308.882216319Z/upload/NC5.1.zip",
+  "id": "20171231T031354.474478423Z",
+  "key": "uploads/20171231T031354.474478423Z/upload/NC5.1.zip",
+  "progress": [
+    13,
+    13
+  ],
+  "start_time": 1514690357.4768481,
   "summary": {
     "Efficiency Gap": -0.14668610259246762,
+    "Efficiency Gap +1 Dem": -0.1346495094645271,
+    "Efficiency Gap +1 Dem SD": 0.005801446813525513,
+    "Efficiency Gap +1 Rep": -0.19295548769065438,
+    "Efficiency Gap +1 Rep SD": 0.011962983229188293,
+    "Efficiency Gap +2 Dem": -0.15434916794296993,
+    "Efficiency Gap +2 Dem SD": 0.0024833380415946464,
+    "Efficiency Gap +2 Rep": -0.17445687335038734,
+    "Efficiency Gap +2 Rep SD": 0.0024763108171139345,
+    "Efficiency Gap +3 Dem": -0.17434916794296992,
+    "Efficiency Gap +3 Dem SD": 0.002483338041594648,
+    "Efficiency Gap +3 Rep": -0.15445687335038738,
+    "Efficiency Gap +3 Rep SD": 0.0024763108171139336,
+    "Efficiency Gap +4 Dem": -0.19434916794296989,
+    "Efficiency Gap +4 Dem SD": 0.002483338041594648,
+    "Efficiency Gap +4 Rep": -0.1344568733503874,
+    "Efficiency Gap +4 Rep SD": 0.0024763108171139327,
+    "Efficiency Gap +5 Dem": -0.2143491679429699,
+    "Efficiency Gap +5 Dem SD": 0.0024833380415946473,
+    "Efficiency Gap +5 Rep": -0.11445687335038737,
+    "Efficiency Gap +5 Rep SD": 0.002476310817113932,
     "Efficiency Gap SD": 0.045809766992264606
   }
 }
