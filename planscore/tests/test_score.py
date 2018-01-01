@@ -76,8 +76,9 @@ class TestScore (unittest.TestCase):
         self.assertAlmostEqual(mmd5, .15, places=2,
             msg='Should see +blue MMD with 28% mean and 13% median red vote share')
 
+    @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap(self, calculate_EG):
+    def test_calculate_bias(self, calculate_EG, calculate_MMD):
         ''' Efficiency gap can be correctly calculated for an election
         '''
         input = data.Upload(id=None, key=None,
@@ -88,7 +89,10 @@ class TestScore (unittest.TestCase):
                 dict(totals={'Voters': 10, 'Red Votes': 6, 'Blue Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_gaps(score.calculate_gap(input))
+        output = score.calculate_biases(score.calculate_bias(input))
+
+        self.assertEqual(output.summary['Mean/Median'], calculate_MMD.return_value)
+        self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
         self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
         self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
@@ -99,8 +103,9 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['Efficiency Gap +1 Red'], calculate_EG.return_value)
         self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
 
+    @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_ushouse(self, calculate_EG):
+    def test_calculate_gap_ushouse(self, calculate_EG, calculate_MMD):
         ''' Efficiency gap can be correctly calculated for a U.S. House election
         '''
         input = data.Upload(id=None, key=None,
@@ -111,7 +116,10 @@ class TestScore (unittest.TestCase):
                 dict(totals={'US House Rep Votes': 6, 'US House Dem Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_gaps(score.calculate_gap(input))
+        output = score.calculate_biases(score.calculate_bias(input))
+
+        self.assertEqual(output.summary['US House Mean/Median'], calculate_MMD.return_value)
+        self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
         self.assertEqual(output.summary['US House Efficiency Gap'], calculate_EG.return_value)
         self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
@@ -122,8 +130,9 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['US House Efficiency Gap +1 Rep'], calculate_EG.return_value)
         self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
 
+    @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_upperhouse(self, calculate_EG):
+    def test_calculate_gap_upperhouse(self, calculate_EG, calculate_MMD):
         ''' Efficiency gap can be correctly calculated for a State upper house election
         '''
         input = data.Upload(id=None, key=None,
@@ -134,7 +143,10 @@ class TestScore (unittest.TestCase):
                 dict(totals={'SLDU Rep Votes': 6, 'SLDU Dem Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_gaps(score.calculate_gap(input))
+        output = score.calculate_biases(score.calculate_bias(input))
+
+        self.assertEqual(output.summary['SLDU Mean/Median'], calculate_MMD.return_value)
+        self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
         self.assertEqual(output.summary['SLDU Efficiency Gap'], calculate_EG.return_value)
         self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
@@ -145,8 +157,9 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['SLDU Efficiency Gap +1 Rep'], calculate_EG.return_value)
         self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
 
+    @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_lowerhouse(self, calculate_EG):
+    def test_calculate_gap_lowerhouse(self, calculate_EG, calculate_MMD):
         ''' Efficiency gap can be correctly calculated for a State lower house election
         '''
         input = data.Upload(id=None, key=None,
@@ -157,7 +170,10 @@ class TestScore (unittest.TestCase):
                 dict(totals={'SLDL Rep Votes': 6, 'SLDL Dem Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_gaps(score.calculate_gap(input))
+        output = score.calculate_biases(score.calculate_bias(input))
+
+        self.assertEqual(output.summary['SLDL Mean/Median'], calculate_MMD.return_value)
+        self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
         self.assertEqual(output.summary['SLDL Efficiency Gap'], calculate_EG.return_value)
         self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
@@ -168,8 +184,9 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['SLDL Efficiency Gap +1 Rep'], calculate_EG.return_value)
         self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
 
+    @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_sims(self, calculate_EG):
+    def test_calculate_gap_sims(self, calculate_EG, calculate_MMD):
         ''' Efficiency gap can be correctly calculated using input sims.
         '''
         input = data.Upload(id=None, key=None,
@@ -180,8 +197,11 @@ class TestScore (unittest.TestCase):
                 dict(totals={"REP000": 6, "DEM000": 2, "REP001": 5, "DEM001": 3}, tile=None),
                 ])
         
+        calculate_MMD.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_gaps(score.calculate_gap(input))
+        output = score.calculate_biases(score.calculate_bias(input))
+        self.assertEqual(output.summary['Mean/Median'], calculate_MMD.return_value)
+        self.assertEqual(output.summary['Mean/Median SD'], 0)
         self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
         self.assertEqual(output.summary['Efficiency Gap SD'], 0)
         self.assertIn('Efficiency Gap +1 Dem', output.summary)
@@ -252,10 +272,10 @@ class TestScore (unittest.TestCase):
         self.assertTrue(completeness.is_complete(), 'Should see accurate return from district_completeness()')
     
     @unittest.mock.patch('sys.stdout')
-    @unittest.mock.patch('planscore.score.calculate_gaps')
-    @unittest.mock.patch('planscore.score.calculate_gap')
+    @unittest.mock.patch('planscore.score.calculate_biases')
+    @unittest.mock.patch('planscore.score.calculate_bias')
     @unittest.mock.patch('planscore.score.put_upload_index')
-    def test_combine_district_scores(self, put_upload_index, calculate_gap, calculate_gaps, stdout):
+    def test_combine_district_scores(self, put_upload_index, calculate_bias, calculate_biases, stdout):
         '''
         '''
         storage = unittest.mock.Mock()
@@ -276,7 +296,7 @@ class TestScore (unittest.TestCase):
         
         self.assertEqual(len(storage.s3.get_object.mock_calls), 2, 'Should have asked for each district in turn')
         
-        input_upload = calculate_gap.mock_calls[0][1][0]
+        input_upload = calculate_bias.mock_calls[0][1][0]
         self.assertEqual(input_upload.id, 'sample-plan')
         self.assertEqual(len(input_upload.districts), 2)
         self.assertIn('totals', input_upload.districts[0])
@@ -286,10 +306,10 @@ class TestScore (unittest.TestCase):
         self.assertEqual(input_upload.districts[0]['compactness']['Reock'], 0.58986716)
         self.assertEqual(input_upload.districts[1]['compactness']['Reock'], 0.53540118)
         
-        interim_upload = calculate_gap.return_value
-        calculate_gaps.assert_called_once_with(interim_upload)
+        interim_upload = calculate_bias.return_value
+        calculate_biases.assert_called_once_with(interim_upload)
         
-        output_upload = calculate_gaps.return_value
+        output_upload = calculate_biases.return_value
         put_upload_index.assert_called_once_with(storage.s3, 'bucket-name', output_upload)
     
     @unittest.mock.patch('sys.stdout')
