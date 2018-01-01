@@ -52,6 +52,29 @@ class TestScore (unittest.TestCase):
 
         gap4 = score.calculate_EG((1, 5, 5, 5), (7, 3, 3, 3), 0)
         self.assertAlmostEqual(gap4, gap1, msg='Should see identical EG with unchanged vote swing')
+    
+    def test_calculate_MMD(self):
+        ''' Mean/Median can be correctly calculated for various elections
+        '''
+        mmd1 = score.calculate_MMD((6, 6, 4, 4, 4), (5, 5, 5, 8, 8))
+        self.assertAlmostEqual(mmd1, 0, places=2,
+            msg='Should see zero MMD with 44% mean and 44% median red vote share')
+
+        mmd2 = score.calculate_MMD((6, 6, 6, 6, 6), (4, 4, 4, 4, 4))
+        self.assertAlmostEqual(mmd2, 0, places=2,
+            msg='Should see zero MMD with 60% mean and 60% median red vote share')
+
+        mmd3 = score.calculate_MMD((6, 6, 6, 1, 1), (5, 5, 5, 10, 10))
+        self.assertAlmostEqual(mmd3, -.18, places=2,
+            msg='Should see +red MMD with 36% mean and 54% median red vote share')
+
+        mmd4 = score.calculate_MMD((6, 6, 6, 6, 1), (5, 5, 5, 5, 10))
+        self.assertAlmostEqual(mmd4, -.09, places=2,
+            msg='Should see +red MMD with 45% mean and 54% median red vote share')
+
+        mmd5 = score.calculate_MMD((6, 6, 1, 1, 1), (5, 5, 7, 10, 10))
+        self.assertAlmostEqual(mmd5, .15, places=2,
+            msg='Should see +blue MMD with 28% mean and 13% median red vote share')
 
     @unittest.mock.patch('planscore.score.calculate_EG')
     def test_calculate_gap(self, calculate_EG):

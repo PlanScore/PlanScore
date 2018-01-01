@@ -76,6 +76,17 @@ def calculate_EG(red_districts, blue_districts, vote_swing=0):
     
     return (wasted_red - wasted_blue) / election_votes
 
+def calculate_MMD(red_districts, blue_districts):
+    ''' Convert two lists of district vote counts into a Mean/Median score.
+    
+        Vote swing does not seem to affect Mean/Median, so leave it off.
+    '''
+    shares = sorted([B/(R + B) for (R, B) in zip(red_districts, blue_districts)])
+    median = shares[len(shares)//2]
+    mean = statistics.mean(shares)
+    
+    return median - mean
+
 def calculate_gap(upload):
     '''
     '''
