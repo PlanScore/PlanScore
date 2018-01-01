@@ -35,7 +35,7 @@ Instead, you'll want to make edits to the `_statetemplate` files (**state_templa
 If you are running *webpack-dev-server*, it will automagically detect the files having changed, and will trigger a rebuild and reload as usual. Note that this takes a moment; be patient.
 
 While working within the `_statetemplate/` content, some notes of interest:
-* **state_template.src.html** -- You may insert the phrase **STATE_NAME** into the HTML. When the template is copied into the state folder, this will be replaced with the state's Properly Capitalized Name.
+* **state_template.src.html** -- You may insert the phrase **STATE_NAME** into the HTML. When the template is copied into the state folder, this will be replaced with the state's Properly Capitalized Name. **STATE_SLUG** in the HTML will be replaced with the URL-friendly name of the state, which is useful for per-state references like OpenGraph images.
 * All states will receive exactly the same programming, stylesheet, and HTML template (except for the STATE_NAME tag), so they should "detect" their state based on the URL string, if they will need to filter data or otherwise configure custom behavior.
 
 **NOTE FOR MAC USERS**
