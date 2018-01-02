@@ -209,10 +209,18 @@
         white-space: nowrap;
     }
 
-    a {
+    a {  /* any of the "rows" */
         font-family: 'Roboto';
         font-size: 18px;
         color: #666666;
+
+        text-decoration: none;
+        display: block;
+
+        padding: 3px 3px 0px 5px;
+    }
+    a:hover {
+        background-color: #f2f2f2;
     }
 
     span.swatch {  /* see also updateStateListingSwatches() which dynamically recolors these */
