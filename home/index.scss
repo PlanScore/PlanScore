@@ -65,10 +65,8 @@
 #yearpicker-big {
     margin-bottom: 15px;
     height: 35px;
-
-    background-image: url(../images/yearpicker-stripe.jpg);
-    background-repeat-y: no-repeat;
-    background-position: 0 10px;
+    position: relative;
+    z-index:1;
 
     div {  /* structure is a series of rectangular DIVs, each one containing a A for the visible circle */
         cursor: pointer;
@@ -108,6 +106,17 @@
             background-color: #4D599E;
         }
     }
+}
+
+#yearpicker-big:after {
+    content: "";
+    display: block;
+    border-top: solid 1px #4D599E;
+    width: 100%;
+    height: 1px;
+    top: 32.5%;
+    position: relative;
+    z-index:-1;
 }
 
 #boundarypicker {
@@ -200,18 +209,10 @@
         white-space: nowrap;
     }
 
-    a {  /* any of the "rows" */
+    a {
         font-family: 'Roboto';
         font-size: 18px;
         color: #666666;
-
-        text-decoration: none;
-        display: block;
-
-        padding: 3px 3px 0px 5px;
-    }
-    a:hover {
-        background-color: #f2f2f2;
     }
 
     span.swatch {  /* see also updateStateListingSwatches() which dynamically recolors these */
