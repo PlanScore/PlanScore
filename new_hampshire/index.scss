@@ -160,7 +160,7 @@ div.metric-bellchart {
     height: 150px;
     background-image: none;  /* overridden in subclasses */
     background-repeat: no-repeat;
-    background-size: 100% 100%;
+    background-size: 100% 100%;  /* stretch the graphic to fill the area 100% */
     background-position: 0 0;
 }
 div.metric-bellchart.ushouse.eg {

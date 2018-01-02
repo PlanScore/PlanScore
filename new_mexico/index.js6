@@ -28,6 +28,21 @@ const WASTEDVOTE_CHART_WASTED_R = '#C71C36';
 const WASTEDVOTE_CHART_USEFUL_D = '#99b7dc';
 const WASTEDVOTE_CHART_USEFUL_R = '#e8a4ad';
 
+// for the bellcurve charts, the min+max values used to interpolate the black marker line
+// see drawBiasBellChart()
+const BELLCURVE_MINMAX = {
+    ushouse: {
+        eg: { min:-0.203, max:0.203 },
+        mm: { min:-0.1060091362, max:0.1017622749 },
+        pb: { min:-0.2725428571, max:0.25 },
+    },
+    statehouse: {
+        eg: { min:-0.137, max:0.166 },
+        mm: { min:-0.0944124802, max:0.07623086263 },
+        pb: { min:-0.1902700474, max:0.2449782744 },
+    },
+};
+
 
 //
 // PAGE STARTUP / INIT FUNCTIONS
@@ -220,19 +235,16 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     const percent_eg     = favor_party_eg ? `+${Math.round(100 * Math.abs(thisplan.eg_adj_avg))}%` : '';
     const hadseats       = favor_party_eg == 'Republican' ? thisplan.seats_r : thisplan.seats_dem;
     const statement_eg   = favor_party_eg ? `${favor_party_eg}s needed ${(100 * Math.abs(thisplan.eg_adj_avg)).toFixed(1)}% fewer votes to win their ${hadseats} of ${thisplan.seats} seats.` : 'This metric indicates a balanced plan.';
-    const percentile_eg  = 100;  // TODO find out what this is
 
     const favor_party_pb = lookupBiasFavorParty(thisplan.bias_avg);
     const favor_color_pb = lookupBiasColor(thisplan.bias_avg);
     const percent_pb     = favor_party_pb ? `+${Math.round(100 * Math.abs(thisplan.bias_avg))}%` : '';
     const statement_pb   = favor_party_pb ? '' : 'This metric indicates a balanced plan.';
-    const percentile_pb  = 100;  // TODO find out what this is
 
     const favor_party_mm = lookupBiasFavorParty(thisplan.mmd_avg);
     const favor_color_mm = lookupBiasColor(thisplan.mmd_avg);
     const percent_mm     = favor_party_mm ? `+${Math.round(100 * Math.abs(thisplan.mmd_avg))}%` : '';
     const statement_mm   = favor_party_mm ? '' : 'This metric indicates a balanced plan.';
-    const percentile_mm  = 100;  // TODO find out what this is
 
     // color the tab-swatches for the three metrics
     {
@@ -360,14 +372,28 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     }
 
     // the bell charts indicating this plan's relative bias rating for each metric
-    loadPlanBiasBellChart('eg', 0.99);  // TODO same as the "percentile" items above, this is yet to be defined
-    loadPlanBiasBellChart('mm', 0.50);  // TODO same as the "percentile" items above, this is yet to be defined
-    loadPlanBiasBellChart('pb', 0.01);  // TODO same as the "percentile" items above, this is yet to be defined
+    drawBiasBellChart('eg', 0);  // TODO same as the "percentile" items above, this is yet to be defined
+    drawBiasBellChart('mm', 0);  // TODO same as the "percentile" items above, this is yet to be defined
+    drawBiasBellChart('pb', 0);  // TODO same as the "percentile" items above, this is yet to be defined
 };
 
-window.loadPlanBiasBellChart = (whichone, percentile) => {
+window.drawBiasBellChart = (whichone, datavalue) => {
+    // fetch the min+max range expected for this curve's actual data, and thus the max spread (we need 0 to be in the middle)
+    // normalized the value into a range of 0.00 to 1.00 within that range, and that's our "percentile" along the X axis
+    //
+    // watch out!
+    // the "let percentile" declaration invertes datavalue to -datavalue
+    // because a negative value is biased toward republican BUT in American parlance Republicans are "right"
+    // therefore the Red/Republican section of the bell curve is the positive numbers, not negative numbers
+    const targetrange = BELLCURVE_MINMAX[CURRENT_VIEW.boundtype][whichone];
+    if (! targetrange) throw new Error(`drawBiasBellChart() got unexpected bound+field: ${CURRENT_VIEW.boundtype} ${whichone}`);
+
+    const spread = Math.max(targetrange.min, targetrange.max);
+    let percentile = (-datavalue + spread) / (2 * spread);
+    percentile = Math.min(Math.max(0.01, percentile), 0.99);  // don't let it go outside the range
+
     // this set of Highcharts categories, effectively forms 100 "slots" 0-99
-    // take the floor() of our percentile score, and voila; that's which slot gets a 1 instead of a 0
+    // take the floor() of our "category score", and voila; that's which slot gets a 1 instead of a 0
     const roundpercentile = Math.floor(100 * percentile);
     const markerslots     = Array.apply(null, {length: 100}).map(Number.call, Number);
     const markerdataset   = Array.apply(null, {length: 100}).map(() => 0);
@@ -387,6 +413,11 @@ window.loadPlanBiasBellChart = (whichone, percentile) => {
             type: 'column',
             backgroundColor: null,
             spacing: [0, 0, 5, 0],
+            credits: {
+                style: {
+                    color: 'black',
+                },
+            },
         },
         title: {
             text: null,
@@ -404,9 +435,7 @@ window.loadPlanBiasBellChart = (whichone, percentile) => {
             visible: false,
         },
         tooltip: {
-            formatter: function () {
-                return `According to this metric, this plan is more biased than ${this.y}% of other plans analyzed.`;
-            },
+            enabled: false,
         },
         plotOptions: {
             column: {
