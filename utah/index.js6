@@ -372,9 +372,9 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     }
 
     // the bell charts indicating this plan's relative bias rating for each metric
-    drawBiasBellChart('eg', 0);  // TODO same as the "percentile" items above, this is yet to be defined
-    drawBiasBellChart('mm', 0);  // TODO same as the "percentile" items above, this is yet to be defined
-    drawBiasBellChart('pb', 0);  // TODO same as the "percentile" items above, this is yet to be defined
+    drawBiasBellChart('eg', thisplan.eg_adj_avg);
+    drawBiasBellChart('mm', thisplan.mmd_avg);
+    drawBiasBellChart('pb', thisplan.bias_avg);
 };
 
 window.drawBiasBellChart = (whichone, datavalue) => {
