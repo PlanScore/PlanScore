@@ -235,16 +235,19 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     const percent_eg     = favor_party_eg ? `+${Math.round(100 * Math.abs(thisplan.eg_adj_avg))}%` : '';
     const hadseats       = favor_party_eg == 'Republican' ? thisplan.seats_r : thisplan.seats_dem;
     const statement_eg   = favor_party_eg ? `${favor_party_eg}s needed ${(100 * Math.abs(thisplan.eg_adj_avg)).toFixed(1)}% fewer votes to win their ${hadseats} of ${thisplan.seats} seats.` : 'This metric indicates a balanced plan.';
+    const biastext_eg    = favor_party_eg ? `This plan is more biased toward ${favor_party_eg} than ${Math.round(100 * thisplan.eg_avg_percentrank)}% of the enacted plans we have analyzed nationwide.` : '';
 
     const favor_party_pb = lookupBiasFavorParty(thisplan.bias_avg);
     const favor_color_pb = lookupBiasColor(thisplan.bias_avg);
     const percent_pb     = favor_party_pb ? `+${Math.round(100 * Math.abs(thisplan.bias_avg))}%` : '';
     const statement_pb   = favor_party_pb ? '' : 'This metric indicates a balanced plan.';
+    const biastext_pb    = favor_party_pb ? `This plan is more biased toward ${favor_party_pb} than ${Math.round(100 * thisplan.bias_avg_percentrank)}% of the enacted plans we have analyzed nationwide.` : '';
 
     const favor_party_mm = lookupBiasFavorParty(thisplan.mmd_avg);
     const favor_color_mm = lookupBiasColor(thisplan.mmd_avg);
     const percent_mm     = favor_party_mm ? `+${Math.round(100 * Math.abs(thisplan.mmd_avg))}%` : '';
     const statement_mm   = favor_party_mm ? '' : 'This metric indicates a balanced plan.';
+    const biastext_mm    = favor_party_mm ? `This plan is more biased toward ${favor_party_mm} than ${Math.round(100 * thisplan.mmd_avg_percentrank)}% of the enacted plans we have analyzed nationwide.` : '';
 
     // color the tab-swatches for the three metrics
     {
@@ -268,16 +271,19 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     $('#tab-efficiencygap span[data-field="egparty"]').text(favor_party_eg);
     $('#tab-efficiencygap span[data-field="metricstatement"]').text(statement_eg);
     $('#tab-efficiencygap span[data-field="plancompare"]').text('This plan is more biased toward X than 100% all of the enacted plans we have analyzed nationwide.');
+    $('#tab-efficiencygap span[data-field="biasstatement"]').text(biastext_eg);
 
     $('#tab-partisanbias span[data-field="pbpercent"]').text(percent_pb);
     $('#tab-partisanbias span[data-field="pbparty"]').text(favor_party_pb);
     $('#tab-partisanbias span[data-field="metricstatement"]').text(statement_pb);
     $('#tab-partisanbias span[data-field="plancompare"]').text('This plan is more biased toward X than 100% all of the enacted plans we have analyzed nationwide.');
+    $('#tab-partisanbias span[data-field="biasstatement"]').text(biastext_pb);
 
     $('#tab-meanmedian span[data-field="mmpercent"]').text(percent_mm);
     $('#tab-meanmedian span[data-field="mmparty"]').text(favor_party_mm);
     $('#tab-meanmedian span[data-field="metricstatement"]').text(statement_mm);
     $('#tab-meanmedian span[data-field="plancompare"]').text('This plan is more biased toward X than 100% all of the enacted plans we have analyzed nationwide.');
+    $('#tab-meanmedian span[data-field="biasstatement"]').text(biastext_mm);
 
     // color those +DR% boxes
     {
