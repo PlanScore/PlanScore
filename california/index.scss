@@ -81,6 +81,13 @@ h1.state_name {
 
             margin-right: 5px;
         }
+
+        /* increase "hit box" with padding; if you mess with this, don't forget to adjust the plan-begin and plan-continue positions and/or sizes */
+        padding-top: 3px;
+        padding-bottom: 3px;
+    }
+    div.year:hover {
+        background-color: #f2f2f2;
     }
 
     div.year.active {
@@ -96,13 +103,13 @@ h1.state_name {
         background-image: url(../images/statsplan-timeline-begin.svg);
         background-repeat: no-repeat;
         background-position: 0 0;
-        background-size: 20px 20px;
+        background-size: 26px 26px;  /* contrived to fit font size + padding-top + padding-bottom */
     }
     div.year.plan-continue {
         background-image: url(../images/statsplan-timeline-continue.svg);
         background-repeat: no-repeat;
         background-position: 0 0;
-        background-size: 20px 20px;
+        background-size: 26px 26px;  /* contrived to fit font size + padding-top + padding-bottom */
     }
 }
 
