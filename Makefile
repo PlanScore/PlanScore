@@ -22,7 +22,7 @@ planscore-lambda.zip: gdal-geos-python.tar.gz
 	cd planscore-lambda && zip -rq ../planscore-lambda.zip .
 
 gdal-geos-python.tar.gz:
-	curl https://planscore.s3.amazonaws.com/code/gdal-2.1.3-geos-3.6.1-python-3.6.1.tar.gz -o $@ -s
+	curl https://planscore-data.s3.amazonaws.com/code/gdal-2.1.3-geos-3.6.1-python-3.6.1.tar.gz -o $@ -s
 
 planscore/website/build:
 	env AWS=amazonaws.com API_BASE=https://api.planscore.org/ \

@@ -11,7 +11,7 @@ arguments = parser.parse_args()
 
 host_address = socket.gethostbyname(socket.gethostname())
 
-BUCKETNAME = 'planscore'
+BUCKETNAME = 'planscore-data'
 ENDPOINT_S3 = 'http://{}:4572'.format(host_address)
 ENDPOINT_LAM = 'http://{}:4574'.format(host_address)
 AWS_CREDS = dict(aws_access_key_id='nobody', aws_secret_access_key='nothing')
