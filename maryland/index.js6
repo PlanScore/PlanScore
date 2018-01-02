@@ -194,10 +194,10 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     // then show the "no data for this year" content if we have data for this district, but not this year
     const thisplan = allcsvdata.filter((row) => { return row.year == CURRENT_VIEW.year; })[0];
     if (thisplan) {
-        $('#maincontent span[data-hasdata-atall]').hide().filter('[data-hasdata-thisyear="true"]').show();
+        $('#maincontent span[data-hasdata-thisyear]').hide().filter('[data-hasdata-thisyear="true"]').show();
     }
     else {
-        $('#maincontent span[data-hasdata-atall]').hide().filter('[data-hasdata-thisyear="false"]').show();
+        $('#maincontent span[data-hasdata-thisyear]').hide().filter('[data-hasdata-thisyear="false"]').show();
         return;  // nothing else we can do until they select a year which has data
     }
 
