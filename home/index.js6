@@ -316,8 +316,11 @@ window.loadDataForSelectedBoundaryAndYear = () => {
 };
 
 window.selectYear = (year) => {
-    // UI update: highlight this button
+    // UI update: highlight the big/desktop yeapicker button
     $('#yearpicker-big div').removeClass('active').filter(`[data-year="${year}"]`).addClass('active');
+
+    // UI update: select the smaller/mobile yearpicker
+    $('#yearpicker-small').val(year);
 
     // save to the state and refresh the map + data
     CURRENT_VIEW.year = year;
