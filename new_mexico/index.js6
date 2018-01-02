@@ -153,6 +153,9 @@ window.selectYear = (year) => {
 };
 
 window.selectBoundaryType = (boundtype) => {
+    // issue 112 temporary workaround Jan 2017: we won't have State Senate data for some time, so disable this
+    if (boundtype == 'statesenate') return alert("We're working on getting State Senate data. Stay tuned!");
+
     // UI update: highlight this button
     $('#boundarypicker div').removeClass('active').filter(`[data-boundary="${boundtype}"]`).addClass('active');
 
