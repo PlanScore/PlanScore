@@ -8,12 +8,12 @@ const htmlblock = `
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="../home/"><img id="brand-logo" src="../images/logo.svg"></img></a>
+                <a class="navbar-brand" href="/index-new.html"><img id="brand-logo" src="/images/logo.svg"></img></a>
             </div>
             <div class="collapse navbar-collapse" id="navbar">
                 <ul class="nav navbar-nav navbar-right">
-                    <li><a href="../scoreyours/">Score a Plan</a></li>
-                    <li><a href="../about/">What is PlanScore?</a></li>
+                    <li><a href="/scoreyours/">Score a Plan</a></li>
+                    <li><a href="/about/">What is PlanScore?</a></li>
                 </ul>
             </div>
         </div>

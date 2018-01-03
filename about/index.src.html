@@ -8,6 +8,19 @@
     <!-- local config -->
     <link href="index.css?[hash]" rel="stylesheet" />
     <script src="index.js?[hash]"></script>
+    
+    <!-- OG tags -->
+    <meta property="og:title" content="PlanScore" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://planscore.org" />
+    <meta property="og:image" content="https://planscore.org/images/OG-default-01.jpg" />
+    <meta property="og:description" content="PlanScore is a first-of-its-kind gerrymandering scoring service for new district plans, allowing users to upload maps and instantly receive projected data about their partisan consequences. You can also use historical data to discover how partisan advantage has influenced redistricting in your state." />
+
+    <!-- Twitter tags note that per https://developer.twitter.com/en/docs/tweets/optimize-with-cards/guides/getting-started, we need only use the card metas that differ from OG -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@PlanScore" />
+
 </head>
 <body>
 
@@ -16,10 +29,70 @@
     <div class="container container-mainbody">
         <h1>What is PlanScore?</h1>
 
-        <p>Pellentesque nunc ante, volutpat interdum ipsum condimentum, ullamcorper auctor elit. Aenean lectus risus, congue placerat consectetur ac, iaculis sed libero. Mauris feugiat augue nunc, ac lobortis ipsum condimentum et. Sed id efficitur nisl. Praesent eu orci condimentum, aliquet turpis non, porttitor mauris. Etiam non odio id felis suscipit aliquet. Curabitur lectus elit, condimentum sed elit quis, bibendum commodo est. Nullam convallis maximus massa vel semper.</p>
-        <p>Pellentesque eget vestibulum purus, sed lacinia ex. Nulla sed ornare mauris, ut imperdiet nulla. Nunc tincidunt, lectus id tempor egestas, turpis odio tincidunt magna, sed pulvinar mauris quam et nunc. Donec mollis elementum dui, vitae aliquam lorem cursus ac. Aenean vel consectetur arcu. Duis sapien nisi, hendrerit ut pharetra malesuada, finibus sed ex. Maecenas laoreet, ligula ut imperdiet posuere, diam tellus imperdiet justo, ac hendrerit ligula ante id mi. Morbi commodo, ante et finibus blandit, tortor dui malesuada nisi, at sodales ligula dui in risus. Aliquam purus sem, porta eget lobortis nec, pellentesque vitae nisl. Vestibulum mollis vehicula tellus, sed eleifend magna. Aliquam sodales enim sed vehicula interdum. Fusce ligula mauris, maximus a tempus non, tempor in ipsum. Curabitur pulvinar eget ante non mollis.</p>
-        <p>Nam sodales nibh quis dolor gravida, ut varius neque consequat. Morbi nisl urna, iaculis eget congue nec, elementum nec justo. Phasellus dignissim congue arcu, sit amet tristique est eleifend in. In in egestas eros. Vivamus auctor, felis eu lacinia molestie, erat elit blandit turpis, a fermentum arcu ipsum vel metus. Curabitur in arcu lacinia, ultrices risus eu, egestas lorem. Nam rutrum efficitur pellentesque. Quisque nulla nisi, tincidunt porttitor tortor in, fringilla elementum neque. Pellentesque cursus ultricies sapien eget sodales. Cras accumsan erat vel dui elementum condimentum.</p>
-        <p>Vivamus a nibh vitae ante iaculis posuere. Quisque urna est, sagittis nec nibh ac, gravida euismod nibh. Cras dapibus venenatis faucibus. Donec vestibulum nisi nec tortor laoreet, ut pretium enim accumsan. Phasellus cursus ultricies ipsum at convallis. Ut tortor lorem, tincidunt id sem quis, dapibus molestie turpis. Maecenas tristique leo neque, vitae commodo justo maximus eu. Sed euismod risus augue, sit amet venenatis lectus consequat eget. Morbi condimentum elementum magna, quis ornare mi. Donec non nulla porttitor, blandit libero vitae, mattis diam.</p>
+        <p>
+            We are legal, political science, and mapping technology experts tackling the challenge of making redistricting fair and easy to understand. With the help of code and data from election experts around the country, we are building a service to score and publish district plans for all 50 states on an easy-to-use website.
+        </p>
+        <p>
+            To assist legislative staff when creating new plans, any geographic file uploaded by site visitors can be checked for its partisan, demographic, racial, and geometric features and optionally have its results shared publicly.
+        </p>
+        <p>
+            To help voters and journalists understand the the characteristics of new plans, the comprehensive results for any plan proposed by a legislative majority can be referenced, shared, and linked in articles or social media.
+        </p>
+        <p>
+            To provide historical context for the partisan asymmetries of today’s plans, enacted maps all the way back to the 1970s will be scored and made available to site visitors.
+        </p>
+        <p>
+            PlanScore will be a trusted, non-partisan resource for the redistricting efforts to come in the 2020 cycle.
+        </p>
+
+        <h2>Who is PlanScore?</h2>
+        <div class="bio">
+            <div class="bio-photo col-xs-12 col-sm-2 .col-md-2 .col-lg-2 .col-xl-2">
+                <img src="/images/migurski.jpg" alt="Photo of Michal Migurski">
+            </div>
+            <div class="col-xs-12 col-sm-9 .col-md-9 .col-lg-9 .col-xl-9">
+                <h3><a href="https://www.linkedin.com/in/michalmigurski/">Michal Migurski</a></h3>
+                <p class="title">Executive Director</p>
+                <p>Michal has been a leader in open source geospatial software and data in many organizations, as technical director of National Design Award-winning mapping and data visualization studio Stamen and Chief Technology Officer at government technology non-profit Code for America.</p>
+            </div>
+        </div>
+        <div class="bio">
+            <div class="bio-photo col-xs-12 col-sm-2 .col-md-2 .col-lg-2 .col-xl-2">
+                <img src="/images/mcghee.jpg" alt="Photo of Eric McGhee">
+            </div>
+            <div class="col-xs-12 col-sm-9 .col-md-9 .col-lg-9 .col-xl-9">
+                <h3><a href="http://www.ppic.org/person/eric-mcghee/">Eric McGhee</a></h3>
+                <p>Eric is a political scientist who focuses on elections, legislative behavior, political reform, and public opinion. His research has appeared in numerous high-profile academic journals and media outlets. He is a leading expert on redistricting, and is the inventor of the efficiency gap and co-creator (with Nick Stephanopoulos) of a proposed legal test based on the metric. He holds a PhD in political science from the University of California, Berkeley.</p>
+            </div>
+        </div>
+        <div class="bio">
+            <div class="bio-photo col-xs-12 col-sm-2 .col-md-2 .col-lg-2 .col-xl-2">
+                <img src="/images/jackman.jpg" alt="Photo of Simon Jackman">
+            </div>
+            <div class="col-xs-12 col-sm-9 .col-md-9 .col-lg-9 .col-xl-9">
+                <h3><a href="https://www.ussc.edu.au/people/simon-jackman">Simon Jackman</a></h3>
+                <p>Simon is the Chief Executive Officer at the U.S. Studies Centre at the University of Sydney, Australia. Prior to that he was a professor of political science and statistics at Stanford University. His teaching and research centers on public opinion, election campaigns, political participation, and electoral systems. Simon has been the expert witness in two partisan gerrymandering cases (<i>Gill v. Whitford</i> and <i>LWVNC v. Rucho</i>).</p>
+            </div>
+        </div>
+        <div class="bio">
+            <div class="bio-photo col-xs-12 col-sm-2 .col-md-2 .col-lg-2 .col-xl-2">
+                <img src="/images/stephanopoulos.jpg" alt="Photo of Nicholas Stephanopoulos">
+            </div>
+            <div class="col-xs-12 col-sm-9 .col-md-9 .col-lg-9 .col-xl-9">
+                <h3><a href="https://www.law.uchicago.edu/faculty/stephanopoulos">Nicholas Stephanopoulos</a></h3>
+                <p>Nicholas is a Professor of Law at the University of Chicago Law School. His research and teaching interests include election law, constitutional law, legislation, administrative law, comparative law, and local government law. Nicholas co-authored the original law review article on the efficiency gap with Eric McGhee, and is co-counsel for the plaintiffs in two partisan gerrymandering cases (<i>Gill v. Whitford</i> and <i>LWVNC v. Rucho</i>).</p>
+            </div>
+        </div>
+        <div class="bio">
+            <div class="bio-photo col-xs-12 col-sm-2 .col-md-2 .col-lg-2 .col-xl-2">
+                <img src="/images/greenwood.jpg" alt="Photo of Ruth Greenwood">
+            </div>
+            <div class="bio-photo col-xs-12 col-sm-9 .col-md-9 .col-lg-9 .col-xl-9">
+                <h3><a href="http://www.campaignlegalcenter.org/team/ruth-greenwood">Ruth Greenwood</a></h3>
+                <p>Secretary / Treasurer</p>
+                <p>Ruth is a Senior Legal Counsel at the Campaign Legal Center, where she litigates a variety of redistricting cases. Along with co-counsel, Ruth represents the plaintiffs in two partisan gerrymandering cases (<i>Gill v. Whitford</i> and <i>LWVNC v. Rucho</i>).</p>
+            </div>
+        </div>
 
     </div><!--/container-mainbody-->
 

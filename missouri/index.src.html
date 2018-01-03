@@ -21,12 +21,12 @@
     <!-- OG tags -->
     <meta property="og:title" content="PlanScore: Missouri" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://planscore.org" />
+    <meta property="og:url" content="https://planscore.org/missouri" />
     <meta property="og:image" content="https://planscore.org/images/OG-missouri-01.jpg" />
     <meta property="og:description" content="PlanScore is a first-of-its-kind gerrymandering scoring service for new district plans, allowing users to upload maps and instantly receive projected data about their partisan consequences. You can also use historical data to discover how partisan advantage has influenced redistricting in Missouri." />
 
     <!-- Twitter tags note that per https://developer.twitter.com/en/docs/tweets/optimize-with-cards/guides/getting-started, we need only use the card metas that differ from OG -->
-    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:card" content="summary_large_image">    <meta name="twitter:card" content="summary" />
     <meta name="twitter:site" content="@PlanScore" />
 </head>
 <body>
@@ -77,6 +77,7 @@
                 <br/>
 
                 <span data-hasdata-atall="true" data-hasdata-thisyear="true">
+                    <h2><span data-field="title"></span></h2>
                     <p>We used three metrics to examine the bias in these plans. <span data-metric="biasstatement"></span></p>
 
                     <ul class="nav nav-tabs">
@@ -95,13 +96,13 @@
                             <br style="clear: both;" />
                             <br/>
                             <div class="row">
-                                <div class="col-xs-12 col-sm-6">
+                                <div class="col-xs-12 col-md-6">
                                     <h2>How Does This Plan Compare?</h2>
                                     <p class="big"><span data-field="biasstatement"></span></p>
                                     <div class="metric-bellchart" id="metric-bellchart-eg"></div>
                                 </div>
-                                <div class="col-xs-12 col-sm-6">
-                                    <p>Efficiency Gap (EG) shows relative wasted votes between parties, comparing the total statewide number of superfluous and losing votes for each party. <a href="../efficiencygap/">Learn more: What is the efficiency gap and how do we calculate it?</a></p>
+                                <div class="col-xs-12 col-md-6">
+                                    <p>Efficiency Gap (EG) shows relative wasted votes between parties, comparing the total statewide number of superfluous and losing votes for each party. <a href="/efficiencygap/">Learn more: What is the efficiency gap and how do we calculate it?</a></p>
 
                                     <div id="chart-egvoteswasted"></div>
                                 </div>
@@ -123,7 +124,7 @@
                                     <div class="metric-bellchart" id="metric-bellchart-mm"></div>
                                 </div>
                                 <div class="col-xs-12 col-sm-6">
-                                    <p>Mean/Median (MM) shows partisan packing by a majority party, comparing the party’s vote share in the state’s deciding median district to its overall state share. <a href="../meanmedian/">Learn More</a></p>
+                                    <p>Mean/Median (MM) shows partisan packing by a majority party, comparing the party’s vote share in the state’s deciding median district to its overall state share. <a href="/meanmedian/">Learn More</a></p>
                                 </div>
                             </div>
                         </div>
@@ -143,7 +144,7 @@
                                     <div class="metric-bellchart" id="metric-bellchart-pb"></div>
                                 </div>
                                 <div class="col-xs-12 col-sm-6">
-                                    <p>Partisan Bias (PB) shows how much a system unfairly favors a single party, comparing the number of votes cast in an election to the number of legislative seats won. <a href="../partisanbias/">Learn More</a></p>
+                                    <p>Partisan Bias (PB) shows how much a system unfairly favors a single party, comparing the number of votes cast in an election to the number of legislative seats won. <a href="/partisanbias/">Learn More</a></p>
                                 </div>
                             </div>
                         </div>

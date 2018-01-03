@@ -20,7 +20,13 @@ import { lookupBiasColor, lookupBiasFavorParty, lookupBiasPercentile } from "./.
 
 // the currently-visible state: boundary type + year, e.g. US House districts for 1984
 // these are affected by window.selectXXX() family of functions which ultimately are all wrappers over loadDataForSelectedBoundaryAndYear()
-const CURRENT_VIEW = {};
+const CURRENT_VIEW = {
+    // NOTE that the values here are just indicative for documentation purposes
+    // initLoadStartingConditions() parses the URL params and calls selectXXX() to set the actual defaults
+    year: '2000',  // four-digit year (string)
+    boundtype: 'ushouse',  // short polygon name: ushouse statehouse statesenate
+    planorelection: 'election',  // show 'election' or 'plan' statistics on right-hand side
+};
 
 // Efficiency Gap wasted vote chart; colors
 const WASTEDVOTE_CHART_WASTED_D = '#0049A8';
@@ -28,18 +34,55 @@ const WASTEDVOTE_CHART_WASTED_R = '#C71C36';
 const WASTEDVOTE_CHART_USEFUL_D = '#99b7dc';
 const WASTEDVOTE_CHART_USEFUL_R = '#e8a4ad';
 
-// for the bellcurve charts, the min+max values used to interpolate the black marker line
+// for the bellcurve charts, the data spread (min + max absolute values)
+// so we can interpolate a value and position a marker line indicating a value
 // see drawBiasBellChart()
-const BELLCURVE_MINMAX = {
-    ushouse: {
-        eg: { min:-0.203, max:0.203 },
-        mm: { min:-0.1060091362, max:0.1017622749 },
-        pb: { min:-0.2725428571, max:0.25 },
+const BELLCURVE_SPREAD = {
+    eg: 0.22,
+    mm: 0.11,
+    pb: 0.30,
+};
+
+// what fields to use for Election Mode and Plan Mode
+// each record contains bias-related statistics for both that specific election-year and the average of all years the plan was implemented
+// e.g. mmd and mmd_avg, eg_percentrank and eg_avg_percentrank
+// the various sub-systems from updateStatsFromCsvContent() will need to load "the bias field" based on whether CURRENT_VIEW.planorelection indicates that we want a Election Year or a Plan Overview
+// example:   fetch the bias score from either 'the election field' or 'the plan field' as necessary
+//            const relevantbiasfield = ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].bias;
+//            const bias_score        = thisyeardata[relevantbiasfield];
+// not all fields are listed here, just the ones which vary between election view and plan view
+const ELECTION_PLAN_RECORD_FIELDS = {
+    'election': {
+        'eg': 'eg_adj',
+        'egrank': 'eg_percentrank',
+        'bias': 'bias',
+        'biasrank': 'bias_percentrank',
+        'mm': 'mmd',
+        'mmrank': 'mmd_percentrank',
+        'wasted_dem': 'wasted_dem',
+        'wasted_rep': 'wasted_rep',
+        'votes_dem': 'votes_dem',
+        'votes_rep': 'votes_rep',
+        'votes_both': 'votes_twop',
+        'seats': 'seats',
+        'seats_dem': 'seats_dem',
+        'seats_rep': 'seats_r',
     },
-    statehouse: {
-        eg: { min:-0.137, max:0.166 },
-        mm: { min:-0.0944124802, max:0.07623086263 },
-        pb: { min:-0.1902700474, max:0.2449782744 },
+    'plan': {
+        'eg': 'eg_adj_avg',
+        'egrank': 'eg_avg_percentrank',
+        'bias': 'bias_avg',
+        'biasrank': 'bias_avg_percentrank',
+        'mm': 'mmd_avg',
+        'mmrank': 'mmd_avg_percentrank',
+        'wasted_rep': 'wasted_dem_plan',
+        'wasted_dem': 'wasted_rep_plan',
+        'votes_dem': 'votes_dem_plan',
+        'votes_rep': 'votes_rep_plan',
+        'votes_both': 'votes_twop_plan',
+        'seats': 'seats_plan',
+        'seats_dem': 'seats_dem_plan',
+        'seats_rep': 'seats_r_plan',
     },
 };
 
@@ -65,26 +108,35 @@ window.handleResize = () => {
 
 window.initYearPickers = () => {
     // mobile
-    // a simple SELECT to choose a year, and trigger selectYear()
+    // a simple SELECT to choose a year, and trigger selectElectionOrPlan()
     const $picker_small = $('#yearpicker-small');
     PLAN_YEARS.slice().reverse().forEach((year) => {
-        $('<option></option>').text(year).prop('value', year).appendTo($picker_small);
+        const $group = $(`<optgroup label="${year}"></optgroup>`).appendTo($picker_small);
+        $('<option></option>').text(`${year} Election Outcomes`).prop('value', `${year}-election`).appendTo($group);
+        $('<option></option>').text(`${year} Redistricting Plan`).prop('value', `${year}-plan`).appendTo($group);
     });
     $picker_small.change(function () {
-        const year = $(this).val();
-        selectYear(year);
+        const value = $(this).val();
+        const year  = value.split('-')[0];
+        const what  = value.split('-')[1];
+        selectElectionOrPlan(year, what);
     });
 
     // desktop
     // the list of "year beads" running down the side
-    // the left-most background for plan start/continue bead-bar, is specific to the chosen district type; see updateStatsFromCsvContent()
+    // see also redrawYearPicker() since the "plan enacted" part of that yearpicker depends on which dataset is being used
     const $picker_big = $('#yearpicker-big');
     PLAN_YEARS.slice().reverse().forEach((year) => {
-        const $button = $(`<div class="year"><a></a> ${year}</div>`).attr('data-year', year).appendTo($picker_big);
+        const $button = $(`<div class="year" title="Show details for this election year"><a class="plan"></a> <a class="yeardot"></a> ${year}</div>`).attr('data-year', year).appendTo($picker_big);
+    });
+    $('#yearpicker-big').on('click', 'a.plan', function (event) {
+        event.stopPropagation();
+        const year = $(this).closest('div.year').attr('data-year');
+        selectElectionOrPlan(year, 'plan');
     });
     $('#yearpicker-big').on('click', 'div.year', function () {
         const year = $(this).attr('data-year');
-        selectYear(year);
+        selectElectionOrPlan(year, 'election');
     });
 };
 
@@ -97,18 +149,21 @@ window.initBoundaryPicker = () => {
 
 window.initLoadStartingConditions = () => {
     // analyze the #year-polytype hash to see what year + type we should load
-    // provide some defaults
+    // see alsoupdateUrlHash() which generates this hash
+
     let year = PLAN_YEARS[PLAN_YEARS.length - 1];
+    let what = 'election';
     let type = 'ushouse';
 
-    const year_and_type = /^#!(\d\d\d\d)\-(\w+)$/.exec(window.location.hash);
+    const year_and_type = /^#!(\d\d\d\d)\-(\w+)\-(\w+)$/.exec(window.location.hash);
     if (year_and_type) {
-        year = year_and_type[1];
-        type = year_and_type[2];
+        year = year_and_type[1];  // the year
+        what = year_and_type[2];  // election or plan
+        type = year_and_type[3];  // district type
     }
 
     // ready, set, go
-    selectYear(year);
+    selectElectionOrPlan(year, what);
     selectBoundaryType(type);
 };
 
@@ -122,7 +177,7 @@ window.loadDataForSelectedBoundaryAndYear = () => {
     if (! CURRENT_VIEW.year || ! CURRENT_VIEW.boundtype) return;  // need both; during startup one will be blank, so avoid an error
 
     // fetch the CSV file and then use the callbacks to update the map
-    const url = `../data/bias_${CURRENT_VIEW.boundtype}.csv`;
+    const url = `/data/bias_${CURRENT_VIEW.boundtype}.csv`;
     Papa.parse(url, {
         download: true,
         header: true,
@@ -131,24 +186,80 @@ window.loadDataForSelectedBoundaryAndYear = () => {
             const alldataforthisstate = results.data.filter((row) => {
                 return row.state == STATE_NAME_TO_CODE[SELECTED_STATE];
             });
+
+            // data fixes
+            results.data.forEach((row) => {
+                // cast fields to integer
+                [
+                    'eg_adj', 'eg_adj_avg', 'eg_avg_percentrank', 'eg_percentrank',
+                    'bias', 'bias_avg','bias_avg_percentrank', 'bias_percentrank',
+                    'mmd', 'mmd_avg', 'mmd_avg_percentrank', 'mmd_percentrank',
+                ].forEach((fieldname) => { row[fieldname] = parseFloat(row[fieldname]); });
+
+                // cast fields to integer
+                [
+                    'votes_twop_plan', 'votes_twop', 'votes_dem_plan',  'votes_dem',
+                    'wasted_dem_plan', 'wasted_dem',
+                    'wasted_rep_plan', 'wasted_rep',
+                    'seats_plan',  'seats',
+                    'seats_dem_plan',  'seats_dem',
+                    'seats_r_plan', 'seats_r',
+                ].forEach((fieldname) => { row[fieldname] = parseInt(row[fieldname]); });
+
+                // create the votes_rep and votes_rep_plan
+                row.votes_rep_plan = row.votes_twop_plan - row.votes_dem_plan;
+                row.votes_rep      = row.votes_twop - row.votes_dem;
+            });
+
+            // data fixes: go through the CSV and add a plan_minyear and plan_maxyear attribute
+            // this is the min and max year in which that year's "plan" was in effect
+            {
+                // pass 1: 
+                let plans_analyzed = {};
+                results.data.forEach((row) => {
+                    if (! plans_analyzed[row.plan]) {
+                        // not seen this year before; assume this is the first and last year of this newly-found plan
+                        plans_analyzed[row.plan] = { minyear: row.year, maxyear: row.year };
+                    }
+                    else {
+                        // we've seen this plan, update the min and max if appropriate
+                        if (row.year < plans_analyzed[row.plan].minyear) plans_analyzed[row.plan].minyear = row.year;
+                        if (row.year > plans_analyzed[row.plan].maxyear) plans_analyzed[row.plan].maxyear = row.year;
+                    }
+                });
+
+                // pass 2: go through the rows and update from the plans_analyzed
+                results.data.forEach((row) => {
+                    row.plan_minyear = plans_analyzed[row.plan].minyear;
+                    row.plan_maxyear = plans_analyzed[row.plan].maxyear;
+                });
+            }
+
+            // ready, set, go!
             updateStatsFromCsvContent(alldataforthisstate);
         },
     });
 
     // update URL params to show the current search
+    updateUrlHash();
+};
+
+window.updateUrlHash = () => {
+    // update URL params to show the current search
     // see also initLoadStartingConditions() which will load such a state
-    const hash = `#!${CURRENT_VIEW.year}-${CURRENT_VIEW.boundtype}`;
+    const hash = `#!${CURRENT_VIEW.year}-${CURRENT_VIEW.planorelection}-${CURRENT_VIEW.boundtype}`;
     window.location.replace(hash);
 };
 
-window.selectYear = (year) => {
+window.selectElectionOrPlan = (year, planorelection) => {
     // UI update: highlight this button or select this option
-    $('#yearpicker-small').val(year);
+    $('#yearpicker-small').val(`${year}-${planorelection}`);
 
     $('#yearpicker-big div.year').removeClass('active').filter(`[data-year="${year}"]`).addClass('active');
 
     // save to the state and refresh the map + data
     CURRENT_VIEW.year = year;
+    CURRENT_VIEW.planorelection = planorelection;
     loadDataForSelectedBoundaryAndYear();
 };
 
@@ -174,7 +285,7 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
         return;  // nothing else we can do until they select a district type with data
     }
 
-    // general info not related to any specific year
+    // okay so we have SOME data for this state + district type
     // how many distinct plans and years are listed for this district type?
     const distinct_years = {};
     const distinct_plans = {};
@@ -185,33 +296,13 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     $('span[data-metric="electioncount"]').text(Object.keys(distinct_years).length.toLocaleString());
     $('span[data-metric="plancount"]').text(Object.keys(distinct_plans).length.toLocaleString());
 
-    // general info not related to any specific year
-    // regarding the large yearpicker, figure out what plans were effective in each year, and refresh the left-side showing plan continuity
-    // that is to say:
-    // a year which is the first year in which the given plan was in effect, gets an icon indicating that a plan has started
-    // otherwise, the year continues a plan and gets an alternate icon
-    {
-        const yearplans = {};
-        allcsvdata.forEach((row) => { yearplans[row.year] = row.plan; });
+    // okay so we have SOME data for this state + district type
+    // redraw the large yearpicker, indicating years in which a new plan was implemented
+    redrawYearPicker(allcsvdata);
 
-        let current_plan = null;
-
-        const $yearpicker_buttons = $('#yearpicker-big div.year');
-        PLAN_YEARS.forEach((year) => {
-            const $button = $yearpicker_buttons.filter(`[data-year="${year}"]`);
-            const thisyearplan = yearplans[year];
-
-            if (current_plan == thisyearplan) $button.removeClass('plan-begin').addClass('plan-continue').prop('title', '');
-            else                              $button.removeClass('plan-continue').addClass('plan-begin').prop('title', `A new district plan was implemented in ${year}`);
-
-            current_plan = thisyearplan;
-        });
-    }
-
-    // filter to the data for the selected year, to get the specific plan in effect that year
-    // then show the "no data for this year" content if we have data for this district, but not this year
-    const thisplan = allcsvdata.filter((row) => { return row.year == CURRENT_VIEW.year; })[0];
-    if (thisplan) {
+    // final check: do we have data for this district for the selected year?
+    const thisyeardata = allcsvdata.filter((row) => { return row.year == CURRENT_VIEW.year; })[0];
+    if (thisyeardata) {
         $('#maincontent span[data-hasdata-thisyear]').hide().filter('[data-hasdata-thisyear="true"]').show();
     }
     else {
@@ -220,37 +311,104 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     }
 
     //
-    // we have a year which means we have isolated a specific year/plan
-    // we have a lot of little things to fill in
+    // from here on out we know that we're showing a specific election/plan
+    // and we have a lot of little things to fill in
+    // we hand off to functions since it's rather a lot of lines to read as one giant block
     //
 
-    // cast a few fields as floats
-    [ 'eg_adj_avg', 'bias_avg', 'mmd_avg'
-    ].forEach((fieldname) => {
-            thisplan[fieldname] = parseFloat(thisplan[fieldname]);
-        });
+    // set the title
+    updateMetricsTitle(thisyeardata);
+
+    // a single sentence summarizing the 3 metric outcomes: 2 out of 3, they all agree, no consistency found, ...
+    updateMetricsSummary(thisyeardata);
+
+    // update the metric tabs: various sentences in each tab, and the tabs themselves
+    updateMetricsTabs(thisyeardata);
+
+    // Efficiency Gap: refresh the Wasted Votes chart
+    updateWastedVotesChart(thisyeardata);
+
+    // the bell charts indicating this plan's relative bias rating for each metric
+    drawBiasBellCharts(thisyeardata);
+};
+
+window.updateMetricsTitle = (yeardata) => {
+    const minyear = yeardata.plan_minyear;
+    const maxyear = yeardata.plan_maxyear;
+    const year    = yeardata.year;
+
+    // compose a title for what we're seeing
+    let title = `${minyear}-${maxyear} Redistricting Plan`;
+    if (minyear == maxyear) {
+        title = `${maxyear} Redistricting Plan`;  // don't say "2000-2000 plan"
+    }
+    if (CURRENT_VIEW.planorelection == 'election') {
+        title = `${title}: ${year} Election`;
+    }
+
+    // apply it
+    $('#maincontent span[data-field="title"]').text(title);
+};
+
+window.updateMetricsSummary = (yeardata) => {
+    // compose a sentence summarizing how many metrics indicate a bias one way or the other
+    // e.g. "2 out of 3 metrics agree..." or "all metrics agree..."
+    const eg_score    = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].eg ];
+    const pb_score  = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].bias ];
+    const mm_score    = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].mm ];
+
+    const favor_party_eg = lookupBiasFavorParty(eg_score);
+    const favor_party_pb = lookupBiasFavorParty(pb_score);
+    const favor_party_mm = lookupBiasFavorParty(mm_score);
+
+    // how many metrics favor D or R?
+    const metrics_favor_d = [ favor_party_eg, favor_party_pb, favor_party_mm ].filter((party) => { return party == 'Democrat'; }).length;
+    const metrics_favor_r = [ favor_party_eg, favor_party_pb, favor_party_mm ].filter((party) => { return party == 'Republican'; }).length;
+
+    // compose the sentence, with 2 out of 3 being the minimum worth mentioning
+    let biasstatement = "No consistent statistical bias was found among the three metrics.";
+    if      (metrics_favor_d == 3) biasstatement = "All three metrics agree that there is a bias in favor of Democrat voters.";
+    else if (metrics_favor_r == 3) biasstatement = "All three metrics agree that there is a bias in favor of Republican voters.";
+    else if (metrics_favor_d == 2 && metrics_favor_r == 0) biasstatement = "Two of the three metrics indicate a bias in favor of Democrat voters.";
+    else if (metrics_favor_r == 2 && metrics_favor_d == 0) biasstatement = "Two of the three metrics indicate a bias in favor of Reublican voters.";
+
+    // fill it in
+    $('#maincontent span[data-metric="biasstatement"]').text(biasstatement);
+};
+
+window.updateMetricsTabs = (yeardata) => {
+    // fetch the seat counts, vote counts, bias metric scores, ... depending on whether we are showing a Plan or Election
+    const eg_score    = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].eg ];
+    const pb_score    = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].bias ];
+    const mm_score    = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].mm ];
+    const eg_rank     = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].egrank ];
+    const bias_rank   = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].biasrank ];
+    const mmd_rank    = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].mmrank ];
+    const seats_rep   = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].seats_rep ];
+    const seats_dem   = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].seats_dem ];
+    const totalseats  = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].seats ];
 
     // for the selected year/plan
     // the 3 plan-bias metrics: do any of them show a bias toward D or R?
     // tag the biasicon icons in the metrics' tabs
-    const favor_party_eg = lookupBiasFavorParty(thisplan.eg_adj_avg);
-    const favor_color_eg = lookupBiasColor(thisplan.eg_adj_avg);
-    const percent_eg     = favor_party_eg ? `+${Math.round(100 * Math.abs(thisplan.eg_adj_avg))}%` : '';
-    const hadseats       = favor_party_eg == 'Republican' ? thisplan.seats_r : thisplan.seats_dem;
-    const statement_eg   = favor_party_eg ? `${favor_party_eg}s needed ${(100 * Math.abs(thisplan.eg_adj_avg)).toFixed(1)}% fewer votes to win their ${hadseats} of ${thisplan.seats} seats.` : 'This metric indicates a balanced plan.';
-    const biastext_eg    = favor_party_eg ? `This plan is more biased toward ${favor_party_eg} than ${Math.round(100 * thisplan.eg_avg_percentrank)}% of the enacted plans we have analyzed nationwide.` : '';
+    const favor_party_eg = lookupBiasFavorParty(eg_score);
+    const favor_color_eg = lookupBiasColor(eg_score);
+    const percent_eg     = favor_party_eg ? `+${Math.round(100 * Math.abs(eg_score))}%` : '';
+    const hadseats       = favor_party_eg == 'Republican' ? seats_rep : seats_dem;
+    const statement_eg   = favor_party_eg ? `${favor_party_eg}s needed ${(100 * Math.abs(eg_score)).toFixed(1)}% fewer votes to win their ${hadseats} of ${totalseats} seats.` : 'This metric indicates a balanced plan.';
+    const biastext_eg    = favor_party_eg ? `This plan is more biased toward ${favor_party_eg} than ${Math.round(100 * eg_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
 
-    const favor_party_pb = lookupBiasFavorParty(thisplan.bias_avg);
-    const favor_color_pb = lookupBiasColor(thisplan.bias_avg);
-    const percent_pb     = favor_party_pb ? `+${Math.round(100 * Math.abs(thisplan.bias_avg))}%` : '';
+    const favor_party_pb = lookupBiasFavorParty(pb_score);
+    const favor_color_pb = lookupBiasColor(pb_score);
+    const percent_pb     = favor_party_pb ? `+${Math.round(100 * Math.abs(pb_score))}%` : '';
     const statement_pb   = favor_party_pb ? '' : 'This metric indicates a balanced plan.';
-    const biastext_pb    = favor_party_pb ? `This plan is more biased toward ${favor_party_pb} than ${Math.round(100 * thisplan.bias_avg_percentrank)}% of the enacted plans we have analyzed nationwide.` : '';
+    const biastext_pb    = favor_party_pb ? `This plan is more biased toward ${favor_party_pb} than ${Math.round(100 * bias_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
 
-    const favor_party_mm = lookupBiasFavorParty(thisplan.mmd_avg);
-    const favor_color_mm = lookupBiasColor(thisplan.mmd_avg);
-    const percent_mm     = favor_party_mm ? `+${Math.round(100 * Math.abs(thisplan.mmd_avg))}%` : '';
+    const favor_party_mm = lookupBiasFavorParty(mm_score);
+    const favor_color_mm = lookupBiasColor(mm_score);
+    const percent_mm     = favor_party_mm ? `+${Math.round(100 * Math.abs(mm_score))}%` : '';
     const statement_mm   = favor_party_mm ? '' : 'This metric indicates a balanced plan.';
-    const biastext_mm    = favor_party_mm ? `This plan is more biased toward ${favor_party_mm} than ${Math.round(100 * thisplan.mmd_avg_percentrank)}% of the enacted plans we have analyzed nationwide.` : '';
+    const biastext_mm    = favor_party_mm ? `This plan is more biased toward ${favor_party_mm} than ${Math.round(100 * mmd_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
 
     // color the tab-swatches for the three metrics
     {
@@ -304,158 +462,140 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
         if      (favor_party_mm == 'Republican') $sumbox.addClass('republican').show();
         else if (favor_party_mm == 'Democrat')   $sumbox.addClass('democrat').show();
     }
-
-    // compose a sentence summarizing the "favor party" biases
-    const metrics_favor_d = [ favor_party_eg, favor_party_pb, favor_party_mm ].filter((party) => { return party == 'Democrat'; }).length;
-    const metrics_favor_r = [ favor_party_eg, favor_party_pb, favor_party_mm ].filter((party) => { return party == 'Republican'; }).length;
-    let biasstatement = "No consistent statistical bias was found among the three metrics.";
-    if      (metrics_favor_d == 3) biasstatement = "All three metrics agree that there is a bias in favor of Democrat voters.";
-    else if (metrics_favor_r == 3) biasstatement = "All three metrics agree that there is a bias in favor of Republican voters.";
-    else if (metrics_favor_d == 2 && metrics_favor_r == 0) biasstatement = "Two of the three metrics indicate a bias in favor of Democrat voters.";
-    else if (metrics_favor_r == 2 && metrics_favor_d == 0) biasstatement = "Two of the three metrics indicate a bias in favor of Reublican voters.";
-    $('span[data-metric="biasstatement"]').text(biasstatement);
-
-    // Efficiency Gap: refresh the Wasted Votes chart
-    // try to cope with broken data by hiding the chart
-    if (thisplan.votes_twop) {
-        const votechartdata = [
-            {
-                name: 'Votes Wasted',
-                data: [0, 0],
-                colors: [ WASTEDVOTE_CHART_WASTED_D, WASTEDVOTE_CHART_WASTED_R ],
-            },
-            {
-                name: 'Votes Needed',
-                data: [0, 0],
-                colors: [ WASTEDVOTE_CHART_USEFUL_D, WASTEDVOTE_CHART_USEFUL_R ],
-            }
-        ];
-        votechartdata[0].data[0] = parseInt(thisplan.wasted_dem);
-        votechartdata[0].data[1] = parseInt(thisplan.wasted_rep);
-        votechartdata[1].data[0] = parseInt(thisplan.votes_dem) - parseInt(thisplan.wasted_dem);
-        votechartdata[1].data[1] = (parseInt(thisplan.votes_twop) - parseInt(thisplan.votes_dem)) - parseInt(thisplan.wasted_rep);  // they didn't calculate R votes separately; R=total-dem
-
-        $('#chart-egvoteswasted').show();
-        Highcharts.chart('chart-egvoteswasted', {
-            chart: {
-                type: 'bar'
-            },
-            title: {
-                text: 'Votes Needed and Wasted',
-                margin:0,
-            },
-            xAxis: {
-                categories: ['D', 'R']
-            },
-            yAxis: {
-                min: 0,
-                title: {
-                    enabled: false,
-                }
-            },
-            legend: {
-                enabled: false,
-            },
-            tooltip: {
-                formatter: function () {
-                    const party = this.point.category == 'D' ? 'Democrat' : 'Republican';
-                    return `${party}<br/>${this.y.toLocaleString()} ${this.series.name}`;
-                },
-            },
-            plotOptions: {
-                series: {
-                    stacking: 'normal',
-                    pointPadding: 0,
-                    groupPadding: 0,
-                    pointWidth: 25,
-                    colorByPoint: true,  // use the cvustom-assigned colors,
-                    animation: false,
-                }
-            },
-            series: votechartdata,
-        });
-    }
-    else {
-        // no data on votes + wasted votes
-        $('#chart-egvoteswasted').hide();
-    }
-
-    // the bell charts indicating this plan's relative bias rating for each metric
-    drawBiasBellChart('eg', thisplan.eg_adj_avg);
-    drawBiasBellChart('mm', thisplan.mmd_avg);
-    drawBiasBellChart('pb', thisplan.bias_avg);
 };
 
-window.drawBiasBellChart = (whichone, datavalue) => {
-    // fetch the min+max range expected for this curve's actual data, and thus the max spread (we need 0 to be in the middle)
-    // normalized the value into a range of 0.00 to 1.00 within that range, and that's our "percentile" along the X axis
-    //
-    // watch out!
-    // the "let percentile" declaration invertes datavalue to -datavalue
-    // because a negative value is biased toward republican BUT in American parlance Republicans are "right"
-    // therefore the Red/Republican section of the bell curve is the positive numbers, not negative numbers
-    const targetrange = BELLCURVE_MINMAX[CURRENT_VIEW.boundtype][whichone];
-    if (! targetrange) throw new Error(`drawBiasBellChart() got unexpected bound+field: ${CURRENT_VIEW.boundtype} ${whichone}`);
+window.updateWastedVotesChart = (yeardata) => {
+    // fetch the vote tallies for this election/plan
+    const totalvotes = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].votes_both ];
+    const wasted_dem = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].wasted_dem ];
+    const wasted_rep = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].wasted_rep ];
+    const votes_dem  = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].votes_dem ];
+    const votes_rep  = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].votes_rep ];
 
-    const spread = Math.max(targetrange.min, targetrange.max);
-    let percentile = (-datavalue + spread) / (2 * spread);
-    percentile = Math.min(Math.max(0.01, percentile), 0.99);  // don't let it go outside the range
+    // if there is no data on votes + wasted votes for this election/plan
+    // then just hide this chart
+    if (! totalvotes) {
+        $('#chart-egvoteswasted').hide();
+        return;
+    }
 
-    // this set of Highcharts categories, effectively forms 100 "slots" 0-99
-    // take the floor() of our "category score", and voila; that's which slot gets a 1 instead of a 0
-    const roundpercentile = Math.floor(100 * percentile);
-    const markerslots     = Array.apply(null, {length: 100}).map(Number.call, Number);
-    const markerdataset   = Array.apply(null, {length: 100}).map(() => 0);
-    markerdataset[roundpercentile] = roundpercentile;  // the actual data value, which is also the chart's "max", so it stretches to the top AND we can mouse-over it for tooltip
+    // construct the chart series
+    const votechartdata = [
+        {
+            name: 'Votes Wasted',
+            data: [0, 0],
+            colors: [ WASTEDVOTE_CHART_WASTED_D, WASTEDVOTE_CHART_WASTED_R ],
+        },
+        {
+            name: 'Votes Needed',
+            data: [0, 0],
+            colors: [ WASTEDVOTE_CHART_USEFUL_D, WASTEDVOTE_CHART_USEFUL_R ],
+        }
+    ];
+    votechartdata[0].data[0] = wasted_dem;
+    votechartdata[0].data[1] = wasted_rep;
+    votechartdata[1].data[0] = votes_dem - wasted_dem;
+    votechartdata[1].data[1] = votes_rep - wasted_rep;
 
-    // the bell charts are a bit of a trick, in that the real bellchart libs won't do what we need
-    // this is a column chart with a single non-0 data point, to draw the black bar showing this plan's rating
-    // the div.metric-bellchart has additional CSS classes, to use a colorful background-image
-    const divid = `metric-bellchart-${whichone}`;
-
-    const $div = $(`#${divid}`);
-    $div.removeClass('pb').removeClass('eg').removeClass('mm').addClass(whichone);
-    $div.removeClass('ushouse').removeClass('statehouse').removeClass('statesentate').addClass(CURRENT_VIEW.boundtype);
-
-    Highcharts.chart(divid, {
+    // now chart it
+    // and show the chart, in case it was previously hidden
+    $('#chart-egvoteswasted').show();
+    Highcharts.chart('chart-egvoteswasted', {
         chart: {
-            type: 'column',
-            backgroundColor: null,
-            spacing: [0, 0, 5, 0],
-            credits: {
-                style: {
-                    color: 'black',
-                },
-            },
+            type: 'bar'
         },
         title: {
-            text: null,
-        },
-        legend: {
-            enabled:false,
+            text: 'Votes Needed and Wasted',
+            margin:0,
         },
         xAxis: {
-            categories: markerslots,
-            visible: false
+            categories: ['D', 'R']
         },
         yAxis: {
             min: 0,
-            max: roundpercentile,
-            visible: false,
-        },
-        tooltip: {
-            enabled: false,
-        },
-        plotOptions: {
-            column: {
-                pointWidth: 5,
+            title: {
+                enabled: false,
             }
         },
-        series: [{
-            name: 'This One',
-            data: markerdataset,
-            color: 'black',
-            animation: false,
-        }]
+        legend: {
+            enabled: false,
+        },
+        tooltip: {
+            formatter: function () {
+                const party = this.point.category == 'D' ? 'Democrat' : 'Republican';
+                return `${party}<br/>${this.y.toLocaleString()} ${this.series.name}`;
+            },
+        },
+        plotOptions: {
+            series: {
+                stacking: 'normal',
+                pointPadding: 0,
+                groupPadding: 0,
+                pointWidth: 25,
+                colorByPoint: true,  // use the cvustom-assigned colors,
+                animation: false,
+            }
+        },
+        series: votechartdata,
     });
+};
+
+window.redrawYearPicker = (csvdata) => {
+    // the big yearpicker has a button to select the given election year
+    // but also the left-most dot-and-dash thing indicating when a new plan was enacted
+    // while the years are a universal constant, the plan-enactment years depends on what district type we're discussing
+    // so must be redrawn here
+
+    // a lookup dict: year => plan
+    const yearplans = {};
+    csvdata.forEach((row) => { yearplans[row.year] = row.plan; });
+
+    // the set of year-rows in the picker
+    const $yearpicker_buttons = $('#yearpicker-big div.year');
+
+    // go over each year in the universe (which was used to construct the $yearpicker_buttons) and find its row
+    // tag the row as being plan-start or plan-continue
+    // CSS will take care of the background image to make a dot-dash thing
+    let current_plan = null;
+    PLAN_YEARS.forEach((year) => {
+        const $button = $yearpicker_buttons.filter(`[data-year="${year}"]`);
+        const thisyearplan = yearplans[year];
+
+        if (current_plan == thisyearplan) $button.removeClass('plan-begin').addClass('plan-continue').prop('title', 'Show details for this districting plan');
+        else                              $button.removeClass('plan-continue').addClass('plan-begin').prop('title', `A new district plan was implemented in ${year}. Show details for this districting plan.`);
+
+        current_plan = thisyearplan;
+    });
+};
+
+window.drawBiasBellCharts = (yeardata) => {
+    // just a wrapper around drawBiasBellChart as it's mostly identical for all 3 metrics
+    const egscore = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].eg ];
+    const mmscore = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].mm ];
+    const pbscore = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].bias ];
+
+    drawBiasBellChart('eg', egscore);
+    drawBiasBellChart('mm', mmscore);
+    drawBiasBellChart('pb', pbscore);
+};
+
+window.drawBiasBellChart = (whichone, datavalue) => {
+    // the bell charts are a bit of a trick, in that the real bellchart libs won't do what we need
+    // this is a column chart with a single non-0 data point, to draw the black bar showing this plan's rating
+    // the div.metric-bellchart has additional CSS classes, to use a colorful background-image which looks like a bell curve
+
+    // replace CSS classes to change which curve image is being displayed as the backdrop
+    const $div = $(`#metric-bellchart-${whichone}`).empty();
+    $div.removeClass('pb').removeClass('eg').removeClass('mm').addClass(whichone);
+    $div.removeClass('ushouse').removeClass('statehouse').removeClass('statesentate').addClass(CURRENT_VIEW.boundtype);
+
+    // normalize the value into a range of 0% to 100% within that range, to form an X axis position
+    // 0% is the furthest left; 100% furthest right; 50% balanced
+    // watch out! we swap the sign here!
+    // Republican bias is indicated with values <0 BUT in American parlance Republicans are "right" which is the positive-numbers side
+    // so SUBTRACT the bias to shift a positive/democrat bias toward blue left
+    const spread = BELLCURVE_SPREAD[whichone];
+    const percentile = 0.5 - (0.5 * datavalue / spread);
+    // console.log([ `drawBiasBellChart() ${whichone}`, spread, datavalue, percentile ]);
+    $('<div class="markline"></div>').css({ 'left':`${100 * percentile}%` }).appendTo($div);
 };
