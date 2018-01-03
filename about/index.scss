@@ -1,2 +1,15 @@
 @import 'sitewide';
 
+div.bio {
+	margin: 25px 0px;
+	clear: both;
+}
+
+p.title {	
+	font-weight: 1000;
+}
+
+div.bio-photo img {
+    width: 100%;
+    margin-top: 25px;
+}
