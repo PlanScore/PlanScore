@@ -129,6 +129,13 @@ ul.nav-tabs a span.biasicon {
     color: white;
 }
 
+@media screen and (max-width: 550px) {
+    ul.nav-tabs a span.biasicon {
+        display: block;
+        margin: 0 auto;
+    }
+}
+
 div.tab-content {
     div.metricdrsum {
         float: left;
