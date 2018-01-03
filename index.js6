@@ -4,10 +4,10 @@ require('./index.scss');
 require('./index.src.html');
 
 // shared constants between pages: the list of years, the red-blue color gradient, ...
-import { PLAN_YEARS } from "./../planscore_common";
-import { STATE_CODE_TO_NAME } from "./../planscore_common";
-import { BIAS_SPREAD_SCALING } from "./../planscore_common";
-import { lookupBiasColor, lookupBiasDescription, lookupBiasFavorParty, lookupBiasPercentile } from "./../planscore_common";
+import { PLAN_YEARS } from "./planscore_common";
+import { STATE_CODE_TO_NAME } from "./planscore_common";
+import { BIAS_SPREAD_SCALING } from "./planscore_common";
+import { lookupBiasColor, lookupBiasDescription, lookupBiasFavorParty, lookupBiasPercentile } from "./planscore_common";
 
 // bundle polyfills and local/vendor libraries specific to this page
 //require('core-js/fn/array/includes');
@@ -143,7 +143,7 @@ window.loadDataForSelectedBoundaryAndYear = () => {
     }
 
     // fetch the CSV file and then use the callbacks to update the map
-    const url = `../data/bias_${CURRENT_VIEW.boundtype}.csv`;
+    const url = `/data/bias_${CURRENT_VIEW.boundtype}.csv`;
     Papa.parse(url, {
         download: true,
         header: true,
@@ -387,7 +387,8 @@ window.selectState = (stateabbr) => {
         // and with a hash for the current year + district:   #!2010-plan-ushouse
         // see the states page programming for details as to the expected hash params
         const plan_or_election = 'election';
-        const moreinfourl = `../${biasinfo.name.toLowerCase().replace(/\W/g, '_')}/#!${CURRENT_VIEW.year}-${plan_or_election}-${CURRENT_VIEW.boundtype}`;
+        const stateslug        = biasinfo.name.toLowerCase().replace(/\W/g, '_');
+        const moreinfourl      = `/${stateslug}/#!${CURRENT_VIEW.year}-${plan_or_election}-${CURRENT_VIEW.boundtype}`;
 
         // open the modal and do the string replacements
         const $modal = $('#stateinfo-modal').modal('show');

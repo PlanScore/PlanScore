@@ -183,7 +183,7 @@ window.loadDataForSelectedBoundaryAndYear = () => {
     if (! CURRENT_VIEW.year || ! CURRENT_VIEW.boundtype) return;  // need both; during startup one will be blank, so avoid an error
 
     // fetch the CSV file and then use the callbacks to update the map
-    const url = `../data/bias_${CURRENT_VIEW.boundtype}.csv`;
+    const url = `/data/bias_${CURRENT_VIEW.boundtype}.csv`;
     Papa.parse(url, {
         download: true,
         header: true,

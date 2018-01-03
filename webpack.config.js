@@ -5,7 +5,7 @@
 
 const JS6_FILES = [
     // home page and peripheral pages
-    './home/index.js6',
+    './index.js6',
     './about/index.js6',
     './scoreyours/index.js6',
     './efficiencygap/index.js6',
