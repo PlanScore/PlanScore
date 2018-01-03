@@ -181,7 +181,7 @@ div.metric-bellchart {
     position: relative; /* for positioning the markline */
     div.markline {
         position: absolute;
-        left: 50%;
+        left: 50%; /* overridden to position it */
         top: 30px;
         height: 100px;
 

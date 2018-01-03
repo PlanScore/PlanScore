@@ -39,6 +39,12 @@ $dark-purple-color: #4D599E;
 }
 
 
+span.mobilespace {  /* a utlity class used to enclose a single space character, so it's only visible (and causes libne-wrap) on very small screens; see issue 99 */
+    display: none;
+    @media screen and (max-width: 365px) {
+        display: inline;
+    }
+}
 
 /*
  * GLOBAL GENERAL STYLES
