@@ -34,19 +34,13 @@ const WASTEDVOTE_CHART_WASTED_R = '#C71C36';
 const WASTEDVOTE_CHART_USEFUL_D = '#99b7dc';
 const WASTEDVOTE_CHART_USEFUL_R = '#e8a4ad';
 
-// for the bellcurve charts, the min+max values used to interpolate the black marker line
+// for the bellcurve charts, the data spread (min + max absolute values)
+// so we can interpolate a value and position a marker line indicating a value
 // see drawBiasBellChart()
-const BELLCURVE_MINMAX = {
-    ushouse: {
-        eg: { min:-0.22, max:0.22 },
-        mm: { min:-0.1060091362, max:0.1017622749 },
-        pb: { min:-0.2725428571, max:0.25 },
-    },
-    statehouse: {
-        eg: { min:-0.137, max:0.166 },
-        mm: { min:-0.0944124802, max:0.07623086263 },
-        pb: { min:-0.1902700474, max:0.2449782744 },
-    },
+const BELLCURVE_SPREAD = {
+    eg: 0.22,
+    mm: 0.11,
+    pb: 0.30,
 };
 
 // what fields to use for Election Mode and Plan Mode
@@ -183,7 +177,7 @@ window.loadDataForSelectedBoundaryAndYear = () => {
     if (! CURRENT_VIEW.year || ! CURRENT_VIEW.boundtype) return;  // need both; during startup one will be blank, so avoid an error
 
     // fetch the CSV file and then use the callbacks to update the map
-    const url = `../data/bias_${CURRENT_VIEW.boundtype}.csv`;
+    const url = `/data/bias_${CURRENT_VIEW.boundtype}.csv`;
     Papa.parse(url, {
         download: true,
         header: true,
@@ -335,18 +329,21 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     updateWastedVotesChart(thisyeardata);
 
     // the bell charts indicating this plan's relative bias rating for each metric
-    // TODO 94 detect whether this is a Plan or Election and pick fields accordingly
     drawBiasBellCharts(thisyeardata);
 };
 
 window.updateMetricsTitle = (yeardata) => {
+    const minyear = yeardata.plan_minyear;
+    const maxyear = yeardata.plan_maxyear;
+    const year    = yeardata.year;
+
     // compose a title for what we're seeing
-    let title = `${yeardata.plan_minyear}-${yeardata.plan_maxyear} Redistricting Plan`;
-    if (yeardata.plan_minyear == yeardata.plan_maxyear) {  // some plans only last one year, don't say "2000-2000 plan"
-        title = `${yeardata.plan_maxyear} Redistricting Plan`;
+    let title = `${minyear}-${maxyear} Redistricting Plan`;
+    if (minyear == maxyear) {
+        title = `${maxyear} Redistricting Plan`;  // don't say "2000-2000 plan"
     }
     if (CURRENT_VIEW.planorelection == 'election') {
-        title = `${title}: ${yeardata.year} Election`;
+        title = `${title}: ${year} Election`;
     }
 
     // apply it
@@ -586,73 +583,19 @@ window.drawBiasBellChart = (whichone, datavalue) => {
     // the bell charts are a bit of a trick, in that the real bellchart libs won't do what we need
     // this is a column chart with a single non-0 data point, to draw the black bar showing this plan's rating
     // the div.metric-bellchart has additional CSS classes, to use a colorful background-image which looks like a bell curve
-    const divid = `metric-bellchart-${whichone}`;
-
-    // fetch the min+max range expected for this curve's actual data, and thus the max spread (we need 0 to be in the middle)
-    // normalized the value into a range of 0.00 to 1.00 within that range, and that's our "percentile" along the X axis
-    //
-    // watch out!
-    // the "let percentile" declaration inverts datavalue to -datavalue
-    // Republican bias is indicated with values <0 BUT in American parlance Republicans are "right" which is the positive-numbers side
-    // so swap the sign in order to make Red Republicans Right and Blue Democrats Left
-    const targetrange = BELLCURVE_MINMAX[CURRENT_VIEW.boundtype][whichone];
-    if (! targetrange) throw new Error(`drawBiasBellChart() got unexpected bound+field: ${CURRENT_VIEW.boundtype} ${whichone}`);
-
-    const spread = Math.max(targetrange.min, targetrange.max);
-    let percentile = (-datavalue + spread) / (2 * spread);
-    percentile = Math.min(Math.max(0.01, percentile), 0.99);  // don't let it go outside the range
-
-    // this set of Highcharts categories, effectively forms 100 "slots" 0-99
-    // take the floor() of our "category score", and voila; that's which slot gets a 1 instead of a 0
-    const markerslots     = Array.apply(null, {length: 100}).map(Number.call, Number);
-    const markerdataset   = Array.apply(null, {length: 100}).map(() => 0);
-    const whichslot       = Math.floor(100 * percentile);
-    markerdataset[whichslot] = 100;  // this single data value: a 1 in a world of 0s
 
     // replace CSS classes to change which curve image is being displayed as the backdrop
-    const $div = $(`#${divid}`);
+    const $div = $(`#metric-bellchart-${whichone}`).empty();
     $div.removeClass('pb').removeClass('eg').removeClass('mm').addClass(whichone);
     $div.removeClass('ushouse').removeClass('statehouse').removeClass('statesentate').addClass(CURRENT_VIEW.boundtype);
 
-    Highcharts.chart(divid, {
-        chart: {
-            type: 'column',
-            backgroundColor: null,
-            spacing: [0, 0, 5, 0],
-        },
-        credits: {
-            style: {
-                color: 'black',
-            },
-        },
-        title: {
-            text: null,
-        },
-        legend: {
-            enabled:false,
-        },
-        xAxis: {
-            categories: markerslots,
-            visible: false
-        },
-        yAxis: {
-            min: 0,
-            max: 100,
-            visible: false,
-        },
-        tooltip: {
-            enabled: false,
-        },
-        plotOptions: {
-            column: {
-                pointWidth: 3,
-            }
-        },
-        series: [{
-            name: 'This One',
-            data: markerdataset,
-            color: 'black',
-            animation: false,
-        }]
-    });
+    // normalize the value into a range of 0% to 100% within that range, to form an X axis position
+    // 0% is the furthest left; 100% furthest right; 50% balanced
+    // watch out! we swap the sign here!
+    // Republican bias is indicated with values <0 BUT in American parlance Republicans are "right" which is the positive-numbers side
+    // so SUBTRACT the bias to shift a positive/democrat bias toward blue left
+    const spread = BELLCURVE_SPREAD[whichone];
+    const percentile = 0.5 - (0.5 * datavalue / spread);
+    // console.log([ `drawBiasBellChart() ${whichone}`, spread, datavalue, percentile ]);
+    $('<div class="markline"></div>').css({ 'left':`${100 * percentile}%` }).appendTo($div);
 };
