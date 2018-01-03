@@ -131,13 +131,6 @@ window.handleResize = () => {
 window.loadDataForSelectedBoundaryAndYear = () => {
     if (! CURRENT_VIEW.year || ! CURRENT_VIEW.boundtype) return;  // need both; during startup one will be blank, so avoid an error
 
-    // if there's a map already, destroy it
-    const existing_map = $('#map').data('mapchart');
-    if (existing_map) {
-        existing_map.destroy();
-        $('#map').data('mapchart', null);
-    }
-
     // initialize the bias score statistics to No Data all around
     // expected data structure: list of states and their bias ratings
     const chartdata = [];
@@ -200,69 +193,78 @@ window.loadDataForSelectedBoundaryAndYear = () => {
         }
 
         // render the map chart
-        const newmapchart = Highcharts.mapChart('map', {
-            chart: {
-                borderWidth: 0,
-            },
-            title: {
-                text: '',  // no big title
-            },
-            legend: {
-                enabled: false,  // we have a custom-crafted label
-            },
-            colorAxis: {
-                dataClasses: map_choropleth_colors,
-            },
-            tooltip: {  // the tooltips are kept minimal, as most info is in a popup when clicked and mobile folks can't use tooltips effectively
-                formatter: function() {
-                    return this.key;  // the state name
+        // if we already did one, then we can just replace the chart.series[0] and not completely destroy and recreate the chart
+        // on browsers other than Chrome this is a substantial performance gain
+        let chart = $('#map').data('mapchart');
+        if (chart) {
+            // a chart already exists; just update its data
+            chart.series[0].setData(data);
+        }
+        else {
+            // a chart has not yet been created; create it and then stow that reference
+            const newmapchart = Highcharts.mapChart('map', {
+                chart: {
+                    borderWidth: 0,
                 },
-                positioner: function (labelWidth, labelHeight, point) {  // center the tooltip on the state, instead of using the mouse; issue 78
-                    const width = this.chart.chartWidth;
-                    const height = this.chart.chartHeight;
-
-                    const x = (width / 2) - 30;  //could use (labelWidth/2) but then the box "jumps around"
-                    const y = height - labelHeight - 5;
-                    return { x, y };
+                title: {
+                    text: '',  // no big title
                 },
-            },
-            series: [{
-                // use the Highcharts-provided US states, joining on their "postal-code" to our "abbr"
-                data: data,
-                mapData: polygons,
-                joinBy: ['postal-code', 'abbr'],
-                // labels make small states easier to see, cursor makes it obvious to click
-                cursor: 'pointer',
-                dataLabels: {
-                    enabled: true,
-                    formatter: function () {
-                        return this.point.abbr;
+                legend: {
+                    enabled: false,  // we have a custom-crafted label
+                },
+                colorAxis: {
+                    dataClasses: map_choropleth_colors,
+                },
+                tooltip: {  // the tooltips are kept minimal, as most info is in a popup when clicked and mobile folks can't use tooltips effectively
+                    formatter: function() {
+                        return this.key;  // the state name
                     },
-                    style: {
-                        fontSize: '9px',
-                        color: 'black',
-                        textOutline: false
-                    }
+                    positioner: function (labelWidth, labelHeight, point) {  // center the tooltip on the state, instead of using the mouse; issue 78
+                        const width = this.chart.chartWidth;
+                        const height = this.chart.chartHeight;
+                        const x = (width / 2) - 30;  //could use (labelWidth/2) but then the box "jumps around"
+                        const y = height - labelHeight - 5;
+                        return { x, y };
+                    },
                 },
-                nullColor: 'white',
-                states: {
-                    hover: {
-                        brightness: 0,
-                        borderColor: '#333333',
-                        borderWidth: 2
-                    }
-                },
-                // click events: call the popup maker
-                events: {
-                    click: function (e) {
-                        selectState(e.point.abbr);
-                    }
-                },
-            }]
-        });
+                series: [{
+                    // use the Highcharts-provided US states, joining on their "postal-code" to our "abbr"
+                    data: data,
+                    mapData: polygons,
+                    joinBy: ['postal-code', 'abbr'],
+                    // labels make small states easier to see, cursor makes it obvious to click
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: true,
+                        formatter: function () {
+                            return this.point.abbr;
+                        },
+                        style: {
+                            fontSize: '9px',
+                            color: 'black',
+                            textOutline: false
+                        }
+                    },
+                    nullColor: 'white',
+                    states: {
+                        hover: {
+                            brightness: 0,
+                            borderColor: '#333333',
+                            borderWidth: 2
+                        }
+                    },
+                    // click events: call the popup maker
+                    events: {
+                        click: function (e) {
+                            selectState(e.point.abbr);
+                        }
+                    },
+                }]
+            });
 
-        // stow that reference so we can destroy it on next data load
-        $('#map').data('mapchart', newmapchart);
+            // stow it for later retrieval
+            $('#map').data('mapchart', newmapchart);
+        }
     }
 
     function renderMapLegend() {
