@@ -172,28 +172,40 @@
     border-radius: 5px;
 }
 
-#stateinfo-modal {
-}
+#stateinfo-popup {
+    display: none; /* hidden by default; see selectState() */
 
-.modal-backdrop {
-    background-color: rgba(0,0,0,0);
-}
+    z-index: 1;
 
-.modal-dialog {
-    position: relative;
-    width: 80%;
-    margin: 50px auto;
-}
+    position: absolute;
+    top: 200px;
+    left: 50%;
 
-@media (min-width: 768px) {
-    .modal-dialog {
-        width: 400px;
-        margin: 200px auto;
+    width: 400px;
+    max-width: 400px;
+    margin-left: -200px;
+    @media (max-width: 450px) {
+        width: 90%;
+        margin-left: 0;
+        left: 5%;
     }
-}
 
-.modal-content {
-    position: relative;
+    @media (min-width: 1001px) {
+        top: 190px;
+    }
+    @media (max-width: 1000px) {
+        top: 225px;
+    }
+    @media (max-width: 767px) {
+        top: 220px;
+    }
+    @media (max-width: 500px) {
+        top: 255px;
+    }
+    @media (max-width: 350px) {
+        top: 300px;
+    }
+
     background-color: #fff;
     -webkit-background-clip: padding-box;
     background-clip: padding-box;
@@ -202,6 +214,17 @@
     outline: 0;
     -webkit-box-shadow: 0 3px 9px rgba(0,0,0,.2);
     box-shadow: 0 3px 9px rgba(0,0,0,.2);
+
+    padding: 10px 10px 10px 10px;
+
+    button {
+    }
+    h4 {
+    }
+    span {
+    }
+    a.learnmore {
+    }
 }
 
 .states-listing {

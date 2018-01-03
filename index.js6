@@ -83,8 +83,9 @@ window.initStatePicker = () => {
         selectState(stateabbr);
     });
 
-    // when the modal closes, also explicitly select no state so as to reset the UI
-    $('#stateinfo-modal').on('hidden.bs.modal', function (e) {
+    // when the X button in the state popup is clicked, explicitly select no state which will close this popup
+    $('#stateinfo-popup button').click(function (event) {
+        event.stopPropagation();
         selectState(null);
     });
 };
@@ -362,45 +363,42 @@ window.selectState = (stateabbr) => {
     // UI update: set the selector
     $('#statepicker').val(stateabbr);
 
-    // show/hide the popup
-    if (stateabbr) {
+    // passing empty/null stateabbr is how you explicitly select no state
+    if (! stateabbr) {
+        $('#stateinfo-popup').hide();
+    }
         // fetch the info from the map, and attach some attributes for the popup
-        // tip: shallow copy via slice() so as not to mutate the existing one
-        const biasinfo = $('#map').data('biasdata').filter((statedata) => { return statedata.abbr === stateabbr; }).slice(0, 1)[0];
+    // tip: shallow copy via slice() so as not to mutate the existing one
+    const biasinfo = $('#map').data('biasdata').filter((statedata) => { return statedata.abbr === stateabbr; }).slice(0, 1)[0];
 
-        // add to the info, an analysis
-        if (biasinfo.value === undefined || biasinfo.value === null) {
-            biasinfo.analysis = 'No data was available for this election year.';
-        }
-        else {
-            const favor_party = lookupBiasFavorParty(biasinfo.value);
-            const bias_centile = lookupBiasPercentile(biasinfo.value);
-
-            if (favor_party) {
-                biasinfo.analysis = `This plan shows bias in favor of <b>${favor_party}</b> voters.<br/>This plan is more biased than <b>${bias_centile}%</b> of plans analyzed.`;
-            }
-            else {
-                biasinfo.analysis = "No statistically significant bias was detected in this plan.";
-            }
-        }
-
-        // the URL for more info: the state name, mangled for URLs e.g. south_carolina
-        // and with a hash for the current year + district:   #!2010-plan-ushouse
-        // see the states page programming for details as to the expected hash params
-        const plan_or_election = 'election';
-        const stateslug        = biasinfo.name.toLowerCase().replace(/\W/g, '_');
-        const moreinfourl      = `/${stateslug}/#!${CURRENT_VIEW.year}-${plan_or_election}-${CURRENT_VIEW.boundtype}`;
-
-        // open the modal and do the string replacements
-        const $modal = $('#stateinfo-modal').modal('show');
-        $modal.find('span[data-field="statename"]').html(biasinfo.name);
-        $modal.find('span[data-field="analysis"]').html(biasinfo.analysis);
-        $modal.find('.modal-content a').prop('href', moreinfourl);
+    // add to the info, an analysis
+    if (biasinfo.value === undefined || biasinfo.value === null) {
+        biasinfo.analysis = 'No data was available for this election year.';
     }
     else {
-        // nothing to do, except I guess close the modal if it happens to be open
-        $('#stateinfo-modal').modal('hide');
+        const favor_party = lookupBiasFavorParty(biasinfo.value);
+        const bias_centile = lookupBiasPercentile(biasinfo.value);
+
+        if (favor_party) {
+            biasinfo.analysis = `This plan shows bias in favor of <b>${favor_party}</b> voters.<br/>This plan is more biased than <b>${bias_centile}%</b> of plans analyzed.`;
+        }
+        else {
+            biasinfo.analysis = "No statistically significant bias was detected in this plan.";
+        }
     }
+
+    // the URL for more info: the state name, mangled for URLs e.g. south_carolina
+    // and with a hash for the current year + district:   #!2010-plan-ushouse
+    // see the states page programming for details as to the expected hash params
+    const plan_or_election = 'election';
+    const stateslug        = biasinfo.name.toLowerCase().replace(/\W/g, '_');
+    const moreinfourl      = `/${stateslug}/#!${CURRENT_VIEW.year}-${plan_or_election}-${CURRENT_VIEW.boundtype}`;
+
+    // open the popup and do the string replacements
+    const $modal = $('#stateinfo-popup').show();
+    $modal.find('span[data-field="statename"]').html(biasinfo.name);
+    $modal.find('span[data-field="analysis"]').html(biasinfo.analysis);
+    $modal.find('a.learnmore').prop('href', moreinfourl);
 };
 
 //

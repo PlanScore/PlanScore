@@ -280,19 +280,16 @@
         </div>
     </div><!--/container-mainbody-->
 
-    <div class="modal" tabindex="-1" role="dialog" id="stateinfo-modal">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-body">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title"><span data-field="statename"></span></h4>
-                    <span data-field="analysis"></span>
-                    <br>
-                    <a href="javascript:void(0);"><span>Learn More <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></span></a>
-                </div>
-            </div>
-        </div>
+
+    <!-- this popup will be displayed by selectState() -->
+    <div id="stateinfo-popup">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title"><span data-field="statename"></span></h4>
+        <span data-field="analysis"></span>
+        <br>
+        <a href="javascript:void(0);" class="learnmore"><span>Learn More <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></span></a>
     </div>
+
 
     <!--[include_footer]-->
 
