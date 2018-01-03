@@ -180,6 +180,15 @@ ul.nav.nav-tabs {
         background-color:white;
         color: #95989a;
     }
+    
+    @media screen and (max-width: 550px) {
+        a {
+            font-size: 16px;
+        }
+        li a {
+            padding: 5px;
+        }
+    }
 }
 
 .tab-content {
