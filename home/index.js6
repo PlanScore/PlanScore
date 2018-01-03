@@ -165,6 +165,7 @@ window.loadDataForSelectedBoundaryAndYear = () => {
             renderMapWithNewData(chartdata);
             renderMapLegend();
             updateStateListingSwatches(chartdata);
+            updateStateListingHashes(chartdata);
         },
     });
 
@@ -306,6 +307,18 @@ window.loadDataForSelectedBoundaryAndYear = () => {
             if (state_info.value === null) $(this) .prop('title', words) .css({ 'background-color': color, 'border':'1px solid #95989A' });
             else if (state_info.value === undefined) $(this) .prop('title', words) .css({ 'background-color': color, 'border':'1px solid #95989A' });
             else $(this) .prop('title', words) .css({ 'background-color': color });
+        });
+    }
+
+    function updateStateListingHashes(data) {
+        const $swatches = $('.states-listing a');
+        $swatches.each(function () {
+            const $link             = $(this);
+            const baseurl           = $link.prop('href').replace(/\#.*$/, '');
+            const plan_or_election  = 'election';
+            const hashcomponent     = `#!${CURRENT_VIEW.year}-${plan_or_election}-${CURRENT_VIEW.boundtype}`;
+            const url               = `${baseurl}${hashcomponent}`;
+            $link.prop('href', url);
         });
     }
 
