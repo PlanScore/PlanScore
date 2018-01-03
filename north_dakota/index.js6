@@ -38,7 +38,7 @@ const WASTEDVOTE_CHART_USEFUL_R = '#e8a4ad';
 // see drawBiasBellChart()
 const BELLCURVE_MINMAX = {
     ushouse: {
-        eg: { min:-0.203, max:0.203 },
+        eg: { min:-0.22, max:0.22 },
         mm: { min:-0.1060091362, max:0.1017622749 },
         pb: { min:-0.2725428571, max:0.25 },
     },
