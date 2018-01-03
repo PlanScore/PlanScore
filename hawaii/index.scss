@@ -76,7 +76,7 @@ h1.state_name {
 
         padding-left: 25px;
 
-        a { /* the little circle */
+        a.yeardot { /* the little circle indicating the election year */
             display: inline-block;
             height: 10px;
             width: 10px;
@@ -86,9 +86,13 @@ h1.state_name {
             margin-right: 5px;
         }
 
-        /* increase "hit box" with padding; if you mess with this, don't forget to adjust the plan-begin and plan-continue positions and/or sizes */
-        padding-top: 3px;
-        padding-bottom: 3px;
+        a.plan {  /* the dot and dash icon indicating the start/continuation of a plan; nothing visible but see the plan-begin and plan-continue subclasses */
+            display: inline-block;
+            height: 26px;
+            width: 26px;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
     }
     div.year:hover {
         background-color: #f2f2f2;
@@ -98,18 +102,18 @@ h1.state_name {
         background-color: silver;
         color: black;
 
-        a { /* the little circle */
+        a.yeardot { /* the little circle indicating the election year */
             background-color: black;
         }
     }
 
-    div.year.plan-begin {
+    div.year.plan-begin a.plan {
         background-image: url(../images/statsplan-timeline-begin.svg);
         background-repeat: no-repeat;
         background-position: 0 0;
         background-size: 26px 26px;  /* contrived to fit font size + padding-top + padding-bottom */
     }
-    div.year.plan-continue {
+    div.year.plan-continue a.plan {
         background-image: url(../images/statsplan-timeline-continue.svg);
         background-repeat: no-repeat;
         background-position: 0 0;

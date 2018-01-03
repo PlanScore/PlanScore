@@ -20,7 +20,13 @@ import { lookupBiasColor, lookupBiasFavorParty, lookupBiasPercentile } from "./.
 
 // the currently-visible state: boundary type + year, e.g. US House districts for 1984
 // these are affected by window.selectXXX() family of functions which ultimately are all wrappers over loadDataForSelectedBoundaryAndYear()
-const CURRENT_VIEW = {};
+const CURRENT_VIEW = {
+    // NOTE that the values here are just indicative for documentation purposes
+    // initLoadStartingConditions() parses the URL params and calls selectXXX() to set the actual defaults
+    year: '2000',  // four-digit year (string)
+    boundtype: 'ushouse',  // short polygon name: ushouse statehouse statesenate
+    planordistrict: 'election',  // show 'election' or 'plan' statistics on right-hand side
+};
 
 // Efficiency Gap wasted vote chart; colors
 const WASTEDVOTE_CHART_WASTED_D = '#0049A8';
@@ -65,14 +71,18 @@ window.handleResize = () => {
 
 window.initYearPickers = () => {
     // mobile
-    // a simple SELECT to choose a year, and trigger selectYear()
+    // a simple SELECT to choose a year, and trigger selectElectionOrPlan()
     const $picker_small = $('#yearpicker-small');
     PLAN_YEARS.slice().reverse().forEach((year) => {
-        $('<option></option>').text(year).prop('value', year).appendTo($picker_small);
+        const $group = $(`<optgroup label="${year}"></optgroup>`).appendTo($picker_small);
+        $('<option></option>').text(`${year} Election Outcomes`).prop('value', `${year}-election`).appendTo($group);
+        $('<option></option>').text(`${year} Redistricting Plan`).prop('value', `${year}-plan`).appendTo($group);
     });
     $picker_small.change(function () {
-        const year = $(this).val();
-        selectYear(year);
+        const value = $(this).val();
+        const year  = value.split('-')[0];
+        const what  = value.split('-')[1];
+        selectElectionOrPlan(year, what);
     });
 
     // desktop
@@ -80,11 +90,16 @@ window.initYearPickers = () => {
     // see also redrawYearPicker() since the "plan enacted" part of that yearpicker depends on which dataset is being used
     const $picker_big = $('#yearpicker-big');
     PLAN_YEARS.slice().reverse().forEach((year) => {
-        const $button = $(`<div class="year"><a></a> ${year}</div>`).attr('data-year', year).appendTo($picker_big);
+        const $button = $(`<div class="year" title="Show details for this election year"><a class="plan"></a> <a class="yeardot"></a> ${year}</div>`).attr('data-year', year).appendTo($picker_big);
+    });
+    $('#yearpicker-big').on('click', 'a.plan', function (event) {
+        event.stopPropagation();
+        const year = $(this).closest('div.year').attr('data-year');
+        selectElectionOrPlan(year, 'plan');
     });
     $('#yearpicker-big').on('click', 'div.year', function () {
         const year = $(this).attr('data-year');
-        selectYear(year);
+        selectElectionOrPlan(year, 'election');
     });
 };
 
@@ -97,18 +112,21 @@ window.initBoundaryPicker = () => {
 
 window.initLoadStartingConditions = () => {
     // analyze the #year-polytype hash to see what year + type we should load
-    // provide some defaults
+    // see alsoupdateUrlHash() which generates this hash
+
     let year = PLAN_YEARS[PLAN_YEARS.length - 1];
+    let what = 'election';
     let type = 'ushouse';
 
-    const year_and_type = /^#!(\d\d\d\d)\-(\w+)$/.exec(window.location.hash);
+    const year_and_type = /^#!(\d\d\d\d)\-(\w+)\-(\w+)$/.exec(window.location.hash);
     if (year_and_type) {
-        year = year_and_type[1];
-        type = year_and_type[2];
+        year = year_and_type[1];  // the year
+        what = year_and_type[2];  // election or plan
+        type = year_and_type[3];  // district type
     }
 
     // ready, set, go
-    selectYear(year);
+    selectElectionOrPlan(year, what);
     selectBoundaryType(type);
 };
 
@@ -136,19 +154,26 @@ window.loadDataForSelectedBoundaryAndYear = () => {
     });
 
     // update URL params to show the current search
+    updateUrlHash();
+};
+
+window.updateUrlHash = () => {
+    // update URL params to show the current search
     // see also initLoadStartingConditions() which will load such a state
-    const hash = `#!${CURRENT_VIEW.year}-${CURRENT_VIEW.boundtype}`;
+    const hash = `#!${CURRENT_VIEW.year}-${CURRENT_VIEW.planordistrict}-${CURRENT_VIEW.boundtype}`;
     window.location.replace(hash);
 };
 
-window.selectYear = (year) => {
+window.selectElectionOrPlan = (year, planordistrict) => {
     // UI update: highlight this button or select this option
-    $('#yearpicker-small').val(year);
+    $('#yearpicker-small').val(`${year}-${planordistrict}`);
 
     $('#yearpicker-big div.year').removeClass('active').filter(`[data-year="${year}"]`).addClass('active');
 
     // save to the state and refresh the map + data
     CURRENT_VIEW.year = year;
+    CURRENT_VIEW.planordistrict = planordistrict;
+console.log(CURRENT_VIEW);//gda
     loadDataForSelectedBoundaryAndYear();
 };
 
@@ -231,7 +256,7 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     updateWastedVotesChart(thisyeardata);
 
     // the bell charts indicating this plan's relative bias rating for each metric
-    // TODO 94 pick fields based on election/plan data
+    // TODO 94 detect whether this is a Plan or Election and pick fields accordingly
     drawBiasBellChart('eg', thisyeardata.eg_adj_avg);
     drawBiasBellChart('mm', thisyeardata.mmd_avg);
     drawBiasBellChart('pb', thisyeardata.bias_avg);
@@ -241,7 +266,7 @@ window.updateMetricsSummary = (yeardata) => {
     // compose a sentence summarizing how many metrics indicate a bias one way or the other
     // e.g. "2 out of 3 metrics agree..." or "all metrics agree..."
 
-    // TODO 94 detect whether this is a Plan or Year and pick fields accordingly
+    // TODO 94 detect whether this is a Plan or Election and pick fields accordingly
     const favor_party_eg = lookupBiasFavorParty(yeardata.eg_adj_avg);
     const favor_party_pb = lookupBiasFavorParty(yeardata.bias_avg);
     const favor_party_mm = lookupBiasFavorParty(yeardata.mmd_avg);
@@ -262,7 +287,7 @@ window.updateMetricsSummary = (yeardata) => {
 };
 
 window.updateMetricsTabs = (yeardata) => {
-    // TODO 94 detect whether this is a Plan or Year and pick fields accordingly
+    // TODO 94 detect whether this is a Plan or Election and pick fields accordingly
 
     // for the selected year/plan
     // the 3 plan-bias metrics: do any of them show a bias toward D or R?
@@ -349,7 +374,7 @@ window.updateWastedVotesChart = (yeardata) => {
     }
 
     // construct the chart series
-    // TODO 94 detect whether this is a Plan or Year and pick fields accordingly
+    // TODO 94 detect whether this is a Plan or Election and pick fields accordingly
     const votechartdata = [
         {
             name: 'Votes Wasted',
@@ -431,9 +456,8 @@ window.redrawYearPicker = (csvdata) => {
         const $button = $yearpicker_buttons.filter(`[data-year="${year}"]`);
         const thisyearplan = yearplans[year];
 
-        // TODO 94 rewrite this whole concept to create a second link so one may click the plan instead of the election year
-        if (current_plan == thisyearplan) $button.removeClass('plan-begin').addClass('plan-continue').prop('title', '');
-        else                              $button.removeClass('plan-continue').addClass('plan-begin').prop('title', `A new district plan was implemented in ${year}`);
+        if (current_plan == thisyearplan) $button.removeClass('plan-begin').addClass('plan-continue').prop('title', 'Show details for this districting plan');
+        else                              $button.removeClass('plan-continue').addClass('plan-begin').prop('title', `A new district plan was implemented in ${year}. Show details for this districting plan.`);
 
         current_plan = thisyearplan;
     });
