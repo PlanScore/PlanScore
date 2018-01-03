@@ -170,10 +170,11 @@ window.loadDataForSelectedBoundaryAndYear = () => {
         // Highcharts trick: load up the us-small data which includes breakout boxes for the small New England States (issue 78)
         // preprocess it to add the state's ABBR as the label for the boxes
         const polygons = Highcharts.geojson(Highcharts.maps['countries/us/custom/us-small']);
+        const has_callout_boxes = [ 'NJ', 'MD', 'DE', 'CT', 'RI', 'MA', 'NH', 'VT' ];
         $.each(polygons, function () {
             var path = this.path, copy = { path: path };
 
-            if (path[1] === 9727) {
+            if (has_callout_boxes.indexOf(this.properties.postal) !== -1) {
                 Highcharts.seriesTypes.map.prototype.getBox.call({}, [copy]);
                 this.middleX = ((path[1] + path[4]) / 2 - copy._minX) / (copy._maxX - copy._minX); // eslint-disable-line no-underscore-dangle
                 this.middleY = ((path[2] + path[7]) / 2 - copy._minY) / (copy._maxY - copy._minY); // eslint-disable-line no-underscore-dangle
@@ -228,10 +229,10 @@ window.loadDataForSelectedBoundaryAndYear = () => {
                     },
                 },
                 series: [{
-                    // use the Highcharts-provided US states, joining on their "postal-code" to our "abbr"
+                    // use the Highcharts-provided US states, joining on their "postal" to our "abbr"
                     data: data,
                     mapData: polygons,
-                    joinBy: ['postal-code', 'abbr'],
+                    joinBy: ['postal', 'abbr'],
                     // labels make small states easier to see, cursor makes it obvious to click
                     cursor: 'pointer',
                     dataLabels: {
