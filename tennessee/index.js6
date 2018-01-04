@@ -93,7 +93,7 @@ const STATE_BBOX = STATE_BOUNDING_BOXES[STATE_NAME_TO_CODE[SELECTED_STATE]];
 // for the map of election winnders & plan winners, the styles
 const MAP_DISTRICT_STYLE_DEFAULT = {
     stroke: true, color: 'black', weight: 1,
-    fill: "url(/images/mapfill_nodata.png)",  // thank you, leaflet-polygon.fillPattern.js
+    fill: "url(/images/mapfill_nodata.png)", // crosshatch image fill, thanks to leaflet-polygon.fillPattern.js
     bubblingMouseEvents: false,
     clickable: false,
 };
@@ -767,13 +767,7 @@ window.updateMapForCurrentSelection = (yeardata) => {
                 // then style them according to winner of that election or plan
                 MAP.polygondistrictsoverlay.eachLayer(function (layer) {
                     const district_id = layer.feature.properties.DISTRICT;
-                    let csvinfo = results.filter((row) => { return row.district == district_id; })[0];
-//gda that let should be a const
-
-//gda force a lack of data for one oddball district out of this year/plan
-//gda so as to test the handling of that condition
-if (district_id == "3" || district_id == "7" || district_id == "11") csvinfo = null;
-
+                    const csvinfo = results.filter((row) => { return row.district == district_id; })[0];
 
                     if (! csvinfo) {
                         // this district on the map, has no corresponding entry in the election/plan data
@@ -781,13 +775,31 @@ if (district_id == "3" || district_id == "7" || district_id == "11") csvinfo = n
                     }
                     else if (planorelection == 'election') {
                         // color by election winner
-//GDA actual plan logic here
-layer.setStyle(MAP_DISTRICT_STYLE_DEMOCRAT);
+                        switch (csvinfo.winner) {
+                            case 'D':
+                                layer.setStyle(MAP_DISTRICT_STYLE_DEMOCRAT);
+                                break;
+                            case 'R':
+                                layer.setStyle(MAP_DISTRICT_STYLE_REPUBLICAN);
+                                break;
+                            default:
+                                layer.setStyle(MAP_DISTRICT_STYLE_DEFAULT);
+                                break;
+                        }
                     }
                     else {
                         // color by plan winner
-//GDA actual plan logic here
-layer.setStyle(MAP_DISTRICT_STYLE_REPUBLICAN);
+                        switch (csvinfo.winner_plan) {
+                            case 'D':
+                                layer.setStyle(MAP_DISTRICT_STYLE_DEMOCRAT);
+                                break;
+                            case 'R':
+                                layer.setStyle(MAP_DISTRICT_STYLE_REPUBLICAN);
+                                break;
+                            default:
+                                layer.setStyle(MAP_DISTRICT_STYLE_DEFAULT);
+                                break;
+                        }
                     }
                 });
             }, // end of CSV download
