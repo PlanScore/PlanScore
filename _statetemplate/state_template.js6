@@ -91,6 +91,23 @@ const ELECTION_PLAN_RECORD_FIELDS = {
 // the bounding box of this state
 const STATE_BBOX = STATE_BOUNDING_BOXES[STATE_NAME_TO_CODE[SELECTED_STATE]];
 
+// for the map of election winnders & plan winners, the styles
+const MAP_POLYGON_STYLE_DEFAULT = {
+    stroke: true, color: 'black', weight: 1,
+    fill: false, // tip: transparent fill can be clicked; no fill cannot be clicked
+    bubblingMouseEvents: false,
+};
+const MAP_POLYGON_STYLE_DEMOCRAT = {
+    stroke: true, color: 'black', weight: 1,
+    fill: true, fillColor: '#0049A8',
+    bubblingMouseEvents: false,
+};
+const MAP_POLYGON_STYLE_REPUBLICAN = {
+    stroke: true, color: 'black', weight: 1,
+    fill: true, fillColor: '#C71C36',
+    bubblingMouseEvents: false,
+};
+
 
 //
 // PAGE STARTUP / INIT FUNCTIONS
@@ -139,6 +156,22 @@ window.initMap = () => {
         position: 'topright',
         homeBounds: STATE_BBOX,
     }).addTo(MAP);
+
+
+    // more prep work: create L.TopoJSON which parses both GeoJSON and TopoJSON
+    L.TopoJSON = L.GeoJSON.extend({
+        addData: function(jsonData) {
+            if (jsonData.type === "Topology") {
+                for (var key in jsonData.objects) {
+                    const geojson = topojson.feature(jsonData, jsonData.objects[key]);
+                    L.GeoJSON.prototype.addData.call(this, geojson);
+                }
+            }    
+            else {
+                L.GeoJSON.prototype.addData.call(this, jsonData);
+            }
+        }
+    });
 };
 
 window.initYearPickers = () => {
@@ -385,7 +418,7 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     drawBiasBellCharts(thisyeardata);
 
     // update the map, showing the election outcomes / plan winners
-    updateMapForCurrentSelection();
+    updateMapForCurrentSelection(thisyeardata);
 };
 
 window.updateMetricsTitle = (yeardata) => {
@@ -668,6 +701,71 @@ window.drawBiasBellChart = (whichone, datavalue) => {
     $('<div class="markline"></div>').css({ 'left':`${100 * percentile}%` }).appendTo($div);
 };
 
-window.updateMapForCurrentSelection = () => {
-    console.log([ 'updateMapForCurrentSelection', CURRENT_VIEW ]);
+window.updateMapForCurrentSelection = (yeardata) => {
+    const whichplan  = yeardata.plan;
+    const whichlevel = CURRENT_VIEW.boundtype;
+    const geojsonurl = `/data/districtpolygons/${whichlevel}-${whichplan}.json`;
+    const csvurl     = '/data/elections_plans.csv';
+    const statecode  = yeardata.state;
+    const whichyear  = CURRENT_VIEW.year;
+    const boundtype  = CURRENT_VIEW.boundtype;
+    // console.log([ 'updateMapForCurrentSelection', yeardata, CURRENT_VIEW.year, CURRENT_VIEW.boundtype, whichplan ]);
+
+    // load the TopoJSON and set it up as the MAP's poylgons layer, but only if we have in fact selected a different one
+    // keep a reference to the layer so we can add/remove it
+    // and also a "geojsonurl" attribute on it so we can check that we're just continuing to use the same polygons
+    if (! MAP.polygondistrictsoverlay || MAP.polygondistrictsoverlay.geojsonurl != geojsonurl) {
+        if (MAP.polygondistrictsoverlay) {
+            MAP.removeLayer(MAP.polygondistrictsoverlay);
+            MAP.polygondistrictsoverlay = undefined;
+        }
+
+        $.get(geojsonurl, function (jsondata) {
+            MAP.polygondistrictsoverlay = new L.TopoJSON(jsondata, {
+                style: MAP_POLYGON_STYLE_DEFAULT,
+            });
+            MAP.polygondistrictsoverlay.geojsonurl = geojsonurl;
+            MAP.polygondistrictsoverlay.addTo(MAP);
+
+            applyStylesToMapPolygons();
+        }, 'json');
+        MAP.geojsonurl = geojsonurl;
+    }
+    else {
+        // we have an overlay and it's the same boundaries we're already showing
+        // just apply styling base don new data
+        applyStylesToMapPolygons();
+    }
+
+    // after loading the polygons, style them by election winner or plan winner
+    // that data is in a CSV of all election+plan outcomes, we will filter to state
+    // then style polygons by the relevant field
+    function applyStylesToMapPolygons() {
+        Papa.parse(csvurl, {
+            download: true,
+            header: true,
+            complete: function (results) {
+                // filter to year + state, or year + plan
+                // filtering down the data in a separate step, makes it a lot easier to isolate the relevant results, separately from the polygon-style code later
+                if (boundtype == 'election') {
+                    // election year; filter by "year" and the "plan" field starting with this state code
+                    results.data = results.data.filter((row) => {
+                        return row.year == whichyear && row.plan.substr(0, 2) == statecode;
+                    });
+                }
+                else {
+                    // must be a plan; filter by the "plan" field
+                    results.data = results.data.filter((row) => {
+                        return row.plan == whichplan;
+                    });
+                }
+                console.log([ 'applyStylesToMapPolygons() results are:', results ]);
+
+                // go through the polygons and match their "DISTRICT" property to CSV's "district" field
+                // to color them according to winner
+                // again, winner depends on election or plan
+//GDA
+            },
+        });
+    }
 };
