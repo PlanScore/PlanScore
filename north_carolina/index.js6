@@ -127,8 +127,10 @@ window.initYearPickers = () => {
     // we can only do half of it here: the list of all election years (right-hand side)
     // since the plan timeline (left-hand side) depends on what dataset is selected; thus see also redrawYearPicker()
     const $picker_big   = $('#yearpicker-big');
-    const $plansdiv     = $('<div class="plans col-xs-4"></div>').appendTo($picker_big);
-    const $electionsdiv = $('<div class="elections col-xs-8"></div>').appendTo($picker_big);
+    const $plansdiv     = $('<div class="plans col-xs-5"></div>').appendTo($picker_big);
+    const $electionsdiv = $('<div class="elections col-xs-7"></div>').appendTo($picker_big);
+    
+    $('<span>Election<br>Years</span>').appendTo($electionsdiv);
 
     PLAN_YEARS.slice().reverse().forEach((year) => {
         $(`<a title="Show details for the ${year} election year"><span></span> ${year}</a>`).attr('data-year', year).appendTo($electionsdiv);
@@ -566,6 +568,8 @@ window.redrawYearPicker = (csvdata) => {
 
     // the set of year-rows in the picker// the column containing the plans
     const $plansdiv = $('#yearpicker-big div.plans').empty();
+    
+    $('<span>Enacted<br>Plans</span>').appendTo($plansdiv);
 
     // go over each year in the universe (which was used to construct the $yearpicker_buttons) and find its row
     // tag the row as being plan-start or plan-continue, for CSS purposes
