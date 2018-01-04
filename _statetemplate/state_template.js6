@@ -245,6 +245,11 @@ window.loadDataForSelectedBoundaryAndYear = () => {
             // ready, set, go!
             updateStatsFromCsvContent(alldataforthisstate);
         },
+        error: function () {
+            // an error, meaning bad network or missing CSV
+            // treat this the same as receiving 0 rows, so the UI states that it has no data
+            updateStatsFromCsvContent([]);
+        },
     });
 
     // update URL params to show the current search
@@ -280,9 +285,6 @@ window.selectElectionOrPlan = (year, planorelection) => {
 };
 
 window.selectBoundaryType = (boundtype) => {
-    // issue 112 temporary workaround Jan 2017: we won't have State Senate data for some time, so disable this
-    if (boundtype == 'statesenate') return alert("We're working on getting State Senate data. Stay tuned!");
-
     // UI update: highlight this button
     $('#boundarypicker div').removeClass('active').filter(`[data-boundary="${boundtype}"]`).addClass('active');
 
