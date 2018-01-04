@@ -380,10 +380,10 @@ window.selectState = (stateabbr) => {
         const bias_centile = lookupBiasPercentile(biasinfo.value);
 
         if (favor_party) {
-            biasinfo.analysis = `This plan shows bias in favor of <b>${favor_party}</b> voters.<br/>This plan is more biased than <b>${bias_centile}%</b> of plans analyzed.`;
+            biasinfo.analysis = `This plan is more biased than <b>${bias_centile}%</b> of the enacted plans we have analyzed nationwide.`;
         }
         else {
-            biasinfo.analysis = "No statistically significant bias was detected in this plan.";
+            biasinfo.analysis = "No consistent bias was found in favor of either party.";
         }
     }
 
