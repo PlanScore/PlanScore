@@ -70,6 +70,18 @@ html {
     background-color: $behind-background-color;
 }
 
+td {
+    color: #95989A;
+}
+
+th {
+    color: #666;
+}
+
+td:nth-child(1){
+    font-weight: 700;
+}
+
 .navbar-default {
     background-image: none;
     background-color: $navbar-background-color;
