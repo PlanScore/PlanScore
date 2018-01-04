@@ -59,17 +59,6 @@ h1.state_name {
     }
 }
 
-
-#yearpicker-small {
-    padding: 5px;
-    border-radius: 5px;
-}
-
-#yearpicker-small-wrapper {
-    display: block;
-    margin-bottom: 15px;
-}
-
 #yearpicker-big {
     /* two halves: the elections side and the plans timeline; both are a series of A elements, these being links to the electionyear/plan
        designer should contrive the height of these items so the two columns align into what look like side-by-side years */
@@ -171,30 +160,6 @@ ul.nav-tabs a span.biasicon {
     ul.nav-tabs a span.biasicon {
         display: block;
         margin: 0 auto;
-    }
-}
-
-div.tab-content {
-    div.metricdrsum {
-        float: left;
-        font-size: 18px;
-        padding: 5px 5px 5px 5px;
-        color: white;
-
-        margin-right: 1em;
-    }
-    div.metricdrblurb {
-        float: left;
-        padding-top: 0.5em;
-    }
-
-    h2 {
-        font-size: 18px;
-        margin-top: 0;
-    }
-
-    .tab-pane p {
-        font-size: 13px;
     }
 }
 
