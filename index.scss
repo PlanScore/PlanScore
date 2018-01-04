@@ -6,6 +6,12 @@
 
 #map g.highcharts-tooltip {
     z-index: 100;
+
+    /* though tooltips are usually not an issue on mobile, these do appear when a state is selected and collide with legend below 500px wide */
+    @media (max-width: 500px) {
+        display:none;
+    }
+    
 }
 
 #map {
