@@ -285,7 +285,12 @@ ul.nav.nav-tabs {
     }
 }
 
-div.tab-content {
+div.metric-block p {
+        font-size: 16px;
+        color: #121212;
+    }   
+
+div.tab-content, div.metric-block {
     div.metricdrsum {
         float: left;
         font-size: 18px;
@@ -319,4 +324,15 @@ div.tab-content {
     color: $gray-med;
     border-color: $gray-med;
     border-radius: 2px;
+}
+
+
+div.left-photo img {
+    width: 100%;
+    margin-top: 25px;
+}
+
+div.right-text {
+    margin: 25px 0px;
+    clear: both;
 }
