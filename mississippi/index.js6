@@ -127,8 +127,8 @@ window.initYearPickers = () => {
     // we can only do half of it here: the list of all election years (right-hand side)
     // since the plan timeline (left-hand side) depends on what dataset is selected; thus see also redrawYearPicker()
     const $picker_big   = $('#yearpicker-big');
-    const $plansdiv     = $('<div class="plans col-xs-2"></div>').appendTo($picker_big);
-    const $electionsdiv = $('<div class="elections col-xs-10"></div>').appendTo($picker_big);
+    const $plansdiv     = $('<div class="plans col-xs-4"></div>').appendTo($picker_big);
+    const $electionsdiv = $('<div class="elections col-xs-8"></div>').appendTo($picker_big);
 
     PLAN_YEARS.slice().reverse().forEach((year) => {
         $(`<a title="Show details for the ${year} election year"><span></span> ${year}</a>`).attr('data-year', year).appendTo($electionsdiv);

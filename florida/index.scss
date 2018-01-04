@@ -78,8 +78,8 @@ h1.state_name {
 
         a {  /* a year link */
             display: block;
-            height: 26px;
-            line-height: 26px;
+            height: 24px;
+            line-height: 24px;
 
             cursor: pointer;
 
@@ -95,7 +95,7 @@ h1.state_name {
 
                 margin-right: 5px;
 
-                background-color: silver;
+                background-color: white;
                 color: $dark-purple-color;
             }
         }
@@ -116,8 +116,8 @@ h1.state_name {
 
             span {
                 display: inline-block;
-                height: 26px;
-                width: 26px;
+                height: 24px;
+                width: 24px;
                 vertical-align: middle;
                 margin-right: 11px;
             }
@@ -130,8 +130,8 @@ h1.state_name {
         a.plan-continue span {
             width: 1px;
             margin-right: 22px;
-            border: 1px solid $dark-purple-color;
-            background-color: white;
+            border: 0.05em solid #4d599e;
+            background-color: #fff;
         }
 
         a.plan-begin.active span {
@@ -140,21 +140,10 @@ h1.state_name {
         }
         a.plan-continue.active span {
             background-color: $dark-purple-color;
-            width: 5px;
-            margin-right: 21px;
+            width: 4px;
+            margin-right: 21.5px;
         }
     }
-}
-
-#yearpicker-big:after {
-    content: "";
-    width: 0;
-    height: 100%;
-    position: absolute;
-    border: 1px solid $dark-purple-color;
-    top: 0;
-    left: 37px;
-    z-index: -1;
 }
 
 ul.nav-tabs a span.biasicon {
