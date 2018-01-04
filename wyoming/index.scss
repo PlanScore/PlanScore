@@ -200,12 +200,13 @@ div.tab-content {
 
 #chart-egvoteswasted {
     height: 150px;
-    width: 100%;
+    width: 300px;
 }
 
 div.metric-bellchart {
     /* the bellcharts indicating the plan's percentile rating, are a bit of a trick: a single-bar column chart, and a stretching background of a bell curve for visual reference */
-    width: 250px;
+
+    width: 300px;
     height: 150px;
     background-image: none;  /* overridden in subclasses */
     background-repeat: no-repeat;
@@ -216,7 +217,7 @@ div.metric-bellchart {
     div.markline {
         position: absolute;
         left: 50%; /* overridden to position it */
-        top: 30px;
+        top: 40px;
         height: 100px;
 
         width: 2px;
