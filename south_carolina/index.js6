@@ -529,7 +529,9 @@ window.updateWastedVotesChart = (yeardata) => {
             min: 0,
             title: {
                 enabled: false,
-            }
+            },
+            tickAmount: 4,
+            showFirstLabel: false,
         },
         legend: {
             enabled: false,
