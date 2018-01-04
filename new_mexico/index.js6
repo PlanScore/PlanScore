@@ -410,19 +410,19 @@ window.updateMetricsTabs = (yeardata) => {
     const percent_eg     = favor_party_eg ? `+${Math.round(100 * Math.abs(eg_score))}%` : '';
     const hadseats       = favor_party_eg == 'Republican' ? seats_rep : seats_dem;
     const statement_eg   = favor_party_eg ? `${favor_party_eg}s needed ${(100 * Math.abs(eg_score)).toFixed(1)}% fewer votes to win their ${hadseats} of ${totalseats} seats.` : 'This metric indicates a balanced plan.';
-    const biastext_eg    = favor_party_eg ? `This plan is more biased toward ${favor_party_eg} than ${Math.round(100 * eg_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
+    const biastext_eg    = favor_party_eg ? `This plan is more biased than ${Math.round(100 * eg_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
 
     const favor_party_pb = lookupBiasFavorParty(pb_score);
     const favor_color_pb = lookupBiasColor(pb_score);
     const percent_pb     = favor_party_pb ? `+${Math.round(100 * Math.abs(pb_score))}%` : '';
     const statement_pb   = favor_party_pb ? '' : 'This metric indicates a balanced plan.';
-    const biastext_pb    = favor_party_pb ? `This plan is more biased toward ${favor_party_pb} than ${Math.round(100 * bias_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
+    const biastext_pb    = favor_party_pb ? `This plan is more biased than ${Math.round(100 * bias_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
 
     const favor_party_mm = lookupBiasFavorParty(mm_score);
     const favor_color_mm = lookupBiasColor(mm_score);
     const percent_mm     = favor_party_mm ? `+${Math.round(100 * Math.abs(mm_score))}%` : '';
     const statement_mm   = favor_party_mm ? '' : 'This metric indicates a balanced plan.';
-    const biastext_mm    = favor_party_mm ? `This plan is more biased toward ${favor_party_mm} than ${Math.round(100 * mmd_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
+    const biastext_mm    = favor_party_mm ? `This plan is more biased than ${Math.round(100 * mmd_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
 
     // color the tab-swatches for the three metrics
     {
