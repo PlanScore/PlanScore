@@ -409,20 +409,20 @@ window.updateMetricsTabs = (yeardata) => {
     // tag the biasicon icons in the metrics' tabs
     const favor_party_eg = lookupBiasFavorParty(eg_score);
     const favor_color_eg = lookupBiasColor(eg_score);
-    const percent_eg     = favor_party_eg ? `+${Math.round(100 * Math.abs(eg_score))}%` : '';
+    const percent_eg     = `+${Math.round(100 * Math.abs(eg_score))}%`;
     const hadseats       = favor_party_eg == 'Republican' ? seats_rep : seats_dem;
     const statement_eg   = favor_party_eg ? `${favor_party_eg}s needed ${(100 * Math.abs(eg_score)).toFixed(1)}% fewer votes to win their ${hadseats} of ${totalseats} seats.` : 'This metric indicates a balanced plan.';
     const biastext_eg    = favor_party_eg ? `This plan is more biased than ${Math.round(100 * eg_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
 
     const favor_party_pb = lookupBiasFavorParty(pb_score);
     const favor_color_pb = lookupBiasColor(pb_score);
-    const percent_pb     = favor_party_pb ? `+${Math.round(100 * Math.abs(pb_score))}%` : '';
+    const percent_pb     = `+${Math.round(100 * Math.abs(pb_score))}%`;
     const statement_pb   = favor_party_pb ? '' : 'This metric indicates a balanced plan.';
     const biastext_pb    = favor_party_pb ? `This plan is more biased than ${Math.round(100 * bias_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
 
     const favor_party_mm = lookupBiasFavorParty(mm_score);
     const favor_color_mm = lookupBiasColor(mm_score);
-    const percent_mm     = favor_party_mm ? `+${Math.round(100 * Math.abs(mm_score))}%` : '';
+    const percent_mm     = `+${Math.round(100 * Math.abs(mm_score))}%`;
     const statement_mm   = favor_party_mm ? '' : 'This metric indicates a balanced plan.';
     const biastext_mm    = favor_party_mm ? `This plan is more biased than ${Math.round(100 * mmd_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
 
@@ -444,39 +444,42 @@ window.updateMetricsTabs = (yeardata) => {
     }
 
     // fill in those +DR% numbers and the summary texts, at the top of the metric tabs
-    $('#tab-efficiencygap span[data-field="egpercent"]').text(percent_eg);
-    $('#tab-efficiencygap span[data-field="egparty"]').text(favor_party_eg);
+    $('#tab-efficiencygap span[data-field="metricpercent"]').text(percent_eg);
+    $('#tab-efficiencygap span[data-field="metricparty"]').text(favor_party_eg ? favor_party_eg : 'Balanced');
     $('#tab-efficiencygap span[data-field="metricstatement"]').text(statement_eg);
     $('#tab-efficiencygap span[data-field="plancompare"]').text('This plan is more biased toward X than 100% all of the enacted plans we have analyzed nationwide.');
     $('#tab-efficiencygap span[data-field="biasstatement"]').text(biastext_eg);
 
-    $('#tab-partisanbias span[data-field="pbpercent"]').text(percent_pb);
-    $('#tab-partisanbias span[data-field="pbparty"]').text(favor_party_pb);
+    $('#tab-partisanbias span[data-field="metricpercent"]').text(percent_pb);
+    $('#tab-partisanbias span[data-field="metricparty"]').text(favor_party_pb ? favor_party_pb : 'Balanced');
     $('#tab-partisanbias span[data-field="metricstatement"]').text(statement_pb);
     $('#tab-partisanbias span[data-field="plancompare"]').text('This plan is more biased toward X than 100% all of the enacted plans we have analyzed nationwide.');
     $('#tab-partisanbias span[data-field="biasstatement"]').text(biastext_pb);
 
-    $('#tab-meanmedian span[data-field="mmpercent"]').text(percent_mm);
-    $('#tab-meanmedian span[data-field="mmparty"]').text(favor_party_mm);
+    $('#tab-meanmedian span[data-field="metricpercent"]').text(percent_mm);
+    $('#tab-meanmedian span[data-field="metricparty"]').text(favor_party_mm ? favor_party_mm : 'Balanced');
     $('#tab-meanmedian span[data-field="metricstatement"]').text(statement_mm);
     $('#tab-meanmedian span[data-field="plancompare"]').text('This plan is more biased toward X than 100% all of the enacted plans we have analyzed nationwide.');
     $('#tab-meanmedian span[data-field="biasstatement"]').text(biastext_mm);
 
     // color those +DR% boxes
     {
-        const $sumbox = $('#tab-efficiencygap div.metricdrsum').removeClass('republican').removeClass('democrat').hide();
-        if      (favor_party_eg == 'Republican') $sumbox.addClass('republican').show();
-        else if (favor_party_eg == 'Democrat')   $sumbox.addClass('democrat').show();
+        const $sumbox = $('#tab-efficiencygap div.metricdrsum').removeClass('republican').removeClass('democrat').removeClass('balanced');
+        if      (favor_party_eg == 'Republican') $sumbox.addClass('republican');
+        else if (favor_party_eg == 'Democrat')   $sumbox.addClass('democrat');
+        else                                     $sumbox.addClass('balanced');
     }
     {
-        const $sumbox = $('#tab-partisanbias div.metricdrsum').removeClass('republican').removeClass('democrat').hide();
-        if      (favor_party_pb == 'Republican') $sumbox.addClass('republican').show();
-        else if (favor_party_pb == 'Democrat')   $sumbox.addClass('democrat').show();
+        const $sumbox = $('#tab-partisanbias div.metricdrsum').removeClass('republican').removeClass('democrat').removeClass('balanced');
+        if      (favor_party_pb == 'Republican') $sumbox.addClass('republican');
+        else if (favor_party_pb == 'Democrat')   $sumbox.addClass('democrat');
+        else                                     $sumbox.addClass('balanced');
     }
     {
-        const $sumbox = $('#tab-meanmedian div.metricdrsum').removeClass('republican').removeClass('democrat').hide();
-        if      (favor_party_mm == 'Republican') $sumbox.addClass('republican').show();
-        else if (favor_party_mm == 'Democrat')   $sumbox.addClass('democrat').show();
+        const $sumbox = $('#tab-meanmedian div.metricdrsum').removeClass('republican').removeClass('democrat').removeClass('balanced');
+        if      (favor_party_mm == 'Republican') $sumbox.addClass('republican');
+        else if (favor_party_mm == 'Democrat')   $sumbox.addClass('democrat');
+        else                                     $sumbox.addClass('balanced');
     }
 };
 

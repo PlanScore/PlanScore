@@ -9,6 +9,7 @@ $navbar-text-color: #333;
 
 $republican-color: #C71C36;
 $democrat-color: #0049A8;
+$balanced-color: #CCCCCC;
 $dark-purple-color: #4D599E;
 
 $screen-xxs: 365px;
@@ -37,6 +38,9 @@ $screen-lg: 1200px;
 
 .pointer { cursor: pointer; }
 
+.balanced {
+    background-color: $balanced-color !important;
+}
 .democrat {
     background-color: $democrat-color !important;
 }
