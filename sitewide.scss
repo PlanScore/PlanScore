@@ -6,6 +6,8 @@ $behind-background-color: #CCCCCC;
 
 $navbar-background-color: white;
 $navbar-text-color: #333;
+$gray-bg: #ccc;
+$gray-med: #95989A;
 
 $republican-color: #C71C36;
 $democrat-color: #0049A8;
@@ -162,13 +164,64 @@ p {
     color: #666666;
 }
 
+.btn-default {
+    text-shadow: none;
+    color: $gray-med;
+    background-color: #F2F2F2;
+    background-image: none  !important;
+    border: none;
+    border-radius: 2px;
+    box-shadow: 2px 2px 2px 1px rgba(0,0,0,.16);
+    margin-right: 4px;
+    outline:0;
+}
+
+.btn-default:hover {
+    color: $gray-med;
+    background-color: #F2F2F2;
+    border-color: none;
+    outline:0;
+}
+
+.btn-default:focus {
+    color: #333;
+    background-color: #e6e6e6;
+    background-image: 2px 2px 2px 1px rgba(0,0,0,.16);
+    -webkit-box-shadow: 2px 2px 2px 1px rgba(0,0,0,.16);
+    outline:0;
+}
+
+.btn-default:active {
+    background-image: none  !important;
+    -webkit-box-shadow: none 2px 2px 2px 1px rgba(0,0,0,.16);
+    box-shadow: none  2px 2px 2px 1px rgba(0,0,0,.16);
+    outline:0;
+}
+
+.gray {
+    background-color: $gray-bg;
+    color: white !important;
+    padding: 10px;
+}
+
+.gray p {
+    color: white !important;
+    margin-bottom: 2px;
+}
+
+.gray .btn {
+    display: block;
+    margin: 14px auto 5px;
+    width: 100%;
+}
+
 ul.nav.nav-tabs {
     border-bottom: 1px solid #B3B3B3;
 
     a {
         font-size: 18px;
         border-radius: 0;
-        color: #95989A;
+        color: $gray-med;
         text-align: center;
     }
 
@@ -185,7 +238,7 @@ ul.nav.nav-tabs {
     li a:hover {
         border: 1px solid #B3B3B3;
         background-color: #F2F2F2;
-        color: #95989a;
+        color: $gray-med;
     }
     
     li.active a {
@@ -194,7 +247,7 @@ ul.nav.nav-tabs {
         border-bottom-color: transparent;
         margin-top: -1.5px;
         background-color:white;
-        color: #95989a;
+        color: $gray-med;
     }
     
     @media screen and (max-width: $screen-xs) {
@@ -218,4 +271,40 @@ ul.nav.nav-tabs {
             color: #121212;
         }
     }
+}
+
+div.tab-content {
+    div.metricdrsum {
+        float: left;
+        font-size: 18px;
+        padding: 5px 5px 5px 5px;
+        color: white;
+
+        margin-right: 1em;
+    }
+    div.metricdrblurb {
+        float: left;
+        padding-top: 0.5em;
+    }
+
+    h2 {
+        font-size: 18px;
+        margin-top: 0;
+    }
+
+    .tab-pane p {
+        font-size: 13px;
+    }
+}
+
+#yearpicker-small-wrapper {
+    display: block;
+    margin-bottom: 15px;
+}
+
+#statepicker, #yearpicker-small {
+    padding: 5px;
+    color: $gray-med;
+    border-color: $gray-med;
+    border-radius: 2px;
 }
