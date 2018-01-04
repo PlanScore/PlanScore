@@ -127,7 +127,7 @@
 
 #boundarypicker {
     /* small-enough screens, force these to 100% as they will linewrap before Bootstrap will "xs" them to stack */
-    @media screen and (max-width: 550px) {
+    @media screen and (max-width: $screen-xs) {
         > div {
           width: 100%;
         }

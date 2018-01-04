@@ -13,7 +13,7 @@ h1.state_name {
 
 #boundarypicker {
     /* small-enough screens, force these to 100% as they will linewrap before Bootstrap will "xs" them to stack */
-    @media screen and (max-width: 550px) {
+    @media screen and (max-width: $screen-xs) {
         > div {
           width: 100%;
         }
@@ -158,7 +158,7 @@ ul.nav-tabs a span.biasicon {
     color: white;
 }
 
-@media screen and (max-width: 550px) {
+@media screen and (max-width: $screen-xs) {
     ul.nav-tabs a span.biasicon {
         display: block;
         margin: 0 auto;

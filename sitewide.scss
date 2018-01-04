@@ -11,6 +11,12 @@ $republican-color: #C71C36;
 $democrat-color: #0049A8;
 $dark-purple-color: #4D599E;
 
+$screen-xxs: 365px;
+$screen-xs: 550px;
+$screen-sm: 768px;
+$screen-md: 992px;
+$screen-lg: 1200px;
+
 
 
 /*
@@ -41,7 +47,7 @@ $dark-purple-color: #4D599E;
 
 span.mobilespace {  /* a utlity class used to enclose a single space character, so it's only visible (and causes libne-wrap) on very small screens; see issue 99 */
     display: none;
-    @media screen and (max-width: 365px) {
+    @media screen and (max-width: $screen-xxs) {
         display: inline;
     }
 }
@@ -97,14 +103,14 @@ html {
         transform: scaleX(1);
     }
     
-    @media (min-width: 768px) {
+    @media (min-width: $screen-sm) {
         #brand-logo {
             height: 40px;
             width: auto;
         }
     }
     
-    @media (max-width: 768px) {
+    @media (max-width: $screen-sm) {
         #brand-logo {
             height: 30px;
             width: auto;
@@ -187,7 +193,7 @@ ul.nav.nav-tabs {
         color: #95989a;
     }
     
-    @media screen and (max-width: 550px) {
+    @media screen and (max-width: $screen-xs) {
         a {
             font-size: 16px;
         }
