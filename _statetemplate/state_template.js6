@@ -6,12 +6,14 @@ require('./index.src.html');
 // shared constants between pages: the list of years, the red-blue color gradient, ...
 import { PLAN_YEARS } from "./../planscore_common";
 import { STATE_NAME_TO_CODE } from "./../planscore_common";
+import { CONUS_BOUNDS } from "./../planscore_common";
+import { STATE_BOUNDING_BOXES } from "./../planscore_common";
 import { lookupBiasColor, lookupBiasFavorParty } from "./../planscore_common";
 
 // bundle polyfills and local/vendor libraries specific to this page
 //require('core-js/fn/array/includes');
-//require('./js/leaflet-control-basemapbar.js');
-//require('./js/leaflet-control-basemapbar.css');
+require('./../jslibs/leaflet-control-zoombar.js');
+require('./../jslibs/leaflet-control-zoombar.css');
 
 
 //
@@ -86,6 +88,9 @@ const ELECTION_PLAN_RECORD_FIELDS = {
     },
 };
 
+// the bounding box of this state
+const STATE_BBOX = STATE_BOUNDING_BOXES[STATE_NAME_TO_CODE[SELECTED_STATE]];
+
 
 //
 // PAGE STARTUP / INIT FUNCTIONS
@@ -96,6 +101,7 @@ $(document).ready(function () {
 
     initYearPickers();
     initBoundaryPicker();
+    initMap();
     initLoadStartingConditions();  // this will implicitly call loadDataForSelectedBoundaryAndYear() after setup, loading the map
 
     $(window).on('resize', handleResize);
@@ -104,6 +110,35 @@ $(document).ready(function () {
 
 window.handleResize = () => {
     // various things that don't gracefully handle being resized, so we need to help them out
+};
+
+window.initMap = () => {
+    // the map of the state, in its initial state with no data
+    // basemap + labels at fixed zIndexes within the tilePane
+    // simple zoom+home control
+    // see also updateMapForCurrentSelection() which updates the map to the given election/plan/year
+
+    window.MAP = L.map('map', {
+        minZoom: 6,
+        maxZoom: 11,
+        zoomControl: false,
+    }).fitBounds(STATE_BBOX);
+
+    L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+        subdomains: 'abcd',
+        zIndex: 0,
+    }).addTo(MAP);
+    L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+        subdomains: 'abcd',
+        zIndex: 99,
+    }).addTo(MAP);
+
+    new L.Control.ZoomBar({
+        position: 'topright',
+        homeBounds: STATE_BBOX,
+    }).addTo(MAP);
 };
 
 window.initYearPickers = () => {
@@ -348,6 +383,9 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
 
     // the bell charts indicating this plan's relative bias rating for each metric
     drawBiasBellCharts(thisyeardata);
+
+    // update the map, showing the election outcomes / plan winners
+    updateMapForCurrentSelection();
 };
 
 window.updateMetricsTitle = (yeardata) => {
@@ -628,4 +666,8 @@ window.drawBiasBellChart = (whichone, datavalue) => {
     const percentile = 0.5 - (0.5 * datavalue / spread);
     // console.log([ `drawBiasBellChart() ${whichone}`, spread, datavalue, percentile ]);
     $('<div class="markline"></div>').css({ 'left':`${100 * percentile}%` }).appendTo($div);
+};
+
+window.updateMapForCurrentSelection = () => {
+    console.log([ 'updateMapForCurrentSelection', CURRENT_VIEW ]);
 };

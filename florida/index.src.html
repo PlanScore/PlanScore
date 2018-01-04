@@ -11,6 +11,10 @@
     <!-- PapaParse CSV reader -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.3.6/papaparse.min.js"></script>
 
+    <!-- Leaflet for the map -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.2.0/leaflet.css">
+
     <!-- local config -->
     <script>
     var SELECTED_STATE = 'Florida';
@@ -151,6 +155,13 @@
                     </div>
                 </span>
 
+                <!-- the map of election outcomes / plan winners -->
+                <span data-hasdata-atall="true" data-hasdata-thisyear="true">
+                    <div id="map"></div>
+                </span>
+
+
+                <!-- the NO DATA messages -->
                 <span data-hasdata-atall="false">
                     <p>No plan data are available for the selected district type.</p>
                     <p>Try a different district type.</p>

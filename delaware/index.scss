@@ -252,3 +252,11 @@ div.metric-bellchart.statesenate.mm {
 div.metric-bellchart.statesenate.pb {
     background-image: url(../images/statesenate_bias_plan_curve.svg);
 }
+
+#map {
+    width: 100%;
+    height: 50vh;
+    min-height: 400px;
+
+    margin-top: 0.25in;
+}
