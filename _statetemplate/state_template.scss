@@ -71,60 +71,77 @@ h1.state_name {
 }
 
 #yearpicker-big {
-    position: relative;
-    z-index: 0;
-    
-    div.year {
-        cursor: pointer;
-        padding-left: 25px;
-        color: $dark-purple-color;
+    /* two halves: the elections side and the plans timeline; both are a series of A elements, these being links to the electionyear/plan
+       designer should contrive the height of these items so the two columns align into what look like side-by-side years */
+    div.elections {
+        padding-left: 5px;
 
-        a.yeardot { /* the little circle indicating the election year */
-            display: inline-block;
-            height: 10px;
-            width: 10px;
+        a {  /* a year link */
+            display: block;
+            height: 26px;
+            line-height: 26px;
+
+            cursor: pointer;
+
+            color: $dark-purple-color;
+            text-decoration: none !important;
+
+            span {  /* a circular swatch inside that year link */
+                display: inline-block;
+                height: 10px;
+                width: 10px;
+                border: 2px solid $dark-purple-color;
+                border-radius: 50%;
+
+                margin-right: 5px;
+
+                background-color: silver;
+                color: $dark-purple-color;
+            }
+        }
+        a.active {  /* a year link */
+            span {  /* a circular swatch inside that year link */
+                background-color: $dark-purple-color;
+            }
+        }
+    }
+    div.plans {
+        text-align: right;
+        padding-right: 0;
+        padding-left: 0;
+
+        a {
+            display: block;
+            cursor: pointer;
+
+            span {
+                display: inline-block;
+                height: 26px;
+                width: 26px;
+                vertical-align: middle;
+                margin-right: 11px;
+            }
+        }
+        a.plan-begin span {
             border: 2px solid $dark-purple-color;
             border-radius: 50%;
-
-            margin-right: 5px;
+            background-color: white;
+        }
+        a.plan-continue span {
+            width: 1px;
+            margin-right: 22px;
+            border: 1px solid $dark-purple-color;
+            background-color: white;
         }
 
-        a.plan {  /* the dot and dash icon indicating the start/continuation of a plan; nothing visible but see the plan-begin and plan-continue subclasses */
-            display: inline-block;
-            height: 26px;
-            width: 26px;
-            vertical-align: middle;
-            margin-right: 11px;
-        }
-    }
-    
-    div.year.plan-begin a.plan {
-        display: inline-block;
-        height: 26px;
-        width: 26px;
-        border: 2px solid #4d599e;
-        border-radius: 50%;
-        margin-right: 11px;
-        background-color: white;
-    }
-    
-    div.year.plan-continue a.plan {
-    }
-    
-    div.year:hover {
-        background-color: #f2f2f2;
-    }
-
-    div.year.active {
-        background-color: silver;
-        color: $dark-purple-color;
-
-        a.yeardot { /* the little circle indicating the election year */
+        a.plan-begin.active span {
             background-color: $dark-purple-color;
+            color: white;
         }
-        
-        a.plan { /* the little circle indicating the election year */
+        a.plan-continue.active span {
             background-color: $dark-purple-color;
+            width: 5px;
+            margin-right: 21px;
         }
     }
 }

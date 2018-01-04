@@ -41,7 +41,7 @@ h1.state_name {
         box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, .16);
     }
     div[data-boundary].active {
-        background-color: #4D599E;
+        background-color: $dark-purple-color;
         color: white;
         a {
             color: white;
@@ -71,54 +71,90 @@ h1.state_name {
 }
 
 #yearpicker-big {
-    div.year {
-        cursor: pointer;
+    /* two halves: the elections side and the plans timeline; both are a series of A elements, these being links to the electionyear/plan
+       designer should contrive the height of these items so the two columns align into what look like side-by-side years */
+    div.elections {
+        padding-left: 5px;
 
-        padding-left: 25px;
-
-        a.yeardot { /* the little circle indicating the election year */
-            display: inline-block;
-            height: 10px;
-            width: 10px;
-            border: 2px solid black;
-            border-radius: 50%;
-
-            margin-right: 5px;
-        }
-
-        a.plan {  /* the dot and dash icon indicating the start/continuation of a plan; nothing visible but see the plan-begin and plan-continue subclasses */
-            display: inline-block;
+        a {  /* a year link */
+            display: block;
             height: 26px;
-            width: 26px;
-            vertical-align: middle;
-            margin-right: 5px;
+            line-height: 26px;
+
+            cursor: pointer;
+
+            color: $dark-purple-color;
+            text-decoration: none !important;
+
+            span {  /* a circular swatch inside that year link */
+                display: inline-block;
+                height: 10px;
+                width: 10px;
+                border: 2px solid $dark-purple-color;
+                border-radius: 50%;
+
+                margin-right: 5px;
+
+                background-color: silver;
+                color: $dark-purple-color;
+            }
+        }
+        a.active {  /* a year link */
+            span {  /* a circular swatch inside that year link */
+                background-color: $dark-purple-color;
+            }
         }
     }
-    div.year:hover {
-        background-color: #f2f2f2;
-    }
+    div.plans {
+        text-align: right;
+        padding-right: 0;
+        padding-left: 0;
 
-    div.year.active {
-        background-color: silver;
-        color: black;
+        a {
+            display: block;
+            cursor: pointer;
 
-        a.yeardot { /* the little circle indicating the election year */
-            background-color: black;
+            span {
+                display: inline-block;
+                height: 26px;
+                width: 26px;
+                vertical-align: middle;
+                margin-right: 11px;
+            }
+        }
+        a.plan-begin span {
+            border: 2px solid $dark-purple-color;
+            border-radius: 50%;
+            background-color: white;
+        }
+        a.plan-continue span {
+            width: 1px;
+            margin-right: 22px;
+            border: 1px solid $dark-purple-color;
+            background-color: white;
+        }
+
+        a.plan-begin.active span {
+            background-color: $dark-purple-color;
+            color: white;
+        }
+        a.plan-continue.active span {
+            background-color: $dark-purple-color;
+            width: 5px;
+            margin-right: 21px;
         }
     }
+}
 
-    div.year.plan-begin a.plan {
-        background-image: url(../images/statsplan-timeline-begin.svg);
-        background-repeat: no-repeat;
-        background-position: 0 0;
-        background-size: 26px 26px;  /* contrived to fit font size + padding-top + padding-bottom */
-    }
-    div.year.plan-continue a.plan {
-        background-image: url(../images/statsplan-timeline-continue.svg);
-        background-repeat: no-repeat;
-        background-position: 0 0;
-        background-size: 26px 26px;  /* contrived to fit font size + padding-top + padding-bottom */
-    }
+#yearpicker-big:after {
+    content: "";
+    width: 0;
+    height: 100%;
+    position: absolute;
+    border: 1px solid $dark-purple-color;
+    top: 0;
+    left: 37px;
+    z-index: -1;
 }
 
 ul.nav-tabs a span.biasicon {
@@ -171,49 +207,37 @@ div.tab-content {
 
 div.metric-bellchart {
     /* the bellcharts indicating the plan's percentile rating, are a bit of a trick: a single-bar column chart, and a stretching background of a bell curve for visual reference */
-    width: 250px;
+    width: 100%;
     height: 150px;
     background-image: none;  /* overridden in subclasses */
     background-repeat: no-repeat;
     background-size: 100% 100%;  /* stretch the graphic to fill the area 100% */
     background-position: 0 0;
-
-    position: relative; /* for positioning the markline */
-    div.markline {
-        position: absolute;
-        left: 50%; /* overridden to position it */
-        top: 30px;
-        height: 100px;
-
-        width: 2px;
-        margin-left: -1px;  /* half of width, so it centers at the given left % */
-        background-color: black;
-    }
 }
 div.metric-bellchart.ushouse.eg {
-    background-image: url(/images/ushouse_eg_plan_curve.svg);
+    background-image: url(../images/ushouse_eg_plan_curve.svg);
 }
 div.metric-bellchart.ushouse.mm {
-    background-image: url(/images/ushouse_mmd_plan_curve.svg);
+    background-image: url(../images/ushouse_mmd_plan_curve.svg);
 }
 div.metric-bellchart.ushouse.pb {
-    background-image: url(/images/ushouse_bias_plan_curve.svg);
+    background-image: url(../images/ushouse_bias_plan_curve.svg);
 }
 div.metric-bellchart.statehouse.eg {
-    background-image: url(/images/statehouse_eg_plan_curve.svg);
+    background-image: url(../images/statehouse_eg_plan_curve.svg);
 }
 div.metric-bellchart.statehouse.mm {
-    background-image: url(/images/statehouse_mmd_plan_curve.svg);
+    background-image: url(../images/statehouse_mmd_plan_curve.svg);
 }
 div.metric-bellchart.statehouse.pb {
-    background-image: url(/images/statehouse_bias_plan_curve.svg);
+    background-image: url(../images/statehouse_bias_plan_curve.svg);
 }
 div.metric-bellchart.statesenate.eg {
-    background-image: url(/images/statesenate_eg_plan_curve.svg);
+    background-image: url(../images/statesenate_eg_plan_curve.svg);
 }
 div.metric-bellchart.statesenate.mm {
-    background-image: url(/images/statesenate_mmd_plan_curve.svg);
+    background-image: url(../images/statesenate_mmd_plan_curve.svg);
 }
 div.metric-bellchart.statesenate.pb {
-    background-image: url(/images/statesenate_bias_plan_curve.svg);
+    background-image: url(../images/statesenate_bias_plan_curve.svg);
 }
