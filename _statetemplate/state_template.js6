@@ -14,6 +14,7 @@ import { lookupBiasColor, lookupBiasFavorParty } from "./../planscore_common";
 //require('core-js/fn/array/includes');
 require('./../jslibs/leaflet-control-zoombar.js');
 require('./../jslibs/leaflet-control-zoombar.css');
+require('./../jslibs/leaflet-polygon.fillPattern.js');
 
 
 //
@@ -23,11 +24,9 @@ require('./../jslibs/leaflet-control-zoombar.css');
 // the currently-visible state: boundary type + year, e.g. US House districts for 1984
 // these are affected by window.selectXXX() family of functions which ultimately are all wrappers over loadDataForSelectedBoundaryAndYear()
 const CURRENT_VIEW = {
-    // NOTE that the values here are just indicative for documentation purposes
-    // initLoadStartingConditions() parses the URL params and calls selectXXX() to set the actual defaults
-    year: '2000',  // four-digit year (string)
-    boundtype: 'ushouse',  // short polygon name: ushouse statehouse statesenate
-    planorelection: 'election',  // show 'election' or 'plan' statistics on right-hand side
+    // year: '2000',  // four-digit year (string)
+    // boundtype: 'ushouse',  // short polygon name: ushouse statehouse statesenate
+    // planorelection: 'election',  // show 'election' or 'plan' statistics on right-hand side
 };
 
 // Efficiency Gap wasted vote chart; colors
@@ -92,20 +91,23 @@ const ELECTION_PLAN_RECORD_FIELDS = {
 const STATE_BBOX = STATE_BOUNDING_BOXES[STATE_NAME_TO_CODE[SELECTED_STATE]];
 
 // for the map of election winnders & plan winners, the styles
-const MAP_POLYGON_STYLE_DEFAULT = {
+const MAP_DISTRICT_STYLE_DEFAULT = {
     stroke: true, color: 'black', weight: 1,
-    fill: false, // tip: transparent fill can be clicked; no fill cannot be clicked
+    fill: "url(/images/mapfill_nodata.png)",  // crosshatch image fill, thanks to leaflet-polygon.fillPattern.js
     bubblingMouseEvents: false,
+    clickable: false,
 };
-const MAP_POLYGON_STYLE_DEMOCRAT = {
+const MAP_DISTRICT_STYLE_DEMOCRAT = {
     stroke: true, color: 'black', weight: 1,
-    fill: true, fillColor: '#0049A8',
+    fillColor: '#0049A8', fillOpacity: 0.2,
     bubblingMouseEvents: false,
+    clickable: false,
 };
-const MAP_POLYGON_STYLE_REPUBLICAN = {
+const MAP_DISTRICT_STYLE_REPUBLICAN = {
     stroke: true, color: 'black', weight: 1,
-    fill: true, fillColor: '#C71C36',
+    fillColor: '#C71C36', fillOpacity: 0.2,
     bubblingMouseEvents: false,
+    clickable: false,
 };
 
 
@@ -131,7 +133,7 @@ window.handleResize = () => {
 
 window.initMap = () => {
     // the map of the state, in its initial state with no data
-    // basemap + labels at fixed zIndexes within the tilePane
+    // basemap + labels with some hacks on the pane-and-zindex of the labels
     // simple zoom+home control
     // see also updateMapForCurrentSelection() which updates the map to the given election/plan/year
 
@@ -144,12 +146,11 @@ window.initMap = () => {
     L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
         subdomains: 'abcd',
-        zIndex: 0,
     }).addTo(MAP);
     L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
         subdomains: 'abcd',
-        zIndex: 99,
+        pane: 'markerPane',
     }).addTo(MAP);
 
     new L.Control.ZoomBar({
@@ -702,46 +703,32 @@ window.drawBiasBellChart = (whichone, datavalue) => {
 };
 
 window.updateMapForCurrentSelection = (yeardata) => {
-    const whichplan  = yeardata.plan;
-    const whichlevel = CURRENT_VIEW.boundtype;
-    const geojsonurl = `/data/districtpolygons/${whichlevel}-${whichplan}.json`;
-    const csvurl     = '/data/elections_plans.csv';
-    const statecode  = yeardata.state;
-    const whichyear  = CURRENT_VIEW.year;
-    const boundtype  = CURRENT_VIEW.boundtype;
+    const whichplan      = yeardata.plan;
+    const whichlevel     = CURRENT_VIEW.boundtype;
+    const whichyear      = CURRENT_VIEW.year;
+    const planorelection = CURRENT_VIEW.planorelection;
+    const geojsonurl     = `/data/districtpolygons/${whichlevel}-${whichplan}.json`;
+    const csvurl         = '/data/elections_plans.csv';
+    const statecode      = yeardata.state;
     // console.log([ 'updateMapForCurrentSelection', yeardata, CURRENT_VIEW.year, CURRENT_VIEW.boundtype, whichplan ]);
 
-    // load the TopoJSON and set it up as the MAP's poylgons layer, but only if we have in fact selected a different one
+    // load the TopoJSON and set it up as the MAP's polygons layer
     // keep a reference to the layer so we can add/remove it
-    // and also a "geojsonurl" attribute on it so we can check that we're just continuing to use the same polygons
-    if (! MAP.polygondistrictsoverlay || MAP.polygondistrictsoverlay.geojsonurl != geojsonurl) {
+    $.get(geojsonurl, function (jsondata) {
+        $('#map').show();
+
         if (MAP.polygondistrictsoverlay) {
             MAP.removeLayer(MAP.polygondistrictsoverlay);
-            MAP.polygondistrictsoverlay = undefined;
         }
 
-        $.get(geojsonurl, function (jsondata) {
-            $('#map').show();
+        MAP.polygondistrictsoverlay = new L.TopoJSON(jsondata).addTo(MAP);
 
-            MAP.polygondistrictsoverlay = new L.TopoJSON(jsondata, {
-                style: MAP_POLYGON_STYLE_DEFAULT,
-            });
-            MAP.polygondistrictsoverlay.geojsonurl = geojsonurl;
-            MAP.polygondistrictsoverlay.addTo(MAP);
-
-            applyStylesToMapPolygons();
-        }, 'json')
-        .fail(function (error) {
-            // on error, hide map: we have no geometry for this plan
-            $('#map').hide();
-        });
-        MAP.geojsonurl = geojsonurl;
-    }
-    else {
-        // we have an overlay and it's the same boundaries we're already showing
-        // just apply styling base don new data
         applyStylesToMapPolygons();
-    }
+    }, 'json')
+    .fail(function (error) {
+        // on error, hide map: we have no geometry for this plan
+        $('#map').hide();
+    });
 
     // after loading the polygons, style them by election winner or plan winner
     // that data is in a CSV of all election+plan outcomes, we will filter to state
@@ -753,7 +740,7 @@ window.updateMapForCurrentSelection = (yeardata) => {
             complete: function (results) {
                 // filter to year + state, or year + plan
                 // filtering down the data in a separate step, makes it a lot easier to isolate the relevant results, separately from the polygon-style code later
-                if (boundtype == 'election') {
+                if (planorelection == 'election') {
                     // election year; filter by "year" and the "plan" field starting with this state code
                     results = results.data.filter((row) => {
                         return row.year == whichyear && row.plan.substr(0, 2) == statecode;
@@ -765,7 +752,7 @@ window.updateMapForCurrentSelection = (yeardata) => {
                         return row.plan == whichplan;
                     });
                 }
-                console.log([ 'applyStylesToMapPolygons() results are:', results ]);
+                // console.log([ 'applyStylesToMapPolygons() results are:', results ]);
 
                 // if there are 0 rows then we don't have election/plan data for the district polygons (if there are any of those either); if that's the case then hide the map
                 if (results.length) {
@@ -777,10 +764,33 @@ window.updateMapForCurrentSelection = (yeardata) => {
                 }
 
                 // go through the polygons and match their "DISTRICT" property to CSV's "district" field
-                // to color them according to winner
-                // again, winner depends on election or plan
-//GDA
-            },
+                // then style them according to winner of that election or plan
+                MAP.polygondistrictsoverlay.eachLayer(function (layer) {
+                    const district_id = layer.feature.properties.DISTRICT;
+                    let csvinfo = results.filter((row) => { return row.district == district_id; })[0];
+//gda that let should be a const
+
+//gda force a lack of data for one oddball district out of this year/plan
+//gda so as to test the handling of that condition
+if (district_id == "3" || district_id == "7" || district_id == "11") csvinfo = null;
+
+
+                    if (! csvinfo) {
+                        // this district on the map, has no corresponding entry in the election/plan data
+                        layer.setStyle(MAP_DISTRICT_STYLE_DEFAULT);
+                    }
+                    else if (planorelection == 'election') {
+                        // color by election winner
+//GDA actual plan logic here
+layer.setStyle(MAP_DISTRICT_STYLE_DEMOCRAT);
+                    }
+                    else {
+                        // color by plan winner
+//GDA actual plan logic here
+layer.setStyle(MAP_DISTRICT_STYLE_REPUBLICAN);
+                    }
+                });
+            }, // end of CSV download
         });
     }
 };
