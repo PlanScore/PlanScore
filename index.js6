@@ -164,6 +164,14 @@ window.loadDataForSelectedBoundaryAndYear = () => {
             updateStateListingSwatches(chartdata);
             updateStateListingHashes(chartdata);
         },
+        error: function () {
+            // an error, meaning bad network or missing CSV
+            // fortunately we constructed a "blank" structure above, and can roll with that
+            renderMapWithNewData(chartdata);
+            renderMapLegend();
+            updateStateListingSwatches(chartdata);
+            updateStateListingHashes(chartdata);
+        },
     });
 
     function renderMapWithNewData(data) {
@@ -349,9 +357,6 @@ window.selectYear = (year) => {
 };
 
 window.selectBoundaryType = (boundtype) => {
-    // issue 112 temporary workaround Jan 2017: we won't have State Senate data for some time, so disable this
-    if (boundtype == 'statesenate') return alert("We're working on getting State Senate data. Stay tuned!");
-
     // UI update: highlight this button
     $('#boundarypicker div[data-boundary]').removeClass('active').filter(`[data-boundary="${boundtype}"]`).addClass('active');
 
