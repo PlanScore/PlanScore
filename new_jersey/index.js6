@@ -138,7 +138,7 @@ window.initMap = () => {
     // see also updateMapForCurrentSelection() which updates the map to the given election/plan/year
 
     window.MAP = L.map('map', {
-        minZoom: 6,
+        minZoom: 4,
         maxZoom: 11,
         zoomControl: false,
     }).fitBounds(STATE_BBOX);
