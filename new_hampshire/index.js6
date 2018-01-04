@@ -93,19 +93,19 @@ const STATE_BBOX = STATE_BOUNDING_BOXES[STATE_NAME_TO_CODE[SELECTED_STATE]];
 // for the map of election winnders & plan winners, the styles
 const MAP_DISTRICT_STYLE_DEFAULT = {
     stroke: true, color: 'black', weight: 1,
-    fill: "url(/images/mapfill_nodata.png)", // crosshatch image fill, thanks to leaflet-polygon.fillPattern.js
+    fill: "url(/images/mapfill_nodata.png)", fillColor: 'transparent', fillOpacity: 0.4,  // crosshatch image fill, thanks to leaflet-polygon.fillPattern.js
     bubblingMouseEvents: false,
     clickable: false,
 };
 const MAP_DISTRICT_STYLE_DEMOCRAT = {
     stroke: true, color: 'black', weight: 1,
-    fillColor: '#0049A8', fillOpacity: 0.2,
+    fill: true, fillColor: '#0049A8', fillOpacity: 0.4,
     bubblingMouseEvents: false,
     clickable: false,
 };
 const MAP_DISTRICT_STYLE_REPUBLICAN = {
     stroke: true, color: 'black', weight: 1,
-    fillColor: '#C71C36', fillOpacity: 0.2,
+    fill: true, fillColor: '#C71C36', fillOpacity: 0.4,
     bubblingMouseEvents: false,
     clickable: false,
 };
@@ -721,7 +721,9 @@ window.updateMapForCurrentSelection = (yeardata) => {
             MAP.removeLayer(MAP.polygondistrictsoverlay);
         }
 
-        MAP.polygondistrictsoverlay = new L.TopoJSON(jsondata).addTo(MAP);
+        MAP.polygondistrictsoverlay = new L.TopoJSON(jsondata, {
+            style: MAP_DISTRICT_STYLE_DEFAULT,
+        }).addTo(MAP);
 
         applyStylesToMapPolygons();
     }, 'json')
