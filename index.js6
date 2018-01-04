@@ -218,6 +218,7 @@ window.loadDataForSelectedBoundaryAndYear = () => {
                     dataClasses: map_choropleth_colors,
                 },
                 tooltip: {  // the tooltips are kept minimal, as most info is in a popup when clicked and mobile folks can't use tooltips effectively
+                    enabled: false,
                     formatter: function() {
                         return this.key;  // the state name
                     },

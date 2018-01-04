@@ -26,6 +26,19 @@
         position: absolute;
         bottom: 12px;
         right: 10px;
+        
+        
+        @media screen and (max-width: $screen-lg) and (min-width: $screen-md) {
+            right: 25px;
+        }
+        
+        @media screen and (max-width: $screen-md) and (min-width: $screen-sm) {
+            right: 185px;
+        }
+        
+        @media screen and (max-width: $screen-sm) and (min-width: $screen-xs) {
+            right: 25%;
+        }
 
         div.slice {
             display: inline-block;
