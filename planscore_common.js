@@ -168,13 +168,6 @@ export const lookupBiasDescription = (score) => {
     return 'No Significant Bias';
 };
 
-export const lookupBiasPercentile = (score) => {
-    // this plan is more biased than X% of the plans analyzed
-    // return the percentile rating of this plan; or a 0 if it's not statistically biased
-    if (Math.abs(score) <= BIAS_BALANCED_THRESHOLD) return 0;
-    return 50 + Math.round(Math.abs(score)) * 100;      // TODO: we never did touch upon the math here, need to confirm
-};
-
 export const lookupBiasFavorParty = (score) => {
     // just return the name of the party who is favored by this plan; or empty if it's balanced
     if (score === null || score === undefined) return '';

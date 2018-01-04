@@ -7,7 +7,7 @@ require('./index.src.html');
 import { PLAN_YEARS } from "./planscore_common";
 import { STATE_CODE_TO_NAME } from "./planscore_common";
 import { BIAS_SPREAD_SCALING } from "./planscore_common";
-import { lookupBiasColor, lookupBiasDescription, lookupBiasFavorParty, lookupBiasPercentile } from "./planscore_common";
+import { lookupBiasColor, lookupBiasDescription, lookupBiasFavorParty } from "./planscore_common";
 
 // bundle polyfills and local/vendor libraries specific to this page
 //require('core-js/fn/array/includes');
@@ -140,6 +140,7 @@ window.loadDataForSelectedBoundaryAndYear = () => {
             abbr: stateabbr,
             name: statename,
             value: null,
+            percentrank: null,
         });
     }
 
@@ -152,9 +153,11 @@ window.loadDataForSelectedBoundaryAndYear = () => {
             // filter by the year (geography is implicit by which CSV was fetched)
             // and for each row assign the bias score to the state's row in the above
             // this is loop-within-loop as we match arrays to arrays, but P=50 and Q=20ish so it's affordable
-            results = results.data.forEach(function (row) {
-                if (row.year != CURRENT_VIEW.year) return;  // wrong year; next
-                chartdata.filter((datarow) => { return datarow.abbr == row.state; })[0].value = parseFloat(row.eg_adj_avg);
+            results = results.data.forEach(function (datarow) {
+                if (datarow.year != CURRENT_VIEW.year) return;  // wrong year; next
+                const chartrow = chartdata.filter((filteringthisonerow) => { return filteringthisonerow.abbr == datarow.state; })[0];
+                chartrow.value = parseFloat(datarow.eg_adj_avg);
+                chartrow.percentrank = Math.round(100 * datarow.eg_avg_percentrank).toFixed(0);
             });
             renderMapWithNewData(chartdata);
             renderMapLegend();
@@ -368,7 +371,8 @@ window.selectState = (stateabbr) => {
     if (! stateabbr) {
         $('#stateinfo-popup').hide();
     }
-        // fetch the info from the map, and attach some attributes for the popup
+
+    // fetch the info from the map, and attach some attributes for the popup
     // tip: shallow copy via slice() so as not to mutate the existing one
     const biasinfo = $('#map').data('biasdata').filter((statedata) => { return statedata.abbr === stateabbr; }).slice(0, 1)[0];
 
@@ -378,10 +382,9 @@ window.selectState = (stateabbr) => {
     }
     else {
         const favor_party = lookupBiasFavorParty(biasinfo.value);
-        const bias_centile = lookupBiasPercentile(biasinfo.value);
 
         if (favor_party) {
-            biasinfo.analysis = `This plan is more biased than <b>${bias_centile}%</b> of the enacted plans we have analyzed nationwide.`;
+            biasinfo.analysis = `This plan is more biased than <b>${biasinfo.percentrank}%</b> of the enacted plans we have analyzed nationwide.`;
         }
         else {
             biasinfo.analysis = "No consistent bias was found in favor of either party.";
