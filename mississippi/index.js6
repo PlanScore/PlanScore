@@ -318,6 +318,9 @@ window.loadDataForSelectedBoundaryAndYear = () => {
 
             // ready, set, go!
             updateStatsFromCsvContent(alldataforthisstate);
+
+            // log the GA request
+            logRequestToGoogleAnalytics();
         },
         error: function () {
             // an error, meaning bad network or missing CSV
@@ -328,6 +331,17 @@ window.loadDataForSelectedBoundaryAndYear = () => {
 
     // update URL params to show the current search
     updateUrlHash();
+};
+
+window.logRequestToGoogleAnalytics = () => {
+    if (! gtag) return;  // no Google Tag Manager = don't bother; this should be declared along with GTM
+
+    gtag('event', 'statedetails', {
+        name: STATE_NAME_TO_CODE[SELECTED_STATE],
+        value: CURRENT_VIEW.year,
+        event_category: CURRENT_VIEW.planorelection,
+        event_label : CURRENT_VIEW.boundtype,
+    });
 };
 
 window.updateUrlHash = () => {
