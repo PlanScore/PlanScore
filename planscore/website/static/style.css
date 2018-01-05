@@ -37,41 +37,6 @@ table
 
 th, td, p img { border-color: #EEE8D6 }
 
-ul#scores-box
-{
-    padding: 0;
-}
-
-    ul#scores-box li
-    {
-        list-style-type: none;
-    }
-
-    ul#scores-box li h3
-    {
-        font-weight: bold;
-        font-size: 20px;
-        color: #858073;
-    }
-
-    ul#scores-box li p
-    {
-        font-size: 14px;
-        color: #606980;
-    }
-
-    ul#scores-box li p.score
-    {
-        font-size: 64px;
-    }
-
-    ul#scores-box li p.score-na
-    {
-        font-size: 36px;
-        color: #BBBBBB;
-        letter-spacing: -5px;
-    }
-
 /*
  * Override writ.css for tile image inside the map.
  */

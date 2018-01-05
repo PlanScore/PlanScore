@@ -361,7 +361,12 @@ function load_plan_score(url, fields, message_section, score_section,
             new_row.appendChild(new_cell);
         }
 
-        table.appendChild(new_row);
+        var thead = document.createElement('thead'),
+            tbody = document.createElement('tbody');
+
+        table.appendChild(thead);
+        table.appendChild(tbody);
+        thead.appendChild(new_row);
 
         for(var j = 1; j < all_columns[0].length; j++)
         {
@@ -377,7 +382,7 @@ function load_plan_score(url, fields, message_section, score_section,
                 new_row.appendChild(new_cell);
             }
 
-            table.appendChild(new_row);
+            tbody.appendChild(new_row);
         }
 
         // Populate scores.
