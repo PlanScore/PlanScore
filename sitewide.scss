@@ -270,6 +270,12 @@ ul.nav.nav-tabs {
             padding: 5px;
         }
     }
+    
+    @media screen and (max-width: $screen-xxs) {
+        li a {
+            word-spacing: 10em;
+        }
+    }
 }
 
 .tab-content {
