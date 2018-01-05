@@ -121,6 +121,7 @@ $(document).ready(function () {
     initYearPickers();
     initBoundaryPicker();
     initMap();
+    initMetricTabTracking();
     initLoadStartingConditions();  // this will implicitly call loadDataForSelectedBoundaryAndYear() after setup, loading the map
 
     $(window).on('resize', handleResize);
@@ -225,6 +226,14 @@ window.initBoundaryPicker = () => {
     $('#boundarypicker div[data-boundary]').click(function () {
         const boundarytype = $(this).attr('data-boundary');
         selectBoundaryType(boundarytype);
+    });
+};
+
+window.initMetricTabTracking = () => {
+    // when they switch metrics tabs, log a Google Analytics event
+    $('#tabs-metrics a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        const whichtab = $(e.target).prop('href').replace(/.+#tab-/, '');  // the suffix is the metric name, e.g. #tab-efficiencygap
+        logMetricToggleToGoogleAnalytics(whichtab);
     });
 };
 
@@ -829,4 +838,14 @@ window.updateMapForCurrentSelection = (yeardata) => {
             }, // end of CSV download
         });
     }
+};
+
+window.logMetricToggleToGoogleAnalytics = (whichmetric) => {
+    if (! gtag) return;  // no Google Tag Manager = don't bother; this should be declared along with GTM
+
+    gtag('event', 'metricdetails', {
+        value: CURRENT_VIEW.year,
+        event_category: whichmetric,
+        event_label : `${CURRENT_VIEW.boundtype}-${CURRENT_VIEW.planorelection}`,
+    });
 };
