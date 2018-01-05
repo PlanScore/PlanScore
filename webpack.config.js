@@ -11,6 +11,7 @@ const JS6_FILES = [
     './efficiencygap/index.js6',
     './meanmedian/index.js6',
     './partisanbias/index.js6',
+    './sitewide.js6',
     './patternlibrary/index.js6',
     './patternlibrary_htmltemplate/index.js6',
 
