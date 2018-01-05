@@ -11,54 +11,6 @@ h1.state_name {
     color: white;
 }
 
-#boundarypicker {
-    /* small-enough screens, force these to 100% as they will linewrap before Bootstrap will "xs" them to stack */
-    @media screen and (max-width: $screen-xs) {
-        > div {
-          width: 100%;
-        }
-
-        > div {  /* when stacked, give them a tiny bit of bottom margin so they do't blur together */
-            margin-bottom: 10px;
-        }
-    }
-
-    div[data-boundary] {
-        cursor: pointer;
-
-        a {
-            text-decoration: none !important;
-            color: #95989A;
-        }
-
-        background-color: #F2F2F2;
-
-        padding-bottom: 15px;
-        padding-top: 15px;
-
-        font-size: 18px;
-        border-radius: 2px;
-        box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, .16);
-    }
-    div[data-boundary].active {
-        background-color: $dark-purple-color;
-        color: white;
-        a {
-            color: white;
-        }
-    }
-    div[data-boundary="ushouse"] {
-    }
-    div[data-boundary="statesenate"] {
-    }
-    div[data-boundary="statehouse"] {
-    }
-
-    div[data-boundary="statesenate"], div[data-boundary="statesenate"] a { /* issue 112 temporarily disabled */
-        opacity: 0.7; cursor: not-allowed;
-    }
-}
-
 #yearpicker-big {
     /* two halves: the elections side and the plans timeline; both are a series of A elements, these being links to the electionyear/plan
        designer should contrive the height of these items so the two columns align into what look like side-by-side years */
@@ -166,56 +118,6 @@ ul.nav-tabs a span.biasicon {
 #chart-egvoteswasted {
     height: 150px;
     width: 300px;
-}
-
-div.metric-bellchart {
-    /* the bellcharts indicating the plan's percentile rating, are a bit of a trick: a single-bar column chart, and a stretching background of a bell curve for visual reference */
-
-    width: 300px;
-    height: 150px;
-    background-image: none;  /* overridden in subclasses */
-    background-repeat: no-repeat;
-    background-size: 100% 100%;  /* stretch the graphic to fill the area 100% */
-    background-position: 0 0;
-
-    position: relative; /* for positioning the markline */
-    div.markline {
-        position: absolute;
-        left: 50%; /* overridden to position it */
-        top: 40px;
-        height: 100px;
-
-        width: 2px;
-        margin-left: -1px;  /* half of width, so it centers at the given left % */
-        background-color: black;
-    }
-}
-div.metric-bellchart.ushouse.eg {
-    background-image: url(../images/ushouse_eg_plan_curve.svg);
-}
-div.metric-bellchart.ushouse.mm {
-    background-image: url(../images/ushouse_mmd_plan_curve.svg);
-}
-div.metric-bellchart.ushouse.pb {
-    background-image: url(../images/ushouse_bias_plan_curve.svg);
-}
-div.metric-bellchart.statehouse.eg {
-    background-image: url(../images/statehouse_eg_plan_curve.svg);
-}
-div.metric-bellchart.statehouse.mm {
-    background-image: url(../images/statehouse_mmd_plan_curve.svg);
-}
-div.metric-bellchart.statehouse.pb {
-    background-image: url(../images/statehouse_bias_plan_curve.svg);
-}
-div.metric-bellchart.statesenate.eg {
-    background-image: url(../images/statesenate_eg_plan_curve.svg);
-}
-div.metric-bellchart.statesenate.mm {
-    background-image: url(../images/statesenate_mmd_plan_curve.svg);
-}
-div.metric-bellchart.statesenate.pb {
-    background-image: url(../images/statesenate_bias_plan_curve.svg);
 }
 
 #map {

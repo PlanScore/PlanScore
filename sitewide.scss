@@ -339,6 +339,7 @@ div.right-text {
 
 
 /*
+ * BELLCHART DIAGRAMS
  * bellcharts indicating the plan's percentile rating
  * a bit of a visual trick: a single-bar column chart, and a stretching background of a bell curve for visual reference
  */
@@ -391,3 +392,56 @@ div.metric-bellchart.statesenate.pb {
     background-image: url(/images/statesenate_bias_plan_curve.svg);
 }
 
+
+
+/*
+ * BOUNDARY PICKER
+ * the selector for statehouse/ushouse/senate
+ */
+#boundarypicker {
+    /* small-enough screens, force these to 100% as they will linewrap before Bootstrap will "xs" them to stack */
+    @media screen and (max-width: $screen-xs) {
+        > div {
+          width: 100%;
+        }
+
+        > div {  /* when stacked, give them a tiny bit of bottom margin so they do't blur together */
+            margin-bottom: 10px;
+        }
+    }
+
+    div[data-boundary] {
+        cursor: pointer;
+
+        a {
+            text-decoration: none !important;
+            color: #95989A;
+        }
+
+        background-color: #F2F2F2;
+
+        padding-bottom: 15px;
+        padding-top: 15px;
+
+        font-size: 18px;
+        border-radius: 2px;
+        box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, .16);
+    }
+    div[data-boundary].active {
+        background-color: #4D599E;
+        color: white;
+        a {
+            color: white;
+        }
+    }
+    div[data-boundary="ushouse"] {
+    }
+    div[data-boundary="statesenate"] {
+    }
+    div[data-boundary="statehouse"] {
+    }
+
+    div[data-boundary="statesenate"], div[data-boundary="statesenate"] a { /* issue 112 temporarily disabled */
+        opacity: 0.7; cursor: not-allowed;
+    }
+}
