@@ -354,6 +354,7 @@ div.metric-bellchart {
 
     width: 300px;
     height: 150px;
+    margin: 15px auto 0;
     background-image: none;  /* overridden in subclasses */
     background-repeat: no-repeat;
     background-size: 100% 100%;  /* stretch the graphic to fill the area 100% */
@@ -369,6 +370,31 @@ div.metric-bellchart {
         width: 2px;
         margin-left: -1px;  /* half of width, so it centers at the given left % */
         background-color: black;
+    }
+    
+    @media screen and (max-width: $screen-md) {
+        margin-bottom: 30px;
+    }
+    
+    @media screen and (min-width: $screen-lg) {
+        width: 335px;
+        div.markline {
+            top: 48px;
+        }
+    }
+    
+    @media screen and (max-width: $screen-md) and (min-width: $screen-xs) {
+        width: 335px;
+        div.markline {
+            top: 48px;
+        }
+    }
+    
+    @media screen and (max-width: $screen-xxs) {
+        width: 250px;
+        div.markline {
+            top: 30px;
+        }
     }
 }
 div.metric-bellchart.ushouse.plan.eg {
@@ -427,6 +453,24 @@ div.metric-bellchart.statesenate.election.pb {
 }
 
 
+/*
+ * WASTED VOTES DIAGRAMS
+ */
+#chart-egvoteswasted {
+    height: 150px;
+    width: 300px;
+    margin: 0 auto;
+    
+    @media screen and (min-width: $screen-lg) {
+        height: 150px;
+        width: 332px;
+    }
+    
+    @media screen and (max-width: $screen-md) {
+        height: 150px;
+        width: 100%;
+    }
+}
 
 /*
  * BOUNDARY PICKER
