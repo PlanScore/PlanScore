@@ -485,7 +485,7 @@ window.updateMetricsTabs = (yeardata) => {
     const favor_color_eg = lookupBiasColor(eg_score);
     const percent_eg     = `+${Math.round(100 * Math.abs(eg_score))}%`;
     const hadseats       = favor_party_eg == 'Republican' ? seats_rep : seats_dem;
-    const statement_eg   = favor_party_eg ? `${favor_party_eg}s needed ${(100 * Math.abs(eg_score)).toFixed(1)}% fewer votes to win their ${hadseats} of ${totalseats} seats.` : 'This metric indicates a balanced plan.';
+    const statement_eg   = totalseats ? (favor_party_eg ? `${favor_party_eg}s needed ${(100 * Math.abs(eg_score)).toFixed(1)}% fewer votes to win their ${hadseats} of ${totalseats} seats.` : 'This metric indicates a balanced plan.') : '';
     const biastext_eg    = favor_party_eg ? `This plan is more biased than ${Math.round(100 * eg_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
 
     const favor_party_pb = lookupBiasFavorParty(pb_score);
