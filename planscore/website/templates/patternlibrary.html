@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PlanScore :: {% block title %}{% endblock %}</title>
+
+    
+    <!-- Viewport meta tags -->
+    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+    <meta charset='utf-8' />
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
+
+    <!-- jQuery and Bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+
+    <!-- sitewide CSS -->    
+    <link href="https://planscore.org/sitewide.css" rel="stylesheet" />
+
+    <!-- OG tags -->
+    <meta property="og:title" content="PlanScore" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://planscore.org" />
+    <meta property="og:image" content="https://planscore.org/images/OG-default-01.jpg" />
+    <meta property="og:description" content="PlanScore is a first-of-its-kind gerrymandering scoring service for new district plans, allowing users to upload maps and instantly receive projected data about their partisan consequences. You can also use historical data to discover how partisan advantage has influenced redistricting in your state." />
+
+    <!-- Twitter tags note that per https://developer.twitter.com/en/docs/tweets/optimize-with-cards/guides/getting-started, we need only use the card metas that differ from OG -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:site" content="@PlanScore" />
+
+	{% block head %}{% endblock %}
+</head>
+<body>
+
+    
+    <nav class="navbar navbar-default">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/index-new.html"><img id="brand-logo" src="/images/logo.svg"></img></a>
+            </div>
+            <div class="collapse navbar-collapse" id="navbar">
+                <ul class="nav navbar-nav navbar-right">
+                    <li><a href="/scoreyours/">Score a Plan</a></li>
+                    <li><a href="/about/">What is PlanScore?</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="container container-mainbody">
+        {% block content %}{% endblock %}
+    </div><!--/container-mainbody-->
+
+    
+    <div class="container-fluid footer">
+        <div class="col-xs-12 col-sm-6 left">
+            <a target="_blank" href="mailto:info@planscore.org"><img src="/images/email-logo.png" /> info@planscore.org</a>
+            &nbsp;
+            <a target="_blank" href="https://twitter.com/PlanScore"><img src="/images/twitter-logo.png" /> @PlanScore</a>
+            &nbsp;
+            <a target="_blank" href="https://github.com/PlanScore/PlanScore"><img src="/images/github-logo.png" /> Github</a>
+        </div>
+        <div class="col-xs-12 col-sm-6 right">
+            PlanScore is a fiscally sponsored project of <a href="http://www.greeninfo.org/" target="_blank"><img src="/images/greeninfo.png" /> GreenInfo Network</a>
+        </div>
+    </div>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-65629552-4"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'UA-65629552-4');
+    </script>
+    
+
+</body>
+</html>
