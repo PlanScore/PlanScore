@@ -87,25 +87,22 @@ const ELECTION_PLAN_RECORD_FIELDS = {
     },
 };
 
-// the bounding box of this state
-const STATE_BBOX = STATE_BOUNDING_BOXES[STATE_NAME_TO_CODE[SELECTED_STATE]];
-
 // for the map of election winnders & plan winners, the styles
 const MAP_DISTRICT_STYLE_DEFAULT = {
-    stroke: true, color: 'black', weight: 1,
-    fill: "url(/images/mapfill_nodata.png)", fillColor: 'transparent', fillOpacity: 0.4,  // crosshatch image fill, thanks to leaflet-polygon.fillPattern.js
+    stroke: true, color: '#cccccc', weight: 1,
+    fill: "url(/images/mapfill_nodata.png)", fillColor: 'transparent', fillOpacity: 0.6,  // crosshatch image fill, thanks to leaflet-polygon.fillPattern.js
     bubblingMouseEvents: false,
     clickable: false,
 };
 const MAP_DISTRICT_STYLE_DEMOCRAT = {
-    stroke: true, color: 'black', weight: 1,
-    fill: true, fillColor: '#0049A8', fillOpacity: 0.4,
+    stroke: true, color: '#cccccc', weight: 1,
+    fill: true, fillColor: '#0049A8', fillOpacity: 0.6,
     bubblingMouseEvents: false,
     clickable: false,
 };
 const MAP_DISTRICT_STYLE_REPUBLICAN = {
-    stroke: true, color: 'black', weight: 1,
-    fill: true, fillColor: '#C71C36', fillOpacity: 0.4,
+    stroke: true, color: '#cccccc', weight: 1,
+    fill: true, fillColor: '#C71C36', fillOpacity: 0.6,
     bubblingMouseEvents: false,
     clickable: false,
 };
