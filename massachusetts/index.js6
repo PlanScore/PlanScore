@@ -194,17 +194,20 @@ window.initYearPickers = () => {
     });
 
     // desktop
-    // the list of "year beads" running down the side
-    // we can only do half of it here: the list of all election years (right-hand side)
-    // since the plan timeline (left-hand side) depends on what dataset is selected; thus see also redrawYearPicker()
+    // the list of "year beads" running down the side, which is two columns for election years (right) and district plans (left)
+    // see also redrawYearPicker() which assigns the data-plan="" attribute to plans, and shows/hides election years
+    // both bases on the actual data present
     const $picker_big   = $('#yearpicker-big');
     const $plansdiv     = $('<div class="plans col-xs-5"></div>').appendTo($picker_big);
     const $electionsdiv = $('<div class="elections col-xs-7"></div>').appendTo($picker_big);
     
     $('<span>Election<br>Years</span>').appendTo($electionsdiv);
+    $('<span>Enacted<br>Plans</span>').appendTo($plansdiv);
 
+//gda
     PLAN_YEARS.slice().reverse().forEach((year) => {
-        $(`<a title="Show details for the ${year} election year"><span></span> ${year}</a>`).attr('data-year', year).appendTo($electionsdiv);
+        $(`<a data-year="${year}" title="Show details for the ${year} election year"><span></span> ${year}</a>`).appendTo($electionsdiv);
+        $(`<a data-year="${year}" title="Show details for this districting plan"><span></span></a>`).appendTo($plansdiv);  // will be tagged with data-plan attribute when we have data
     });
 
     $electionsdiv.on('click', 'a', function () {
@@ -669,21 +672,33 @@ window.redrawYearPicker = (csvdata) => {
     const yearplans = {};
     csvdata.forEach((row) => { yearplans[row.year] = row.plan; });
 
-    // the set of year-rows in the picker// the column containing the plans
-    const $plansdiv = $('#yearpicker-big div.plans').empty();
-    
-    $('<span>Enacted<br>Plans</span>').appendTo($plansdiv);
+    // the A links on the plan side & year side
+    const $planslinks = $('#yearpicker-big div.plans').find('a');
+    const $yearslinks = $('#yearpicker-big div.elections').find('a');
 
     // go over each year in the universe (which was used to construct the $yearpicker_buttons) and find its row
     // tag the row as being plan-start or plan-continue, for CSS purposes
     PLAN_YEARS.slice().reverse().forEach((year, index, allyears) => {
         const thisyearplan = yearplans[year];
         const prevyearplan = yearplans[allyears[index+1]];
+        const $planlink = $planslinks.filter(`[data-year="${year}"]`);
+        const $yearlink = $yearslinks.filter(`[data-year="${year}"]`);
         // console.log([ year, thisyearplan, prevyearplan, thisyearplan !== prevyearplan ? 'newplan' : 'continue' ]);
 
-        const $link = $(`<a data-year="${year}" data-plan="${thisyearplan}"><span></span></a>`).appendTo($plansdiv);
-        if (thisyearplan == prevyearplan) $link.removeClass('plan-begin').addClass('plan-continue').prop('title', 'Show details for this districting plan');
-        else                              $link.removeClass('plan-continue').addClass('plan-begin').prop('title', `A new district plan was implemented in ${year}. Show details for this districting plan.`);
+        // tag the plan as either begin/continue
+        // or if we have no data, hide both the plan and year links
+        // use "thisyearplan" for both sides, since it would be filled in with a plan ID if we had any data at all
+        if (thisyearplan) {
+            $yearlink.show();
+            $planlink.attr('data-plan', thisyearplan).show();  // used for click handling so we know what plan to load
+
+            if (thisyearplan == prevyearplan) $planlink.removeClass('plan-begin').addClass('plan-continue').prop('title', 'Show details for this districting plan');
+            else                              $planlink.removeClass('plan-continue').addClass('plan-begin').prop('title', `A new district plan was implemented in ${year}. Show details for this districting plan.`);
+        }
+        else {
+            $yearlink.hide();
+            $planlink.hide();
+        }
     });
 
     // final touch: if were showing a plan then highlight the plan visually
