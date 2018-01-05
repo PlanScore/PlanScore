@@ -429,11 +429,33 @@ div.metric-bellchart.statesenate.election.pb {
     /* small-enough screens, force these to 100% as they will linewrap before Bootstrap will "xs" them to stack */
     @media screen and (max-width: $screen-xs) {
         > div {
-          width: 100%;
+            padding-right: 5px;
+            padding-left: 5px;
         }
-
-        > div {  /* when stacked, give them a tiny bit of bottom margin so they do't blur together */
-            margin-bottom: 10px;
+        > div:first-child {
+            padding-left: 15px;
+        }
+        > div:last-child {
+            padding-right: 15px;
+        }
+    }
+    
+    @media screen and (max-width: $screen-sm) {
+        > div {
+            padding-right: 10px;
+            padding-left: 10px;
+        }
+        > div:first-child {
+            padding-left: 15px;
+        }
+        > div:last-child {
+            padding-right: 15px;
+        }
+    }
+    
+    @media screen and (max-width: 480px) {
+        > div {
+            word-spacing: 10em;
         }
     }
 
