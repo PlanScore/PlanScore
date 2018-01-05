@@ -87,6 +87,9 @@ const ELECTION_PLAN_RECORD_FIELDS = {
     },
 };
 
+// the bounding box of this state
+const STATE_BBOX = STATE_BOUNDING_BOXES[STATE_NAME_TO_CODE[SELECTED_STATE]];
+
 // for the map of election winnders & plan winners, the styles
 const MAP_DISTRICT_STYLE_DEFAULT = {
     stroke: true, color: '#cccccc', weight: 1,
