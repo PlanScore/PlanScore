@@ -690,6 +690,8 @@ window.drawBiasBellChart = (whichone, datavalue) => {
     const $div = $(`#metric-bellchart-${whichone}`).empty();
     $div.removeClass('pb').removeClass('eg').removeClass('mm').addClass(whichone);
     $div.removeClass('ushouse').removeClass('statehouse').removeClass('statesentate').addClass(CURRENT_VIEW.boundtype);
+//gda election or plan
+    $div.removeClass('election').removeClass('plan').addClass(CURRENT_VIEW.planorelection);
 
     // normalize the value into a range of 0% to 100% within that range, to form an X axis position
     // 0% is the furthest left; 100% furthest right; 50% balanced

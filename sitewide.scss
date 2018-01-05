@@ -364,32 +364,59 @@ div.metric-bellchart {
         background-color: black;
     }
 }
-div.metric-bellchart.ushouse.eg {
+div.metric-bellchart.ushouse.plan.eg {
     background-image: url(/images/ushouse_eg_plan_curve.svg);
 }
-div.metric-bellchart.ushouse.mm {
+div.metric-bellchart.ushouse.plan.mm {
     background-image: url(/images/ushouse_mmd_plan_curve.svg);
 }
-div.metric-bellchart.ushouse.pb {
+div.metric-bellchart.ushouse.plan.pb {
     background-image: url(/images/ushouse_bias_plan_curve.svg);
 }
-div.metric-bellchart.statehouse.eg {
+div.metric-bellchart.statehouse.plan.eg {
     background-image: url(/images/statehouse_eg_plan_curve.svg);
 }
-div.metric-bellchart.statehouse.mm {
+div.metric-bellchart.statehouse.plan.mm {
     background-image: url(/images/statehouse_mmd_plan_curve.svg);
 }
-div.metric-bellchart.statehouse.pb {
+div.metric-bellchart.statehouse.plan.pb {
     background-image: url(/images/statehouse_bias_plan_curve.svg);
 }
-div.metric-bellchart.statesenate.eg {
+div.metric-bellchart.statesenate.plan.eg {
     background-image: url(/images/statesenate_eg_plan_curve.svg);
 }
-div.metric-bellchart.statesenate.mm {
+div.metric-bellchart.statesenate.plan.mm {
     background-image: url(/images/statesenate_mmd_plan_curve.svg);
 }
-div.metric-bellchart.statesenate.pb {
+div.metric-bellchart.statesenate.plan.pb {
     background-image: url(/images/statesenate_bias_plan_curve.svg);
+}
+div.metric-bellchart.ushouse.election.eg {
+    background-image: url(/images/ushouse_eg_election_curve.svg);
+}
+div.metric-bellchart.ushouse.election.mm {
+    background-image: url(/images/ushouse_mmd_election_curve.svg);
+}
+div.metric-bellchart.ushouse.election.pb {
+    background-image: url(/images/ushouse_bias_election_curve.svg);
+}
+div.metric-bellchart.statehouse.election.eg {
+    background-image: url(/images/statehouse_eg_election_curve.svg);
+}
+div.metric-bellchart.statehouse.election.mm {
+    background-image: url(/images/statehouse_mmd_election_curve.svg);
+}
+div.metric-bellchart.statehouse.election.pb {
+    background-image: url(/images/statehouse_bias_election_curve.svg);
+}
+div.metric-bellchart.statesenate.election.eg {
+    background-image: url(/images/statesenate_eg_election_curve.svg);
+}
+div.metric-bellchart.statesenate.election.mm {
+    background-image: url(/images/statesenate_mmd_election_curve.svg);
+}
+div.metric-bellchart.statesenate.election.pb {
+    background-image: url(/images/statesenate_bias_election_curve.svg);
 }
 
 
