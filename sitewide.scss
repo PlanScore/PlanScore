@@ -427,6 +427,20 @@ div.metric-bellchart.statesenate.election.pb {
  */
 #boundarypicker {
     /* small-enough screens, force these to 100% as they will linewrap before Bootstrap will "xs" them to stack */
+    
+    @media screen and (max-width: $screen-sm) {
+        > div {
+            padding-right: 10px;
+            padding-left: 10px;
+        }
+        > div:first-child {
+            padding-left: 15px;
+        }
+        > div:last-child {
+            padding-right: 15px;
+        }
+    }
+    
     @media screen and (max-width: $screen-xs) {
         > div {
             padding-right: 5px;
@@ -440,10 +454,10 @@ div.metric-bellchart.statesenate.election.pb {
         }
     }
     
-    @media screen and (max-width: $screen-sm) {
+    @media screen and (max-width: $screen-xxs) {
         > div {
-            padding-right: 10px;
-            padding-left: 10px;
+            padding-right: 2px;
+            padding-left: 2px;
         }
         > div:first-child {
             padding-left: 15px;
