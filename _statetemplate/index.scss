@@ -1,0 +1,124 @@
+@import 'sitewide';
+
+h1.state_name {
+    margin-top: 0;
+
+    font-size: 26px;
+
+    padding: 5px;
+
+    background-color: #cccccc;
+    color: white;
+}
+
+#yearpicker-big {
+    /* two halves: the elections side and the plans timeline; both are a series of A elements, these being links to the electionyear/plan
+       designer should contrive the height of these items so the two columns align into what look like side-by-side years */
+    div span {
+        display: block;
+        color: #4d599e;
+        font-size: 15px;
+        margin-right: 9px;
+        line-height: 1.2em;
+        padding-bottom: 0.2em;
+    }
+    
+    div.elections {
+        padding-left: 5px;
+
+        a {  /* a year link */
+            display: block;
+            height: 24px;
+            line-height: 24px;
+
+            cursor: pointer;
+
+            color: $dark-purple-color;
+            text-decoration: none !important;
+
+            span {  /* a circular swatch inside that year link */
+                display: inline-block;
+                height: 10px;
+                width: 10px;
+                border: 2px solid $dark-purple-color;
+                border-radius: 50%;
+
+                margin-right: 5px;
+
+                background-color: white;
+                color: $dark-purple-color;
+            }
+        }
+        a.active {  /* a year link */
+            span {  /* a circular swatch inside that year link */
+                background-color: $dark-purple-color;
+            }
+        }
+    }
+    div.plans {
+        text-align: right;
+        padding-right: 0;
+        padding-left: 0;
+
+        a {
+            display: block;
+            cursor: pointer;
+
+            span {
+                display: inline-block;
+                height: 24px;
+                width: 24px;
+                vertical-align: middle;
+                margin-right: 11px;
+            }
+        }
+        a.plan-begin span {
+            border: 2px solid $dark-purple-color;
+            border-radius: 50%;
+            background-color: white;
+        }
+        a.plan-continue span {
+            width: 1px;
+            margin-right: 22px;
+            border: 0.05em solid #4d599e;
+            background-color: #fff;
+        }
+
+        a.plan-begin.active span {
+            background-color: $dark-purple-color;
+            color: white;
+        }
+        a.plan-continue.active span {
+            background-color: $dark-purple-color;
+            width: 4px;
+            margin-right: 21.5px;
+        }
+    }
+}
+
+ul.nav-tabs a span.biasicon {
+    display: inline-block;
+    height: 18px;
+    width: 18px;
+
+    text-align: center;
+    font-size: 15px;
+
+    background-color: transparent; /* unless assigned a specific bias class below, they're effectively invisible */
+    color: white;
+}
+
+@media screen and (max-width: $screen-xs) {
+    ul.nav-tabs a span.biasicon {
+        display: block;
+        margin: 0 auto;
+    }
+}
+
+#map {
+    width: 100%;
+    height: 50vh;
+    min-height: 400px;
+
+    margin-top: 0.25in;
+}
