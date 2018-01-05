@@ -141,16 +141,21 @@ window.initMap = () => {
         minZoom: 4,
         maxZoom: 11,
         zoomControl: false,
+        scrollWheelZoom: false,
     }).fitBounds(STATE_BBOX);
 
-    L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
+    L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}{retina}.png', {
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
         subdomains: 'abcd',
+        retina: '@2x',
+        detectRetina: true,
     }).addTo(MAP);
-    L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_only_labels/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="http://cartodb.com/attributions">CartoDB</a>',
+    L.tileLayer('http://a.tile.stamen.com/toner-labels/{z}/{x}/{y}{retina}.png', {
+        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. Data by <a href="http://openstreetmap.org">OpenStreetMap</a>, under <a href="http://www.openstreetmap.org/copyright">ODbL</a>.',
         subdomains: 'abcd',
         pane: 'markerPane',
+        retina: '@2x',
+        detectRetina: true,
     }).addTo(MAP);
 
     new L.Control.ZoomBar({
