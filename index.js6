@@ -228,18 +228,8 @@ window.loadDataForSelectedBoundaryAndYear = () => {
                 colorAxis: {
                     dataClasses: map_choropleth_colors,
                 },
-                tooltip: {  // the tooltips are kept minimal, as most info is in a popup when clicked and mobile folks can't use tooltips effectively
+                tooltip: {
                     enabled: false,
-                    formatter: function() {
-                        return this.key;  // the state name
-                    },
-                    positioner: function (labelWidth, labelHeight, point) {  // center the tooltip on the state, instead of using the mouse; issue 78
-                        const width = this.chart.chartWidth;
-                        const height = this.chart.chartHeight;
-                        const x = (width / 2) - 30;  //could use (labelWidth/2) but then the box "jumps around"
-                        const y = height - labelHeight - 5;
-                        return { x, y };
-                    },
                 },
                 series: [{
                     // use the Highcharts-provided US states, joining on their "postal" to our "abbr"
