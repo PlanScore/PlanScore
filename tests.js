@@ -135,3 +135,5 @@ assert.equal(plan.nice_percent(.001), '0.1%', 'Should see one decimal place');
 
 assert.equal(plan.nice_gap(.1), '+10.0% for Democrats', 'Positive gaps should be blue');
 assert.equal(plan.nice_gap(-.1), '+10.0% for Republicans', 'Negative gaps should be red');
+
+assert.equal(plan.nice_string('yo'), '&#121;&#111;');

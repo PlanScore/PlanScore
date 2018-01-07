@@ -32,6 +32,11 @@ function nice_gap(value)
     }
 }
 
+function nice_string(value)
+{
+    return value.replace(/./gm, function(c) { return "&#" + c.charCodeAt(0) + ";" });
+}
+
 function clear_element(el)
 {
     while(el.lastChild)
@@ -368,7 +373,7 @@ function load_plan_score(url, message_section, score_section,
 
         // Build the results table
         var table_array = plan_array(plan),
-            tags;
+            tags, value;
         
         tags = ['<thead>', '<tr>'];
         for(var j = 0; j < table_array[0].length; j++)
@@ -382,10 +387,13 @@ function load_plan_score(url, message_section, score_section,
             for(var j = 0; j < table_array[i].length; j++)
             {
                 if(typeof table_array[i][j] == 'number') {
-                    tags = tags.concat(['<td>', nice_count(table_array[i][j]), '</td>']);
+                    value = nice_count(table_array[i][j]);
+                } else if(typeof table_array[i][j] == 'string') {
+                    value = nice_string(table_array[i][j]);
                 } else {
-                    tags = tags.concat(['<td>', table_array[i][j], '</td>']);
+                    value = '???';
                 }
+                tags = tags.concat(['<td>', value, '</td>']);
             }
             tags = tags.concat(['</tr>']);
         }
@@ -483,7 +491,7 @@ function load_plan_map(url, div, plan)
 if(typeof module !== 'undefined' && module.exports)
 {
     module.exports = {
-        format_url: format_url, nice_count: nice_count,
+        format_url: format_url, nice_count: nice_count, nice_string: nice_string,
         nice_percent: nice_percent, nice_gap: nice_gap, date_age: date_age,
         what_score_description_html: what_score_description_html,
         which_score_summary_name: which_score_summary_name,
