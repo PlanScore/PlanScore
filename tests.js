@@ -4,7 +4,8 @@ plan = require('planscore/website/static/plan.js');
 var NC_index = require('data/sample-NC-1-992/index.json'),
     NC_incomplete_index = require('data/sample-NC-1-992-incomplete/index.json'),
     NC_simple_index = require('data/sample-NC-1-992-simple/index.json'),
-    NC_multisim_index = require('data/sample-NC-simulations/index.json');
+    NC_multisim_index = require('data/sample-NC-simulations/index.json'),
+    NC_public_index = require('data/sample-NC5.1/index.json');
 
 // Old-style red vs. blue plan
 
@@ -23,6 +24,9 @@ assert.equal(plan.which_district_color(NC_simple_index.districts[0], NC_simple_i
 assert.equal(plan.which_district_color(NC_simple_index.districts[7], NC_simple_index),
     '#4D90D1', 'Should return the blue district color');
 
+var plan_array1 = plan.plan_array(NC_simple_index);
+assert.equal(plan_array1.length, 14, 'Should have a header with 13 districts');
+
 // Incomplete plan, seen just after upload but before scoring is complete
 
 assert.equal(plan.what_score_description_html(NC_incomplete_index),
@@ -33,6 +37,9 @@ assert.strictEqual(plan.which_score_summary_name(NC_incomplete_index),
 
 assert.deepEqual(plan.which_score_column_names(NC_incomplete_index),
     [], 'Should return an empty list of column names');
+
+var plan_array2 = plan.plan_array(NC_incomplete_index);
+assert.equal(plan_array2, undefined, 'Should have an undefined table');
 
 // North Carolina plan with named house and parties
 
@@ -55,6 +62,9 @@ assert.equal(plan.which_district_color(NC_index.districts[0], NC_index),
 assert.equal(plan.which_district_color(NC_index.districts[7], NC_index),
     '#4D90D1', 'Should return the blue district color');
 
+var plan_array3 = plan.plan_array(NC_index);
+assert.equal(plan_array3.length, 14, 'Should have a header with 13 districts');
+
 // New-style North Carolina plan with confidence intervals from simulations
 
 assert.equal(plan.what_score_description_html(NC_multisim_index),
@@ -72,6 +82,38 @@ assert.equal(plan.which_district_color(NC_multisim_index.districts[0], NC_multis
 
 assert.equal(plan.which_district_color(NC_multisim_index.districts[7], NC_multisim_index),
     '#4D90D1', 'Should return the blue district color');
+
+var plan_array4 = plan.plan_array(NC_multisim_index);
+assert.equal(plan_array4.length, 14, 'Should have a header with 13 districts');
+
+assert.deepEqual(plan_array4[0],
+    ['District', 'Democratic Votes', 'Republican Votes'],
+    'Should pick out the right column names');
+
+assert.deepEqual(plan_array4[1],
+    [1, 1028053.906695856, 1140266.0413978184],
+    'Should pick out the right column values');
+
+assert.deepEqual(plan_array4[13],
+    [13, 841420.1306598457, 1149160.4424367815],
+    'Should pick out the right column values');
+
+// North Carolina plan in proposed final form
+
+var plan_array5 = plan.plan_array(NC_public_index);
+assert.equal(plan_array5.length, 14, 'Should have a header with 13 districts');
+
+assert.deepEqual(plan_array5[0],
+    ['District', 'Population 2015', 'Black Population 2015', 'Democratic Votes', 'Republican Votes', 'Polsby-Popper', 'Reock'],
+    'Should pick out the right column names');
+
+assert.deepEqual(plan_array5[1],
+    [1, 734814, 339971, 226503, 115999, 0.199, 0.346],
+    'Should pick out the right column values');
+
+assert.deepEqual(plan_array5[13],
+    [13, 747501, 170567, 155381, 198285, 0.227, 0.355],
+    'Should pick out the right column values');
 
 // Assorted functions
 

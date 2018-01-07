@@ -276,6 +276,67 @@ function hide_message(score_section, message_section)
     message_section.style.display = 'none';
 }
 
+/*
+ * Return a rows * columns matrix representing a scored plan table
+ */
+function plan_array(plan)
+{
+    var fields = ['Population 2015', 'Black Population 2015', 'Democratic Votes',
+            'Republican Votes', 'Polsby-Popper', 'Reock'];
+
+    // Build list of columns
+    var head_row = ['District'],
+        all_rows = [head_row],
+        field, current_row, field_missing;
+
+    if(plan.districts.length == 0)
+    {
+        return undefined;
+    }
+    
+    for(var j = 0; j < plan.districts.length; j++)
+    {
+        all_rows.push([j + 1]);
+    }
+    
+    for(var i in fields)
+    {
+        field = fields[i];
+        field_missing = false;
+        
+        for(var j in plan.districts)
+        {
+            if(field in plan.districts[j].totals) {
+                continue;
+            } else if('compactness' in plan.districts[j] && field in plan.districts[j].compactness) {
+                continue;
+            } else {
+                field_missing = true;
+            }
+        }
+        
+        if(field_missing) {
+            continue;
+        }
+        
+        head_row.push(field);
+
+        for(var j in plan.districts)
+        {
+            current_row = all_rows[parseInt(j) + 1];
+        
+            if(field in plan.districts[j].totals) {
+                current_row.push(plan.districts[j].totals[field]);
+
+            } else if('compactness' in plan.districts[j] && field in plan.districts[j].compactness) {
+                current_row.push(plan.districts[j].compactness[field]);
+            }
+        }
+    }
+    
+    return all_rows;
+}
+
 function load_plan_score(url, fields, message_section, score_section,
     description, table, score_EG, score_pop, score_dem, map_url, map_div)
 {
@@ -476,6 +537,7 @@ if(typeof module !== 'undefined' && module.exports)
         what_score_description_html: what_score_description_html,
         which_score_summary_name: which_score_summary_name,
         which_score_column_names: which_score_column_names,
-        which_district_color: which_district_color
+        which_district_color: which_district_color,
+        plan_array: plan_array
         };
 }
