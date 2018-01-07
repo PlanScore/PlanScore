@@ -60,22 +60,17 @@
     <ul class="row" id="scores-box">
         {# these list items will be populated by load_plan_score() #}
 
-        <li class="col-md-3" id="score-efficiency-gap">
+        <li class="col-md-4" id="score-efficiency-gap">
             <h3>Efficiency Gap</h3>
             <p>B+</p>
             <p>Not enough information to calculate this score.</p>
         </li>
-        <li class="col-md-3" id="score-population">
+        <li class="col-md-4" id="score-population">
             <h3>Population</h3>
             <p class="score-na">N/A</p>
             <p>Not enough information to calculate this score.</p>
         </li>
-        <li class="col-md-3">
-            <h3>Compactness</h3>
-            <p class="score-na">N/A</p>
-            <p>Not enough information to calculate this score.</p>
-        </li>
-        <li class="col-md-3" id="score-demographics">
+        <li class="col-md-4" id="score-demographics">
             <h3>Demographics</h3>
             <p class="score-na">N/A</p>
             <p>Not enough information to calculate this score.</p>
@@ -89,12 +84,11 @@
     </div>
     </section>
 	<script language="javascript">
-	    var fields = {{ fields|tojson }},
-	        plan_id = location.search.replace('?', ''),
+	    var plan_id = location.search.replace('?', ''),
 	        plan_url = format_url('{{ data_url_pattern }}', plan_id),
 	        geom_url = format_url('{{ geom_url_pattern }}', plan_id);
 
-	    load_plan_score(plan_url, fields,
+	    load_plan_score(plan_url,
 	        document.getElementById('message'),
 	        document.getElementById('plan-score'),
 	        document.getElementById('plan-description'),

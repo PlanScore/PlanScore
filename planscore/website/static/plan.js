@@ -32,6 +32,11 @@ function nice_gap(value)
     }
 }
 
+function nice_string(value)
+{
+    return value.replace(/./gm, function(c) { return "&#" + c.charCodeAt(0) + ";" });
+}
+
 function clear_element(el)
 {
     while(el.lastChild)
@@ -79,7 +84,8 @@ function which_score_column_names(plan)
 {
     if(typeof plan.summary['Efficiency Gap SD'] === 'number')
     {
-        return ['Population 2015', 'Black Population 2015', 'Democratic Votes', 'Republican Votes'];
+        return ['Population 2015', 'Black Population 2015', 'Democratic Votes',
+            'Republican Votes', 'Polsby-Popper', 'Reock'];
     }
 
     if(typeof plan.summary['US House Efficiency Gap'] === 'number')
@@ -275,7 +281,68 @@ function hide_message(score_section, message_section)
     message_section.style.display = 'none';
 }
 
-function load_plan_score(url, fields, message_section, score_section,
+/*
+ * Return a rows * columns matrix representing a scored plan table
+ */
+function plan_array(plan)
+{
+    var fields = ['Population 2015', 'Black Population 2015', 'Democratic Votes',
+            'Republican Votes', 'Polsby-Popper', 'Reock'];
+
+    // Build list of columns
+    var head_row = ['District'],
+        all_rows = [head_row],
+        field, current_row, field_missing;
+
+    if(plan.districts.length == 0)
+    {
+        return undefined;
+    }
+    
+    for(var j = 0; j < plan.districts.length; j++)
+    {
+        all_rows.push([(j + 1).toString()]);
+    }
+    
+    for(var i in fields)
+    {
+        field = fields[i];
+        field_missing = false;
+        
+        for(var j in plan.districts)
+        {
+            if(field in plan.districts[j].totals) {
+                continue;
+            } else if('compactness' in plan.districts[j] && field in plan.districts[j].compactness) {
+                continue;
+            } else {
+                field_missing = true;
+            }
+        }
+        
+        if(field_missing) {
+            continue;
+        }
+        
+        head_row.push(field);
+
+        for(var j in plan.districts)
+        {
+            current_row = all_rows[parseInt(j) + 1];
+        
+            if(field in plan.districts[j].totals) {
+                current_row.push(plan.districts[j].totals[field]);
+
+            } else if('compactness' in plan.districts[j] && field in plan.districts[j].compactness) {
+                current_row.push(plan.districts[j].compactness[field]);
+            }
+        }
+    }
+    
+    return all_rows;
+}
+
+function load_plan_score(url, message_section, score_section,
     description, table, score_EG, score_pop, score_dem, map_url, map_div)
 {
     var request = new XMLHttpRequest();
@@ -304,77 +371,36 @@ function load_plan_score(url, fields, message_section, score_section,
                 ? 'Uploaded on '+ modified_at.toLocaleDateString()
                 : 'Uploaded at '+ modified_at.toLocaleString()));
 
-        // Build list of columns
-        var current_column = ['District'],
-            all_columns = [current_column],
-            field;
-
-        for(var j = 0; j < plan.districts.length; j++)
-        {
-            current_column.push(j + 1);
-        }
-
-        for(var i in fields)
-        {
-            field = fields[i];
-            current_column = [field];
-            all_columns.push(current_column);
-
-            for(var j in plan.districts)
-            {
-                current_column.push(plan.districts[j].totals[field]);
-            }
-        }
-
-        // Remove any column that doesn't belong
-        var column_names = which_score_column_names(plan);
-
-        for(var i = all_columns.length - 1; i > 0; i--)
-        {
-            if(column_names.indexOf(all_columns[i][0]) === -1)
-            {
-                all_columns.splice(i, 1);
-            }
-        }
+        // Build the results table
+        var table_array = plan_array(plan),
+            tags, value;
         
-        // Sort columns in table
-        all_columns.sort(function(a, b) { return column_names.indexOf(a[0]) - column_names.indexOf(b[0]) });
-
-        // Write table out to page
-        var new_row = document.createElement('tr'),
-            new_cell;
-
-        for(var i in all_columns)
+        tags = ['<thead>', '<tr>'];
+        for(var j = 0; j < table_array[0].length; j++)
         {
-            new_cell = document.createElement('th');
-            new_cell.innerText = all_columns[i][0];
-            new_row.appendChild(new_cell);
+            tags = tags.concat(['<th>', table_array[0][j], '</th>']);
         }
-
-        var thead = document.createElement('thead'),
-            tbody = document.createElement('tbody');
-
-        table.appendChild(thead);
-        table.appendChild(tbody);
-        thead.appendChild(new_row);
-
-        for(var j = 1; j < all_columns[0].length; j++)
+        tags = tags.concat(['</tr>', '</thead>', '<tbody>']);
+        for(var i = 1; i < table_array.length; i++)
         {
-            new_row = document.createElement('tr');
-            new_cell = document.createElement('td');
-            new_cell.innerText = all_columns[0][j];
-            new_row.appendChild(new_cell);
-
-            for(var i = 1; i < all_columns.length; i++)
+            tags = tags.concat(['<tr>']);
+            for(var j = 0; j < table_array[i].length; j++)
             {
-                new_cell = document.createElement('td');
-                new_cell.innerText = nice_count(all_columns[i][j]);
-                new_row.appendChild(new_cell);
+                if(typeof table_array[i][j] == 'number') {
+                    value = nice_count(table_array[i][j]);
+                } else if(typeof table_array[i][j] == 'string') {
+                    value = nice_string(table_array[i][j]);
+                } else {
+                    value = '???';
+                }
+                tags = tags.concat(['<td>', value, '</td>']);
             }
-
-            tbody.appendChild(new_row);
+            tags = tags.concat(['</tr>']);
         }
 
+        tags = tags.concat(['</tbody>']);
+        table.innerHTML = tags.join('');
+        
         // Populate scores.
         show_efficiency_gap_score(plan, score_EG);
         show_population_score(plan, score_pop);
@@ -465,11 +491,12 @@ function load_plan_map(url, div, plan)
 if(typeof module !== 'undefined' && module.exports)
 {
     module.exports = {
-        format_url: format_url, nice_count: nice_count,
+        format_url: format_url, nice_count: nice_count, nice_string: nice_string,
         nice_percent: nice_percent, nice_gap: nice_gap, date_age: date_age,
         what_score_description_html: what_score_description_html,
         which_score_summary_name: which_score_summary_name,
         which_score_column_names: which_score_column_names,
-        which_district_color: which_district_color
+        which_district_color: which_district_color,
+        plan_array: plan_array
         };
 }
