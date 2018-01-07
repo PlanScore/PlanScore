@@ -64,7 +64,7 @@ assert.equal(plan.which_score_summary_name(NC_multisim_index),
     'Efficiency Gap', 'Should pick out the right summary name');
 
 assert.deepEqual(plan.which_score_column_names(NC_multisim_index),
-    ['Population 2015', 'Black Population 2015', 'Democratic Votes', 'Republican Votes'],
+    ['Population 2015', 'Black Population 2015', 'Democratic Votes', 'Republican Votes', 'Polsby-Popper', 'Reock'],
     'Should pick out the right column names');
 
 assert.equal(plan.which_district_color(NC_multisim_index.districts[0], NC_multisim_index),

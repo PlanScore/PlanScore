@@ -79,7 +79,8 @@ function which_score_column_names(plan)
 {
     if(typeof plan.summary['Efficiency Gap SD'] === 'number')
     {
-        return ['Population 2015', 'Black Population 2015', 'Democratic Votes', 'Republican Votes'];
+        return ['Population 2015', 'Black Population 2015', 'Democratic Votes',
+            'Republican Votes', 'Polsby-Popper', 'Reock'];
     }
 
     if(typeof plan.summary['US House Efficiency Gap'] === 'number')
@@ -322,7 +323,12 @@ function load_plan_score(url, fields, message_section, score_section,
 
             for(var j in plan.districts)
             {
-                current_column.push(plan.districts[j].totals[field]);
+                if(field in plan.districts[j].totals) {
+                    current_column.push(plan.districts[j].totals[field]);
+
+                } else if(field in plan.districts[j].compactness) {
+                    current_column.push(100 * plan.districts[j].compactness[field]);
+                }
             }
         }
 
