@@ -296,7 +296,7 @@ function plan_array(plan)
     
     for(var j = 0; j < plan.districts.length; j++)
     {
-        all_rows.push([j + 1]);
+        all_rows.push([(j + 1).toString()]);
     }
     
     for(var i in fields)
@@ -337,7 +337,7 @@ function plan_array(plan)
     return all_rows;
 }
 
-function load_plan_score(url, fields, message_section, score_section,
+function load_plan_score(url, message_section, score_section,
     description, table, score_EG, score_pop, score_dem, map_url, map_div)
 {
     var request = new XMLHttpRequest();
@@ -366,82 +366,33 @@ function load_plan_score(url, fields, message_section, score_section,
                 ? 'Uploaded on '+ modified_at.toLocaleDateString()
                 : 'Uploaded at '+ modified_at.toLocaleString()));
 
-        // Build list of columns
-        var current_column = ['District'],
-            all_columns = [current_column],
-            field;
-
-        for(var j = 0; j < plan.districts.length; j++)
+        // Build the results table
+        var table_array = plan_array(plan),
+            tags;
+        
+        tags = ['<thead>', '<tr>'];
+        for(var j = 0; j < table_array[0].length; j++)
         {
-            current_column.push(j + 1);
+            tags = tags.concat(['<th>', table_array[0][j], '</th>']);
         }
-
-        for(var i in fields)
+        tags = tags.concat(['</tr>', '</thead>', '<tbody>']);
+        for(var i = 1; i < table_array.length; i++)
         {
-            field = fields[i];
-            current_column = [field];
-            all_columns.push(current_column);
-
-            for(var j in plan.districts)
+            tags = tags.concat(['<tr>']);
+            for(var j = 0; j < table_array[i].length; j++)
             {
-                if(field in plan.districts[j].totals) {
-                    current_column.push(plan.districts[j].totals[field]);
-
-                } else if(field in plan.districts[j].compactness) {
-                    current_column.push(100 * plan.districts[j].compactness[field]);
+                if(typeof table_array[i][j] == 'number') {
+                    tags = tags.concat(['<td>', nice_count(table_array[i][j]), '</td>']);
+                } else {
+                    tags = tags.concat(['<td>', table_array[i][j], '</td>']);
                 }
             }
+            tags = tags.concat(['</tr>']);
         }
 
-        // Remove any column that doesn't belong
-        var column_names = which_score_column_names(plan);
-
-        for(var i = all_columns.length - 1; i > 0; i--)
-        {
-            if(column_names.indexOf(all_columns[i][0]) === -1)
-            {
-                all_columns.splice(i, 1);
-            }
-        }
+        tags = tags.concat(['</tbody>']);
+        table.innerHTML = tags.join('');
         
-        // Sort columns in table
-        all_columns.sort(function(a, b) { return column_names.indexOf(a[0]) - column_names.indexOf(b[0]) });
-
-        // Write table out to page
-        var new_row = document.createElement('tr'),
-            new_cell;
-
-        for(var i in all_columns)
-        {
-            new_cell = document.createElement('th');
-            new_cell.innerText = all_columns[i][0];
-            new_row.appendChild(new_cell);
-        }
-
-        var thead = document.createElement('thead'),
-            tbody = document.createElement('tbody');
-
-        table.appendChild(thead);
-        table.appendChild(tbody);
-        thead.appendChild(new_row);
-
-        for(var j = 1; j < all_columns[0].length; j++)
-        {
-            new_row = document.createElement('tr');
-            new_cell = document.createElement('td');
-            new_cell.innerText = all_columns[0][j];
-            new_row.appendChild(new_cell);
-
-            for(var i = 1; i < all_columns.length; i++)
-            {
-                new_cell = document.createElement('td');
-                new_cell.innerText = nice_count(all_columns[i][j]);
-                new_row.appendChild(new_cell);
-            }
-
-            tbody.appendChild(new_row);
-        }
-
         // Populate scores.
         show_efficiency_gap_score(plan, score_EG);
         show_population_score(plan, score_pop);

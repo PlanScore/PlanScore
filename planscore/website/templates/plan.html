@@ -84,13 +84,11 @@
     </div>
     </section>
 	<script language="javascript">
-	    var fields = ['Population 2015', 'Black Population 2015', 'Democratic Votes',
-	            'Republican Votes', 'Polsby-Popper', 'Reock'],
-	        plan_id = location.search.replace('?', ''),
+	    var plan_id = location.search.replace('?', ''),
 	        plan_url = format_url('{{ data_url_pattern }}', plan_id),
 	        geom_url = format_url('{{ geom_url_pattern }}', plan_id);
 
-	    load_plan_score(plan_url, fields,
+	    load_plan_score(plan_url,
 	        document.getElementById('message'),
 	        document.getElementById('plan-score'),
 	        document.getElementById('plan-description'),

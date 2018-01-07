@@ -91,11 +91,11 @@ assert.deepEqual(plan_array4[0],
     'Should pick out the right column names');
 
 assert.deepEqual(plan_array4[1],
-    [1, 1028053.906695856, 1140266.0413978184],
+    ['1', 1028053.906695856, 1140266.0413978184],
     'Should pick out the right column values');
 
 assert.deepEqual(plan_array4[13],
-    [13, 841420.1306598457, 1149160.4424367815],
+    ['13', 841420.1306598457, 1149160.4424367815],
     'Should pick out the right column values');
 
 // North Carolina plan in proposed final form
@@ -108,11 +108,11 @@ assert.deepEqual(plan_array5[0],
     'Should pick out the right column names');
 
 assert.deepEqual(plan_array5[1],
-    [1, 734814, 339971, 226503, 115999, 0.199, 0.346],
+    ['1', 734814, 339971, 226503, 115999, 0.199, 0.346],
     'Should pick out the right column values');
 
 assert.deepEqual(plan_array5[13],
-    [13, 747501, 170567, 155381, 198285, 0.227, 0.355],
+    ['13', 747501, 170567, 155381, 198285, 0.227, 0.355],
     'Should pick out the right column values');
 
 // Assorted functions
