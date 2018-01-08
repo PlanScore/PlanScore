@@ -57,10 +57,10 @@
                 </div>
 
                 <div class="hidden-xs row" id="yearpicker-big"></div>
-                <div class="gray" style="clear: both;">
+                <div class="gray hidden-xs" style="clear: both;">
                     <p>New Plans</p>
-                    <span>Drawing your own district map of Pennsylvania? Upload it here to find out how well it scores on these and other measures.</span>
-                    <a class="btn btn-default" href="../scoreyours/" target="_blank">Upload Plan</a>
+                    <span>Drawing your own district map of Pennsylvania? Upload it here to find out how well it scores on these and other metrics.</span>
+                    <a class="btn btn-default" href="https://planscore.org/upload.html">Upload Plan</a>
                 </div>
             </div>
             <div class="col-xs-12 col-sm-9" id="maincontent">
@@ -70,9 +70,6 @@
                 -->
                 <span data-hasdata-atall="true">
                     <h2 class="hidden-xs"><span data-field="title"></span></h2>
-                    <!--
-                    <p>We have data about <span data-metric="plancount" class="bold big">0</span> plans, covering <span data-metric="electioncount" class="bold big">0</span> elections.</p>
-                    -->
                     <p>Pennsylvania's elected state legislators drew the borders of U.S. Congressional and Pennsylvania state legislative districts to create the map.</p>
                 </span>
 
@@ -101,8 +98,8 @@
 
                     <ul class="nav nav-tabs" id="tabs-metrics">
                         <li class="active"><a href="#tab-efficiencygap" data-toggle="tab">Efficiency Gap <span class="biasicon"></span></a></li>
-                        <li><a href="#tab-meanmedian" data-toggle="tab">Mean/<span class="mobilespace"> </span>Median <span class="biasicon"></span></a></li>
                         <li><a href="#tab-partisanbias" data-toggle="tab">Partisan Bias <span class="biasicon"></span></a></li>
+                        <li><a href="#tab-meanmedian" data-toggle="tab">Mean-<span class="mobilespace"> </span>Median <span class="biasicon"></span></a></li>
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane fade in active" id="tab-efficiencygap">
@@ -121,29 +118,9 @@
                                     <div class="metric-bellchart" id="metric-bellchart-eg"></div>
                                 </div>
                                 <div class="col-xs-12 col-md-6">
-                                    <p>Efficiency Gap (EG) shows relative wasted votes between parties, comparing the total statewide number of superfluous and losing votes for each party. <a href="/efficiencygap/">Learn more: What is the efficiency gap and how do we calculate it?</a></p>
+                                    <p>The efficiency gap is the difference between the parties’ respective wasted votes in an election divided by the total number of votes cast. <a href="/efficiencygap/">Learn more: What is the efficiency gap and how do we calculate it?</a></p>
 
                                     <div id="chart-egvoteswasted"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="tab-pane fade" id="tab-meanmedian">
-                            <div class="metricdrsum">
-                                <span data-field="metricpercent"></span> <span data-field="metricparty"></span>
-                            </div>
-                            <div class="metricdrblurb">
-                                <span data-field="metricstatement" class="big"></span>
-                            </div>
-                            <br style="clear: both;" />
-                            <br/>
-                            <div class="row">
-                                <div class="col-xs-12 col-sm-6">
-                                    <h2>How Does This Plan Compare?</h2>
-                                    <p class="big"><span data-field="biasstatement"></span></p>
-                                    <div class="metric-bellchart" id="metric-bellchart-mm"></div>
-                                </div>
-                                <div class="col-xs-12 col-sm-6">
-                                    <p>Mean/Median (MM) shows partisan packing by a majority party, comparing the party’s vote share in the state’s deciding median district to its overall state share. <a href="/meanmedian/">Learn More</a></p>
                                 </div>
                             </div>
                         </div>
@@ -163,7 +140,27 @@
                                     <div class="metric-bellchart" id="metric-bellchart-pb"></div>
                                 </div>
                                 <div class="col-xs-12 col-sm-6">
-                                    <p>Partisan Bias (PB) shows how much a system unfairly favors a single party, comparing the number of votes cast in an election to the number of legislative seats won. <a href="/partisanbias/">Learn More</a></p>
+                                    <p>Partisan bias is the difference between each party’s seat share and 50% in a hypothetical, perfectly tied election. <a href="/partisanbias/">Learn More</a></p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="tab-meanmedian">
+                            <div class="metricdrsum">
+                                <span data-field="metricpercent"></span> <span data-field="metricparty"></span>
+                            </div>
+                            <div class="metricdrblurb">
+                                <span data-field="metricstatement" class="big"></span>
+                            </div>
+                            <br style="clear: both;" />
+                            <br/>
+                            <div class="row">
+                                <div class="col-xs-12 col-sm-6">
+                                    <h2>How Does This Plan Compare?</h2>
+                                    <p class="big"><span data-field="biasstatement"></span></p>
+                                    <div class="metric-bellchart" id="metric-bellchart-mm"></div>
+                                </div>
+                                <div class="col-xs-12 col-sm-6">
+                                    <p>The mean-median difference is a party’s median vote share minus its mean vote share, across all of a plan’s districts. <a href="/meanmedian/">Learn More</a></p>
                                 </div>
                             </div>
                         </div>

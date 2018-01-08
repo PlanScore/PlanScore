@@ -416,19 +416,6 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     }
 
     // okay so we have SOME data for this state + district type
-    // how many distinct plans and years are listed for this district type?
-    /*
-    const distinct_years = {};
-    const distinct_plans = {};
-    allcsvdata.forEach((row) => {
-        distinct_years[row.year] = true;
-        distinct_plans[row.plan] = true;
-    });
-    $('span[data-metric="electioncount"]').text(Object.keys(distinct_years).length.toLocaleString());
-    $('span[data-metric="plancount"]').text(Object.keys(distinct_plans).length.toLocaleString());
-    */
-
-    // okay so we have SOME data for this state + district type
     // redraw the large yearpicker, indicating years in which a new plan was implemented
     redrawYearPicker(allcsvdata);
 
