@@ -10,23 +10,10 @@ import { BIAS_SPREAD_SCALING } from "./planscore_common";
 import { lookupBiasColor, lookupBiasDescription, lookupBiasFavorParty } from "./planscore_common";
 
 // bundle polyfills and local/vendor libraries specific to this page
+require('babel-polyfill');
+require('core-js/fn/object/entries');
 //require('./js/leaflet-control-basemapbar.js');
 //require('./js/leaflet-control-basemapbar.css');
-
-
-
-//
-// POLYFILLS
-//
-
-if (! Object.entries) {
-    Object.entries = function(obj) {
-        var ownProps = Object.keys(obj), i = ownProps.length, resArray = new Array(i);
-        while (i--) resArray[i] = [ownProps[i], obj[ownProps[i]]];
-        return resArray;
-    };
-}
-
 
 //
 // CONSTANTS
