@@ -54,6 +54,7 @@ const BELLCURVE_SPREAD = {
 // not all fields are listed here, just the ones which vary between election view and plan view
 const ELECTION_PLAN_RECORD_FIELDS = {
     'election': {
+        // NOTE per issue 94, the 6 per-election fields (eg, bias, mm + rank) are stripped from CSVs to make them more compact downloads, until we reinstate election-year displays
         'eg': 'eg_adj',
         'egrank': 'eg_percentrank',
         'bias': 'bias',
