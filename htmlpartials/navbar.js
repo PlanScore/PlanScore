@@ -8,7 +8,7 @@ const htmlblock = `
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="/index-new.html"><img id="brand-logo" src="/images/logo.svg"></img></a>
+                <a class="navbar-brand" href="/index-new.html"><img id="brand-logo" src="/images/logo.svg" /></a>
             </div>
             <div class="collapse navbar-collapse" id="navbar">
                 <ul class="nav navbar-nav navbar-right">
