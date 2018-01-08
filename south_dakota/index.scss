@@ -12,9 +12,16 @@ h1.state_name {
 }
 
 #yearpicker-small {
+    margin-bottom: 10px;
+
     > div {  /* the plan/election picker DIVs */
-        div {  /* all three cells: prev, readout, next */
-            padding: 0;
+        div:first-child {
+            text-align: left;
+            padding-right: 0;
+        }
+        div:last-child {
+            text-align: right;
+            padding-left: 0;
         }
         i {  /* the prev and next buttons */
             font-size: 24px;
