@@ -43,8 +43,10 @@
         <!-- the mobile + desktop year picker UIs; see initYearPickers() and of course selectYear() -->
         <div class="hidden-xs" id="yearpicker-big">
         </div>
-        <div class="right">
-            <select id="yearpicker-small" class="visible-xs-inline"></select>
+        <div id="yearpicker-small" class="row visible-xs-block">
+            <div class="col-xs-1"><i class="glyphicon glyphicon-chevron-left" data-role="prev" title="Previous year"></i></div>
+            <div class="col-xs-10 readout"><!-- current year here --></div>
+            <div class="col-xs-1"><i class="glyphicon glyphicon-chevron-right" data-role="next" title="Next year"></i></div>
         </div>
 
         <div id="map"></div>

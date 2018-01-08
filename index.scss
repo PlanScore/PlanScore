@@ -208,3 +208,23 @@
         width: 14px;
     }
 }
+
+#yearpicker-small {
+    div:first-child {
+        text-align: left;
+        padding-right: 0;
+    }
+    div:last-child {
+        text-align: right;
+        padding-left: 0;
+    }
+    i {  /* the prev and next buttons */
+        font-size: 24px;
+        cursor: pointer;
+    }
+    div.readout {  /* the year/plan readout */
+        text-align: center;
+        font-weight: bold;
+        font-size: 20px;
+    }
+}

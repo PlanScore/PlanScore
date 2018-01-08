@@ -65,17 +65,25 @@ window.initMapLegend = () => {
 };
 
 window.initYearPickers = () => {
-    // there are 2 year pickers: mobile and full-size
-    // mobile is a simple SELECT element and changing it selects a year
+    // there are 2 year pickers: mobile and desktop
     // desktop is a fancy series of HTML/CSS dots which can be clicked to select a year
+    // mobile is a prev/next thing to cycle years with arrows
     // both of these connect to selectYear()
 
     const $picker_small = $('#yearpicker-small');
-    PLAN_YEARS.slice().reverse().forEach((year) => {
-        $('<option></option>').text(year).prop('value', year).appendTo($picker_small);
+    const $year_listing = $picker_small.find('div.readout');
+    PLAN_YEARS.forEach((year) => {
+        $(`<span data-year="${year}">${year}</span>`).appendTo($year_listing).hide();
     });
-    $picker_small.change(function () {
-        const year = $(this).val();
+
+    $picker_small.on('click', 'i[data-role="next"]', function () {
+        const $targetbutton = $year_listing.find('span:visible').next('span');
+        const year = $targetbutton.attr('data-year');
+        selectYear(year);
+    });
+    $picker_small.on('click', 'i[data-role="prev"]', function () {
+        const $targetbutton = $year_listing.find('span:visible').prev('span');
+        const year = $targetbutton.attr('data-year');
         selectYear(year);
     });
 
@@ -317,8 +325,17 @@ window.selectYear = (year) => {
     // UI update: highlight the big/desktop yeapicker button
     $('#yearpicker-big div').removeClass('active').filter(`[data-year="${year}"]`).addClass('active');
 
-    // UI update: select the smaller/mobile yearpicker
-    $('#yearpicker-small').val(year);
+    // UI update: select the mobile yearpicker
+    // if the selected year is the first/last then show/hide the prev/next buttons
+    const $small_button = $('#yearpicker-small span').hide().filter(`[data-year="${year}"]`).show();
+    const $prevbutton = $('#yearpicker-small i[data-role="prev"]');
+    const $nextbutton = $('#yearpicker-small i[data-role="next"]');
+//gda
+
+    if ($small_button.is(':first-child')) $prevbutton.hide();
+    else                                  $prevbutton.show();
+    if ($small_button.is(':last-child'))  $nextbutton.hide();
+    else                                  $nextbutton.show();
 
     // save to the state and refresh the map + data
     CURRENT_VIEW.year = year;
