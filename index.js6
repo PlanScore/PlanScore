@@ -29,7 +29,6 @@ const CURRENT_VIEW = {};
 
 $(document).ready(function () {
     initYearPickers();
-    initStatePicker();
     initBoundaryPicker();
     initLoadStartingConditions();  // this will implicitly call loadDataForSelectedBoundaryAndYear() after setup, loading the map
 
@@ -96,26 +95,6 @@ window.initYearPickers = () => {
     $picker_big.on('click', 'div', function () {
         const year = $(this).attr('data-year');
         selectYear(year);
-    });
-};
-
-window.initStatePicker = () => {
-    // state picker is the UI for selectState() to show a popup for the given state
-    const $picker = $('#statepicker');
-    $('<option></option>').text('(select state)').prop('value', '').appendTo($picker);
-    for (const [stateabbr, statename] of Object.entries(STATE_CODE_TO_NAME)) {
-        $('<option></option>').text(statename).prop('value', stateabbr).appendTo($picker);
-    }
-
-    $picker.change(function () {
-        const stateabbr = $(this).val();
-        selectState(stateabbr);
-    });
-
-    // when the X button in the state popup is clicked, explicitly select no state which will close this popup
-    $('#stateinfo-popup button').click(function (event) {
-        event.stopPropagation();
-        selectState(null);
     });
 };
 
@@ -196,7 +175,6 @@ window.loadDataForSelectedBoundaryAndYear = () => {
             // an error, meaning bad network or missing CSV
             // fortunately we constructed a "blank" structure above, and can roll with that
             renderMapWithNewData(chartdata);
-            renderMapLegend();
             updateStateListingSwatches(chartdata);
             updateStateListingHashes(chartdata);
         },
@@ -360,9 +338,6 @@ window.selectBoundaryType = (boundtype) => {
 window.selectState = (stateabbr) => {
     // note that blank is an acceptable option to select no state at all
     if (! stateabbr) stateabbr = '';
-
-    // UI update: set the selector
-    $('#statepicker').val(stateabbr);
 
     // passing empty/null stateabbr is how you explicitly select no state
     if (! stateabbr) {
