@@ -179,19 +179,32 @@ window.initMap = () => {
 
 window.initYearPickers = () => {
     // mobile
-    // a simple SELECT to choose a year, and trigger selectElectionOrPlan()
-    const $picker_small = $('#yearpicker-small');
-    PLAN_YEARS.slice().reverse().forEach((year) => {
-        const $group = $(`<optgroup label="${year}"></optgroup>`).appendTo($picker_small);
-        $('<option></option>').text(`${year} Election Outcomes`).prop('value', `${year}-election`).appendTo($group);
-        $('<option></option>').text(`${year} Redistricting Plan`).prop('value', `${year}-plan`).appendTo($group);
+    // two separate UIs for cycling through prev/next election year or district plan
+    // only one is visible and that's based on whether our URL (or defaults) indicate that we want to see a year/plan
+    // see initLoadStartingConditions() for that startup logic to show only one
+    // see selectElectionOrPlan() which does the real work when prev/next are performed
+    const $plan_picker = $('#yearpicker-small > div[data-picker="plan"]');
+    const $year_picker = $('#yearpicker-small > div[data-picker="election"]');
+    const $year_listing = $year_picker.find('div.readout');
+    const $plan_listing = $plan_picker.find('div.readout');
+
+    PLAN_YEARS.forEach((year) => {
+        $(`<span data-year="${year}">${year} Election</span>`).appendTo($year_listing).hide();
     });
-    $picker_small.change(function () {
-        const value = $(this).val();
-        const year  = value.split('-')[0];
-        const what  = value.split('-')[1];
-        selectElectionOrPlan(year, what);
+
+    $year_picker.on('click', 'i[data-role="next"]', function () {
+        const nextyear = $year_listing.find('span:visible').next('span');
+        const year = nextyear.attr('data-year');
+        selectElectionOrPlan(year, 'election');
     });
+    $year_picker.on('click', 'i[data-role="prev"]', function () {
+        const nextyear = $year_listing.find('span:visible').prev('span');
+        const year = nextyear.attr('data-year');
+        selectElectionOrPlan(year, 'election');
+    });
+
+//gda
+// now the plan picker
 
     // desktop
     // the list of "year beads" running down the side, which is two columns for election years (right) and district plans (left)
@@ -204,7 +217,6 @@ window.initYearPickers = () => {
     $('<span>Election<br>Years</span>').appendTo($electionsdiv);
     $('<span>Enacted<br>Plans</span>').appendTo($plansdiv);
 
-//gda
     PLAN_YEARS.slice().reverse().forEach((year) => {
         $(`<a data-year="${year}" title="Show details for the ${year} election year"><span></span> ${year}</a>`).appendTo($electionsdiv);
         $(`<a data-year="${year}" title="Show details for this districting plan"><span></span></a>`).appendTo($plansdiv);  // will be tagged with data-plan attribute when we have data
@@ -250,6 +262,10 @@ window.initLoadStartingConditions = () => {
         what = year_and_type[2];  // election or plan
         type = year_and_type[3];  // district type
     }
+
+    // toggle which yeapricker-small is displayed
+    // per issue 129 only one of these is visible and that depends on whether the page loads with a plan/election
+    $('#yearpicker-small > div').hide().filter(`[data-picker="${what}"]`).show();
 
     // ready, set, go
     selectElectionOrPlan(year, what);
@@ -401,6 +417,7 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
 
     // okay so we have SOME data for this state + district type
     // how many distinct plans and years are listed for this district type?
+    /*
     const distinct_years = {};
     const distinct_plans = {};
     allcsvdata.forEach((row) => {
@@ -409,6 +426,7 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     });
     $('span[data-metric="electioncount"]').text(Object.keys(distinct_years).length.toLocaleString());
     $('span[data-metric="plancount"]').text(Object.keys(distinct_plans).length.toLocaleString());
+    */
 
     // okay so we have SOME data for this state + district type
     // redraw the large yearpicker, indicating years in which a new plan was implemented
@@ -460,7 +478,7 @@ window.updateMetricsTitle = (yeardata) => {
         title = `${maxyear} Redistricting Plan`;  // don't say "2000-2000 plan"
     }
     if (CURRENT_VIEW.planorelection == 'election') {
-        title = `${title}: ${year} Election`;
+        title = `${year} Election`;
     }
 
     // apply it
@@ -663,50 +681,73 @@ window.updateWastedVotesChart = (yeardata) => {
 };
 
 window.redrawYearPicker = (csvdata) => {
+    // THE BIG/DESKTOP YEARPICKER
     // the big yearpicker has a button to select the given election year
     // but also the left-most dot-and-dash thing indicating when a new plan was enacted
     // while the years are a universal constant, the plan-enactment years depends on what district type we're discussing
     // so must be redrawn here
+    {
+        // a lookup dict: year => plan
+        const yearplans = {};
+        csvdata.forEach((row) => { yearplans[row.year] = row.plan; });
 
-    // a lookup dict: year => plan
-    const yearplans = {};
-    csvdata.forEach((row) => { yearplans[row.year] = row.plan; });
+        // the A links on the plan side & year side
+        const $planslinks = $('#yearpicker-big div.plans').find('a');
+        const $yearslinks = $('#yearpicker-big div.elections').find('a');
 
-    // the A links on the plan side & year side
-    const $planslinks = $('#yearpicker-big div.plans').find('a');
-    const $yearslinks = $('#yearpicker-big div.elections').find('a');
+        // go over each year in the universe (which was used to construct the $yearpicker_buttons) and find its row
+        // tag the row as being plan-start or plan-continue, for CSS purposes
+        PLAN_YEARS.slice().reverse().forEach((year, index, allyears) => {
+            const thisyearplan = yearplans[year];
+            const prevyearplan = yearplans[allyears[index+1]];
+            const $planlink = $planslinks.filter(`[data-year="${year}"]`);
+            const $yearlink = $yearslinks.filter(`[data-year="${year}"]`);
+            // console.log([ year, thisyearplan, prevyearplan, thisyearplan !== prevyearplan ? 'newplan' : 'continue' ]);
 
-    // go over each year in the universe (which was used to construct the $yearpicker_buttons) and find its row
-    // tag the row as being plan-start or plan-continue, for CSS purposes
-    PLAN_YEARS.slice().reverse().forEach((year, index, allyears) => {
-        const thisyearplan = yearplans[year];
-        const prevyearplan = yearplans[allyears[index+1]];
-        const $planlink = $planslinks.filter(`[data-year="${year}"]`);
-        const $yearlink = $yearslinks.filter(`[data-year="${year}"]`);
-        // console.log([ year, thisyearplan, prevyearplan, thisyearplan !== prevyearplan ? 'newplan' : 'continue' ]);
+            // tag the plan as either begin/continue
+            // or if we have no data, hide both the plan and year links
+            // use "thisyearplan" for both sides, since it would be filled in with a plan ID if we had any data at all
+            if (thisyearplan) {
+                $yearlink.show();
+                $planlink.attr('data-plan', thisyearplan).show();  // used for click handling so we know what plan to load
 
-        // tag the plan as either begin/continue
-        // or if we have no data, hide both the plan and year links
-        // use "thisyearplan" for both sides, since it would be filled in with a plan ID if we had any data at all
-        if (thisyearplan) {
-            $yearlink.show();
-            $planlink.attr('data-plan', thisyearplan).show();  // used for click handling so we know what plan to load
+                if (thisyearplan == prevyearplan) $planlink.removeClass('plan-begin').addClass('plan-continue').prop('title', 'Show details for this districting plan');
+                else                              $planlink.removeClass('plan-continue').addClass('plan-begin').prop('title', `A new district plan was implemented in ${year}. Show details for this districting plan.`);
+            }
+            else {
+                $yearlink.hide();
+                $planlink.hide();
+            }
+        });
 
-            if (thisyearplan == prevyearplan) $planlink.removeClass('plan-begin').addClass('plan-continue').prop('title', 'Show details for this districting plan');
-            else                              $planlink.removeClass('plan-continue').addClass('plan-begin').prop('title', `A new district plan was implemented in ${year}. Show details for this districting plan.`);
+        // final touch: if were showing a plan then highlight the plan visually
+        if (CURRENT_VIEW.planorelection == 'plan') {
+            const $plinks = $('#yearpicker-big div.plans a').removeClass('active');
+            const plan = $plinks.filter(`[data-year="${CURRENT_VIEW.year}"]`).first().attr('data-plan');
+            $plinks.filter(`[data-plan="${plan}"]`).addClass('active');
         }
-        else {
-            $yearlink.hide();
-            $planlink.hide();
-        }
-    });
-
-    // final touch: if were showing a plan then highlight the plan visually
-    if (CURRENT_VIEW.planorelection == 'plan') {
-        const $plinks = $('#yearpicker-big div.plans a').removeClass('active');
-        const plan = $plinks.filter(`[data-year="${CURRENT_VIEW.year}"]`).first().attr('data-plan');
-        $plinks.filter(`[data-plan="${plan}"]`).addClass('active');
     }
+
+    // THE SMALL/MOBILE YEARPICKER
+    // update the election year readout, showing the selected year
+    // as well as the next/prev buttons if we are now st the first/last
+    {
+        // show this year's readout
+        const $picker    = $('#yearpicker-small > div[data-picker="election"]');
+        const $yearlinks = $picker.find('> div.readout > span').hide();
+        const $thislink  = $yearlinks.filter(`[data-year="${CURRENT_VIEW.year}"]`).show();
+        const $prevbutton = $picker.find('i[data-role="prev"]').hide();
+        const $nextbutton = $picker.find('i[data-role="next"]').hide();
+
+        // detect first year and disable prev; detect last year and disable next
+        if ($thislink.is(':first-child')) $prevbutton.hide();
+        else                              $prevbutton.show();
+        if ($thislink.is(':last-child'))  $nextbutton.hide();
+        else                              $nextbutton.show();
+    }
+
+//gda
+// now the plan picker
 };
 
 window.drawBiasBellCharts = (yeardata) => {

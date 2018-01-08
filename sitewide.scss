@@ -176,6 +176,13 @@ p {
     color: #666666;
 }
 
+select {
+    padding: 5px;
+    color: $gray-med;
+    border-color: $gray-med;
+    border-radius: 2px;
+}
+
 .btn-default {
     text-shadow: none;
     color: $gray-med;
@@ -320,19 +327,6 @@ div.tab-content, div.metric-block {
         font-size: 13px;
     }
 }
-
-#yearpicker-small-wrapper {
-    display: block;
-    margin-bottom: 15px;
-}
-
-#statepicker, #yearpicker-small {
-    padding: 5px;
-    color: $gray-med;
-    border-color: $gray-med;
-    border-radius: 2px;
-}
-
 
 div.left-photo img {
     width: 100%;

@@ -43,14 +43,21 @@
             <div class="col-xs-12 col-sm-3">
                 <h1 class="state_name">South Carolina</h1>
 
-                <div class="visible-xs-block big center" id="yearpicker-small-wrapper">
-                    Select a year and an election district level:
-                    <br/>
-                    <select id="yearpicker-small"></select>
+                <div class="visible-xs-block" id="yearpicker-small">
+                    <div data-picker="plan" class="row">
+                        <div class="col-xs-1"><i class="glyphicon glyphicon-chevron-left" data-role="prev" title="Previous districting plan"></i></div>
+                        <div class="col-xs-10 readout"><!-- current plan here --></div>
+                        <div class="col-xs-1"><i class="glyphicon glyphicon-chevron-right" data-role="next" title="Next districting plan"></i></div>
+                    </div>
+                    <div data-picker="election">
+                        <div class="col-xs-1"><i class="glyphicon glyphicon-chevron-left" data-role="prev" title="Previous election year"></i></div>
+                        <div class="col-xs-10 readout"><!-- current year here --></div>
+                        <div class="col-xs-1"><i class="glyphicon glyphicon-chevron-right" data-role="next" title="Next election year"></i></div>
+                    </div>
                 </div>
 
                 <div class="hidden-xs row" id="yearpicker-big"></div>
-                <div class="gray">
+                <div class="gray" style="clear: both;">
                     <p>New Plans</p>
                     <span>Drawing your own district map of South Carolina? Upload it here to find out how well it scores on these and other measures.</span>
                     <a class="btn btn-default" href="../scoreyours/" target="_blank">Upload Plan</a>
@@ -62,8 +69,11 @@
                 the appropriate '#maincontent span[data-hasdata-atall]' will be shown when loadDataForSelectedBoundaryAndYear() finds data... or does not
                 -->
                 <span data-hasdata-atall="true">
+                    <h2 class="hidden-xs"><span data-field="title"></span></h2>
+                    <!--
                     <p>We have data about <span data-metric="plancount" class="bold big">0</span> plans, covering <span data-metric="electioncount" class="bold big">0</span> elections.</p>
-                    <p>South Carolina's elected state legislators drew the borders of U.S. Congressional and South Carolina state legislative districts to create the maps for these <span data-metric="plancount">0</span> plans.</p>
+                    -->
+                    <p>South Carolina's elected state legislators drew the borders of U.S. Congressional and South Carolina state legislative districts to create the map.</p>
                 </span>
 
                 <div class="row" id="boundarypicker">
@@ -87,7 +97,6 @@
                 <br/>
 
                 <span data-hasdata-atall="true" data-hasdata-thisyear="true">
-                    <h2><span data-field="title"></span></h2>
                     <p>We used three metrics to examine the bias in these plans. <span data-metric="biasstatement"></span></p>
 
                     <ul class="nav nav-tabs" id="tabs-metrics">

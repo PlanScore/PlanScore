@@ -11,6 +11,23 @@ h1.state_name {
     color: white;
 }
 
+#yearpicker-small {
+    > div {  /* the plan/election picker DIVs */
+        div {  /* all three cells: prev, readout, next */
+            padding: 0;
+        }
+        i {  /* the prev and next buttons */
+            font-size: 24px;
+            cursor: pointer;
+        }
+        div.readout {  /* the year/plan readout */
+            text-align: center;
+            font-weight: bold;
+            font-size: 20px;
+        }
+    }
+}
+
 #yearpicker-big {
     /* two halves: the elections side and the plans timeline; both are a series of A elements, these being links to the electionyear/plan
        designer should contrive the height of these items so the two columns align into what look like side-by-side years */
