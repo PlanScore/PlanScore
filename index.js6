@@ -10,8 +10,6 @@ import { BIAS_SPREAD_SCALING } from "./planscore_common";
 import { lookupBiasColor, lookupBiasDescription, lookupBiasFavorParty } from "./planscore_common";
 
 // bundle polyfills and local/vendor libraries specific to this page
-require('babel-polyfill');
-require('core-js/fn/object/entries');
 //require('./js/leaflet-control-basemapbar.js');
 //require('./js/leaflet-control-basemapbar.css');
 
