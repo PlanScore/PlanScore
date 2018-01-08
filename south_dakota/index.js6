@@ -233,7 +233,9 @@ window.initYearPickers = () => {
 
     $electionsdiv.on('click', 'a', function () {
         const year = $(this).attr('data-year');
-        selectElectionOrPlan(year, 'election');
+        //selectElectionOrPlan(year, 'election');
+//gda
+        selectElectionOrPlan(year, 'plan');
     });
 
     $plansdiv.on('click', 'a', function () {

@@ -233,7 +233,9 @@ window.initYearPickers = () => {
 
     $electionsdiv.on('click', 'a', function () {
         const year = $(this).attr('data-year');
-        selectElectionOrPlan(year, 'election');
+        // issue 94: for the time being, years also go to Plans not election-year details
+        //selectElectionOrPlan(year, 'election');
+        selectElectionOrPlan(year, 'plan');
     });
 
     $plansdiv.on('click', 'a', function () {
