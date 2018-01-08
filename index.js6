@@ -323,7 +323,7 @@ window.loadDataForSelectedBoundaryAndYear = () => {
         $swatches.each(function () {
             const $link             = $(this);
             const baseurl           = $link.prop('href').replace(/\#.*$/, '');
-            const plan_or_election  = 'election';
+            const plan_or_election  = 'plan';
             const hashcomponent     = `#!${CURRENT_VIEW.year}-${plan_or_election}-${CURRENT_VIEW.boundtype}`;
             const url               = `${baseurl}${hashcomponent}`;
             $link.prop('href', url);
@@ -391,7 +391,7 @@ window.selectState = (stateabbr) => {
     // the URL for more info: the state name, mangled for URLs e.g. south_carolina
     // and with a hash for the current year + district:   #!2010-plan-ushouse
     // see the states page programming for details as to the expected hash params
-    const plan_or_election = 'election';
+    const plan_or_election = 'plan';
     const stateslug        = biasinfo.name.toLowerCase().replace(/\W/g, '_');
     const moreinfourl      = `/${stateslug}/#!${CURRENT_VIEW.year}-${plan_or_election}-${CURRENT_VIEW.boundtype}`;
 
