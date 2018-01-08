@@ -760,14 +760,18 @@ window.redrawYearPicker = (csvdata) => {
         const $readout = $picker.find('> div.readout').empty();
         plans_listing.forEach((planinfo) => {
             const text = planinfo.minyear == planinfo.maxyear ? `${planinfo.minyear} Districting Plan` : `${planinfo.minyear}-${planinfo.maxyear} Districting Plan`;
-            $(`<span data-year="${planinfo.minyear}" data-plan="${planinfo.plan}">${text}</span>`).appendTo($readout).hide();
+            $(`<span data-plan="${planinfo.plan}" data-year="${planinfo.minyear}" data-minyear="${planinfo.minyear}" data-maxyear="${planinfo.maxyear}">${text}</span>`).appendTo($readout).hide();
         });
 
-        // show the selected year
+        // show the selected year  (not easy: we have to find a range of minyear-maxyear, may not be an exact year that is offered)
         // detect first year and disable prev; detect last year and disable next
-        const $thislink   = $readout.find(`span[data-year="${CURRENT_VIEW.year}"]`).show();
         const $prevbutton = $picker.find('i[data-role="prev"]');
         const $nextbutton = $picker.find('i[data-role="next"]');
+
+        const $thislink = $readout.find('span').filter(function () {
+            const $this = $(this);
+            return $this.attr('data-minyear') <= CURRENT_VIEW.year && $this.attr('data-maxyear') >= CURRENT_VIEW.year;
+        }).show();
 
         if ($thislink.is(':first-child')) $prevbutton.hide();
         else                              $prevbutton.show();
