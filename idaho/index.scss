@@ -14,24 +14,30 @@ h1.state_name {
 #yearpicker-small {
     margin-bottom: 10px;
 
-    > div {  /* the plan/election picker DIVs */
-        div:first-child {
-            text-align: left;
-            padding-right: 0;
-        }
-        div:last-child {
-            text-align: right;
-            padding-left: 0;
-        }
-        i {  /* the prev and next buttons */
-            font-size: 24px;
-            cursor: pointer;
-        }
-        div.readout {  /* the year/plan readout */
-            text-align: center;
-            font-weight: bold;
-            font-size: 20px;
-        }
+    position: relative;  /* readout is overlaid atop a 6/6 split, to maximize hit area on both halves */
+
+    div.nextprev {
+        cursor: pointer;
+        z-index: 1;
+    }
+    div.nextprev.disabled {
+        opacity: 0;
+    }
+    div.right {
+    }
+    div.left {
+    }
+    i {  /* the prev and next buttons */
+        font-size: 24px;
+        cursor: pointer;
+    }
+    div.readout {  /* the year/plan readout */
+        text-align: center;
+        font-weight: bold;
+        font-size: 20px;
+
+        position: absolute; top: 0; left: 0;
+        width: 100%;
     }
 }
 

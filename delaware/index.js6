@@ -54,6 +54,7 @@ const BELLCURVE_SPREAD = {
 // not all fields are listed here, just the ones which vary between election view and plan view
 const ELECTION_PLAN_RECORD_FIELDS = {
     'election': {
+        // NOTE per issue 94, the 6 per-election fields (eg, bias, mm + rank) are stripped from CSVs to make them more compact downloads, until we reinstate election-year displays
         'eg': 'eg_adj',
         'egrank': 'eg_percentrank',
         'bias': 'bias',
@@ -192,24 +193,26 @@ window.initYearPickers = () => {
         $(`<span data-year="${year}">${year} Election</span>`).appendTo($year_listing).hide();
     });
 
-    $year_picker.on('click', 'i[data-role="next"]', function () {
+    $year_picker.on('click', 'div.nextprev.right', function () {
         const $targetbutton = $year_listing.find('span:visible').next('span');
         const year = $targetbutton.attr('data-year');
+        if (! year) return;  // don't allow clicking past the first/last
         selectElectionOrPlan(year, 'election');
     });
-    $year_picker.on('click', 'i[data-role="prev"]', function () {
+    $year_picker.on('click', 'div.nextprev.left', function () {
         const $targetbutton = $year_listing.find('span:visible').prev('span');
         const year = $targetbutton.attr('data-year');
+        if (! year) return;  // don't allow clicking past the first/last
         selectElectionOrPlan(year, 'election');
     });
 
     // there won't be any plans listed here at startup; see redrawYearPicker() since the list of plans depends on district type
-    $plan_picker.on('click', 'i[data-role="next"]', function () {
+    $plan_picker.on('click', 'div.nextprev.right', function () {
         const $targetbutton = $plan_listing.find('span:visible').next('span');
         const year = $targetbutton.attr('data-year');
         selectElectionOrPlan(year, 'plan');
     });
-    $plan_picker.on('click', 'i[data-role="prev"]', function () {
+    $plan_picker.on('click', 'div.nextprev.left', function () {
         const $targetbutton = $plan_listing.find('span:visible').prev('span');
         const year = $targetbutton.attr('data-year');
         selectElectionOrPlan(year, 'plan');
@@ -233,8 +236,8 @@ window.initYearPickers = () => {
 
     $electionsdiv.on('click', 'a', function () {
         const year = $(this).attr('data-year');
+        // issue 94: for the time being, years also go to Plans not election-year details
         //selectElectionOrPlan(year, 'election');
-//gda
         selectElectionOrPlan(year, 'plan');
     });
 
@@ -745,14 +748,14 @@ window.redrawYearPicker = (csvdata) => {
         const $picker    = $('#yearpicker-small > div[data-picker="election"]');
         const $yearlinks = $picker.find('> div.readout > span').hide();
         const $thislink  = $yearlinks.filter(`[data-year="${CURRENT_VIEW.year}"]`).show();
-        const $prevbutton = $picker.find('i[data-role="prev"]');
-        const $nextbutton = $picker.find('i[data-role="next"]');
+        const $prevbutton = $picker.find('div.nextprev.left');
+        const $nextbutton = $picker.find('div.nextprev.right');
 
         // detect first year and disable prev; detect last year and disable next
-        if ($thislink.is(':first-child')) $prevbutton.hide();
-        else                              $prevbutton.show();
-        if ($thislink.is(':last-child'))  $nextbutton.hide();
-        else                              $nextbutton.show();
+        if ($thislink.is(':first-child')) $prevbutton.addClass('disabled');
+        else                              $prevbutton.removeClass('disabled');
+        if ($thislink.is(':last-child'))  $nextbutton.addClass('disabled');
+        else                              $nextbutton.removeClass('disabled');
     }
 
     // now the plan picker: a list of plans, and a data-year= of their starting year
@@ -778,18 +781,18 @@ window.redrawYearPicker = (csvdata) => {
 
         // show the selected year  (not easy: we have to find a range of minyear-maxyear, may not be an exact year that is offered)
         // detect first year and disable prev; detect last year and disable next
-        const $prevbutton = $picker.find('i[data-role="prev"]');
-        const $nextbutton = $picker.find('i[data-role="next"]');
+        const $prevbutton = $picker.find('div.nextprev.left');
+        const $nextbutton = $picker.find('div.nextprev.right');
 
         const $thislink = $readout.find('span').filter(function () {
             const $this = $(this);
             return $this.attr('data-minyear') <= CURRENT_VIEW.year && $this.attr('data-maxyear') >= CURRENT_VIEW.year;
         }).show();
 
-        if ($thislink.is(':first-child')) $prevbutton.hide();
-        else                              $prevbutton.show();
-        if ($thislink.is(':last-child'))  $nextbutton.hide();
-        else                              $nextbutton.show();
+        if ($thislink.is(':first-child')) $prevbutton.addClass('disabled');
+        else                              $prevbutton.removeClass('disabled');
+        if ($thislink.is(':last-child'))  $nextbutton.addClass('disabled');
+        else                              $nextbutton.removeClass('disabled');
     }
 };
 

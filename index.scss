@@ -210,12 +210,19 @@
 }
 
 #yearpicker-small {
-    div:first-child {
-        text-align: left;
+    position: relative;  /* readout is overlaid atop a 6/6 split, to maximize hit area on both halves */
+
+    div.nextprev {
+        cursor: pointer;
+        z-index: 1;
+    }
+    div.nextprev.disabled {
+        opacity: 0;
+    }
+    div.right {
         padding-right: 0;
     }
-    div:last-child {
-        text-align: right;
+    div.left {
         padding-left: 0;
     }
     i {  /* the prev and next buttons */
@@ -226,5 +233,8 @@
         text-align: center;
         font-weight: bold;
         font-size: 20px;
+
+        position: absolute; top: 0; left: 0;
+        width: 100%;
     }
 }

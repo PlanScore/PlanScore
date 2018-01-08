@@ -76,14 +76,16 @@ window.initYearPickers = () => {
         $(`<span data-year="${year}">${year}</span>`).appendTo($year_listing).hide();
     });
 
-    $picker_small.on('click', 'i[data-role="next"]', function () {
+    $picker_small.on('click', 'div.nextprev.right', function () {
         const $targetbutton = $year_listing.find('span:visible').next('span');
         const year = $targetbutton.attr('data-year');
+        if (! year) return;  // don't allow clicking past the first/last
         selectYear(year);
     });
-    $picker_small.on('click', 'i[data-role="prev"]', function () {
+    $picker_small.on('click', 'div.nextprev.left', function () {
         const $targetbutton = $year_listing.find('span:visible').prev('span');
         const year = $targetbutton.attr('data-year');
+        if (! year) return;  // don't allow clicking past the first/last
         selectYear(year);
     });
 
@@ -328,14 +330,13 @@ window.selectYear = (year) => {
     // UI update: select the mobile yearpicker
     // if the selected year is the first/last then show/hide the prev/next buttons
     const $small_button = $('#yearpicker-small span').hide().filter(`[data-year="${year}"]`).show();
-    const $prevbutton = $('#yearpicker-small i[data-role="prev"]');
-    const $nextbutton = $('#yearpicker-small i[data-role="next"]');
-//gda
+    const $prevbutton = $('#yearpicker-small div.nextprev.left');
+    const $nextbutton = $('#yearpicker-small div.nextprev.right');
 
-    if ($small_button.is(':first-child')) $prevbutton.hide();
-    else                                  $prevbutton.show();
-    if ($small_button.is(':last-child'))  $nextbutton.hide();
-    else                                  $nextbutton.show();
+    if ($small_button.is(':first-child')) $prevbutton.addClass('disabled');
+    else                                  $prevbutton.removeClass('disabled');
+    if ($small_button.is(':last-child'))  $nextbutton.addClass('disabled');
+    else                                  $nextbutton.removeClass('disabled');
 
     // save to the state and refresh the map + data
     CURRENT_VIEW.year = year;
