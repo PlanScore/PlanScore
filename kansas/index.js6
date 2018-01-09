@@ -845,8 +845,6 @@ window.drawBiasBellChart = (whichone, datavalue) => {
     const spread = BELLCURVE_SPREAD[whichone];
     let percentile = 0.5 - (0.5 * datavalue / spread);
     percentile = Math.min(Math.max(percentile, 0), 1);
-//gda
-if (whichone == 'mm') percentile = 0;
     // console.log([ `drawBiasBellChart() ${whichone}`, spread, datavalue, percentile ]);
     $markline.css({ 'left':`${100 * percentile}%` });
     $marklabel.css({ 'left':`${100 * percentile}%` });
