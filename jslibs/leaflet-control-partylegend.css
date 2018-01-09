@@ -17,14 +17,17 @@ div.planscore-partylegend div.planscore-partylegend-swatch {
 
 div.planscore-partylegend div.planscore-partylegend-swatch-democrat {
     background-color: #0049A8;
+    opacity: 0.6;
 }
 
 div.planscore-partylegend div.planscore-partylegend-swatch-republican {
     background-color: #C71C36;
+    opacity: 0.6;
 }
 
 div.planscore-partylegend div.planscore-partylegend-swatch-both {
     background-image: url(/images/mapfill_nodata.png);
+    opacity: 0.6;
 }
 
 div.planscore-partylegend div.planscore-partylegend-words {
