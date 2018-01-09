@@ -830,7 +830,7 @@ window.drawBiasBellChart = (whichone, datavalue) => {
     // the div.metric-bellchart has additional CSS classes, to use a colorful background-image which looks like a bell curve
 
     // replace CSS classes to change which curve image is being displayed as the backdrop
-    const $div = $(`#metric-bellchart-${whichone}`).empty();
+    const $div = $(`#metric-bellchart-${whichone}`);
     $div.removeClass('pb').removeClass('eg').removeClass('mm').addClass(whichone);
     $div.removeClass('ushouse').removeClass('statehouse').removeClass('statesentate').addClass(CURRENT_VIEW.boundtype);
     $div.removeClass('election').removeClass('plan').addClass(CURRENT_VIEW.planorelection);
@@ -840,11 +840,17 @@ window.drawBiasBellChart = (whichone, datavalue) => {
     // watch out! we swap the sign here!
     // Republican bias is indicated with values <0 BUT in American parlance Republicans are "right" which is the positive-numbers side
     // so SUBTRACT the bias to shift a positive/democrat bias toward blue left
+    const $markline = $div.find('div.markline');
     const spread = BELLCURVE_SPREAD[whichone];
     let percentile = 0.5 - (0.5 * datavalue / spread);
     percentile = Math.min(Math.max(percentile, 0), 1);
     // console.log([ `drawBiasBellChart() ${whichone}`, spread, datavalue, percentile ]);
-    $('<div class="markline"></div>').css({ 'left':`${100 * percentile}%` }).appendTo($div);
+    $markline.css({ 'left':`${100 * percentile}%` });
+
+    // fill in the spread values into the +D% ad +R% legends
+    const $legend = $div.find('div.metric-bellchart-legend');
+    const spreadtext = Math.round(100 * spread);
+    $legend.find('span[data-field="metric-bellchart-spread"]').text(spreadtext);
 };
 
 window.updateMapForCurrentSelection = (yeardata) => {
