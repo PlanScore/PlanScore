@@ -29,6 +29,7 @@ const CURRENT_VIEW = {
     // year: '2000',  // four-digit year (string)
     // boundtype: 'ushouse',  // short polygon name: ushouse statehouse statesenate
     // planorelection: 'election',  // show 'election' or 'plan' statistics on right-hand side
+    // metric: 'eg', // which metric tab is showing?
 };
 
 // Efficiency Gap wasted vote chart; colors
@@ -265,30 +266,33 @@ window.initMetricTabTracking = () => {
         const whichtab = $(e.target).prop('href').replace(/.+#tab-/, '');  // the suffix is the metric name, e.g. #tab-efficiencygap
         logMetricToggleToGoogleAnalytics(whichtab);
     });
+
+    // when metric tab is switched, also track that in the CURRENT_VIEW; see also selectMetric() which may be relevant
+    $('#tabs-metrics a[data-toggle="tab"]').on('shown.bs.tab', function (e, p, q) {
+        const whichmetric = $(e.target).attr('data-metric');  // the suffix is the metric name, e.g. #tab-efficiencygap
+        CURRENT_VIEW.metric = whichmetric;
+        updateUrlHash();
+    });
 };
 
 window.initLoadStartingConditions = () => {
-    // analyze the #year-polytype hash to see what year + type we should load
+    // analyze the #!year-polytype hash to see what year + district we should load
     // see alsoupdateUrlHash() which generates this hash
 
-    let year = PLAN_YEARS[PLAN_YEARS.length - 1];
-    let what = 'plan';
-    let type = 'ushouse';
+    const params   = window.location.hash.replace(/^#!/, '').split('-');
+    const year     = params.shift() || PLAN_YEARS[PLAN_YEARS.length - 1];
+    const planyear = params.shift() || 'plan';
+    const district = params.shift() || 'ushouse';
+    const metric   = params.shift() || 'eg';
 
-    const year_and_type = /^#!(\d\d\d\d)\-(\w+)\-(\w+)$/.exec(window.location.hash);
-    if (year_and_type) {
-        year = year_and_type[1];  // the year
-        what = year_and_type[2];  // election or plan
-        type = year_and_type[3];  // district type
-    }
-
-    // toggle which yeapricker-small is displayed
+    // toggle which yearpicker-small is displayed
     // per issue 129 only one of these is visible and that depends on whether the page loads with a plan/election
-    $('#yearpicker-small > div').hide().filter(`[data-picker="${what}"]`).show();
+    $('#yearpicker-small > div').hide().filter(`[data-picker="${planyear}"]`).show();
 
     // ready, set, go
-    selectElectionOrPlan(year, what);
-    selectBoundaryType(type);
+    selectMetric(metric);
+    selectElectionOrPlan(year, planyear);
+    selectBoundaryType(district);
 };
 
 
@@ -390,8 +394,16 @@ window.logRequestToGoogleAnalytics = () => {
 window.updateUrlHash = () => {
     // update URL params to show the current search
     // see also initLoadStartingConditions() which will load such a state
-    const hash = `#!${CURRENT_VIEW.year}-${CURRENT_VIEW.planorelection}-${CURRENT_VIEW.boundtype}`;
+    const hash = `#!${CURRENT_VIEW.year}-${CURRENT_VIEW.planorelection}-${CURRENT_VIEW.boundtype}-${CURRENT_VIEW.metric}`;
     window.location.replace(hash);
+};
+
+window.selectMetric = (whichmetric) => {
+    // click the metric tab for them, and save to the state
+    // see also initMetricTabTracking() which is perhaps relevant to these tabs being clicked
+    $(`#tabs-metrics a[data-metric="${whichmetric}"]`).click();
+    CURRENT_VIEW.metric = whichmetric;
+    updateUrlHash();
 };
 
 window.selectElectionOrPlan = (year, planorelection) => {
