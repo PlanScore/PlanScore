@@ -378,30 +378,47 @@ div.metric-bellchart {
         div.markline {
             position: absolute;
             left: 50%; /* override this to position the markerline at the appropriate % with 0% being far left and 100% being far right */
-            top: 40px;
             height: 100px;
 
             width: 2px;
             margin-left: -1px;  /* half of width, so it centers at the given left % */
             background-color: black;
         }
-   
-   
-        @media screen and (min-width: $screen-lg) {
-            div.markline {
+
+        div.markline {
+            top: 40px;
+            @media screen and (min-width: $screen-lg) {
                 top: 48px;
             }
-        }
-    
-        @media screen and (max-width: $screen-md) and (min-width: $screen-xs) {
-            div.markline {
+            @media screen and (max-width: $screen-md) and (min-width: $screen-xs) {
                 top: 48px;
-            }
-        }
-    
-        @media screen and (max-width: $screen-xxs) {
-            div.markline {
+            }  
+            @media screen and (max-width: $screen-xxs) {
                 top: 30px;
+            }
+        }
+
+        div.marklabel {
+            position: absolute;
+            left: 50%; /* override this to position the markerlabel at the appropriate % with 0% being far left and 100% being far right */
+            margin-left: -30px; /* half of the declared width */
+            z-index: 1;
+
+            background-color: black;
+            color: white;
+            font-size: 13px;
+            width: 60px;
+            text-align: center;
+
+            top: 25px;
+            @media screen and (min-width: $screen-lg) {
+                top: 33px;
+            }
+            @media screen and (max-width: $screen-md) and (min-width: $screen-xs) {
+                top: 33px;
+            }  
+            @media screen and (max-width: $screen-xxs) {
+                top: 15px;
             }
         }
     }
