@@ -138,7 +138,11 @@ td:nth-child(1){
 
 div.footer {
     background-color: $behind-background-color;
-
+    img {
+        height: auto;
+        width: 2em;
+    }
+    
     a {
         font-size: 14px;
         line-height: 50px;
