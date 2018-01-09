@@ -410,7 +410,7 @@ div.metric-bellchart {
             width: 60px;
             text-align: center;
 
-            top: 25px;
+            top: 25px;  /* these tops are matched to those of the .markline declared above, minus a tad */
             @media screen and (min-width: $screen-lg) {
                 top: 33px;
             }
@@ -420,6 +420,12 @@ div.metric-bellchart {
             @media screen and (max-width: $screen-xxs) {
                 top: 15px;
             }
+        }
+        div.marklabel.right {
+            margin-left: -59px;  /* extreme left: match left side of label to the line, except by 1px so it lines up nicely */
+        }
+        div.marklabel.left {
+            margin-left: -1px;  /* extreme right: don't right side of label to the line, except by 1px so it lines up nicely */
         }
     }
 
