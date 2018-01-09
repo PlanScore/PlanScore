@@ -14,6 +14,8 @@ import { lookupBiasColor, lookupBiasFavorParty } from "./../planscore_common";
 require('core-js/fn/object/values');
 require('./../jslibs/leaflet-control-zoombar.js');
 require('./../jslibs/leaflet-control-zoombar.css');
+require('./../jslibs/leaflet-control-partylegend.js');
+require('./../jslibs/leaflet-control-partylegend.css');
 require('./../jslibs/leaflet-polygon.fillPattern.js');
 
 
@@ -161,6 +163,9 @@ window.initMap = () => {
         homeBounds: STATE_BBOX,
     }).addTo(MAP);
 
+    new L.Control.PartyLegend({
+        position: 'topleft',
+    }).addTo(MAP);
 
     // more prep work: create L.TopoJSON which parses both GeoJSON and TopoJSON
     L.TopoJSON = L.GeoJSON.extend({

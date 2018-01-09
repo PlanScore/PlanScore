@@ -1,0 +1,35 @@
+div.planscore-partylegend {
+    border: 2px solid rgba(0,0,0,0.2);
+    border-radius: 4px;
+    background-color: #fff;
+
+    padding: 5px 5px 0 5px;
+}
+
+div.planscore-partylegend div.planscore-partylegend-legend {
+}
+
+div.planscore-partylegend div.planscore-partylegend-swatch {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+}
+
+div.planscore-partylegend div.planscore-partylegend-swatch-democrat {
+    background-color: #0049A8;
+}
+
+div.planscore-partylegend div.planscore-partylegend-swatch-republican {
+    background-color: #C71C36;
+}
+
+div.planscore-partylegend div.planscore-partylegend-swatch-both {
+    background-image: url(/images/mapfill_nodata.png);
+}
+
+div.planscore-partylegend div.planscore-partylegend-words {
+    padding-left: 10px;
+    font-size: 14px;
+    display: inline-block;
+    vertical-align: text-bottom;
+}
