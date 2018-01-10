@@ -136,6 +136,10 @@ td:nth-child(1){
     }
 }
 
+.container {
+    max-width: $screen-md;
+}
+
 div.footer {
     background-color: $behind-background-color;
     padding-top: 10px;
