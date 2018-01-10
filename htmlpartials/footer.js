@@ -6,9 +6,10 @@ const htmlblock = `
             <a target="_blank" href="https://twitter.com/PlanScore"><img src="/images/twitter-logo.svg" /> @PlanScore</a>
             &nbsp;
             <a target="_blank" href="https://github.com/PlanScore/PlanScore"><img src="/images/github-logo.svg" /> Github</a>
+            <br>
+            <span>PlanScore is a fiscally sponsored project of <a href="http://www.greeninfo.org/" target="_blank"><img src="/images/greeninfo.svg" /> GreenInfo Network</a></span>
         </div>
         <div class="col-xs-12 col-md-6 right">
-            PlanScore is a fiscally sponsored project of <a href="http://www.greeninfo.org/" target="_blank"><img src="/images/greeninfo.svg" /> GreenInfo Network</a>
         </div>
     </div>
 
