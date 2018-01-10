@@ -873,6 +873,7 @@ window.updateMapForCurrentSelection = (yeardata) => {
     // keep a reference to the layer so we can add/remove it
     $.get(geojsonurl, function (jsondata) {
         $('#map').show();
+        MAP.invalidateSize();
 
         if (MAP.polygondistrictsoverlay) {
             MAP.removeLayer(MAP.polygondistrictsoverlay);
