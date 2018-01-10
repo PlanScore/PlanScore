@@ -138,6 +138,9 @@ td:nth-child(1){
 
 div.footer {
     background-color: $behind-background-color;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    
     img {
         height: auto;
         width: 2em;
@@ -145,7 +148,6 @@ div.footer {
     
     a {
         font-size: 14px;
-        line-height: 50px;
         text-decoration: none;
         white-space:nowrap; /* prevent a single link (logo+words) from wrapping internally */
         margin-right: 10px;
