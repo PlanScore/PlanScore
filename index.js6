@@ -95,9 +95,10 @@ window.initYearPickers = () => {
         // see also handleResize() which adjusts the full-width spacing behavior
         const $button = $('<div><a></a></div>').attr('data-year', year).prop('title', `Show partisan bias analysis for ${year}`).appendTo($picker_big);
         if (year % 10 === 0) $button.addClass('decade');
-        if (year % 4 === 0) $button.addClass('presidential');
+        if (year % 10 === 2) $button.addClass('decplan');
+        if (year % 4 === 0)  $button.addClass('presidential');
 
-        if (year % 10 === 0) {
+        if (year % 10 === 2) {  // per 151 decennial plans come out the next cycle
             $('<span></span>').text(year).appendTo($button);
         }
     });
