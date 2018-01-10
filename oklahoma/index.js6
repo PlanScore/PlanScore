@@ -792,7 +792,7 @@ window.redrawYearPicker = (csvdata) => {
 
         const $readout = $picker.find('> div.readout').empty();
         plans_listing.forEach((planinfo) => {
-            const text = planinfo.minyear == planinfo.maxyear ? `${planinfo.minyear} Districting Plan` : `${planinfo.minyear}-${planinfo.maxyear} Districting Plan`;
+            const text = planinfo.minyear == planinfo.maxyear ? `${planinfo.minyear} Plan` : `${planinfo.minyear}-${planinfo.maxyear} Districting Plan`;
             $(`<span data-plan="${planinfo.plan}" data-year="${planinfo.minyear}" data-minyear="${planinfo.minyear}" data-maxyear="${planinfo.maxyear}">${text}</span>`).appendTo($readout).hide();
         });
 
