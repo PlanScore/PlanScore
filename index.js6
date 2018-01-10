@@ -29,11 +29,20 @@ const CURRENT_VIEW = {};
 $(document).ready(function () {
     initYearPickers();
     initBoundaryPicker();
+    initStatePopup();
     initLoadStartingConditions();  // this will implicitly call loadDataForSelectedBoundaryAndYear() after setup, loading the map
 
     $(window).on('resize', handleResize);
     handleResize();
 });
+
+window.initStatePopup = () => {
+    // the stateinfo popup is managed by selectState()
+    // but we do want to add some event hanndlers: the X button to close it
+    $('#stateinfo-popup button').click(function () {
+        selectState('');
+    });
+};
 
 window.initMapLegend = () => {
     // generate a list of from/to/color/title items much as we do the for the map's choropleth
