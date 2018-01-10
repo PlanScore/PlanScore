@@ -92,6 +92,10 @@
             background-color: white;
             border: 2px solid #4D599E;
             border-radius: 50%;
+
+            @media screen and (-webkit-min-device-pixel-ratio:0) { /* Chrome and Safari only: the year-beads are off-vertical by 1px */
+                margin-top: 1px;
+            }
         }
 
         span {  /* year labels */
