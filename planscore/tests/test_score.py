@@ -23,6 +23,21 @@ def mock_s3_get_object(Bucket, Key):
 
 class TestScore (unittest.TestCase):
 
+    def test_swing_vote(self):
+        ''' Vote swing is correctly calculated
+        '''
+        reds1, blues1 = score.swing_vote((1, 2, 3), (3, 2, 1), 0)
+        self.assertEqual(reds1, [1, 2, 3])
+        self.assertEqual(blues1, [3, 2, 1])
+
+        reds2, blues2 = score.swing_vote((1, 2, 3), (3, 2, 1), .1)
+        self.assertEqual(reds2, [.6, 1.6, 2.6])
+        self.assertEqual(blues2, [3.4, 2.4, 1.4])
+
+        reds3, blues3 = score.swing_vote((1, 2, 3), (3, 2, 1), -.1)
+        self.assertEqual(reds3, [1.4, 2.4, 3.4])
+        self.assertEqual(blues3, [2.6, 1.6, .6])
+
     def test_calculate_EG_fair(self):
         ''' Efficiency gap can be correctly calculated for a fair election
         '''
@@ -75,6 +90,25 @@ class TestScore (unittest.TestCase):
         mmd5 = score.calculate_MMD((6, 6, 1, 1, 1), (5, 5, 7, 10, 10))
         self.assertAlmostEqual(mmd5, .15, places=2,
             msg='Should see +blue MMD with 28% mean and 13% median red vote share')
+
+    def test_calculate_PB(self):
+        ''' Partisan Bias can be correctly calculated for various elections
+        '''
+        pb1 = score.calculate_PB((6, 6, 4, 4), (4, 4, 6, 6))
+        self.assertAlmostEqual(pb1, 0, places=2,
+            msg='Should see zero PB with 50/50 election and 50/50 seats')
+
+        pb2 = score.calculate_PB((6, 6, 6, 3, 3), (2, 2, 2, 5, 5))
+        self.assertAlmostEqual(pb2, 0, places=2,
+            msg='Should see zero PB with 60/40 election and 60/40 seats')
+
+        pb3 = score.calculate_PB((6, 6, 6, 3, 3), (4, 4, 4, 12, 12))
+        self.assertAlmostEqual(pb3, -.2, places=2,
+            msg='Should see +red PB with 40% red vote share and 60% red seats')
+
+        pb4 = score.calculate_PB((5, 5, 5, 5, 10), (6, 6, 6, 6, 1))
+        self.assertAlmostEqual(pb4, .2, places=2,
+            msg='Should see +blue PB with 40% blue vote share and 60% blue seats')
 
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_EG')

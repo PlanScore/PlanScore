@@ -40,18 +40,25 @@ FIELD_NAMES += tuple([f'DEM{sim:03d}' for sim in range(1000)])
 
 FUNCTION_NAME = 'PlanScore-ScoreDistrictPlan'
 
+def swing_vote(red_districts, blue_districts, amount):
+    ''' Swing the vote by a percentage, positive toward blue.
+    '''
+    if amount == 0:
+        return list(red_districts), list(blue_districts)
+    
+    districts = [(R, B, R + B) for (R, B) in zip(red_districts, blue_districts)]
+    swung_reds = [((R/T - amount) * T) for (R, B, T) in districts if T > 0]
+    swung_blues = [((B/T + amount) * T) for (R, B, T) in districts if T > 0]
+    
+    return swung_reds, swung_blues
+
 def calculate_EG(red_districts, blue_districts, vote_swing=0):
     ''' Convert two lists of district vote counts into an EG score.
     
         Vote swing is positive toward blue and negative toward red.
     '''
     election_votes, wasted_red, wasted_blue, red_wins, blue_wins = 0, 0, 0, 0, 0
-    
-    # Swing the vote, if necessary
-    if vote_swing != 0:
-        districts = [(R, B, R + B) for (R, B) in zip(red_districts, blue_districts)]
-        red_districts = [((R/T - vote_swing) * T) for (R, B, T) in districts if T > 0]
-        blue_districts = [((B/T + vote_swing) * T) for (R, B, T) in districts if T > 0]
+    red_districts, blue_districts = swing_vote(red_districts, blue_districts, vote_swing)
     
     # Calculate Efficiency Gap using swung vote
     for (red_votes, blue_votes) in zip(red_districts, blue_districts):
