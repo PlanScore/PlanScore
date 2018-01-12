@@ -51,7 +51,7 @@ class TestCompactness (unittest.TestCase):
         '''
         # A square around Lake Merritt
         geom1 = ogr.CreateGeometryFromJson('{"type": "Polygon", "coordinates": [[[-122.2631266, 37.7987797], [-122.2631266, 37.8103489], [-122.2484841, 37.8103489], [-122.2484841, 37.7987797], [-122.2631266, 37.7987797]]]}')
-        self.assertAlmostEqual(compactness.get_reock_score(geom1), 2/math.pi, places=5)
+        self.assertAlmostEqual(compactness.get_reock_score(geom1), 2/math.pi, places=4)
 
         # A thin line through Lake Merritt
         geom2 = ogr.CreateGeometryFromJson('{"type": "Polygon", "coordinates": [[[-122.2631266, 37.804111], [-122.2631266, 37.804112], [-122.2484841, 37.804112], [-122.2484841, 37.804111], [-122.2631266, 37.804111]]]}')
@@ -59,14 +59,14 @@ class TestCompactness (unittest.TestCase):
 
         # A square around Lake Merritt with a peephole in it
         geom3 = ogr.CreateGeometryFromJson('{"type": "Polygon", "coordinates": [[[-122.2631266, 37.7987797], [-122.2631266, 37.8103489], [-122.2484841, 37.8103489], [-122.2484841, 37.7987797], [-122.2631266, 37.7987797]], [[-122.257189, 37.804124], [-122.257189, 37.804132], [-122.257178, 37.804132], [-122.257178, 37.804124], [-122.257189, 37.804124]]]}')
-        self.assertAlmostEqual(compactness.get_reock_score(geom3), 2/math.pi, places=5)
+        self.assertAlmostEqual(compactness.get_reock_score(geom3), 2/math.pi, places=4)
     
     def test_polsbypopper_score(self):
         ''' Polsyby-Popper score looks about right
         '''
         # A square around Lake Merritt
         geom1 = ogr.CreateGeometryFromJson('{"type": "Polygon", "coordinates": [[[-122.2631266, 37.7987797], [-122.2631266, 37.8103489], [-122.2484841, 37.8103489], [-122.2484841, 37.7987797], [-122.2631266, 37.7987797]]]}')
-        self.assertAlmostEqual(compactness.get_polsbypopper_score(geom1), math.pi/4, places=5)
+        self.assertAlmostEqual(compactness.get_polsbypopper_score(geom1), math.pi/4, places=4)
 
         # A thin line through Lake Merritt
         geom2 = ogr.CreateGeometryFromJson('{"type": "Polygon", "coordinates": [[[-122.2631266, 37.804111], [-122.2631266, 37.804112], [-122.2484841, 37.804112], [-122.2484841, 37.804111], [-122.2631266, 37.804111]]]}')

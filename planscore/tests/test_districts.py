@@ -358,11 +358,11 @@ class TestDistricts (unittest.TestCase):
         for tile_zxy in ('12/2047/2047', '12/2047/2048', '12/2048/2047', '12/2048/2048'):
             districts.score_precinct(partial, precinct, tile_zxy)
         
-        self.assertAlmostEqual(partial.totals['Voters'], 2.25423371)
-        self.assertAlmostEqual(partial.totals['Red Votes'], 1.69067528)
-        self.assertAlmostEqual(partial.totals['REP999'], 1.69067528)
-        self.assertAlmostEqual(partial.totals['Blue Votes'], 0)
-        self.assertAlmostEqual(partial.totals['DEM999'], 0)
+        self.assertAlmostEqual(partial.totals['Voters'], 2.25423371, places=2)
+        self.assertAlmostEqual(partial.totals['Red Votes'], 1.69067528, places=2)
+        self.assertAlmostEqual(partial.totals['REP999'], 1.69067528, places=2)
+        self.assertAlmostEqual(partial.totals['Blue Votes'], 0, places=2)
+        self.assertAlmostEqual(partial.totals['DEM999'], 0, places=2)
     
     # Precinct and Census block (represented as points) score cases:
     #
