@@ -69,7 +69,7 @@ class TestScore (unittest.TestCase):
         self.assertAlmostEqual(gap4, gap1, msg='Should see identical EG with unchanged vote swing')
     
     def test_calculate_MMD(self):
-        ''' Mean/Median can be correctly calculated for various elections
+        ''' Mean-Median can be correctly calculated for various elections
         '''
         mmd1 = score.calculate_MMD((6, 6, 4, 4, 4), (5, 5, 5, 8, 8))
         self.assertAlmostEqual(mmd1, 0, places=2,
@@ -125,7 +125,7 @@ class TestScore (unittest.TestCase):
         
         output = score.calculate_biases(score.calculate_bias(input))
 
-        self.assertEqual(output.summary['Mean/Median'], calculate_MMD.return_value)
+        self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
         self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
@@ -152,7 +152,7 @@ class TestScore (unittest.TestCase):
         
         output = score.calculate_biases(score.calculate_bias(input))
 
-        self.assertEqual(output.summary['US House Mean/Median'], calculate_MMD.return_value)
+        self.assertEqual(output.summary['US House Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
         self.assertEqual(output.summary['US House Efficiency Gap'], calculate_EG.return_value)
@@ -179,7 +179,7 @@ class TestScore (unittest.TestCase):
         
         output = score.calculate_biases(score.calculate_bias(input))
 
-        self.assertEqual(output.summary['SLDU Mean/Median'], calculate_MMD.return_value)
+        self.assertEqual(output.summary['SLDU Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
         self.assertEqual(output.summary['SLDU Efficiency Gap'], calculate_EG.return_value)
@@ -206,7 +206,7 @@ class TestScore (unittest.TestCase):
         
         output = score.calculate_biases(score.calculate_bias(input))
 
-        self.assertEqual(output.summary['SLDL Mean/Median'], calculate_MMD.return_value)
+        self.assertEqual(output.summary['SLDL Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
         self.assertEqual(output.summary['SLDL Efficiency Gap'], calculate_EG.return_value)
@@ -234,8 +234,8 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_EG.return_value = 0
         output = score.calculate_biases(score.calculate_bias(input))
-        self.assertEqual(output.summary['Mean/Median'], calculate_MMD.return_value)
-        self.assertEqual(output.summary['Mean/Median SD'], 0)
+        self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
+        self.assertEqual(output.summary['Mean-Median SD'], 0)
         self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
         self.assertEqual(output.summary['Efficiency Gap SD'], 0)
         self.assertIn('Efficiency Gap +1 Dem', output.summary)

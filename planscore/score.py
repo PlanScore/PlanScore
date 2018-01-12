@@ -84,17 +84,17 @@ def calculate_EG(red_districts, blue_districts, vote_swing=0):
     return (wasted_red - wasted_blue) / election_votes
 
 def calculate_MMD(red_districts, blue_districts):
-    ''' Convert two lists of district vote counts into a Mean/Median score.
+    ''' Convert two lists of district vote counts into a Mean-Median score.
     
         By convention, result is positive for blue and negative for red.
     
-        Vote swing does not seem to affect Mean/Median, so leave it off.
+        Vote swing does not seem to affect Mean-Median, so leave it off.
     '''
-    shares = sorted([B/(R + B) for (R, B) in zip(red_districts, blue_districts)])
+    shares = sorted([R/(R + B) for (R, B) in zip(red_districts, blue_districts)])
     median = shares[len(shares)//2]
     mean = statistics.mean(shares)
     
-    return median - mean
+    return mean - median
 
 def calculate_PB(red_districts, blue_districts):
     ''' Convert two lists of district vote counts into a Partisan Bias score.
@@ -131,7 +131,7 @@ def calculate_bias(upload):
         blue_districts = [d['totals'].get(blue_field) or 0 for d in upload.districts]
 
         if prefix == 'Red/Blue':
-            summary_dict['Mean/Median'] = calculate_MMD(red_districts, blue_districts)
+            summary_dict['Mean-Median'] = calculate_MMD(red_districts, blue_districts)
             summary_dict['Efficiency Gap'] = calculate_EG(red_districts, blue_districts)
 
             # Calculate -5 to +5 point swings
@@ -140,7 +140,7 @@ def calculate_bias(upload):
                 gap = calculate_EG(red_districts, blue_districts, swing * points)
                 summary_dict[f'Efficiency Gap +{points:.0f} {party}'] = gap
         else:
-            summary_dict[f'{prefix} Mean/Median'] = calculate_MMD(red_districts, blue_districts)
+            summary_dict[f'{prefix} Mean-Median'] = calculate_MMD(red_districts, blue_districts)
             summary_dict[f'{prefix} Efficiency Gap'] = calculate_EG(red_districts, blue_districts)
 
             # Calculate -5 to +5 point swings
@@ -194,8 +194,8 @@ def calculate_biases(upload):
         district['totals']['Democratic Votes SD'] = statistics.stdev(blue_votes)
         district['totals']['Republican Votes SD'] = statistics.stdev(red_votes)
 
-    summary_dict['Mean/Median'] = statistics.mean(MMDs)
-    summary_dict['Mean/Median SD'] = statistics.stdev(MMDs)
+    summary_dict['Mean-Median'] = statistics.mean(MMDs)
+    summary_dict['Mean-Median SD'] = statistics.stdev(MMDs)
     summary_dict['Efficiency Gap'] = statistics.mean(EGs[0])
     summary_dict['Efficiency Gap SD'] = statistics.stdev(EGs[0])
     
