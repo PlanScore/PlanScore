@@ -1,6 +1,7 @@
 import math, itertools
 from osgeo import ogr, osr
 from . import smallestenclosingcircle
+from .. import constants
 
 # Spherical mercator should work at typical district sizes
 EPSG4326 = osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)
@@ -43,7 +44,7 @@ def get_reock_score(geometry):
         points = [boundary.GetPoint(i)[:2] for i in range(1, boundary.GetPointCount())]
 
     _, _, radius = smallestenclosingcircle.make_circle(points)
-    return geom_area / (math.pi * radius * radius)
+    return round(geom_area / (math.pi * radius * radius), constants.ROUND_FLOAT)
 
 def get_polsbypopper_score(geometry):
     ''' Return area ratio of geometry to equal-perimeter circle
@@ -62,4 +63,4 @@ def get_polsbypopper_score(geometry):
     else:
         length = boundary.Length()
 
-    return 4 * math.pi * geom_area / length**2
+    return round(4 * math.pi * geom_area / length**2, constants.ROUND_FLOAT)

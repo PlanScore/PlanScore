@@ -252,7 +252,7 @@ def score_precinct(partial, precinct, tile_zxy):
         if name not in precinct['properties']:
             continue
         precinct_value = precinct_fraction * (precinct['properties'][name] or 0)
-        partial.totals[name] += precinct_value
+        partial.totals[name] += round(precinct_value, 2)
 
 def load_tile_precincts(storage, tile_zxy):
     ''' Get GeoJSON features for a specific tile.

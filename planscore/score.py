@@ -192,10 +192,12 @@ def calculate_biases(upload):
     # Finalize per-district vote totals and confidence intervals
     for (i, district) in enumerate(copied_districts):
         red_votes, blue_votes = all_red_districts[i], all_blue_districts[i]
-        district['totals']['Democratic Votes'] = statistics.mean(blue_votes)
-        district['totals']['Republican Votes'] = statistics.mean(red_votes)
-        district['totals']['Democratic Votes SD'] = statistics.stdev(blue_votes)
-        district['totals']['Republican Votes SD'] = statistics.stdev(red_votes)
+        district['totals'].update({
+            'Democratic Votes': round(statistics.mean(blue_votes), constants.ROUND_COUNT),
+            'Republican Votes': round(statistics.mean(red_votes), constants.ROUND_COUNT),
+            'Democratic Votes SD': round(statistics.stdev(blue_votes), constants.ROUND_COUNT),
+            'Republican Votes SD': round(statistics.stdev(red_votes), constants.ROUND_COUNT)
+            })
 
     summary_dict['Mean-Median'] = statistics.mean(MMDs)
     summary_dict['Mean-Median SD'] = statistics.stdev(MMDs)
@@ -210,7 +212,8 @@ def calculate_biases(upload):
         summary_dict[f'Efficiency Gap +{swing} Dem SD'] = statistics.stdev(EGs[swing])
         summary_dict[f'Efficiency Gap +{swing} Rep SD'] = statistics.stdev(EGs[-swing])
     
-    return upload.clone(districts=copied_districts, summary=summary_dict)
+    rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
+    return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
 
 def put_upload_index(s3, bucket, upload):
     ''' Save a JSON index and a plaintext file for this upload.
