@@ -136,8 +136,15 @@ td:nth-child(1){
     }
 }
 
+.container {
+    max-width: $screen-md;
+}
+
 div.footer {
     background-color: $behind-background-color;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    
     img {
         height: auto;
         width: 2em;
@@ -145,7 +152,6 @@ div.footer {
     
     a {
         font-size: 14px;
-        line-height: 50px;
         text-decoration: none;
         white-space:nowrap; /* prevent a single link (logo+words) from wrapping internally */
         margin-right: 10px;
@@ -153,7 +159,7 @@ div.footer {
 }
 
 .container-mainbody {
-    padding-bottom: 100px;
+    padding-bottom: 50px;
 }
 
 label { font-weight:normal; }
@@ -168,6 +174,10 @@ h1 {
 h2 {
     font-size: 30px;
     color: #666666;
+}
+
+h2:first-child {
+    margin-top: 0;
 }
 
 h3 {
@@ -493,6 +503,10 @@ div.metric-bellchart.statesenate.election.pb div.curve {
 /*
  * WASTED VOTES DIAGRAMS
  */
+.highcharts-title {
+    font-family: 'Roboto', sans-serif !important;
+}
+
 #chart-egvoteswasted {
     height: 150px;
     width: 300px;
