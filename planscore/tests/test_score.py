@@ -106,7 +106,7 @@ class TestScore (unittest.TestCase):
         self.assertAlmostEqual(pb3, -.2, places=2,
             msg='Should see +red PB with 40% red vote share and 60% red seats')
 
-        pb4 = score.calculate_PB((5, 5, 5, 5, 10), (6, 6, 6, 6, 1))
+        pb4 = score.calculate_PB((4, 4, 4, 12, 12), (6, 6, 6, 3, 3))
         self.assertAlmostEqual(pb4, .2, places=2,
             msg='Should see +blue PB with 40% blue vote share and 60% blue seats')
 

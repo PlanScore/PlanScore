@@ -55,7 +55,7 @@ def swing_vote(red_districts, blue_districts, amount):
 def calculate_EG(red_districts, blue_districts, vote_swing=0):
     ''' Convert two lists of district vote counts into an EG score.
     
-        Vote swing is positive toward blue and negative toward red.
+        By convention, result is positive for blue and negative for red.
     '''
     election_votes, wasted_red, wasted_blue, red_wins, blue_wins = 0, 0, 0, 0, 0
     red_districts, blue_districts = swing_vote(red_districts, blue_districts, vote_swing)
@@ -86,6 +86,8 @@ def calculate_EG(red_districts, blue_districts, vote_swing=0):
 def calculate_MMD(red_districts, blue_districts):
     ''' Convert two lists of district vote counts into a Mean/Median score.
     
+        By convention, result is positive for blue and negative for red.
+    
         Vote swing does not seem to affect Mean/Median, so leave it off.
     '''
     shares = sorted([B/(R + B) for (R, B) in zip(red_districts, blue_districts)])
@@ -93,6 +95,21 @@ def calculate_MMD(red_districts, blue_districts):
     mean = statistics.mean(shares)
     
     return median - mean
+
+def calculate_PB(red_districts, blue_districts):
+    ''' Convert two lists of district vote counts into a Partisan Bias score.
+    
+        By convention, result is positive for blue and negative for red.
+    '''
+    red_total, blue_total = sum(red_districts), sum(blue_districts)
+    blue_margin = (blue_total - red_total) / (blue_total + red_total)
+    
+    reds_5050, blues_5050 = swing_vote(red_districts, blue_districts, -blue_margin/2)
+    blue_seats = len([True for (R, B) in zip(reds_5050, blues_5050) if R < B])
+    blue_seatshare = blue_seats / len(blues_5050)
+    blue_voteshare = blue_total / (blue_total + red_total)
+    
+    return blue_seatshare - blue_voteshare
 
 def calculate_bias(upload):
     ''' Calculate partisan metrics for districts with plain vote counts.
