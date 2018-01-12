@@ -111,8 +111,9 @@ class TestScore (unittest.TestCase):
             msg='Should see +blue PB with 40% blue vote share and 60% blue seats')
 
     @unittest.mock.patch('planscore.score.calculate_MMD')
+    @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_bias(self, calculate_EG, calculate_MMD):
+    def test_calculate_bias(self, calculate_EG, calculate_PB, calculate_MMD):
         ''' Efficiency gap can be correctly calculated for an election
         '''
         input = data.Upload(id=None, key=None,
@@ -128,6 +129,9 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
+        self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
+        self.assertEqual(calculate_PB.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
+
         self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
         self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
@@ -138,8 +142,9 @@ class TestScore (unittest.TestCase):
         self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
 
     @unittest.mock.patch('planscore.score.calculate_MMD')
+    @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_ushouse(self, calculate_EG, calculate_MMD):
+    def test_calculate_gap_ushouse(self, calculate_EG, calculate_PB, calculate_MMD):
         ''' Efficiency gap can be correctly calculated for a U.S. House election
         '''
         input = data.Upload(id=None, key=None,
@@ -155,6 +160,9 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['US House Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
+        self.assertEqual(output.summary['US House Partisan Bias'], calculate_PB.return_value)
+        self.assertEqual(calculate_PB.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
+
         self.assertEqual(output.summary['US House Efficiency Gap'], calculate_EG.return_value)
         self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
@@ -165,8 +173,9 @@ class TestScore (unittest.TestCase):
         self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
 
     @unittest.mock.patch('planscore.score.calculate_MMD')
+    @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_upperhouse(self, calculate_EG, calculate_MMD):
+    def test_calculate_gap_upperhouse(self, calculate_EG, calculate_PB, calculate_MMD):
         ''' Efficiency gap can be correctly calculated for a State upper house election
         '''
         input = data.Upload(id=None, key=None,
@@ -182,6 +191,9 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['SLDU Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
+        self.assertEqual(output.summary['SLDU Partisan Bias'], calculate_PB.return_value)
+        self.assertEqual(calculate_PB.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
+
         self.assertEqual(output.summary['SLDU Efficiency Gap'], calculate_EG.return_value)
         self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
@@ -192,8 +204,9 @@ class TestScore (unittest.TestCase):
         self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
 
     @unittest.mock.patch('planscore.score.calculate_MMD')
+    @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_lowerhouse(self, calculate_EG, calculate_MMD):
+    def test_calculate_gap_lowerhouse(self, calculate_EG, calculate_PB, calculate_MMD):
         ''' Efficiency gap can be correctly calculated for a State lower house election
         '''
         input = data.Upload(id=None, key=None,
@@ -209,6 +222,9 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['SLDL Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
+        self.assertEqual(output.summary['SLDL Partisan Bias'], calculate_PB.return_value)
+        self.assertEqual(calculate_PB.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
+
         self.assertEqual(output.summary['SLDL Efficiency Gap'], calculate_EG.return_value)
         self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
@@ -219,8 +235,9 @@ class TestScore (unittest.TestCase):
         self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
 
     @unittest.mock.patch('planscore.score.calculate_MMD')
+    @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_sims(self, calculate_EG, calculate_MMD):
+    def test_calculate_gap_sims(self, calculate_EG, calculate_PB, calculate_MMD):
         ''' Efficiency gap can be correctly calculated using input sims.
         '''
         input = data.Upload(id=None, key=None,
@@ -232,10 +249,13 @@ class TestScore (unittest.TestCase):
                 ])
         
         calculate_MMD.return_value = 0
+        calculate_PB.return_value = 0
         calculate_EG.return_value = 0
         output = score.calculate_biases(score.calculate_bias(input))
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
+        self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
+        self.assertEqual(output.summary['Partisan Bias SD'], 0)
         self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
         self.assertEqual(output.summary['Efficiency Gap SD'], 0)
         self.assertIn('Efficiency Gap +1 Dem', output.summary)

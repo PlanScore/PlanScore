@@ -132,6 +132,7 @@ def calculate_bias(upload):
 
         if prefix == 'Red/Blue':
             summary_dict['Mean-Median'] = calculate_MMD(red_districts, blue_districts)
+            summary_dict['Partisan Bias'] = calculate_PB(red_districts, blue_districts)
             summary_dict['Efficiency Gap'] = calculate_EG(red_districts, blue_districts)
 
             # Calculate -5 to +5 point swings
@@ -141,6 +142,7 @@ def calculate_bias(upload):
                 summary_dict[f'Efficiency Gap +{points:.0f} {party}'] = gap
         else:
             summary_dict[f'{prefix} Mean-Median'] = calculate_MMD(red_districts, blue_districts)
+            summary_dict[f'{prefix} Partisan Bias'] = calculate_PB(red_districts, blue_districts)
             summary_dict[f'{prefix} Efficiency Gap'] = calculate_EG(red_districts, blue_districts)
 
             # Calculate -5 to +5 point swings
@@ -154,7 +156,7 @@ def calculate_bias(upload):
 def calculate_biases(upload):
     ''' Calculate partisan metrics for districts with multiple simulations.
     '''
-    MMDs = list()
+    MMDs, PBs = list(), list()
     EGs = {swing: list() for swing in (0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5)}
     summary_dict, copied_districts = dict(), copy.deepcopy(upload.districts)
     first_totals = copied_districts[0]['totals']
@@ -182,6 +184,7 @@ def calculate_biases(upload):
             all_blue_districts[i].append(blue_votes)
     
         MMDs.append(calculate_MMD(sim_red_districts, sim_blue_districts))
+        PBs.append(calculate_PB(sim_red_districts, sim_blue_districts))
         
         for swing in EGs:
             EGs[swing].append(calculate_EG(sim_red_districts, sim_blue_districts, swing/100))
@@ -196,6 +199,8 @@ def calculate_biases(upload):
 
     summary_dict['Mean-Median'] = statistics.mean(MMDs)
     summary_dict['Mean-Median SD'] = statistics.stdev(MMDs)
+    summary_dict['Partisan Bias'] = statistics.mean(PBs)
+    summary_dict['Partisan Bias SD'] = statistics.stdev(PBs)
     summary_dict['Efficiency Gap'] = statistics.mean(EGs[0])
     summary_dict['Efficiency Gap SD'] = statistics.stdev(EGs[0])
     
