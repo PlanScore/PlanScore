@@ -54,6 +54,8 @@ def excerpt_feature(feature, bbox_geom):
         # Only attempt to calculate out a fraction for an original polygon
         fraction = local_geometry.GetArea() / original_geometry.GetArea()
         local_feature.SetField(FRACTION_FIELD, fraction)
+    else:
+        local_feature.UnsetField(FRACTION_FIELD)
     
     return local_feature
 
