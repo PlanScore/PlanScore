@@ -40,6 +40,26 @@ def iter_extent_tiles(xxyy_extent, zoom):
         
         yield (tile_ul, bbox_wkt)
 
+def excerpt_feature(original_feature, bbox_geom):
+    ''' Return a cloned feature trimmed to the bbox and marked with a fraction.
+    '''
+    original_geometry = original_feature.GetGeometryRef()
+    new_feature = original_feature.Clone()
+    intersection_geometry = original_geometry.Clone().Intersection(bbox_geom)
+    intersection_geometry.TransformTo(EPSG4326)
+    new_feature.SetGeometry(intersection_geometry)
+    
+    if original_geometry.GetGeometryType() in (ogr.wkbPolygon,
+        ogr.wkbPolygon25D, ogr.wkbMultiPolygon, ogr.wkbMultiPolygon25D):
+        # Only attempt to calculate out a fraction for an original polygon
+        fraction = intersection_geometry.GetArea() / original_geometry.GetArea()
+        new_feature.SetField(FRACTION_FIELD, fraction)
+    else:
+        # Set fraction to null otherwise
+        new_feature.UnsetField(FRACTION_FIELD)
+    
+    return new_feature
+
 parser = argparse.ArgumentParser(description='YESS')
 
 parser.add_argument('filename', help='Name of geographic file with precinct data')
@@ -67,15 +87,8 @@ def main():
         features_json = []
     
         for feature in layer:
-            geometry = feature.GetGeometryRef()
-            local_feature = feature.Clone()
-            local_geometry = geometry.Clone().Intersection(bbox_geom)
-            local_geometry.TransformTo(EPSG4326)
-
-            fraction = local_geometry.GetArea() / geometry.GetArea()
-            local_feature.SetField(FRACTION_FIELD, fraction)
-            local_feature.SetGeometry(local_geometry)
-            features_json.append(local_feature.ExportToJson(options=['COORDINATE_PRECISION=7']))
+            features_json.append(excerpt_feature(feature, bbox_geom)
+                .ExportToJson(options=['COORDINATE_PRECISION=7']))
         
         if not features_json:
             continue

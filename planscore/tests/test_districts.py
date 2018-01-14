@@ -378,6 +378,7 @@ class TestDistricts (unittest.TestCase):
     # 4. precinct from tile outside district - 0%
     # 5. block-point from tile within district - 100%
     # 6. block-point from tile outside district - 0%
+    # 7. empty geometry from tile within district - 0%
     
     def test_score_precinct_1_tile_within(self):
         ''' Correct voter count for a precinct from tile within district.
@@ -498,6 +499,17 @@ class TestDistricts (unittest.TestCase):
 
         blockpoint = {"type": "Feature", "properties": {"Voters": 1}, "geometry": {"type": "Point", "coordinates": [1.00, 0.05]}}
         districts.score_precinct(partial, blockpoint, '12/2059/2047')
+        self.assertAlmostEqual(partial.totals['Voters'], 0., 9)
+    
+    def test_score_precinct_7_empty(self):
+        ''' Correct voter count for an empty geometry from tile within district.
+        '''
+        geometry = ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,1 1,1 -1,-1 -1))')
+        partial = districts.Partial(None, {'Voters': 0}, None, None, None, None, None, geometry)
+        self.assertTrue(partial.contains_tile('12/2048/2047'))
+
+        empty = {"type": "Feature", "properties": {"Voters": 1}, "geometry": {"type": "GeometryCollection", "geometries": [ ]}}
+        districts.score_precinct(partial, empty, '12/2048/2047')
         self.assertAlmostEqual(partial.totals['Voters'], 0., 9)
     
     @unittest.mock.patch('planscore.districts.load_tile_precincts')

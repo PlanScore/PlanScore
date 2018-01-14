@@ -205,7 +205,7 @@ def score_precinct(partial, precinct, tile_zxy):
     '''
     precinct_geom = ogr.CreateGeometryFromJson(json.dumps(precinct['geometry']))
     
-    if precinct_geom is None:
+    if precinct_geom is None or precinct_geom.IsEmpty():
         # If there's no geometry here, don't bother.
         return
     elif precinct_geom.GetGeometryType() in (ogr.wkbPoint,
