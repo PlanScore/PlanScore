@@ -43,14 +43,17 @@ def iter_extent_tiles(xxyy_extent, zoom):
 def excerpt_feature(feature, bbox_geom):
     ''' Return a cloned feature trimmed to the bbox and marked with a fraction.
     '''
-    geometry = feature.GetGeometryRef()
+    original_geometry = feature.GetGeometryRef()
     local_feature = feature.Clone()
-    local_geometry = geometry.Clone().Intersection(bbox_geom)
+    local_geometry = original_geometry.Clone().Intersection(bbox_geom)
     local_geometry.TransformTo(EPSG4326)
-
-    fraction = local_geometry.GetArea() / geometry.GetArea()
-    local_feature.SetField(FRACTION_FIELD, fraction)
     local_feature.SetGeometry(local_geometry)
+    
+    if original_geometry.GetGeometryType() in (ogr.wkbPolygon,
+        ogr.wkbPolygon25D, ogr.wkbMultiPolygon, ogr.wkbMultiPolygon25D):
+        # Only attempt to calculate out a fraction for an original polygon
+        fraction = local_geometry.GetArea() / original_geometry.GetArea()
+        local_feature.SetField(FRACTION_FIELD, fraction)
     
     return local_feature
 
