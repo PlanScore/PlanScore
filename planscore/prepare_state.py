@@ -40,25 +40,25 @@ def iter_extent_tiles(xxyy_extent, zoom):
         
         yield (tile_ul, bbox_wkt)
 
-def excerpt_feature(feature, bbox_geom):
+def excerpt_feature(original_feature, bbox_geom):
     ''' Return a cloned feature trimmed to the bbox and marked with a fraction.
     '''
-    original_geometry = feature.GetGeometryRef()
-    local_feature = feature.Clone()
-    local_geometry = original_geometry.Clone().Intersection(bbox_geom)
-    local_geometry.TransformTo(EPSG4326)
-    local_feature.SetGeometry(local_geometry)
+    original_geometry = original_feature.GetGeometryRef()
+    new_feature = original_feature.Clone()
+    intersection_geometry = original_geometry.Clone().Intersection(bbox_geom)
+    intersection_geometry.TransformTo(EPSG4326)
+    new_feature.SetGeometry(intersection_geometry)
     
     if original_geometry.GetGeometryType() in (ogr.wkbPolygon,
         ogr.wkbPolygon25D, ogr.wkbMultiPolygon, ogr.wkbMultiPolygon25D):
         # Only attempt to calculate out a fraction for an original polygon
-        fraction = local_geometry.GetArea() / original_geometry.GetArea()
-        local_feature.SetField(FRACTION_FIELD, fraction)
+        fraction = intersection_geometry.GetArea() / original_geometry.GetArea()
+        new_feature.SetField(FRACTION_FIELD, fraction)
     else:
         # Set fraction to null otherwise
-        local_feature.UnsetField(FRACTION_FIELD)
+        new_feature.UnsetField(FRACTION_FIELD)
     
-    return local_feature
+    return new_feature
 
 parser = argparse.ArgumentParser(description='YESS')
 
