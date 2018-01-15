@@ -1,6 +1,7 @@
 import argparse, math, itertools, io, gzip, os
 from osgeo import ogr, osr
 import boto3, ModestMaps.Geo, ModestMaps.Core
+from . import constants
 
 TILE_ZOOM = 12
 FRACTION_FIELD = 'PlanScore:Fraction'
@@ -105,7 +106,7 @@ def main():
             body = gzip.compress(buffer.getvalue().encode('utf8'))
             print(key, '-', '{:.1f}KB'.format(len(body) / 1024))
     
-            s3.put_object(Bucket='planscore', Key=key, Body=body,
+            s3.put_object(Bucket=constants.S3_BUCKET, Key=key, Body=body,
                 ContentEncoding='gzip', ContentType='text/json', ACL='public-read')
         else:
             os.makedirs(os.path.dirname(key), exist_ok=True)
