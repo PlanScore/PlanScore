@@ -362,9 +362,14 @@ function load_plan_score(url, message_section, score_section,
 
         // Clear out and repopulate description.
         clear_element(description);
+        
+        if(plan['start_time'])
+        {
+            modified_at = new Date(plan['start_time'] * 1000);
+        }
 
-        description.innerHTML = what_score_description_html(plan);
-        description.appendChild(document.createElement('br'));
+        //description.innerHTML = what_score_description_html(plan);
+        //description.appendChild(document.createElement('br'));
         description.appendChild(document.createElement('i'));
         description.lastChild.appendChild(document.createTextNode(
             (date_age(modified_at) > 86400)
