@@ -221,44 +221,40 @@ function show_population_score(plan, score_pop)
     score_pop.appendChild(new_words);
 }
 
-function show_demographics_score(plan, score_dem)
+function show_sensitivity_test(plan, score_sense)
 {
-    var summary_name = which_score_summary_name(plan);
-
-    if(summary_name == 'Efficiency Gap')
-    {
-        return;
-    }
-
-    var black_shares = [];
-
-    for(var i = 0; i < plan.districts.length; i++)
-    {
-        var totals = plan.districts[i].totals;
-        black_shares.push(totals['Black Voting-Age Population'] / totals['Voting-Age Population']);
-    }
-
-    clear_element(score_dem);
-
-    var new_h3 = document.createElement('h3'),
-        new_score = document.createElement('p'),
-        new_words = document.createElement('p');
-
-    new_h3.innerText = 'Demographics';
-    new_score.className = 'score'
-
-    if(Math.max.apply(null, black_shares) > .33) {
-        new_score.innerText = 'A';
-    } else {
-        new_score.innerText = 'F';
-    }
-
-    new_words.innerText = ('One district with '
-        + nice_percent(Math.max.apply(null, black_shares)) + ' minority population');
-
-    score_dem.appendChild(new_h3);
-    score_dem.appendChild(new_score);
-    score_dem.appendChild(new_words);
+    Highcharts.chart(score_sense, {
+        chart: { type: 'line' },
+        credits: { enabled: false },
+        title: { text: null },
+        series: [{
+            name: 'Expected Efficiency Gap',
+            data: [
+                100 * plan.summary['Efficiency Gap +5 Dem'],
+                100 * plan.summary['Efficiency Gap +4 Dem'],
+                100 * plan.summary['Efficiency Gap +3 Dem'],
+                100 * plan.summary['Efficiency Gap +2 Dem'],
+                100 * plan.summary['Efficiency Gap +1 Dem'],
+                100 * plan.summary['Efficiency Gap'],
+                100 * plan.summary['Efficiency Gap +1 Rep'],
+                100 * plan.summary['Efficiency Gap +2 Rep'],
+                100 * plan.summary['Efficiency Gap +3 Rep'],
+                100 * plan.summary['Efficiency Gap +4 Rep'],
+                100 * plan.summary['Efficiency Gap +5 Rep']
+                ]
+        }],
+        xAxis: {
+            categories: ['+5 D', '+4 D', '+3 D', '+2 D', '+1 D', '0', '+1 R', '+2 R', '+3 R', '+4 R', '+5 R'],
+            title: { text: 'Possible Vote Swing' }
+        },
+        yAxis: { title: { text: null } },
+        plotOptions: {
+            line: {
+                dataLabels: { enabled: false },
+                enableMouseTracking: false
+            }
+        }
+    });
 }
 
 function show_message(text, score_section, message_section)
@@ -343,7 +339,7 @@ function plan_array(plan)
 }
 
 function load_plan_score(url, message_section, score_section,
-    description, table, score_EG, score_pop, score_dem, map_url, map_div)
+    description, table, score_EG, score_pop, score_sense, map_url, map_div)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -409,7 +405,7 @@ function load_plan_score(url, message_section, score_section,
         // Populate scores.
         show_efficiency_gap_score(plan, score_EG);
         show_population_score(plan, score_pop);
-        show_demographics_score(plan, score_dem);
+        show_sensitivity_test(plan, score_sense);
 
         // Go on to load the map.
         load_plan_map(map_url, map_div, plan);
