@@ -4,6 +4,10 @@
     <script src="{{ digested_static_url('plan.js') }}"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+
+    <!-- Highcharts does charts and also maps -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+
     <style lang="text/css">
     
         ul#scores-box
@@ -48,6 +52,11 @@
             border: 1px solid #93A1A1;
             clear: both;
         }
+        
+        #score-sensitivity
+        {
+            height: 200px;
+        }
 
     </style>
 {% endblock %}
@@ -65,15 +74,14 @@
             <p>B+</p>
             <p>Not enough information to calculate this score.</p>
         </li>
-        <li class="col-md-4" id="score-population">
-            <h3>Population</h3>
+        <li class="col-md-4" id="score-partisan-bias">
+            <h3>Partisan Bias</h3>
             <p class="score-na">N/A</p>
             <p>Not enough information to calculate this score.</p>
         </li>
-        <li class="col-md-4" id="score-demographics">
-            <h3>Demographics</h3>
-            <p class="score-na">N/A</p>
-            <p>Not enough information to calculate this score.</p>
+        <li class="col-md-4">
+            <h3>Sensitivity</h3>
+            <p id="score-sensitivity"></p>
         </li>
     </ul>
     <p id="map"></p>
@@ -94,8 +102,8 @@
 	        document.getElementById('plan-description'),
 	        document.getElementById('districts'),
 	        document.getElementById('score-efficiency-gap'),
-	        document.getElementById('score-population'),
-	        document.getElementById('score-demographics'),
+	        document.getElementById('score-partisan-bias'),
+	        document.getElementById('score-sensitivity'),
 	        geom_url, document.getElementById('map'));
 	</script>
 
