@@ -60,7 +60,7 @@ MODEL_VERSION = {
 
 # Time limit to process an upload, in seconds
 
-UPLOAD_TIME_LIMIT = 15 * 60
+UPLOAD_TIME_LIMIT = 30 * 60
 
 # Amount to round different kinds of values
 
