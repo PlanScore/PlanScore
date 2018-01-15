@@ -176,49 +176,23 @@ function show_efficiency_gap_score(plan, score_EG)
     score_EG.appendChild(new_words);
 }
 
-function show_population_score(plan, score_pop)
+function show_partisan_bias_score(plan, score_PB)
 {
-    var summary_name = which_score_summary_name(plan);
-
-    var populations = [];
-
-    for(var i = 0; i < plan.districts.length; i++)
-    {
-        var totals = plan.districts[i].totals;
-        console.log(totals);
-        if(summary_name == 'Efficiency Gap') {
-            if(typeof totals['Population 2015'] === 'number') {
-                populations.push(totals['Population 2015']);
-            } else {
-                populations.push(totals['Voters']);
-            }
-        } else if(summary_name == 'US House Efficiency Gap') {
-            populations.push(totals['Population']);
-        } else {
-            return;
-        }
-    }
-    console.log(populations);
-
-    var max_pop = Math.max.apply(null, populations),
-        min_pop = Math.min.apply(null, populations);
-
-    clear_element(score_pop);
+    var partisan_bias = plan.summary['Partisan Bias'];
+    clear_element(score_PB);
 
     var new_h3 = document.createElement('h3'),
         new_score = document.createElement('p'),
         new_words = document.createElement('p');
 
-    new_h3.innerText = 'Population';
+    new_h3.innerText = 'Partisan Bias';
     new_score.className = 'score'
-    new_score.innerText = nice_percent(max_pop / min_pop - 1);
-    new_words.innerText = ('Largest district has '
-        + nice_percent(max_pop / min_pop - 1)
-        + ' greater population than smallest district.');
+    new_score.innerText = nice_percent(Math.abs(partisan_bias));
+    new_words.innerText = nice_gap(partisan_bias) + '.';
 
-    score_pop.appendChild(new_h3);
-    score_pop.appendChild(new_score);
-    score_pop.appendChild(new_words);
+    score_PB.appendChild(new_h3);
+    score_PB.appendChild(new_score);
+    score_PB.appendChild(new_words);
 }
 
 function show_sensitivity_test(plan, score_sense)
@@ -339,7 +313,7 @@ function plan_array(plan)
 }
 
 function load_plan_score(url, message_section, score_section,
-    description, table, score_EG, score_pop, score_sense, map_url, map_div)
+    description, table, score_EG, score_PB, score_sense, map_url, map_div)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -404,7 +378,7 @@ function load_plan_score(url, message_section, score_section,
         
         // Populate scores.
         show_efficiency_gap_score(plan, score_EG);
-        show_population_score(plan, score_pop);
+        show_partisan_bias_score(plan, score_PB);
         show_sensitivity_test(plan, score_sense);
 
         // Go on to load the map.
