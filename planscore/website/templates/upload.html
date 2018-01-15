@@ -34,24 +34,53 @@
     </style>
 {% endblock %}
 {% block content %}
-    <p>
-        Upload a GeoJSON or Geopackage file. While PlanScore is under
-        construction, only district plans for Null Island will work.
-    </p>
-    <form id="upload" action="#" method="post" enctype="multipart/form-data">
-        <input type="hidden" name="key">
-        <input type="hidden" name="AWSAccessKeyId">
-        <input type="hidden" name="policy">
-        <input type="hidden" name="signature">
-        <input type="hidden" name="success_action_redirect">
-        <input type="hidden" name="acl">
-        <input type="hidden" name="x-amz-security-token">
-        <p>
-            <input type="file" name="file" id="file">
-            <label for="file" class="btn btn-default">Choose A File</label>
-            <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary" disabled>
-        </p>
-    </form>
+    <section class="row">
+        <div class="col-md-6">
+            <p>
+                Try our scoring service for new district plans. Upload a map to
+                instantly receive projected data about its partisan
+                consequences. Previously, this sort of analysis was available
+                only to the parties’ line-drawers.
+            </p>
+            <p>
+                Our first supported state is <strong>North Carolina</strong>.
+                We are building models for other states,
+                <a href="https://twitter.com/planscore">follow us on Twitter @PlanScore</a>
+                for news on new models.
+            </p>
+        </div>
+        <form class="col-md-6" id="upload" action="#" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="key">
+            <input type="hidden" name="AWSAccessKeyId">
+            <input type="hidden" name="policy">
+            <input type="hidden" name="signature">
+            <input type="hidden" name="success_action_redirect">
+            <input type="hidden" name="acl">
+            <input type="hidden" name="x-amz-security-token">
+            <p>
+                Upload a district plan as a geospatial file containing Polygon
+                or MultiPolygon shapes. Processing time depends on the
+                complexity of the district plan, and may take a few seconds or
+                many minutes.
+            </p>
+            <p>
+                <input type="file" name="file" id="file">
+                <label for="file" class="btn btn-default">Choose A File</label>
+                <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary" disabled>
+            </p>
+            <p>
+                These file types are currently supported:
+            </p>
+            <ul>
+                <li>
+                    <a href="https://doc.arcgis.com/en/arcgis-online/reference/shapefiles.htm">Shapefile</a>
+                    (upload as a <a href="https://en.wikipedia.org/wiki/Zip_(file_format)">single .zip file</a>)
+                </li>
+                <li><a href="http://geojson.org">GeoJSON</a></li>
+                <li><a href="http://www.geopackage.org">Geopackage</a></li>
+            </ul>
+        </form>
+    </section>
 	<script language="javascript">
 	
 	    var upload_form = document.getElementById('upload'),
