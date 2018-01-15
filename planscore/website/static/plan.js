@@ -1,3 +1,7 @@
+var FIELDS = ['Population 2010', 'Population 2015', 'Black Population 2015',
+    'Hispanic Population 2015', 'Democratic Votes', 'Republican Votes',
+    'Polsby-Popper', 'Reock'];
+
 function format_url(url_pattern, id)
 {
     return url_pattern.replace('{id}', id);
@@ -84,9 +88,7 @@ function which_score_column_names(plan)
 {
     if(typeof plan.summary['Efficiency Gap SD'] === 'number')
     {
-        return ['Population 2010', 'Population 2015', 'Black Population 2015',
-            'Hispanic Population 2015', 'Democratic Votes', 'Republican Votes',
-            'Polsby-Popper', 'Reock'];
+        return FIELDS.slice();
     }
 
     if(typeof plan.summary['US House Efficiency Gap'] === 'number')
@@ -257,9 +259,7 @@ function hide_message(score_section, message_section)
  */
 function plan_array(plan)
 {
-    var fields = ['Population 2010', 'Population 2015', 'Black Population 2015',
-        'Hispanic Population 2015', 'Democratic Votes', 'Republican Votes',
-        'Polsby-Popper', 'Reock'];
+    var fields = FIELDS.slice();
 
     // Build list of columns
     var head_row = ['District'],
