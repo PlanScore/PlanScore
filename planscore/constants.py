@@ -54,7 +54,7 @@ if os.environ.get('AWS', 'localstack') == 'amazonaws.com':
 
 MODEL_VERSION = {
     'XX': {2: '002'},
-    'NC': { 13: '003-county-parts' },
+    'NC': { 13: '004-ushouse', 50: '004-ncsenate', 120: '004-nchouse' },
     'WI': { 8: '001-us-house', 33: '001-state-senate', 99: '001-state-assembly' },
     }
 

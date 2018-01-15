@@ -71,7 +71,7 @@ class TestAfterUpload (unittest.TestCase):
         self.assertEqual(after_upload.guess_state_house(null_plan_path), ('XX', '002'))
 
         nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
-        self.assertEqual(after_upload.guess_state_house(nc_plan_path), ('NC', '003-county-parts'))
+        self.assertEqual(after_upload.guess_state_house(nc_plan_path), ('NC', '004-ushouse'))
     
     @unittest.mock.patch('osgeo.ogr')
     def test_guess_state_house_imagined(self, osgeo_ogr):
