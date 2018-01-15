@@ -1,14 +1,44 @@
-{% extends "layout.html" %}
+{% extends "patternlibrary.html" %}
 {% block title %}Upload{% endblock %}
 {% block head %}
 	<script src="{{ digested_static_url('upload.js') }}"></script>
+    <style lang="text/css">
+    
+        form#upload label,
+        form#upload input
+        {
+            font-size: 100%;
+            padding: 1.5rem 3rem;
+            margin-right: 1rem;
+        }
+    
+        /**
+         * Hide the file input itself, and use a label for primary interaction
+         * https://tympanus.net/codrops/2015/09/15/styling-customizing-file-inputs-smart-way/
+         */
+        input#file
+        {
+            width: 0.1px;
+            height: 0.1px;
+            opacity: 0;
+            overflow: hidden;
+            position: absolute;
+            z-index: -1;
+        }
+        
+        label[for='file']
+        {
+            cursor: pointer;
+        }
+
+    </style>
 {% endblock %}
 {% block content %}
-    <form action="#" method="post" enctype="multipart/form-data">
-        <p>
-            Upload a GeoJSON or Geopackage file. While PlanScore is under
-            construction, only district plans for Null Island will work.
-        </p>
+    <p>
+        Upload a GeoJSON or Geopackage file. While PlanScore is under
+        construction, only district plans for Null Island will work.
+    </p>
+    <form id="upload" action="#" method="post" enctype="multipart/form-data">
         <input type="hidden" name="key">
         <input type="hidden" name="AWSAccessKeyId">
         <input type="hidden" name="policy">
@@ -17,12 +47,29 @@
         <input type="hidden" name="acl">
         <input type="hidden" name="x-amz-security-token">
         <p>
-            <input type="file" name="file">
-            <input type="submit" name="submission" value="Upload" disabled>
+            <input type="file" name="file" id="file">
+            <label for="file" class="btn btn-default">Choose A File</label>
+            <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary" disabled>
         </p>
     </form>
 	<script language="javascript">
-	    enable_form('{{upload_fields_url}}', document.forms[0]);
+	
+	    var upload_form = document.getElementById('upload'),
+	        file_input = document.getElementById('file'),
+	        file_label = file_input.nextElementSibling;
+	    
+	    enable_form('{{upload_fields_url}}', upload_form);
+	    
+	    file_input.addEventListener('change', function(e)
+	    {
+	        if(this.files.length) {
+	            file_label.innerText = this.files[0].name;
+	        
+	        } else {
+	            file_label.innerText = 'Choose A File';
+	        }
+	    });
+	    
 	</script>
 
 	{% include 'olark-embed.html' %}
