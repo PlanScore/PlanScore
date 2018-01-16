@@ -557,22 +557,28 @@ window.updateMetricsTabs = (yeardata) => {
     // tag the biasicon icons in the metrics' tabs
     const favor_party_eg = lookupBias(eg_score).party;
     const favor_color_eg = lookupBias(eg_score).color;
-    const percent_eg     = `+${Math.round(100 * Math.abs(eg_score))}%`;
     const hadseats       = favor_party_eg == 'Republican' ? seats_rep : seats_dem;
     const statement_eg   = totalseats ? (favor_party_eg ? `${favor_party_eg}s needed to earn ${(100 * Math.abs(eg_score)).toFixed(1)}% fewer votes to win ${hadseats} of ${totalseats} races than under a fair plan.` : 'This metric indicates a balanced plan.') : '';
     const biastext_eg    = favor_party_eg ? `This plan is more biased than ${Math.round(100 * eg_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
+    const roundscore_eg = Math.round(100 * Math.abs(eg_score));
+    let metricdrsum_eg = '0% Balanced';
+    if (roundscore_eg) metricdrsum_eg = `+${roundscore_eg}% ${eg_score > 0 ? 'Democrat' : 'Republican'}`;
 
     const favor_party_pb = lookupBias(pb_score).party;
     const favor_color_pb = lookupBias(pb_score).color;
-    const percent_pb     = `+${Math.round(100 * Math.abs(pb_score))}%`;
     const statement_pb   = favor_party_pb ? '' : 'This metric indicates a balanced plan.';
     const biastext_pb    = favor_party_pb ? `This plan is more biased than ${Math.round(100 * bias_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
-
+    const roundscore_pb = Math.round(100 * Math.abs(pb_score));
+    let metricdrsum_pb = '0% Balanced';
+    if (roundscore_pb) metricdrsum_pb = `+${roundscore_pb}% ${pb_score > 0 ? 'Democrat' : 'Republican'}`;
+ 
     const favor_party_mm = lookupBias(mm_score).party;
     const favor_color_mm = lookupBias(mm_score).color;
-    const percent_mm     = `+${Math.round(100 * Math.abs(mm_score))}%`;
     const statement_mm   = favor_party_mm ? '' : 'This metric indicates a balanced plan.';
     const biastext_mm    = favor_party_mm ? `This plan is more biased than ${Math.round(100 * mmd_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
+    const roundscore_mm = Math.round(100 * Math.abs(mm_score));
+    let metricdrsum_mm = '0% Balanced';
+    if (roundscore_mm) metricdrsum_mm = `+${roundscore_mm}% ${pb_score > 0 ? 'Democrat' : 'Republican'}`;
 
     // color the tab-swatches for the three metrics
     {
@@ -592,20 +598,17 @@ window.updateMetricsTabs = (yeardata) => {
     }
 
     // fill in those +DR% numbers and the summary texts, at the top of the metric tabs
-    $('#tab-efficiencygap span[data-field="metricpercent"]').text(percent_eg);
-    $('#tab-efficiencygap span[data-field="metricparty"]').text(favor_party_eg ? favor_party_eg : 'Balanced');
+    $('#tab-efficiencygap span[data-field="metricdrsum"]').text(metricdrsum_eg);
     $('#tab-efficiencygap span[data-field="metricstatement"]').text(statement_eg);
     $('#tab-efficiencygap span[data-field="plancompare"]').text('This plan is more biased toward X than 100% all of the enacted plans we have analyzed nationwide.');
     $('#tab-efficiencygap span[data-field="biasstatement"]').text(biastext_eg);
 
-    $('#tab-partisanbias span[data-field="metricpercent"]').text(percent_pb);
-    $('#tab-partisanbias span[data-field="metricparty"]').text(favor_party_pb ? favor_party_pb : 'Balanced');
+    $('#tab-partisanbias span[data-field="metricdrsum"]').text(metricdrsum_pb);
     $('#tab-partisanbias span[data-field="metricstatement"]').text(statement_pb);
     $('#tab-partisanbias span[data-field="plancompare"]').text('This plan is more biased toward X than 100% all of the enacted plans we have analyzed nationwide.');
     $('#tab-partisanbias span[data-field="biasstatement"]').text(biastext_pb);
 
-    $('#tab-meanmedian span[data-field="metricpercent"]').text(percent_mm);
-    $('#tab-meanmedian span[data-field="metricparty"]').text(favor_party_mm ? favor_party_mm : 'Balanced');
+    $('#tab-meanmedian span[data-field="metricdrsum"]').text(metricdrsum_mm);
     $('#tab-meanmedian span[data-field="metricstatement"]').text(statement_mm);
     $('#tab-meanmedian span[data-field="plancompare"]').text('This plan is more biased toward X than 100% all of the enacted plans we have analyzed nationwide.');
     $('#tab-meanmedian span[data-field="biasstatement"]').text(biastext_mm);
