@@ -44,25 +44,25 @@
     }
 
     div.slice.r3 {
-        background-color: rgb(205, 57, 82);
+        background-color: $biascolor-r3;
     }
     div.slice.r2 {
-        background-color: rgb(218, 118, 142);
+        background-color: $biascolor-r2;
     }
     div.slice.r1 {
-        background-color: rgb(231, 180, 202);
+        background-color: $biascolor-r1;
     }
     div.slice.balanced {
-        background-color: rgb(227, 220, 245);
+        background-color: $biascolor-0;
     }
     div.slice.d1 {
-        background-color: rgb(155, 173, 220);
+        background-color: $biascolor-d1;
     }
     div.slice.d2 {
-        background-color: rgb(82, 126, 196);
+        background-color: $biascolor-d2;
     }
     div.slice.d3 {
-        background-color: rgb(10, 79, 171);
+        background-color: $biascolor-d3;
     }
     div.slice.nodata {
         background-color: white;

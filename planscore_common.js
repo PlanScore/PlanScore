@@ -13,16 +13,16 @@ export const PLAN_YEARS = [
 ];
 
 // the color gradient from Republican red to Democrat blue
-// see also lookupBiasColor() lookupBiasDescription() et al, which resolves a score (-1 to +1) into colors & descriptions
+// see also lookupBias() which resolves a score (-1 to +1) into colors & descriptions
 export const COLOR_GRADIENT = require('tinygradient').rgb(['#C71C36', '#F2E5FA', '#0049A8'], 100).map((tinycolor) => { return tinycolor.toHexString(); });
 
 // technically bias scores range -1 to +1, but realistically we scale to a narrower band (25% bias is a lot!)
 // this defines the spread to consider when scaling a score onto a color ramp or similar
-// see also lookupBiasColor() lookupBiasDescription() et al, which resolves a score (-1 to +1) into colors & descriptions
+// see also lookupBias() which resolves a score (-1 to +1) into colors & descriptions
 export const BIAS_SPREAD_SCALING = 0.25;
 
 // a bias <= this value will be considered balanced and below statistical significance
-// see also lookupBiasColor() lookupBiasDescription() et al, which resolves a score (-1 to +1) into colors & descriptions
+// see also lookupBias() which resolves a score (-1 to +1) into colors & descriptions
 export const BIAS_BALANCED_THRESHOLD = 0.02;
 
 // for remapping state name to a short code
@@ -194,39 +194,38 @@ export const STATE_BOUNDING_BOXES = {
 // SHARED UTILITY FUNCTIONS
 //
 
-export const lookupBiasColor = (score) => {
-    // for swatches, map a bias score onto the color ramp
+// return a structure of information about the given EG bias score: whether it's strong or weak, D or R, etc.
+export const lookupBias = (score) => {
+    if (score === undefined || score === null) return 'No Data';
 
-    if (score === undefined || score === null) return '#FFFFFF';  // No Data
+    const abscore = Math.abs(score);
 
-    // normalize the score onto an absolute scale from 0 (-max) to 1 (+max)
-    // that gives us the index of the color gradient entry
+    const party = abscore > BIAS_BALANCED_THRESHOLD ? (score > 0 ? 'Democrat' : 'Republican') : '';
+    const partycode = party.substr(0, 1).toLowerCase();
+
+    let description = 'No Significant Bias';
+    if (abscore >= 0.20) description = `Most Biased In Favor of ${party}`;
+    if (abscore >= 0.14) description = `More Biased In Favor of ${party}`;
+    if (abscore >= 0.07) description = `Biased In Favor of ${party}`;
+    if (abscore >= BIAS_BALANCED_THRESHOLD) description = `Slightly Biased In Favor of ${party}`;
+
+    let extremity = 0;
+    if (abscore >= 0.14) extremity = 3;
+    if (abscore >= 0.07) extremity = 2;
+    if (abscore >= BIAS_BALANCED_THRESHOLD) extremity = 1;
+
+    // normalize the score onto an absolute scale from 0 (-max) to 1 (+max); that gives us the index of the color gradient entry
     const bias_spread = BIAS_SPREAD_SCALING;
     let p_value = 0.5 + (0.5 * (score / bias_spread));
     if (p_value < 0) p_value = 0;
     else if (p_value > 1) p_value = 1;
+    const color = COLOR_GRADIENT[ Math.round((COLOR_GRADIENT.length - 1) * p_value) ];
 
-    const i = Math.round((COLOR_GRADIENT.length - 1) * p_value);
-    return COLOR_GRADIENT[i];
-};
-
-export const lookupBiasDescription = (score) => {
-    // for swatches and titles, map a bias score onto some words describing it
-    if (score === undefined || score === null) return 'No Data';
-
-    const abscore = Math.abs(score);
-    const whichparty = score > 0 ? 'Democrats' : 'Republicans';
-
-    if (abscore >= 0.20) return `Most Biased In Favor of ${whichparty}`;
-    if (abscore >= 0.14) return `More Biased In Favor of ${whichparty}`;
-    if (abscore >= 0.07) return `Biased In Favor of ${whichparty}`;
-    if (abscore >= BIAS_BALANCED_THRESHOLD) return `Slightly Biased In Favor of ${whichparty}`;
-    return 'No Significant Bias';
-};
-
-export const lookupBiasFavorParty = (score) => {
-    // just return the name of the party who is favored by this plan; or empty if it's balanced
-    if (score === null || score === undefined) return '';
-    if (Math.abs(score) <= BIAS_BALANCED_THRESHOLD) return '';
-    return score > 0 ? 'Democrat' : 'Republican';
+    return {
+        party: party,
+        partycode: partycode,
+        color: color,
+        extremity: extremity,
+        description: description,
+    };
 };

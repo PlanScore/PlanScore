@@ -124,11 +124,34 @@ p.wehavedata {
         a.plan-begin.active span {
             background-color: $dark-purple-color;
             color: white;
+            border-width: 4px;
         }
         a.plan-continue.active span {
             background-color: $dark-purple-color;
             width: 4px;
             margin-right: 21.5px;
+        }
+
+        a.plan-begin.r-3 span {
+            background-color: $biascolor-r3;
+        }
+        a.plan-begin.r-2 span {
+            background-color: $biascolor-r2;
+        }
+        a.plan-begin.r-1 span {
+            background-color: $biascolor-r1;
+        }
+        a.plan-begin.nobias span {
+            background-color: $biascolor-0;
+        }
+        a.plan-begin.d-1 span {
+            background-color: $biascolor-d1;
+        }
+        a.plan-begin.d-2 span {
+            background-color: $biascolor-d2;
+        }
+        a.plan-begin.d-3 span {
+            background-color: $biascolor-d3;
         }
     }
 }
