@@ -338,6 +338,7 @@ window.selectState = (stateabbr) => {
     // passing empty/null stateabbr is how you explicitly select no state
     if (! stateabbr) {
         $('#stateinfo-popup').hide();
+        return;
     }
 
     // fetch the info from the map, and attach some attributes for the popup
