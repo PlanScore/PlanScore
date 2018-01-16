@@ -91,7 +91,17 @@
     #maplegend {
         position: relative;
         top: -22px;
-        right: 85px;
+        right: 300px;
+    }
+}
+@media screen and (min-width: $screen-lg) {
+    #map {
+        margin-bottom: -25px;
+    }
+    #maplegend {
+        position: relative;
+        top: -22px;
+        right: 320px;
     }
 }
 
