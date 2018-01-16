@@ -44,35 +44,6 @@ window.initStatePopup = () => {
     });
 };
 
-window.initMapLegend = () => {
-    // generate a list of from/to/color/title items much as we do the for the map's choropleth
-    const legend_choropleth_colors = [];
-    const slice_step = 0.30 * BIAS_SPREAD_SCALING;
-    for (let slice_lower = -BIAS_SPREAD_SCALING; slice_lower < BIAS_SPREAD_SCALING; slice_lower += slice_step) {
-        legend_choropleth_colors.push({
-            from: slice_lower,
-            to: slice_lower + slice_step,
-            color: lookupBiasColor(slice_lower + 0.5 * slice_step),  // middle score for this slice's range
-            title: lookupBiasDescription(slice_lower + 0.5 * slice_step),  // middle score for this slice's range
-        });
-    }
-
-    // generate the legend
-    const $legend = $('<div class="legend"></div>').appendTo('#map');
-
-    $('<h1>Most biased plan in our data</h1>').appendTo($legend);
-    $('<h2>(based on efficiency gap)</h2>').appendTo($legend);
-
-    legend_choropleth_colors.forEach((legendentry, i, allslices) => {
-        const $slice = $('<div class="slice"></div>').css({ 'background-color':legendentry.color }).prop('title', legendentry.title).appendTo($legend);
-        if      (i === 0)                    $slice.append('<span>R</span>');  // first real slice = R
-        else if (i === allslices.length - 1) $slice.append('<span>D</span>');  // last real slice = D
-    });
-
-    $('<div class="slice"></div>').css({ 'background-color': 'white', 'border': '1px solid #95989A' }).prop('title', 'No Data').appendTo($legend);
-    $('<h5>No Data</h5>').appendTo($legend);  // last slice will be the No Data, here are the words to go with it
-};
-
 window.initYearPickers = () => {
     // there are 2 year pickers: mobile and desktop
     // desktop is a fancy series of HTML/CSS dots which can be clicked to select a year
@@ -243,6 +214,7 @@ window.loadDataForSelectedBoundaryAndYear = () => {
             const newmapchart = Highcharts.mapChart('map', {
                 chart: {
                     borderWidth: 0,
+                    spacing: [ 0, 0, 0, 0 ],
                 },
                 title: {
                     text: '',  // no big title
@@ -293,9 +265,6 @@ window.loadDataForSelectedBoundaryAndYear = () => {
 
             // stow it for later retrieval
             $('#map').data('mapchart', newmapchart);
-
-            // and install the legend DIV, which we do only once
-            initMapLegend();
         }
     }
 
