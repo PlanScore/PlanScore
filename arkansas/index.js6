@@ -12,6 +12,7 @@ import { lookupBias } from "./../planscore_common";
 
 // bundle polyfills and local/vendor libraries specific to this page
 require('core-js/fn/object/values');
+require('core-js/fn/object/entries');
 require('./../jslibs/leaflet-control-zoombar.js');
 require('./../jslibs/leaflet-control-zoombar.css');
 require('./../jslibs/leaflet-control-partylegend.js');
@@ -560,7 +561,7 @@ window.updateMetricsTabs = (yeardata) => {
     const hadseats       = favor_party_eg == 'Republican' ? seats_rep : seats_dem;
     const statement_eg   = totalseats ? (favor_party_eg ? `${favor_party_eg}s needed to earn ${(100 * Math.abs(eg_score)).toFixed(1)}% fewer votes to win ${hadseats} of ${totalseats} races than under a fair plan.` : 'This metric indicates a balanced plan.') : '';
     const biastext_eg    = favor_party_eg ? `This plan is more biased than ${Math.round(100 * eg_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
-    const roundscore_eg = Math.round(100 * Math.abs(eg_score));
+    const roundscore_eg = Math.round(100 * Math.abs(eg_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
     let metricdrsum_eg = '0% Balanced';
     if (roundscore_eg) metricdrsum_eg = `+${roundscore_eg}% ${eg_score > 0 ? 'Democrat' : 'Republican'}`;
 
@@ -568,7 +569,7 @@ window.updateMetricsTabs = (yeardata) => {
     const favor_color_pb = lookupBias(pb_score).color;
     const statement_pb   = favor_party_pb ? '' : 'This metric indicates a balanced plan.';
     const biastext_pb    = favor_party_pb ? `This plan is more biased than ${Math.round(100 * bias_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
-    const roundscore_pb = Math.round(100 * Math.abs(pb_score));
+    const roundscore_pb = Math.round(100 * Math.abs(pb_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
     let metricdrsum_pb = '0% Balanced';
     if (roundscore_pb) metricdrsum_pb = `+${roundscore_pb}% ${pb_score > 0 ? 'Democrat' : 'Republican'}`;
  
@@ -576,7 +577,7 @@ window.updateMetricsTabs = (yeardata) => {
     const favor_color_mm = lookupBias(mm_score).color;
     const statement_mm   = favor_party_mm ? '' : 'This metric indicates a balanced plan.';
     const biastext_mm    = favor_party_mm ? `This plan is more biased than ${Math.round(100 * mmd_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
-    const roundscore_mm = Math.round(100 * Math.abs(mm_score));
+    const roundscore_mm = Math.round(100 * Math.abs(mm_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
     let metricdrsum_mm = '0% Balanced';
     if (roundscore_mm) metricdrsum_mm = `+${roundscore_mm}% ${pb_score > 0 ? 'Democrat' : 'Republican'}`;
 
@@ -717,61 +718,78 @@ window.redrawYearPicker = (csvdata) => {
     // the big yearpicker has a button to select the given election year
     // but also the left-most dot-and-dash thing indicating when a new plan was enacted
     // while the years are a universal constant, the plan-enactment years depends on what district type we're discussing
-    // so must be redrawn here
+    // so must be redrawn here after data are had
+    // ALSO needs to handle missing data, hiding missing years but still drawing nice timelines for the years we do have (Alabama statehouse, issue 167)
     {
         // a lookup dict: year => plan
+        // a lookup dict: for each plan, its first year
+        // a lookup dict: year => EG bias ratings
         const yearplans = {};
+        const planfirstyears = {};
+        const yearbiases = {};
         csvdata.forEach((row) => {
             yearplans[row.year] = {
                 plan: row.plan,
                 bias: row.eg_adj_avg,
             };
+
+            planfirstyears[row.plan] = row.plan_minyear;
+
+            yearbiases[row.year] = lookupBias(row.eg_adj_avg);
         });
 
         // the A links on the plan side & year side
         const $planslinks = $('#yearpicker-big div.plans').find('a');
         const $yearslinks = $('#yearpicker-big div.elections').find('a');
 
-        // go over each year in the universe (which was used to construct the $yearpicker_buttons) and find its row
-        // tag the row as being plan-start or plan-continue, for CSS purposes
-        PLAN_YEARS.slice().reverse().forEach((year, index, allyears) => {
-            const thisyearinfo = yearplans[year];
-            const nextyearinfo = yearplans[allyears[index+1]];
+        // go through the year + plan links
+        // hide any which have no data
+        // tag the plan links with their plan
+        $planslinks.each(function () {
+            const $thislink = $(this);
+            const year      = $thislink.attr('data-year');
+            const planinfo  = yearplans[year];
 
-            const $planlink = $planslinks.filter(`[data-year="${year}"]`);
-            const $yearlink = $yearslinks.filter(`[data-year="${year}"]`);
-
-            if (thisyearinfo) {  // do we have data for this year? we may not have data for all years for all states for all district types
-                const thisyearplan = thisyearinfo.plan;
-                const prevyearplan = nextyearinfo ? nextyearinfo.plan : null;
-                // console.log([ year, thisyearplan, prevyearplan, thisyearplan !== prevyearplan ? 'newplan' : 'continue' ]);
-
-                // tag the plan as either begin/continue
-                // use "thisyearplan" for both sides, since it would be filled in with a plan ID if we had any data at all
-                $yearlink.show();
-                $planlink.attr('data-plan', thisyearplan).show();  // used for click handling so we know what plan to load
-
-                const isnewplan = thisyearplan != prevyearplan;
-                if  (isnewplan) {
-                    $planlink.removeClass('plan-continue').addClass('plan-begin').prop('title', `A new district plan was implemented in ${year}. Show details for this districting plan.`);
-                }
-                else {
-                    $planlink.removeClass('plan-begin').addClass('plan-continue').prop('title', 'Show details for this districting plan');
-                }
-
-                // tag the year as being biased towards whom and how strongly
-                const bias = lookupBias(thisyearinfo.bias);
-                const cssclass = bias.partycode ? `${bias.partycode}-${bias.extremity}` : 'nobias';
-                $planlink.removeClass('d-3').removeClass('d-2').removeClass('d-1').removeClass('nobias').removeClass('r-1').removeClass('r-2').removeClass('r-3');
-                if (cssclass) $planlink.addClass(cssclass);  // .d-3, .r-2 etc. see CSS classes for colorizing
+            if (! planinfo) {
+                $thislink.attr('data-plan', '').hide();
             }
             else {
-                $yearlink.hide();
-                $planlink.hide();
+                $thislink.attr('data-plan', planinfo.plan).show();
+            }
+        });
+        $yearslinks.each(function () {
+            const $thislink = $(this);
+            const year      = $thislink.attr('data-year');
+            const planinfo  = yearplans[year];
+
+            if (! planinfo) {
+                $thislink.attr('data-plan', '').hide();
             }
         });
 
-        // final touch: if were showing a plan then highlight the plan visually
+        // now that we have only visible links tagged with plans
+        // assign the row with the plan-firstyear as a circle, and leave others as a dash
+        // based on the planfirstyears lookup created earlier
+        $planslinks.removeClass('plan-begin').addClass('plan-continue').prop('title', 'Show details for this districting plan');
+
+        Object.entries(planfirstyears).forEach(([plan, firstyear]) => {
+            const $firstyearlink = $planslinks.filter(`[data-plan="${plan}"]`).last();  // last link = first year
+            $firstyearlink.removeClass('plan-continue').addClass('plan-begin');
+        });
+
+//gda
+        // assign additional CSS classes about the bias in this year's plan, so we can color the plan and give a visual timeline
+        $planslinks.filter('.plan-begin').each(function () {
+            const $thislink = $(this);
+            const year = $thislink.attr('data-year');
+            const biasinfo = yearbiases[year];
+
+            const cssclass = biasinfo.partycode ? `${biasinfo.partycode}-${biasinfo.extremity}` : 'nobias';
+            $thislink.removeClass('d-3').removeClass('d-2').removeClass('d-1').removeClass('nobias').removeClass('r-1').removeClass('r-2').removeClass('r-3');
+            if (cssclass) $thislink.addClass(cssclass);  // .d-3, .r-2 etc. see CSS classes for colorizing
+        });
+
+        // final touch: if we are showing a Plan, then highlight the Plan clickers accordingly
         if (CURRENT_VIEW.planorelection == 'plan') {
             const $plinks = $('#yearpicker-big div.plans a').removeClass('active');
             const plan = $plinks.filter(`[data-year="${CURRENT_VIEW.year}"]`).first().attr('data-plan');
