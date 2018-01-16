@@ -408,6 +408,9 @@ window.selectMetric = (whichmetric) => {
 };
 
 window.selectElectionOrPlan = (year, planorelection) => {
+    // not supplied = fill it in
+    if (! planorelection) planorelection = CURRENT_VIEW.planorelection;
+
     // UI update: highlight this button or select this option
     $('#yearpicker-small').val(`${year}-${planorelection}`);
 
@@ -463,12 +466,29 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     redrawYearPicker(allcsvdata);
 
     // final check: do we have data for this district for the selected year?
+    // if not, fill in the closest year for which we DO have data
+    // which actually does involve peeking at most of the state so we can link to it
     const thisyeardata = allcsvdata.filter((row) => { return row.year == CURRENT_VIEW.year; })[0];
     if (thisyeardata) {
         $('#maincontent span[data-hasdata-thisyear]').hide().filter('[data-hasdata-thisyear="true"]').show();
     }
     else {
         $('#maincontent span[data-hasdata-thisyear]').hide().filter('[data-hasdata-thisyear="false"]').show();
+
+        const wehavetheseyears = allcsvdata.map((row) => {
+            return parseInt(row.year);
+        });
+        wehavetheseyears.sort((p, q) => {
+            const px = Math.abs(p - parseInt(CURRENT_VIEW.year));
+            const qx = Math.abs(q - parseInt(CURRENT_VIEW.year));
+            return (px != qx) ? (px > qx ? 1 : -1) : (p > q ? -1 : 1); // order by diff from desired year; or else by higher-year if equal spread
+        });
+        const closestyear = wehavetheseyears[0];
+
+        const $link = $('#maincontent span[data-hasdata-thisyear="false"] a');
+        $link.attr('data-year', closestyear);
+        $link.find('span[data-field="closestyear"]').text(closestyear);
+
         return;  // nothing else we can do until they select a year which has data
     }
 
@@ -777,7 +797,6 @@ window.redrawYearPicker = (csvdata) => {
             $firstyearlink.removeClass('plan-continue').addClass('plan-begin');
         });
 
-//gda
         // assign additional CSS classes about the bias in this year's plan, so we can color the plan and give a visual timeline
         $planslinks.filter('.plan-begin').each(function () {
             const $thislink = $(this);
