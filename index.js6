@@ -127,7 +127,7 @@ window.handleResize = () => {
 // loadDataForSelectedBoundaryAndYear() is the real worker here; the others are basically convenience functions
 //
 
-window.loadDataForSelectedBoundaryAndYear = () => {
+window.loadDataForSelectedBoundaryAndYear = (options={}) => {
     if (! CURRENT_VIEW.year || ! CURRENT_VIEW.boundtype) return;  // need both; during startup one will be blank, so avoid an error
 
     // initialize the bias score statistics to No Data all around
@@ -148,6 +148,28 @@ window.loadDataForSelectedBoundaryAndYear = () => {
         download: true,
         header: true,
         complete: function (results) {
+            // issue 169, if fudgeYearIfNoData is enabled and we have no data for this year, pick another year
+            // nearest year to our chosen which does have data, favoring more-recent year in event of a tie
+            if (options.fudgeYearIfNoData) {
+                const hasdata = results.data.filter((datarow) => { return datarow.year == CURRENT_VIEW.year; }).length;
+                if (! hasdata) {
+                    const wehavetheseyears = results.data.map((datarow) => {
+                        return parseInt(datarow.year);
+                    });
+                    wehavetheseyears.sort((p, q) => {
+                        const px = Math.abs(p - parseInt(CURRENT_VIEW.year));
+                        const qx = Math.abs(q - parseInt(CURRENT_VIEW.year));
+                        return (px != qx) ? (px > qx ? 1 : -1) : (p > q ? -1 : 1); // order by diff from desired year; or else by higher-year if equal spread
+                    });
+                    const closestyear = wehavetheseyears[0];
+
+                    setTimeout(function () {
+                        selectYear(closestyear);
+                    }, 1);
+                    return;
+                }
+            }
+
             // filter by the year (geography is implicit by which CSV was fetched)
             // and for each row assign the bias score to the state's row in the above
             // this is loop-within-loop as we match arrays to arrays, but P=50 and Q=20ish so it's affordable
@@ -327,8 +349,11 @@ window.selectBoundaryType = (boundtype) => {
     $('#boundarypicker div[data-boundary]').removeClass('active').filter(`[data-boundary="${boundtype}"]`).addClass('active');
 
     // save to the state and refresh the map + data
+    // per 169 this invokes a new year-fudging should we encounter a no-data condition
     CURRENT_VIEW.boundtype = boundtype;
-    loadDataForSelectedBoundaryAndYear();
+    loadDataForSelectedBoundaryAndYear({
+        fudgeYearIfNoData: true
+    });
 };
 
 window.selectState = (stateabbr) => {
