@@ -1,0 +1,35 @@
+/*
+ * UTILITY CLASSES
+ */
+
+.center { text-align:center; }
+.right { text-align:right; }
+.left { text-align:left; }
+
+.bold { font-weight:bold; }
+
+.big { font-size: 120%; }
+
+.nowrap { white-space:nowrap; }
+
+.rightfloat { float: right; }
+
+.pointer { cursor: pointer; }
+
+.balanced {
+    background-color: $balanced-color !important;
+}
+.democrat {
+    background-color: $democrat-color !important;
+}
+.republican {
+    background-color: $republican-color !important;
+}
+
+
+span.mobilespace {  /* a utlity class used to enclose a single space character, so it's only visible (and causes libne-wrap) on very small screens; see issue 99 */
+    display: none;
+    @media screen and (max-width: $screen-xxs) {
+        display: inline;
+    }
+}

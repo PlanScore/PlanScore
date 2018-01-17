@@ -1,8 +1,13 @@
-@import 'sitewide';
+@import '_common/styles/defines';
+@import '_common/styles/utility';
+@import '_common/styles/general';
+/* @import '_common/styles/bellcurves'; */
+/* @import '_common/styles/boundarypicker'; */
+/* @import '_common/styles/wastedvotes'; */
 
 
 
-p.title {	
+p.title {
 	font-weight: 1000;
 }
 

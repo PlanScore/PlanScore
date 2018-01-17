@@ -4,20 +4,20 @@ require('./index.scss');
 require('./index.src.html');
 
 // shared constants between pages: the list of years, the red-blue color gradient, ...
-import { PLAN_YEARS } from "./../planscore_common";
-import { STATE_NAME_TO_CODE } from "./../planscore_common";
-import { CONUS_BOUNDS } from "./../planscore_common";
-import { STATE_BOUNDING_BOXES } from "./../planscore_common";
-import { lookupBias } from "./../planscore_common";
+import { PLAN_YEARS } from "./../_common/constants";
+import { STATE_NAME_TO_CODE } from "./../_common/constants";
+import { CONUS_BOUNDS } from "./../_common/constants";
+import { STATE_BOUNDING_BOXES } from "./../_common/constants";
+import { lookupBias } from "./../_common/functions";
 
 // bundle polyfills and local/vendor libraries specific to this page
 require('core-js/fn/object/values');
 require('core-js/fn/object/entries');
-require('./../jslibs/leaflet-control-zoombar.js');
-require('./../jslibs/leaflet-control-zoombar.css');
-require('./../jslibs/leaflet-control-partylegend.js');
-require('./../jslibs/leaflet-control-partylegend.css');
-require('./../jslibs/leaflet-polygon.fillPattern.js');
+require('./../_common/jslibs/leaflet-control-zoombar.js');
+require('./../_common/jslibs/leaflet-control-zoombar.css');
+require('./../_common/jslibs/leaflet-control-partylegend.js');
+require('./../_common/jslibs/leaflet-control-partylegend.css');
+require('./../_common/jslibs/leaflet-polygon.fillPattern.js');
 
 
 //

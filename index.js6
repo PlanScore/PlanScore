@@ -4,10 +4,10 @@ require('./index.scss');
 require('./index.src.html');
 
 // shared constants between pages: the list of years, the red-blue color gradient, ...
-import { PLAN_YEARS } from "./planscore_common";
-import { STATE_CODE_TO_NAME } from "./planscore_common";
-import { BIAS_SPREAD_SCALING } from "./planscore_common";
-import { lookupBias } from "./planscore_common";
+import { PLAN_YEARS } from "./_common/constants";
+import { STATE_CODE_TO_NAME } from "./_common/constants";
+import { BIAS_SPREAD_SCALING } from "./_common/constants";
+import { lookupBias } from "./_common/functions";
 
 // bundle polyfills and local/vendor libraries specific to this page
 //require('./js/leaflet-control-basemapbar.js');

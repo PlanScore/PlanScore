@@ -1,0 +1,23 @@
+/*
+ * WASTED VOTES DIAGRAMS
+ */
+.highcharts-title {
+    font-family: 'Roboto', sans-serif !important;
+}
+
+#chart-egvoteswasted {
+    height: 150px;
+    width: 300px;
+    margin: 0 auto;
+    
+    @media screen and (min-width: $screen-lg) {
+        height: 150px;
+        width: 332px;
+    }
+    
+    @media screen and (max-width: $screen-md) {
+        height: 150px;
+        width: 100%;
+    }
+}
+

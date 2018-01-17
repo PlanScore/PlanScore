@@ -1,4 +1,5 @@
-// sitewide.js6 exists only so we can have a sitewide.css output
+// sitewide.js6 exists only so we can have a sitewide.css and sitewide.js output
 // this will be usable by other websites so they can style their sites to look like PlanScore
 // this is relevant to the pattern library
 require('./sitewide.scss');
+

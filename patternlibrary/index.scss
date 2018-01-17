@@ -1,4 +1,9 @@
-@import 'sitewide';
+@import '_common/styles/defines';
+@import '_common/styles/utility';
+@import '_common/styles/general';
+/* @import '_common/styles/bellcurves'; */
+/* @import '_common/styles/boundarypicker'; */
+/* @import '_common/styles/wastedvotes'; */
 @import '_statetemplate/state_template';
 
 /* use SASS here */

@@ -1,0 +1,87 @@
+/*
+ * BOUNDARY PICKER
+ * the selector for statehouse/ushouse/senate
+ */
+#boundarypicker {
+    /* small-enough screens, force these to 100% as they will linewrap before Bootstrap will "xs" them to stack */
+    
+    @media screen and (max-width: $screen-sm) {
+        > div {
+            padding-right: 10px;
+            padding-left: 10px;
+        }
+        > div:first-child {
+            padding-left: 15px;
+        }
+        > div:last-child {
+            padding-right: 15px;
+        }
+    }
+    
+    @media screen and (max-width: $screen-xs) {
+        > div {
+            padding-right: 5px;
+            padding-left: 5px;
+        }
+        > div:first-child {
+            padding-left: 15px;
+        }
+        > div:last-child {
+            padding-right: 15px;
+        }
+    }
+    
+    @media screen and (max-width: $screen-xxs) {
+        > div {
+            padding-right: 2px;
+            padding-left: 2px;
+        }
+        > div:first-child {
+            padding-left: 15px;
+        }
+        > div:last-child {
+            padding-right: 15px;
+        }
+    }
+    
+    @media screen and (max-width: 480px) {
+        > div {
+            word-spacing: 10em;
+        }
+    }
+
+    div[data-boundary] {
+        cursor: pointer;
+
+        a {
+            text-decoration: none !important;
+            color: #95989A;
+        }
+
+        background-color: #F2F2F2;
+
+        padding-bottom: 15px;
+        padding-top: 15px;
+
+        font-size: 18px;
+        border-radius: 2px;
+        box-shadow: 2px 2px 2px 1px rgba(0, 0, 0, .16);
+    }
+    div[data-boundary].active {
+        background-color: #4D599E;
+        color: white;
+        a {
+            color: white;
+        }
+    }
+    div[data-boundary="ushouse"] {
+    }
+    div[data-boundary="statesenate"] {
+    }
+    div[data-boundary="statehouse"] {
+    }
+
+    div[data-boundary="statesenate"], div[data-boundary="statesenate"] a { /* issue 112 temporarily disabled */
+        opacity: 0.7; cursor: not-allowed;
+    }
+}

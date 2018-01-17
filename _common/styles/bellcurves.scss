@@ -1,0 +1,145 @@
+/*
+ * BELLCHART DIAGRAMS
+ * bellcharts indicating the plan's percentile rating
+ * a bit of a visual trick: a single-bar column chart, and a stretching background of a bell curve for visual reference
+ */
+div.metric-bellchart {
+    width: 300px;
+    @media screen and (min-width: $screen-lg) {
+        width: 335px;
+    }
+    @media screen and (max-width: $screen-md) and (min-width: $screen-xs) {
+        width: 335px;
+    }
+    @media screen and (max-width: $screen-xxs) {
+        width: 250px;
+    }
+
+    @media screen and (max-width: $screen-md) {
+        margin-bottom: 30px;
+    }
+
+    div.curve {
+        width: 100%; /* of the width defined above */
+        height: 150px;
+        margin: 15px auto 0;
+        background-image: none;  /* overridden in subclasses */
+        background-repeat: no-repeat;
+        background-size: 100% 100%;  /* stretch the graphic to fill the area 100% */
+        background-position: 0 0;
+
+        position: relative; /* for positioning the markline */
+        div.markline {
+            position: absolute;
+            left: 50%; /* override this to position the markerline at the appropriate % with 0% being far left and 100% being far right */
+            height: 100px;
+
+            width: 2px;
+            margin-left: -1px;  /* half of width, so it centers at the given left % */
+            background-color: black;
+        }
+
+        div.markline {
+            top: 40px;
+            @media screen and (min-width: $screen-lg) {
+                top: 48px;
+            }
+            @media screen and (max-width: $screen-md) and (min-width: $screen-xs) {
+                top: 48px;
+            }  
+            @media screen and (max-width: $screen-xxs) {
+                top: 30px;
+            }
+        }
+
+        div.marklabel {
+            position: absolute;
+            left: 50%; /* override this to position the markerlabel at the appropriate % with 0% being far left and 100% being far right */
+            margin-left: -30px; /* half of the declared width */
+            z-index: 1;
+
+            background-color: black;
+            color: white;
+            font-size: 13px;
+            width: 60px;
+            text-align: center;
+
+            top: 25px;  /* these tops are matched to those of the .markline declared above, minus a tad */
+            @media screen and (min-width: $screen-lg) {
+                top: 33px;
+            }
+            @media screen and (max-width: $screen-md) and (min-width: $screen-xs) {
+                top: 33px;
+            }  
+            @media screen and (max-width: $screen-xxs) {
+                top: 15px;
+            }
+        }
+        div.marklabel.right {
+            margin-left: -59px;  /* extreme left: match left side of label to the line, except by 1px so it lines up nicely */
+        }
+        div.marklabel.left {
+            margin-left: -1px;  /* extreme right: don't right side of label to the line, except by 1px so it lines up nicely */
+        }
+    }
+
+    div.metric-bellchart-legend {
+        color: $gray-med;
+        font-size: 12px;
+    }
+}
+div.metric-bellchart.ushouse.plan.eg div.curve {
+    background-image: url(/images/ushouse_eg_plan_curve.svg);
+}
+div.metric-bellchart.ushouse.plan.mm div.curve {
+    background-image: url(/images/ushouse_mmd_plan_curve.svg);
+}
+div.metric-bellchart.ushouse.plan.pb div.curve {
+    background-image: url(/images/ushouse_bias_plan_curve.svg);
+}
+div.metric-bellchart.statehouse.plan.eg div.curve {
+    background-image: url(/images/statehouse_eg_plan_curve.svg);
+}
+div.metric-bellchart.statehouse.plan.mm div.curve {
+    background-image: url(/images/statehouse_mmd_plan_curve.svg);
+}
+div.metric-bellchart.statehouse.plan.pb div.curve {
+    background-image: url(/images/statehouse_bias_plan_curve.svg);
+}
+div.metric-bellchart.statesenate.plan.eg div.curve {
+    background-image: url(/images/statesenate_eg_plan_curve.svg);
+}
+div.metric-bellchart.statesenate.plan.mm div.curve {
+    background-image: url(/images/statesenate_mmd_plan_curve.svg);
+}
+div.metric-bellchart.statesenate.plan.pb div.curve {
+    background-image: url(/images/statesenate_bias_plan_curve.svg);
+}
+div.metric-bellchart.ushouse.election.eg div.curve {
+    background-image: url(/images/ushouse_eg_election_curve.svg);
+}
+div.metric-bellchart.ushouse.election.mm div.curve {
+    background-image: url(/images/ushouse_mmd_election_curve.svg);
+}
+div.metric-bellchart.ushouse.election.pb div.curve {
+    background-image: url(/images/ushouse_bias_election_curve.svg);
+}
+div.metric-bellchart.statehouse.election.eg div.curve {
+    background-image: url(/images/statehouse_eg_election_curve.svg);
+}
+div.metric-bellchart.statehouse.election.mm div.curve {
+    background-image: url(/images/statehouse_mmd_election_curve.svg);
+}
+div.metric-bellchart.statehouse.election.pb div.curve {
+    background-image: url(/images/statehouse_bias_election_curve.svg);
+}
+div.metric-bellchart.statesenate.election.eg div.curve {
+    background-image: url(/images/statesenate_eg_election_curve.svg);
+}
+div.metric-bellchart.statesenate.election.mm div.curve {
+    background-image: url(/images/statesenate_mmd_election_curve.svg);
+}
+div.metric-bellchart.statesenate.election.pb div.curve {
+    background-image: url(/images/statesenate_bias_election_curve.svg);
+}
+
