@@ -8,7 +8,12 @@ import { PLAN_YEARS } from "./../_common/constants";
 import { STATE_NAME_TO_CODE } from "./../_common/constants";
 import { CONUS_BOUNDS } from "./../_common/constants";
 import { STATE_BOUNDING_BOXES } from "./../_common/constants";
+import { WASTEDVOTE_CHART_WASTED_D } from "./../_common/constants";
+import { WASTEDVOTE_CHART_WASTED_R } from "./../_common/constants";
+import { WASTEDVOTE_CHART_USEFUL_D } from "./../_common/constants";
+import { WASTEDVOTE_CHART_USEFUL_R } from "./../_common/constants";
 import { lookupBias } from "./../_common/functions";
+import { drawBiasBellChart } from "./../_common/functions";
 
 // bundle polyfills and local/vendor libraries specific to this page
 require('core-js/fn/object/values');
@@ -31,21 +36,6 @@ const CURRENT_VIEW = {
     // boundtype: 'ushouse',  // short polygon name: ushouse statehouse statesenate
     // planorelection: 'election',  // show 'election' or 'plan' statistics on right-hand side
     // metric: 'eg', // which metric tab is showing?
-};
-
-// Efficiency Gap wasted vote chart; colors
-const WASTEDVOTE_CHART_WASTED_D = '#0049A8';
-const WASTEDVOTE_CHART_WASTED_R = '#C71C36';
-const WASTEDVOTE_CHART_USEFUL_D = '#99b7dc';
-const WASTEDVOTE_CHART_USEFUL_R = '#e8a4ad';
-
-// for the bellcurve charts, the data spread (min + max absolute values)
-// so we can interpolate a value and position a marker line indicating a value
-// see drawBiasBellChart()
-const BELLCURVE_SPREAD = {
-    eg: 0.22,
-    mm: 0.11,
-    pb: 0.30,
 };
 
 // what fields to use for Election Mode and Plan Mode
@@ -878,44 +868,9 @@ window.drawBiasBellCharts = (yeardata) => {
     const mmscore = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].mm ];
     const pbscore = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].bias ];
 
-    drawBiasBellChart('eg', egscore);
-    drawBiasBellChart('mm', mmscore);
-    drawBiasBellChart('pb', pbscore);
-};
-
-window.drawBiasBellChart = (whichone, datavalue) => {
-    // the bell charts are a bit of a trick, in that the real bellchart libs won't do what we need
-    // this is a column chart with a single non-0 data point, to draw the black bar showing this plan's rating
-    // the div.metric-bellchart has additional CSS classes, to use a colorful background-image which looks like a bell curve
-
-    // replace CSS classes to change which curve image is being displayed as the backdrop
-    const $div = $(`#metric-bellchart-${whichone}`);
-    $div.removeClass('pb').removeClass('eg').removeClass('mm').addClass(whichone);
-    $div.removeClass('ushouse').removeClass('statehouse').removeClass('statesentate').addClass(CURRENT_VIEW.boundtype);
-    $div.removeClass('election').removeClass('plan').addClass(CURRENT_VIEW.planorelection);
-
-    // normalize the value into a range of 0% to 100% within that range, to form an X axis position
-    // 0% is the furthest left; 100% furthest right; 50% balanced
-    // watch out! we swap the sign here!
-    // Republican bias is indicated with values <0 BUT in American parlance Republicans are "right" which is the positive-numbers side
-    // so SUBTRACT the bias to shift a positive/democrat bias toward blue left
-    const $markline  = $div.find('div.markline');
-    const $marklabel = $div.find('div.marklabel');
-    const spread = BELLCURVE_SPREAD[whichone];
-    let percentile = 0.5 - (0.5 * datavalue / spread);
-    percentile = Math.min(Math.max(percentile, 0), 1);
-    // console.log([ `drawBiasBellChart() ${whichone}`, spread, datavalue, percentile ]);
-
-    $markline.css({ 'left':`${100 * percentile}%` });
-    $marklabel.css({ 'left':`${100 * percentile}%` });
-    $marklabel.removeClass('left').removeClass('right');
-    if (percentile >= 0.95) $marklabel.addClass('right');
-    if (percentile <= 0.05) $marklabel.addClass('left');
-
-    // fill in the spread values into the +D% ad +R% legends
-    const $legend = $div.find('div.metric-bellchart-legend');
-    const spreadtext = Math.round(100 * spread);
-    $legend.find('span[data-field="metric-bellchart-spread"]').text(spreadtext);
+    drawBiasBellChart('eg', egscore, 'metric-bellchart-eg', CURRENT_VIEW.boundtype, CURRENT_VIEW.planorelection);
+    drawBiasBellChart('mm', mmscore, 'metric-bellchart-mm', CURRENT_VIEW.boundtype, CURRENT_VIEW.planorelection);
+    drawBiasBellChart('pb', pbscore, 'metric-bellchart-pb', CURRENT_VIEW.boundtype, CURRENT_VIEW.planorelection);
 };
 
 window.updateMapForCurrentSelection = (yeardata) => {

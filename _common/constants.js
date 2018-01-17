@@ -188,3 +188,18 @@ export const STATE_BOUNDING_BOXES = {
     'WI': [ [42.49172, -92.88943], [47.30982, -86.24955] ],
     'WY': [ [40.99477, -111.05456], [45.00582, -104.05225] ],
 };
+
+// for the bellcurve charts, the data spread (min + max absolute values)
+// so we can interpolate a value and position a marker line indicating a value
+// see drawBiasBellChart()
+export const BELLCURVE_SPREAD = {
+    eg: 0.22,
+    mm: 0.11,
+    pb: 0.30,
+};
+
+// Efficiency Gap wasted vote chart; colors
+export const WASTEDVOTE_CHART_WASTED_D = '#0049A8';
+export const WASTEDVOTE_CHART_WASTED_R = '#C71C36';
+export const WASTEDVOTE_CHART_USEFUL_D = '#99b7dc';
+export const WASTEDVOTE_CHART_USEFUL_R = '#e8a4ad';
