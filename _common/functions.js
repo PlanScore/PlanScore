@@ -66,8 +66,8 @@ export const drawBiasBellChart = (whichone, datavalue, htmldivid, boundtype, pla
     $markline.css({ 'left':`${100 * percentile}%` });
     $marklabel.css({ 'left':`${100 * percentile}%` });
     $marklabel.removeClass('left').removeClass('right');
-    if (percentile >= 0.95) $marklabel.addClass('right');
-    if (percentile <= 0.05) $marklabel.addClass('left');
+    if (percentile >= 0.90) $marklabel.addClass('right');
+    if (percentile <= 0.10) $marklabel.addClass('left');
 
     // fill in the spread values into the +D% ad +R% legends
     const $legend = $div.find('div.metric-bellchart-legend');

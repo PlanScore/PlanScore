@@ -64,6 +64,8 @@ div.metric-bellchart {
             width: 60px;
             text-align: center;
 
+            border-radius: 3px; /* overridden on .left and .right  to form a proper flag shape */
+
             top: 25px;  /* these tops are matched to those of the .markline declared above, minus a tad */
             @media screen and (min-width: $screen-lg) {
                 top: 33px;
@@ -77,9 +79,13 @@ div.metric-bellchart {
         }
         div.marklabel.right {
             margin-left: -59px;  /* extreme left: match left side of label to the line, except by 1px so it lines up nicely */
+            border-bottom-right-radius: 0;
+            border-top-right-radius: 0;
         }
         div.marklabel.left {
             margin-left: -1px;  /* extreme right: don't right side of label to the line, except by 1px so it lines up nicely */
+            border-bottom-left-radius: 0;
+            border-top-left-radius: 0;
         }
     }
 
