@@ -14,6 +14,8 @@ $democrat-color: #0049A8;
 $balanced-color: #CCCCCC;
 $dark-purple-color: #4D599E;
 
+/* the maps and bellcurves have a gentle gradient of 100 colors from red to purple to blue; for CSS purposes we use a simpified set of 7 colors */
+/* this is idiosyncratic to the #maplegend on the front page, as everyplace else uses lookupBias() to get a real color */
 $biascolor-r3: rgb(205, 57, 82);
 $biascolor-r2: rgb(218, 118, 142);
 $biascolor-r1: rgb(231, 180, 202);

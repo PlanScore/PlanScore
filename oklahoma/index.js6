@@ -781,24 +781,19 @@ window.redrawYearPicker = (csvdata) => {
         });
 
         // now that we have only visible links tagged with plans
-        // assign the row with the plan-firstyear as a circle, and leave others as a dash
+        // assign the row with the plan-firstyear as a circle (colored by EG bias that year), and leave others as a dash
         // based on the planfirstyears lookup created earlier
-        $planslinks.removeClass('plan-begin').addClass('plan-continue').prop('title', 'Show details for this districting plan');
+        const default_color = '#4d599e'; // see state_template.scss and $dark-purple-color
+        $planslinks.removeClass('plan-begin').addClass('plan-continue').prop('title', 'Show details for this districting plan').find('span').css({ 'background-color': default_color });
 
         Object.entries(planfirstyears).forEach(([plan, firstyear]) => {
-            const $firstyearlink = $planslinks.filter(`[data-plan="${plan}"]`).last();  // last link = first year
-            $firstyearlink.removeClass('plan-continue').addClass('plan-begin');
-        });
+            const $thislink = $planslinks.filter(`[data-plan="${plan}"]`).last();  // last link = first year
+            const $circle   = $thislink.find('span');
+            const year      = $thislink.attr('data-year');
+            const biasinfo  = yearbiases[year];
 
-        // assign additional CSS classes about the bias in this year's plan, so we can color the plan and give a visual timeline
-        $planslinks.filter('.plan-begin').each(function () {
-            const $thislink = $(this);
-            const year = $thislink.attr('data-year');
-            const biasinfo = yearbiases[year];
-
-            const cssclass = biasinfo.partycode ? `${biasinfo.partycode}-${biasinfo.extremity}` : 'nobias';
-            $thislink.removeClass('d-3').removeClass('d-2').removeClass('d-1').removeClass('nobias').removeClass('r-1').removeClass('r-2').removeClass('r-3');
-            if (cssclass) $thislink.addClass(cssclass);  // .d-3, .r-2 etc. see CSS classes for colorizing
+            $thislink.removeClass('plan-continue').addClass('plan-begin');
+            $circle.css({ 'background-color': biasinfo.color });
         });
 
         // final touch: if we are showing a Plan, then highlight the Plan clickers accordingly

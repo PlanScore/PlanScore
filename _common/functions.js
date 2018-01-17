@@ -21,15 +21,10 @@ export const lookupBias = (score) => {
     const partycode = party.substr(0, 1).toLowerCase();
 
     let description = 'No Significant Bias';
-    if (abscore >= 0.20) description = `Most Biased In Favor of ${party}`;
-    if (abscore >= 0.14) description = `More Biased In Favor of ${party}`;
-    if (abscore >= 0.07) description = `Biased In Favor of ${party}`;
-    if (abscore >= BIAS_BALANCED_THRESHOLD) description = `Slightly Biased In Favor of ${party}`;
-
-    let extremity = 0;
-    if (abscore >= 0.14) extremity = 3;
-    if (abscore >= 0.07) extremity = 2;
-    if (abscore >= BIAS_BALANCED_THRESHOLD) extremity = 1;
+    if      (abscore >= 0.20) description = `Most Biased In Favor of ${party}`;
+    else if (abscore >= 0.14) description = `More Biased In Favor of ${party}`;
+    else if (abscore >= 0.07) description = `Biased In Favor of ${party}`;
+    else if (abscore >= BIAS_BALANCED_THRESHOLD) description = `Slightly Biased In Favor of ${party}`;
 
     // normalize the score onto an absolute scale from 0 (-max) to 1 (+max); that gives us the index of the color gradient entry
     const bias_spread = BIAS_SPREAD_SCALING;
@@ -42,7 +37,6 @@ export const lookupBias = (score) => {
         party: party,
         partycode: partycode,
         color: color,
-        extremity: extremity,
         description: description,
     };
 };
