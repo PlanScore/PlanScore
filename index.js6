@@ -38,7 +38,7 @@ $(document).ready(function () {
 
 window.initStatePopup = () => {
     // the stateinfo popup is managed by selectState()
-    // but we do want to add some event hanndlers: the X button to close it
+    // but we do want to add some event handlers: the X button to close it
     $('#stateinfo-popup button').click(function () {
         selectState('');
     });
@@ -73,13 +73,19 @@ window.initYearPickers = () => {
     PLAN_YEARS.forEach((year) => {
         // each button has some utility classes so we can call out certain landmark years
         // see also handleResize() which adjusts the full-width spacing behavior
-        const $button = $('<div><a></a></div>').attr('data-year', year).prop('title', `Show partisan bias analysis for ${year}`).appendTo($picker_big);
+        const $button = $('<div></div>').attr('data-year', year).prop('title', `Show efficiency gap analysis for ${year}`).appendTo($picker_big);
         if (year % 10 === 0) $button.addClass('decade');
         if (year % 10 === 2) $button.addClass('decplan');
         if (year % 4 === 0)  $button.addClass('presidential');
 
+//gda
+        $('<span class="currentyear"></span>').text(year).appendTo($button);
+        $('<span class="currentyearline"></span>').appendTo($button);
+
+        $('<a></a>').appendTo($button); // for styling and as a click magnet
+
         if (year % 10 === 2) {  // per 151 decennial plans come out the next cycle
-            $('<span></span>').text(year).appendTo($button);
+            $('<span class="yearlabel"></span>').text(year).appendTo($button);
         }
     });
     $picker_big.on('click', 'div', function () {
@@ -325,10 +331,12 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
 };
 
 window.selectYear = (year) => {
-    // UI update: highlight the big/desktop yeapicker button
+    // UI update: big/desktop yearpicker
+    // add class to the DIV so as to style elements: colored fill, visible label, ...
+//gda
     $('#yearpicker-big div').removeClass('active').filter(`[data-year="${year}"]`).addClass('active');
 
-    // UI update: select the mobile yearpicker
+    // UI update: small/mobile yearpicker
     // if the selected year is the first/last then show/hide the prev/next buttons
     const $small_button = $('#yearpicker-small span').hide().filter(`[data-year="${year}"]`).show();
     const $prevbutton = $('#yearpicker-small div.nextprev.left');

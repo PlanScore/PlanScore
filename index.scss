@@ -137,11 +137,38 @@
             }
         }
 
-        span {  /* year labels */
+        span.yearlabel {  /* year labels */
             display: block;
             color: #4D599E;
             font-size: 16px;
             margin-top: 2px;
+        }
+        span.currentyear {
+            display: inline-block;
+            width: 34px;
+            height: 17px;  /* contrived to fit font size */
+            background-color: black;
+            color: white;
+
+            border-radius: 3px;
+
+            font-size: 13px;
+            text-align: center;
+
+            opacity: 0;  /* see div.active subclass below */
+        }
+        span.currentyearline {
+            display: inline-block;
+            background-color: black;
+            height: 20px;
+            width: 2px;
+
+            position: relative;
+            left: -17px; /* half of the currentyear width */
+            top: 20px;
+            z-index: -1;
+
+            opacity: 0;  /* see div.active subclass below */
         }
     }
     div.decplan {  /* larger dots for decennial plans */
@@ -159,6 +186,9 @@
         a {
             background-color: #4D599E;
         }
+        span.currentyear, span.currentyearline {
+            opacity: 1; /* show/hide for visibility, breaks spacing since we expect these labels to occupy space even when not visible */
+        }
     }
 }
 
@@ -168,7 +198,7 @@
     border-top: solid 1px #4D599E;
     width: 100%;
     height: 1px;
-    top: 32.5%;
+    top: 37px;
     position: relative;
     z-index:-1;
 }
