@@ -164,8 +164,13 @@
             width: 2px;
 
             position: relative;
-            left: -17px; /* half of the currentyear width */
-            top: 20px;
+            left: 6px;
+            top: -2px;
+            @media screen and (min-width: $screen-md) {  /* workaround for weird bugs at sm and md+ screens */
+                left: -17px;
+                top: 20px;
+            }
+
             z-index: -1;
 
             opacity: 0;  /* see div.active subclass below */
