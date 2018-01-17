@@ -5,9 +5,9 @@
 
     <!--[include_head]-->
 
-    <!-- sitewide JS and CSS -->
-    <link href="https://planscore.org/sitewide.css" rel="stylesheet" />
-    <script src="https://planscore.org/sitewide.js"></script>
+    <!-- PlanScore Website Framework -->    
+    <link href="/sitewide.css" rel="stylesheet" />
+    <script src="/sitewide.js"></script>
 
     <!-- OG tags -->
     <meta property="og:title" content="PlanScore" />
@@ -20,8 +20,18 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:site" content="@PlanScore" />
+
+    <!-- trigger some script stuff when the page loads -->
+    <script>
+    function runDemos() {
+        // Bias Scoring Histograms
+        drawBiasBellChart('eg', -0.03, 'metric-bellchart-eg', 'ushouse', 'plan');
+        drawBiasBellChart('pb', -0.02, 'metric-bellchart-pb', 'ushouse', 'plan');
+        drawBiasBellChart('mm', 0.06, 'metric-bellchart-mm', 'ushouse', 'plan');
+    }
+    </script>
 </head>
-<body>
+<body onLoad="runDemos();">
 
     <!--[include_navbar]-->
 <div class="container container-mainbody">
@@ -42,11 +52,13 @@
             </ul>
             <hr>
             <p>And here are the basic styles and pieces from PlanScore.org for you to reuse.</p>
+
             <h1>Header 1</h1>
             <h2>Header 2</h2>
             <h3>Header 3</h3>
             <h4>Header 4</h4>
             <p>Body text with a link to <a href="#">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a></p>
+
             <ul>
                 <li>Here's an unordered list.</li>
                 <li>Here's an unordered list.</li>
@@ -129,13 +141,13 @@
                 </div>
             </div>
 
+
             <h2>Metric Content Block</h2>
             <div class="metric-block">
                 <div class="row">
                     <div class="col-xs-12 col-md-6">
                         <h2>How Does This Plan Compare?</h2>
-                        <p class="big"><span data-field="biasstatement"></span></p>
-                        <div class="metric-bellchart" id="metric-bellchart-eg"></div>
+                        <p class="big">This plan is more or less balanced. Let's check the math.</p>
                     </div>
                     <div class="col-xs-12 col-md-6">
                         <p>Efficiency Gap (EG) shows relative wasted votes between parties, comparing the total statewide number of superfluous and losing votes for each party. <a href="/efficiencygap/">Learn more: What is the efficiency gap and how do we calculate it?</a></p>
@@ -146,10 +158,6 @@
             </div>
 
 
-
-            <h2>Leaflet Map</h2>
-            <p>For a Leaflet map, take a look at a state page, <a href="https://planscore.org/north_carolina/index.html#!2012-election-ushouse">like this one</a>.</p>
-
             <h2>Button Styles</h2>
 
             <a class="btn btn-default" href="#" role="button">Link</a>
@@ -158,10 +166,35 @@
             <input class="btn btn-default" type="submit" value="Submit">
             <br><br>
 
-            <h2>Bellcurve Histograms</h2>
-            <div id="bellcurve_eg"></div>
-            <div id="bellcurve_pb"></div>
-            <div id="bellcurve_mm"></div>
+
+            <h2>Bias Scoring Histograms</h2>
+            <p>Create the DIVs with the code below, then use <code>drawBiasBellChart()</code> to fill in their curves and markers. View Source to see actual code.</p>
+
+            <div class="metric-bellchart" id="metric-bellchart-eg">
+                <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
+                <div class="row metric-bellchart-legend">
+                    <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
+                    <div class="col-xs-4 center">Balanced</div>
+                    <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
+                </div>
+            </div>
+            <div class="metric-bellchart" id="metric-bellchart-pb">
+                <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
+                <div class="row metric-bellchart-legend">
+                    <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
+                    <div class="col-xs-4 center">Balanced</div>
+                    <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
+                </div>
+            </div>
+            <div class="metric-bellchart" id="metric-bellchart-mm">
+                <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
+                <div class="row metric-bellchart-legend">
+                    <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
+                    <div class="col-xs-4 center">Balanced</div>
+                    <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
+                </div>
+            </div>
+
      
             <h2>Tables</h2>
 

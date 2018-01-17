@@ -3,3 +3,6 @@
 // this is relevant to the pattern library
 require('./sitewide.scss');
 
+// just export these functions to window, so they may be used
+import { drawBiasBellChart } from "./_common/functions";
+window.drawBiasBellChart = drawBiasBellChart;
