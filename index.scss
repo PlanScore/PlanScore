@@ -111,9 +111,9 @@
 }
 
 #yearpicker-big {
+    position: relative;
     margin-bottom: 15px;
     height: 35px;
-    position: relative;
     z-index:1;
 
     div {  /* structure is a series of rectangular DIVs, each one containing a A for the visible circle */
@@ -122,6 +122,8 @@
 
         display: inline;
         float:left;
+
+        position: relative; /* so we can absolutely position the .currentyearline */
 
         a {
             display: inline-block;
@@ -163,13 +165,10 @@
             height: 20px;
             width: 2px;
 
-            position: relative;
-            left: 6px;
-            top: -2px;
-            @media screen and (min-width: $screen-md) {  /* workaround for weird bugs at sm and md+ screens */
-                left: -17px;
-                top: 20px;
-            }
+            position: absolute;
+            left: 50%;
+            top: 10px;
+            margin-left: -1px; /* half of width */
 
             z-index: -1;
 
@@ -185,14 +184,6 @@
     div.decade {
     }
     div.presidential {
-        span.currentyearline {
-            left: 11px;
-            top: -2px;
-            @media screen and (min-width: $screen-md) {  /* workaround for weird bugs at sm and md+ screens */
-                left: -17px;
-                top: 20px;
-            }
-        }
     }
 
     div.active {  /* the currently-selected year */
@@ -211,7 +202,7 @@
     border-top: solid 1px #4D599E;
     width: 100%;
     height: 1px;
-    top: 37px;
+    top: 31px;
     position: relative;
     z-index:-1;
 }
