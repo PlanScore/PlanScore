@@ -168,11 +168,11 @@ function show_efficiency_gap_score(plan, score_EG)
         }
     }
     
-    score_EG.innerText = [
+    score_EG.innerHTML = [
         (gap < 0 ? 'Republicans' : 'Democrats'),
-        'needed to earn', nice_percent(Math.abs(gap)), 'fewer votes to win',
-        (gap < 0 ? seats_r : seats_d), 'of', (seats_d + seats_r),
-        'than under a fair plan.'
+        'needed to earn <strong>', nice_percent(Math.abs(gap)), '</strong>',
+        'fewer votes to win', (gap < 0 ? seats_r : seats_d),
+        'of', (seats_d + seats_r), 'seats than under a fair plan.'
         ].join(' ');
 }
 
