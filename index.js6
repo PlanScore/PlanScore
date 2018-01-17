@@ -78,7 +78,6 @@ window.initYearPickers = () => {
         if (year % 10 === 2) $button.addClass('decplan');
         if (year % 4 === 0)  $button.addClass('presidential');
 
-//gda
         $('<span class="currentyear"></span>').text(year).appendTo($button);
         $('<span class="currentyearline"></span>').appendTo($button);
 
@@ -333,7 +332,6 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
 window.selectYear = (year) => {
     // UI update: big/desktop yearpicker
     // add class to the DIV so as to style elements: colored fill, visible label, ...
-//gda
     $('#yearpicker-big div').removeClass('active').filter(`[data-year="${year}"]`).addClass('active');
 
     // UI update: small/mobile yearpicker
