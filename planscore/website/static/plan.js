@@ -146,37 +146,34 @@ function which_district_color(district, plan)
 
 function show_efficiency_gap_score(plan, score_EG)
 {
-    var summary_name = which_score_summary_name(plan);
+    var summary_name = which_score_summary_name(plan),
+        gap = plan.summary[summary_name];
+
     clear_element(score_EG);
+    drawBiasBellChart('eg', gap, 'metric-bellchart-eg', 'ushouse', 'plan');
 
-    var new_h3 = document.createElement('h3'),
-        new_score = document.createElement('p'),
-        new_words = document.createElement('p');
+    var new_words = document.createElement('p'),
+        seats_d = 0, seats_r = 0,
+        votes_d, votes_r;
+    
+    for(var i = 0; i < plan.districts.length; i++)
+    {
+        votes_d = plan.districts[i].totals['Democratic Votes'];
+        votes_r = plan.districts[i].totals['Republican Votes'];
 
-    new_h3.innerText = 'Efficiency Gap';
-    new_score.className = 'score'
-    new_score.innerText = nice_percent(Math.abs(plan.summary[summary_name]));
-
-    if(Math.abs(plan.summary[summary_name]) < .02) {
-        new_words.innerText = (nice_gap(plan.summary[summary_name])
-            + ' is close to zero.');
-    } else if(Math.abs(plan.summary[summary_name]) < .04) {
-        new_words.innerText = (nice_gap(plan.summary[summary_name])
-            + ' is well within 7% threshold.');
-    } else if(Math.abs(plan.summary[summary_name]) < .07) {
-        new_words.innerText = (nice_gap(plan.summary[summary_name])
-            + ' is within 7% threshold.');
-    } else if(Math.abs(plan.summary[summary_name]) < .09) {
-        new_words.innerText = (nice_gap(plan.summary[summary_name])
-            + ' is outside 7% threshold.');
-    } else {
-        new_words.innerText = (nice_gap(plan.summary[summary_name])
-            + ' is far outside 7% threshold.');
+        if(votes_d > votes_r) {
+            seats_d += 1;
+        } else {
+            seats_r += 1;
+        }
     }
-
-    score_EG.appendChild(new_h3);
-    score_EG.appendChild(new_score);
-    score_EG.appendChild(new_words);
+    
+    score_EG.innerText = [
+        (gap < 0 ? 'Republicans' : 'Democrats'),
+        'needed to earn', nice_percent(Math.abs(gap)), 'fewer votes to win',
+        (gap < 0 ? seats_r : seats_d), 'of', (seats_d + seats_r),
+        'than under a fair plan.'
+        ].join(' ');
 }
 
 function show_partisan_bias_score(plan, score_PB)
