@@ -94,6 +94,13 @@ div.metric-bellchart {
         font-size: 12px;
     }
 }
+
+div.col-md-4 div.metric-bellchart {
+    @media screen and (min-width: $screen-lg) {
+        width: 300px;
+    }
+}
+
 div.metric-bellchart.ushouse.plan.eg div.curve {
     background-image: url(/images/ushouse_eg_plan_curve.svg);
 }
