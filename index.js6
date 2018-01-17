@@ -21,6 +21,12 @@ import { lookupBias } from "./_common/functions";
 // these are affected by window.selectXXX() family of functions which ultimately are all wrappers over loadDataForSelectedBoundaryAndYear()
 const CURRENT_VIEW = {};
 
+// year picker timeline animation; see yearAnimationToggle()
+const ANIMATION = {
+    delayseconds: 2.0,  // time delay (in seconds) between switches
+    timer: undefined,  // if playing, an interval handle from setInterval(); else undefined
+};
+
 
 //
 // PAGE STARTUP / INIT FUNCTIONS
@@ -90,6 +96,11 @@ window.initYearPickers = () => {
     $picker_big.on('click', 'div', function () {
         const year = $(this).attr('data-year');
         selectYear(year);
+    });
+
+    // the big year picker also has a play/pause button to toggle the playing/paused status
+    $('#yearpicker-big-playbutton a').click(function () {
+        yearAnimationToggle();
     });
 };
 
@@ -405,6 +416,21 @@ window.selectState = (stateabbr) => {
     $modal.find('a.learnmore').prop('href', moreinfourl);
 };
 
-//
-// OTHER RUNTIME FUNCTIONS
-//
+window.yearAnimationToggle = () => {
+    if (ANIMATION.timer) {
+        clearInterval(ANIMATION.timer);
+        ANIMATION.timer = undefined;
+
+        $('#yearpicker-big-playbutton a[data-status="paused"]').removeClass('hidden').siblings().addClass('hidden');
+    }
+    else {
+        ANIMATION.timer = setInterval(function () {
+            const i = PLAN_YEARS.indexOf(parseInt(CURRENT_VIEW.year));
+            let n = i + 1;
+            if (n >= PLAN_YEARS.length) n = 0;  // loop back to if +1 would be past the end
+            selectYear(PLAN_YEARS[n]);
+        }, 1000 * ANIMATION.delayseconds);
+
+        $('#yearpicker-big-playbutton a[data-status="playing"]').removeClass('hidden').siblings().addClass('hidden');
+    }
+};

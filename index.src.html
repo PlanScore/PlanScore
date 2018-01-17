@@ -43,7 +43,12 @@
         <br />
 
         <!-- the mobile + desktop year picker UIs; see initYearPickers() and of course selectYear() -->
-        <div class="hidden-xs" id="yearpicker-big">
+        <div class="row hidden-xs" id="yearpicker-big-wrapper">
+            <div class="col-xs-1" id="yearpicker-big-playbutton">
+                <a data-status="paused" href="javascript:void(0);" title="Play an animation showing change in plan bias over time"><i class="glyphicon glyphicon-play"></i></a>
+                <a data-status="playing" class="hidden" href="javascript:void(0);" title="Pause the animation"><i class="glyphicon glyphicon-pause"></i></a>
+            </div>
+            <div class="col-xs-11" id="yearpicker-big"></div>
         </div>
         <div class="container visible-xs-block">
             <div id="yearpicker-small" class="row">
