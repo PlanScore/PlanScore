@@ -116,7 +116,9 @@
 #yearpicker-big-playbutton {
     padding-right: 0; /* in a row, but here we want the left and right sides as close as feasible */
 
-    line-height: 65px;
+    line-height: 67px;
+
+    width: 50px;  /* we want responsive row, but to force width; see also #yearpicker-big width */
 
     a {
         font-size: 30px;
@@ -130,10 +132,12 @@
 
 #yearpicker-big {
     position: relative;
-    height: 35px;  /* match height of #yearpicker-big-playbutton to achieve vertical centering */
+    height: 35px;
     z-index:1;
 
     padding-left: 0; /* in a row, but here we want the left and right sides as close as feasible */
+
+    width: calc(100% - 50px);  /* we want responsive row, but to force width; see also #yearpicker-big-playbutton width */
 
     div {  /* structure is a series of rectangular DIVs, each one containing a A for the visible circle */
         cursor: pointer;
