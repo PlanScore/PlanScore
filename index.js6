@@ -23,7 +23,7 @@ const CURRENT_VIEW = {};
 
 // year picker timeline animation; see yearAnimationToggle()
 const ANIMATION = {
-    delayseconds: 2.0,  // time delay (in seconds) between switches
+    delayseconds: 1.5,  // time delay (in seconds) between switches
     timer: undefined,  // if playing, an interval handle from setInterval(); else undefined
 };
 
