@@ -20,12 +20,15 @@
         width: 15px;
         height: 15px;
 
+        line-height: 15px;
+        @media screen and (-ms-high-contrast:none) {  /* hack for IE only: they get the line-height wrong */
+            line-height: 14px;
+        }
+
         text-align: center;
         span {
             color: #fff;
-            font-size: 15px;
-            position: relative;
-            top: -2px;
+            font-size: 14px;
         }
     }
 
