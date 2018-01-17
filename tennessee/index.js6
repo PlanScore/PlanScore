@@ -775,6 +775,9 @@ window.redrawYearPicker = (csvdata) => {
             if (! planinfo) {
                 $thislink.attr('data-plan', '').hide();
             }
+            else {
+                $thislink.attr('data-plan', planinfo.plan).show();
+            }
         });
 
         // now that we have only visible links tagged with plans
