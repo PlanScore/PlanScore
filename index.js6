@@ -346,9 +346,12 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
             // find bias color and apply CSS
             const words = lookupBias(state_info.value).description;
             const color = lookupBias(state_info.value).color;
-            if (state_info.value === null) $(this) .prop('title', words) .css({ 'background-color': color, 'border':'1px solid #95989A' });
-            else if (state_info.value === undefined) $(this) .prop('title', words) .css({ 'background-color': color, 'border':'1px solid #95989A' });
-            else $(this) .prop('title', words) .css({ 'background-color': color });
+            if (state_info.value === MAP_NODATA_VALUE || state_info.value === undefined) {
+                $(this).prop('title', words) .css({ 'background-color': MAP_NODATA_FILLCOLOR, 'border':'1px solid #95989A' });
+            }
+            else {
+                $(this).prop('title', words).css({ 'background-color': color });
+            }
         });
     }
 
@@ -415,7 +418,7 @@ window.selectState = (stateabbr) => {
     const biasinfo = $('#map').data('biasdata').filter((statedata) => { return statedata.abbr === stateabbr; }).slice(0, 1)[0];
 
     // add to the info, an analysis
-    if (biasinfo.value === undefined || biasinfo.value === null) {
+    if (biasinfo.value === undefined || biasinfo.value === MAP_NODATA_VALUE) {
         biasinfo.analysis = 'No data was available for this election year.';
     }
     else {
