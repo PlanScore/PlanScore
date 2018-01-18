@@ -87,6 +87,12 @@ const STATE_BBOX = STATE_BOUNDING_BOXES[STATE_NAME_TO_CODE[SELECTED_STATE]];
 
 // for the map of election winnders & plan winners, the styles
 const MAP_DISTRICT_STYLE_DEFAULT = {
+    stroke: true, color: '#333333', weight: 1,
+    fill: true, fillColor: '#cccccc', fillOpacity: 0.6,
+    bubblingMouseEvents: false,
+    clickable: false,
+};
+const MAP_DISTRICT_STYLE_MIXED = {
     stroke: true, color: '#cccccc', weight: 1,
     fill: "url(/images/mapfill_nodata.png)", fillColor: 'transparent', fillOpacity: 0.6,  // crosshatch image fill, thanks to leaflet-polygon.fillPattern.js
     bubblingMouseEvents: false,
@@ -926,15 +932,6 @@ window.updateMapForCurrentSelection = (yeardata) => {
                 }
                 // console.log([ 'applyStylesToMapPolygons() results are:', results ]);
 
-                // if there are 0 rows then we don't have election/plan data for the district polygons (if there are any of those either); if that's the case then hide the map
-                if (results.length) {
-                    $('#map').show();
-                }
-                else {
-                    $('#map').hide();
-                    return;
-                }
-
                 // go through the polygons and match their "DISTRICT" property to CSV's "district" field
                 // then style them according to winner of that election or plan
                 MAP.polygondistrictsoverlay.eachLayer(function (layer) {
@@ -955,7 +952,7 @@ window.updateMapForCurrentSelection = (yeardata) => {
                                 layer.setStyle(MAP_DISTRICT_STYLE_REPUBLICAN);
                                 break;
                             default:
-                                layer.setStyle(MAP_DISTRICT_STYLE_DEFAULT);
+                                layer.setStyle(MAP_DISTRICT_STYLE_MIXED);
                                 break;
                         }
                     }
@@ -969,7 +966,7 @@ window.updateMapForCurrentSelection = (yeardata) => {
                                 layer.setStyle(MAP_DISTRICT_STYLE_REPUBLICAN);
                                 break;
                             default:
-                                layer.setStyle(MAP_DISTRICT_STYLE_DEFAULT);
+                                layer.setStyle(MAP_DISTRICT_STYLE_MIXED);
                                 break;
                         }
                     }
@@ -977,8 +974,11 @@ window.updateMapForCurrentSelection = (yeardata) => {
             }, // end of CSV download
             error: function () {
                 // an error, meaning bad network or missing CSV
-                //give up and hide the map
-                $('#map').hide();
+                // set all polygons to the nodata style
+                MAP.polygondistrictsoverlay.eachLayer(function (layer) {
+                    layer.setStyle(MAP_DISTRICT_STYLE_DEFAULT);
+console.log([layer, MAP_DISTRICT_STYLE_DEFAULT ]);
+                });
             },
         });
     }

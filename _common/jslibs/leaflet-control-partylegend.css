@@ -30,6 +30,11 @@ div.planscore-partylegend div.planscore-partylegend-swatch-both {
     opacity: 0.6;
 }
 
+div.planscore-partylegend div.planscore-partylegend-swatch-nodata {
+    background-color: #cccccc;
+    opacity: 0.6;
+}
+
 div.planscore-partylegend div.planscore-partylegend-words {
     padding-left: 10px;
     font-size: 14px;

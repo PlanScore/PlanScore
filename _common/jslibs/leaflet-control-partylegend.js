@@ -27,6 +27,11 @@ L.Control.PartyLegend = L.Control.extend({
         var words_x  = L.DomUtil.create('div', 'planscore-partylegend-words', row_x);
         words_x.innerHTML = 'Mixed Results';
 
+        var row_0    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
+        var swatch_0 = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-nodata', row_0);
+        var words_0  = L.DomUtil.create('div', 'planscore-partylegend-words', row_0);
+        words_0.innerHTML = 'No Data';
+
         return container;
     },
 });
