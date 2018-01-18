@@ -146,6 +146,10 @@ window.handleResize = () => {
 window.loadDataForSelectedBoundaryAndYear = (options={}) => {
     if (! CURRENT_VIEW.year || ! CURRENT_VIEW.boundtype) return;  // need both; during startup one will be blank, so avoid an error
 
+    // options documentation
+    // * fudgeYearIfNoData:true -- if no data for given boundary & year, select closest year which DOES have data and use that instead
+    // * noHashUpdate:true -- suppress updating the #! hash in address bar
+
     // initialize the bias score statistics to No Data all around
     // expected data structure: list of states and their bias ratings
     const chartdata = [];
@@ -198,6 +202,7 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
             renderMapWithNewData(chartdata);
             updateStateListingSwatches(chartdata);
             updateStateListingHashes(chartdata);
+            if (! options.noHashUpdate) updateAddressHash();
         },
         error: function () {
             // an error, meaning bad network or missing CSV
@@ -333,14 +338,9 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
             $link.prop('href', url);
         });
     }
-
-    // update URL params to show the current search
-    // see also initLoadStartingConditions() which will load such a state
-    const hash = `#!${CURRENT_VIEW.year}-${CURRENT_VIEW.boundtype}`;
-    window.location.replace(hash);
 };
 
-window.selectYear = (year) => {
+window.selectYear = (year, options={}) => {
     // UI update: big/desktop yearpicker
     // add class to the DIV so as to style elements: colored fill, visible label, ...
     $('#yearpicker-big div').removeClass('active').filter(`[data-year="${year}"]`).addClass('active');
@@ -358,19 +358,21 @@ window.selectYear = (year) => {
 
     // save to the state and refresh the map + data
     CURRENT_VIEW.year = year;
-    loadDataForSelectedBoundaryAndYear();
+
+    const passoptions = Object.assign(options, {});
+    loadDataForSelectedBoundaryAndYear(passoptions);
 };
 
-window.selectBoundaryType = (boundtype) => {
+window.selectBoundaryType = (boundtype, options={}) => {
     // UI update: highlight this button
     $('#boundarypicker div[data-boundary]').removeClass('active').filter(`[data-boundary="${boundtype}"]`).addClass('active');
 
     // save to the state and refresh the map + data
     // per 169 this invokes a new year-fudging should we encounter a no-data condition
     CURRENT_VIEW.boundtype = boundtype;
-    loadDataForSelectedBoundaryAndYear({
-        fudgeYearIfNoData: true
-    });
+
+    const passoptions = Object.assign(options, { fudgeYearIfNoData: true });
+    loadDataForSelectedBoundaryAndYear(passoptions);
 };
 
 window.selectState = (stateabbr) => {
@@ -422,15 +424,23 @@ window.yearAnimationToggle = () => {
         ANIMATION.timer = undefined;
 
         $('#yearpicker-big-playbutton a[data-status="paused"]').removeClass('hidden').siblings().addClass('hidden');
+
+        updateAddressHash();  // per 135 #! update explicitly suppressed and explicitly requested on pause
     }
     else {
         ANIMATION.timer = setInterval(function () {
             const i = PLAN_YEARS.indexOf(parseInt(CURRENT_VIEW.year));
             let n = i + 1;
             if (n >= PLAN_YEARS.length) n = 0;  // loop back to if +1 would be past the end
-            selectYear(PLAN_YEARS[n]);
+            selectYear(PLAN_YEARS[n], { noHashUpdate: true});
         }, 1000 * ANIMATION.delayseconds);
 
         $('#yearpicker-big-playbutton a[data-status="playing"]').removeClass('hidden').siblings().addClass('hidden');
     }
+};
+
+window.updateAddressHash = () => {
+    // see also initLoadStartingConditions() which will load such a state
+    const hash = `#!${CURRENT_VIEW.year}-${CURRENT_VIEW.boundtype}`;
+    window.location.replace(hash);
 };
