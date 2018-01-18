@@ -27,6 +27,20 @@ const ANIMATION = {
     timer: undefined,  // if playing, an interval handle from setInterval(); else undefined
 };
 
+// the map uses a choropleth constructed from BIAS_SPREAD_SCALING
+// but for nodata states, use this NODATA value and this color fill
+const MAP_NODATA_VALUE = 999999;
+const MAP_NODATA_FILLCOLOR = '#ffffff';
+const MAP_NODATA_LABELCOLOR = '#cccccc';
+
+// the color of the state labels on the map
+const MAP_LABELSIZE = '9px';
+const MAP_LABELCOLOR = 'black';
+
+// style for mouseover-ing the states on the map
+const MAP_MOUSEOVER_COLOR = '#333333';
+const MAP_MOUSEOVER_WIDTH = 2;
+
 
 //
 // PAGE STARTUP / INIT FUNCTIONS
@@ -157,7 +171,7 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
         chartdata.push({
             abbr: stateabbr,
             name: statename,
-            value: null,
+            value: MAP_NODATA_VALUE,
             percentrank: null,
         });
     }
@@ -242,6 +256,13 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
                 to: slice_lower + slice_step,
                 color: lookupBias(slice_lower + 0.5 * slice_step).color,  // middle score for this slice's range
             });
+
+            // add the 999999 No Data style
+            map_choropleth_colors.push({
+                from: MAP_NODATA_VALUE,
+                to: MAP_NODATA_VALUE,
+                color: MAP_NODATA_FILLCOLOR,
+            });
         }
 
         // render the map chart
@@ -281,20 +302,24 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
                     dataLabels: {
                         enabled: true,
                         formatter: function () {
-                            return this.point.abbr;
+                            if (this.point.value == MAP_NODATA_VALUE) {
+                                return `<span style="color: ${MAP_NODATA_LABELCOLOR}">${this.point.abbr}</span>`;
+                            }
+                            else {
+                                return this.point.abbr;
+                            }
                         },
                         style: {
-                            fontSize: '9px',
-                            color: 'black',
+                            fontSize: MAP_LABELSIZE,
+                            color: MAP_LABELCOLOR,
                             textOutline: false
                         }
                     },
-                    nullColor: 'white',
                     states: {
                         hover: {
                             brightness: 0,
-                            borderColor: '#333333',
-                            borderWidth: 2
+                            borderColor: MAP_MOUSEOVER_COLOR,
+                            borderWidth: MAP_MOUSEOVER_WIDTH,
                         }
                     },
                     // click events: call the popup maker
