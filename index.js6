@@ -170,7 +170,7 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
                 const hasdata = results.data.filter((datarow) => { return datarow.year == CURRENT_VIEW.year; }).length;
                 if (! hasdata) {
                     const wehavetheseyears = results.data.map((datarow) => {
-                        return parseInt(datarow.year);
+                        return datarow.year ? parseInt(datarow.year) : 0;  // workaround for 176, iOS 11 including blank rows so year=NaN
                     });
                     wehavetheseyears.sort((p, q) => {
                         const px = Math.abs(p - parseInt(CURRENT_VIEW.year));
