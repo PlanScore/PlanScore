@@ -877,7 +877,7 @@ window.updateMapForCurrentSelection = (yeardata) => {
     const whichyear      = CURRENT_VIEW.year;
     const planorelection = CURRENT_VIEW.planorelection;
     const geojsonurl     = `/data/districtpolygons/${whichlevel}-${whichplan}.json`;
-    const csvurl         = '/data/elections_plans.csv';
+    const csvurl         = `/data/electionoutcomes_${whichlevel}.csv`;
     const statecode      = yeardata.state;
     // console.log([ 'updateMapForCurrentSelection', yeardata, CURRENT_VIEW.year, CURRENT_VIEW.boundtype, whichplan ]);
 
@@ -975,6 +975,11 @@ window.updateMapForCurrentSelection = (yeardata) => {
                     }
                 });
             }, // end of CSV download
+            error: function () {
+                // an error, meaning bad network or missing CSV
+                //give up and hide the map
+                $('#map').hide();
+            },
         });
     }
 };
