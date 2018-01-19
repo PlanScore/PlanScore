@@ -977,7 +977,6 @@ window.updateMapForCurrentSelection = (yeardata) => {
                 // set all polygons to the nodata style
                 MAP.polygondistrictsoverlay.eachLayer(function (layer) {
                     layer.setStyle(MAP_DISTRICT_STYLE_DEFAULT);
-console.log([layer, MAP_DISTRICT_STYLE_DEFAULT ]);
                 });
             },
         });
