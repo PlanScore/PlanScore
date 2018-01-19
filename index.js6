@@ -42,6 +42,9 @@ const MAP_LABELCOLOR = 'black';
 const MAP_MOUSEOVER_COLOR = '#333333';
 const MAP_MOUSEOVER_WIDTH = 2;
 
+// the Esc key
+const KEYCODE_ESC = 27;
+
 
 //
 // PAGE STARTUP / INIT FUNCTIONS
@@ -59,10 +62,39 @@ $(document).ready(function () {
 
 window.initStatePopup = () => {
     // the stateinfo popup is managed by selectState()
-    // but we do want to add some event handlers: the X button to close it
+    // but we do want to add some event handlers
+
+    // the popup's X button closes it
     $('#stateinfo-popup button').click(function () {
         selectState('');
     });
+
+    // a keypress of the Esc key at any time, will close it
+    $(window).on('keyup', function (event) {
+        if (event.keyCode == KEYCODE_ESC) {
+            selectState('');
+        }
+    });
+
+    // a click anywhere on the page will close it (except within the popup, on the map, on a yearpicker, ...)
+    $('#stateinfo-popup').click(function (event) {
+        event.stopPropagation();
+    });
+    $('#yearpicker-big').click(function (event) {
+        event.stopPropagation();
+    });
+    $('#yearpicker-small').click(function (event) {
+        event.stopPropagation();
+    });
+    $('#map').on('click', 'g', function (event) {  // only the visible map, within the whole #map
+        event.stopPropagation();
+    });
+    $('html').click(function () {
+        selectState('');
+    });
+
+    // selecting the state that is already selected, will also select nothing
+    // that's actually done within selectState()
 };
 
 window.initYearPickers = () => {
@@ -410,9 +442,17 @@ window.selectState = (stateabbr) => {
     // note that blank is an acceptable option to select no state at all
     if (! stateabbr) stateabbr = '';
 
+    const $modal = $('#stateinfo-popup');
+
     // passing empty/null stateabbr is how you explicitly select no state
     if (! stateabbr) {
-        $('#stateinfo-popup').hide();
+        $modal.attr('data-state', '').hide();
+        return;
+    }
+
+    // if the popup is visible and already showing this same state, then close it
+    if ( $modal.is(':visible') && $modal.attr('data-state') == stateabbr) {
+        $modal.attr('data-state', '').hide();
         return;
     }
 
@@ -443,7 +483,8 @@ window.selectState = (stateabbr) => {
     const moreinfourl      = `/${stateslug}/#!${CURRENT_VIEW.year}-${plan_or_election}-${CURRENT_VIEW.boundtype}`;
 
     // open the popup and do the string replacements
-    const $modal = $('#stateinfo-popup').show();
+    $modal.attr('data-state', stateabbr);
+    $modal.show();
     $modal.find('span[data-field="statename"]').html(biasinfo.name);
     $modal.find('span[data-field="analysis"]').html(biasinfo.analysis);
     if (biasinfo.value && biasinfo.value !== MAP_NODATA_VALUE) {
