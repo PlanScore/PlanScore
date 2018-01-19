@@ -87,7 +87,7 @@ const STATE_BBOX = STATE_BOUNDING_BOXES[STATE_NAME_TO_CODE[SELECTED_STATE]];
 
 // for the map of election winnders & plan winners, the styles
 const MAP_DISTRICT_STYLE_DEFAULT = {
-    stroke: true, color: '#333333', weight: 1,
+    stroke: true, color: '#999999', weight: 1,
     fill: true, fillColor: '#cccccc', fillOpacity: 0.6,
     bubblingMouseEvents: false,
     clickable: false,

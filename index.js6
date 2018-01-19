@@ -32,6 +32,7 @@ const ANIMATION = {
 const MAP_NODATA_VALUE = 999999;
 const MAP_NODATA_FILLCOLOR = '#ffffff';
 const MAP_NODATA_LABELCOLOR = '#cccccc';
+const MAP_BORDER_COLOR = '#6E6E6E';
 
 // the color of the state labels on the map
 const MAP_LABELSIZE = '9px';
@@ -297,6 +298,7 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
                     // use the Highcharts-provided US states, joining on their "postal" to our "abbr"
                     data: data,
                     mapData: polygons,
+                    borderColor: MAP_BORDER_COLOR,
                     joinBy: ['postal', 'abbr'],
                     // labels make small states easier to see, cursor makes it obvious to click
                     cursor: 'pointer',
