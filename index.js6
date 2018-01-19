@@ -360,7 +360,7 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
                     // click events: call the popup maker
                     events: {
                         click: function (e) {
-                            selectState(e.point.abbr);
+                            selectState(e.point.abbr, { closeIfSameState: true });
                         }
                     },
                 }]
@@ -422,8 +422,7 @@ window.selectYear = (year, options={}) => {
     // save to the state and refresh the map + data
     CURRENT_VIEW.year = year;
 
-    const passoptions = Object.assign(options, {});
-    loadDataForSelectedBoundaryAndYear(passoptions);
+    loadDataForSelectedBoundaryAndYear(options);  // no new options nor overrides; just pass options as-given
 };
 
 window.selectBoundaryType = (boundtype, options={}) => {
@@ -434,13 +433,17 @@ window.selectBoundaryType = (boundtype, options={}) => {
     // per 169 this invokes a new year-fudging should we encounter a no-data condition
     CURRENT_VIEW.boundtype = boundtype;
 
-    const passoptions = Object.assign(options, { fudgeYearIfNoData: true });
-    loadDataForSelectedBoundaryAndYear(passoptions);
+    options = Object.assign({  // add fudgeYearIfNoData option for this special case, but do allow overrides by the caller
+        fudgeYearIfNoData: true
+    }, options);
+    loadDataForSelectedBoundaryAndYear(options);
 };
 
-window.selectState = (stateabbr) => {
-    // note that blank is an acceptable option to select no state at all
-    if (! stateabbr) stateabbr = '';
+window.selectState = (stateabbr, options={}) => {
+    // default options, overridden by their passed options
+    options = Object.assign({
+        closeIfSameState: false,  // if the popover is already showing the state being requested, then close it instead
+    }, options);
 
     const $modal = $('#stateinfo-popup');
 
@@ -451,7 +454,7 @@ window.selectState = (stateabbr) => {
     }
 
     // if the popup is visible and already showing this same state, then close it
-    if ( $modal.is(':visible') && $modal.attr('data-state') == stateabbr) {
+    if ( options.closeIfSameState && $modal.is(':visible') && $modal.attr('data-state') == stateabbr) {
         $modal.attr('data-state', '').hide();
         return;
     }
