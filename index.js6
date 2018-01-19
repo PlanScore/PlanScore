@@ -80,10 +80,13 @@ window.initStatePopup = () => {
     $('#stateinfo-popup').click(function (event) {
         event.stopPropagation();
     });
-    $('#yearpicker-big').click(function (event) {
+    $('#yearpicker-big-wrapper').click(function (event) {  // the yearpicker line AND the play/pause button
         event.stopPropagation();
     });
     $('#yearpicker-small').click(function (event) {
+        event.stopPropagation();
+    });
+    $('#boundarypicker').click(function (event) {
         event.stopPropagation();
     });
     $('#map').on('click', 'g', function (event) {  // only the visible map, within the whole #map
