@@ -440,9 +440,11 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     // handle a condition of no data at all for this whole district type, for any year
     if (allcsvdata.length) {
         $('#maincontent span[data-hasdata-atall]').hide().filter('[data-hasdata-atall="true"]').show();
+        $('#sidebar span[data-hasdata-atall]').hide().filter('[data-hasdata-atall="true"]').show();
     }
     else {
         $('#maincontent span[data-hasdata-atall]').hide().filter('[data-hasdata-atall="false"]').show();
+        $('#sidebar span[data-hasdata-atall]').hide().filter('[data-hasdata-atall="false"]').show();
         return;  // nothing else we can do until they select a district type with data
     }
 

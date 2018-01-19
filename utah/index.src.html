@@ -40,32 +40,37 @@
 
     <div class="container container-mainbody">
         <div class="row">
-            <div class="col-xs-12 col-sm-3">
+            <div class="col-xs-12 col-sm-3" id="sidebar">
                 <h1 class="state_name">Utah</h1>
 
-                <div class="visible-xs-block" id="yearpicker-small">
-                    <div data-picker="plan" class="row">
-                        <div class="col-xs-6 left nextprev" title="Previous districting plan"><i class="glyphicon glyphicon-chevron-left"></i></div>
-                        <div class="col-xs-6 right nextprev" title="Next districting plan"><i class="glyphicon glyphicon-chevron-right"></i></div>
-                        <div class="readout"></div>
+                <span data-hasdata-atall="true">
+                    <div class="visible-xs-block" id="yearpicker-small">
+                        <div data-picker="plan" class="row">
+                            <div class="col-xs-6 left nextprev" title="Previous districting plan"><i class="glyphicon glyphicon-chevron-left"></i></div>
+                            <div class="col-xs-6 right nextprev" title="Next districting plan"><i class="glyphicon glyphicon-chevron-right"></i></div>
+                            <div class="readout"></div>
+                        </div>
+                        <div data-picker="election" class="row">
+                            <div class="col-xs-6 left nextprev" title="Previous election year"><i class="glyphicon glyphicon-chevron-left"></i></div>
+                            <div class="col-xs-6 right nextprev" title="Next election year"><i class="glyphicon glyphicon-chevron-right"></i></div>
+                            <div class="readout"></div>
+                        </div>
                     </div>
-                    <div data-picker="election" class="row">
-                        <div class="col-xs-6 left nextprev" title="Previous election year"><i class="glyphicon glyphicon-chevron-left"></i></div>
-                        <div class="col-xs-6 right nextprev" title="Next election year"><i class="glyphicon glyphicon-chevron-right"></i></div>
-                        <div class="readout"></div>
+
+                    <!-- below yearpicker on mobile, above yearpicker on desktop -->
+                    <p class="wehavedata">We have data about <span data-metric="plancount" class="bold">0</span> plans, covering <span data-metric="electioncount" class="bold">0</span> elections.</p>
+
+                    <div class="hidden-xs row" id="yearpicker-big"></div>
+
+                    <div class="gray hidden-xs" style="clear: both;">
+                        <p>New Plans</p>
+                        <span>Drawing your own district map of Utah? Upload it here to find out how well it scores on these and other metrics.</span>
+                        <a class="btn btn-default" href="https://planscore.org/upload.html">Upload Plan</a>
                     </div>
-                </div>
-
-                <!-- below yearpicker on mobile, above yearpicker on desktop -->
-                <p class="wehavedata">We have data about <span data-metric="plancount" class="bold">0</span> plans, covering <span data-metric="electioncount" class="bold">0</span> elections.</p>
-
-                <div class="hidden-xs row" id="yearpicker-big"></div>
-
-                <div class="gray hidden-xs" style="clear: both;">
-                    <p>New Plans</p>
-                    <span>Drawing your own district map of Utah? Upload it here to find out how well it scores on these and other metrics.</span>
-                    <a class="btn btn-default" href="https://planscore.org/upload.html">Upload Plan</a>
-                </div>
+                </span>
+                <span data-hasdata-atall="false">
+                    <!-- message here in sidebar, if no data available for this whole district type -->
+                </span>
             </div>
             <div class="col-xs-12 col-sm-9" id="maincontent">
                 <!--
