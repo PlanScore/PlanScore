@@ -232,7 +232,8 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
         // see also selectState() which needs to access the compiled data
         $('#map').data('biasdata', data);
 
-        // Highcharts trick: load up the us-small data which includes breakout boxes for the small New England States (issue 78)
+        // Highcharts trick: load up the us-small data (see the SCRIPT tag for usmapchart.json)
+        // which includes breakout boxes for the small New England States (issue 78)
         // preprocess it to add the state's ABBR as the label for the boxes
         const polygons = Highcharts.geojson(Highcharts.maps['countries/us/custom/us-small']);
         const has_callout_boxes = [ 'NJ', 'MD', 'DE', 'CT', 'RI', 'MA', 'NH', 'VT' ];
@@ -279,12 +280,6 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
                 chart: {
                     borderWidth: 0,
                     spacing: [ 0, 0, 0, 0 ],
-                    events: {
-                        render: function () {
-                            // fuss the map labels so as not to touch things
-                            pixelFussMapLabels();
-                        },
-                    },
                 },
                 title: {
                     text: '',  // no big title
@@ -482,43 +477,4 @@ window.updateAddressHash = () => {
     // see also initLoadStartingConditions() which will load such a state
     const hash = `#!${CURRENT_VIEW.year}-${CURRENT_VIEW.boundtype}`;
     window.location.replace(hash);
-};
-
-window.pixelFussMapLabels = () => {
-    // Highcharts positions the state labels automagically, and in a few cases it's not great
-    // ID and KY and LA touch the state borders, for example, and would look better if fussed by a few px...
-    const mapheight = $('#map').height();
-    const mapwidth  = $('#map').height();
-
-    function applyXY($tspan, dx, dy) {  // given a span, find it parent G and shift it by dy/dy pixels
-        const $g = $tspan.closest('g');
-        const oldxy = /translate\((\d+),(\d+)\)/.exec( $g.attr('transform') );
-        const newx = parseInt(oldxy[1]) + dx;
-        const newy = parseInt(oldxy[2]) + dy;
-        $g.attr('transform', `translate(${newx},${newy})`);
-    }
-
-    $('#map .highcharts-data-labels text').each(function () {
-        const $tspan = $(this);
-        const state = $tspan.text();
-        let x = 0;
-        let y = 0;
-        switch (state) {
-            case 'ID':
-                x = 0;
-                y = mapheight * 0.05;
-                applyXY($tspan, x, y);
-                break;
-            case 'LA':
-                x = -mapwidth * 0.03;
-                y = 0;
-                applyXY($tspan, x, y);
-                break;
-            case 'KY':
-                x = mapwidth * 0.01;
-                y = mapheight * 0.01;
-                applyXY($tspan, x, y);
-                break;
-        }
-    });
 };
