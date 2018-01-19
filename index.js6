@@ -449,7 +449,12 @@ window.selectState = (stateabbr) => {
     const $modal = $('#stateinfo-popup').show();
     $modal.find('span[data-field="statename"]').html(biasinfo.name);
     $modal.find('span[data-field="analysis"]').html(biasinfo.analysis);
-    $modal.find('a.learnmore').prop('href', moreinfourl);
+    if (biasinfo.value && biasinfo.value !== MAP_NODATA_VALUE) {
+        $modal.find('a.learnmore').prop('href', moreinfourl).show();
+    }
+    else {
+        $modal.find('a.learnmore').hide();
+    }
 };
 
 window.yearAnimationToggle = () => {
