@@ -250,6 +250,7 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
             updateStateListingSwatches(chartdata);
             updateStateListingHashes(chartdata);
             if (! options.noHashUpdate) updateAddressHash();
+            reloadStatePopup();
         },
         error: function () {
             // an error, meaning bad network or missing CSV
@@ -437,6 +438,15 @@ window.selectBoundaryType = (boundtype, options={}) => {
         fudgeYearIfNoData: true
     }, options);
     loadDataForSelectedBoundaryAndYear(options);
+};
+
+window.reloadStatePopup = () => {
+    const $modal = $('#stateinfo-popup');
+    const isopen = $modal.is(':visible');
+    const statecode = $modal.attr('data-state');
+    if (statecode && isopen) {
+        selectState(statecode, { closeIfSameState: false });
+    }
 };
 
 window.selectState = (stateabbr, options={}) => {
