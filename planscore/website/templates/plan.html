@@ -69,10 +69,17 @@
     <ul class="row" id="scores-box">
         {# these list items will be populated by load_plan_score() #}
 
-        <li class="col-md-4" id="score-efficiency-gap">
+        <li class="col-md-4">
             <h3>Efficiency Gap</h3>
-            <p>B+</p>
-            <p>Not enough information to calculate this score.</p>
+            <p id="score-efficiency-gap">Not enough information to calculate this score.</p>
+            <div class="metric-bellchart" id="metric-bellchart-eg">
+                <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
+                <div class="row metric-bellchart-legend">
+                    <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
+                    <div class="col-xs-4 center">Balanced</div>
+                    <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
+                </div>
+            </div>
         </li>
         <li class="col-md-4" id="score-partisan-bias">
             <h3>Partisan Bias</h3>
@@ -81,6 +88,11 @@
         </li>
         <li class="col-md-4">
             <h3>Sensitivity</h3>
+            <p>
+                To determine how durable the partisan effects are, these
+                sensitivity tests show the expected efficiency gap with a range
+                of possible vote swings.
+            </p>
             <p id="score-sensitivity"></p>
         </li>
     </ul>
