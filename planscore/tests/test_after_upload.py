@@ -88,32 +88,32 @@ class TestAfterUpload (unittest.TestCase):
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 2, 'XX'
         self.assertEqual(after_upload.guess_state_house('districts.shp'), ('XX', '002'))
 
-        feature_iter.return_value, state_field.return_value = [ogr_feature] * 5, 'WI'
-        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('WI', '001-us-house'))
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 11, 'NC'
+        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('NC', '004-ushouse'))
 
-        feature_iter.return_value, state_field.return_value = [ogr_feature] * 8, 'WI'
-        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('WI', '001-us-house'))
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 13, 'NC'
+        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('NC', '004-ushouse'))
 
-        feature_iter.return_value, state_field.return_value = [ogr_feature] * 9, 'WI'
-        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('WI', '001-us-house'))
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 15, 'NC'
+        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('NC', '004-ushouse'))
 
-        feature_iter.return_value, state_field.return_value = [ogr_feature] * 30, 'WI'
-        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('WI', '001-state-senate'))
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 40, 'NC'
+        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('NC', '004-ncsenate'))
 
-        feature_iter.return_value, state_field.return_value = [ogr_feature] * 33, 'WI'
-        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('WI', '001-state-senate'))
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 50, 'NC'
+        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('NC', '004-ncsenate'))
 
-        feature_iter.return_value, state_field.return_value = [ogr_feature] * 40, 'WI'
-        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('WI', '001-state-senate'))
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 60, 'NC'
+        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('NC', '004-ncsenate'))
 
-        feature_iter.return_value, state_field.return_value = [ogr_feature] * 90, 'WI'
-        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('WI', '001-state-assembly'))
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 110, 'NC'
+        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('NC', '004-nchouse'))
 
-        feature_iter.return_value, state_field.return_value = [ogr_feature] * 99, 'WI'
-        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('WI', '001-state-assembly'))
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 120, 'NC'
+        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('NC', '004-nchouse'))
 
-        feature_iter.return_value, state_field.return_value = [ogr_feature] * 110, 'WI'
-        self.assertEqual(after_upload.guess_state_house('file.gpkg'), ('WI', '001-state-assembly'))
+        feature_iter.return_value, state_field.return_value = [ogr_feature] * 130, 'NC'
+        self.assertEqual(after_upload.guess_state_house('file.gpkg'), ('NC', '004-nchouse'))
     
     @unittest.mock.patch('sys.stdout')
     def test_put_district_geometries(self, stdout):
