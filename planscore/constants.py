@@ -55,7 +55,7 @@ if os.environ.get('AWS', 'localstack') == 'amazonaws.com':
 MODEL_VERSION = {
     'XX': {2: '002'},
     'NC': { 13: '004-ushouse', 50: '004-ncsenate', 120: '004-nchouse' },
-    'WI': { 99: '001-assembly' },
+    'WI': { 8: '001-ushouse', 33: '001-senate', 99: '001-assembly' },
     }
 
 # Time limit to process an upload, in seconds
