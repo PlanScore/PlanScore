@@ -44,7 +44,7 @@ class TestUploadFields (unittest.TestCase):
         url, fields = upload_fields.get_upload_fields(s3, creds, 'https://example.org', 'sec')
         
         s3.generate_presigned_post.assert_called_once_with('the-bucket',
-            'uploads/id/upload/${filename}', Conditions=[{'acl': 'private'},
+            'uploads/id/upload/${filename}', Conditions=[{'acl': 'bucket-owner-full-control'},
             {'success_action_redirect': 'https://example.org/uploaded?id=id.sig'},
             ['starts-with', '$key', 'uploads/id/upload/']], ExpiresIn=300)
 
@@ -62,7 +62,7 @@ class TestUploadFields (unittest.TestCase):
         url, fields = upload_fields.get_upload_fields(s3, creds, 'https://example.org', 'sec')
         
         s3.generate_presigned_post.assert_called_once_with('the-bucket',
-            'uploads/id/upload/${filename}', Conditions=[{'acl': 'private'},
+            'uploads/id/upload/${filename}', Conditions=[{'acl': 'bucket-owner-full-control'},
             {'success_action_redirect': 'https://example.org/uploaded?id=id.sig'},
             ['starts-with', '$key', 'uploads/id/upload/']], ExpiresIn=300)
 
