@@ -14,7 +14,7 @@ def get_upload_fields(s3, creds, request_url, secret):
     unsigned_id, signed_id = generate_signed_id(secret)
     redirect_query = urllib.parse.urlencode(dict(id=signed_id))
     redirect_path = '{}?{}'.format(constants.API_UPLOADED_RELPATH, redirect_query)
-    acl, redirect_url = 'private', urllib.parse.urljoin(request_url, redirect_path)
+    acl, redirect_url = 'bucket-owner-full-control', urllib.parse.urljoin(request_url, redirect_path)
     
     presigned = s3.generate_presigned_post(
         constants.S3_BUCKET,

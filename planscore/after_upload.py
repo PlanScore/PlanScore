@@ -74,7 +74,7 @@ def put_district_geometries(s3, bucket, upload, path):
         
         key = data.UPLOAD_GEOMETRIES_KEY.format(id=upload.id, index=index)
         
-        s3.put_object(Bucket=bucket, Key=key,
+        s3.put_object(Bucket=bucket, Key=key, ACL='bucket-owner-full-control',
             Body=geometry.ExportToWkt(), ContentType='text/plain')
         
         keys.append(key)

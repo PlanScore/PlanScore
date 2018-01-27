@@ -176,7 +176,7 @@ def post_score_results(storage, partial):
     print('Uploading', len(body), 'bytes to', key)
     
     storage.s3.put_object(Bucket=storage.bucket, Key=key, Body=body,
-        ContentType='text/json', ACL='private')
+        ContentType='text/json', ACL='bucket-owner-full-control')
 
 def consume_tiles(storage, partial):
     ''' Generate a stream of steps, updating totals from precincts and tiles.
