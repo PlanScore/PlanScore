@@ -9,6 +9,11 @@
     <link href="index.css?[hash]" rel="stylesheet" />
     <script src="index.js?[hash]"></script>
 
+    <!-- Histogram charts -->
+    <link href="/sitewide.css" rel="stylesheet" />
+    <script src="/sitewide.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+
     <!-- OG tags -->
     <meta property="og:title" content="PlanScore" />
     <meta property="og:type" content="website" />
@@ -28,11 +33,49 @@
     <!--[include_navbar]-->
 
     <div class="container container-mainbody">
-        <h1>Partisan Bias</h1>
-        <p>Partisan bias is the difference between each party&rsquo;s seat share and 50% in a hypothetical, perfectly tied election. For example, if a party would win 55% of a plan&rsquo;s districts if it received 50% of the statewide vote, then the plan would have a bias of 5% in this party&rsquo;s favor. To calculate partisan bias, the observed vote share in each district is shifted by the amount necessary to simulate a tied statewide election. Each party&rsquo;s seat share in this hypothetical election is then determined. The difference between each party&rsquo;s seat share and 50% is partisan bias.</p>
-        <p>For more about partisan bias, see Bernard Grofman and Gary King’s 2007 Election Law Journal article, <a href="https://gking.harvard.edu/files/jp.pdf"><i>The Future of Partisan Symmetry as a Judicial Test for Partisan Gerrymandering After LULAC v. Perry</i></a>.</p>
+        <div class="col-sm-6">
+            <h1>Partisan Bias</h1>
+            <p>Partisan bias is the difference between each party&rsquo;s seat share and 50% in a hypothetical, perfectly tied election. For example, if a party would win 55% of a plan&rsquo;s districts if it received 50% of the statewide vote, then the plan would have a bias of 5% in this party&rsquo;s favor. To calculate partisan bias, the observed vote share in each district is shifted by the amount necessary to simulate a tied statewide election. Each party&rsquo;s seat share in this hypothetical election is then determined. The difference between each party&rsquo;s seat share and 50% is partisan bias.</p>
+            <p>For more about partisan bias, see Bernard Grofman and Gary King’s 2007 Election Law Journal article, <a href="https://gking.harvard.edu/files/jp.pdf"><i>The Future of Partisan Symmetry as a Judicial Test for Partisan Gerrymandering After LULAC v. Perry</i></a>.</p>
+        </div>
+        
+        <div class="col-sm-6">
+            <h3><a href="/maryland/#!2012-plan-ushouse-pb">Maryland 2012</a></h3>
+            <p>
+                Under <a href="/maryland/#!2012-plan-ushouse-pb">Maryland’s 2012-2016 plan</a>,
+                Democrats something something something 25% than under a fair plan.
+            </p>
+            <div class="metric-bellchart" id="maryland-pb">
+                <div class="curve"><div class="marklabel">MD</div><div class="markline"></div></div>
+                <div class="row metric-bellchart-legend">
+                    <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
+                    <div class="col-xs-4 center">Balanced</div>
+                    <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
+                </div>
+            </div>
+            <script>
+                drawBiasBellChart('pb', 0.25, 'maryland-pb', 'ushouse', 'plan');
+            </script>
 
-
+            <h3><a href="/alabama/#!2016-plan-ushouse-pb">Alabama 2012</a></h3>
+            <p>
+                Under <a href="/alabama/#!2016-plan-ushouse-pb">the Alabama 2012-2016 plan</a>,
+                Republicans something something something 27% than under a fair plan.
+            </p>
+            <div class="metric-bellchart" id="alabama-pb">
+                <div class="curve"><div class="marklabel">AL</div><div class="markline"></div></div>
+                <div class="row metric-bellchart-legend">
+                    <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
+                    <div class="col-xs-4 center">Balanced</div>
+                    <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
+                </div>
+            </div>
+            <script>
+                drawBiasBellChart('pb', -0.27, 'alabama-pb', 'ushouse', 'plan');
+            </script>
+            
+        </div>
+        
     </div><!--/container-mainbody-->
 
     <!--[include_footer]-->

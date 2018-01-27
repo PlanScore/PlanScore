@@ -9,6 +9,11 @@
     <link href="index.css?[hash]" rel="stylesheet" />
     <script src="index.js?[hash]"></script>
 
+    <!-- Histogram charts -->
+    <link href="/sitewide.css" rel="stylesheet" />
+    <script src="/sitewide.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+
     <!-- OG tags -->
     <meta property="og:title" content="PlanScore" />
     <meta property="og:type" content="website" />
@@ -27,10 +32,49 @@
     <!--[include_navbar]-->
 
     <div class="container container-mainbody">
-        <h1>Mean/Median Metric</h1>
-        <p>The mean-median difference is a party&rsquo;s median vote share minus its mean vote share, across all of a plan&rsquo;s districts. For example, if a party has a median vote share of 45% and a mean vote share of 50%, then the plan has a mean-median difference of 5% against this party. When the mean and the median diverge significantly, the district distribution is skewed in favor of one party and against its opponent. Conversely, when the mean and the median are close, the district distribution is more symmetric.</p>
-        <p>For more about the mean-median difference, see Michael McDonald and Robin Best&rsquo;s 2015 Election Law Article, <a href="http://www.commoncause.org/issues/voting-and-elections/redistricting/writing-contest-winning-papers/unfair-partisan-gerrymanders.pdf"><i>Unfair Partisan Gerrymanders in Politics and Law: A Diagnostic Applied to Six Cases</i></a>.</p>
+        <div class="col-sm-6">
+            <h1>Mean/Median Metric</h1>
+            <p>The mean-median difference is a party&rsquo;s median vote share minus its mean vote share, across all of a plan&rsquo;s districts. For example, if a party has a median vote share of 45% and a mean vote share of 50%, then the plan has a mean-median difference of 5% against this party. When the mean and the median diverge significantly, the district distribution is skewed in favor of one party and against its opponent. Conversely, when the mean and the median are close, the district distribution is more symmetric.</p>
+            <p>For more about the mean-median difference, see Michael McDonald and Robin Best&rsquo;s 2015 Election Law Article, <a href="http://www.commoncause.org/issues/voting-and-elections/redistricting/writing-contest-winning-papers/unfair-partisan-gerrymanders.pdf"><i>Unfair Partisan Gerrymanders in Politics and Law: A Diagnostic Applied to Six Cases</i></a>.</p>
+        </div>
+        
+        <div class="col-sm-6">
+            <h3><a href="/georgia/#!2006-plan-ushouse-mm">Georgia 2006</a></h3>
+            <p>
+                Under <a href="/georgia/#!2006-plan-ushouse-mm">Georgia’s 2006-2010 plan</a>,
+                Republicans something something something 11% than under a fair plan.
+            </p>
+            <div class="metric-bellchart" id="georgia-mm">
+                <div class="curve"><div class="marklabel">GA</div><div class="markline"></div></div>
+                <div class="row metric-bellchart-legend">
+                    <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
+                    <div class="col-xs-4 center">Balanced</div>
+                    <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
+                </div>
+            </div>
+            <script>
+                drawBiasBellChart('mm', -0.11, 'georgia-mm', 'ushouse', 'plan');
+            </script>
 
+            <h3><a href="/kentucky/#!1980-plan-ushouse-mm">Kentucky 1972</a></h3>
+            <p>
+                Under <a href="/kentucky/#!1980-plan-ushouse-mm">the Kentucky 1972-1980 plan</a>,
+                Democrats something something something 10% than under a fair plan.
+            </p>
+            <div class="metric-bellchart" id="kentucky-mm">
+                <div class="curve"><div class="marklabel">KY</div><div class="markline"></div></div>
+                <div class="row metric-bellchart-legend">
+                    <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
+                    <div class="col-xs-4 center">Balanced</div>
+                    <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
+                </div>
+            </div>
+            <script>
+                drawBiasBellChart('mm', 0.1, 'kentucky-mm', 'ushouse', 'plan');
+            </script>
+            
+        </div>
+        
     </div><!--/container-mainbody-->
 
     <!--[include_footer]-->
