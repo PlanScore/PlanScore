@@ -13,7 +13,7 @@ def _local_url(port):
 SECRET = os.environ.get('PLANSCORE_SECRET', 'fake')
 
 # S3 bucket name, which should generally be left alone.
-S3_BUCKET = os.environ.get('S3_BUCKET', 'planscore-data')
+S3_BUCKET = os.environ.get('S3_BUCKET', 'planscore')
 
 # Website and API URLs.
 #
