@@ -9,6 +9,7 @@ const JS6_FILES = [
     './error.js6',
     './about/index.js6',
     './scoreyours/index.js6',
+    './historical-data/index.js6',
     './efficiencygap/index.js6',
     './meanmedian/index.js6',
     './partisanbias/index.js6',
