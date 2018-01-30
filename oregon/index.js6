@@ -549,11 +549,11 @@ window.updateMetricsSummary = (yeardata) => {
     const metrics_favor_r = [ favor_party_eg, favor_party_pb, favor_party_mm ].filter((party) => { return party == 'Republican'; }).length;
 
     // compose the sentence, with 2 out of 3 being the minimum worth mentioning
-    let biasstatement = "No consistent statistical bias was found among the three metrics.";
-    if      (metrics_favor_d == 3) biasstatement = "All three metrics agree that there is a bias in favor of Democrat voters.";
-    else if (metrics_favor_r == 3) biasstatement = "All three metrics agree that there is a bias in favor of Republican voters.";
-    else if (metrics_favor_d == 2 && metrics_favor_r == 0) biasstatement = "Two of the three metrics indicate a bias in favor of Democrat voters.";
-    else if (metrics_favor_r == 2 && metrics_favor_d == 0) biasstatement = "Two of the three metrics indicate a bias in favor of Reublican voters.";
+    let biasstatement = "The metrics do not consistently indicate a skew in either party’s favor.";
+    if      (metrics_favor_d == 3) biasstatement = "All three metrics indicate a pro-Democrat skew.";
+    else if (metrics_favor_r == 3) biasstatement = "All three metrics indicate a pro-Republican skew.";
+    else if (metrics_favor_d == 2 && metrics_favor_r == 0) biasstatement = "Two of the three metrics indicate a pro-Democrat skew.";
+    else if (metrics_favor_r == 2 && metrics_favor_d == 0) biasstatement = "Two of the three metrics indicate a pro-Republican skew.";
 
     // fill it in
     $('#maincontent span[data-metric="biasstatement"]').text(biasstatement);
