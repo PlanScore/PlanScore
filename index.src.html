@@ -38,14 +38,14 @@
     <!--[include_navbar]-->
 
     <div class="container container-mainbody">
-        <h2>Partisan Gerrymandering Since 1972</h2>
-        <span>PlanScore presents the most-comprehensive historical dataset of partisan gerrymandering ever assembled for the United States. We also provide tools for policymakers and litigators to transparently score new plans and assess their fairness.</span>
+        <h2>Partisan Gerrymandering Historical Data</h2>
+        <span>PlanScore presents the most comprehensive historical dataset of partisan gerrymandering ever assembled. We also provide tools for policymakers and litigators to transparently score new plans and assess their fairness.</span>
         <br />
 
         <!-- the mobile + desktop year picker UIs; see initYearPickers() and of course selectYear() -->
         <div class="row hidden-xs" id="yearpicker-big-wrapper">
             <div class="col-xs-1" id="yearpicker-big-playbutton">
-                <a data-status="paused" href="javascript:void(0);" title="Play an animation showing change in plan bias over time"><i class="glyphicon glyphicon-play"></i></a>
+                <a data-status="paused" href="javascript:void(0);" title="Play an animation showing change in plan skew over time"><i class="glyphicon glyphicon-play"></i></a>
                 <a data-status="playing" class="hidden" href="javascript:void(0);" title="Pause the animation"><i class="glyphicon glyphicon-pause"></i></a>
             </div>
             <div class="col-xs-11" id="yearpicker-big"></div>
@@ -62,7 +62,7 @@
         <div id="map"></div>
 
         <div id="maplegend">
-            <h1>Most biased plans in our data</h1>
+            <h1>Most skewed plans in our data</h1>
             <h2>(based on efficiency gap)</h2>
 
             <div class="slice d3"><span>D</span></div><div class="slice d2"><span>&nbsp;</span></div><div class="slice d1"><span>&nbsp;</span></div><div class="slice balanced"><span>&nbsp;</span></div><div class="slice r1"><span>&nbsp;</span></div><div class="slice r2"><span>&nbsp;</span></div><div class="slice r3"><span>R</span></div>
@@ -73,17 +73,17 @@
 
         <div class="row" id="boundarypicker">
             <div class="col-xs-4">
-                <div class="col-xs-12 center" data-boundary="ushouse" title="Show partisan bias analysis for US House district plans">
+                <div class="col-xs-12 center" data-boundary="ushouse" title="Show partisan skew analysis for US House district plans">
                     <a href="javascript:void(0);">US House</a>
                 </div>
             </div>
             <div class="col-xs-4">
-                <div class="col-xs-12 center" data-boundary="statesenate" title="Show partisan bias analysis for State Senate district plans">
+                <div class="col-xs-12 center" data-boundary="statesenate" title="Show partisan skew analysis for State Senate district plans">
                     <a href="javascript:void(0);">State Senate</a>
                 </div>
             </div>
             <div class="col-xs-4">
-                <div class="col-xs-12 center" data-boundary="statehouse" title="Show partisan bias analysis for State House district plans">
+                <div class="col-xs-12 center" data-boundary="statehouse" title="Show partisan skew analysis for State House district plans">
                     <a href="javascript:void(0);">State House</a>
                 </div>
             </div>
@@ -273,13 +273,11 @@
 
         <h2>What is Partisan Gerrymandering?</h2>
 
-        <h3>It's not just about crazy shapes</h3>
-
-        <p>Partisan gerrymandering is a deeply undemocratic practice. It produces state legislatures and congressional delegations that look nothing like the voters they are meant to represent. The basic notion that in a democracy, the people rule, is thus subverted. In a gerrymandered state, it is the will of the mapmaking party that governs.</p>
+        <p>Partisan gerrymandering means drawing district lines to benefit one party and disadvantage the opposing party. Through gerrymandering, a party is able to translate its votes into seats more efficiently than its opponent. With more seats comes more legislative power and, ultimately, more control over the policies the government enacts.</p>
 
         <h3>How Do We Measure It?</h3>
 
-        <p>We used three metrics to examine the bias in these plans. These are the three metrics. When they all agree that the plan is biased, that's a pretty good sign that the plan is biased.</p>
+        <p>We use three distinct measures of partisan gerrymandering: the efficiency gap, partisan bias, and the mean-median difference. All of these metrics are reliable when a state is competitive, but only the efficiency gap should be trusted when one party predominates in a state.</p>
 
         <ul class="nav nav-tabs">
             <li class="active"><a href="#tab-efficiencygap" data-toggle="tab">Efficiency Gap</a></li>
