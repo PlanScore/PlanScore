@@ -23,7 +23,7 @@ export const BIAS_SPREAD_SCALING = 0.25;
 
 // a bias <= this value will be considered balanced and below statistical significance
 // see also lookupBias() which resolves a score (-1 to +1) into colors & descriptions
-export const BIAS_BALANCED_THRESHOLD = 0.02;
+export const BIAS_BALANCED_THRESHOLD = 0.04;
 
 // for remapping state name to a short code
 export const STATE_NAME_TO_CODE = {

@@ -534,7 +534,7 @@ window.updateMetricsTitle = (yeardata) => {
 };
 
 window.updateMetricsSummary = (yeardata) => {
-    // compose a sentence summarizing how many metrics indicate a bias one way or the other
+    // compose a sentence summarizing how many metrics indicate a skew one way or the other
     // e.g. "2 out of 3 metrics agree..." or "all metrics agree..."
     const eg_score    = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].eg ];
     const pb_score  = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].bias ];
@@ -575,26 +575,27 @@ window.updateMetricsTabs = (yeardata) => {
     // the 3 plan-bias metrics: do any of them show a bias toward D or R?
     // tag the biasicon icons in the metrics' tabs
     const favor_party_eg = lookupBias(eg_score).party;
+    const loser_party_eg = lookupBias(eg_score).otherparty;
     const favor_color_eg = lookupBias(eg_score).color;
     const hadseats       = favor_party_eg == 'Republican' ? seats_rep : seats_dem;
-    const statement_eg   = totalseats ? (favor_party_eg ? `${favor_party_eg}s needed to earn ${(100 * Math.abs(eg_score)).toFixed(1)}% fewer votes to win ${hadseats} of ${totalseats} races than under a fair plan.` : 'This metric indicates a balanced plan.') : '';
-    const biastext_eg    = favor_party_eg ? `This plan is more biased than ${Math.round(100 * eg_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
+    const statement_eg   = favor_party_eg ? `${favor_party_eg} votes were wasted at a rate ${(100 * Math.abs(eg_score)).toFixed(1)}% lower than ${loser_party_eg} votes, resulting in ${(100 * Math.abs(eg_score)).toFixed(1)}% more ${favor_party_eg} seats than under a neutral map.` : 'This metric indicates a balanced plan.';
+    const biastext_eg    = favor_party_eg ? `This plan is more skewed than ${Math.round(100 * eg_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
     const roundscore_eg = Math.round(100 * Math.abs(eg_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
     let metricdrsum_eg = '0% Balanced';
     if (roundscore_eg) metricdrsum_eg = `+${roundscore_eg}% ${eg_score > 0 ? 'Democrat' : 'Republican'}`;
 
     const favor_party_pb = lookupBias(pb_score).party;
     const favor_color_pb = lookupBias(pb_score).color;
-    const statement_pb   = favor_party_pb ? '' : 'This metric indicates a balanced plan.';
-    const biastext_pb    = favor_party_pb ? `This plan is more biased than ${Math.round(100 * bias_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
+    const statement_pb   = favor_party_pb ? `${favor_party_pb}s would win ${(100 * Math.abs(pb_score)).toFixed(1)}% more seats than under a neutral map in a hypothetical, perfectly tied election.` : 'This metric indicates a balanced plan.';
+    const biastext_pb    = favor_party_pb ? `This plan is more skewed than ${Math.round(100 * bias_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
     const roundscore_pb = Math.round(100 * Math.abs(pb_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
     let metricdrsum_pb = '0% Balanced';
     if (roundscore_pb) metricdrsum_pb = `+${roundscore_pb}% ${pb_score > 0 ? 'Democrat' : 'Republican'}`;
  
     const favor_party_mm = lookupBias(mm_score).party;
     const favor_color_mm = lookupBias(mm_score).color;
-    const statement_mm   = favor_party_mm ? '' : 'This metric indicates a balanced plan.';
-    const biastext_mm    = favor_party_mm ? `This plan is more biased than ${Math.round(100 * mmd_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent bias was found in favor of either party.';
+    const statement_mm   = favor_party_mm ? `The median ${favor_party_mm} vote share was ${(100 * Math.abs(mm_score)).toFixed(1)}% higher than the mean ${favor_party_mm} vote share.` : 'This metric indicates a balanced plan.';
+    const biastext_mm    = favor_party_mm ? `This plan is more skewed than ${Math.round(100 * mmd_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
     const roundscore_mm = Math.round(100 * Math.abs(mm_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
     let metricdrsum_mm = '0% Balanced';
     if (roundscore_mm) metricdrsum_mm = `+${roundscore_mm}% ${pb_score > 0 ? 'Democrat' : 'Republican'}`;
@@ -619,17 +620,17 @@ window.updateMetricsTabs = (yeardata) => {
     // fill in those +DR% numbers and the summary texts, at the top of the metric tabs
     $('#tab-efficiencygap span[data-field="metricdrsum"]').text(metricdrsum_eg);
     $('#tab-efficiencygap span[data-field="metricstatement"]').text(statement_eg);
-    $('#tab-efficiencygap span[data-field="plancompare"]').text('This plan is more biased toward X than 100% all of the enacted plans we have analyzed nationwide.');
+    $('#tab-efficiencygap span[data-field="plancompare"]').text('This plan is more skewed toward X than 100% all of the enacted plans we have analyzed nationwide.');
     $('#tab-efficiencygap span[data-field="biasstatement"]').text(biastext_eg);
 
     $('#tab-partisanbias span[data-field="metricdrsum"]').text(metricdrsum_pb);
     $('#tab-partisanbias span[data-field="metricstatement"]').text(statement_pb);
-    $('#tab-partisanbias span[data-field="plancompare"]').text('This plan is more biased toward X than 100% all of the enacted plans we have analyzed nationwide.');
+    $('#tab-partisanbias span[data-field="plancompare"]').text('This plan is more skewed toward X than 100% all of the enacted plans we have analyzed nationwide.');
     $('#tab-partisanbias span[data-field="biasstatement"]').text(biastext_pb);
 
     $('#tab-meanmedian span[data-field="metricdrsum"]').text(metricdrsum_mm);
     $('#tab-meanmedian span[data-field="metricstatement"]').text(statement_mm);
-    $('#tab-meanmedian span[data-field="plancompare"]').text('This plan is more biased toward X than 100% all of the enacted plans we have analyzed nationwide.');
+    $('#tab-meanmedian span[data-field="plancompare"]').text('This plan is more skewed toward X than 100% all of the enacted plans we have analyzed nationwide.');
     $('#tab-meanmedian span[data-field="biasstatement"]').text(biastext_mm);
 
     // color those +DR% boxes
@@ -694,7 +695,7 @@ window.updateWastedVotesChart = (yeardata) => {
             type: 'bar'
         },
         title: {
-            text: 'Votes Needed and Wasted',
+            text: 'Efficient and Wasted Votes',
             margin:0,
         },
         xAxis: {
