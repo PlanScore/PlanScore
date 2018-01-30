@@ -147,52 +147,54 @@ function which_district_color(district, plan)
 function show_efficiency_gap_score(plan, score_EG)
 {
     var summary_name = which_score_summary_name(plan),
-        gap = plan.summary[summary_name];
-
-    clear_element(score_EG);
-    drawBiasBellChart('eg', gap, 'metric-bellchart-eg', 'ushouse', 'plan');
-
-    var new_words = document.createElement('p'),
-        seats_d = 0, seats_r = 0,
-        votes_d, votes_r;
+        gap = plan.summary[summary_name],
+        gap_amount = nice_percent(Math.abs(gap));
     
-    for(var i = 0; i < plan.districts.length; i++)
+    for(node = score_EG.firstChild; node = node.nextSibling; node)
     {
-        votes_d = plan.districts[i].totals['Democratic Votes'];
-        votes_r = plan.districts[i].totals['Republican Votes'];
+        if(node.nodeName == 'H3') {
+            node.innerHTML += ': ' + gap_amount;
 
-        if(votes_d > votes_r) {
-            seats_d += 1;
-        } else {
-            seats_r += 1;
+        } else if(node.nodeName == 'DIV') {
+            drawBiasBellChart('eg', gap, node.id, 'ushouse', 'plan');
+
+        } else if(node.nodeName == 'P') {
+            var win_party = (gap < 0 ? 'Republicans' : 'Democrats'),
+                lose_party = (gap < 0 ? 'Democrats' : 'Republicans');
+
+            clear_element(node);
+            node.innerHTML = [
+                win_party, 'votes are expected to be wasted at a rate', gap_amount,
+                'lower than', lose_party, 'votes, resulting in', gap_amount, 'more',
+                win_party, 'seats than under a neutral map.'
+                ].join(' ');
         }
     }
-    
-    score_EG.innerHTML = [
-        (gap < 0 ? 'Republicans' : 'Democrats'),
-        'needed to earn <strong>', nice_percent(Math.abs(gap)), '</strong>',
-        'fewer votes to win', (gap < 0 ? seats_r : seats_d),
-        'of', (seats_d + seats_r), 'seats than under a fair plan.'
-        ].join(' ');
 }
 
 function show_partisan_bias_score(plan, score_PB)
 {
-    var partisan_bias = plan.summary['Partisan Bias'];
-    clear_element(score_PB);
+    var bias = plan.summary['Partisan Bias'],
+        bias_amount = nice_percent(Math.abs(bias));
+    
+    for(node = score_PB.firstChild; node = node.nextSibling; node)
+    {
+        if(node.nodeName == 'H3') {
+            node.innerHTML += ': ' + bias_amount;
 
-    var new_h3 = document.createElement('h3'),
-        new_score = document.createElement('p'),
-        new_words = document.createElement('p');
+        } else if(node.nodeName == 'DIV') {
+            drawBiasBellChart('pb', bias, node.id, 'ushouse', 'plan');
 
-    new_h3.innerText = 'Partisan Bias';
-    new_score.className = 'score'
-    new_score.innerText = nice_percent(Math.abs(partisan_bias));
-    new_words.innerText = nice_gap(partisan_bias) + '.';
+        } else if(node.nodeName == 'P') {
+            var win_party = (bias < 0 ? 'Republicans' : 'Democrats');
 
-    score_PB.appendChild(new_h3);
-    score_PB.appendChild(new_score);
-    score_PB.appendChild(new_words);
+            clear_element(node);
+            node.innerHTML = [
+                win_party, 'would be expected to win', bias_amount,
+                'more seats than under a neutral map in a hypothetical, perfectly tied election.'
+                ].join(' ');
+        }
+    }
 }
 
 function show_sensitivity_test(plan, score_sense)
