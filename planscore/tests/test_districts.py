@@ -302,13 +302,16 @@ class TestDistricts (unittest.TestCase):
         def mock_score_precinct(partial, precinct, tile_zxy):
             partial.totals['Voters'] += precinct['Voters']
         
+        storage = unittest.mock.Mock()
+        storage.prefix = 'XX/0001'
+        
         # Just use the identity function to extend precincts
         load_tile_precincts.side_effect = lambda storage, tile: tile
         score_precinct.side_effect = mock_score_precinct
         
         for (index, (totals, precincts, tiles)) in enumerate(cases):
             partial = districts.Partial(-1, totals, None, precincts, tiles, None, None, None)
-            iterations = list(districts.consume_tiles(None, partial))
+            iterations = list(districts.consume_tiles(storage, partial))
             self.assertFalse(partial.precincts, 'Precincts should be completely emptied ({})'.format(index))
             self.assertFalse(partial.tiles, 'Tiles should be completely emptied ({})'.format(index))
             self.assertEqual(partial.totals['Voters'], 15, '({})'.format(index))
@@ -324,6 +327,9 @@ class TestDistricts (unittest.TestCase):
         def mock_score_precinct(partial, precinct, tile_zxy):
             partial.totals['Voters'] += precinct['Voters']
         
+        storage = unittest.mock.Mock()
+        storage.prefix = 'XX/0001'
+        
         # Just use the identity function to extend precincts
         load_tile_precincts.side_effect = lambda storage, tile: tile
         score_precinct.side_effect = mock_score_precinct
@@ -333,7 +339,7 @@ class TestDistricts (unittest.TestCase):
         
         upload = data.Upload('ID', None)
         partial = districts.Partial(-1, totals, None, precincts, tiles, None, upload, None)
-        call = districts.consume_tiles(None, partial)
+        call = districts.consume_tiles(storage, partial)
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
             (-1, {'Voters': 0}, [{'Voters': 1}], [({'Voters': 2}, ), ({'Voters': 4}, {'Voters': 8})], 'ID'),
             'Should see the original lists unchanged')

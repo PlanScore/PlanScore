@@ -3,7 +3,7 @@
 Performs as many tile-based accumulations of district votes as possible within
 AWS Lambda time limit before recursively calling for remaining tiles.
 '''
-import collections, json, io, gzip, statistics, time, base64, posixpath, pickle, functools, logging
+import collections, json, io, gzip, statistics, time, base64, posixpath, pickle, functools, logging, time
 from osgeo import ogr
 import boto3, botocore.exceptions, ModestMaps.OpenStreetMap, ModestMaps.Core
 from . import prepare_state, score, data, constants, compactness, util
@@ -197,9 +197,14 @@ def consume_tiles(storage, partial):
     
     # Iterate over each tile, loading precincts and scoring them.
     while partial.tiles:
-        tile_zxy = partial.tiles.pop(0)
+        tile_zxy, start_time = partial.tiles.pop(0), time.time()
         for precinct in load_tile_precincts(storage, tile_zxy):
             score_precinct(partial, precinct, tile_zxy)
+
+        message = dict(prefix=storage.prefix, upload=partial.upload.id,
+            tile=tile_zxy, time=round(time.time() - start_time, 3))
+
+        logging.getLogger(LOGGER_NAME).info(json.dumps(message))
         
         # Yield after each complete tile is processed.
         yield
