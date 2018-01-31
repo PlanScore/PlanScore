@@ -3,14 +3,15 @@
 Performs as many tile-based accumulations of district votes as possible within
 AWS Lambda time limit before recursively calling for remaining tiles.
 '''
-import collections, json, io, gzip, statistics, time, base64, posixpath, pickle, functools
+import collections, json, io, gzip, statistics, time, base64, posixpath, pickle, functools, logging
 from osgeo import ogr
 import boto3, botocore.exceptions, ModestMaps.OpenStreetMap, ModestMaps.Core
-from . import prepare_state, score, data, constants, compactness
+from . import prepare_state, score, data, constants, compactness, util
 
 ogr.UseExceptions()
 
 FUNCTION_NAME = 'PlanScore-RunDistrict'
+LOGGER_NAME = f'{__name__}.consume_tiles'
 
 # Borrow some Modest Maps tile math
 _mercator = ModestMaps.OpenStreetMap.Provider().projection
@@ -118,6 +119,9 @@ def tile_geometry(tile_zxy):
 def lambda_handler(event, context):
     '''
     '''
+    # Set up SQS logger
+    util.add_sqs_logging_handler(LOGGER_NAME)
+
     s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
     storage = data.Storage.from_event(event, s3)
     partial = Partial.from_event(event, storage)

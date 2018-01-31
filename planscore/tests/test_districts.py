@@ -137,7 +137,9 @@ class TestDistricts (unittest.TestCase):
     @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.post_score_results')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_init(self, consume_tiles, post_score_results, get_scores, boto3_client, stdout):
+    @unittest.mock.patch('planscore.util.add_sqs_logging_handler')
+    def test_lambda_handler_init(self, add_sqs_logging_handler, consume_tiles,
+        post_score_results, get_scores, boto3_client, stdout):
         ''' Lambda event data with just geometry starts the process.
         '''
         s3 = boto3_client.return_value
@@ -164,7 +166,9 @@ class TestDistricts (unittest.TestCase):
     @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.post_score_results')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_timeout(self, consume_tiles, post_score_results, get_scores, boto3_client, stdout):
+    @unittest.mock.patch('planscore.util.add_sqs_logging_handler')
+    def test_lambda_handler_timeout(self, add_sqs_logging_handler, consume_tiles,
+        post_score_results, get_scores, boto3_client, stdout):
         ''' Lambda event hands off the process when no time is left.
         '''
         s3 = boto3_client.return_value
@@ -196,7 +200,9 @@ class TestDistricts (unittest.TestCase):
     @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.post_score_results')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_continue(self, consume_tiles, post_score_results, get_scores, boto3_client, stdout):
+    @unittest.mock.patch('planscore.util.add_sqs_logging_handler')
+    def test_lambda_handler_continue(self, add_sqs_logging_handler, consume_tiles,
+        post_score_results, get_scores, boto3_client, stdout):
         ''' Lambda event data with existing totals continues the process.
         '''
         s3 = boto3_client.return_value
@@ -222,7 +228,9 @@ class TestDistricts (unittest.TestCase):
     @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.post_score_results')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_final(self, consume_tiles, post_score_results, get_scores, boto3_client, stdout):
+    @unittest.mock.patch('planscore.util.add_sqs_logging_handler')
+    def test_lambda_handler_final(self, add_sqs_logging_handler, consume_tiles,
+        post_score_results, get_scores, boto3_client, stdout):
         ''' Lambda event for the final district does not hand off to the score function.
         '''
         s3 = boto3_client.return_value
@@ -242,7 +250,9 @@ class TestDistricts (unittest.TestCase):
     @unittest.mock.patch('boto3.client')
     @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_overdue(self, consume_tiles, get_scores, boto3_client, stdout):
+    @unittest.mock.patch('planscore.util.add_sqs_logging_handler')
+    def test_lambda_handler_overdue(self, add_sqs_logging_handler, consume_tiles,
+        get_scores, boto3_client, stdout):
         ''' Lambda event for an overdue upload errors out.
         '''
         s3 = boto3_client.return_value

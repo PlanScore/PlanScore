@@ -88,6 +88,7 @@ env = {
     'PLANSCORE_SECRET': 'localstack',
     'WEBSITE_BASE': 'http://127.0.0.1:5000/',
     'S3_ENDPOINT_URL': ENDPOINT_S3,
+    'SQS_ENDPOINT_URL': ENDPOINT_SQS,
     'LAMBDA_ENDPOINT_URL': ENDPOINT_LAM,
     }
 
