@@ -1,4 +1,17 @@
-import urllib.parse, tempfile, shutil, os, contextlib
+import urllib.parse, tempfile, shutil, os, contextlib, logging
+import boto3
+
+class SQSLoggingHandler(logging.Handler):
+    ''' Logs to the given Amazon SQS queue; meant for timing logs.
+    '''
+    def __init__(self, sqs_client, queue_url, *args, **kwargs):
+        super(SQSLoggingHandler, self).__init__(*args, **kwargs)
+        self.client, self.queue_url = sqs_client, queue_url
+        self.setFormatter(logging.Formatter('%(message)s'))
+        self.setLevel(logging.DEBUG)
+    
+    def emit(self, record):
+        self.client.send_message(QueueUrl=self.queue_url, MessageBody=self.format(record))
 
 @contextlib.contextmanager
 def temporary_buffer_file(filename, buffer):

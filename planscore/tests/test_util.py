@@ -1,4 +1,4 @@
-import unittest, unittest.mock, io, os
+import unittest, unittest.mock, io, os, logging
 from .. import util
 
 class TestUtil (unittest.TestCase):
@@ -35,3 +35,19 @@ class TestUtil (unittest.TestCase):
 
         args4 = util.event_query_args({'queryStringParameters': {'foo': 'bar'}})
         self.assertEqual(args4, {'foo': 'bar'})
+    
+    def test_sqs_log_handler(self):
+        ''' Log events sent to SQS arrive as intended
+        '''
+        client = unittest.mock.Mock()
+        handler = util.SQSLoggingHandler(client, 'http://example.com/queue')
+        
+        logger = logging.getLogger()
+        logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
+        logger.info('{"hello": "world"}')
+        logger.debug('{"too much": "information"}')
+        logger.removeHandler(handler)
+        
+        client.send_message.assert_called_once_with(MessageBody='{"hello": "world"}',
+            QueueUrl='http://example.com/queue')
