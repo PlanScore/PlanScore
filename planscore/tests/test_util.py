@@ -1,5 +1,5 @@
 import unittest, unittest.mock, io, os, logging
-from .. import util
+from .. import util, constants
 
 class TestUtil (unittest.TestCase):
 
@@ -51,3 +51,17 @@ class TestUtil (unittest.TestCase):
         
         client.send_message.assert_called_once_with(MessageBody='{"hello": "world"}',
             QueueUrl='http://example.com/queue')
+    
+    @unittest.mock.patch('logging.getLogger')
+    @unittest.mock.patch('planscore.util.SQSLoggingHandler')
+    @unittest.mock.patch('boto3.client')
+    def test_add_sqs_logging_handler(self, boto3_client, SQSLoggingHandler, getLogger):
+        '''
+        '''
+        logger = getLogger.return_value
+        util.add_sqs_logging_handler('yo')
+        
+        SQSLoggingHandler.assert_called_once_with(boto3_client.return_value, constants.SQS_QUEUEURL)
+        logger.addHandler.assert_called_once_with(SQSLoggingHandler.return_value)
+        logger.setLevel.assert_called_once_with(logging.INFO)
+        getLogger.assert_called_once_with('yo')

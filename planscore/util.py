@@ -1,5 +1,6 @@
 import urllib.parse, tempfile, shutil, os, contextlib, logging
 import boto3
+from . import constants
 
 class SQSLoggingHandler(logging.Handler):
     ''' Logs to the given Amazon SQS queue; meant for timing logs.
@@ -37,3 +38,17 @@ def event_query_args(event):
     '''
     '''
     return event.get('queryStringParameters') or {}
+
+def add_sqs_logging_handler(name):
+    '''
+    '''
+    if constants.SQS_QUEUEURL is None:
+        return
+    
+    client = boto3.client('sqs', endpoint_url=constants.SQS_ENDPOINT_URL)
+    handler = SQSLoggingHandler(client, constants.SQS_QUEUEURL)
+    handler.setFormatter(logging.Formatter('%(message)s'))
+    
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+    logger.addHandler(handler)
