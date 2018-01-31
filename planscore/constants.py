@@ -15,9 +15,6 @@ SECRET = os.environ.get('PLANSCORE_SECRET', 'fake')
 # S3 bucket name, which should generally be left alone.
 S3_BUCKET = os.environ.get('S3_BUCKET', 'planscore')
 
-# SQS queue URL
-SQS_QUEUEURL = os.environ.get('SQS_NAME')
-
 # Website and API URLs.
 #
 # Used to coordinate links, form actions, and redirects between Flask app
@@ -49,10 +46,12 @@ S3_ENDPOINT_URL = os.environ.get('S3_ENDPOINT_URL', _local_url(4572))
 SQS_ENDPOINT_URL = os.environ.get('SQS_ENDPOINT_URL', _local_url(4561))
 LAMBDA_ENDPOINT_URL = os.environ.get('LAMBDA_ENDPOINT_URL', _local_url(4574))
 S3_URL_PATTERN = urllib.parse.urljoin(S3_ENDPOINT_URL, '/{b}/{k}')
+SQS_QUEUEURL = urllib.parse.urljoin(SQS_ENDPOINT_URL, '/queue/tiles')
 
 if os.environ.get('AWS') == 'amazonaws.com':
     S3_ENDPOINT_URL, SQS_ENDPOINT_URL, LAMBDA_ENDPOINT_URL = None, None, None
     S3_URL_PATTERN = 'https://{b}.s3.amazonaws.com/{k}'
+    SQS_QUEUEURL = os.environ.get('SQS_QUEUEURL')
 
 # Active version of each state model
 
