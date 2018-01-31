@@ -202,7 +202,8 @@ def consume_tiles(storage, partial):
             score_precinct(partial, precinct, tile_zxy)
 
         message = dict(prefix=storage.prefix, upload=partial.upload.id,
-            tile=tile_zxy, time=round(time.time() - start_time, 3))
+            tile=tile_zxy, time=round(time.time() - start_time, 3),
+            **get_tile_metadata(storage, tile_zxy))
 
         logging.getLogger(LOGGER_NAME).info(json.dumps(message))
         
@@ -262,6 +263,19 @@ def score_precinct(partial, precinct, tile_zxy):
             continue
         precinct_value = precinct_fraction * (precinct['properties'][name] or 0)
         partial.totals[name] = round(partial.totals[name] + precinct_value, constants.ROUND_COUNT)
+
+def get_tile_metadata(storage, tile_zxy):
+    ''' Get metadata dictionary for a specific tile.
+    '''
+    try:
+        response = storage.s3.head_object(Bucket=storage.bucket,
+            Key='{}/{}.geojson'.format(storage.prefix, tile_zxy))
+    except botocore.exceptions.ClientError as error:
+        if error.response['Error']['Code'] == 'NoSuchKey':
+            return {}
+        raise
+    
+    return dict(size=response.get('ContentLength'))
 
 def load_tile_precincts(storage, tile_zxy):
     ''' Get GeoJSON features for a specific tile.

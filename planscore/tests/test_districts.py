@@ -286,9 +286,10 @@ class TestDistricts (unittest.TestCase):
             ACL='bucket-owner-full-control', Body=b'{\n  "index": -1,\n  "totals": {\n    "Voters": 1\n  },\n  "compactness": {},\n  "precincts": 0,\n  "tiles": [],\n  "upload": {\n    "id": "ID",\n    "key": "uploads/ID/upload/file.geojson",\n    "districts": [\n      null,\n      null\n    ],\n    "summary": {},\n    "progress": null,\n    "start_time": -1\n  }\n}',
             Bucket='bucket-name', ContentType='text/json', Key='uploads/ID/districts/-1.json')
     
+    @unittest.mock.patch('planscore.districts.get_tile_metadata')
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
     @unittest.mock.patch('planscore.districts.score_precinct')
-    def test_consume_tiles(self, score_precinct, load_tile_precincts):
+    def test_consume_tiles(self, score_precinct, load_tile_precincts, get_tile_metadata):
         ''' Expected updates are made to totals dictionary.
         '''
         cases = [
@@ -310,7 +311,8 @@ class TestDistricts (unittest.TestCase):
         score_precinct.side_effect = mock_score_precinct
         
         for (index, (totals, precincts, tiles)) in enumerate(cases):
-            partial = districts.Partial(-1, totals, None, precincts, tiles, None, None, None)
+            upload = data.Upload('ID', 'uploads/ID/upload/file.zip')
+            partial = districts.Partial(-1, totals, None, precincts, tiles, None, upload, None)
             iterations = list(districts.consume_tiles(storage, partial))
             self.assertFalse(partial.precincts, 'Precincts should be completely emptied ({})'.format(index))
             self.assertFalse(partial.tiles, 'Tiles should be completely emptied ({})'.format(index))
@@ -319,9 +321,10 @@ class TestDistricts (unittest.TestCase):
         
         self.assertEqual(len(score_precinct.mock_calls), 14)
     
+    @unittest.mock.patch('planscore.districts.get_tile_metadata')
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
     @unittest.mock.patch('planscore.districts.score_precinct')
-    def test_consume_tiles_detail(self, score_precinct, load_tile_precincts):
+    def test_consume_tiles_detail(self, score_precinct, load_tile_precincts, get_tile_metadata):
         ''' Expected updates are made to totals dictionary and lists.
         '''
         def mock_score_precinct(partial, precinct, tile_zxy):
@@ -553,6 +556,20 @@ class TestDistricts (unittest.TestCase):
             self.assertEqual(actual, expected)
         
         self.assertEqual(len(load_tile_precincts.mock_calls), expected_calls)
+    
+    def test_get_tile_metadata(self):
+        '''
+        '''
+        s3 = unittest.mock.Mock()
+        storage = data.Storage(s3, 'bucket-name', 'XX')
+
+        s3.head_object.return_value = {'ContentLength': -1}
+        metadata1 = districts.get_tile_metadata(storage, '12/-1/-1')
+        self.assertEqual(metadata1['size'], -1)
+
+        s3.head_object.return_value = {'SomethingElse': -1}
+        metadata2 = districts.get_tile_metadata(storage, '12/-1/-1')
+        self.assertIsNone(metadata2['size'])
     
     def test_load_tile_precincts(self):
         '''
