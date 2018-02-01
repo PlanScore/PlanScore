@@ -201,11 +201,11 @@ def consume_tiles(storage, partial):
         for precinct in load_tile_precincts(storage, tile_zxy):
             score_precinct(partial, precinct, tile_zxy)
 
-        message = dict(prefix=storage.prefix, upload=partial.upload.id,
-            tile=tile_zxy, time=round(time.time() - start_time, 3),
-            **get_tile_metadata(storage, tile_zxy))
-
-        logging.getLogger(LOGGER_NAME).debug(json.dumps(message))
+        # message = dict(prefix=storage.prefix, upload=partial.upload.id,
+        #     tile=tile_zxy, time=round(time.time() - start_time, 3),
+        #     **get_tile_metadata(storage, tile_zxy))
+        # 
+        # logging.getLogger(LOGGER_NAME).debug(json.dumps(message))
         
         # Yield after each complete tile is processed.
         yield
