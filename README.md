@@ -15,9 +15,9 @@ transforming the politics, litigation, and coverage of redistricting.
 Install for Local Development
 ---
 
-PlanScore is a Python 3 application deployed to Amazon Web Services with S3 and
-Lambda. To make local development possible, use Docker and the local AWS
-development stack [LocalStack](https://github.com/localstack/localstack).
+PlanScore is a Python 3 application deployed to Amazon Web Services with S3,
+Lambda, and SQS. To make local development possible, use Docker and the local
+AWS development stack [LocalStack](https://github.com/localstack/localstack).
 
 1.  Clone the PlanScore git repository and prepare a
     [Python virtual environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/#virtualenv).
@@ -44,12 +44,13 @@ development stack [LocalStack](https://github.com/localstack/localstack).
     
 7.  In a separate window, run LocalStack.
     
-        env SERVICES=s3,lambda LAMBDA_EXECUTOR=docker localstack start
+        env SERVICES=s3,lambda,sqs LAMBDA_EXECUTOR=docker localstack start
     
     Wait for the expected output.
     
         Starting local dev environment. CTRL-C to quit.
         Starting mock S3 (http port 4572)...
+        Starting mock SQS (http port 4576)...
         Starting mock Lambda service (http port 4574)...
         Ready.
     

@@ -13,9 +13,18 @@ host_address = socket.gethostbyname(socket.gethostname())
 
 BUCKETNAME = 'planscore'
 ENDPOINT_S3 = 'http://{}:4572'.format(host_address)
+ENDPOINT_SQS = 'http://{}:4561'.format(host_address)
 ENDPOINT_LAM = 'http://{}:4574'.format(host_address)
 AWS_CREDS = dict(aws_access_key_id='nobody', aws_secret_access_key='nothing')
 CODE_PATH = arguments.code_path
+
+# SQS Queue setup
+
+print('--> Set up SQS', ENDPOINT_SQS)
+sqs = boto3.client('sqs', endpoint_url=ENDPOINT_SQS, **AWS_CREDS)
+
+print('    Create "tiles" queue')
+sqs.create_queue(QueueName='tiles')
 
 # S3 Bucket setup
 
@@ -79,6 +88,7 @@ env = {
     'PLANSCORE_SECRET': 'localstack',
     'WEBSITE_BASE': 'http://127.0.0.1:5000/',
     'S3_ENDPOINT_URL': ENDPOINT_S3,
+    'SQS_ENDPOINT_URL': ENDPOINT_SQS,
     'LAMBDA_ENDPOINT_URL': ENDPOINT_LAM,
     }
 

@@ -137,7 +137,9 @@ class TestDistricts (unittest.TestCase):
     @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.post_score_results')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_init(self, consume_tiles, post_score_results, get_scores, boto3_client, stdout):
+    @unittest.mock.patch('planscore.util.add_sqs_logging_handler')
+    def test_lambda_handler_init(self, add_sqs_logging_handler, consume_tiles,
+        post_score_results, get_scores, boto3_client, stdout):
         ''' Lambda event data with just geometry starts the process.
         '''
         s3 = boto3_client.return_value
@@ -164,7 +166,9 @@ class TestDistricts (unittest.TestCase):
     @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.post_score_results')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_timeout(self, consume_tiles, post_score_results, get_scores, boto3_client, stdout):
+    @unittest.mock.patch('planscore.util.add_sqs_logging_handler')
+    def test_lambda_handler_timeout(self, add_sqs_logging_handler, consume_tiles,
+        post_score_results, get_scores, boto3_client, stdout):
         ''' Lambda event hands off the process when no time is left.
         '''
         s3 = boto3_client.return_value
@@ -196,7 +200,9 @@ class TestDistricts (unittest.TestCase):
     @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.post_score_results')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_continue(self, consume_tiles, post_score_results, get_scores, boto3_client, stdout):
+    @unittest.mock.patch('planscore.util.add_sqs_logging_handler')
+    def test_lambda_handler_continue(self, add_sqs_logging_handler, consume_tiles,
+        post_score_results, get_scores, boto3_client, stdout):
         ''' Lambda event data with existing totals continues the process.
         '''
         s3 = boto3_client.return_value
@@ -222,7 +228,9 @@ class TestDistricts (unittest.TestCase):
     @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.post_score_results')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_final(self, consume_tiles, post_score_results, get_scores, boto3_client, stdout):
+    @unittest.mock.patch('planscore.util.add_sqs_logging_handler')
+    def test_lambda_handler_final(self, add_sqs_logging_handler, consume_tiles,
+        post_score_results, get_scores, boto3_client, stdout):
         ''' Lambda event for the final district does not hand off to the score function.
         '''
         s3 = boto3_client.return_value
@@ -242,7 +250,9 @@ class TestDistricts (unittest.TestCase):
     @unittest.mock.patch('boto3.client')
     @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.consume_tiles')
-    def test_lambda_handler_overdue(self, consume_tiles, get_scores, boto3_client, stdout):
+    @unittest.mock.patch('planscore.util.add_sqs_logging_handler')
+    def test_lambda_handler_overdue(self, add_sqs_logging_handler, consume_tiles,
+        get_scores, boto3_client, stdout):
         ''' Lambda event for an overdue upload errors out.
         '''
         s3 = boto3_client.return_value
@@ -276,9 +286,10 @@ class TestDistricts (unittest.TestCase):
             ACL='bucket-owner-full-control', Body=b'{\n  "index": -1,\n  "totals": {\n    "Voters": 1\n  },\n  "compactness": {},\n  "precincts": 0,\n  "tiles": [],\n  "upload": {\n    "id": "ID",\n    "key": "uploads/ID/upload/file.geojson",\n    "districts": [\n      null,\n      null\n    ],\n    "summary": {},\n    "progress": null,\n    "start_time": -1\n  }\n}',
             Bucket='bucket-name', ContentType='text/json', Key='uploads/ID/districts/-1.json')
     
+    @unittest.mock.patch('planscore.districts.get_tile_metadata')
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
     @unittest.mock.patch('planscore.districts.score_precinct')
-    def test_consume_tiles(self, score_precinct, load_tile_precincts):
+    def test_consume_tiles(self, score_precinct, load_tile_precincts, get_tile_metadata):
         ''' Expected updates are made to totals dictionary.
         '''
         cases = [
@@ -292,13 +303,17 @@ class TestDistricts (unittest.TestCase):
         def mock_score_precinct(partial, precinct, tile_zxy):
             partial.totals['Voters'] += precinct['Voters']
         
+        storage = unittest.mock.Mock()
+        storage.prefix = 'XX/0001'
+        
         # Just use the identity function to extend precincts
         load_tile_precincts.side_effect = lambda storage, tile: tile
         score_precinct.side_effect = mock_score_precinct
         
         for (index, (totals, precincts, tiles)) in enumerate(cases):
-            partial = districts.Partial(-1, totals, None, precincts, tiles, None, None, None)
-            iterations = list(districts.consume_tiles(None, partial))
+            upload = data.Upload('ID', 'uploads/ID/upload/file.zip')
+            partial = districts.Partial(-1, totals, None, precincts, tiles, None, upload, None)
+            iterations = list(districts.consume_tiles(storage, partial))
             self.assertFalse(partial.precincts, 'Precincts should be completely emptied ({})'.format(index))
             self.assertFalse(partial.tiles, 'Tiles should be completely emptied ({})'.format(index))
             self.assertEqual(partial.totals['Voters'], 15, '({})'.format(index))
@@ -306,13 +321,17 @@ class TestDistricts (unittest.TestCase):
         
         self.assertEqual(len(score_precinct.mock_calls), 14)
     
+    @unittest.mock.patch('planscore.districts.get_tile_metadata')
     @unittest.mock.patch('planscore.districts.load_tile_precincts')
     @unittest.mock.patch('planscore.districts.score_precinct')
-    def test_consume_tiles_detail(self, score_precinct, load_tile_precincts):
+    def test_consume_tiles_detail(self, score_precinct, load_tile_precincts, get_tile_metadata):
         ''' Expected updates are made to totals dictionary and lists.
         '''
         def mock_score_precinct(partial, precinct, tile_zxy):
             partial.totals['Voters'] += precinct['Voters']
+        
+        storage = unittest.mock.Mock()
+        storage.prefix = 'XX/0001'
         
         # Just use the identity function to extend precincts
         load_tile_precincts.side_effect = lambda storage, tile: tile
@@ -323,7 +342,7 @@ class TestDistricts (unittest.TestCase):
         
         upload = data.Upload('ID', None)
         partial = districts.Partial(-1, totals, None, precincts, tiles, None, upload, None)
-        call = districts.consume_tiles(None, partial)
+        call = districts.consume_tiles(storage, partial)
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
             (-1, {'Voters': 0}, [{'Voters': 1}], [({'Voters': 2}, ), ({'Voters': 4}, {'Voters': 8})], 'ID'),
             'Should see the original lists unchanged')
@@ -537,6 +556,20 @@ class TestDistricts (unittest.TestCase):
             self.assertEqual(actual, expected)
         
         self.assertEqual(len(load_tile_precincts.mock_calls), expected_calls)
+    
+    def test_get_tile_metadata(self):
+        '''
+        '''
+        s3 = unittest.mock.Mock()
+        storage = data.Storage(s3, 'bucket-name', 'XX')
+
+        s3.head_object.return_value = {'ContentLength': -1}
+        metadata1 = districts.get_tile_metadata(storage, '12/-1/-1')
+        self.assertEqual(metadata1['size'], -1)
+
+        s3.head_object.return_value = {'SomethingElse': -1}
+        metadata2 = districts.get_tile_metadata(storage, '12/-1/-1')
+        self.assertIsNone(metadata2['size'])
     
     def test_load_tile_precincts(self):
         '''

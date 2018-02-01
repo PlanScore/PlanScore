@@ -3,14 +3,15 @@
 Performs as many tile-based accumulations of district votes as possible within
 AWS Lambda time limit before recursively calling for remaining tiles.
 '''
-import collections, json, io, gzip, statistics, time, base64, posixpath, pickle, functools
+import collections, json, io, gzip, statistics, time, base64, posixpath, pickle, functools, logging, time
 from osgeo import ogr
 import boto3, botocore.exceptions, ModestMaps.OpenStreetMap, ModestMaps.Core
-from . import prepare_state, score, data, constants, compactness
+from . import prepare_state, score, data, constants, compactness, util
 
 ogr.UseExceptions()
 
 FUNCTION_NAME = 'PlanScore-RunDistrict'
+LOGGER_NAME = f'{__name__}.consume_tiles'
 
 # Borrow some Modest Maps tile math
 _mercator = ModestMaps.OpenStreetMap.Provider().projection
@@ -118,6 +119,9 @@ def tile_geometry(tile_zxy):
 def lambda_handler(event, context):
     '''
     '''
+    # Set up SQS logger
+    util.add_sqs_logging_handler(LOGGER_NAME)
+
     s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
     storage = data.Storage.from_event(event, s3)
     partial = Partial.from_event(event, storage)
@@ -193,9 +197,15 @@ def consume_tiles(storage, partial):
     
     # Iterate over each tile, loading precincts and scoring them.
     while partial.tiles:
-        tile_zxy = partial.tiles.pop(0)
+        tile_zxy, start_time = partial.tiles.pop(0), time.time()
         for precinct in load_tile_precincts(storage, tile_zxy):
             score_precinct(partial, precinct, tile_zxy)
+
+        message = dict(prefix=storage.prefix, upload=partial.upload.id,
+            tile=tile_zxy, time=round(time.time() - start_time, 3),
+            **get_tile_metadata(storage, tile_zxy))
+
+        logging.getLogger(LOGGER_NAME).info(json.dumps(message))
         
         # Yield after each complete tile is processed.
         yield
@@ -253,6 +263,19 @@ def score_precinct(partial, precinct, tile_zxy):
             continue
         precinct_value = precinct_fraction * (precinct['properties'][name] or 0)
         partial.totals[name] = round(partial.totals[name] + precinct_value, constants.ROUND_COUNT)
+
+def get_tile_metadata(storage, tile_zxy):
+    ''' Get metadata dictionary for a specific tile.
+    '''
+    try:
+        response = storage.s3.head_object(Bucket=storage.bucket,
+            Key='{}/{}.geojson'.format(storage.prefix, tile_zxy))
+    except botocore.exceptions.ClientError as error:
+        if error.response['Error']['Code'] == 'NoSuchKey':
+            return {}
+        raise
+    
+    return dict(size=response.get('ContentLength'))
 
 def load_tile_precincts(storage, tile_zxy):
     ''' Get GeoJSON features for a specific tile.
