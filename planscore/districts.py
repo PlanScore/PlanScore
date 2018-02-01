@@ -205,7 +205,7 @@ def consume_tiles(storage, partial):
             tile=tile_zxy, time=round(time.time() - start_time, 3),
             **get_tile_metadata(storage, tile_zxy))
 
-        logging.getLogger(LOGGER_NAME).info(json.dumps(message))
+        logging.getLogger(LOGGER_NAME).debug(json.dumps(message))
         
         # Yield after each complete tile is processed.
         yield
