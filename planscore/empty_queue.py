@@ -6,7 +6,7 @@ def main():
     s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
     sqs = boto3.client('sqs', endpoint_url=constants.SQS_ENDPOINT_URL)
 
-    wrote_something = False
+    wrote_lines = 0
     buffer = io.StringIO()
     fields = ('upload', 'prefix', 'tile', 'size', 'time')
     out = csv.DictWriter(buffer, fields, dialect='excel-tab')
@@ -24,22 +24,21 @@ def main():
                 row = json.loads(message['Body'])
                 out.writerow({k: row.get(k) for k in out.fieldnames})
             except:
-                print('Fail', message['ReceiptHandle'])
+                pass
             else:
-                wrote_something = True
-                print('OK', message['ReceiptHandle'])
+                wrote_lines += 1
             finally:
                 sqs.delete_message(QueueUrl=constants.SQS_QUEUEURL,
                     ReceiptHandle=message['ReceiptHandle'])
     
-    if not wrote_something:
+    if not wrote_lines:
+        print('Wrote nothing.')
         return
     
-    print(buffer.getvalue())
-
     key = 'logs/{}.txt'.format(datetime.now().strftime('%Y%m%dT%H%M%S'))
     body = buffer.getvalue().encode('utf8')
     s3.put_object(Bucket=constants.S3_BUCKET, Key=key, Body=body, ContentType='text/plain')
+    print('Wrote', wrote_lines, 'lines to', key)
 
 def lambda_handler(event, context):
     '''
