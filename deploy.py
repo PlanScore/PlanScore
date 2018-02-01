@@ -53,7 +53,8 @@ parser.add_argument('name', help='Function name')
 
 if __name__ == '__main__':
     args = parser.parse_args()
-    env = {k: os.environ[k] for k in ('PLANSCORE_SECRET', 'WEBSITE_BASE', 'AWS')
+    env = {k: os.environ[k]
+        for k in ('PLANSCORE_SECRET', 'WEBSITE_BASE', 'AWS', 'SQS_QUEUEURL')
         if k in os.environ}
     
     lam = boto3.client('lambda', region_name='us-east-1')
