@@ -578,7 +578,7 @@ window.updateMetricsTabs = (yeardata) => {
     const loser_party_eg = lookupBias(eg_score).otherparty;
     const favor_color_eg = lookupBias(eg_score).color;
     const hadseats       = favor_party_eg == 'Republican' ? seats_rep : seats_dem;
-    const statement_eg   = favor_party_eg ? `${favor_party_eg} votes were wasted at a rate ${(100 * Math.abs(eg_score)).toFixed(1)}% lower than ${loser_party_eg} votes, resulting in ${(100 * Math.abs(eg_score)).toFixed(1)}% more ${favor_party_eg} seats than under a neutral map.` : 'This metric indicates a balanced plan.';
+    const statement_eg   = favor_party_eg ? `Votes for ${favor_party_eg} candidates were wasted at a rate ${(100 * Math.abs(eg_score)).toFixed(1)}% lower than votes for ${loser_party_eg} candidates.` : 'This metric indicates a balanced plan.';
     const biastext_eg    = favor_party_eg ? `This plan is more skewed than ${Math.round(100 * eg_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
     const roundscore_eg = Math.round(100 * Math.abs(eg_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
     let metricdrsum_eg = '0% Balanced';
