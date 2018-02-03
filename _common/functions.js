@@ -17,9 +17,9 @@ export const lookupBias = (score) => {
 
     const abscore = Math.abs(score);
 
-    const party = abscore > BIAS_BALANCED_THRESHOLD ? (score > 0 ? 'Democrat' : 'Republican') : '';
+    const party = abscore > BIAS_BALANCED_THRESHOLD ? (score > 0 ? 'Democratic' : 'Republican') : '';
     const partycode = party.substr(0, 1).toLowerCase();
-    const otherparty = abscore > BIAS_BALANCED_THRESHOLD ? (score > 0 ? 'Republican' : 'Democrat') : '';
+    const otherparty = abscore > BIAS_BALANCED_THRESHOLD ? (score > 0 ? 'Republican' : 'Democratic') : '';
     const otherpartycode = otherparty.substr(0, 1).toLowerCase();
 
     let description = 'No Significant Bias';

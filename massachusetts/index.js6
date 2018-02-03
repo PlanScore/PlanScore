@@ -578,19 +578,19 @@ window.updateMetricsTabs = (yeardata) => {
     const loser_party_eg = lookupBias(eg_score).otherparty;
     const favor_color_eg = lookupBias(eg_score).color;
     const hadseats       = favor_party_eg == 'Republican' ? seats_rep : seats_dem;
-    const statement_eg   = favor_party_eg ? `${favor_party_eg} votes were wasted at a rate ${(100 * Math.abs(eg_score)).toFixed(1)}% lower than ${loser_party_eg} votes, resulting in ${(100 * Math.abs(eg_score)).toFixed(1)}% more ${favor_party_eg} seats than under a neutral map.` : 'This metric indicates a balanced plan.';
+    const statement_eg   = favor_party_eg ? `Votes for ${favor_party_eg} candidates were wasted at a rate ${(100 * Math.abs(eg_score)).toFixed(1)}% lower than votes for ${loser_party_eg} candidates.` : 'This metric indicates a balanced plan.';
     const biastext_eg    = favor_party_eg ? `This plan is more skewed than ${Math.round(100 * eg_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
     const roundscore_eg = Math.round(100 * Math.abs(eg_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
     let metricdrsum_eg = '0% Balanced';
-    if (roundscore_eg) metricdrsum_eg = `+${roundscore_eg}% ${eg_score > 0 ? 'Democrat' : 'Republican'}`;
+    if (roundscore_eg) metricdrsum_eg = `+${roundscore_eg}% ${eg_score > 0 ? 'Democratic' : 'Republican'}`;
 
     const favor_party_pb = lookupBias(pb_score).party;
     const favor_color_pb = lookupBias(pb_score).color;
-    const statement_pb   = favor_party_pb ? `${favor_party_pb}s would win ${(100 * Math.abs(pb_score)).toFixed(1)}% more seats than under a neutral map in a hypothetical, perfectly tied election.` : 'This metric indicates a balanced plan.';
+    const statement_pb   = favor_party_pb ? `${favor_party_pb}s would win ${(100 * Math.abs(pb_score)).toFixed(1)}% extra seats in a hypothetical, perfectly tied election.` : 'This metric indicates a balanced plan.';
     const biastext_pb    = favor_party_pb ? `This plan is more skewed than ${Math.round(100 * bias_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
     const roundscore_pb = Math.round(100 * Math.abs(pb_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
     let metricdrsum_pb = '0% Balanced';
-    if (roundscore_pb) metricdrsum_pb = `+${roundscore_pb}% ${pb_score > 0 ? 'Democrat' : 'Republican'}`;
+    if (roundscore_pb) metricdrsum_pb = `+${roundscore_pb}% ${pb_score > 0 ? 'Democratic' : 'Republican'}`;
  
     const favor_party_mm = lookupBias(mm_score).party;
     const favor_color_mm = lookupBias(mm_score).color;
@@ -598,22 +598,22 @@ window.updateMetricsTabs = (yeardata) => {
     const biastext_mm    = favor_party_mm ? `This plan is more skewed than ${Math.round(100 * mmd_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
     const roundscore_mm = Math.round(100 * Math.abs(mm_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
     let metricdrsum_mm = '0% Balanced';
-    if (roundscore_mm) metricdrsum_mm = `+${roundscore_mm}% ${pb_score > 0 ? 'Democrat' : 'Republican'}`;
+    if (roundscore_mm) metricdrsum_mm = `+${roundscore_mm}% ${pb_score > 0 ? 'Democratic' : 'Republican'}`;
 
     // color the tab-swatches for the three metrics
     {
         let $swatch = $('#maincontent ul.nav-tabs a[href="#tab-efficiencygap"] span.biasicon');
-        $swatch.removeClass('republican').removeClass('democrat').text(' ');
+        $swatch.removeClass('republican').removeClass('democratic').text(' ');
         if (favor_party_eg) $swatch.addClass(`${favor_party_eg.toLowerCase()}`).text(favor_party_eg.substr(0,1).toUpperCase());
     }
     {
         let $swatch = $('#maincontent ul.nav-tabs a[href="#tab-partisanbias"] span.biasicon');
-        $swatch.removeClass('republican').removeClass('democrat').text(' ');
+        $swatch.removeClass('republican').removeClass('democratic').text(' ');
         if (favor_party_pb) $swatch.addClass(`${favor_party_pb.toLowerCase()}`).text(favor_party_pb.substr(0,1).toUpperCase());
     }
     {
         let $swatch = $('#maincontent ul.nav-tabs a[href="#tab-meanmedian"] span.biasicon');
-        $swatch.removeClass('republican').removeClass('democrat').text(' ');
+        $swatch.removeClass('republican').removeClass('democratic').text(' ');
         if (favor_party_mm) $swatch.addClass(`${favor_party_mm.toLowerCase()}`).text(favor_party_mm.substr(0,1).toUpperCase());
     }
 
@@ -635,21 +635,21 @@ window.updateMetricsTabs = (yeardata) => {
 
     // color those +DR% boxes
     {
-        const $sumbox = $('#tab-efficiencygap div.metricdrsum').removeClass('republican').removeClass('democrat').removeClass('balanced');
+        const $sumbox = $('#tab-efficiencygap div.metricdrsum').removeClass('republican').removeClass('democratic').removeClass('balanced');
         if      (favor_party_eg == 'Republican') $sumbox.addClass('republican');
-        else if (favor_party_eg == 'Democrat')   $sumbox.addClass('democrat');
+        else if (favor_party_eg == 'Democratic') $sumbox.addClass('democratic');
         else                                     $sumbox.addClass('balanced');
     }
     {
-        const $sumbox = $('#tab-partisanbias div.metricdrsum').removeClass('republican').removeClass('democrat').removeClass('balanced');
+        const $sumbox = $('#tab-partisanbias div.metricdrsum').removeClass('republican').removeClass('democratic').removeClass('balanced');
         if      (favor_party_pb == 'Republican') $sumbox.addClass('republican');
-        else if (favor_party_pb == 'Democrat')   $sumbox.addClass('democrat');
+        else if (favor_party_pb == 'Democratic') $sumbox.addClass('democratic');
         else                                     $sumbox.addClass('balanced');
     }
     {
-        const $sumbox = $('#tab-meanmedian div.metricdrsum').removeClass('republican').removeClass('democrat').removeClass('balanced');
+        const $sumbox = $('#tab-meanmedian div.metricdrsum').removeClass('republican').removeClass('democratic').removeClass('balanced');
         if      (favor_party_mm == 'Republican') $sumbox.addClass('republican');
-        else if (favor_party_mm == 'Democrat')   $sumbox.addClass('democrat');
+        else if (favor_party_mm == 'Democratic') $sumbox.addClass('democratic');
         else                                     $sumbox.addClass('balanced');
     }
 };
@@ -672,12 +672,12 @@ window.updateWastedVotesChart = (yeardata) => {
     // construct the chart series
     const votechartdata = [
         {
-            name: 'Votes Wasted',
+            name: 'Wasted Votes',
             data: [0, 0],
             colors: [ WASTEDVOTE_CHART_WASTED_D, WASTEDVOTE_CHART_WASTED_R ],
         },
         {
-            name: 'Votes Needed',
+            name: 'Efficient Votes',
             data: [0, 0],
             colors: [ WASTEDVOTE_CHART_USEFUL_D, WASTEDVOTE_CHART_USEFUL_R ],
         }
@@ -695,7 +695,7 @@ window.updateWastedVotesChart = (yeardata) => {
             type: 'bar'
         },
         title: {
-            text: 'Efficient and Wasted Votes',
+            text: 'Efficient Votes and Wasted Votes',
             margin:0,
         },
         xAxis: {
@@ -714,7 +714,7 @@ window.updateWastedVotesChart = (yeardata) => {
         },
         tooltip: {
             formatter: function () {
-                const party = this.point.category == 'D' ? 'Democrat' : 'Republican';
+                const party = this.point.category == 'D' ? 'Democratic' : 'Republican';
                 return `${party}<br/>${this.y.toLocaleString()} ${this.series.name}`;
             },
         },

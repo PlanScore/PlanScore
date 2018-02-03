@@ -484,10 +484,10 @@ window.selectState = (stateabbr, options={}) => {
         const favor_party = lookupBias(biasinfo.value).party;
 
         if (favor_party) {
-            biasinfo.analysis = `This plan is more biased than <b>${biasinfo.percentrank}%</b> of the enacted plans we have analyzed nationwide.`;
+            biasinfo.analysis = `This plan is more skewed than <b>${biasinfo.percentrank}%</b> of the enacted plans we have analyzed nationwide.`;
         }
         else {
-            biasinfo.analysis = "No consistent bias was found in favor of either party.";
+            biasinfo.analysis = "No consistent skew was found in favor of either party.";
         }
     }
 
