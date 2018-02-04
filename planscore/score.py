@@ -13,11 +13,11 @@ ogr.UseExceptions()
 FIELD_NAMES = (
     # Toy fields
     'Voters', 'Blue Votes', 'Red Votes',
-
-    # Real fields
     'Population', 'Voting-Age Population', 'Black Voting-Age Population',
     'US Senate Rep Votes', 'US Senate Dem Votes', 'US House Rep Votes', 'US House Dem Votes',
     'SLDU Rep Votes', 'SLDU Dem Votes', 'SLDL Rep Votes', 'SLDL Dem Votes',
+
+    # Real fields
     'Democratic Votes', 'Republican Votes',
     
     # ACS 2015 fields
@@ -25,6 +25,12 @@ FIELD_NAMES = (
     'Hispanic Population 2015', 'Hispanic Population 2015, Error',
     'Population 2015', 'Population 2015, Error',
     'Voting-Age Population 2015', 'Voting-Age Population 2015, Error',
+    
+    # ACS 2016 fields
+    'Black Population 2016', 'Black Population 2016, Error',
+    'Hispanic Population 2016', 'Hispanic Population 2016, Error',
+    'Population 2016', 'Population 2016, Error',
+    'Voting-Age Population 2016', 'Voting-Age Population 2016, Error',
     
     # Census 2010 fields
     'Population 2010',
