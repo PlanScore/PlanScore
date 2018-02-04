@@ -41,28 +41,36 @@ def get_ourplan_page():
     return flask.render_template('our-plan.html')
 
 @app.route('/about.html')
+def get_oldabout_page():
+    return flask.render_template('old-about.html')
+
+@app.route('/metrics/')
+def get_metrics_page():
+    return flask.render_template('metrics-efficiencygap.html')
+
+@app.route('/metrics/efficiencygap/')
+def get_efficiencygap_page():
+    return flask.render_template('metrics-efficiencygap.html')
+
+@app.route('/metrics/partisanbias/')
+def get_partisanbias_page():
+    return flask.render_template('metrics-partisanbias.html')
+
+@app.route('/metrics/meanmedian/')
+def get_meanmedian_page():
+    return flask.render_template('metrics-meanmedian.html')
+
+@app.route('/about/')
 def get_about_page():
     return flask.render_template('about.html')
 
-@app.route('/efficiencygap/')
-def get_efficiencygap_page():
-    return flask.render_template('efficiencygap.html')
-
-@app.route('/partisanbias/')
-def get_partisanbias_page():
-    return flask.render_template('partisanbias.html')
-
-@app.route('/meanmedian/')
-def get_meanmedian_page():
-    return flask.render_template('meanmedian.html')
-
-@app.route('/historical-data/')
+@app.route('/about/historical-data/')
 def get_historicaldata_page():
-    return flask.render_template('historical-data.html')
+    return flask.render_template('about-historical-data.html')
 
-@app.route('/friends-resources/')
+@app.route('/about/friends-resources/')
 def get_friendsresources_page():
-    return flask.render_template('friends-resources.html')
+    return flask.render_template('about-friends-resources.html')
 
 @app.route('/upload.html')
 def get_upload():
