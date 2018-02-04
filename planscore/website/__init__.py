@@ -56,6 +56,10 @@ def get_partisanbias_page():
 def get_meanmedian_page():
     return flask.render_template('meanmedian.html')
 
+@app.route('/historical-data/')
+def get_historicaldata_page():
+    return flask.render_template('historical-data.html')
+
 @app.route('/upload.html')
 def get_upload():
     upload_fields_url = get_function_url('get_localstack_lambda', constants.API_UPLOAD_RELPATH)
