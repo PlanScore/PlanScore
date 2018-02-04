@@ -44,6 +44,26 @@ def get_ourplan_page():
 def get_about_page():
     return flask.render_template('about.html')
 
+@app.route('/efficiencygap/')
+def get_efficiencygap_page():
+    return flask.render_template('efficiencygap.html')
+
+@app.route('/partisanbias/')
+def get_partisanbias_page():
+    return flask.render_template('partisanbias.html')
+
+@app.route('/meanmedian/')
+def get_meanmedian_page():
+    return flask.render_template('meanmedian.html')
+
+@app.route('/historical-data/')
+def get_historicaldata_page():
+    return flask.render_template('historical-data.html')
+
+@app.route('/friends-resources/')
+def get_friendsresources_page():
+    return flask.render_template('friends-resources.html')
+
 @app.route('/upload.html')
 def get_upload():
     upload_fields_url = get_function_url('get_localstack_lambda', constants.API_UPLOAD_RELPATH)
