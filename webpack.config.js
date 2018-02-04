@@ -7,12 +7,6 @@ const JS6_FILES = [
     // home page and peripheral pages
     './index.js6',
     './error.js6',
-    './about/index.js6',
-    './scoreyours/index.js6',
-    './historical-data/index.js6',
-    './efficiencygap/index.js6',
-    './meanmedian/index.js6',
-    './partisanbias/index.js6',
     './sitewide.js6',
     './patternlibrary/index.js6',
     './patternlibrary_htmltemplate/index.js6',
