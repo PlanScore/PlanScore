@@ -159,14 +159,14 @@ function show_efficiency_gap_score(plan, score_EG)
             drawBiasBellChart('eg', gap, node.id, 'ushouse', 'plan');
 
         } else if(node.nodeName == 'P') {
-            var win_party = (gap < 0 ? 'Republicans' : 'Democrats'),
-                lose_party = (gap < 0 ? 'Democrats' : 'Republicans');
+            var win_party = (gap < 0 ? 'Republican' : 'Democratic'),
+                lose_party = (gap < 0 ? 'Democratic' : 'Republican');
 
             clear_element(node);
             node.innerHTML = [
-                win_party, 'votes are expected to be wasted at a rate', gap_amount,
-                'lower than', lose_party, 'votes, resulting in', gap_amount, 'more',
-                win_party, 'seats than under a neutral map.'
+                'Votes for', win_party, 'candidates are expected to be wasted at a rate',
+                gap_amount, 'lower than votes for', lose_party, 'candidates.',
+                ' <a href="/efficiencygap/">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                 ].join(' ');
         }
     }
@@ -191,7 +191,8 @@ function show_partisan_bias_score(plan, score_PB)
             clear_element(node);
             node.innerHTML = [
                 win_party, 'would be expected to win', bias_amount,
-                'more seats than under a neutral map in a hypothetical, perfectly tied election.'
+                'extra seats in a hypothetical, perfectly tied election.',
+                ' <a href="/partisanbias/">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                 ].join(' ');
         }
     }
