@@ -318,6 +318,9 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
                     borderWidth: 0,
                     spacing: [ 0, 0, 0, 0 ],
                 },
+                credits: {
+                    enabled: false,
+                },
                 title: {
                     text: '',  // no big title
                 },

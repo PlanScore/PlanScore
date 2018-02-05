@@ -692,7 +692,10 @@ window.updateWastedVotesChart = (yeardata) => {
     $('#chart-egvoteswasted').show();
     Highcharts.chart('chart-egvoteswasted', {
         chart: {
-            type: 'bar'
+            type: 'bar',
+        },
+        credits: {
+            enabled: false,
         },
         title: {
             text: 'Efficient Votes and Wasted Votes',
