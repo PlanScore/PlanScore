@@ -41,6 +41,38 @@ def iter_extent_tiles(xxyy_extent, zoom):
         
         yield (tile_ul, bbox_wkt)
 
+def iter_extent_coords(xxyy_extent, zoom):
+    ''' Generate a stream of MMaps Coordinate tuples.
+    
+        Extent is given as four-elements (xmin, xmax, ymin, ymax) to match
+        values returned from layer.GetExtent() and geometry.GetEnvelope().
+    '''
+    mercator = get_projection()
+    
+    w, e, s, n = xxyy_extent
+    nw, se = ModestMaps.Geo.Location(n, w), ModestMaps.Geo.Location(s, e)
+    ul, lr = [mercator.locationCoordinate(loc).zoomTo(zoom).container() for loc in (nw, se)]
+    rows, columns = range(ul.row, lr.row + 1), range(ul.column, lr.column + 1)
+    
+    for (row, column) in itertools.product(rows, columns):
+        yield ModestMaps.Core.Coordinate(row, column, zoom)
+
+def coord_wkt(coord_ul):
+    ''' Get a well-known text geometry representation for a MMaps Coordinate.
+    '''
+    mercator = get_projection()
+    wkt_format = 'POLYGON(({x1:.7f} {y1:.7f}, {x1:.7f} {y2:.7f}, {x2:.7f} ' \
+        '{y2:.7f}, {x2:.7f} {y1:.7f}, {x1:.7f} {y1:.7f}))'
+    
+    coord_lr = coord_ul.down().right()
+    coord_nw = mercator.coordinateLocation(coord_ul)
+    coord_se = mercator.coordinateLocation(coord_lr)
+    
+    x1, y1, x2, y2 = coord_nw.lon, coord_se.lat, coord_se.lon, coord_nw.lat
+    bbox_wkt = wkt_format.format(**locals())
+    
+    return bbox_wkt
+
 def excerpt_feature(original_feature, bbox_geom):
     ''' Return a cloned feature trimmed to the bbox and marked with a fraction.
     '''

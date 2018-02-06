@@ -1,4 +1,5 @@
 import unittest
+import ModestMaps.Core
 from osgeo import ogr
 from .. import prepare_state
 
@@ -27,6 +28,35 @@ class TestPrepareState (unittest.TestCase):
         self.assertEqual((z9_coord2.zoom, z9_coord2.row, z9_coord2.column), (9, 257, 257))
         self.assertIn('POLYGON', z9_wkt1)
         self.assertIn('POLYGON', z9_wkt2)
+    
+    def test_iter_extent_coords(self):
+    
+        z8_coords = list(prepare_state.iter_extent_coords((-1, 1, -1, 1), 8))
+        z9_coords = list(prepare_state.iter_extent_coords((-1, 1, -1, 1), 9))
+        
+        self.assertEqual(len(z8_coords), 4)
+        self.assertEqual(len(z9_coords), 16)
+        
+        z8_coord1 = z8_coords[0]
+        z8_coord2 = z8_coords[-1]
+        
+        self.assertEqual((z8_coord1.zoom, z8_coord1.row, z8_coord1.column), (8, 127, 127))
+        self.assertEqual((z8_coord2.zoom, z8_coord2.row, z8_coord2.column), (8, 128, 128))
+    
+        z9_coord1 = z9_coords[0]
+        z9_coord2 = z9_coords[-1]
+        
+        self.assertEqual((z9_coord1.zoom, z9_coord1.row, z9_coord1.column), (9, 254, 254))
+        self.assertEqual((z9_coord2.zoom, z9_coord2.row, z9_coord2.column), (9, 257, 257))
+    
+    def test_coord_wkt(self):
+        
+        coord = ModestMaps.Core.Coordinate(1582, 656, 12)
+        bbox_wkt = prepare_state.coord_wkt(coord)
+        
+        self.assertEqual(bbox_wkt, 'POLYGON((-122.3437500 37.7880814, '
+            '-122.3437500 37.8575072, -122.2558594 37.8575072, -122.2558594 '
+            '37.7880814, -122.3437500 37.7880814))')
     
     def test_excerpt_feature_within(self):
         ''' excerpt_feature() works with a contained polygon.
