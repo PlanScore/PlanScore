@@ -541,13 +541,12 @@ window.updateMetricsSummary = (yeardata) => {
     const pb_score  = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].bias ];
     const mm_score  = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].mm ];
 
-    const favor_party_eg = lookupBias('eg', eg_score).party;
-    const favor_party_pb = lookupBias('pb', pb_score).party;
-    const favor_party_mm = lookupBias('mm', mm_score).party;
-
-    // how many metrics favor D or R?
-    const metrics_favor_d = [ favor_party_eg, favor_party_pb, favor_party_mm ].filter((party) => { return party == 'Democrat'; }).length;
-    const metrics_favor_r = [ favor_party_eg, favor_party_pb, favor_party_mm ].filter((party) => { return party == 'Republican'; }).length;
+    // how many metrics favor D or R beyond threshold?
+    const favor_party_eg = lookupBias('eg', eg_score);
+    const favor_party_pb = lookupBias('pb', pb_score);
+    const favor_party_mm = lookupBias('mm', mm_score);
+    const metrics_favor_d = [ favor_party_eg, favor_party_pb, favor_party_mm ].filter((biasinfo) => { return biasinfo.isbiased && biasinfo.partycode == 'd'; }).length;
+    const metrics_favor_r = [ favor_party_eg, favor_party_pb, favor_party_mm ].filter((biasinfo) => { return biasinfo.isbiased && biasinfo.partycode == 'r'; }).length;
 
     // compose the sentence, with 2 out of 3 being the minimum worth mentioning
     let biasstatement = "The metrics do not consistently indicate a skew in either party’s favor.";
