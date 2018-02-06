@@ -588,7 +588,7 @@ window.updateMetricsTabs = (yeardata) => {
     const biastext_eg    = isbiased_eg ? `This plan is more skewed than ${Math.round(100 * eg_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
     const roundscore_eg  = Math.round(100 * Math.abs(eg_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
 
-    const biaseval_pb    = lookupBias('pb', eg_score);
+    const biaseval_pb    = lookupBias('pb', pb_score);
     const favor_party_pb = biaseval_pb.party;
     const favor_color_pb = biaseval_pb.color;
     const favor_code_pb  = biaseval_pb.partycode;
@@ -599,7 +599,7 @@ window.updateMetricsTabs = (yeardata) => {
     const biastext_pb    = isbiased_pb ? `This plan is more skewed than ${Math.round(100 * bias_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
     const roundscore_pb  = Math.round(100 * Math.abs(pb_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
  
-    const biaseval_mm    = lookupBias('mm', eg_score);
+    const biaseval_mm    = lookupBias('mm', mm_score);
     const favor_party_mm = biaseval_mm.party;
     const favor_color_mm = biaseval_mm.color;
     const favor_code_mm  = biaseval_mm.partycode;
