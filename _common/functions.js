@@ -12,12 +12,14 @@ import { BELLCURVE_SPREAD } from './constants';
  * return a structure of information about the given EG bias score:
  * whether it's strong or weak, D or R, etc.
  */
-export const lookupBias = (score) => {
+export const lookupBias = (whichmetric, score) => {
     if (score === undefined || score === null) return 'No Data';
+
+    const bias_threshold = BIAS_BALANCED_THRESHOLD[whichmetric];
 
     const abscore = Math.abs(score);
 
-    const party = abscore > BIAS_BALANCED_THRESHOLD ? (score > 0 ? 'Democratic' : 'Republican') : '';
+    const party = abscore > bias_threshold ? (score > 0 ? 'Democratic' : 'Republican') : '';
     const partycode = party.substr(0, 1).toLowerCase();
     const otherparty = abscore > BIAS_BALANCED_THRESHOLD ? (score > 0 ? 'Republican' : 'Democratic') : '';
     const otherpartycode = otherparty.substr(0, 1).toLowerCase();
@@ -26,7 +28,7 @@ export const lookupBias = (score) => {
     if      (abscore >= 0.20) description = `Most Biased In Favor of ${party}`;
     else if (abscore >= 0.14) description = `More Biased In Favor of ${party}`;
     else if (abscore >= 0.07) description = `Biased In Favor of ${party}`;
-    else if (abscore >= BIAS_BALANCED_THRESHOLD) description = `Slightly Biased In Favor of ${party}`;
+    else if (abscore >= bias_threshold) description = `Slightly Biased In Favor of ${party}`;
 
     // normalize the score onto an absolute scale from 0 (-max) to 1 (+max); that gives us the index of the color gradient entry
     const bias_spread = BIAS_SPREAD_SCALING;

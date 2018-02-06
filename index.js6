@@ -292,7 +292,7 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
             map_choropleth_colors.push({
                 from: slice_lower,
                 to: slice_lower + slice_step,
-                color: lookupBias(slice_lower + 0.5 * slice_step).color,  // middle score for this slice's range
+                color: lookupBias('eg', slice_lower + 0.5 * slice_step).color,  // middle score for this slice's range
             });
 
             // add the 999999 No Data style
@@ -386,8 +386,9 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
             const state_info = data.filter((stateinfo) => { return stateinfo.name === state_name; }).slice(0, 1)[0];
 
             // find bias color and apply CSS
-            const words = lookupBias(state_info.value).description;
-            const color = lookupBias(state_info.value).color;
+            const biaseval = lookupBias('eg', state_info.value);
+            const words = biaseval.description;
+            const color = biaseval.color;
             if (state_info.value === MAP_NODATA_VALUE || state_info.value === undefined) {
                 $(this).prop('title', words) .css({ 'background-color': MAP_NODATA_FILLCOLOR, 'border':'1px solid #95989A' });
             }
@@ -484,7 +485,7 @@ window.selectState = (stateabbr, options={}) => {
         biasinfo.analysis = 'No data was available for this election year.';
     }
     else {
-        const favor_party = lookupBias(biasinfo.value).party;
+        const favor_party = lookupBias('eg', biasinfo.value).party;
 
         if (favor_party) {
             biasinfo.analysis = `This plan is more skewed than <b>${biasinfo.percentrank}%</b> of the enacted plans we have analyzed nationwide.`;

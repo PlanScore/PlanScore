@@ -540,9 +540,9 @@ window.updateMetricsSummary = (yeardata) => {
     const pb_score  = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].bias ];
     const mm_score    = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].mm ];
 
-    const favor_party_eg = lookupBias(eg_score).party;
-    const favor_party_pb = lookupBias(pb_score).party;
-    const favor_party_mm = lookupBias(mm_score).party;
+    const favor_party_eg = lookupBias('eg', eg_score).party;
+    const favor_party_pb = lookupBias('pb', pb_score).party;
+    const favor_party_mm = lookupBias('mm', mm_score).party;
 
     // how many metrics favor D or R?
     const metrics_favor_d = [ favor_party_eg, favor_party_pb, favor_party_mm ].filter((party) => { return party == 'Democrat'; }).length;
@@ -574,9 +574,10 @@ window.updateMetricsTabs = (yeardata) => {
     // for the selected year/plan
     // the 3 plan-bias metrics: do any of them show a bias toward D or R?
     // tag the biasicon icons in the metrics' tabs
-    const favor_party_eg = lookupBias(eg_score).party;
-    const loser_party_eg = lookupBias(eg_score).otherparty;
-    const favor_color_eg = lookupBias(eg_score).color;
+    const biaseval_eg    = lookupBias('eg', eg_score);
+    const favor_party_eg = biaseval_eg.party;
+    const loser_party_eg = biaseval_eg.otherparty;
+    const favor_color_eg = biaseval_eg.color;
     const hadseats       = favor_party_eg == 'Republican' ? seats_rep : seats_dem;
     const statement_eg   = favor_party_eg ? `Votes for ${favor_party_eg} candidates were wasted at a rate ${(100 * Math.abs(eg_score)).toFixed(1)}% lower than votes for ${loser_party_eg} candidates.` : 'This metric indicates a balanced plan.';
     const biastext_eg    = favor_party_eg ? `This plan is more skewed than ${Math.round(100 * eg_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
@@ -584,16 +585,18 @@ window.updateMetricsTabs = (yeardata) => {
     let metricdrsum_eg = '0% Balanced';
     if (roundscore_eg) metricdrsum_eg = `+${roundscore_eg}% ${eg_score > 0 ? 'Democratic' : 'Republican'}`;
 
-    const favor_party_pb = lookupBias(pb_score).party;
-    const favor_color_pb = lookupBias(pb_score).color;
+    const biaseval_pb    = lookupBias('pb', eg_score);
+    const favor_party_pb = biaseval_pb.party;
+    const favor_color_pb = biaseval_pb.color;
     const statement_pb   = favor_party_pb ? `${favor_party_pb}s would win ${(100 * Math.abs(pb_score)).toFixed(1)}% extra seats in a hypothetical, perfectly tied election.` : 'This metric indicates a balanced plan.';
     const biastext_pb    = favor_party_pb ? `This plan is more skewed than ${Math.round(100 * bias_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
     const roundscore_pb = Math.round(100 * Math.abs(pb_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
     let metricdrsum_pb = '0% Balanced';
     if (roundscore_pb) metricdrsum_pb = `+${roundscore_pb}% ${pb_score > 0 ? 'Democratic' : 'Republican'}`;
  
-    const favor_party_mm = lookupBias(mm_score).party;
-    const favor_color_mm = lookupBias(mm_score).color;
+    const biaseval_mm    = lookupBias('mm', eg_score);
+    const favor_party_mm = biaseval_mm.party;
+    const favor_color_mm = biaseval_mm.color;
     const statement_mm   = favor_party_mm ? `The median ${favor_party_mm} vote share was ${(100 * Math.abs(mm_score)).toFixed(1)}% higher than the mean ${favor_party_mm} vote share.` : 'This metric indicates a balanced plan.';
     const biastext_mm    = favor_party_mm ? `This plan is more skewed than ${Math.round(100 * mmd_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
     const roundscore_mm = Math.round(100 * Math.abs(mm_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
@@ -757,7 +760,7 @@ window.redrawYearPicker = (csvdata) => {
 
             planfirstyears[row.plan] = row.plan_minyear;
 
-            yearbiases[row.year] = lookupBias(row.eg_adj_avg);
+            yearbiases[row.year] = lookupBias('eg', row.eg_adj_avg);
         });
 
         // the A links on the plan side & year side
