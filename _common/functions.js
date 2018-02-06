@@ -18,10 +18,11 @@ export const lookupBias = (whichmetric, score) => {
     const bias_threshold = BIAS_BALANCED_THRESHOLD[whichmetric];
 
     const abscore = Math.abs(score);
+    const isbiased = abscore > bias_threshold;
 
-    const party = abscore > bias_threshold ? (score > 0 ? 'Democratic' : 'Republican') : '';
+    const party = score > 0 ? 'Democratic' : 'Republican';
     const partycode = party.substr(0, 1).toLowerCase();
-    const otherparty = abscore > BIAS_BALANCED_THRESHOLD ? (score > 0 ? 'Republican' : 'Democratic') : '';
+    const otherparty = score > 0 ? 'Republican' : 'Democratic';
     const otherpartycode = otherparty.substr(0, 1).toLowerCase();
 
     let description = 'No Significant Bias';
@@ -42,8 +43,10 @@ export const lookupBias = (whichmetric, score) => {
         partycode: partycode,
         otherparty: otherparty,
         otherpartycode: otherpartycode,
+        cssclass: isbiased ? party.toLowerCase() : 'balanced',
         color: color,
         description: description,
+        isbiased: isbiased,
     };
 };
 

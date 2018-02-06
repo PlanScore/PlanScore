@@ -577,83 +577,93 @@ window.updateMetricsTabs = (yeardata) => {
     const biaseval_eg    = lookupBias('eg', eg_score);
     const favor_party_eg = biaseval_eg.party;
     const loser_party_eg = biaseval_eg.otherparty;
-    const favor_color_eg = biaseval_eg.color;
+    const favor_code_eg  = biaseval_eg.partycode;
+    const loser_code_eg  = biaseval_eg.otherparty;
+    const favor_color_eg = biaseval_eg.colorcode;
+    const cssclass_eg    = biaseval_eg.cssclass;
+    const isbiased_eg    = biaseval_eg.isbiased;
     const hadseats       = favor_party_eg == 'Republican' ? seats_rep : seats_dem;
-    const statement_eg   = favor_party_eg ? `Votes for ${favor_party_eg} candidates were wasted at a rate ${(100 * Math.abs(eg_score)).toFixed(1)}% lower than votes for ${loser_party_eg} candidates.` : 'This metric indicates a balanced plan.';
-    const biastext_eg    = favor_party_eg ? `This plan is more skewed than ${Math.round(100 * eg_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
-    const roundscore_eg = Math.round(100 * Math.abs(eg_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
-    let metricdrsum_eg = '0% Balanced';
-    if (roundscore_eg) metricdrsum_eg = `+${roundscore_eg}% ${eg_score > 0 ? 'Democratic' : 'Republican'}`;
+    const statement_eg   = `${! isbiased_eg ? 'This metric indicates a balanced plan.' : ''} Votes for ${favor_party_eg} candidates were wasted at a rate ${(100 * Math.abs(eg_score)).toFixed(1)}% lower than votes for ${loser_party_eg} candidates.`;
+    const biastext_eg    = isbiased_eg ? `This plan is more skewed than ${Math.round(100 * eg_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
+    const roundscore_eg  = Math.round(100 * Math.abs(eg_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
 
     const biaseval_pb    = lookupBias('pb', eg_score);
     const favor_party_pb = biaseval_pb.party;
     const favor_color_pb = biaseval_pb.color;
-    const statement_pb   = favor_party_pb ? `${favor_party_pb}s would win ${(100 * Math.abs(pb_score)).toFixed(1)}% extra seats in a hypothetical, perfectly tied election.` : 'This metric indicates a balanced plan.';
-    const biastext_pb    = favor_party_pb ? `This plan is more skewed than ${Math.round(100 * bias_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
-    const roundscore_pb = Math.round(100 * Math.abs(pb_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
-    let metricdrsum_pb = '0% Balanced';
-    if (roundscore_pb) metricdrsum_pb = `+${roundscore_pb}% ${pb_score > 0 ? 'Democratic' : 'Republican'}`;
+    const favor_code_pb  = biaseval_pb.partycode;
+    const loser_code_pb  = biaseval_pb.otherparty;
+    const cssclass_pb    = biaseval_pb.cssclass;
+    const isbiased_pb    = biaseval_pb.isbiased;
+    const statement_pb   = `${! isbiased_pb ? 'This metric indicates a balanced plan.' : ''} ${favor_party_pb}s would win ${(100 * Math.abs(pb_score)).toFixed(1)}% extra seats in a hypothetical, perfectly tied election.`;
+    const biastext_pb    = isbiased_pb ? `This plan is more skewed than ${Math.round(100 * bias_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
+    const roundscore_pb  = Math.round(100 * Math.abs(pb_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
  
     const biaseval_mm    = lookupBias('mm', eg_score);
     const favor_party_mm = biaseval_mm.party;
     const favor_color_mm = biaseval_mm.color;
-    const statement_mm   = favor_party_mm ? `The median ${favor_party_mm} vote share was ${(100 * Math.abs(mm_score)).toFixed(1)}% higher than the mean ${favor_party_mm} vote share.` : 'This metric indicates a balanced plan.';
-    const biastext_mm    = favor_party_mm ? `This plan is more skewed than ${Math.round(100 * mmd_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
-    const roundscore_mm = Math.round(100 * Math.abs(mm_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
-    let metricdrsum_mm = '0% Balanced';
-    if (roundscore_mm) metricdrsum_mm = `+${roundscore_mm}% ${pb_score > 0 ? 'Democratic' : 'Republican'}`;
+    const favor_code_mm  = biaseval_mm.partycode;
+    const loser_code_mm  = biaseval_mm.otherparty;
+    const cssclass_mm    = biaseval_mm.cssclass;
+    const isbiased_mm    = biaseval_mm.isbiased;
+    const statement_mm   = `${! isbiased_mm ? 'This metric indicates a balanced plan.' : ''} The median ${favor_party_mm} vote share was ${(100 * Math.abs(mm_score)).toFixed(1)}% higher than the mean ${favor_party_mm} vote share.`;
+    const biastext_mm    = isbiased_mm ? `This plan is more skewed than ${Math.round(100 * mmd_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
+    const roundscore_mm  = Math.round(100 * Math.abs(mm_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
 
     // color the tab-swatches for the three metrics
     {
         let $swatch = $('#maincontent ul.nav-tabs a[href="#tab-efficiencygap"] span.biasicon');
         $swatch.removeClass('republican').removeClass('democratic').text(' ');
-        if (favor_party_eg) $swatch.addClass(`${favor_party_eg.toLowerCase()}`).text(favor_party_eg.substr(0,1).toUpperCase());
+        if (isbiased_eg) $swatch.addClass(cssclass_eg).text(favor_code_eg);
     }
     {
         let $swatch = $('#maincontent ul.nav-tabs a[href="#tab-partisanbias"] span.biasicon');
         $swatch.removeClass('republican').removeClass('democratic').text(' ');
-        if (favor_party_pb) $swatch.addClass(`${favor_party_pb.toLowerCase()}`).text(favor_party_pb.substr(0,1).toUpperCase());
+        if (isbiased_pb) $swatch.addClass(cssclass_pb).text(favor_code_pb);
     }
     {
         let $swatch = $('#maincontent ul.nav-tabs a[href="#tab-meanmedian"] span.biasicon');
         $swatch.removeClass('republican').removeClass('democratic').text(' ');
-        if (favor_party_mm) $swatch.addClass(`${favor_party_mm.toLowerCase()}`).text(favor_party_mm.substr(0,1).toUpperCase());
+        if (isbiased_mm) $swatch.addClass(cssclass_mm).text(favor_code_mm);
     }
 
     // fill in those +DR% numbers and the summary texts, at the top of the metric tabs
-    $('#tab-efficiencygap span[data-field="metricdrsum"]').text(metricdrsum_eg);
-    $('#tab-efficiencygap span[data-field="metricstatement"]').text(statement_eg);
-    $('#tab-efficiencygap span[data-field="plancompare"]').text('This plan is more skewed toward X than 100% all of the enacted plans we have analyzed nationwide.');
-    $('#tab-efficiencygap span[data-field="biasstatement"]').text(biastext_eg);
+    {
+        let metricdrsum_eg   = '0% Balanced';
+        if (roundscore_eg) metricdrsum_eg = `+${roundscore_eg}% ${favor_party_eg}`;
 
-    $('#tab-partisanbias span[data-field="metricdrsum"]').text(metricdrsum_pb);
-    $('#tab-partisanbias span[data-field="metricstatement"]').text(statement_pb);
-    $('#tab-partisanbias span[data-field="plancompare"]').text('This plan is more skewed toward X than 100% all of the enacted plans we have analyzed nationwide.');
-    $('#tab-partisanbias span[data-field="biasstatement"]').text(biastext_pb);
+        $('#tab-efficiencygap span[data-field="metricdrsum"]').text(metricdrsum_eg);
+        $('#tab-efficiencygap span[data-field="metricstatement"]').text(statement_eg);
+        $('#tab-efficiencygap span[data-field="plancompare"]').text('This plan is more skewed toward X than 100% all of the enacted plans we have analyzed nationwide.');
+        $('#tab-efficiencygap span[data-field="biasstatement"]').text(biastext_eg);
+    }
+    {
+        let metricdrsum_pb   = '0% Balanced';
+        if (roundscore_pb) metricdrsum_pb = `+${roundscore_pb}% ${favor_party_pb}`;
 
-    $('#tab-meanmedian span[data-field="metricdrsum"]').text(metricdrsum_mm);
-    $('#tab-meanmedian span[data-field="metricstatement"]').text(statement_mm);
-    $('#tab-meanmedian span[data-field="plancompare"]').text('This plan is more skewed toward X than 100% all of the enacted plans we have analyzed nationwide.');
-    $('#tab-meanmedian span[data-field="biasstatement"]').text(biastext_mm);
+        $('#tab-partisanbias span[data-field="metricdrsum"]').text(metricdrsum_pb);
+        $('#tab-partisanbias span[data-field="metricstatement"]').text(statement_pb);
+        $('#tab-partisanbias span[data-field="plancompare"]').text('This plan is more skewed toward X than 100% all of the enacted plans we have analyzed nationwide.');
+        $('#tab-partisanbias span[data-field="biasstatement"]').text(biastext_pb);
+    }
+    {
+        let metricdrsum_mm   = '0% Balanced';
+        if (roundscore_mm) metricdrsum_mm = `+${roundscore_mm}% ${favor_party_mm}`;
+
+        $('#tab-meanmedian span[data-field="metricdrsum"]').text(metricdrsum_mm);
+        $('#tab-meanmedian span[data-field="metricstatement"]').text(statement_mm);
+        $('#tab-meanmedian span[data-field="plancompare"]').text('This plan is more skewed toward X than 100% all of the enacted plans we have analyzed nationwide.');
+        $('#tab-meanmedian span[data-field="biasstatement"]').text(biastext_mm);
+    }
 
     // color those +DR% boxes
     {
-        const $sumbox = $('#tab-efficiencygap div.metricdrsum').removeClass('republican').removeClass('democratic').removeClass('balanced');
-        if      (favor_party_eg == 'Republican') $sumbox.addClass('republican');
-        else if (favor_party_eg == 'Democratic') $sumbox.addClass('democratic');
-        else                                     $sumbox.addClass('balanced');
+        const $sumbox = $('#tab-efficiencygap div.metricdrsum').removeClass('republican').removeClass('democratic').removeClass('balanced').addClass(cssclass_eg);
     }
     {
-        const $sumbox = $('#tab-partisanbias div.metricdrsum').removeClass('republican').removeClass('democratic').removeClass('balanced');
-        if      (favor_party_pb == 'Republican') $sumbox.addClass('republican');
-        else if (favor_party_pb == 'Democratic') $sumbox.addClass('democratic');
-        else                                     $sumbox.addClass('balanced');
+        const $sumbox = $('#tab-partisanbias div.metricdrsum').removeClass('republican').removeClass('democratic').removeClass('balanced').addClass(cssclass_pb);
     }
     {
-        const $sumbox = $('#tab-meanmedian div.metricdrsum').removeClass('republican').removeClass('democratic').removeClass('balanced');
-        if      (favor_party_mm == 'Republican') $sumbox.addClass('republican');
-        else if (favor_party_mm == 'Democratic') $sumbox.addClass('democratic');
-        else                                     $sumbox.addClass('balanced');
+        const $sumbox = $('#tab-meanmedian div.metricdrsum').removeClass('republican').removeClass('democratic').removeClass('balanced').addClass(cssclass_mm);
     }
 };
 

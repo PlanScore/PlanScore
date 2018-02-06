@@ -173,6 +173,8 @@ ul.nav-tabs a span.biasicon {
 
     background-color: transparent; /* unless assigned a specific bias class below, they're effectively invisible */
     color: white;
+
+    text-transform: uppercase;
 }
 
 @media screen and (max-width: $screen-xs) {
