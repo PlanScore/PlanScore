@@ -505,8 +505,9 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     // update the metric tabs: various sentences in each tab, and the tabs themselves
     updateMetricsTabs(thisyeardata);
 
-    // Efficiency Gap: refresh the Wasted Votes chart
+    // refresh some charts: Efficiency Gap Wasted Votes, Partisan Bias Seat Share
     updateWastedVotesChart(thisyeardata);
+    updateSeatShareChart(thisyeardata);
 
     // the bell charts indicating this plan's relative bias rating for each metric
     drawBiasBellCharts(thisyeardata);
@@ -536,9 +537,9 @@ window.updateMetricsTitle = (yeardata) => {
 window.updateMetricsSummary = (yeardata) => {
     // compose a sentence summarizing how many metrics indicate a skew one way or the other
     // e.g. "2 out of 3 metrics agree..." or "all metrics agree..."
-    const eg_score    = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].eg ];
+    const eg_score  = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].eg ];
     const pb_score  = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].bias ];
-    const mm_score    = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].mm ];
+    const mm_score  = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].mm ];
 
     const favor_party_eg = lookupBias('eg', eg_score).party;
     const favor_party_pb = lookupBias('pb', pb_score).party;
@@ -667,6 +668,78 @@ window.updateMetricsTabs = (yeardata) => {
     }
 };
 
+window.updateSeatShareChart = (yeardata) => {
+    const pb_score = 100 * yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].bias ];
+    const pb_variance = pb_score / 2;
+
+    let r_seatshare = 50;
+    let d_seatshare = 50;
+
+    if (pb_score > 0) {
+        r_seatshare -= pb_variance;
+        d_seatshare += pb_variance;
+    }
+    else if (pb_score < 0) {
+        r_seatshare += pb_variance;
+        d_seatshare -= pb_variance;
+    }
+
+    // construct the chart series
+    const votechartdata = [
+        {
+            name: 'Seat Share',
+            data: [ d_seatshare, r_seatshare ],
+            colors: [ WASTEDVOTE_CHART_WASTED_D, WASTEDVOTE_CHART_WASTED_R ],
+        }
+    ];
+
+    // now chart it
+    // and show the chart, in case it was previously hidden
+    $('#chart-pbseatshare').show();
+    Highcharts.chart('chart-pbseatshare', {
+        chart: {
+            type: 'bar',
+        },
+        credits: {
+            enabled: false,
+        },
+        title: {
+            text: 'Seat Share at 50% of the Vote',
+            margin: 0,
+        },
+        xAxis: {
+            categories: ['D', 'R']
+        },
+        yAxis: {
+            min: 0,
+            max: 100,
+            title: {
+                enabled: false,
+            },
+        },
+        legend: {
+            enabled: false,
+        },
+        tooltip: {
+            formatter: function () {
+                const party = this.point.category == 'D' ? 'Democratic' : 'Republican';
+                return `${party}<br/>${this.y.toLocaleString()}% ${this.series.name}`;
+            },
+        },
+        plotOptions: {
+            series: {
+                stacking: 'normal',
+                pointPadding: 0,
+                groupPadding: 0,
+                pointWidth: 25,
+                colorByPoint: true,  // use the custom-assigned colors,
+                animation: false,
+            }
+        },
+        series: votechartdata,
+    });
+};
+
 window.updateWastedVotesChart = (yeardata) => {
     // fetch the vote tallies for this election/plan
     const totalvotes = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].votes_both ];
@@ -740,7 +813,7 @@ window.updateWastedVotesChart = (yeardata) => {
                 pointPadding: 0,
                 groupPadding: 0,
                 pointWidth: 25,
-                colorByPoint: true,  // use the cvustom-assigned colors,
+                colorByPoint: true,  // use the custom-assigned colors,
                 animation: false,
             }
         },
