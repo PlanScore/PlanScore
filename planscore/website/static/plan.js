@@ -149,7 +149,8 @@ function show_efficiency_gap_score(plan, score_EG)
 {
     var summary_name = which_score_summary_name(plan),
         gap = plan.summary[summary_name],
-        gap_amount = nice_percent(Math.abs(gap));
+        gap_amount = nice_percent(Math.abs(gap)),
+        gap_error = plan.summary['Efficiency Gap SD'];
     
     for(node = score_EG.firstChild; node = node.nextSibling; node)
     {
@@ -166,8 +167,9 @@ function show_efficiency_gap_score(plan, score_EG)
             clear_element(node);
             node.innerHTML = [
                 'Votes for', win_party, 'candidates are expected to be wasted at a rate',
-                gap_amount, 'lower than votes for', lose_party, 'candidates.',
-                ' <a href="/efficiencygap/">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
+                gap_amount+'&nbsp;(±'+nice_percent(gap_error)+')',
+                'lower than votes for', lose_party, 'candidates.',
+                ' <a href="' + window.eg_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                 ].join(' ');
         }
     }
@@ -176,7 +178,8 @@ function show_efficiency_gap_score(plan, score_EG)
 function show_partisan_bias_score(plan, score_PB)
 {
     var bias = plan.summary['Partisan Bias'],
-        bias_amount = nice_percent(Math.abs(bias));
+        bias_amount = nice_percent(Math.abs(bias)),
+        bias_error = plan.summary['Partisan Bias SD'];
     
     for(node = score_PB.firstChild; node = node.nextSibling; node)
     {
@@ -191,9 +194,10 @@ function show_partisan_bias_score(plan, score_PB)
 
             clear_element(node);
             node.innerHTML = [
-                win_party, 'would be expected to win', bias_amount,
+                win_party, 'would be expected to win',
+                bias_amount+'&nbsp;(±'+nice_percent(bias_error)+')',
                 'extra seats in a hypothetical, perfectly tied election.',
-                ' <a href="/partisanbias/">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
+                ' <a href="' + window.pb_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                 ].join(' ');
         }
     }

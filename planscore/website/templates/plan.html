@@ -111,7 +111,9 @@
 	<script language="javascript">
 	    var plan_id = location.search.replace('?', ''),
 	        plan_url = format_url('{{ data_url_pattern }}', plan_id),
-	        geom_url = format_url('{{ geom_url_pattern }}', plan_id);
+	        geom_url = format_url('{{ geom_url_pattern }}', plan_id),
+	        eg_metric_url = '{{ url_for("get_efficiencygap_page") }}',
+	        pb_metric_url = '{{ url_for("get_partisanbias_page") }}';
 
 	    load_plan_score(plan_url,
 	        document.getElementById('message'),
