@@ -669,18 +669,17 @@ window.updateMetricsTabs = (yeardata) => {
 
 window.updateSeatShareChart = (yeardata) => {
     const pb_score = 100 * yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].bias ];
-    const pb_variance = pb_score / 2;
 
     let r_seatshare = 50;
     let d_seatshare = 50;
 
-    if (pb_score > 0) {
-        r_seatshare -= pb_variance;
-        d_seatshare += pb_variance;
+    if (pb_score > 0) {  // as usual, R is >0
+        r_seatshare += pb_score;
+        d_seatshare -= pb_score;
     }
     else if (pb_score < 0) {
-        r_seatshare += pb_variance;
-        d_seatshare -= pb_variance;
+        r_seatshare -= pb_score;
+        d_seatshare += pb_score;
     }
 
     // construct the chart series
