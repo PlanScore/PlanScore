@@ -673,13 +673,13 @@ window.updateSeatShareChart = (yeardata) => {
     let r_seatshare = 50;
     let d_seatshare = 50;
 
-    if (pb_score > 0) {  // as usual, R is >0
-        r_seatshare += pb_score;
-        d_seatshare -= pb_score;
+    if (pb_score < 0) {  // as usual, R is <0
+        r_seatshare += Math.abs(pb_score);
+        d_seatshare -= Math.abs(pb_score);
     }
-    else if (pb_score < 0) {
-        r_seatshare -= pb_score;
-        d_seatshare += pb_score;
+    else if (pb_score > 0) {
+        r_seatshare -= Math.abs(pb_score);
+        d_seatshare += Math.abs(pb_score);
     }
 
     // construct the chart series
