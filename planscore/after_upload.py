@@ -19,7 +19,11 @@ def unzip_shapefile(zip_path, zip_dir):
     zf = zipfile.ZipFile(zip_path)
     unzipped_path = None
     
-    for (file1, file2) in itertools.product(zf.namelist(), zf.namelist()):
+    # Sort names so "real"-looking paths come last: not dot-names, not in '__MACOSX'
+    namelist = sorted(zf.namelist(), reverse=True,
+        key=lambda n: (os.path.basename(n).startswith('.'), n.startswith('__MACOSX')))
+    
+    for (file1, file2) in itertools.product(namelist, namelist):
         base1, ext1 = os.path.splitext(file1)
         base2, ext2 = os.path.splitext(file2)
         
