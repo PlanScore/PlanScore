@@ -29,7 +29,7 @@ def unzip_shapefile(zip_path, zip_dir):
         
         if ext1 == '.shp' and base2 == base1:
             zf.extract(file2, zip_dir)
-            unzipped_path = os.path.join(zip_dir, os.path.basename(file1))
+            unzipped_path = os.path.join(zip_dir, file1)
     
     return unzipped_path
 
