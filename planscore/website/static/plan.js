@@ -355,12 +355,17 @@ function load_plan_score(url, message_section, score_section,
 
         // Build the results table
         var table_array = plan_array(plan),
-            tags, value;
+            tags, value, head;
         
         tags = ['<thead>', '<tr>'];
         for(var j = 0; j < table_array[0].length; j++)
         {
-            tags = tags.concat(['<th>', table_array[0][j], '</th>']);
+            head = table_array[0][j];
+            if(head == 'Democratic Votes' || head == 'Republican Votes')
+            {
+                head = 'Predicted ' + head;
+            }
+            tags = tags.concat(['<th>', head, '</th>']);
         }
         tags = tags.concat(['</tr>', '</thead>', '<tbody>']);
         for(var i = 1; i < table_array.length; i++)
