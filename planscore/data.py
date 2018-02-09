@@ -1,4 +1,4 @@
-import json, csv, io, time
+import json, csv, io, time, enum
 from . import constants
 
 UPLOAD_PREFIX = 'uploads/{id}/upload/'
@@ -7,6 +7,14 @@ UPLOAD_PLAINTEXT_KEY = 'uploads/{id}/index.txt'
 UPLOAD_GEOMETRY_KEY = 'uploads/{id}/geometry.json'
 UPLOAD_DISTRICTS_KEY = 'uploads/{id}/districts/{index}.json'
 UPLOAD_GEOMETRIES_KEY = 'uploads/{id}/geometries/{index}.wkt'
+
+class State (enum.Enum):
+    XX = 'XX'
+    NC = 'NC'
+    WI = 'WI'
+
+class House (enum.Enum):
+    ushouse = 'ushouse'; statesenate = 'statesenate'; statehouse = 'statehouse'
 
 class Storage:
     ''' Wrapper for S3-related details.
@@ -43,11 +51,45 @@ class Progress:
     def __eq__(self, other):
         return (self.completed / self.expected) == (other.completed / other.expected)
 
+class Model:
+
+    def __init__(self, state:State, house:House, seats:int, key_prefix:str):
+        self.state = state
+        self.house = house
+        self.seats = seats
+        self.key_prefix = key_prefix
+    
+    def to_dict(self):
+        return dict(
+            state = self.state.value,
+            house = self.house.value,
+            seats = self.seats,
+            key_prefix = self.key_prefix,
+            )
+    
+    def to_json(self):
+        return json.dumps(self.to_dict(), sort_keys=True, indent=2)
+    
+    @staticmethod
+    def from_dict(data):
+        return Model(
+            state = State[data['state']],
+            house = House[data['house']],
+            seats = int(data['seats']),
+            key_prefix = str(data['key_prefix'])
+            )
+    
+    @staticmethod
+    def from_json(body):
+        return Model.from_dict(json.loads(body))
+
 class Upload:
 
-    def __init__(self, id, key, districts=None, summary=None, progress=None, start_time=None, **ignored):
+    def __init__(self, id, key, model:Model=None, districts=None, summary=None,
+            progress=None, start_time=None, **ignored):
         self.id = id
         self.key = key
+        self.model = model
         self.districts = districts or []
         self.summary = summary or {}
         self.progress = progress
@@ -99,6 +141,7 @@ class Upload:
         return dict(
             id = self.id,
             key = self.key,
+            model = (self.model.to_dict() if self.model else None),
             districts = self.districts,
             summary = self.summary,
             progress = progress,
@@ -108,8 +151,9 @@ class Upload:
     def to_json(self):
         return json.dumps(self.to_dict(), sort_keys=True, indent=2)
     
-    def clone(self, districts=None, summary=None, progress=None, start_time=None):
+    def clone(self, model=None, districts=None, summary=None, progress=None, start_time=None):
         return Upload(self.id, self.key,
+            model = model or self.model,
             districts = districts or self.districts,
             summary = summary or self.summary,
             progress = progress if (progress is not None) else self.progress,
@@ -119,10 +163,12 @@ class Upload:
     @staticmethod
     def from_dict(data):
         progress = Progress(*data['progress']) if data.get('progress') else None
+        model = Model.from_dict(data['model']) if data.get('model') else None
     
         return Upload(
             id = data['id'], 
             key = data['key'],
+            model = model,
             districts = data.get('districts'),
             summary = data.get('summary'),
             progress = progress,
@@ -132,3 +178,15 @@ class Upload:
     @staticmethod
     def from_json(body):
         return Upload.from_dict(json.loads(body))
+
+# Active version of each state model
+
+MODELS = [
+    Model(State.XX, House.statehouse,    2, 'data/XX/002'),
+    Model(State.NC, House.ushouse,      13, 'data/NC/004-ushouse'),
+    Model(State.NC, House.statesenate,  50, 'data/NC/004-ncsenate'),
+    Model(State.NC, House.statehouse,  120, 'data/NC/004-nchouse'),
+    Model(State.WI, House.ushouse,       8, 'data/WI/001-ushouse'),
+    Model(State.WI, House.statesenate,  33, 'data/WI/001-senate'),
+    Model(State.WI, House.statehouse,   99, 'data/WI/001-assembly'),
+    ]

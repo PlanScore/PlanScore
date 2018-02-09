@@ -53,14 +53,6 @@ if os.environ.get('AWS') == 'amazonaws.com':
     S3_URL_PATTERN = 'https://{b}.s3.amazonaws.com/{k}'
     SQS_QUEUEURL = os.environ.get('SQS_QUEUEURL')
 
-# Active version of each state model
-
-MODEL_VERSION = {
-    'XX': {2: '002'},
-    'NC': { 13: '004-ushouse', 50: '004-ncsenate', 120: '004-nchouse' },
-    'WI': { 8: '001-ushouse', 33: '001-senate', 99: '001-assembly' },
-    }
-
 # Time limit to process an upload, in seconds
 
 UPLOAD_TIME_LIMIT = 30 * 60

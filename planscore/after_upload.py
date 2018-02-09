@@ -44,21 +44,20 @@ def commence_upload_scoring(s3, bucket, upload):
             ds_path = unzip_shapefile(ul_path, os.path.dirname(ul_path))
         else:
             ds_path = ul_path
-        state_abbr, state_version = guess_state_house(ds_path)
-        prefix = f'data/{state_abbr}/{state_version}'
+        model = guess_state_model(ds_path)
         score.put_upload_index(s3, bucket, upload)
         put_geojson_file(s3, bucket, upload, ds_path)
         geometry_keys = put_district_geometries(s3, bucket, upload, ds_path)
         
         # Used so that the length of the upload districts array is correct
         district_blanks = [None] * len(geometry_keys)
-        forward_upload = upload.clone(districts=district_blanks)
+        forward_upload = upload.clone(model=model, districts=district_blanks)
         
         # Do this second-to-last - localstack invokes Lambda functions synchronously
-        fan_out_district_lambdas(bucket, prefix, forward_upload, geometry_keys)
+        fan_out_district_lambdas(bucket, model.key_prefix, forward_upload, geometry_keys)
         
         # Do this last.
-        start_observer_score_lambda(data.Storage(s3, bucket, prefix), forward_upload)
+        start_observer_score_lambda(data.Storage(s3, bucket, model.key_prefix), forward_upload)
 
 def put_district_geometries(s3, bucket, upload, path):
     '''
@@ -112,8 +111,8 @@ def start_observer_score_lambda(storage, upload):
     lam.invoke(FunctionName=score.FUNCTION_NAME, InvocationType='Event',
         Payload=json.dumps(event).encode('utf8'))
 
-def guess_state_house(path):
-    ''' Guess state postal abbreviation and house for the given input path.
+def guess_state_model(path):
+    ''' Guess state model for the given input path.
     '''
     ds = osgeo.ogr.Open(path)
     
@@ -144,12 +143,11 @@ def guess_state_house(path):
         state_abbr = 'XX'
 
     # Sort by log(seats) to findest smallest difference
-    house_guesses = [(abs(math.log(len(features) / seats)), path)
-        for (seats, path) in constants.MODEL_VERSION[state_abbr].items()]
+    model_guesses = [(abs(math.log(len(features) / model.seats)), model)
+        for model in data.MODELS
+        if model.state.value == state_abbr]
     
-    house_path = [path for (_, path) in sorted(house_guesses)][0]
-    
-    return state_abbr, house_path
+    return sorted(model_guesses)[0][1]
 
 def put_geojson_file(s3, bucket, upload, path):
     ''' Save a property-less GeoJSON file for this upload.

@@ -158,7 +158,8 @@ function show_efficiency_gap_score(plan, score_EG)
             node.innerHTML += ': ' + gap_amount;
 
         } else if(node.nodeName == 'DIV') {
-            drawBiasBellChart('eg', gap, node.id, 'ushouse', 'plan');
+            drawBiasBellChart('eg', gap, node.id,
+                (plan.model ? plan.model.house : 'ushouse'), 'plan');
 
         } else if(node.nodeName == 'P') {
             var win_party = (gap < 0 ? 'Republican' : 'Democratic'),
@@ -187,7 +188,7 @@ function show_partisan_bias_score(plan, score_PB)
             node.innerHTML += ': ' + bias_amount;
 
         } else if(node.nodeName == 'DIV') {
-            drawBiasBellChart('pb', bias, node.id, 'ushouse', 'plan');
+            drawBiasBellChart('pb', bias, node.id, plan.model.house, 'plan');
 
         } else if(node.nodeName == 'P') {
             var win_party = (bias < 0 ? 'Republicans' : 'Democrats');
@@ -319,6 +320,48 @@ function plan_array(plan)
     return all_rows;
 }
 
+function get_description(plan, modified_at)
+{
+    var states = {
+        'XX': 'Null Island',
+        'AL': 'Alabama', 'NE': 'Nebraska', 'AK': 'Alaska', 'NV': 'Nevada',
+        'AZ': 'Arizona', 'NH': 'New Hampshire', 'AR': 'Arkansas',
+        'NJ': 'New Jersey', 'CA': 'California', 'NM': 'New Mexico',
+        'CO': 'Colorado', 'NY': 'New York', 'CT': 'Connecticut',
+        'NC': 'North Carolina', 'DE': 'Delaware', 'ND': 'North Dakota',
+        'DC': 'District of Columbia', 'OH': 'Ohio', 'FL': 'Florida',
+        'OK': 'Oklahoma', 'GA': 'Georgia', 'OR': 'Oregon', 'HI': 'Hawaii',
+        'PA': 'Pennsylvania', 'ID': 'Idaho', 'PR': 'Puerto Rico',
+        'IL': 'Illinois', 'RI': 'Rhode Island', 'IN': 'Indiana',
+        'SC': 'South Carolina', 'IA': 'Iowa', 'SD': 'South Dakota',
+        'KS': 'Kansas', 'TN': 'Tennessee', 'KY': 'Kentucky', 'TX': 'Texas',
+        'LA': 'Louisiana', 'UT': 'Utah', 'ME': 'Maine', 'VT': 'Vermont',
+        'MD': 'Maryland', 'VA': 'Virginia', 'MA': 'Massachusetts',
+        'VI': 'Virgin Islands', 'MI': 'Michigan', 'WA': 'Washington',
+        'MN': 'Minnesota', 'WV': 'West Virginia', 'MS': 'Mississippi',
+        'WI': 'Wisconsin', 'MO': 'Missouri', 'WY': 'Wyoming',
+        'MT': 'Montana'
+        };
+    
+    var description = ['Plan uploaded'], houses = {'ushouse': 'U.S. House',
+        'statesenate': 'State Senate', 'statehouse': 'State House'};
+    
+    if(plan['start_time'])
+    {
+        modified_at = new Date(plan.start_time * 1000);
+    }
+    
+    if(plan['model'])
+    {
+        description = [states[plan.model.state],
+            houses[plan.model.house], 'plan uploaded'].join(' ');
+    }
+
+    return (date_age(modified_at) > 86400)
+            ? [description, 'on', modified_at.toLocaleDateString()].join(' ')
+            : [description, 'at', modified_at.toLocaleString()].join(' ');
+}
+
 function load_plan_score(url, message_section, score_section,
     description, table, score_EG, score_PB, score_sense, map_url, map_div)
 {
@@ -339,19 +382,9 @@ function load_plan_score(url, message_section, score_section,
 
         // Clear out and repopulate description.
         clear_element(description);
-        
-        if(plan['start_time'])
-        {
-            modified_at = new Date(plan['start_time'] * 1000);
-        }
-
-        //description.innerHTML = what_score_description_html(plan);
-        //description.appendChild(document.createElement('br'));
         description.appendChild(document.createElement('i'));
-        description.lastChild.appendChild(document.createTextNode(
-            (date_age(modified_at) > 86400)
-                ? 'Uploaded on '+ modified_at.toLocaleDateString()
-                : 'Uploaded at '+ modified_at.toLocaleString()));
+        description.lastChild.appendChild(
+            document.createTextNode(get_description(plan, modified_at)));
 
         // Build the results table
         var table_array = plan_array(plan),
@@ -484,6 +517,6 @@ if(typeof module !== 'undefined' && module.exports)
         which_score_summary_name: which_score_summary_name,
         which_score_column_names: which_score_column_names,
         which_district_color: which_district_color,
-        plan_array: plan_array
+        plan_array: plan_array, get_description: get_description
         };
 }

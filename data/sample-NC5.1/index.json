@@ -328,11 +328,17 @@
   ],
   "id": "20180115T071350.391003189Z",
   "key": "uploads/20180115T071350.391003189Z/upload/NC5.1.zip",
+  "model": {
+    "house": "ushouse",
+    "key_prefix": "data/NC/000",
+    "seats": 13,
+    "state": "NC"
+  },
   "progress": [
     13,
     13
   ],
-  "start_time": 1516000484.0146248,
+  "start_time": 1515945600,
   "summary": {
     "Efficiency Gap": -0.1467,
     "Efficiency Gap +1 Dem": -0.1346,

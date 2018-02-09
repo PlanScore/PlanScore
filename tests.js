@@ -100,6 +100,9 @@ assert.deepEqual(plan_array4[13],
     ['13', 841420.1306598457, 1149160.4424367815],
     'Should pick out the right column values');
 
+assert.equal(plan.get_description(NC_multisim_index, new Date(2018, 0, 14)),
+    'Plan uploaded on 1/14/2018');
+
 // North Carolina plan in proposed final form
 
 var plan_array5 = plan.plan_array(NC_public_index);
@@ -117,6 +120,9 @@ assert.deepEqual(plan_array5[1],
 assert.deepEqual(plan_array5[13],
     ['13', 733505.0, 747501.53, 170567.16, 56192.36, 155381.82, 198285.9, 0.2274, 0.3557],
     'Should pick out the right column values');
+
+assert.equal(plan.get_description(NC_public_index, undefined),
+    'North Carolina U.S. House plan uploaded on 1/14/2018');
 
 // Assorted functions
 

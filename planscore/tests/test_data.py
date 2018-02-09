@@ -21,6 +21,21 @@ class TestData (unittest.TestCase):
         self.assertFalse(p1.is_complete())
         self.assertTrue(p2.is_complete())
         self.assertTrue(p3.is_complete())
+    
+    def test_model(self):
+        '''
+        '''
+        model1 = data.Model.from_json('{"state": "NC", "house": "ushouse", "seats": 13, "key_prefix": "data/NC/001"}')
+        self.assertEqual(model1.state, data.State.NC)
+        self.assertEqual(model1.house, data.House.ushouse)
+        self.assertEqual(model1.seats, 13)
+        self.assertEqual(model1.key_prefix, 'data/NC/001')
+        
+        with self.assertRaises(KeyError) as e:
+            model2 = data.Model.from_json('{}')
+        
+        with self.assertRaises(KeyError) as e:
+            model3 = data.Model.from_json('{"state": "-1", "house": "ushouse", "seats": 13, "key_prefix": "data/NC/001"}')
 
     def test_upload_storage(self):
         ''' Past and future data.Upload instances are readable
@@ -50,6 +65,13 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload5.id, 'ID')
         self.assertEqual(upload5.key, 'KEY')
         self.assertEqual(upload5.start_time, 999)
+
+        upload6 = data.Upload.from_json('{"id": "ID", "key": "KEY", '
+            '"model": {"state": "NC", "house": "ushouse", "seats": 13, "key_prefix": "data/NC/001"}}')
+        self.assertEqual(upload6.id, 'ID')
+        self.assertEqual(upload6.key, 'KEY')
+        self.assertEqual(upload6.model.state, data.State.NC)
+        self.assertEqual(upload6.model.seats, 13)
     
     def test_upload_overdue(self):
         ''' data.Upload self-reports correct overdue state
@@ -96,6 +118,19 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload8.key, upload7.key)
         self.assertEqual(upload8.progress, upload7.progress)
         self.assertEqual(upload8.start_time, upload7.start_time)
+    
+        upload9 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
+            model=data.Model(data.State.NC, data.House.ushouse, 13, 'data/NC/001'))
+        upload10 = data.Upload.from_json(upload9.to_json())
+
+        self.assertEqual(upload10.id, upload9.id)
+        self.assertEqual(upload10.key, upload9.key)
+        self.assertEqual(upload10.progress, upload9.progress)
+        self.assertEqual(upload10.start_time, upload9.start_time)
+        self.assertEqual(upload10.model.state, upload9.model.state)
+        self.assertEqual(upload10.model.house, upload9.model.house)
+        self.assertEqual(upload10.model.seats, upload9.model.seats)
+        self.assertEqual(upload10.model.key_prefix, upload9.model.key_prefix)
     
     def test_upload_plaintext(self):
         ''' data.Upload instances can be converted to plaintext
@@ -149,12 +184,13 @@ class TestData (unittest.TestCase):
     def test_upload_clone(self):
         ''' data.Upload.clone() returns a copy with the right properties
         '''
+        model1, model2 = unittest.mock.Mock(), unittest.mock.Mock()
         districts1, districts2 = unittest.mock.Mock(), unittest.mock.Mock()
         summary1, summary2 = unittest.mock.Mock(), unittest.mock.Mock()
         progress1, progress2 = unittest.mock.Mock(), unittest.mock.Mock()
         start_time1, start_time2 = unittest.mock.Mock(), unittest.mock.Mock()
         input = data.Upload(id='ID', key='whatever.json', districts=districts1,
-            summary=summary1, progress=progress1, start_time=start_time1)
+            model=model1, summary=summary1, progress=progress1, start_time=start_time1)
 
         self.assertIs(input.districts, districts1)
         self.assertIs(input.summary, summary1)
@@ -189,3 +225,8 @@ class TestData (unittest.TestCase):
         self.assertEqual(output5.id, input.id)
         self.assertEqual(output5.key, input.key)
         self.assertIs(output5.start_time, start_time2)
+
+        output6 = input.clone(model=model2)
+        self.assertEqual(output6.id, input.id)
+        self.assertEqual(output6.key, input.key)
+        self.assertIs(output6.model, model2)
