@@ -51,6 +51,17 @@ class Model:
         self.seats = seats
         self.key_prefix = key_prefix
     
+    def to_dict(self):
+        return dict(
+            state = self.state.value,
+            house = self.house.value,
+            seats = self.seats,
+            key_prefix = self.key_prefix,
+            )
+    
+    def to_json(self):
+        return json.dumps(self.to_dict(), sort_keys=True, indent=2)
+    
     @staticmethod
     def from_dict(data):
         return Model(
@@ -66,9 +77,11 @@ class Model:
 
 class Upload:
 
-    def __init__(self, id, key, districts=None, summary=None, progress=None, start_time=None, **ignored):
+    def __init__(self, id, key, model:Model=None, districts=None, summary=None,
+            progress=None, start_time=None, **ignored):
         self.id = id
         self.key = key
+        self.model = model
         self.districts = districts or []
         self.summary = summary or {}
         self.progress = progress
@@ -120,6 +133,7 @@ class Upload:
         return dict(
             id = self.id,
             key = self.key,
+            model = (self.model.to_dict() if self.model else None),
             districts = self.districts,
             summary = self.summary,
             progress = progress,
@@ -130,7 +144,7 @@ class Upload:
         return json.dumps(self.to_dict(), sort_keys=True, indent=2)
     
     def clone(self, districts=None, summary=None, progress=None, start_time=None):
-        return Upload(self.id, self.key,
+        return Upload(self.id, self.key, self.model,
             districts = districts or self.districts,
             summary = summary or self.summary,
             progress = progress if (progress is not None) else self.progress,
@@ -140,10 +154,12 @@ class Upload:
     @staticmethod
     def from_dict(data):
         progress = Progress(*data['progress']) if data.get('progress') else None
+        model = Model.from_dict(data['model']) if data.get('model') else None
     
         return Upload(
             id = data['id'], 
             key = data['key'],
+            model = model,
             districts = data.get('districts'),
             summary = data.get('summary'),
             progress = progress,

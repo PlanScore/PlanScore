@@ -130,7 +130,7 @@ class TestAfterUpload (unittest.TestCase):
     def test_fan_out_district_lambdas(self, boto3_client, stdout):
         ''' Test that district Lambda fan-out is invoked correctly.
         '''
-        upload = data.Upload('ID', 'uploads/ID/upload/file.geojson', [None, None])
+        upload = data.Upload('ID', 'uploads/ID/upload/file.geojson', districts=[None, None])
         after_upload.fan_out_district_lambdas('bucket-name', 'data/XX', upload,
             ['uploads/ID/geometries/0.wkt', 'uploads/ID/geometries/1.wkt'])
         

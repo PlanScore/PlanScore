@@ -283,7 +283,7 @@ class TestDistricts (unittest.TestCase):
         districts.post_score_results(storage, partial)
 
         storage.s3.put_object.assert_called_once_with(
-            ACL='bucket-owner-full-control', Body=b'{\n  "index": -1,\n  "totals": {\n    "Voters": 1\n  },\n  "compactness": {},\n  "precincts": 0,\n  "tiles": [],\n  "upload": {\n    "id": "ID",\n    "key": "uploads/ID/upload/file.geojson",\n    "districts": [\n      null,\n      null\n    ],\n    "summary": {},\n    "progress": null,\n    "start_time": -1\n  }\n}',
+            ACL='bucket-owner-full-control', Body=b'{\n  "index": -1,\n  "totals": {\n    "Voters": 1\n  },\n  "compactness": {},\n  "precincts": 0,\n  "tiles": [],\n  "upload": {\n    "id": "ID",\n    "key": "uploads/ID/upload/file.geojson",\n    "model": null,\n    "districts": [\n      null,\n      null\n    ],\n    "summary": {},\n    "progress": null,\n    "start_time": -1\n  }\n}',
             Bucket='bucket-name', ContentType='text/json', Key='uploads/ID/districts/-1.json')
     
     @unittest.mock.patch('planscore.districts.get_tile_metadata')
