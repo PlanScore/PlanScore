@@ -43,6 +43,27 @@ class Progress:
     def __eq__(self, other):
         return (self.completed / self.expected) == (other.completed / other.expected)
 
+class Model:
+
+    def __init__(self, state:constants.State, house:constants.House, seats:int, key_prefix:str):
+        self.state = state
+        self.house = house
+        self.seats = seats
+        self.key_prefix = key_prefix
+    
+    @staticmethod
+    def from_dict(data):
+        return Model(
+            state = constants.State[data['state']],
+            house = constants.House[data['house']],
+            seats = int(data['seats']),
+            key_prefix = str(data['key_prefix'])
+            )
+    
+    @staticmethod
+    def from_json(body):
+        return Model.from_dict(json.loads(body))
+
 class Upload:
 
     def __init__(self, id, key, districts=None, summary=None, progress=None, start_time=None, **ignored):

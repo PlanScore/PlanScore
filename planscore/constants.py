@@ -1,4 +1,4 @@
-import os, socket, urllib.parse
+import os, socket, urllib.parse, enum
 
 def _local_url(port):
     ''' Generate a local URL with a given port number.
@@ -54,6 +54,16 @@ if os.environ.get('AWS') == 'amazonaws.com':
     SQS_QUEUEURL = os.environ.get('SQS_QUEUEURL')
 
 # Active version of each state model
+
+class State (enum.Enum):
+    XX = 'XX'
+    NC = 'NC'
+    WI = 'WI'
+
+class House (enum.Enum):
+    ushouse = 'ushouse'
+    statesenate = 'statesenate'
+    statehouse = 'statehouse'
 
 MODEL_VERSION = {
     'XX': {2: '002'},

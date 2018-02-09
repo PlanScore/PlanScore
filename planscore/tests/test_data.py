@@ -1,5 +1,5 @@
 import unittest, unittest.mock
-from .. import data
+from .. import data, constants
 
 class TestData (unittest.TestCase):
 
@@ -21,6 +21,21 @@ class TestData (unittest.TestCase):
         self.assertFalse(p1.is_complete())
         self.assertTrue(p2.is_complete())
         self.assertTrue(p3.is_complete())
+    
+    def test_model(self):
+        '''
+        '''
+        model1 = data.Model.from_json('{"state": "NC", "house": "ushouse", "seats": 13, "key_prefix": "data/NC/001"}')
+        self.assertEqual(model1.state, constants.State.NC)
+        self.assertEqual(model1.house, constants.House.ushouse)
+        self.assertEqual(model1.seats, 13)
+        self.assertEqual(model1.key_prefix, 'data/NC/001')
+        
+        with self.assertRaises(KeyError) as e:
+            model2 = data.Model.from_json('{}')
+        
+        with self.assertRaises(KeyError) as e:
+            model3 = data.Model.from_json('{"state": "-1", "house": "ushouse", "seats": 13, "key_prefix": "data/NC/001"}')
 
     def test_upload_storage(self):
         ''' Past and future data.Upload instances are readable
