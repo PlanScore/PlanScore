@@ -1,4 +1,4 @@
-import os, socket, urllib.parse, enum
+import os, socket, urllib.parse
 
 def _local_url(port):
     ''' Generate a local URL with a given port number.
@@ -52,24 +52,6 @@ if os.environ.get('AWS') == 'amazonaws.com':
     S3_ENDPOINT_URL, SQS_ENDPOINT_URL, LAMBDA_ENDPOINT_URL = None, None, None
     S3_URL_PATTERN = 'https://{b}.s3.amazonaws.com/{k}'
     SQS_QUEUEURL = os.environ.get('SQS_QUEUEURL')
-
-# Active version of each state model
-
-class State (enum.Enum):
-    XX = 'XX'
-    NC = 'NC'
-    WI = 'WI'
-
-class House (enum.Enum):
-    ushouse = 'ushouse'
-    statesenate = 'statesenate'
-    statehouse = 'statehouse'
-
-MODEL_VERSION = {
-    'XX': {2: '002'},
-    'NC': { 13: '004-ushouse', 50: '004-ncsenate', 120: '004-nchouse' },
-    'WI': { 8: '001-ushouse', 33: '001-senate', 99: '001-assembly' },
-    }
 
 # Time limit to process an upload, in seconds
 

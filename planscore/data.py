@@ -1,4 +1,4 @@
-import json, csv, io, time
+import json, csv, io, time, enum
 from . import constants
 
 UPLOAD_PREFIX = 'uploads/{id}/upload/'
@@ -7,6 +7,14 @@ UPLOAD_PLAINTEXT_KEY = 'uploads/{id}/index.txt'
 UPLOAD_GEOMETRY_KEY = 'uploads/{id}/geometry.json'
 UPLOAD_DISTRICTS_KEY = 'uploads/{id}/districts/{index}.json'
 UPLOAD_GEOMETRIES_KEY = 'uploads/{id}/geometries/{index}.wkt'
+
+class State (enum.Enum):
+    XX = 'XX'
+    NC = 'NC'
+    WI = 'WI'
+
+class House (enum.Enum):
+    ushouse = 'ushouse'; statesenate = 'statesenate'; statehouse = 'statehouse'
 
 class Storage:
     ''' Wrapper for S3-related details.
@@ -45,7 +53,7 @@ class Progress:
 
 class Model:
 
-    def __init__(self, state:constants.State, house:constants.House, seats:int, key_prefix:str):
+    def __init__(self, state:State, house:House, seats:int, key_prefix:str):
         self.state = state
         self.house = house
         self.seats = seats
@@ -65,8 +73,8 @@ class Model:
     @staticmethod
     def from_dict(data):
         return Model(
-            state = constants.State[data['state']],
-            house = constants.House[data['house']],
+            state = State[data['state']],
+            house = House[data['house']],
             seats = int(data['seats']),
             key_prefix = str(data['key_prefix'])
             )
@@ -169,3 +177,15 @@ class Upload:
     @staticmethod
     def from_json(body):
         return Upload.from_dict(json.loads(body))
+
+# Active version of each state model
+
+MODELS = [
+    Model(State.XX, None,                2, 'data/XX/002'),
+    Model(State.NC, House.ushouse,      13, 'data/NC/004-ushouse'),
+    Model(State.NC, House.statesenate,  50, 'data/NC/004-ncsenate'),
+    Model(State.NC, House.statehouse,  120, 'data/NC/004-nchouse'),
+    Model(State.WI, House.ushouse,       8, 'data/WI/001-ushouse'),
+    Model(State.WI, House.statesenate,  33, 'data/WI/001-senate'),
+    Model(State.WI, House.statehouse,   99, 'data/WI/001-assembly'),
+    ]

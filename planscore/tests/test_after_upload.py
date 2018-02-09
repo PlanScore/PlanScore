@@ -64,18 +64,18 @@ class TestAfterUpload (unittest.TestCase):
         redirect_url = after_upload.get_redirect_url('https://planscore.org/', 'ID')
         self.assertEqual(redirect_url, 'https://planscore.org/plan.html?ID')
     
-    def test_guess_state_house_knowns(self):
-        ''' Test that guess_state_house() guesses the correct U.S. state and house.
+    def test_guess_state_model_knowns(self):
+        ''' Test that guess_state_model() guesses the correct U.S. state and house.
         '''
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
-        self.assertEqual(after_upload.guess_state_house(null_plan_path), ('XX', '002'))
+        self.assertEqual(after_upload.guess_state_model(null_plan_path).key_prefix, 'data/XX/002')
 
         nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
-        self.assertEqual(after_upload.guess_state_house(nc_plan_path), ('NC', '004-ushouse'))
+        self.assertEqual(after_upload.guess_state_model(nc_plan_path).key_prefix, 'data/NC/004-ushouse')
     
     @unittest.mock.patch('osgeo.ogr')
-    def test_guess_state_house_imagined(self, osgeo_ogr):
-        ''' Test that guess_state_house() guesses the correct U.S. state and house.
+    def test_guess_state_model_imagined(self, osgeo_ogr):
+        ''' Test that guess_state_model() guesses the correct U.S. state and house.
         '''
         # Mock OGR boilerplate
         ogr_feature = unittest.mock.Mock()
@@ -86,34 +86,34 @@ class TestAfterUpload (unittest.TestCase):
 
         # Real tests
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 2, 'XX'
-        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('XX', '002'))
+        self.assertEqual(after_upload.guess_state_model('districts.shp').key_prefix, 'data/XX/002')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 11, 'NC'
-        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('NC', '004-ushouse'))
+        self.assertEqual(after_upload.guess_state_model('districts.shp').key_prefix, 'data/NC/004-ushouse')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 13, 'NC'
-        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('NC', '004-ushouse'))
+        self.assertEqual(after_upload.guess_state_model('districts.shp').key_prefix, 'data/NC/004-ushouse')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 15, 'NC'
-        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('NC', '004-ushouse'))
+        self.assertEqual(after_upload.guess_state_model('districts.shp').key_prefix, 'data/NC/004-ushouse')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 40, 'NC'
-        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('NC', '004-ncsenate'))
+        self.assertEqual(after_upload.guess_state_model('districts.shp').key_prefix, 'data/NC/004-ncsenate')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 50, 'NC'
-        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('NC', '004-ncsenate'))
+        self.assertEqual(after_upload.guess_state_model('districts.shp').key_prefix, 'data/NC/004-ncsenate')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 60, 'NC'
-        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('NC', '004-ncsenate'))
+        self.assertEqual(after_upload.guess_state_model('districts.shp').key_prefix, 'data/NC/004-ncsenate')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 110, 'NC'
-        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('NC', '004-nchouse'))
+        self.assertEqual(after_upload.guess_state_model('districts.shp').key_prefix, 'data/NC/004-nchouse')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 120, 'NC'
-        self.assertEqual(after_upload.guess_state_house('districts.shp'), ('NC', '004-nchouse'))
+        self.assertEqual(after_upload.guess_state_model('districts.shp').key_prefix, 'data/NC/004-nchouse')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 130, 'NC'
-        self.assertEqual(after_upload.guess_state_house('file.gpkg'), ('NC', '004-nchouse'))
+        self.assertEqual(after_upload.guess_state_model('file.gpkg').key_prefix, 'data/NC/004-nchouse')
     
     @unittest.mock.patch('sys.stdout')
     def test_put_district_geometries(self, stdout):
@@ -168,14 +168,14 @@ class TestAfterUpload (unittest.TestCase):
     @unittest.mock.patch('planscore.after_upload.put_district_geometries')
     @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
     @unittest.mock.patch('planscore.after_upload.start_observer_score_lambda')
-    @unittest.mock.patch('planscore.after_upload.guess_state_house')
-    def test_commence_upload_scoring_good_file(self, guess_state_house, start_observer_score_lambda, fan_out_district_lambdas, put_district_geometries, put_geojson_file, put_upload_index, temporary_buffer_file):
+    @unittest.mock.patch('planscore.after_upload.guess_state_model')
+    def test_commence_upload_scoring_good_file(self, guess_state_model, start_observer_score_lambda, fan_out_district_lambdas, put_district_geometries, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
-        guess_state_house.return_value = 'XX', '002'
+        guess_state_model.return_value = data.Model(data.State.XX, None, 2, 'data/XX/002')
         
         @contextlib.contextmanager
         def nullplan_file(*args):
@@ -189,7 +189,7 @@ class TestAfterUpload (unittest.TestCase):
 
         upload = data.Upload(id, upload_key)
         info = after_upload.commence_upload_scoring(s3, bucket, upload)
-        guess_state_house.assert_called_once_with(nullplan_path)
+        guess_state_model.assert_called_once_with(nullplan_path)
 
         temporary_buffer_file.assert_called_once_with('null-plan.geojson', None)
         self.assertIsNone(info)
@@ -215,14 +215,14 @@ class TestAfterUpload (unittest.TestCase):
     @unittest.mock.patch('planscore.after_upload.put_district_geometries')
     @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
     @unittest.mock.patch('planscore.after_upload.start_observer_score_lambda')
-    @unittest.mock.patch('planscore.after_upload.guess_state_house')
-    def test_commence_upload_scoring_zipped_file(self, guess_state_house, start_observer_score_lambda, fan_out_district_lambdas, put_district_geometries, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
+    @unittest.mock.patch('planscore.after_upload.guess_state_model')
+    def test_commence_upload_scoring_zipped_file(self, guess_state_model, start_observer_score_lambda, fan_out_district_lambdas, put_district_geometries, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.shp.zip'
-        guess_state_house.return_value = 'XX', '002'
+        guess_state_model.return_value = data.Model(data.State.XX, None, 2, 'data/XX/002')
         
         @contextlib.contextmanager
         def nullplan_file(*args):
@@ -237,7 +237,7 @@ class TestAfterUpload (unittest.TestCase):
         upload = data.Upload(id, upload_key)
         info = after_upload.commence_upload_scoring(s3, bucket, upload)
         unzip_shapefile.assert_called_once_with(nullplan_path, os.path.dirname(nullplan_path))
-        guess_state_house.assert_called_once_with(unzip_shapefile.return_value)
+        guess_state_model.assert_called_once_with(unzip_shapefile.return_value)
 
         temporary_buffer_file.assert_called_once_with('null-plan.shp.zip', None)
         self.assertIsNone(info)
