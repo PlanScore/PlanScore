@@ -188,7 +188,8 @@ function show_partisan_bias_score(plan, score_PB)
             node.innerHTML += ': ' + bias_amount;
 
         } else if(node.nodeName == 'DIV') {
-            drawBiasBellChart('pb', bias, node.id, plan.model.house, 'plan');
+            drawBiasBellChart('pb', bias, node.id,
+                (plan.model ? plan.model.house : 'ushouse'), 'plan');
 
         } else if(node.nodeName == 'P') {
             var win_party = (bias < 0 ? 'Republicans' : 'Democrats');
