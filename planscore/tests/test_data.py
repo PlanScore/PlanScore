@@ -184,12 +184,13 @@ class TestData (unittest.TestCase):
     def test_upload_clone(self):
         ''' data.Upload.clone() returns a copy with the right properties
         '''
+        model1, model2 = unittest.mock.Mock(), unittest.mock.Mock()
         districts1, districts2 = unittest.mock.Mock(), unittest.mock.Mock()
         summary1, summary2 = unittest.mock.Mock(), unittest.mock.Mock()
         progress1, progress2 = unittest.mock.Mock(), unittest.mock.Mock()
         start_time1, start_time2 = unittest.mock.Mock(), unittest.mock.Mock()
         input = data.Upload(id='ID', key='whatever.json', districts=districts1,
-            summary=summary1, progress=progress1, start_time=start_time1)
+            model=model1, summary=summary1, progress=progress1, start_time=start_time1)
 
         self.assertIs(input.districts, districts1)
         self.assertIs(input.summary, summary1)
@@ -224,3 +225,8 @@ class TestData (unittest.TestCase):
         self.assertEqual(output5.id, input.id)
         self.assertEqual(output5.key, input.key)
         self.assertIs(output5.start_time, start_time2)
+
+        output6 = input.clone(model=model2)
+        self.assertEqual(output6.id, input.id)
+        self.assertEqual(output6.key, input.key)
+        self.assertIs(output6.model, model2)

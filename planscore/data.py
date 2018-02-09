@@ -151,8 +151,9 @@ class Upload:
     def to_json(self):
         return json.dumps(self.to_dict(), sort_keys=True, indent=2)
     
-    def clone(self, districts=None, summary=None, progress=None, start_time=None):
-        return Upload(self.id, self.key, self.model,
+    def clone(self, model=None, districts=None, summary=None, progress=None, start_time=None):
+        return Upload(self.id, self.key,
+            model = model or self.model,
             districts = districts or self.districts,
             summary = summary or self.summary,
             progress = progress if (progress is not None) else self.progress,
@@ -181,7 +182,7 @@ class Upload:
 # Active version of each state model
 
 MODELS = [
-    Model(State.XX, None,                2, 'data/XX/002'),
+    Model(State.XX, House.statehouse,    2, 'data/XX/002'),
     Model(State.NC, House.ushouse,      13, 'data/NC/004-ushouse'),
     Model(State.NC, House.statesenate,  50, 'data/NC/004-ncsenate'),
     Model(State.NC, House.statehouse,  120, 'data/NC/004-nchouse'),

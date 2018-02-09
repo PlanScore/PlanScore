@@ -51,7 +51,7 @@ def commence_upload_scoring(s3, bucket, upload):
         
         # Used so that the length of the upload districts array is correct
         district_blanks = [None] * len(geometry_keys)
-        forward_upload = upload.clone(districts=district_blanks)
+        forward_upload = upload.clone(model=model, districts=district_blanks)
         
         # Do this second-to-last - localstack invokes Lambda functions synchronously
         fan_out_district_lambdas(bucket, model.key_prefix, forward_upload, geometry_keys)
