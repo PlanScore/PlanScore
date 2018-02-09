@@ -158,7 +158,8 @@ function show_efficiency_gap_score(plan, score_EG)
             node.innerHTML += ': ' + gap_amount;
 
         } else if(node.nodeName == 'DIV') {
-            drawBiasBellChart('eg', gap, node.id, plan.model.house, 'plan');
+            drawBiasBellChart('eg', gap, node.id,
+                (plan.model ? plan.model.house : 'ushouse'), 'plan');
 
         } else if(node.nodeName == 'P') {
             var win_party = (gap < 0 ? 'Republican' : 'Democratic'),
