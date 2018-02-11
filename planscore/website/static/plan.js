@@ -300,14 +300,12 @@ function update_vote_percentages(head, row)
         rep_index = head.indexOf('Republican Votes'),
         vote_count;
 
-    if(dem_index == -1 || rep_index == -1)
+    if(dem_index >= 0 && rep_index >= 0)
     {
-        return;
+        vote_count = (row[dem_index] + row[rep_index]);
+        row[dem_index] = nice_percent(row[dem_index] / vote_count);
+        row[rep_index] = nice_percent(row[rep_index] / vote_count);
     }
-    
-    vote_count = (row[dem_index] + row[rep_index]);
-    row[dem_index] = nice_percent(row[dem_index] / vote_count);
-    row[rep_index] = nice_percent(row[rep_index] / vote_count);
 }
 
 function update_acs2015_percentages(head, row)
@@ -316,13 +314,11 @@ function update_acs2015_percentages(head, row)
         black_index = head.indexOf('Black Population 2015'),
         latin_index = head.indexOf('Hispanic Population 2015');
 
-    if(total_index == -1 || black_index == -1 || latin_index == -1)
+    if(total_index >= 0 && black_index >= 0 && latin_index >= 0)
     {
-        return;
+        row[black_index] = nice_percent(row[black_index] / row[total_index]);
+        row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
     }
-    
-    row[black_index] = nice_percent(row[black_index] / row[total_index]);
-    row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
 }
 
 function update_acs2016_percentages(head, row)
@@ -331,13 +327,11 @@ function update_acs2016_percentages(head, row)
         black_index = head.indexOf('Black Population 2016'),
         latin_index = head.indexOf('Hispanic Population 2016');
 
-    if(total_index == -1 || black_index == -1 || latin_index == -1)
+    if(total_index >= 0 && black_index >= 0 && latin_index >= 0)
     {
-        return;
+        row[black_index] = nice_percent(row[black_index] / row[total_index]);
+        row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
     }
-    
-    row[black_index] = nice_percent(row[black_index] / row[total_index]);
-    row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
 }
 
 function update_cvap2015_percentages(head, row)
@@ -346,13 +340,11 @@ function update_cvap2015_percentages(head, row)
         black_index = head.indexOf('Black Citizen Voting-Age Population 2015'),
         latin_index = head.indexOf('Hispanic Citizen Voting-Age Population 2015');
 
-    if(total_index == -1 || black_index == -1 || latin_index == -1)
+    if(total_index >= 0 && black_index >= 0 && latin_index >= 0)
     {
-        return;
+        row[black_index] = nice_percent(row[black_index] / row[total_index]);
+        row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
     }
-    
-    row[black_index] = nice_percent(row[black_index] / row[total_index]);
-    row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
 }
 
 /*
