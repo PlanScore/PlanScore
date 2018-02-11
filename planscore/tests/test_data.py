@@ -125,12 +125,18 @@ class TestData (unittest.TestCase):
 
         self.assertEqual(upload10.id, upload9.id)
         self.assertEqual(upload10.key, upload9.key)
-        self.assertEqual(upload10.progress, upload9.progress)
-        self.assertEqual(upload10.start_time, upload9.start_time)
         self.assertEqual(upload10.model.state, upload9.model.state)
         self.assertEqual(upload10.model.house, upload9.model.house)
         self.assertEqual(upload10.model.seats, upload9.model.seats)
         self.assertEqual(upload10.model.key_prefix, upload9.model.key_prefix)
+    
+        upload11 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
+            message='I have uploaded the plan that was on your laptop')
+        upload12 = data.Upload.from_json(upload11.to_json())
+
+        self.assertEqual(upload12.id, upload11.id)
+        self.assertEqual(upload12.key, upload11.key)
+        self.assertEqual(upload12.message, upload11.message)
     
     def test_upload_plaintext(self):
         ''' data.Upload instances can be converted to plaintext
@@ -230,3 +236,8 @@ class TestData (unittest.TestCase):
         self.assertEqual(output6.id, input.id)
         self.assertEqual(output6.key, input.key)
         self.assertIs(output6.model, model2)
+
+        output7 = input.clone(message='Yo')
+        self.assertEqual(output7.id, input.id)
+        self.assertEqual(output7.key, input.key)
+        self.assertIs(output7.message, 'Yo')
