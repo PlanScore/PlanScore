@@ -145,7 +145,7 @@ plan.update_acs2015_percentages(['Population 2015', 'Black Population 2015', 'Hi
 assert.deepEqual(row4, [10, '40.0%', '60.0%']);
 
 var row5 = [10, 4, 6];
-plan.update_acs2015_percentages(['Population 2015', 'Black Population 2016', 'Hispanic Population 2015'], row5);
+plan.update_acs2015_percentages(['Population 2015', 'Black Population 1999', 'Hispanic Population 2015'], row5);
 assert.deepEqual(row5, [10, 4, 6]);
 
 var row6 = [10, 4, 6];
@@ -163,7 +163,7 @@ assert.deepEqual(row8, [10, '40.0%', '60.0%']);
 
 var row9 = [10, 4, 6];
 plan.update_cvap2015_percentages(['Citizen Voting-Age Population 2015',
-    'Black Population 2016', 'Hispanic Citizen Voting-Age Population 2015'], row9);
+    'Black Population 1999', 'Hispanic Citizen Voting-Age Population 2015'], row9);
 assert.deepEqual(row9, [10, 4, 6]);
 
 var row10 = [10, 4, 6];
@@ -175,6 +175,22 @@ var row11 = [10, 4, 6];
 plan.update_cvap2015_percentages(['Population 2010',
     'Black Citizen Voting-Age Population 2015', 'Hispanic Citizen Voting-Age Population 2015'], row11);
 assert.deepEqual(row11, [10, 4, 6]);
+
+var row12 = [10, 4, 6];
+plan.update_acs2016_percentages(['Population 2016', 'Black Population 2016', 'Hispanic Population 2016'], row12);
+assert.deepEqual(row12, [10, '40.0%', '60.0%']);
+
+var row13 = [10, 4, 6];
+plan.update_acs2016_percentages(['Population 2016', 'Black Population 1999', 'Hispanic Population 2016'], row13);
+assert.deepEqual(row13, [10, 4, 6]);
+
+var row14 = [10, 4, 6];
+plan.update_acs2016_percentages(['Population 2016', 'Black Population 2016', 'No Population 2016'], row14);
+assert.deepEqual(row14, [10, 4, 6]);
+
+var row15 = [10, 4, 6];
+plan.update_acs2016_percentages(['Population 2010', 'Black Population 2016', 'Hispanic Population 2016'], row15);
+assert.deepEqual(row15, [10, 4, 6]);
 
 // Assorted functions
 
