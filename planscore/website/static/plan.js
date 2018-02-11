@@ -304,6 +304,23 @@ function hide_message(score_section, message_section)
     message_section.style.display = 'none';
 }
 
+function update_heading_titles(head)
+{
+    if(head.indexOf('Democratic Votes') >= 0 && head.indexOf('Republican Votes') >= 0)
+    {
+        head[head.indexOf('Democratic Votes')] = 'Predicted Democratic Vote Share';
+        head[head.indexOf('Republican Votes')] = 'Predicted Republican Vote Share';
+    }
+
+    if(head.indexOf('Citizen Voting-Age Population 2015') >= 0
+        && head.indexOf('Black Citizen Voting-Age Population 2015') >= 0
+        && head.indexOf('Hispanic Citizen Voting-Age Population 2015') >= 0)
+    {
+        head[head.indexOf('Black Citizen Voting-Age Population 2015')] = 'Black Non-Hispanic CVAP 2015';
+        head[head.indexOf('Hispanic Citizen Voting-Age Population 2015')] = 'Hispanic CVAP 2015';
+    }
+}
+
 function update_vote_percentages(head, row)
 {
     var dem_index = head.indexOf('Democratic Votes'),
@@ -422,6 +439,7 @@ function plan_array(plan)
         update_cvap2015_percentages(head_row, all_rows[j]);
     }
     
+    update_heading_titles(head_row);
     return all_rows;
 }
 
@@ -494,17 +512,12 @@ function load_plan_score(url, message_section, score_section,
 
         // Build the results table
         var table_array = plan_array(plan),
-            tags, value, head;
+            tags, value;
         
         tags = ['<thead>', '<tr>'];
         for(var j = 0; j < table_array[0].length; j++)
         {
-            head = table_array[0][j];
-            if(head == 'Democratic Votes' || head == 'Republican Votes')
-            {
-                head = 'Predicted ' + head;
-            }
-            tags = tags.concat(['<th>', head, '</th>']);
+            tags = tags.concat(['<th>', table_array[0][j], '</th>']);
         }
         tags = tags.concat(['</tr>', '</thead>', '<tbody>']);
         for(var i = 1; i < table_array.length; i++)
@@ -631,6 +644,7 @@ if(typeof module !== 'undefined' && module.exports)
         update_vote_percentages: update_vote_percentages,
         update_acs2015_percentages: update_acs2015_percentages,
         update_acs2016_percentages: update_acs2016_percentages,
-        update_cvap2015_percentages: update_cvap2015_percentages
+        update_cvap2015_percentages: update_cvap2015_percentages,
+        update_heading_titles: update_heading_titles
         };
 }

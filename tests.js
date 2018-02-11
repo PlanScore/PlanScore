@@ -91,7 +91,7 @@ var plan_array4 = plan.plan_array(NC_multisim_index);
 assert.equal(plan_array4.length, 14, 'Should have a header with 13 districts');
 
 assert.deepEqual(plan_array4[0],
-    ['District', 'Democratic Votes', 'Republican Votes'],
+    ['District', 'Predicted Democratic Vote Share', 'Predicted Republican Vote Share'],
     'Should pick out the right column names');
 
 assert.deepEqual(plan_array4[1],
@@ -112,7 +112,8 @@ assert.equal(plan_array5.length, 14, 'Should have a header with 13 districts');
 
 assert.deepEqual(plan_array5[0],
     ['District', 'Population 2010', 'Population 2015', 'Black Population 2015',
-    'Hispanic Population 2015', 'Democratic Votes', 'Republican Votes'/*, 'Polsby-Popper', 'Reock'*/],
+    'Hispanic Population 2015', 'Predicted Democratic Vote Share',
+    'Predicted Republican Vote Share'/*, 'Polsby-Popper', 'Reock'*/],
     'Should pick out the right column names');
 
 assert.deepEqual(plan_array5[1],
@@ -127,6 +128,16 @@ assert.equal(plan.get_description(NC_public_index, undefined),
     'North Carolina U.S. House plan uploaded on 1/14/2018');
 
 // Display preparation functions
+
+var head1 = ['Democratic Votes', 'Republican Votes'];
+plan.update_heading_titles(head1)
+assert.deepEqual(head1, ['Predicted Democratic Vote Share', 'Predicted Republican Vote Share']);
+
+var head2 = ['Citizen Voting-Age Population 2015',
+    'Black Citizen Voting-Age Population 2015', 'Hispanic Citizen Voting-Age Population 2015'];
+plan.update_heading_titles(head2)
+assert.deepEqual(head2, ['Citizen Voting-Age Population 2015',
+    'Black Non-Hispanic CVAP 2015', 'Hispanic CVAP 2015']);
 
 var row1 = [4, 6];
 plan.update_vote_percentages(['Democratic Votes', 'Republican Votes'], row1);
