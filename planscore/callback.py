@@ -11,7 +11,8 @@ from . import after_upload, constants, util, website, data, score
 def create_upload(s3, bucket, key, id):
     '''
     '''
-    upload = data.Upload(id, key, [])
+    upload = data.Upload(id, key, [],
+        message='Scoring this newly-uploaded plan. Reload this page to see the result.')
     score.put_upload_index(s3, bucket, upload)
     return upload
 

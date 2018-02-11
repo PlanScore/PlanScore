@@ -404,7 +404,8 @@ function load_plan_score(url, message_section, score_section,
     function on_loaded_score(plan, modified_at)
     {
         if(which_score_summary_name(plan) === null) {
-            show_message('District plan failed to load.', score_section, message_section);
+            show_message(plan['message'] ? plan.message : 'District plan failed to load.',
+                score_section, message_section);
             return;
 
         } else {
@@ -471,7 +472,10 @@ function load_plan_score(url, message_section, score_section,
                 modified_at = new Date(request.getResponseHeader('Last-Modified'));
             console.log('Loaded plan:', data);
             on_loaded_score(data, modified_at);
+            return;
         }
+        
+        show_message('The district plan failed to load.', score_section, message_section);
     };
 
     request.onerror = function() { /* There was a connection error of some sort */ };

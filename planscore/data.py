@@ -85,7 +85,7 @@ class Model:
 class Upload:
 
     def __init__(self, id, key, model:Model=None, districts=None, summary=None,
-            progress=None, start_time=None, **ignored):
+            progress=None, start_time=None, message=None, **ignored):
         self.id = id
         self.key = key
         self.model = model
@@ -93,6 +93,7 @@ class Upload:
         self.summary = summary or {}
         self.progress = progress
         self.start_time = start_time or time.time()
+        self.message = message
     
     def is_overdue(self):
         return bool(time.time() > (self.start_time + constants.UPLOAD_TIME_LIMIT))
@@ -145,18 +146,21 @@ class Upload:
             summary = self.summary,
             progress = progress,
             start_time = self.start_time,
+            message = self.message,
             )
     
     def to_json(self):
         return json.dumps(self.to_dict(), sort_keys=True, indent=2)
     
-    def clone(self, model=None, districts=None, summary=None, progress=None, start_time=None):
+    def clone(self, model=None, districts=None, summary=None, progress=None,
+        start_time=None, message=None):
         return Upload(self.id, self.key,
             model = model or self.model,
             districts = districts or self.districts,
             summary = summary or self.summary,
             progress = progress if (progress is not None) else self.progress,
             start_time = start_time or self.start_time,
+            message = message or self.message,
             )
     
     @staticmethod
@@ -172,6 +176,7 @@ class Upload:
             summary = data.get('summary'),
             progress = progress,
             start_time = data.get('start_time'),
+            message = data.get('message'),
             )
     
     @staticmethod
