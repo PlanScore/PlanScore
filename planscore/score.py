@@ -32,6 +32,14 @@ FIELD_NAMES = (
     'Population 2016', 'Population 2016, Error',
     'Voting-Age Population 2016', 'Voting-Age Population 2016, Error',
     
+    # CVAP 2015 fields
+    'Citizen Voting-Age Population 2015',
+    'Citizen Voting-Age Population 2015, Error',
+    'Black Citizen Voting-Age Population 2015',
+    'Black Citizen Voting-Age Population 2015, Error',
+    'Hispanic Citizen Voting-Age Population 2015',
+    'Hispanic Citizen Voting-Age Population 2015, Error',
+    
     # Census 2010 fields
     'Population 2010',
     
