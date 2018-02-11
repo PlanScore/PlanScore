@@ -191,7 +191,7 @@ MODELS = [
     Model(State.NC, House.statesenate,  50, 'data/NC/004-ncsenate'),
     Model(State.NC, House.statehouse,  120, 'data/NC/004-nchouse'),
     Model(State.PA, House.ushouse,      18, 'data/PA/001-ushouse'),
-    Model(State.WI, House.ushouse,       8, 'data/WI/001-ushouse'),
-    Model(State.WI, House.statesenate,  33, 'data/WI/001-senate'),
-    Model(State.WI, House.statehouse,   99, 'data/WI/001-assembly'),
+    #Model(State.WI, House.ushouse,       8, 'data/WI/001-ushouse'),
+    #Model(State.WI, House.statesenate,  33, 'data/WI/001-senate'),
+    #Model(State.WI, House.statehouse,   99, 'data/WI/001-assembly'),
     ]
