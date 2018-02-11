@@ -13,9 +13,19 @@ function format_url(url_pattern, id)
 
 function nice_count(value)
 {
-    if(value >= 1000) {
-        return (value / 1000).toFixed(1) + 'k';
-    } else if(value >= 100) {
+    if(value >= 1000)
+    {
+        var raw = value.toFixed(0);
+        
+        while(raw.match(/\d\d\d\d\b/))
+        {
+            raw = raw.replace(/(\d)(\d\d\d)\b/, '$1,$2');
+        }
+        
+        return raw;
+    }
+    
+    if(value >= 100) {
         return value.toFixed(0);
     } else if(value >= 10) {
         return value.toFixed(1);

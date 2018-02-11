@@ -198,8 +198,10 @@ assert(plan.date_age(new Date('1970-01-01')) > 86400 * 365);
 assert(plan.date_age(new Date('2017-10-01')) < 86400 * 365 * 5);
 assert(plan.date_age(new Date()) < 1);
 
-assert.equal(plan.nice_count(7654321), '7654.3k', 'Should not have a thousands separator');
-assert.equal(plan.nice_count(4321), '4.3k', 'Should show numbers in thousands');
+assert.equal(plan.nice_count(7654321), '7,654,321', 'Should have a thousands separator');
+assert.equal(plan.nice_count(654321), '654,321', 'Should have a thousands separator');
+assert.equal(plan.nice_count(54321), '54,321', 'Should have a thousands separator');
+assert.equal(plan.nice_count(4321), '4,321', 'Should have a thousands separator');
 assert.equal(plan.nice_count(321), '321', 'Should see a literal integer');
 assert.equal(plan.nice_count(21), '21.0', 'Should see one decimal place');
 assert.equal(plan.nice_count(1), '1.00', 'Should see two decimal places');
