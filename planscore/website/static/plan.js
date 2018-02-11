@@ -294,6 +294,59 @@ function hide_message(score_section, message_section)
     message_section.style.display = 'none';
 }
 
+function update_vote_percentages(head, row)
+{
+    var dem_index = head.indexOf('Democratic Votes'),
+        rep_index = head.indexOf('Republican Votes'),
+        vote_count;
+
+    if(dem_index >= 0 && rep_index >= 0)
+    {
+        vote_count = (row[dem_index] + row[rep_index]);
+        row[dem_index] = nice_percent(row[dem_index] / vote_count);
+        row[rep_index] = nice_percent(row[rep_index] / vote_count);
+    }
+}
+
+function update_acs2015_percentages(head, row)
+{
+    var total_index = head.indexOf('Population 2015'),
+        black_index = head.indexOf('Black Population 2015'),
+        latin_index = head.indexOf('Hispanic Population 2015');
+
+    if(total_index >= 0 && black_index >= 0 && latin_index >= 0)
+    {
+        row[black_index] = nice_percent(row[black_index] / row[total_index]);
+        row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
+    }
+}
+
+function update_acs2016_percentages(head, row)
+{
+    var total_index = head.indexOf('Population 2016'),
+        black_index = head.indexOf('Black Population 2016'),
+        latin_index = head.indexOf('Hispanic Population 2016');
+
+    if(total_index >= 0 && black_index >= 0 && latin_index >= 0)
+    {
+        row[black_index] = nice_percent(row[black_index] / row[total_index]);
+        row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
+    }
+}
+
+function update_cvap2015_percentages(head, row)
+{
+    var total_index = head.indexOf('Citizen Voting-Age Population 2015'),
+        black_index = head.indexOf('Black Citizen Voting-Age Population 2015'),
+        latin_index = head.indexOf('Hispanic Citizen Voting-Age Population 2015');
+
+    if(total_index >= 0 && black_index >= 0 && latin_index >= 0)
+    {
+        row[black_index] = nice_percent(row[black_index] / row[total_index]);
+        row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
+    }
+}
+
 /*
  * Return a rows * columns matrix representing a scored plan table
  */
@@ -349,6 +402,14 @@ function plan_array(plan)
                 current_row.push(plan.districts[j].compactness[field]);
             }
         }
+    }
+    
+    for(var j = 1; j < all_rows.length; j++)
+    {
+        update_vote_percentages(head_row, all_rows[j]);
+        update_acs2015_percentages(head_row, all_rows[j]);
+        update_acs2016_percentages(head_row, all_rows[j]);
+        update_cvap2015_percentages(head_row, all_rows[j]);
     }
     
     return all_rows;
@@ -556,6 +617,10 @@ if(typeof module !== 'undefined' && module.exports)
         which_score_summary_name: which_score_summary_name,
         which_score_column_names: which_score_column_names,
         which_district_color: which_district_color,
-        plan_array: plan_array, get_description: get_description
+        plan_array: plan_array, get_description: get_description,
+        update_vote_percentages: update_vote_percentages,
+        update_acs2015_percentages: update_acs2015_percentages,
+        update_acs2016_percentages: update_acs2016_percentages,
+        update_cvap2015_percentages: update_cvap2015_percentages
         };
 }
