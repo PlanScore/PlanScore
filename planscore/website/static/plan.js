@@ -325,6 +325,21 @@ function update_acs2015_percentages(head, row)
     row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
 }
 
+function update_cvap2015_percentages(head, row)
+{
+    var total_index = head.indexOf('Citizen Voting-Age Population 2015'),
+        black_index = head.indexOf('Black Citizen Voting-Age Population 2015'),
+        latin_index = head.indexOf('Hispanic Citizen Voting-Age Population 2015');
+
+    if(total_index == -1 || black_index == -1 || latin_index == -1)
+    {
+        return;
+    }
+    
+    row[black_index] = nice_percent(row[black_index] / row[total_index]);
+    row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
+}
+
 /*
  * Return a rows * columns matrix representing a scored plan table
  */
@@ -386,6 +401,7 @@ function plan_array(plan)
     {
         update_vote_percentages(head_row, all_rows[j]);
         update_acs2015_percentages(head_row, all_rows[j]);
+        update_cvap2015_percentages(head_row, all_rows[j]);
     }
     
     return all_rows;
@@ -595,6 +611,7 @@ if(typeof module !== 'undefined' && module.exports)
         which_district_color: which_district_color,
         plan_array: plan_array, get_description: get_description,
         update_vote_percentages: update_vote_percentages,
-        update_acs2015_percentages: update_acs2015_percentages
+        update_acs2015_percentages: update_acs2015_percentages,
+        update_cvap2015_percentages: update_cvap2015_percentages
         };
 }

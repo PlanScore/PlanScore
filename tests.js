@@ -156,6 +156,26 @@ var row7 = [10, 4, 6];
 plan.update_acs2015_percentages(['Population 2010', 'Black Population 2015', 'Hispanic Population 2015'], row7);
 assert.deepEqual(row7, [10, 4, 6]);
 
+var row8 = [10, 4, 6];
+plan.update_cvap2015_percentages(['Citizen Voting-Age Population 2015',
+    'Black Citizen Voting-Age Population 2015', 'Hispanic Citizen Voting-Age Population 2015'], row8);
+assert.deepEqual(row8, [10, '40.0%', '60.0%']);
+
+var row9 = [10, 4, 6];
+plan.update_cvap2015_percentages(['Citizen Voting-Age Population 2015',
+    'Black Population 2016', 'Hispanic Citizen Voting-Age Population 2015'], row9);
+assert.deepEqual(row9, [10, 4, 6]);
+
+var row10 = [10, 4, 6];
+plan.update_cvap2015_percentages(['Citizen Voting-Age Population 2015',
+    'Black Citizen Voting-Age Population 2015', 'No Population 2015'], row10);
+assert.deepEqual(row10, [10, 4, 6]);
+
+var row11 = [10, 4, 6];
+plan.update_cvap2015_percentages(['Population 2010',
+    'Black Citizen Voting-Age Population 2015', 'Hispanic Citizen Voting-Age Population 2015'], row11);
+assert.deepEqual(row11, [10, 4, 6]);
+
 // Assorted functions
 
 assert(plan.date_age(new Date('1970-01-01')) > 86400 * 365);
