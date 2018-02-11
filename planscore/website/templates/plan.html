@@ -55,7 +55,7 @@
         
         #score-sensitivity
         {
-            height: 200px;
+            height: 140px;
         }
 
     </style>
@@ -66,57 +66,58 @@
     </section>
     <section id="plan-score">
     <p id="plan-description">Blah blah blah</p>
-    <ul class="row" id="scores-box">
-        {# these list items will be populated by load_plan_score() #}
 
-        <li class="col-md-4">
-            <div id="score-efficiency-gap">
-                <h3>Efficiency Gap</h3>
-                <div class="metric-bellchart" id="metric-bellchart-eg">
-                    <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
-                    <div class="row metric-bellchart-legend">
-                        <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
-                        <div class="col-xs-4 center">Balanced</div>
-                        <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
-                    </div>
+    {# these list items will be populated by load_plan_score() #}
+
+    <ul class="row" id="scores-box">
+        <li class="col-md-4" id="score-efficiency-gap">
+            <h3>Efficiency Gap</h3>
+            <div class="metric-bellchart" id="metric-bellchart-eg">
+                <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
+                <div class="row metric-bellchart-legend">
+                    <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
+                    <div class="col-xs-4 center">Balanced</div>
+                    <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
                 </div>
-                <p>Not enough information to calculate this score.</p>
             </div>
-            <div>
-                <h3>Sensitivity</h3>
-                <p>
-                    Sensitivity testing shows us a plan’s expected efficiency gap given a range of possible vote swings. It let us evaluate the durability of a plan’s skew.
-                </p>
-                <p id="score-sensitivity"></p>
-            </div>
+            <p>Not enough information to calculate this score.</p>
         </li>
-        <li class="col-md-4">
-            <div id="score-partisan-bias">
-                <h3>Partisan Bias</h3>
-                <div class="metric-bellchart" id="metric-bellchart-pb">
-                    <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
-                    <div class="row metric-bellchart-legend">
-                        <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
-                        <div class="col-xs-4 center">Balanced</div>
-                        <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
-                    </div>
+        <li class="col-md-4" id="score-partisan-bias">
+            <h3>Partisan Bias</h3>
+            <div class="metric-bellchart" id="metric-bellchart-pb">
+                <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
+                <div class="row metric-bellchart-legend">
+                    <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
+                    <div class="col-xs-4 center">Balanced</div>
+                    <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
                 </div>
-                <p>Not enough information to calculate this score.</p>
             </div>
+            <p>Not enough information to calculate this score.</p>
         </li>
-        <li class="col-md-4">
-            <div id="score-mean-median">
-                <h3>Mean-Median Difference</h3>
-                <div class="metric-bellchart" id="metric-bellchart-mm">
-                    <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
-                    <div class="row metric-bellchart-legend">
-                        <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
-                        <div class="col-xs-4 center">Balanced</div>
-                        <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
-                    </div>
+        <li class="col-md-4" id="score-mean-median">
+            <h3>Mean-Median Difference</h3>
+            <div class="metric-bellchart" id="metric-bellchart-mm">
+                <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
+                <div class="row metric-bellchart-legend">
+                    <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
+                    <div class="col-xs-4 center">Balanced</div>
+                    <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
                 </div>
-                <p>Not enough information to calculate this score.</p>
             </div>
+            <p>Not enough information to calculate this score.</p>
+        </li>
+    </ul>
+    <ul class="row" id="scores-box">
+        <li class="col-md-2 col-md-push-2">
+        </li>
+        <li class="col-md-4 col-md-push-4">
+            <h4>Sensitivity</h4>
+            <p>
+                Sensitivity testing shows us a plan’s expected efficiency gap given a range of possible vote swings. It let us evaluate the durability of a plan’s skew.
+            </p>
+        </li>
+        <li class="col-md-6 col-md-pull-6">
+            <p id="score-sensitivity"></p>
         </li>
     </ul>
     <p id="map"></p>

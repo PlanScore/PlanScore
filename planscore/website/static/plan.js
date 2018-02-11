@@ -239,6 +239,7 @@ function show_sensitivity_test(plan, score_sense)
 {
     Highcharts.chart(score_sense, {
         chart: { type: 'line' },
+        legend: { enabled: false },
         credits: { enabled: false },
         title: { text: null },
         series: [{
