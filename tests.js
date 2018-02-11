@@ -76,7 +76,7 @@ assert.equal(plan.which_score_summary_name(NC_multisim_index),
 assert.deepEqual(plan.which_score_column_names(NC_multisim_index),
     ['Population 2010', 'Population 2015', 'Black Population 2015', 'Hispanic Population 2015',
     'Population 2016', 'Black Population 2016', 'Hispanic Population 2016',
-    'Democratic Votes', 'Republican Votes', 'Polsby-Popper', 'Reock'],
+    'Democratic Votes', 'Republican Votes'/*, 'Polsby-Popper', 'Reock'*/],
     'Should pick out the right column names');
 
 assert.equal(plan.which_district_color(NC_multisim_index.districts[0], NC_multisim_index),
@@ -110,15 +110,15 @@ assert.equal(plan_array5.length, 14, 'Should have a header with 13 districts');
 
 assert.deepEqual(plan_array5[0],
     ['District', 'Population 2010', 'Population 2015', 'Black Population 2015',
-    'Hispanic Population 2015', 'Democratic Votes', 'Republican Votes', 'Polsby-Popper', 'Reock'],
+    'Hispanic Population 2015', 'Democratic Votes', 'Republican Votes'/*, 'Polsby-Popper', 'Reock'*/],
     'Should pick out the right column names');
 
 assert.deepEqual(plan_array5[1],
-    ['1', 733460.0, 734814.32, 339971.63, 60919.18, 226503.67, 115999.24, 0.1992, 0.3469],
+    ['1', 733460.0, 734814.32, 339971.63, 60919.18, 226503.67, 115999.24/*, 0.1992, 0.3469*/],
     'Should pick out the right column values');
 
 assert.deepEqual(plan_array5[13],
-    ['13', 733505.0, 747501.53, 170567.16, 56192.36, 155381.82, 198285.9, 0.2274, 0.3557],
+    ['13', 733505.0, 747501.53, 170567.16, 56192.36, 155381.82, 198285.9/*, 0.2274, 0.3557*/],
     'Should pick out the right column values');
 
 assert.equal(plan.get_description(NC_public_index, undefined),

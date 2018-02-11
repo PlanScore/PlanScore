@@ -1,7 +1,7 @@
 var FIELDS = ['Population 2010', 'Population 2015', 'Black Population 2015',
     'Hispanic Population 2015', 'Population 2016', 'Black Population 2016',
-    'Hispanic Population 2016', 'Democratic Votes', 'Republican Votes',
-    'Polsby-Popper', 'Reock'];
+    'Hispanic Population 2016', 'Democratic Votes', 'Republican Votes'
+    /*, 'Polsby-Popper', 'Reock'*/];
 
 function format_url(url_pattern, id)
 {
