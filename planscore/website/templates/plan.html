@@ -55,7 +55,7 @@
         
         #score-sensitivity
         {
-            height: 200px;
+            height: 140px;
         }
 
     </style>
@@ -66,9 +66,10 @@
     </section>
     <section id="plan-score">
     <p id="plan-description">Blah blah blah</p>
-    <ul class="row" id="scores-box">
-        {# these list items will be populated by load_plan_score() #}
 
+    {# these list items will be populated by load_plan_score() #}
+
+    <ul class="row" id="scores-box">
         <li class="col-md-4" id="score-efficiency-gap">
             <h3>Efficiency Gap</h3>
             <div class="metric-bellchart" id="metric-bellchart-eg">
@@ -93,11 +94,29 @@
             </div>
             <p>Not enough information to calculate this score.</p>
         </li>
-        <li class="col-md-4">
-            <h3>Sensitivity</h3>
+        <li class="col-md-4" id="score-mean-median">
+            <h3>Mean-Median Difference</h3>
+            <div class="metric-bellchart" id="metric-bellchart-mm">
+                <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
+                <div class="row metric-bellchart-legend">
+                    <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
+                    <div class="col-xs-4 center">Balanced</div>
+                    <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
+                </div>
+            </div>
+            <p>Not enough information to calculate this score.</p>
+        </li>
+    </ul>
+    <ul class="row" id="scores-box">
+        <li class="col-md-2 col-md-push-2">
+        </li>
+        <li class="col-md-4 col-md-push-4">
+            <h4>Sensitivity</h4>
             <p>
                 Sensitivity testing shows us a plan’s expected efficiency gap given a range of possible vote swings. It let us evaluate the durability of a plan’s skew.
             </p>
+        </li>
+        <li class="col-md-6 col-md-pull-6">
             <p id="score-sensitivity"></p>
         </li>
     </ul>
@@ -113,7 +132,8 @@
 	        plan_url = format_url('{{ data_url_pattern }}', plan_id),
 	        geom_url = format_url('{{ geom_url_pattern }}', plan_id),
 	        eg_metric_url = '{{ url_for("get_efficiencygap_page") }}',
-	        pb_metric_url = '{{ url_for("get_partisanbias_page") }}';
+	        pb_metric_url = '{{ url_for("get_partisanbias_page") }}',
+	        mm_metric_url = '{{ url_for("get_meanmedian_page") }}';
 
 	    load_plan_score(plan_url,
 	        document.getElementById('message'),
@@ -122,6 +142,7 @@
 	        document.getElementById('districts'),
 	        document.getElementById('score-efficiency-gap'),
 	        document.getElementById('score-partisan-bias'),
+	        document.getElementById('score-mean-median'),
 	        document.getElementById('score-sensitivity'),
 	        geom_url, document.getElementById('map'));
 	</script>
