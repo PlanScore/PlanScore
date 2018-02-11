@@ -296,7 +296,10 @@ def lambda_handler(event, context):
     delays = itertools.chain(range(15), itertools.repeat(15))
     
     for delay in delays:
-        upload = upload.clone(progress=district_completeness(storage, upload))
+        progress = district_completeness(storage, upload)
+        upload = upload.clone(progress=progress,
+            message='Scoring this newly-uploaded plan. {} of {} districts'
+                ' complete. Reload this page to see the result.'.format(*progress.to_list()))
     
         if upload.progress.is_complete():
             # All done
