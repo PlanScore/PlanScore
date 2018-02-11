@@ -205,6 +205,36 @@ function show_partisan_bias_score(plan, score_PB)
     }
 }
 
+function show_mean_median_score(plan, score_MM)
+{
+    var diff = plan.summary['Mean-Median'],
+        diff_amount = nice_percent(Math.abs(diff)),
+        diff_error = plan.summary['Mean-Median SD'];
+    
+    for(node = score_MM.firstChild; node = node.nextSibling; node)
+    {
+        if(node.nodeName == 'H3') {
+            node.innerHTML += ': ' + diff_amount;
+
+        } else if(node.nodeName == 'DIV') {
+            drawBiasBellChart('mm', diff, node.id,
+                (plan.model ? plan.model.house : 'ushouse'), 'plan');
+
+        } else if(node.nodeName == 'P') {
+            var win_party = (diff < 0 ? 'Republican' : 'Democrat'),
+                lose_party = (diff < 0 ? 'Democratic' : 'Republican');
+
+            clear_element(node);
+            node.innerHTML = [
+                'The median', win_party, 'vote share was',
+                diff_amount+'&nbsp;(±'+nice_percent(diff_error)+')',
+                'higher than the mean', lose_party, 'vote share.',
+                ' <a href="' + window.mm_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
+                ].join(' ');
+        }
+    }
+}
+
 function show_sensitivity_test(plan, score_sense)
 {
     Highcharts.chart(score_sense, {
@@ -364,7 +394,7 @@ function get_description(plan, modified_at)
 }
 
 function load_plan_score(url, message_section, score_section,
-    description, table, score_EG, score_PB, score_sense, map_url, map_div)
+    description, table, score_EG, score_PB, score_MM, score_sense, map_url, map_div)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -425,6 +455,7 @@ function load_plan_score(url, message_section, score_section,
         // Populate scores.
         show_efficiency_gap_score(plan, score_EG);
         show_partisan_bias_score(plan, score_PB);
+        show_mean_median_score(plan, score_MM);
         show_sensitivity_test(plan, score_sense);
 
         // Go on to load the map.
