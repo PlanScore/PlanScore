@@ -221,14 +221,13 @@ function show_mean_median_score(plan, score_MM)
                 (plan.model ? plan.model.house : 'ushouse'), 'plan');
 
         } else if(node.nodeName == 'P') {
-            var win_party = (diff < 0 ? 'Republican' : 'Democrat'),
-                lose_party = (diff < 0 ? 'Democratic' : 'Republican');
+            var win_party = (diff < 0 ? 'Republican' : 'Democrat');
 
             clear_element(node);
             node.innerHTML = [
                 'The median', win_party, 'vote share was',
                 diff_amount+'&nbsp;(±'+nice_percent(diff_error)+')',
-                'higher than the mean', lose_party, 'vote share.',
+                'higher than the mean', win_party, 'vote share.',
                 ' <a href="' + window.mm_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                 ].join(' ');
         }
