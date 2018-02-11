@@ -76,7 +76,9 @@ assert.equal(plan.which_score_summary_name(NC_multisim_index),
 assert.deepEqual(plan.which_score_column_names(NC_multisim_index),
     ['Population 2010', 'Population 2015', 'Black Population 2015', 'Hispanic Population 2015',
     'Population 2016', 'Black Population 2016', 'Hispanic Population 2016',
-    'Democratic Votes', 'Republican Votes'/*, 'Polsby-Popper', 'Reock'*/],
+    'Citizen Voting-Age Population 2015', 'Black Citizen Voting-Age Population 2015',
+    'Hispanic Citizen Voting-Age Population 2015', 'Democratic Votes',
+    'Republican Votes'/*, 'Polsby-Popper', 'Reock'*/],
     'Should pick out the right column names');
 
 assert.equal(plan.which_district_color(NC_multisim_index.districts[0], NC_multisim_index),
