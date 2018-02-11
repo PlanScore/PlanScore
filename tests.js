@@ -95,11 +95,11 @@ assert.deepEqual(plan_array4[0],
     'Should pick out the right column names');
 
 assert.deepEqual(plan_array4[1],
-    ['1', 1028053.906695856, 1140266.0413978184],
+    ['1', '47.4%', '52.6%'],
     'Should pick out the right column values');
 
 assert.deepEqual(plan_array4[13],
-    ['13', 841420.1306598457, 1149160.4424367815],
+    ['13', '42.3%', '57.7%'],
     'Should pick out the right column values');
 
 assert.equal(plan.get_description(NC_multisim_index, new Date(2018, 0, 14)),
@@ -116,15 +116,45 @@ assert.deepEqual(plan_array5[0],
     'Should pick out the right column names');
 
 assert.deepEqual(plan_array5[1],
-    ['1', 733460.0, 734814.32, 339971.63, 60919.18, 226503.67, 115999.24/*, 0.1992, 0.3469*/],
+    ['1', 733460.0, 734814.32, '46.3%', '8.3%', '66.1%', '33.9%'/*, 0.1992, 0.3469*/],
     'Should pick out the right column values');
 
 assert.deepEqual(plan_array5[13],
-    ['13', 733505.0, 747501.53, 170567.16, 56192.36, 155381.82, 198285.9/*, 0.2274, 0.3557*/],
+    ['13', 733505.0, 747501.53, '22.8%', '7.5%', '43.9%', '56.1%'/*, 0.2274, 0.3557*/],
     'Should pick out the right column values');
 
 assert.equal(plan.get_description(NC_public_index, undefined),
     'North Carolina U.S. House plan uploaded on 1/14/2018');
+
+// Display preparation functions
+
+var row1 = [4, 6];
+plan.update_vote_percentages(['Democratic Votes', 'Republican Votes'], row1);
+assert.deepEqual(row1, ['40.0%', '60.0%']);
+
+var row2 = [4, 6];
+plan.update_vote_percentages(['Democratic Votes', 'Republican Smokes'], row2);
+assert.deepEqual(row2, [4, 6]);
+
+var row3 = [4, 6];
+plan.update_vote_percentages(['Democratic Jokes', 'Republican Votes'], row3);
+assert.deepEqual(row3, [4, 6]);
+
+var row4 = [10, 4, 6];
+plan.update_acs2015_percentages(['Population 2015', 'Black Population 2015', 'Hispanic Population 2015'], row4);
+assert.deepEqual(row4, [10, '40.0%', '60.0%']);
+
+var row5 = [10, 4, 6];
+plan.update_acs2015_percentages(['Population 2015', 'Black Population 2016', 'Hispanic Population 2015'], row5);
+assert.deepEqual(row5, [10, 4, 6]);
+
+var row6 = [10, 4, 6];
+plan.update_acs2015_percentages(['Population 2015', 'Black Population 2015', 'No Population 2015'], row6);
+assert.deepEqual(row6, [10, 4, 6]);
+
+var row7 = [10, 4, 6];
+plan.update_acs2015_percentages(['Population 2010', 'Black Population 2015', 'Hispanic Population 2015'], row7);
+assert.deepEqual(row7, [10, 4, 6]);
 
 // Assorted functions
 
