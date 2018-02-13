@@ -492,6 +492,7 @@ function get_explanation(plan)
         return 'PlanScore’s partisan asymmetry scores are based on a precinct-level model using election results, demographic data, and incumbency status from the 2016 general election. The scores displayed here rely on currently available information about which incumbents will run for reelection. These real-world estimates reveal the partisan skew that a plan is likely to exhibit by incorporating the effects of incumbency.';
     }
 
+    return 'PlanScore’s partisan asymmetry scores are based on a precinct-level model using election results and demographic data from the 2016 general election.';
     return 'PlanScore’s partisan asymmetry scores are based on a precinct-level model using election results, demographic data, and incumbency status from the 2016 general election. The scores displayed here assume that all congressional seats will be open. These open-seat estimates reveal a plan’s underlying partisan skew by removing the effects of incumbency.';
 }
 
