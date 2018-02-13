@@ -238,7 +238,7 @@ function show_mean_median_score(plan, score_MM)
 
             clear_element(node);
             node.innerHTML = [
-                'The median', win_party, 'vote share was',
+                'The median', win_party, 'vote share is expected to be',
                 diff_amount+'&nbsp;(±'+nice_percent(diff_error)+')',
                 'higher than the mean', win_party, 'vote share.',
                 ' <a href="' + window.mm_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
