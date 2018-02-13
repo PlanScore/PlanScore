@@ -106,6 +106,12 @@ div.footer {
             text-decoration: underline;
         }
     }
+    
+    #map {
+        a {
+            text-decoration: none !important;
+        }
+    }
 }
 
 label { font-weight:normal; }
