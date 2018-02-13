@@ -193,13 +193,25 @@ export const STATE_BOUNDING_BOXES = {
     'WY': [ [40.99477, -111.05456], [45.00582, -104.05225] ],
 };
 
-// for the bellcurve charts, the data spread (min + max absolute values)
-// so we can interpolate a value and position a marker line indicating a value
-// see drawBiasBellChart()
+// for the bellcurve charts, the data spread (min + max absolute values) for each district type & metric
+// as the 9 combinations don't all have the same spread represented in their chart graphic
+// see drawBiasBellChart() where we interpolate a value and position a marker line indicating a value
 export const BELLCURVE_SPREAD = {
-    eg: 0.22,
-    mm: 0.11,
-    pb: 0.30,
+    statehouse: {
+        eg: 0.22,
+        mm: 0.11,
+        pb: 0.30,
+    },
+    ushouse: {
+        eg: 0.22,
+        mm: 0.11,
+        pb: 0.30,
+    },
+    statesenate: {
+        eg: 0.22,
+        mm: 0.11,
+        pb: 0.30,
+    },
 };
 
 // Efficiency Gap wasted vote chart; colors

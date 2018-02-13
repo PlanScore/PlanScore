@@ -67,7 +67,7 @@ export const drawBiasBellChart = (whichone, datavalue, htmldivid, boundtype, pla
     // so SUBTRACT the bias to shift a positive/democrat bias toward blue left
     const $markline  = $div.find('div.markline');
     const $marklabel = $div.find('div.marklabel');
-    const spread = BELLCURVE_SPREAD[whichone];
+    const spread = BELLCURVE_SPREAD[boundtype][whichone];
     let percentile = 0.5 - (0.5 * datavalue / spread);
     percentile = Math.min(Math.max(percentile, 0), 1);
     // console.log([ `drawBiasBellChart() ${whichone}`, spread, datavalue, percentile ]);
