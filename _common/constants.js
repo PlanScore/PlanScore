@@ -198,9 +198,9 @@ export const STATE_BOUNDING_BOXES = {
 // see drawBiasBellChart() where we interpolate a value and position a marker line indicating a value
 export const BELLCURVE_SPREAD = {
     statehouse: {
-        eg: 0.22,
-        mm: 0.11,
-        pb: 0.30,
+        eg: 0.17,
+        mm: 0.10,
+        pb: 0.25,
     },
     ushouse: {
         eg: 0.22,
