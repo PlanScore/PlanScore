@@ -172,7 +172,7 @@ function show_efficiency_gap_score(plan, score_EG)
 
         } else if(node.nodeName == 'DIV') {
             drawBiasBellChart('eg', gap, node.id,
-                (plan.model ? plan.model.house : 'ushouse'), 'plan');
+                (plan.model ? plan.model.house : 'ushouse'), 'election');
 
         } else if(node.nodeName == 'P') {
             var win_party = (gap < 0 ? 'Republican' : 'Democratic'),
@@ -202,7 +202,7 @@ function show_partisan_bias_score(plan, score_PB)
 
         } else if(node.nodeName == 'DIV') {
             drawBiasBellChart('pb', bias, node.id,
-                (plan.model ? plan.model.house : 'ushouse'), 'plan');
+                (plan.model ? plan.model.house : 'ushouse'), 'election');
 
         } else if(node.nodeName == 'P') {
             var win_party = (bias < 0 ? 'Republicans' : 'Democrats');
@@ -231,7 +231,7 @@ function show_mean_median_score(plan, score_MM)
 
         } else if(node.nodeName == 'DIV') {
             drawBiasBellChart('mm', diff, node.id,
-                (plan.model ? plan.model.house : 'ushouse'), 'plan');
+                (plan.model ? plan.model.house : 'ushouse'), 'election');
 
         } else if(node.nodeName == 'P') {
             var win_party = (diff < 0 ? 'Republican' : 'Democrat');
