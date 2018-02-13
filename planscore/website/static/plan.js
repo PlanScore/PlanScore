@@ -485,6 +485,16 @@ function get_description(plan, modified_at)
             : [description, 'at', modified_at.toLocaleString()].join(' ');
 }
 
+function get_explanation(plan)
+{
+    if(plan['model'] && plan.model['incumbency'])
+    {
+        return 'PlanScore’s partisan asymmetry scores are based on a precinct-level model using election results, demographic data, and incumbency status from the 2016 general election. The scores displayed here rely on currently available information about which incumbents will run for reelection. These real-world estimates reveal the partisan skew that a plan is likely to exhibit by incorporating the effects of incumbency.';
+    }
+
+    return 'PlanScore’s partisan asymmetry scores are based on a precinct-level model using election results, demographic data, and incumbency status from the 2016 general election. The scores displayed here assume that all congressional seats will be open. These open-seat estimates reveal a plan’s underlying partisan skew by removing the effects of incumbency.';
+}
+
 function load_plan_score(url, message_section, score_section,
     description, table, score_EG, score_PB, score_MM, score_sense, map_url, map_div)
 {
@@ -509,6 +519,9 @@ function load_plan_score(url, message_section, score_section,
         description.appendChild(document.createElement('i'));
         description.lastChild.appendChild(
             document.createTextNode(get_description(plan, modified_at)));
+        description.appendChild(document.createElement('br'));
+        description.appendChild(
+            document.createTextNode(get_explanation(plan)));
 
         // Build the results table
         var table_array = plan_array(plan),
@@ -645,6 +658,7 @@ if(typeof module !== 'undefined' && module.exports)
         update_acs2015_percentages: update_acs2015_percentages,
         update_acs2016_percentages: update_acs2016_percentages,
         update_cvap2015_percentages: update_cvap2015_percentages,
-        update_heading_titles: update_heading_titles
+        update_heading_titles: update_heading_titles,
+        get_explanation: get_explanation
         };
 }
