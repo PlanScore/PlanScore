@@ -584,7 +584,8 @@ window.updateMetricsTabs = (yeardata) => {
     const isbiased_eg    = biaseval_eg.isbiased;
     const hadseats       = favor_party_eg == 'Republican' ? seats_rep : seats_dem;
     const statement_eg   = `${! isbiased_eg ? 'This metric indicates a balanced plan.' : ''} Votes for ${favor_party_eg} candidates were wasted at a rate ${(100 * Math.abs(eg_score)).toFixed(1)}% lower than votes for ${loser_party_eg} candidates.`;
-    const biastext_eg    = isbiased_eg ? `This plan is more skewed than ${Math.round(100 * eg_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
+//gda
+    const biastext_eg    = `${! isbiased_eg ? 'No consistent skew was found in favor of either party.' : ''} This plan is more skewed than ${Math.round(100 * eg_rank)}% of the enacted plans we have analyzed nationwide.`;
     const roundscore_eg  = Math.round(100 * Math.abs(eg_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
 
     const biaseval_pb    = lookupBias('pb', pb_score);
@@ -595,7 +596,8 @@ window.updateMetricsTabs = (yeardata) => {
     const cssclass_pb    = biaseval_pb.cssclass;
     const isbiased_pb    = biaseval_pb.isbiased;
     const statement_pb   = `${! isbiased_pb ? 'This metric indicates a balanced plan.' : ''} ${favor_party_pb}s would win ${(100 * Math.abs(pb_score)).toFixed(1)}% extra seats in a hypothetical, perfectly tied election.`;
-    const biastext_pb    = isbiased_pb ? `This plan is more skewed than ${Math.round(100 * bias_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
+//gda
+    const biastext_pb    = `${! isbiased_pb ? 'No consistent skew was found in favor of either party.' : ''} This plan is more skewed than ${Math.round(100 * bias_rank)}% of the enacted plans we have analyzed nationwide.`;
     const roundscore_pb  = Math.round(100 * Math.abs(pb_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
  
     const biaseval_mm    = lookupBias('mm', mm_score);
@@ -606,7 +608,8 @@ window.updateMetricsTabs = (yeardata) => {
     const cssclass_mm    = biaseval_mm.cssclass;
     const isbiased_mm    = biaseval_mm.isbiased;
     const statement_mm   = `${! isbiased_mm ? 'This metric indicates a balanced plan.' : ''} The median ${favor_party_mm} vote share was ${(100 * Math.abs(mm_score)).toFixed(1)}% higher than the mean ${favor_party_mm} vote share.`;
-    const biastext_mm    = isbiased_mm ? `This plan is more skewed than ${Math.round(100 * mmd_rank)}% of the enacted plans we have analyzed nationwide.` : 'No consistent skew was found in favor of either party.';
+//gda
+    const biastext_mm    = `${! isbiased_mm ? 'No consistent skew was found in favor of either party.' : ''} This plan is more skewed than ${Math.round(100 * mmd_rank)}% of the enacted plans we have analyzed nationwide.`;
     const roundscore_mm  = Math.round(100 * Math.abs(mm_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
 
     // color the tab-swatches for the three metrics
