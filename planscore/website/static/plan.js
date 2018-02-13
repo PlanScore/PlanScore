@@ -181,7 +181,7 @@ function show_efficiency_gap_score(plan, score_EG)
             clear_element(node);
             node.innerHTML = [
                 'Votes for', win_party, 'candidates are expected to be wasted at a rate',
-                gap_amount+'&nbsp;(±'+nice_percent(gap_error)+')',
+                gap_amount+'&nbsp;(±'+nice_percent(gap_error*2)+')',
                 'lower than votes for', lose_party, 'candidates.',
                 ' <a href="' + window.eg_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                 ].join(' ');
@@ -210,7 +210,7 @@ function show_partisan_bias_score(plan, score_PB)
             clear_element(node);
             node.innerHTML = [
                 win_party, 'would be expected to win',
-                bias_amount+'&nbsp;(±'+nice_percent(bias_error)+')',
+                bias_amount+'&nbsp;(±'+nice_percent(bias_error*2)+')',
                 'extra seats in a hypothetical, perfectly tied election.',
                 ' <a href="' + window.pb_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                 ].join(' ');
@@ -239,7 +239,7 @@ function show_mean_median_score(plan, score_MM)
             clear_element(node);
             node.innerHTML = [
                 'The median', win_party, 'vote share is expected to be',
-                diff_amount+'&nbsp;(±'+nice_percent(diff_error)+')',
+                diff_amount+'&nbsp;(±'+nice_percent(diff_error*2)+')',
                 'higher than the mean', win_party, 'vote share.',
                 ' <a href="' + window.mm_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                 ].join(' ');
