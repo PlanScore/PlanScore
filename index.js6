@@ -398,11 +398,6 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
             else {
                 $(this).prop('title', words).css({ 'background-color': color });
             }
-
-// GDA
-if (state_name === 'North Carolina') {
-    console.log([ state_info.value, CURRENT_VIEW.boundtype, biaseval.color, biaseval ]);
-}
         });
     }
 
