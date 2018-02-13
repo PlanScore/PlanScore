@@ -190,7 +190,7 @@ MODELS = [
     Model(State.NC, House.ushouse,      13, 'data/NC/004-ushouse'),
     Model(State.NC, House.statesenate,  50, 'data/NC/004-ncsenate'),
     Model(State.NC, House.statehouse,  120, 'data/NC/004-nchouse'),
-    Model(State.PA, House.ushouse,      18, 'data/PA/003-ushouse'),
+    Model(State.PA, House.ushouse,      18, 'data/PA/003-ushouse-JP'),
     #Model(State.WI, House.ushouse,       8, 'data/WI/001-ushouse'),
     #Model(State.WI, House.statesenate,  33, 'data/WI/001-senate'),
     #Model(State.WI, House.statehouse,   99, 'data/WI/001-assembly'),
