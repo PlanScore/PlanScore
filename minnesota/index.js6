@@ -907,6 +907,10 @@ window.redrawYearPickers = (csvdata) => {
         });
         available_years.sort().reverse();  // reverses in-place but also returns it
 
+        // for the year we are currently showing, what plan would be active?
+        // we'll use this to highlight the currently-active plan, once we have the UI laid out
+        const currentplan = yearplans[CURRENT_VIEW.year];
+
         // purge the existing links (and re-add the titles)
         // then draw new ones one row at a time
         // a row is an illusion: there is a plan-begin/plan-continue indicator on the left, and the year on the right
@@ -927,8 +931,10 @@ window.redrawYearPickers = (csvdata) => {
                 $planlink.find('span').css({ 'background-color': biasinfo.color });
             }
 
-            // if this is the currently-selected year, tag it as such
-//gda
+            // if we are currently showing Plans (as opposed to elections) and this year's plan is that, then additional highlighting
+            if (CURRENT_VIEW.planorelection == 'plan' && plan == currentplan) {
+                $planlink.addClass('active');
+            }
         });
     }
 };
