@@ -908,12 +908,18 @@ window.redrawYearPickers = (csvdata) => {
         available_years.sort();
 
         // pad the years list with null-years, where we find a gap larger than 2 years
+        // this allows the timeline to be stretched with empty rows, so we show gaps in coverage
+        // not all states have 2-year cycles for all district types, so we hardcode these hacks to handle that chaos
+        let yearsbetweencycles = 2;
+        if (SELECTED_STATE == 'Alabama' && CURRENT_VIEW.boundtype == 'statehouse') yearsbetweencycles = 4;
+        if (SELECTED_STATE == 'Mississippi' && CURRENT_VIEW.boundtype == 'statehouse') yearsbetweencycles = 4;
+
         const nullpadded_years = [];
         for (var i=0, l=available_years.length; i+1<l; i++) {  // all except the last
             var thisyear = available_years[i];
             var nextyear = available_years[i+1];
 
-            for (let y=thisyear; y<nextyear; y+=2) {
+            for (let y=thisyear; y<nextyear; y+=yearsbetweencycles) {
                 nullpadded_years.push(y);
             }
         }
@@ -955,13 +961,16 @@ window.redrawYearPickers = (csvdata) => {
                 }
             }
             else {
-                // figure out what plan would have been in effect at this time, cuz we still need to highlight this "do nothing" row even though it does nothing
+                // the null years links, don't really do nothing as discussed
+                // they must be tagged with data-plan so as to be highlighted along with other plan years
+                // and need a data-year (of a real year with data) so they can be clicked to show that year's data
+                // note: if we ever reinstate showing Election info, this fudging to show the year of the nearest plan is likely to backfire, and may need to be removed
                 let latestplanyearbeforethis = available_years.filter((fyear) => { return fyear < year; });
                 latestplanyearbeforethis = latestplanyearbeforethis[latestplanyearbeforethis.length - 1];
                 const priorplan = yearplans[latestplanyearbeforethis];
 
-                const $planlink = $(`<a data-plan="${priorplan}"><span></span></a>`).addClass('plan-continue').appendTo($plansdiv);
-                const $yearlink = $(`<a></a>`).appendTo($yearsdiv);
+                const $planlink = $(`<a data-plan="${priorplan}" data-year="${latestplanyearbeforethis}"><span></span></a>`).addClass('plan-continue').appendTo($plansdiv);
+                const $yearlink = $(`<a data-plan="${priorplan}" data-year="${latestplanyearbeforethis}"></a>`).appendTo($yearsdiv);
 
                 // if we are currently showing Plans (as opposed to elections) and this year's plan is that, then additional highlighting
                 if (CURRENT_VIEW.planorelection == 'plan' && priorplan == currentplan) {
