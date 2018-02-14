@@ -194,7 +194,6 @@ window.initYearPickers = () => {
     // note too that we still support showing Plan data or Election-year data
     // even though the display of Election-level data is presently disabled (issue 94) but likely to come back
 
-//GDA
     // mobile yearpicker
     const $planpicker_mobile  = $('#yearpicker-small > div[data-picker="plan"]');
     const $yearpicker_mobile  = $('#yearpicker-small > div[data-picker="election"]');
@@ -886,6 +885,51 @@ window.redrawYearPickers = (csvdata) => {
         else                              $prevbutton.removeClass('disabled');
         if ($thislink.is(':last-child'))  $nextbutton.addClass('disabled');
         else                              $nextbutton.removeClass('disabled');
+    }
+
+    // desktop picker
+    // lists years on the right, and draws plan-start circles on the left
+    // GDA per issue 167, try to "smooth out" "lumpy" distributions from missing years e.g. Alabama statehouse
+    {
+        // a straight list: all available years
+        // a lookup dict: year => plan (to tag a each year's link with its plan for display)
+        // a lookup dict: for each plan, its first year (to add the plan-start dots)
+        // a lookup dict: year => EG bias ratings (used for plan-start dots)
+        const available_years = [];
+        const yearplans = {};
+        const planfirstyears = {};
+        const yearbiasinfo = {};
+        csvdata.forEach((row) => {
+            yearplans[row.year] = row.plan;
+            planfirstyears[row.plan] = row.plan_minyear;
+            yearbiasinfo[row.year] = lookupBias('eg', row.eg_adj_avg);
+            available_years.push(parseInt(row.year));
+        });
+        available_years.sort().reverse();  // reverses in-place but also returns it
+
+        // purge the existing links (and re-add the titles)
+        // then draw new ones one row at a time
+        // a row is an illusion: there is a plan-begin/plan-continue indicator on the left, and the year on the right
+        const $plansdiv = $('#yearpicker-big div.plans').empty().append('<span>Enacted<br>Plans</span>');
+        const $yearsdiv = $('#yearpicker-big div.elections').empty().append('<span>Election<br>Years</span>');
+
+        available_years.forEach((year) => {
+            const plan          = yearplans[year];
+            const planfirstyear = planfirstyears[plan];
+            const biasinfo      = yearbiasinfo[year];
+
+            const $yearlink = $(`<a data-year="${year}" data-plan="${plan.plan}" title="Show details for the ${year} election year"><span></span> ${year}</a>`).appendTo($yearsdiv);
+            const $planlink = $(`<a data-year="${year}" data-plan="${plan.plan}" title="Show details for this districting plan"><span></span></a>`).addClass('plan-continue').appendTo($plansdiv);
+
+            // if this year is the starting year of a plan, change it from a continue-line to a start-circle with a color indicating its bias
+            if (year == planfirstyear) {
+                $planlink.removeClass('plan-continue').addClass('plan-begin');
+                $planlink.find('span').css({ 'background-color': biasinfo.color });
+            }
+
+            // if this is the currently-selected year, tag it as such
+//gda
+        });
     }
 };
 
