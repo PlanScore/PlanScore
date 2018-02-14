@@ -469,9 +469,13 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     const thisyeardata = allcsvdata.filter((row) => { return row.year == CURRENT_VIEW.year; })[0];
     if (thisyeardata) {
         $('#maincontent span[data-hasdata-thisyear]').hide().filter('[data-hasdata-thisyear="true"]').show();
+
+        $('#yearpicker-small').removeClass('hidden'); // outside of #maincontent and mobile only but is broken if no data
     }
     else {
         $('#maincontent span[data-hasdata-thisyear]').hide().filter('[data-hasdata-thisyear="false"]').show();
+
+        $('#yearpicker-small').addClass('hidden'); // outside of #maincontent and mobile only but is broken if no data
 
         const wehavetheseyears = allcsvdata.map((row) => {
             return parseInt(row.year);
