@@ -546,9 +546,9 @@ window.updateMetricsSummary = (yeardata) => {
     const mm_score  = yeardata[ ELECTION_PLAN_RECORD_FIELDS[CURRENT_VIEW.planorelection].mm ];
 
     // how many metrics favor D or R beyond threshold?
-    const favor_party_eg = lookupBias('eg', eg_score);
-    const favor_party_pb = lookupBias('pb', pb_score);
-    const favor_party_mm = lookupBias('mm', mm_score);
+    const favor_party_eg = lookupBias('eg', eg_score, CURRENT_VIEW.boundtype);
+    const favor_party_pb = lookupBias('pb', pb_score, CURRENT_VIEW.boundtype);
+    const favor_party_mm = lookupBias('mm', mm_score, CURRENT_VIEW.boundtype);
     const metrics_favor_d = [ favor_party_eg, favor_party_pb, favor_party_mm ].filter((biasinfo) => { return biasinfo.isbiased && biasinfo.partycode == 'd'; }).length;
     const metrics_favor_r = [ favor_party_eg, favor_party_pb, favor_party_mm ].filter((biasinfo) => { return biasinfo.isbiased && biasinfo.partycode == 'r'; }).length;
 
@@ -578,7 +578,7 @@ window.updateMetricsTabs = (yeardata) => {
     // for the selected year/plan
     // the 3 plan-bias metrics: do any of them show a bias toward D or R?
     // tag the biasicon icons in the metrics' tabs
-    const biaseval_eg    = lookupBias('eg', eg_score);
+    const biaseval_eg    = lookupBias('eg', eg_score, CURRENT_VIEW.boundtype);
     const favor_party_eg = biaseval_eg.party;
     const loser_party_eg = biaseval_eg.otherparty;
     const favor_code_eg  = biaseval_eg.partycode;
@@ -591,7 +591,7 @@ window.updateMetricsTabs = (yeardata) => {
     const biastext_eg    = `${! isbiased_eg ? 'No consistent skew was found in favor of either party.' : ''} This plan is more skewed than ${Math.round(100 * eg_rank)}% of the enacted plans we have analyzed nationwide.`;
     const roundscore_eg  = Math.round(100 * Math.abs(eg_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
 
-    const biaseval_pb    = lookupBias('pb', pb_score);
+    const biaseval_pb    = lookupBias('pb', pb_score, CURRENT_VIEW.boundtype);
     const favor_party_pb = biaseval_pb.party;
     const favor_color_pb = biaseval_pb.color;
     const favor_code_pb  = biaseval_pb.partycode;
@@ -602,7 +602,7 @@ window.updateMetricsTabs = (yeardata) => {
     const biastext_pb    = `${! isbiased_pb ? 'No consistent skew was found in favor of either party.' : ''} This plan is more skewed than ${Math.round(100 * bias_rank)}% of the enacted plans we have analyzed nationwide.`;
     const roundscore_pb  = Math.round(100 * Math.abs(pb_score));  // per issue 170 these ignore the usual balanced-threshold; we want to show even 1% but keep a balanced color
  
-    const biaseval_mm    = lookupBias('mm', mm_score);
+    const biaseval_mm    = lookupBias('mm', mm_score, CURRENT_VIEW.boundtype);
     const favor_party_mm = biaseval_mm.party;
     const favor_color_mm = biaseval_mm.color;
     const favor_code_mm  = biaseval_mm.partycode;
@@ -845,7 +845,7 @@ window.redrawYearPicker = (csvdata) => {
 
             planfirstyears[row.plan] = row.plan_minyear;
 
-            yearbiases[row.year] = lookupBias('eg', row.eg_adj_avg);
+            yearbiases[row.year] = lookupBias('eg', row.eg_adj_avg, CURRENT_VIEW.boundtype);
         });
 
         // the A links on the plan side & year side
