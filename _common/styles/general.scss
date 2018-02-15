@@ -101,9 +101,15 @@ div.footer {
 .container-mainbody {
     padding-bottom: 50px;
 
-    p {
+    p, h3, li {
         a {
             text-decoration: underline;
+        }
+    }
+    
+    #map {
+        a {
+            text-decoration: none !important;
         }
     }
 }
@@ -198,6 +204,7 @@ select {
 
 ul.nav.nav-tabs {
     border-bottom: 1px solid #B3B3B3;
+    padding-top: 15px;
 
     a {
         font-size: 18px;
@@ -214,6 +221,7 @@ ul.nav.nav-tabs {
         margin-right: 0;
         border: 1px solid #B3B3B3;
         background-color: #F2F2F2;
+        text-decoration: none !important;
     }
     
     li a:hover {
