@@ -688,6 +688,38 @@ window.updateMetricsTabs = (yeardata) => {
         if (isbiased_mm) $swatch.addClass(cssclass_mm).text(favor_code_mm);
     }
 
+    // show/hide the data-have-metric content, depending on whether we have each of the 3 metrics
+    // some state & year & district have only 1 or 2 of the 3 metrics
+    // the rest of the processing below, still works through even if we have a null/NaN for the values, they look bad but since we're hiding them...
+    {
+        if (isNaN(eg_score)) {
+            $('#tab-efficiencygap span[data-have-metric="true"]').hide();
+            $('#tab-efficiencygap span[data-have-metric="false"]').show();
+        }
+        else {
+            $('#tab-efficiencygap span[data-have-metric="true"]').show();
+            $('#tab-efficiencygap span[data-have-metric="false"]').hide();
+        }
+
+        if (isNaN(pb_score)) {
+            $('#tab-partisanbias span[data-have-metric="true"]').hide();
+            $('#tab-partisanbias span[data-have-metric="false"]').show();
+        }
+        else {
+            $('#tab-partisanbias span[data-have-metric="true"]').show();
+            $('#tab-partisanbias span[data-have-metric="false"]').hide();
+        }
+
+        if (isNaN(mm_score)) {
+            $('#tab-meanmedian span[data-have-metric="true"]').hide();
+            $('#tab-meanmedian span[data-have-metric="false"]').show();
+        }
+        else {
+            $('#tab-meanmedian span[data-have-metric="true"]').show();
+            $('#tab-meanmedian span[data-have-metric="false"]').hide();
+        }
+    }
+
     // fill in those +DR% numbers and the summary texts, at the top of the metric tabs
     {
         let metricdrsum_eg   = '0% Balanced';
