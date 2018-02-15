@@ -107,7 +107,7 @@
                 <br/>
 
                 <span data-hasdata-atall="true" data-hasdata-thisyear="true">
-                    <p>We used three metrics to analyze this plan. <span data-metric="biasstatement"></span></p>
+                    <p><span data-metric="biasstatementhowmanymetrics"></span> <span data-metric="biasstatementconclusion"></span></p>
 
                     <ul class="nav nav-tabs" id="tabs-metrics">
                         <li class="active"><a href="#tab-efficiencygap" data-metric="eg" data-toggle="tab">Efficiency Gap <span class="biasicon"></span></a></li>
@@ -116,83 +116,101 @@
                     </ul>
                     <div class="tab-content">
                         <div class="tab-pane fade in active" id="tab-efficiencygap">
-                            <div class="metricdrsum"><span data-field="metricdrsum"></span></div>
-                            <div class="metricdrblurb">
-                                <span data-field="metricstatement" class="big"></span>
-                            </div>
-                            <br style="clear: both;" />
-                            <br/>
-                            <div class="row">
-                                <div class="col-xs-12 col-md-6">
-                                    <h2>How Does This Plan Compare?</h2>
-                                    <p class="big"><span data-field="biasstatement"></span></p>
-                                    <div class="metric-bellchart" id="metric-bellchart-eg">
-                                        <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
-                                        <div class="row metric-bellchart-legend">
-                                            <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
-                                            <div class="col-xs-4 center">Balanced</div>
-                                            <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
+                            <span data-have-metric="true"><!-- we may or may not have calculated this metric -->
+                                <div class="metricdrsum"><span data-field="metricdrsum"></span></div>
+                                <div class="metricdrblurb">
+                                    <span data-field="metricstatement" class="big"></span>
+                                </div>
+                                <br style="clear: both;" />
+                                <br/>
+                                <div class="row">
+                                    <div class="col-xs-12 col-md-6">
+                                        <h2>How Does This Plan Compare?</h2>
+                                        <p class="big"><span data-field="biasstatement"></span></p>
+                                        <div class="metric-bellchart" id="metric-bellchart-eg">
+                                            <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
+                                            <div class="row metric-bellchart-legend">
+                                                <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
+                                                <div class="col-xs-4 center">Balanced</div>
+                                                <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="col-xs-12 col-md-6">
-                                    <p>The efficiency gap is the difference between the parties’ respective wasted votes in an election divided by the total number of votes cast. <a href="https://planscore.org/metrics/efficiencygap/">Learn more about the Efficiency Gap <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a></p>
+                                    <div class="col-xs-12 col-md-6">
+                                        <p>The efficiency gap is the difference between the parties’ respective wasted votes in an election divided by the total number of votes cast. <a href="https://planscore.org/metrics/efficiencygap/">Learn more about the Efficiency Gap <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a></p>
 
-                                    <div id="chart-egvoteswasted"></div>
+                                        <div id="chart-egvoteswasted"></div>
+                                    </div>
                                 </div>
-                            </div>
+                            </span>
+                            <span data-have-metric="false"><!-- we may or may not have calculated this metric -->
+                                <br/>
+                                <h2>This metric was not calculated for this districting plan.</h2>
+                            </span>
                         </div>
                         <div class="tab-pane fade" id="tab-partisanbias">
-                            <div class="metricdrsum"><span data-field="metricdrsum"></span></div>
-                            <div class="metricdrblurb">
-                                <span data-field="metricstatement" class="big"></span>
-                            </div>
-                            <br style="clear: both;" />
-                            <br/>
-                            <div class="row">
-                                <div class="col-xs-12 col-sm-6">
-                                    <h2>How Does This Plan Compare?</h2>
-                                    <p class="big"><span data-field="biasstatement"></span></p>
-                                    <div class="metric-bellchart" id="metric-bellchart-pb">
-                                        <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
-                                        <div class="row metric-bellchart-legend">
-                                            <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
-                                            <div class="col-xs-4 center">Balanced</div>
-                                            <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
+                            <span data-have-metric="true"><!-- we may or may not have calculated this metric -->
+                                <div class="metricdrsum"><span data-field="metricdrsum"></span></div>
+                                <div class="metricdrblurb">
+                                    <span data-field="metricstatement" class="big"></span>
+                                </div>
+                                <br style="clear: both;" />
+                                <br/>
+                                <div class="row">
+                                    <div class="col-xs-12 col-sm-6">
+                                        <h2>How Does This Plan Compare?</h2>
+                                        <p class="big"><span data-field="biasstatement"></span></p>
+                                        <div class="metric-bellchart" id="metric-bellchart-pb">
+                                            <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
+                                            <div class="row metric-bellchart-legend">
+                                                <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
+                                                <div class="col-xs-4 center">Balanced</div>
+                                                <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="col-xs-12 col-sm-6">
-                                    <p>Partisan bias is the difference between each party’s seat share and 50% in a hypothetical, perfectly tied election. <a href="https://planscore.org/metrics/partisanbias/">Learn more about Partisan Bias <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a></p>
+                                    <div class="col-xs-12 col-sm-6">
+                                        <p>Partisan bias is the difference between each party’s seat share and 50% in a hypothetical, perfectly tied election. <a href="https://planscore.org/metrics/partisanbias/">Learn more about Partisan Bias <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a></p>
 
-                                    <div id="chart-pbseatshare"></div>
+                                        <div id="chart-pbseatshare"></div>
+                                    </div>
                                 </div>
-                            </div>
+                            </span>
+                            <span data-have-metric="false"><!-- we may or may not have calculated this metric -->
+                                <br/>
+                                <h2>This metric was not calculated for this districting plan.</h2>
+                            </span>
                         </div>
                         <div class="tab-pane fade" id="tab-meanmedian">
-                            <div class="metricdrsum"><span data-field="metricdrsum"></span></div>
-                            <div class="metricdrblurb">
-                                <span data-field="metricstatement" class="big"></span>
-                            </div>
-                            <br style="clear: both;" />
-                            <br/>
-                            <div class="row">
-                                <div class="col-xs-12 col-sm-6">
-                                    <h2>How Does This Plan Compare?</h2>
-                                    <p class="big"><span data-field="biasstatement"></span></p>
-                                    <div class="metric-bellchart" id="metric-bellchart-mm">
-                                        <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
-                                        <div class="row metric-bellchart-legend">
-                                            <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
-                                            <div class="col-xs-4 center">Balanced</div>
-                                            <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
+                            <span data-have-metric="true"><!-- we may or may not have calculated this metric -->
+                                <div class="metricdrsum"><span data-field="metricdrsum"></span></div>
+                                <div class="metricdrblurb">
+                                    <span data-field="metricstatement" class="big"></span>
+                                </div>
+                                <br style="clear: both;" />
+                                <br/>
+                                <div class="row">
+                                    <div class="col-xs-12 col-sm-6">
+                                        <h2>How Does This Plan Compare?</h2>
+                                        <p class="big"><span data-field="biasstatement"></span></p>
+                                        <div class="metric-bellchart" id="metric-bellchart-mm">
+                                            <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
+                                            <div class="row metric-bellchart-legend">
+                                                <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
+                                                <div class="col-xs-4 center">Balanced</div>
+                                                <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span>% R</div>
+                                            </div>
                                         </div>
                                     </div>
+                                    <div class="col-xs-12 col-sm-6">
+                                        <p>The mean-median difference is a party’s median vote share minus its mean vote share, across all of a plan’s districts. <a href="https://planscore.org/metrics/meanmedian/">Learn more about Mean-Median <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a></p>
+                                    </div>
                                 </div>
-                                <div class="col-xs-12 col-sm-6">
-                                    <p>The mean-median difference is a party’s median vote share minus its mean vote share, across all of a plan’s districts. <a href="https://planscore.org/metrics/meanmedian/">Learn more about Mean-Median <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a></p>
-                                </div>
-                            </div>
+                            </span>
+                            <span data-have-metric="false"><!-- we may or may not have calculated this metric -->
+                                <br/>
+                                <h2>This metric was not calculated for this districting plan.</h2>
+                            </span>
                         </div>
                     </div>
                 </span>
