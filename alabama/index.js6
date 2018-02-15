@@ -972,6 +972,7 @@ window.redrawYearPickers = (csvdata) => {
                 nullpadded_years.push(y);
             }
         }
+        nullpadded_years.push(available_years[available_years.length-1]);  // don't forget the very last year
         nullpadded_years.sort();
 
         // reverse the years list: most recent at the top
