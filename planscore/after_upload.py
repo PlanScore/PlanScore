@@ -192,7 +192,11 @@ def lambda_handler(event, context):
     s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
     upload = data.Upload.from_dict(event)
     
-    commence_upload_scoring(s3, event['bucket'], upload)
+    try:
+        commence_upload_scoring(s3, event['bucket'], upload)
+    except RuntimeError as err:
+        error_upload = upload.clone(message="Can't score this plan: {}".format(err))
+        score.put_upload_index(s3, event['bucket'], error_upload)
 
 if __name__ == '__main__':
     pass

@@ -18,7 +18,7 @@ class TestAfterUpload (unittest.TestCase):
         shutil.rmtree(self.tempdir)
 
     @unittest.mock.patch('planscore.after_upload.commence_upload_scoring')
-    def test_lambda_handler(self, commence_upload_scoring):
+    def test_lambda_handler_success(self, commence_upload_scoring):
         ''' Lambda event triggers the right call to commence_upload_scoring()
         '''
         event = {'id': 'id', 'bucket': 'planscore',
@@ -33,6 +33,27 @@ class TestAfterUpload (unittest.TestCase):
         upload = commence_upload_scoring.mock_calls[0][1][2]
         self.assertEqual(upload.id, event['id'])
         self.assertEqual(upload.key, event['key'])
+    
+    @unittest.mock.patch('planscore.score.put_upload_index')
+    @unittest.mock.patch('planscore.after_upload.commence_upload_scoring')
+    def test_lambda_handler_failure(self, commence_upload_scoring, put_upload_index):
+        ''' Lambda event triggers the right message after a failure
+        '''
+        event = {'id': 'id', 'bucket': 'planscore',
+            'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson'}
+
+        os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
+        
+        def raises_runtimeerror(*args, **kwargs):
+            raise RuntimeError('Bad time')
+        
+        commence_upload_scoring.side_effect = raises_runtimeerror
+
+        after_upload.lambda_handler(event, None)
+        
+        self.assertEqual(len(put_upload_index.mock_calls), 1)
+        self.assertEqual(put_upload_index.mock_calls[0][1][2].message,
+            "Can't score this plan: Bad time")
     
     def test_unzip_shapefile(self):
         ''' Shapefile is found within a zip file.
