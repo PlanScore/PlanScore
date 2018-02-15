@@ -318,7 +318,9 @@ def lambda_handler(event, context):
 
         if upload.is_overdue():
             # Out of time, generally
-            raise RuntimeError('Out of time')
+            overdue_upload = upload.clone(message="Giving up on this plan after it took too long, sorry.")
+            put_upload_index(storage.s3, storage.bucket, overdue_upload)
+            return
         
         remain_msec = context.get_remaining_time_in_millis()
 

@@ -428,7 +428,8 @@ class TestScore (unittest.TestCase):
             'prefix': 'XX', 'key': 'uploads/sample-plan/upload/file.geojson',
             'start_time': 1}
 
-        with self.assertRaises(RuntimeError) as _:
-            score.lambda_handler(event, context)
+        score.lambda_handler(event, context)
 
-        self.assertEqual(len(put_upload_index.mock_calls), 1)
+        self.assertEqual(len(put_upload_index.mock_calls), 2)
+        self.assertEqual(put_upload_index.mock_calls[-1][1][2].message,
+            "Giving up on this plan after it took too long, sorry.")
