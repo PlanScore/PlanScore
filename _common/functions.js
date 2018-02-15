@@ -4,7 +4,6 @@
 
 import { BIAS_BALANCED_THRESHOLD } from './constants';
 import { COLOR_GRADIENT } from './constants';
-import { BIAS_SPREAD_SCALING } from './constants';
 import { BELLCURVE_SPREAD } from './constants';
 
 
@@ -12,7 +11,7 @@ import { BELLCURVE_SPREAD } from './constants';
  * return a structure of information about the given EG bias score:
  * whether it's strong or weak, D or R, etc.
  */
-export const lookupBias = (whichmetric, score) => {
+export const lookupBias = (whichmetric, score, boundtype) => {
     if (score === undefined || score === null) return 'No Data';
 
     const bias_threshold = BIAS_BALANCED_THRESHOLD[whichmetric];
@@ -32,7 +31,7 @@ export const lookupBias = (whichmetric, score) => {
     else if (abscore >= bias_threshold) description = `Slightly Biased In Favor of ${party}`;
 
     // normalize the score onto an absolute scale from 0 (-max) to 1 (+max); that gives us the index of the color gradient entry
-    const bias_spread = BIAS_SPREAD_SCALING;
+    const bias_spread = BELLCURVE_SPREAD[boundtype][whichmetric];
     let p_value = 0.5 + (0.5 * (score / bias_spread));
     if (p_value < 0) p_value = 0;
     else if (p_value > 1) p_value = 1;
@@ -67,7 +66,7 @@ export const drawBiasBellChart = (whichone, datavalue, htmldivid, boundtype, pla
     // so SUBTRACT the bias to shift a positive/democrat bias toward blue left
     const $markline  = $div.find('div.markline');
     const $marklabel = $div.find('div.marklabel');
-    const spread = BELLCURVE_SPREAD[whichone];
+    const spread = BELLCURVE_SPREAD[boundtype][whichone];
     let percentile = 0.5 - (0.5 * datavalue / spread);
     percentile = Math.min(Math.max(percentile, 0), 1);
     // console.log([ `drawBiasBellChart() ${whichone}`, spread, datavalue, percentile ]);

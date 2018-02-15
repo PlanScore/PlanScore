@@ -57,6 +57,9 @@ p.wehavedata {
         width: 100%;
     }
 }
+#yearpicker-small.hidden {
+    display: none !important;  /* BS's .visible-xs-block and .hidden et al get confused here, and "hidden" won't really hide it unless we make the rule realy specific like this */
+}
 
 #yearpicker-big {
     /* two halves: the elections side and the plans timeline; both are a series of A elements, these being links to the electionyear/plan

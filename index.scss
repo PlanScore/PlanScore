@@ -48,6 +48,7 @@ p.subtitle {
         display: inline;
         font-size: 12px;
         vertical-align: text-top;
+        line-height: 15px;
     }
 
     div.slice.r3 {
@@ -75,8 +76,7 @@ p.subtitle {
         background-color: white;
         border: 1px solid #95989A;
 
-        margin-left: 15px;
-        margin-right: 5px;
+        margin-left: 5px;
     }
 }
 
@@ -289,6 +289,7 @@ p.subtitle {
     span {
     }
     a.learnmore {
+        text-decoration: underline;
     }
 }
 
