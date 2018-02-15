@@ -5,6 +5,7 @@ require('./index.src.html');
 
 // shared constants between pages: the list of years, the red-blue color gradient, ...
 import { PLAN_YEARS } from "./../_common/constants";
+import { PLAN_YEARS_PER_STATE } from "./../_common/constants";
 import { STATE_NAME_TO_CODE } from "./../_common/constants";
 import { CONUS_BOUNDS } from "./../_common/constants";
 import { STATE_BOUNDING_BOXES } from "./../_common/constants";
@@ -182,69 +183,58 @@ window.initMap = () => {
 };
 
 window.initYearPickers = () => {
-    // mobile
-    // two separate UIs for cycling through prev/next election year or district plan
-    // only one is visible and that's based on whether our URL (or defaults) indicate that we want to see a year/plan
-    // see initLoadStartingConditions() for that startup logic to show only one
-    // see selectElectionOrPlan() which does the real work when prev/next are performed
-    const $plan_picker = $('#yearpicker-small > div[data-picker="plan"]');
-    const $year_picker = $('#yearpicker-small > div[data-picker="election"]');
-    const $year_listing = $year_picker.find('div.readout');
-    const $plan_listing = $plan_picker.find('div.readout');
+    // there are two separate UIs: the mobile one with "< year >" and a prev/next behavior
+    // and the desktop one forming a set of beads down the side (with colors indicating EG bias that year)
 
-    PLAN_YEARS.forEach((year) => {
-        $(`<span data-year="${year}">${year} Election</span>`).appendTo($year_listing).hide();
-    });
+    // this basically just sets the delegated event handlers, when the pickers' beads/arrows are clicked
+    // per issue 217, most of the work is in redrawYearPickers()
+    // the years offered are once again based on the years in the CSV data for the selected districttype-and-state
+    // since it turns out that not all states have the same years, or may not have the same years between the different district types
 
-    $year_picker.on('click', 'div.nextprev.right', function () {
-        const $targetbutton = $year_listing.find('span:visible').next('span');
+    // note too that we still support showing Plan data or Election-year data
+    // even though the display of Election-level data is presently disabled (issue 94) but likely to come back
+
+    // mobile yearpicker
+    const $planpicker_mobile  = $('#yearpicker-small > div[data-picker="plan"]');
+    const $yearpicker_mobile  = $('#yearpicker-small > div[data-picker="election"]');
+    const $yearlisting_mobile = $yearpicker_mobile.find('div.readout');
+    const $planlisting_mobile = $planpicker_mobile.find('div.readout');
+
+    $yearpicker_mobile.on('click', 'div.nextprev.right', function () {
+        const $targetbutton = $yearlisting_mobile.find('span:visible').next('span');
         const year = $targetbutton.attr('data-year');
         if (! year) return;  // don't allow clicking past the first/last
         selectElectionOrPlan(year, 'election');
     });
-    $year_picker.on('click', 'div.nextprev.left', function () {
-        const $targetbutton = $year_listing.find('span:visible').prev('span');
+    $yearpicker_mobile.on('click', 'div.nextprev.left', function () {
+        const $targetbutton = $yearlisting_mobile.find('span:visible').prev('span');
         const year = $targetbutton.attr('data-year');
         if (! year) return;  // don't allow clicking past the first/last
         selectElectionOrPlan(year, 'election');
     });
-
-    // there won't be any plans listed here at startup; see redrawYearPicker() since the list of plans depends on district type
-    $plan_picker.on('click', 'div.nextprev.right', function () {
-        const $targetbutton = $plan_listing.find('span:visible').next('span');
+    $planpicker_mobile.on('click', 'div.nextprev.right', function () {
+        const $targetbutton = $planlisting_mobile.find('span:visible').next('span');
         const year = $targetbutton.attr('data-year');
         selectElectionOrPlan(year, 'plan');
     });
-    $plan_picker.on('click', 'div.nextprev.left', function () {
-        const $targetbutton = $plan_listing.find('span:visible').prev('span');
+    $planpicker_mobile.on('click', 'div.nextprev.left', function () {
+        const $targetbutton = $planlisting_mobile.find('span:visible').prev('span');
         const year = $targetbutton.attr('data-year');
         selectElectionOrPlan(year, 'plan');
     });
 
-    // desktop
-    // the list of "year beads" running down the side, which is two columns for election years (right) and district plans (left)
-    // see also redrawYearPicker() which assigns the data-plan="" attribute to plans, and shows/hides election years
-    // both bases on the actual data present
-    const $picker_big   = $('#yearpicker-big');
-    const $plansdiv     = $('<div class="plans col-xs-5"></div>').appendTo($picker_big);
-    const $electionsdiv = $('<div class="elections col-xs-7"></div>').appendTo($picker_big);
-    
-    $('<span>Election<br>Years</span>').appendTo($electionsdiv);
-    $('<span>Enacted<br>Plans</span>').appendTo($plansdiv);
+    // desktop yearpicker
+    const $planpicker_desktop  = $('#yearpicker-big');
+    const $planlisting_desktop = $planpicker_desktop.find('div.plans');
+    const $yearlisting_desktop = $planpicker_desktop.find('div.elections');
 
-    PLAN_YEARS.slice().reverse().forEach((year) => {
-        $(`<a data-year="${year}" title="Show details for the ${year} election year"><span></span> ${year}</a>`).appendTo($electionsdiv);
-        $(`<a data-year="${year}" title="Show details for this districting plan"><span></span></a>`).appendTo($plansdiv);  // will be tagged with data-plan attribute when we have data
-    });
-
-    $electionsdiv.on('click', 'a', function () {
+    $yearlisting_desktop.on('click', 'a', function () {
         const year = $(this).attr('data-year');
-        // issue 94: for the time being, years also go to Plans not election-year details
+        // issue 94: for the time being, years also go to Plans and not election-year details
         //selectElectionOrPlan(year, 'election');
         selectElectionOrPlan(year, 'plan');
     });
-
-    $plansdiv.on('click', 'a', function () {
+    $planlisting_desktop.on('click', 'a', function () {
         const year = $(this).attr('data-year');
         selectElectionOrPlan(year, 'plan');
     });
@@ -461,7 +451,7 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
 
     // okay so we have SOME data for this state + district type
     // redraw the large yearpicker, indicating years in which a new plan was implemented
-    redrawYearPicker(allcsvdata);
+    redrawYearPickers(allcsvdata);
 
     // final check: do we have data for this district for the selected year?
     // if not, fill in the closest year for which we DO have data
@@ -823,140 +813,175 @@ window.updateWastedVotesChart = (yeardata) => {
     });
 };
 
-window.redrawYearPicker = (csvdata) => {
-    // THE BIG/DESKTOP YEARPICKER
-    // the big yearpicker has a button to select the given election year
-    // but also the left-most dot-and-dash thing indicating when a new plan was enacted
-    // while the years are a universal constant, the plan-enactment years depends on what district type we're discussing
-    // so must be redrawn here after data are had
-    // ALSO needs to handle missing data, hiding missing years but still drawing nice timelines for the years we do have (Alabama statehouse, issue 167)
+window.redrawYearPickers = (csvdata) => {
+    // see initYearPickers() for the delegated event handlers and further explanation
+    // per issue 217, the mobile & desktop yearpickers must be redrawn based on the years represented in the CSV
+    // for the given district type & state, since it turns out election years aren't consistent between states, nor between a state's district levels
+    // e.g. KY statehouse, ushouse, and statesenate are not the same, and are all a mix of even and odd years
+
+    // there are two separate UIs: the mobile one with "< year >" and a prev/next behavior
+    // and the desktop one forming a set of beads down the side (with colors indicating EG bias that year)
+
+    // note too that we still support showing Plan data or Election-year data
+    // even though the display of Election-level data is presently disabled (issue 94) until they want it back again
+
+    // mobile picker - election
+    // disabled per issue 94 but likely to come back, so we have to keep it working even though nobody knows it exists
+    // empty the links and draw new ones
+    // show the current year (hiding years not the current one)
+    // show/hide the prev/next links if this is the first/last year
     {
-        // a lookup dict: year => plan
-        // a lookup dict: for each plan, its first year
-        // a lookup dict: year => EG bias ratings
-        const yearplans = {};
-        const planfirstyears = {};
-        const yearbiases = {};
+        // make a list of years found in the data
+        const available_years = [];
         csvdata.forEach((row) => {
-            yearplans[row.year] = {
-                plan: row.plan,
-                bias: row.eg_adj_avg,
-            };
-
-            planfirstyears[row.plan] = row.plan_minyear;
-
-            yearbiases[row.year] = lookupBias('eg', row.eg_adj_avg, CURRENT_VIEW.boundtype);
+            available_years.push(parseInt(row.year));
         });
+        available_years.sort();
 
-        // the A links on the plan side & year side
-        const $planslinks = $('#yearpicker-big div.plans').find('a');
-        const $yearslinks = $('#yearpicker-big div.elections').find('a');
+        // update the UI: empty the current set of links, draw new ones in a hidden state, show this year's plan
+        const $yearpicker  = $('#yearpicker-small > div[data-picker="election"]');
+        const $prevbutton  = $yearpicker.find('div.nextprev.left');
+        const $nextbutton  = $yearpicker.find('div.nextprev.right');
 
-        // go through the year + plan links
-        // hide any which have no data
-        // tag the plan links with their plan
-        $planslinks.each(function () {
-            const $thislink = $(this);
-            const year      = $thislink.attr('data-year');
-            const planinfo  = yearplans[year];
-
-            if (! planinfo) {
-                $thislink.attr('data-plan', '').hide();
-            }
-            else {
-                $thislink.attr('data-plan', planinfo.plan).show();
-            }
+        const $readout = $yearpicker.find('div.readout').empty();
+        available_years.forEach((year) => {
+            const $thislink = $(`<span data-year="${year}">${year} Election</span>`).appendTo($readout).hide();
         });
-        $yearslinks.each(function () {
-            const $thislink = $(this);
-            const year      = $thislink.attr('data-year');
-            const planinfo  = yearplans[year];
+        const $thislink = $readout.find('> span').filter(`[data-year="${CURRENT_VIEW.year}"]`).show();
 
-            if (! planinfo) {
-                $thislink.attr('data-plan', '').hide();
-            }
-            else {
-                $thislink.attr('data-plan', planinfo.plan).show();
-            }
-        });
-
-        // now that we have only visible links tagged with plans
-        // assign the row with the plan-firstyear as a circle (colored by EG bias that year), and leave others as a dash
-        // based on the planfirstyears lookup created earlier
-        const default_color = '#4d599e'; // see state_template.scss and $dark-purple-color
-        $planslinks.removeClass('plan-begin').addClass('plan-continue').prop('title', 'Show details for this districting plan').find('span').css({ 'background-color': default_color });
-
-        Object.entries(planfirstyears).forEach(([plan, firstyear]) => {
-            const $thislink = $planslinks.filter(`[data-plan="${plan}"]`).last();  // last link = first year
-            const $circle   = $thislink.find('span');
-            const year      = $thislink.attr('data-year');
-            const biasinfo  = yearbiases[year];
-
-            $thislink.removeClass('plan-continue').addClass('plan-begin');
-            $circle.css({ 'background-color': biasinfo.color });
-        });
-
-        // final touch: if we are showing a Plan, then highlight the Plan clickers accordingly
-        if (CURRENT_VIEW.planorelection == 'plan') {
-            const $plinks = $('#yearpicker-big div.plans a').removeClass('active');
-            const plan = $plinks.filter(`[data-year="${CURRENT_VIEW.year}"]`).first().attr('data-plan');
-            $plinks.filter(`[data-plan="${plan}"]`).addClass('active');
-        }
-    }
-
-    // THE SMALL/MOBILE YEARPICKER
-    // update the election year readout, showing the selected year
-    // as well as the next/prev buttons if we are now st the first/last
-    {
-        // show this year's readout
-        const $picker    = $('#yearpicker-small > div[data-picker="election"]');
-        const $yearlinks = $picker.find('> div.readout > span').hide();
-        const $thislink  = $yearlinks.filter(`[data-year="${CURRENT_VIEW.year}"]`).show();
-        const $prevbutton = $picker.find('div.nextprev.left');
-        const $nextbutton = $picker.find('div.nextprev.right');
-
-        // detect first year and disable prev; detect last year and disable next
+        // update the UI: disable the next/prev links if this is the last/first year
         if ($thislink.is(':first-child')) $prevbutton.addClass('disabled');
         else                              $prevbutton.removeClass('disabled');
         if ($thislink.is(':last-child'))  $nextbutton.addClass('disabled');
         else                              $nextbutton.removeClass('disabled');
     }
 
-    // now the plan picker: a list of plans, and a data-year= of their starting year
+    // mobile picker - plan
+    // get the list of plans and their active years
+    // empty the links and draw new ones for the existing plans
+    // show the current year (hiding years not the current one)
+    // show/hide the prev/next links if this is the first/last year
     {
-
+        // make a list of plans found in the data
         const plans_known = {};
         csvdata.forEach((row) => {
             if (! plans_known[row.plan]) {
                 plans_known[row.plan] = { plan: row.plan, minyear: row.plan_minyear, maxyear: row.plan_maxyear };
             }
         });
-
         const plans_listing = Object.values(plans_known);
         plans_listing.sort((p,q) => { return p.minyear < q.minyear ? -1 : 1; });
 
-        const $picker = $('#yearpicker-small > div[data-picker="plan"]');
+        // update the UI: empty the current set of links, draw new ones in a hidden state, show this year's plan
+        const $yearpicker  = $('#yearpicker-small > div[data-picker="plan"]');
+        const $prevbutton  = $yearpicker.find('div.nextprev.left');
+        const $nextbutton  = $yearpicker.find('div.nextprev.right');
 
-        const $readout = $picker.find('> div.readout').empty();
+        const $readout = $yearpicker.find('div.readout').empty();
         plans_listing.forEach((planinfo) => {
             const text = planinfo.minyear == planinfo.maxyear ? `${planinfo.minyear} Plan` : `${planinfo.minyear}-${planinfo.maxyear} Plan`;
-            $(`<span data-plan="${planinfo.plan}" data-year="${planinfo.minyear}" data-minyear="${planinfo.minyear}" data-maxyear="${planinfo.maxyear}">${text}</span>`).appendTo($readout).hide();
+            const $thislink = $(`<span data-plan="${planinfo.plan}" data-year="${planinfo.minyear}" data-minyear="${planinfo.minyear}" data-maxyear="${planinfo.maxyear}">${text}</span>`).appendTo($readout).hide();
         });
+        const $thislink = $readout.find('> span').filter(`[data-year="${CURRENT_VIEW.year}"]`).show();
 
-        // show the selected year  (not easy: we have to find a range of minyear-maxyear, may not be an exact year that is offered)
-        // detect first year and disable prev; detect last year and disable next
-        const $prevbutton = $picker.find('div.nextprev.left');
-        const $nextbutton = $picker.find('div.nextprev.right');
-
-        const $thislink = $readout.find('span').filter(function () {
-            const $this = $(this);
-            return $this.attr('data-minyear') <= CURRENT_VIEW.year && $this.attr('data-maxyear') >= CURRENT_VIEW.year;
-        }).show();
-
+        // update the UI: disable the next/prev links if this is the last/first year
         if ($thislink.is(':first-child')) $prevbutton.addClass('disabled');
         else                              $prevbutton.removeClass('disabled');
         if ($thislink.is(':last-child'))  $nextbutton.addClass('disabled');
         else                              $nextbutton.removeClass('disabled');
+    }
+
+    // desktop picker
+    // lists years on the right, and draws plan-start circles on the left
+    // try to smooth out "lumpy" distributions by adding null years where we find larger gaps (issue 217)
+    {
+        // a straight list: all available years
+        // a lookup dict: year => plan (to tag a each year's link with its plan for display)
+        // a lookup dict: for each plan, its first year (to add the plan-start dots)
+        // a lookup dict: year => EG bias ratings (used for plan-start dots)
+        const available_years = [];
+        const yearplans = {};
+        const planfirstyears = {};
+        const yearbiasinfo = {};
+        csvdata.forEach((row) => {
+            yearplans[row.year] = row.plan;
+            planfirstyears[row.plan] = row.plan_minyear;
+            yearbiasinfo[row.year] = lookupBias('eg', row.eg_adj_avg, CURRENT_VIEW.boundtype);
+            available_years.push(parseInt(row.year));
+        });
+        available_years.sort();
+
+        // pad the years list with null-years, where we find a gap larger than 2 years
+        // this allows the timeline to be stretched with empty rows, so we show gaps in coverage
+        // not all states have 2-year cycles for all district types, so we hardcode these hacks to handle that chaos
+        let yearsbetweencycles = 2;
+        if (SELECTED_STATE == 'Alabama' && CURRENT_VIEW.boundtype == 'statehouse') yearsbetweencycles = 4;
+        if (SELECTED_STATE == 'Mississippi' && CURRENT_VIEW.boundtype == 'statehouse') yearsbetweencycles = 4;
+
+        const nullpadded_years = [];
+        for (var i=0, l=available_years.length; i+1<l; i++) {  // all except the last
+            var thisyear = available_years[i];
+            var nextyear = available_years[i+1];
+
+            for (let y=thisyear; y<nextyear; y+=yearsbetweencycles) {
+                nullpadded_years.push(y);
+            }
+        }
+        nullpadded_years.sort();
+
+        // reverse the years list: most recent at the top
+        nullpadded_years.reverse();
+
+        // for the year we are currently showing, what plan would be active?
+        // we'll use this to highlight the currently-active plan, once we have the UI laid out
+        const currentplan = yearplans[CURRENT_VIEW.year];
+
+        // purge the existing links (and re-add the titles)
+        // then draw new ones one row at a time
+        // a row is an illusion: there is a plan-begin/plan-continue indicator on the left, and the year on the right
+        const $plansdiv = $('#yearpicker-big div.plans').empty().append('<span>Enacted<br>Plans</span>');
+        const $yearsdiv = $('#yearpicker-big div.elections').empty().append('<span>Election<br>Years</span>');
+
+        nullpadded_years.forEach((year) => {
+            const plan          = yearplans[year];
+            const planfirstyear = planfirstyears[plan];
+            const biasinfo      = yearbiasinfo[year];
+
+            // if this is a null year (no plan), it's really just a spacer with a plan-continue marker: no year, no click behaviors, etc.
+            // if it has a plan, it gets the year readout and all
+            if (plan) {
+                const $planlink = $(`<a data-plan="${plan}" data-year="${year}" title="Show details for this districting plan"><span></span></a>`).addClass('plan-continue').appendTo($plansdiv);
+                const $yearlink = $(`<a data-plan="${plan}" data-year="${year}" title="Show details for the ${year} election year"><span></span> ${year}</a>`).appendTo($yearsdiv);
+
+                // if this year is the starting year of a plan, change it from a continue-line to a start-circle with a color indicating its bias
+                if (year == planfirstyear) {
+                    $planlink.removeClass('plan-continue').addClass('plan-begin');
+                    $planlink.find('span').css({ 'background-color': biasinfo.color });
+                }
+
+                // if we are currently showing Plans (as opposed to elections) and this year's plan is that, then additional highlighting
+                if (CURRENT_VIEW.planorelection == 'plan' && plan == currentplan) {
+                    $planlink.addClass('active');
+                }
+            }
+            else {
+                // the null years links, don't really do nothing as discussed
+                // they must be tagged with data-plan so as to be highlighted along with other plan years
+                // and need a data-year (of a real year with data) so they can be clicked to show that year's data
+                // note: if we ever reinstate showing Election info, this fudging to show the year of the nearest plan is likely to backfire, and may need to be removed
+                let latestplanyearbeforethis = available_years.filter((fyear) => { return fyear < year; });
+                latestplanyearbeforethis = latestplanyearbeforethis[latestplanyearbeforethis.length - 1];
+                const priorplan = yearplans[latestplanyearbeforethis];
+
+                const $planlink = $(`<a data-plan="${priorplan}" data-year="${latestplanyearbeforethis}"><span></span></a>`).addClass('plan-continue').appendTo($plansdiv);
+                const $yearlink = $(`<a data-plan="${priorplan}" data-year="${latestplanyearbeforethis}"></a>`).appendTo($yearsdiv);
+
+                // if we are currently showing Plans (as opposed to elections) and this year's plan is that, then additional highlighting
+                if (CURRENT_VIEW.planorelection == 'plan' && priorplan == currentplan) {
+                    $planlink.addClass('active');
+                }
+            }   
+        });
     }
 };
 
