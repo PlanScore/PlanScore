@@ -479,14 +479,30 @@ window.updateStatsFromCsvContent = (allcsvdata, options={}) => {
     }
     else if (options.selectPlanYearIfNoData && CURRENT_VIEW.planorelection == 'plan') {
         // no data for this year; we DO want to find the active Plan and just forward to it
+        // also handle out-of-bounds cases, e.g. data are present for 1990-2002 and URL asks for 1980 or 2016
+        // by defaulting to the earliest or latest Plan that we have
         const yearsofthesameplan = allcsvdata.filter((row) => {
             return row.plan_minyear <= CURRENT_VIEW.year && row.plan_maxyear >= CURRENT_VIEW.year;
         });
-        const firstyearofthisplan = yearsofthesameplan[0].plan_minyear;
+
+        let usethisyearinstead;
+        if (yearsofthesameplan.length) {
+            usethisyearinstead = yearsofthesameplan[0].plan_minyear;
+        }
+        else {
+            // find the min & max year in the CSV data
+            // if selected year is <min then go with min year; if >max then go with max year
+            const wehavetheseyears = allcsvdata.map((row) => {
+                return parseInt(row.year);
+            });
+            const maxyear = Math.max(...wehavetheseyears);
+            const minyear = Math.min(...wehavetheseyears);
+            usethisyearinstead = CURRENT_VIEW.year >= maxyear ? maxyear : minyear;
+        }
 
         // cease execution, and make them select this new year; async so it's a whole new thread
         setTimeout(function () {
-            selectElectionOrPlan(firstyearofthisplan);
+            selectElectionOrPlan(usethisyearinstead);
         }, 1);
         return;
     }
