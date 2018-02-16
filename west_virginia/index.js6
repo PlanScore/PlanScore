@@ -703,7 +703,7 @@ window.updateMetricsTabs = (yeardata) => {
         }
 
         if (isNaN(pb_score)) {
-            const nodatatext = `We did not calculate Efficiency Gap for ${SELECTED_STATE}’s ${CURRENT_VIEW.year} Redistricting Plan`;
+            const nodatatext = `We did not calculate Partisan Bias for ${SELECTED_STATE}’s ${CURRENT_VIEW.year} Redistricting Plan`;
             $('#tab-partisanbias span[data-have-metric="true"]').hide();
             $('#tab-partisanbias span[data-have-metric="false"]').show().find('h2').text(nodatatext);
         }
@@ -713,7 +713,7 @@ window.updateMetricsTabs = (yeardata) => {
         }
 
         if (isNaN(mm_score)) {
-            const nodatatext = `We did not calculate Efficiency Gap for ${SELECTED_STATE}’s ${CURRENT_VIEW.year} Redistricting Plan`;
+            const nodatatext = `We did not calculate Mean-Median for ${SELECTED_STATE}’s ${CURRENT_VIEW.year} Redistricting Plan`;
             $('#tab-meanmedian span[data-have-metric="true"]').hide();
             $('#tab-meanmedian span[data-have-metric="false"]').show().find('h2').text(nodatatext);
         }
