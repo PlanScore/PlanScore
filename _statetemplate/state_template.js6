@@ -693,8 +693,9 @@ window.updateMetricsTabs = (yeardata) => {
     // the rest of the processing below, still works through even if we have a null/NaN for the values, they look bad but since we're hiding them...
     {
         if (isNaN(eg_score)) {
+            const nodatatext = `We did not calculate Efficiency Gap for ${SELECTED_STATE}’s ${CURRENT_VIEW.year} Redistricting Plan`;
             $('#tab-efficiencygap span[data-have-metric="true"]').hide();
-            $('#tab-efficiencygap span[data-have-metric="false"]').show();
+            $('#tab-efficiencygap span[data-have-metric="false"]').show().find('h2').text(nodatatext);
         }
         else {
             $('#tab-efficiencygap span[data-have-metric="true"]').show();
@@ -702,8 +703,9 @@ window.updateMetricsTabs = (yeardata) => {
         }
 
         if (isNaN(pb_score)) {
+            const nodatatext = `We did not calculate Efficiency Gap for ${SELECTED_STATE}’s ${CURRENT_VIEW.year} Redistricting Plan`;
             $('#tab-partisanbias span[data-have-metric="true"]').hide();
-            $('#tab-partisanbias span[data-have-metric="false"]').show();
+            $('#tab-partisanbias span[data-have-metric="false"]').show().find('h2').text(nodatatext);
         }
         else {
             $('#tab-partisanbias span[data-have-metric="true"]').show();
@@ -711,8 +713,9 @@ window.updateMetricsTabs = (yeardata) => {
         }
 
         if (isNaN(mm_score)) {
+            const nodatatext = `We did not calculate Efficiency Gap for ${SELECTED_STATE}’s ${CURRENT_VIEW.year} Redistricting Plan`;
             $('#tab-meanmedian span[data-have-metric="true"]').hide();
-            $('#tab-meanmedian span[data-have-metric="false"]').show();
+            $('#tab-meanmedian span[data-have-metric="false"]').show().find('h2').text(nodatatext);
         }
         else {
             $('#tab-meanmedian span[data-have-metric="true"]').show();
