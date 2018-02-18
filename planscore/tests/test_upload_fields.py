@@ -36,6 +36,12 @@ class TestUploadFields (unittest.TestCase):
         self.assertEqual(get_upload_fields.mock_calls[0][1][2:], ('http://example.com', 'fake-secret'))
     
     def test_iam_user_env(self):
+        if 'Upload_AWS_ACCESS_KEY_ID' in os.environ:
+            del os.environ['Upload_AWS_ACCESS_KEY_ID']
+    
+        if 'Upload_AWS_SECRET_ACCESS_KEY' in os.environ:
+            del os.environ['Upload_AWS_SECRET_ACCESS_KEY']
+    
         os.environ['AWS_ACCESS_KEY_ID'] = 'role-key'
         os.environ['AWS_SECRET_ACCESS_KEY'] = 'role-secret'
     
