@@ -4,7 +4,7 @@ More details on browser-based S3 uploads using HTTP POST:
 
     http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-post-example.html
 '''
-import json, pprint, urllib.parse, datetime, random, os
+import json, pprint, urllib.parse, datetime, random, os, contextlib
 import boto3, itsdangerous
 from . import util, data, constants
 
@@ -44,6 +44,36 @@ def generate_signed_id(secret):
     identifier = '{}.{:09d}Z'.format(now.strftime('%Y%m%dT%H%M%S'), nsec)
     signer = itsdangerous.Signer(secret)
     return identifier, signer.sign(identifier.encode('utf8')).decode('utf8')
+
+@contextlib.contextmanager
+def iam_user_env(environ):
+    ''' Temporarily overwrite normal AWS role credentials for another AWS user.
+    
+        Looks for "User_AWS_ACCESS_KEY" environment variable.
+    '''
+    old_key, old_secret, old_token = None, None, None
+
+    if 'User_AWS_ACCESS_KEY_ID' in environ and 'User_AWS_SECRET_ACCESS_KEY' in environ:
+        old_key = environ.get('AWS_ACCESS_KEY_ID')
+        old_secret = environ.get('AWS_SECRET_ACCESS_KEY')
+        old_token = environ.get('AWS_SESSION_TOKEN')
+
+        environ['AWS_ACCESS_KEY_ID'] = environ['User_AWS_ACCESS_KEY_ID']
+        environ['AWS_SECRET_ACCESS_KEY'] = environ['User_AWS_SECRET_ACCESS_KEY']
+
+        if 'User_AWS_SESSION_TOKEN' in environ:
+            environ['AWS_SESSION_TOKEN'] = environ['User_AWS_SESSION_TOKEN']
+        elif 'AWS_SESSION_TOKEN' in environ:
+            del environ['AWS_SESSION_TOKEN']
+    
+    yield
+    
+    if 'User_AWS_ACCESS_KEY_ID' in environ and 'User_AWS_SECRET_ACCESS_KEY' in environ:
+        environ['AWS_ACCESS_KEY_ID'] = old_key
+        environ['AWS_SECRET_ACCESS_KEY'] = old_secret
+
+        if 'User_AWS_SESSION_TOKEN' in environ and old_token is not None:
+            environ['AWS_SESSION_TOKEN'] = old_token
 
 def lambda_handler(event, context):
     '''

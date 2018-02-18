@@ -1,4 +1,4 @@
-import unittest, unittest.mock, itsdangerous, os
+import unittest, unittest.mock, itsdangerous, os, boto3
 from .. import upload_fields, constants
 
 class TestUploadFields (unittest.TestCase):
@@ -34,6 +34,41 @@ class TestUploadFields (unittest.TestCase):
         
         self.assertEqual(len(get_upload_fields.mock_calls), 1)
         self.assertEqual(get_upload_fields.mock_calls[0][1][2:], ('http://example.com', 'fake-secret'))
+    
+    def test_iam_user_env(self):
+        os.environ['AWS_ACCESS_KEY_ID'] = 'role-key'
+        os.environ['AWS_SECRET_ACCESS_KEY'] = 'role-secret'
+    
+        with upload_fields.iam_user_env(os.environ):
+            creds1 = boto3.session.Session().get_credentials()
+            self.assertEqual(creds1.access_key, 'role-key')
+            self.assertEqual(creds1.secret_key, 'role-secret')
+            self.assertIsNone(creds1.token)
+
+        os.environ['User_AWS_ACCESS_KEY_ID'] = 'user-key'
+        os.environ['User_AWS_SECRET_ACCESS_KEY'] = 'user-secret'
+    
+        with upload_fields.iam_user_env(os.environ):
+            creds2 = boto3.session.Session().get_credentials()
+            self.assertEqual(creds2.access_key, 'user-key')
+            self.assertEqual(creds2.secret_key, 'user-secret')
+            self.assertIsNone(creds2.token)
+
+        os.environ['AWS_SESSION_TOKEN'] = 'role-token'
+        os.environ['User_AWS_ACCESS_KEY_ID'] = 'user-key'
+        os.environ['User_AWS_SECRET_ACCESS_KEY'] = 'user-secret'
+        os.environ['User_AWS_SESSION_TOKEN'] = 'user-token'
+    
+        with upload_fields.iam_user_env(os.environ):
+            creds3 = boto3.session.Session().get_credentials()
+            self.assertEqual(creds3.access_key, 'user-key')
+            self.assertEqual(creds3.secret_key, 'user-secret')
+            self.assertEqual(creds3.token, 'user-token')
+
+        creds4 = boto3.session.Session().get_credentials()
+        self.assertEqual(creds4.access_key, 'role-key')
+        self.assertEqual(creds4.secret_key, 'role-secret')
+        self.assertEqual(creds4.token, 'role-token')
     
     @unittest.mock.patch('planscore.upload_fields.generate_signed_id')
     def test_with_token(self, generate_signed_id):
