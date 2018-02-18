@@ -55,7 +55,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     env = {k: os.environ[k]
         for k in ('PLANSCORE_SECRET', 'WEBSITE_BASE', 'AWS', 'SQS_QUEUEURL',
-            'User_AWS_ACCESS_KEY_ID', 'User_AWS_SECRET_ACCESS_KEY', 'User_AWS_SESSION_TOKEN')
+            'Upload_AWS_ACCESS_KEY_ID', 'Upload_AWS_SECRET_ACCESS_KEY', 'Upload_AWS_SESSION_TOKEN')
         if k in os.environ}
     
     lam = boto3.client('lambda', region_name='us-east-1')

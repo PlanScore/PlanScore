@@ -49,26 +49,26 @@ def generate_signed_id(secret):
 def iam_user_env(environ):
     ''' Temporarily overwrite normal AWS role credentials for another AWS user.
     
-        Looks for "User_AWS_ACCESS_KEY" environment variable.
+        Looks for "Upload_AWS_*" environment variables.
     '''
     old_key, old_secret, old_token = None, None, None
 
-    if 'User_AWS_ACCESS_KEY_ID' in environ and 'User_AWS_SECRET_ACCESS_KEY' in environ:
+    if 'Upload_AWS_ACCESS_KEY_ID' in environ and 'Upload_AWS_SECRET_ACCESS_KEY' in environ:
         old_key = environ.get('AWS_ACCESS_KEY_ID')
         old_secret = environ.get('AWS_SECRET_ACCESS_KEY')
         old_token = environ.get('AWS_SESSION_TOKEN')
 
-        environ['AWS_ACCESS_KEY_ID'] = environ['User_AWS_ACCESS_KEY_ID']
-        environ['AWS_SECRET_ACCESS_KEY'] = environ['User_AWS_SECRET_ACCESS_KEY']
+        environ['AWS_ACCESS_KEY_ID'] = environ['Upload_AWS_ACCESS_KEY_ID']
+        environ['AWS_SECRET_ACCESS_KEY'] = environ['Upload_AWS_SECRET_ACCESS_KEY']
 
-        if 'User_AWS_SESSION_TOKEN' in environ:
-            environ['AWS_SESSION_TOKEN'] = environ['User_AWS_SESSION_TOKEN']
+        if 'Upload_AWS_SESSION_TOKEN' in environ:
+            environ['AWS_SESSION_TOKEN'] = environ['Upload_AWS_SESSION_TOKEN']
         elif 'AWS_SESSION_TOKEN' in environ:
             del environ['AWS_SESSION_TOKEN']
     
     yield
     
-    if 'User_AWS_ACCESS_KEY_ID' in environ and 'User_AWS_SECRET_ACCESS_KEY' in environ:
+    if 'Upload_AWS_ACCESS_KEY_ID' in environ and 'Upload_AWS_SECRET_ACCESS_KEY' in environ:
         environ['AWS_ACCESS_KEY_ID'] = old_key
         environ['AWS_SECRET_ACCESS_KEY'] = old_secret
         
