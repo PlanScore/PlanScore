@@ -71,16 +71,20 @@ def iam_user_env(environ):
     if 'User_AWS_ACCESS_KEY_ID' in environ and 'User_AWS_SECRET_ACCESS_KEY' in environ:
         environ['AWS_ACCESS_KEY_ID'] = old_key
         environ['AWS_SECRET_ACCESS_KEY'] = old_secret
+        
+        if 'AWS_SESSION_TOKEN' in environ:
+            del environ['AWS_SESSION_TOKEN']
 
-        if 'User_AWS_SESSION_TOKEN' in environ and old_token is not None:
+        if old_token is not None:
             environ['AWS_SESSION_TOKEN'] = old_token
 
 def lambda_handler(event, context):
     '''
     '''
     request_url = util.event_url(event)
-    s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
-    creds = boto3.session.Session().get_credentials()
+    with iam_user_env(os.environ):
+        s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
+        creds = boto3.session.Session().get_credentials()
     url, fields = get_upload_fields(s3, creds, request_url, constants.SECRET)
     
     return {
