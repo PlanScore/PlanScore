@@ -51,32 +51,31 @@ def iam_user_env(environ):
     
         Looks for "Upload_AWS_*" environment variables.
     '''
-    old_key, old_secret, old_token = None, None, None
+    old_key, old_secret, old_token = None, None, environ.get('AWS_SESSION_TOKEN')
 
     if 'Upload_AWS_ACCESS_KEY_ID' in environ and 'Upload_AWS_SECRET_ACCESS_KEY' in environ:
         old_key = environ.get('AWS_ACCESS_KEY_ID')
         old_secret = environ.get('AWS_SECRET_ACCESS_KEY')
-        old_token = environ.get('AWS_SESSION_TOKEN')
 
         environ['AWS_ACCESS_KEY_ID'] = environ['Upload_AWS_ACCESS_KEY_ID']
         environ['AWS_SECRET_ACCESS_KEY'] = environ['Upload_AWS_SECRET_ACCESS_KEY']
 
-        if 'Upload_AWS_SESSION_TOKEN' in environ:
-            environ['AWS_SESSION_TOKEN'] = environ['Upload_AWS_SESSION_TOKEN']
-        elif 'AWS_SESSION_TOKEN' in environ:
-            del environ['AWS_SESSION_TOKEN']
+    if 'Upload_AWS_SESSION_TOKEN' in environ:
+        environ['AWS_SESSION_TOKEN'] = environ['Upload_AWS_SESSION_TOKEN']
+    elif 'AWS_SESSION_TOKEN' in environ:
+        del environ['AWS_SESSION_TOKEN']
     
     yield
     
     if 'Upload_AWS_ACCESS_KEY_ID' in environ and 'Upload_AWS_SECRET_ACCESS_KEY' in environ:
         environ['AWS_ACCESS_KEY_ID'] = old_key
         environ['AWS_SECRET_ACCESS_KEY'] = old_secret
-        
-        if 'AWS_SESSION_TOKEN' in environ:
-            del environ['AWS_SESSION_TOKEN']
+    
+    if 'AWS_SESSION_TOKEN' in environ:
+        del environ['AWS_SESSION_TOKEN']
 
-        if old_token is not None:
-            environ['AWS_SESSION_TOKEN'] = old_token
+    if old_token is not None:
+        environ['AWS_SESSION_TOKEN'] = old_token
 
 def lambda_handler(event, context):
     '''

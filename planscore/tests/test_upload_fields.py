@@ -42,8 +42,12 @@ class TestUploadFields (unittest.TestCase):
         if 'Upload_AWS_SECRET_ACCESS_KEY' in os.environ:
             del os.environ['Upload_AWS_SECRET_ACCESS_KEY']
     
+        if 'Upload_AWS_SESSION_TOKEN' in os.environ:
+            del os.environ['Upload_AWS_SESSION_TOKEN']
+    
         os.environ['AWS_ACCESS_KEY_ID'] = 'role-key'
         os.environ['AWS_SECRET_ACCESS_KEY'] = 'role-secret'
+        os.environ['AWS_SESSION_TOKEN'] = 'role-token'
     
         with upload_fields.iam_user_env(os.environ):
             creds1 = boto3.session.Session().get_credentials()
@@ -60,7 +64,6 @@ class TestUploadFields (unittest.TestCase):
             self.assertEqual(creds2.secret_key, 'user-secret')
             self.assertIsNone(creds2.token)
 
-        os.environ['AWS_SESSION_TOKEN'] = 'role-token'
         os.environ['Upload_AWS_ACCESS_KEY_ID'] = 'user-key'
         os.environ['Upload_AWS_SECRET_ACCESS_KEY'] = 'user-secret'
         os.environ['Upload_AWS_SESSION_TOKEN'] = 'user-token'
