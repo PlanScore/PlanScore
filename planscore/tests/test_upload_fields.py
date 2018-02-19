@@ -94,7 +94,7 @@ class TestUploadFields (unittest.TestCase):
 
         generate_signed_id.assert_called_once_with('sec')
         self.assertEqual(fields['success_action_redirect'], 'https://example.org/uploaded?id=id.sig')
-        #self.assertIs(fields['x-amz-security-token'], creds.token)
+        self.assertIs(fields['x-amz-security-token'], creds.token)
     
     @unittest.mock.patch('planscore.upload_fields.generate_signed_id')
     def test_without_token(self, generate_signed_id):

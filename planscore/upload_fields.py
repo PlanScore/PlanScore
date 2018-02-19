@@ -28,8 +28,8 @@ def get_upload_fields(s3, creds, request_url, secret):
     
     presigned['fields'].update(acl=acl, success_action_redirect=redirect_url)
     
-    if 'x-amz-security-token' in presigned['fields']:
-        del presigned['fields']['x-amz-security-token']
+    if creds.token:
+        presigned['fields']['x-amz-security-token'] = creds.token
     
     return presigned['url'], presigned['fields']
 
@@ -84,7 +84,7 @@ def lambda_handler(event, context):
     with iam_user_env(os.environ):
         s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
         creds = boto3.session.Session().get_credentials()
-    url, fields = get_upload_fields(s3, creds, request_url, constants.SECRET)
+        url, fields = get_upload_fields(s3, creds, request_url, constants.SECRET)
     
     return {
         'statusCode': '200',
