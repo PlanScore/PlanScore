@@ -28,9 +28,7 @@ def get_upload_fields(s3, creds, request_url, secret):
     
     presigned['fields'].update(acl=acl, success_action_redirect=redirect_url)
     
-    if creds.token:
-        presigned['fields']['x-amz-security-token'] = creds.token
-    elif 'x-amz-security-token' in presigned['fields']:
+    if 'x-amz-security-token' in presigned['fields']:
         del presigned['fields']['x-amz-security-token']
     
     return presigned['url'], presigned['fields']
