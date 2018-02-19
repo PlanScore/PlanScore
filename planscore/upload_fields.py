@@ -4,7 +4,7 @@ More details on browser-based S3 uploads using HTTP POST:
 
     http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-post-example.html
 '''
-import json, pprint, urllib.parse, datetime, random, os, contextlib
+import json, pprint, urllib.parse, datetime, random, os
 import boto3, itsdangerous
 from . import util, data, constants
 
@@ -45,46 +45,13 @@ def generate_signed_id(secret):
     signer = itsdangerous.Signer(secret)
     return identifier, signer.sign(identifier.encode('utf8')).decode('utf8')
 
-@contextlib.contextmanager
-def iam_user_env(environ):
-    ''' Temporarily overwrite normal AWS role credentials for another AWS user.
-    
-        Looks for "Upload_AWS_*" environment variables.
-    '''
-    old_key, old_secret, old_token = None, None, environ.get('AWS_SESSION_TOKEN')
-
-    if 'Upload_AWS_ACCESS_KEY_ID' in environ and 'Upload_AWS_SECRET_ACCESS_KEY' in environ:
-        old_key = environ.get('AWS_ACCESS_KEY_ID')
-        old_secret = environ.get('AWS_SECRET_ACCESS_KEY')
-
-        environ['AWS_ACCESS_KEY_ID'] = environ['Upload_AWS_ACCESS_KEY_ID']
-        environ['AWS_SECRET_ACCESS_KEY'] = environ['Upload_AWS_SECRET_ACCESS_KEY']
-
-    if 'Upload_AWS_SESSION_TOKEN' in environ:
-        environ['AWS_SESSION_TOKEN'] = environ['Upload_AWS_SESSION_TOKEN']
-    elif 'AWS_SESSION_TOKEN' in environ:
-        del environ['AWS_SESSION_TOKEN']
-    
-    yield
-    
-    if 'Upload_AWS_ACCESS_KEY_ID' in environ and 'Upload_AWS_SECRET_ACCESS_KEY' in environ:
-        environ['AWS_ACCESS_KEY_ID'] = old_key
-        environ['AWS_SECRET_ACCESS_KEY'] = old_secret
-    
-    if 'AWS_SESSION_TOKEN' in environ:
-        del environ['AWS_SESSION_TOKEN']
-
-    if old_token is not None:
-        environ['AWS_SESSION_TOKEN'] = old_token
-
 def lambda_handler(event, context):
     '''
     '''
     request_url = util.event_url(event)
-    with iam_user_env(os.environ):
-        s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
-        creds = boto3.session.Session().get_credentials()
-        url, fields = get_upload_fields(s3, creds, request_url, constants.SECRET)
+    s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
+    creds = boto3.session.Session().get_credentials()
+    url, fields = get_upload_fields(s3, creds, request_url, constants.SECRET)
     
     return {
         'statusCode': '200',
