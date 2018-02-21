@@ -43,10 +43,11 @@ def ordered_districts(layer):
     
     for index in range(defn.GetFieldCount()):
         name = defn.GetFieldDefn(index).GetName()
+        raw_values = [feat.GetField(name) for feat in features]
         
         try:
-            values = {int(feat.GetField(name)) for feat in features}
-        except TypeError:
+            values = {int(raw) for raw in raw_values}
+        except:
             continue
         
         if values != expected_values:
@@ -97,7 +98,9 @@ def put_district_geometries(s3, bucket, upload, path):
     if not ds:
         raise RuntimeError('Could not open file to fan out district invocations')
 
-    for (index, feature) in enumerate(ds.GetLayer(0)):
+    _, features = ordered_districts(ds.GetLayer(0))
+    
+    for (index, feature) in enumerate(features):
         geometry = feature.GetGeometryRef()
 
         if geometry.GetSpatialReference():
@@ -187,7 +190,9 @@ def put_geojson_file(s3, bucket, upload, path):
     if not ds:
         raise RuntimeError('Could not open "{}"'.format(path))
 
-    for (index, feature) in enumerate(ds.GetLayer(0)):
+    _, features = ordered_districts(ds.GetLayer(0))
+    
+    for (index, feature) in enumerate(features):
         geometry = feature.GetGeometryRef()
         if geometry.GetSpatialReference():
             geometry.TransformTo(prepare_state.EPSG4326)
