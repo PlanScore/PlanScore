@@ -54,11 +54,20 @@ $(document).ready(function () {
     initYearPickers();
     initBoundaryPicker();
     initStatePopup();
+    initTabMetricsTracking();
     initLoadStartingConditions();  // this will implicitly call loadDataForSelectedBoundaryAndYear() after setup, loading the map
 
     $(window).on('resize', handleResize);
     handleResize();
 });
+
+window.initTabMetricsTracking = () => {
+    // when they switch metrics tabs, log a Google Analytics event
+    $('#tabs-metrics a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        const whichtab = $(e.target).prop('href').replace(/.+#tab-/, '');  // the suffix is the metric name, e.g. #tab-efficiencygap
+        logToGoogleAnalytics('metricread', whichtab);
+    });
+};
 
 window.initStatePopup = () => {
     // the stateinfo popup is managed by selectState()
