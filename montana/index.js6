@@ -277,9 +277,12 @@ window.initLoadStartingConditions = () => {
     $('#yearpicker-small > div').hide().filter(`[data-picker="${planyear}"]`).show();
 
     // ready, set, go
+    const options = {
+        selectPlanYearIfNoData: true,
+    };
     selectMetric(metric);
-    selectElectionOrPlan(year, planyear);
-    selectBoundaryType(district);
+    selectElectionOrPlan(year, planyear, options);
+    selectBoundaryType(district, options);
 };
 
 
@@ -288,8 +291,12 @@ window.initLoadStartingConditions = () => {
 // loadDataForSelectedBoundaryAndYear() is the real worker here; the others are basically convenience functions
 //
 
-window.loadDataForSelectedBoundaryAndYear = () => {
-    if (! CURRENT_VIEW.year || ! CURRENT_VIEW.boundtype) return;  // need both; during startup one will be blank, so avoid an error
+window.loadDataForSelectedBoundaryAndYear = (options={}) => {
+    if (! CURRENT_VIEW.year || ! CURRENT_VIEW.boundtype) return;  // need both; during startup one will be blank, so this check avoids an error during startup when we're defining one then the other
+
+    // options provides a special case for when the page loads (inspired by issue 223)
+    // that if we have no data for the selected year, we figure out a better year and then forward them there
+    // that's actually done in updateStatsFromCsvContent()
 
     // fetch the CSV file and then use the callbacks to update the map
     const url = `/data/bias_${CURRENT_VIEW.boundtype}.csv`;
@@ -351,7 +358,7 @@ window.loadDataForSelectedBoundaryAndYear = () => {
             }
 
             // ready, set, go!
-            updateStatsFromCsvContent(alldataforthisstate);
+            updateStatsFromCsvContent(alldataforthisstate, options);
 
             // log the GA request
             logRequestToGoogleAnalytics();
@@ -359,7 +366,7 @@ window.loadDataForSelectedBoundaryAndYear = () => {
         error: function () {
             // an error, meaning bad network or missing CSV
             // treat this the same as receiving 0 rows, so the UI states that it has no data
-            updateStatsFromCsvContent([]);
+            updateStatsFromCsvContent([], options);
         },
     });
 
@@ -393,7 +400,7 @@ window.selectMetric = (whichmetric) => {
     updateUrlHash();
 };
 
-window.selectElectionOrPlan = (year, planorelection) => {
+window.selectElectionOrPlan = (year, planorelection, options={}) => {
     // not supplied = fill it in
     if (! planorelection) planorelection = CURRENT_VIEW.planorelection;
 
@@ -414,20 +421,24 @@ window.selectElectionOrPlan = (year, planorelection) => {
     // save to the state and refresh the map + data
     CURRENT_VIEW.year = year;
     CURRENT_VIEW.planorelection = planorelection;
-    loadDataForSelectedBoundaryAndYear();
+    loadDataForSelectedBoundaryAndYear(options);
 };
 
-window.selectBoundaryType = (boundtype) => {
+window.selectBoundaryType = (boundtype, options={}) => {
     // UI update: highlight this button
     $('#boundarypicker div').removeClass('active').filter(`[data-boundary="${boundtype}"]`).addClass('active');
 
     // save to the state and refresh the map + data
     CURRENT_VIEW.boundtype = boundtype;
-    loadDataForSelectedBoundaryAndYear();
+    loadDataForSelectedBoundaryAndYear(options);
 };
 
-window.updateStatsFromCsvContent = (allcsvdata) => {
-    // handle a condition of no data at all for this whole district type, for any year
+window.updateStatsFromCsvContent = (allcsvdata, options={}) => {
+    // options provides a special case for when the page loads (inspired by issue 223)
+    // that if we have no data for the selected year, we figure out a better year and then forward them there
+    // that's actually done in updateStatsFromCsvContent()
+
+    // handle a condition of no data at all for this whole district type, for any year ever
     if (allcsvdata.length) {
         $('#maincontent span[data-hasdata-atall]').hide().filter('[data-hasdata-atall="true"]').show();
         $('#sidebar span[data-hasdata-atall]').hide().filter('[data-hasdata-atall="true"]').show();
@@ -454,17 +465,51 @@ window.updateStatsFromCsvContent = (allcsvdata) => {
     redrawYearPickers(allcsvdata);
 
     // final check: do we have data for this district for the selected year?
-    // if not, fill in the closest year for which we DO have data
-    // which actually does involve peeking at most of the state so we can link to it
+    // if not, then figure out what Plan was active during CURRENT_VIEW.year and the starting year of that Plan
+    // depending on options.selectPlanYearIfNoData (and being in Plan mode instead of Election mode)
+    // we may simply display an invitation to go read that year instead, or may actually find the Plan and select that year for them
+    // this handles both possible cases where one would ask for data we don't have:
+    // - they switched boundary types after having selected a year; they want their year preserved and would find it jarring to jump to a different year
+    // - they loaded the page with a bad year selected (e.g. issue 223) and would prefer to be automagically forwarded to a proper year
     const thisyeardata = allcsvdata.filter((row) => { return row.year == CURRENT_VIEW.year; })[0];
     if (thisyeardata) {
+        // we do have data for this year
         $('#maincontent span[data-hasdata-thisyear]').hide().filter('[data-hasdata-thisyear="true"]').show();
-
         $('#yearpicker-small').removeClass('hidden'); // outside of #maincontent and mobile only but is broken if no data
     }
-    else {
-        $('#maincontent span[data-hasdata-thisyear]').hide().filter('[data-hasdata-thisyear="false"]').show();
+    else if (options.selectPlanYearIfNoData && CURRENT_VIEW.planorelection == 'plan') {
+        // no data for this year; we DO want to find the active Plan and just forward to it
+        // also handle out-of-bounds cases, e.g. data are present for 1990-2002 and URL asks for 1980 or 2016
+        // by defaulting to the earliest or latest Plan that we have
+        const yearsofthesameplan = allcsvdata.filter((row) => {
+            return row.plan_minyear <= CURRENT_VIEW.year && row.plan_maxyear >= CURRENT_VIEW.year;
+        });
 
+        let usethisyearinstead;
+        if (yearsofthesameplan.length) {
+            usethisyearinstead = yearsofthesameplan[0].plan_minyear;
+        }
+        else {
+            // find the min & max year in the CSV data
+            // if selected year is <min then go with min year; if >max then go with max year
+            const wehavetheseyears = allcsvdata.map((row) => {
+                return parseInt(row.year);
+            });
+            const maxyear = Math.max(...wehavetheseyears);
+            const minyear = Math.min(...wehavetheseyears);
+            usethisyearinstead = CURRENT_VIEW.year >= maxyear ? maxyear : minyear;
+        }
+
+        // cease execution, and make them select this new year; async so it's a whole new thread
+        setTimeout(function () {
+            selectElectionOrPlan(usethisyearinstead);
+        }, 1);
+        return;
+    }
+    else {
+        // no data for this year, and no best-plan-match fudging was requested (or we're not in Plan mode)
+        // just find the closest year where we have data, and offer it as a Did You Mean? sort of thing
+        $('#maincontent span[data-hasdata-thisyear]').hide().filter('[data-hasdata-thisyear="false"]').show();
         $('#yearpicker-small').addClass('hidden'); // outside of #maincontent and mobile only but is broken if no data
 
         const wehavetheseyears = allcsvdata.map((row) => {
