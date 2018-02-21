@@ -33,6 +33,42 @@ def unzip_shapefile(zip_path, zip_dir):
     
     return unzipped_path
 
+def ordered_districts(layer):
+    '''
+    '''
+    defn = layer.GetLayerDefn()
+    expected_values = {i+1 for i in range(len(layer))}
+    features = list(layer)
+    fields = list()
+    
+    print('-' * 80)
+    
+    for index in range(defn.GetFieldCount()):
+        name = defn.GetFieldDefn(index).GetName()
+        
+        try:
+            values = {int(feat.GetField(name)) for feat in features}
+        except TypeError:
+            continue
+        else:
+            print(name, '--', values, values == expected_values)
+        
+        if values != expected_values:
+            continue
+        
+        fields.append((2 if 'district' in name.lower() else 1, name))
+    
+    fields.sort(reverse=True)
+
+    print('fields:', fields)
+    
+    if not fields:
+        return features
+    
+    features.sort(key=lambda f: int(f.GetField(fields[0][1])))
+    
+    return features
+
 def commence_upload_scoring(s3, bucket, upload):
     '''
     '''
