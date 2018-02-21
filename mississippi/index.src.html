@@ -44,6 +44,7 @@
                 <h1 class="state_name">Mississippi</h1>
 
                 <span data-hasdata-atall="true">
+                    <!-- mobile yearpicker -->
                     <div class="visible-xs-block" id="yearpicker-small">
                         <div data-picker="plan" class="row">
                             <div class="col-xs-6 left nextprev" title="Previous districting plan"><i class="glyphicon glyphicon-chevron-left"></i></div>
@@ -57,10 +58,14 @@
                         </div>
                     </div>
 
-                    <!-- below yearpicker on mobile, above yearpicker on desktop -->
+                    <!-- this note comes below the yearpicker on mobile, and above the yearpicker on desktop -->
                     <p class="wehavedata">We have <a href="https://planscore.org/about/historical-data/">data about <span data-metric="plancount" class="bold">0</span> plans, covering <span data-metric="electioncount" class="bold">0</span> elections</a>.</p>
 
-                    <div class="hidden-xs row" id="yearpicker-big"></div>
+                    <!-- desktop yearpicker -->
+                    <div class="hidden-xs row" id="yearpicker-big">
+                        <div class="plans col-xs-5"></div>
+                        <div class="elections col-xs-7"></div>
+                    </div>
 
                     <div class="gray hidden-xs" style="clear: both;">
                         <p>New Plans</p>

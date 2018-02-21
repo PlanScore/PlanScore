@@ -220,6 +220,7 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
         complete: function (results) {
             // issue 169, if fudgeYearIfNoData is enabled and we have no data for this year, pick another year
             // nearest year to our chosen which does have data, favoring more-recent year in event of a tie
+            // primarily used when switching district types, as not all district types have the same coverage for every year (e.g. State House 2016)
             if (options.fudgeYearIfNoData) {
                 const hasdata = results.data.filter((datarow) => { return datarow.year == CURRENT_VIEW.year; }).length;
                 if (! hasdata) {
@@ -239,6 +240,17 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
                     return;
                 }
             }
+
+            // issue 217: odd-numbered years
+            // our whole yearpicker concept was based on even-numbered years,
+            // but a few states have unusual cycles such as odd-numbered years, and some unusual cases e.g. KY which in 1981-1984 changed from odd-numbered to even-numbered
+            // workaround here: rewrite any odd-numbered years to add 1 (1973 becomes 1974) so we still have even numbers
+            // for this visual display having 1974 show the plan enacted in 1973 is sufficiently accurate
+            results.data = results.data.map(function (datarow) {
+                const year = parseInt(datarow.year);
+                if (year % 2 == 1) datarow.year = String(year + 1);
+                return datarow;
+            });
 
             // filter by the year (geography is implicit by which CSV was fetched)
             // and for each row assign the bias score to the state's row in the above
