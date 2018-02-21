@@ -33,6 +33,35 @@ def unzip_shapefile(zip_path, zip_dir):
     
     return unzipped_path
 
+def ordered_districts(layer):
+    ''' Return field name and list of layer features ordered by guessed district numbers.
+    '''
+    defn = layer.GetLayerDefn()
+    expected_values = {i+1 for i in range(len(layer))}
+    features = list(layer)
+    fields = list()
+    
+    for index in range(defn.GetFieldCount()):
+        name = defn.GetFieldDefn(index).GetName()
+        raw_values = [feat.GetField(name) for feat in features]
+        
+        try:
+            values = {int(raw) for raw in raw_values}
+        except:
+            continue
+        
+        if values != expected_values:
+            continue
+        
+        fields.append((2 if 'district' in name.lower() else 1, name))
+
+    if not fields:
+        return None, features
+    
+    name = sorted(fields)[-1][1]
+
+    return name, sorted(features, key=lambda f: int(f.GetField(name)))
+
 def commence_upload_scoring(s3, bucket, upload):
     '''
     '''
@@ -69,7 +98,9 @@ def put_district_geometries(s3, bucket, upload, path):
     if not ds:
         raise RuntimeError('Could not open file to fan out district invocations')
 
-    for (index, feature) in enumerate(ds.GetLayer(0)):
+    _, features = ordered_districts(ds.GetLayer(0))
+    
+    for (index, feature) in enumerate(features):
         geometry = feature.GetGeometryRef()
 
         if geometry.GetSpatialReference():
@@ -159,7 +190,9 @@ def put_geojson_file(s3, bucket, upload, path):
     if not ds:
         raise RuntimeError('Could not open "{}"'.format(path))
 
-    for (index, feature) in enumerate(ds.GetLayer(0)):
+    _, features = ordered_districts(ds.GetLayer(0))
+    
+    for (index, feature) in enumerate(features):
         geometry = feature.GetGeometryRef()
         if geometry.GetSpatialReference():
             geometry.TransformTo(prepare_state.EPSG4326)
