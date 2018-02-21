@@ -96,8 +96,6 @@ class TestAfterUpload (unittest.TestCase):
         layer4 = ds4.GetLayer(0)
         name4, features4 = after_upload.ordered_districts(layer4)
         self.assertIsNone(name4)
-        self.assertEqual([f.GetField('ID') for f in features4],
-            [i for i in range(19, 1, -1)])
 
         ds5 = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'unordered5.geojson'))
         layer5 = ds5.GetLayer(0)
