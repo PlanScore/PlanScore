@@ -382,7 +382,14 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
                     // click events: call the popup maker
                     events: {
                         click: function (e) {
-                            selectState(e.point.abbr, { closeIfSameState: true });
+// GDA issue 238 -- temporary measure to have a click proceed directly to the state page; if they choose to keep it, then selectState() goes away in favor of this
+// selectState(e.point.abbr, { closeIfSameState: true });
+                            // compose URL for the selected state + boundary + year (e.g. /california/#!2010-plan-ushouse) and send them to it
+                            // see the states page programming for details as to the expected hash params
+                            const plan_or_election = 'plan';
+                            const stateslug        = e.point.name.toLowerCase().replace(/\W/g, '_');
+                            const moreinfourl      = `/${stateslug}/#!${CURRENT_VIEW.year}-${plan_or_election}-${CURRENT_VIEW.boundtype}`;
+                            document.location.href = moreinfourl;
                         }
                     },
                 }]
