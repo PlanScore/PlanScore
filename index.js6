@@ -386,10 +386,17 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
 // selectState(e.point.abbr, { closeIfSameState: true });
                             // compose URL for the selected state + boundary + year (e.g. /california/#!2010-plan-ushouse) and send them to it
                             // see the states page programming for details as to the expected hash params
+                            // if they're holding the ctrl/alt/command key, try to open in a new window
                             const plan_or_election = 'plan';
                             const stateslug        = e.point.name.toLowerCase().replace(/\W/g, '_');
                             const moreinfourl      = `/${stateslug}/#!${CURRENT_VIEW.year}-${plan_or_election}-${CURRENT_VIEW.boundtype}`;
-                            document.location.href = moreinfourl;
+
+                            if (e.altKey || e.ctrlKey || e.shiftKey || e.metaKey) {
+                                window.open(moreinfourl);
+                            }
+                            else {
+                                document.location.href = moreinfourl;
+                            }
                         }
                     },
                 }]
