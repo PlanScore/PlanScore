@@ -27,7 +27,7 @@ def unzip_shapefile(zip_path, zip_dir):
         base1, ext1 = os.path.splitext(file1)
         base2, ext2 = os.path.splitext(file2)
         
-        if ext1 == '.shp' and base2 == base1:
+        if ext1 == '.shp' and base2.lower() == base1.lower():
             zf.extract(file2, zip_dir)
             unzipped_path = os.path.join(zip_dir, file1)
     
