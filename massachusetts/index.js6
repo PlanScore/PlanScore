@@ -277,12 +277,9 @@ window.initLoadStartingConditions = () => {
     $('#yearpicker-small > div').hide().filter(`[data-picker="${planyear}"]`).show();
 
     // ready, set, go
-    const options = {
-        selectPlanYearIfNoData: true,
-    };
     selectMetric(metric);
-    selectElectionOrPlan(year, planyear, options);
-    selectBoundaryType(district, options);
+    selectElectionOrPlan(year, planyear);
+    selectBoundaryType(district);
 };
 
 
@@ -464,70 +461,35 @@ window.updateStatsFromCsvContent = (allcsvdata, options={}) => {
     // redraw the large yearpicker, indicating years in which a new plan was implemented
     redrawYearPickers(allcsvdata);
 
-    // final check: do we have data for this district for the selected year?
-    // if not, then figure out what Plan was active during CURRENT_VIEW.year and the starting year of that Plan
-    // depending on options.selectPlanYearIfNoData (and being in Plan mode instead of Election mode)
-    // we may simply display an invitation to go read that year instead, or may actually find the Plan and select that year for them
-    // this handles both possible cases where one would ask for data we don't have:
-    // - they switched boundary types after having selected a year; they want their year preserved and would find it jarring to jump to a different year
-    // - they loaded the page with a bad year selected (e.g. issue 223) and would prefer to be automagically forwarded to a proper year
-    const thisyeardata = allcsvdata.filter((row) => { return row.year == CURRENT_VIEW.year; })[0];
-    if (thisyeardata) {
-        // we do have data for this year
-        $('#maincontent span[data-hasdata-thisyear]').hide().filter('[data-hasdata-thisyear="true"]').show();
-        $('#yearpicker-small').removeClass('hidden'); // outside of #maincontent and mobile only but is broken if no data
+    // extract the data for the selected year; that logic depends on whether we're in Plan mode or Election mode
+    // we may or may not get data; toggle the data-hasdata-thisyear elements accordingly
+    let thisyeardata;
+    switch (CURRENT_VIEW.planorelection) {
+        case 'plan':
+            thisyeardata = getDataForThisYear_Plan(allcsvdata, CURRENT_VIEW.year, options);
+            break;
+        case 'election':
+            thisyeardata = getDataForThisYear_Election(allcsvdata, CURRENT_VIEW.year, options);
+            break;
+        default:
+            throw new Error(`updateStatsFromCsvContent() unexpected CURRENT_VIEW.planorelection value: ${CURRENT_VIEW.planorelection}`);
     }
-    else if (options.selectPlanYearIfNoData && CURRENT_VIEW.planorelection == 'plan') {
-        // no data for this year; we DO want to find the active Plan and just forward to it
-        // also handle out-of-bounds cases, e.g. data are present for 1990-2002 and URL asks for 1980 or 2016
-        // by defaulting to the earliest or latest Plan that we have
-        const yearsofthesameplan = allcsvdata.filter((row) => {
-            return row.plan_minyear <= CURRENT_VIEW.year && row.plan_maxyear >= CURRENT_VIEW.year;
-        });
 
-        let usethisyearinstead;
-        if (yearsofthesameplan.length) {
-            usethisyearinstead = yearsofthesameplan[0].plan_minyear;
-        }
-        else {
-            // find the min & max year in the CSV data
-            // if selected year is <min then go with min year; if >max then go with max year
-            const wehavetheseyears = allcsvdata.map((row) => {
-                return parseInt(row.year);
-            });
-            const maxyear = Math.max(...wehavetheseyears);
-            const minyear = Math.min(...wehavetheseyears);
-            usethisyearinstead = CURRENT_VIEW.year >= maxyear ? maxyear : minyear;
-        }
-
-        // cease execution, and make them select this new year; async so it's a whole new thread
-        setTimeout(function () {
-            selectElectionOrPlan(usethisyearinstead);
-        }, 1);
-        return;
-    }
-    else {
-        // no data for this year, and no best-plan-match fudging was requested (or we're not in Plan mode)
-        // just find the closest year where we have data, and offer it as a Did You Mean? sort of thing
+    if (! thisyeardata) {
+        // no data for this year = find closest year with data, offer it as a Did You Mean? sort of thing
         $('#maincontent span[data-hasdata-thisyear]').hide().filter('[data-hasdata-thisyear="false"]').show();
         $('#yearpicker-small').addClass('hidden'); // outside of #maincontent and mobile only but is broken if no data
 
-        const wehavetheseyears = allcsvdata.map((row) => {
-            return parseInt(row.year);
-        });
-        wehavetheseyears.sort((p, q) => {
-            const px = Math.abs(p - parseInt(CURRENT_VIEW.year));
-            const qx = Math.abs(q - parseInt(CURRENT_VIEW.year));
-            return (px != qx) ? (px > qx ? 1 : -1) : (p > q ? -1 : 1); // order by diff from desired year; or else by higher-year if equal spread
-        });
-        const closestyear = wehavetheseyears[0];
-
+        const closestyear = findClosestYear(allcsvdata, CURRENT_VIEW.year);
         const $link = $('#maincontent span[data-hasdata-thisyear="false"] a');
         $link.attr('data-year', closestyear);
         $link.find('span[data-field="closestyear"]').text(closestyear);
 
         return;  // nothing else we can do until they select a year which has data
     }
+
+    $('#maincontent span[data-hasdata-thisyear]').hide().filter('[data-hasdata-thisyear="true"]').show();
+    $('#yearpicker-small').removeClass('hidden'); // outside of #maincontent and mobile only but is broken if no data
 
     //
     // from here on out we know that we're showing a specific election/plan
@@ -555,12 +517,62 @@ window.updateStatsFromCsvContent = (allcsvdata, options={}) => {
     updateMapForCurrentSelection(thisyeardata);
 };
 
+window.findClosestYear = (allcsvdata, desiredyear) => {
+    const wehavetheseyears = allcsvdata.map((row) => {
+        return parseInt(row.year);
+    });
+    wehavetheseyears.sort((p, q) => {
+        const px = Math.abs(p - parseInt(desiredyear));
+        const qx = Math.abs(q - parseInt(desiredyear));
+        return (px != qx) ? (px > qx ? 1 : -1) : (p > q ? -1 : 1); // order by diff from desired year; or else by higher-year if equal spread
+    });
+    return wehavetheseyears[0];
+};
+
+// called from updateStatsFromCsvContent() to encapsulate some logic for extracting the data relevant to this year
+// Plan is a range of years, and per issues 223 and 241 the desired hehavior is to select the Plan in effect at that time even if it doesn't match the year
+// and also rewrite the row so "year" field matches the request (as opposed to previous year-fudging techniques e.g. selectPlanYearIfNoData)
+// in the case of Plans, we will always return a data row, even if we had to pick a year "surrounding" this one, or the first/last plan in the case of out-of-bounds years
+window.getDataForThisYear_Plan = (allcsvdata, desiredyear, options={}) => {
+    // all rows of the same Plan have the same Plan-related stats, so it doesn't much matter which row we pick
+
+    // can't use minyear and maxyear here, because we have to account for years that are between plans, e.g. 1997 falls in between a 1994-1996 plan and a 1998-2000 plan
+    // workaround: the latest plan with a maxyear <= the desiredyear ... which does imply that the rows are sorted which we shouldn't presume
+    let plansnotyetexpired = allcsvdata.filter((row) => {
+        return row.plan_minyear <= desiredyear;
+    });
+    plansnotyetexpired.sort((p, q) => { return p.year <= q.year ? 1 : -1; });  // recent-to-oldest, so 0 is most recent which hadn't yet expired at this time
+
+    if (plansnotyetexpired.length) {
+        const datarow = plansnotyetexpired[0];
+        return datarow;
+    }
+
+    // the above case would also catch a year that was out-of-bounds by being too high (the year 2100)
+    // if we got here, then the desired year was below bounds, find the earliest plan we do have and use that
+    // don't presume the csvdata are sorted, sort it here
+    const earliestplan = allcsvdata.slice();
+    earliestplan.sort((p, q) => { return p.year <= q.year ? -1 : 1; });  // oldest to recent, so 0 is earliest plan
+    return earliestplan[0];
+};
+
+// called from updateStatsFromCsvContent() to encapsulate some logic for extracting the data relevant to this year
+// Election is one specific election-data row for a specific year, and needs an exact match for CURRENT_VIEW.year or else it's a no-data condition
+// in the case of Elections we may have no data for this year & boundary
+window.getDataForThisYear_Election = (allcsvdata, desiredyear, options={}) => {
+    const matchingrow = allcsvdata.filter((row) => { return row.year == desiredyear; })[0];
+    return matchingrow;
+};
+
 window.updateMetricsTitle = (yeardata) => {
     const minyear = yeardata.plan_minyear;
     const maxyear = yeardata.plan_maxyear;
     const year    = yeardata.year;
 
     // compose a title for what we're seeing
+    // single-year Plan
+    // multi-year Plan
+    // single-year Election details
     let title = `${minyear}-${maxyear} Redistricting Plan`;
     if (minyear == maxyear) {
         title = `${maxyear} Redistricting Plan`;  // don't say "2000-2000 plan"
