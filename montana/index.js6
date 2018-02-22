@@ -457,10 +457,6 @@ window.updateStatsFromCsvContent = (allcsvdata, options={}) => {
     $('span[data-metric="electioncount"]').text(Object.keys(distinct_years).length.toLocaleString());
     $('span[data-metric="plancount"]').text(Object.keys(distinct_plans).length.toLocaleString());
 
-    // okay so we have SOME data for this state + district type
-    // redraw the large yearpicker, indicating years in which a new plan was implemented
-    redrawYearPickers(allcsvdata);
-
     // extract the data for the selected year; that logic depends on whether we're in Plan mode or Election mode
     // we may or may not get data; toggle the data-hasdata-thisyear elements accordingly
     let thisyeardata;
@@ -474,6 +470,8 @@ window.updateStatsFromCsvContent = (allcsvdata, options={}) => {
         default:
             throw new Error(`updateStatsFromCsvContent() unexpected CURRENT_VIEW.planorelection value: ${CURRENT_VIEW.planorelection}`);
     }
+
+    redrawYearPickers(allcsvdata, thisyeardata);  // do this after getting thisyeardata so it can adapt to what we're showing, but before we bail with nodata below
 
     if (! thisyeardata) {
         // no data for this year = find closest year with data, offer it as a Did You Mean? sort of thing
@@ -870,11 +868,13 @@ window.updateWastedVotesChart = (yeardata) => {
     });
 };
 
-window.redrawYearPickers = (csvdata) => {
+window.redrawYearPickers = (csvdata, selectedyeardata={}) => {
     // see initYearPickers() for the delegated event handlers and further explanation
     // per issue 217, the mobile & desktop yearpickers must be redrawn based on the years represented in the CSV
     // for the given district type & state, since it turns out election years aren't consistent between states, nor between a state's district levels
     // e.g. KY statehouse, ushouse, and statesenate are not the same, and are all a mix of even and odd years
+    // per issue 241 the data we're showing may not be for CURRENT_VIEW.year at all, as we try to show SOMETHING especially in Plan mode
+    // so highlighting the current election/plan can be a bit complicated
 
     // there are two separate UIs: the mobile one with "< year >" and a prev/next behavior
     // and the desktop one forming a set of beads down the side (with colors indicating EG bias that year)
@@ -895,7 +895,7 @@ window.redrawYearPickers = (csvdata) => {
         });
         available_years.sort();
 
-        // update the UI: empty the current set of links, draw new ones in a hidden state, show this year's plan
+        // update the UI: empty the current set of links, draw new ones in a hidden state, then show the one that matches the displayed data
         const $yearpicker  = $('#yearpicker-small > div[data-picker="election"]');
         const $prevbutton  = $yearpicker.find('div.nextprev.left');
         const $nextbutton  = $yearpicker.find('div.nextprev.right');
@@ -904,7 +904,8 @@ window.redrawYearPickers = (csvdata) => {
         available_years.forEach((year) => {
             const $thislink = $(`<span data-year="${year}">${year} Election</span>`).appendTo($readout).hide();
         });
-        const $thislink = $readout.find('> span').filter(`[data-year="${CURRENT_VIEW.year}"]`).show();
+
+        const $thislink = $readout.find('> span').filter(`[data-year="${selectedyeardata.year ? selectedyeardata.year : CURRENT_VIEW.year}"]`).show();  // unlike Plans, Elections are always for one specific year
 
         // update the UI: disable the next/prev links if this is the last/first year
         if ($thislink.is(':first-child')) $prevbutton.addClass('disabled');
@@ -929,7 +930,7 @@ window.redrawYearPickers = (csvdata) => {
         const plans_listing = Object.values(plans_known);
         plans_listing.sort((p,q) => { return p.minyear < q.minyear ? -1 : 1; });
 
-        // update the UI: empty the current set of links, draw new ones in a hidden state, show this year's plan
+        // update the UI: empty the current set of links, draw new ones in a hidden state, then show the one that matches the displayed data
         const $yearpicker  = $('#yearpicker-small > div[data-picker="plan"]');
         const $prevbutton  = $yearpicker.find('div.nextprev.left');
         const $nextbutton  = $yearpicker.find('div.nextprev.right');
@@ -939,7 +940,9 @@ window.redrawYearPickers = (csvdata) => {
             const text = planinfo.minyear == planinfo.maxyear ? `${planinfo.minyear} Plan` : `${planinfo.minyear}-${planinfo.maxyear} Plan`;
             const $thislink = $(`<span data-plan="${planinfo.plan}" data-year="${planinfo.minyear}" data-minyear="${planinfo.minyear}" data-maxyear="${planinfo.maxyear}">${text}</span>`).appendTo($readout).hide();
         });
-        const $thislink = $readout.find('> span').filter(`[data-year="${CURRENT_VIEW.year}"]`).show();
+
+        const $thislink = selectedyeardata.plan ? $readout.find('> span').filter(`[data-plan="${selectedyeardata.plan}"]`) : $readout.find('> span').filter(`[data-year="${CURRENT_VIEW.year}"]`);
+        $thislink.show();
 
         // update the UI: disable the next/prev links if this is the last/first year
         if ($thislink.is(':first-child')) $prevbutton.addClass('disabled');
@@ -968,6 +971,10 @@ window.redrawYearPickers = (csvdata) => {
         });
         available_years.sort();
 
+        // for the year we are currently showing, what plan would be active?
+        // we'll use this to highlight the currently-active plan, once we have the UI laid out
+        const currentplan = selectedyeardata.plan ? selectedyeardata.plan : yearplans[CURRENT_VIEW.year];
+
         // pad the years list with null-years, where we find a gap larger than 2 years
         // this allows the timeline to be stretched with empty rows, so we show gaps in coverage
         // not all states have 2-year cycles for all district types, so we hardcode these hacks to handle that chaos
@@ -989,10 +996,6 @@ window.redrawYearPickers = (csvdata) => {
 
         // reverse the years list: most recent at the top
         nullpadded_years.reverse();
-
-        // for the year we are currently showing, what plan would be active?
-        // we'll use this to highlight the currently-active plan, once we have the UI laid out
-        const currentplan = yearplans[CURRENT_VIEW.year];
 
         // purge the existing links (and re-add the titles)
         // then draw new ones one row at a time
@@ -1020,6 +1023,9 @@ window.redrawYearPickers = (csvdata) => {
                 // if we are currently showing Plans (as opposed to elections) and this year's plan is that, then additional highlighting
                 if (CURRENT_VIEW.planorelection == 'plan' && plan == currentplan) {
                     $planlink.addClass('active');
+                }
+                else if (CURRENT_VIEW.planorelection == 'election' && selectedyeardata.year == year) {
+                    $yearlink.addClass('active');
                 }
             }
             else {
