@@ -54,11 +54,20 @@ $(document).ready(function () {
     initYearPickers();
     initBoundaryPicker();
     initStatePopup();
+    initTabMetricsTracking();
     initLoadStartingConditions();  // this will implicitly call loadDataForSelectedBoundaryAndYear() after setup, loading the map
 
     $(window).on('resize', handleResize);
     handleResize();
 });
+
+window.initTabMetricsTracking = () => {
+    // when they switch metrics tabs, log a Google Analytics event
+    $('#tabs-metrics a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+        const whichtab = $(e.target).prop('href').replace(/.+#tab-/, '');  // the suffix is the metric name, e.g. #tab-efficiencygap
+        logToGoogleAnalytics('metricread', whichtab);
+    });
+};
 
 window.initStatePopup = () => {
     // the stateinfo popup is managed by selectState()
@@ -117,12 +126,14 @@ window.initYearPickers = () => {
         const year = $targetbutton.attr('data-year');
         if (! year) return;  // don't allow clicking past the first/last
         selectYear(year);
+        logToGoogleAnalytics('yearselected', year);
     });
     $picker_small.on('click', 'div.nextprev.left', function () {
         const $targetbutton = $year_listing.find('span:visible').prev('span');
         const year = $targetbutton.attr('data-year');
         if (! year) return;  // don't allow clicking past the first/last
         selectYear(year);
+        logToGoogleAnalytics('yearselected', year);
     });
 
     const $picker_big = $('#yearpicker-big');
@@ -146,6 +157,7 @@ window.initYearPickers = () => {
     $picker_big.on('click', 'div', function () {
         const year = $(this).attr('data-year');
         selectYear(year);
+        logToGoogleAnalytics('yearselected', year);
     });
 
     // the big year picker also has a play/pause button to toggle the playing/paused status
@@ -158,6 +170,7 @@ window.initBoundaryPicker = () => {
     $('#boundarypicker div[data-boundary]').click(function () {
         const boundarytype = $(this).attr('data-boundary');
         selectBoundaryType(boundarytype);
+        logToGoogleAnalytics('boundarytype', boundarytype);
     });
 };
 
@@ -384,12 +397,16 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
                         click: function (e) {
 // GDA issue 238 -- temporary measure to have a click proceed directly to the state page; if they choose to keep it, then selectState() goes away in favor of this
 // selectState(e.point.abbr, { closeIfSameState: true });
+// logToGoogleAnalytics('selectstate', e.point.name);
                             // compose URL for the selected state + boundary + year (e.g. /california/#!2010-plan-ushouse) and send them to it
                             // see the states page programming for details as to the expected hash params
                             // if they're holding the ctrl/alt/command key, try to open in a new window
                             const plan_or_election = 'plan';
                             const stateslug        = e.point.name.toLowerCase().replace(/\W/g, '_');
                             const moreinfourl      = `/${stateslug}/#!${CURRENT_VIEW.year}-${plan_or_election}-${CURRENT_VIEW.boundtype}`;
+
+                            // in any case, log the selection before we go
+                            logToGoogleAnalytics('selectstate', e.point.name);
 
                             if (e.altKey || e.ctrlKey || e.shiftKey || e.metaKey) {
                                 window.open(moreinfourl);
@@ -569,4 +586,11 @@ window.updateAddressHash = () => {
     // see also initLoadStartingConditions() which will load such a state
     const hash = `#!${CURRENT_VIEW.year}-${CURRENT_VIEW.boundtype}`;
     window.location.replace(hash);
+};
+
+window.logToGoogleAnalytics = (eventtype, value) => {
+    const actiontype = `frontpage-${eventtype}`;
+    gtag('event', actiontype, {
+        event_category: value,
+    });
 };
