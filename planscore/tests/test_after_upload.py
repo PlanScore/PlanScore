@@ -71,9 +71,6 @@ class TestAfterUpload (unittest.TestCase):
     def test_ordered_districts(self, stdout):
         '''
         '''
-        # For now
-        return
-        
         ds1 = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'unordered1.geojson'))
         layer1 = ds1.GetLayer(0)
         name1, features1 = after_upload.ordered_districts(layer1)
