@@ -64,6 +64,9 @@ def ordered_districts(layer):
         
         fields.append((2 if 'district' in name.lower() else 1, name))
 
+    # For now
+    return None, features
+    
     if not fields:
         return None, features
     
