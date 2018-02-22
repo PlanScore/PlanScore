@@ -3,7 +3,8 @@
 Fans out asynchronous parallel calls to planscore.district function, then
 starts and observer process with planscore.score function.
 '''
-import boto3, pprint, os, io, json, urllib.parse, gzip, functools, zipfile, itertools, time, math
+import boto3, pprint, os, io, json, urllib.parse, gzip, functools, zipfile, \
+    itertools, time, math, shutil
 import osgeo.ogr
 from . import util, data, score, website, prepare_state, districts, constants
 
@@ -27,9 +28,17 @@ def unzip_shapefile(zip_path, zip_dir):
         base1, ext1 = os.path.splitext(file1)
         base2, ext2 = os.path.splitext(file2)
         
-        if ext1 == '.shp' and base2.lower() == base1.lower():
+        if ext1.lower() == '.shp' and base2.lower() == base1.lower():
+            print('Extracting', file2)
             zf.extract(file2, zip_dir)
-            unzipped_path = os.path.join(zip_dir, file1)
+            
+            if file2 != file2.lower():
+                oldname = os.path.join(zip_dir, file2)
+                newname = os.path.join(zip_dir, file2.lower())
+                print('Moving', oldname, 'to', newname)
+                shutil.move(oldname, newname)
+            
+            unzipped_path = os.path.join(zip_dir, file1.lower())
     
     return unzipped_path
 
