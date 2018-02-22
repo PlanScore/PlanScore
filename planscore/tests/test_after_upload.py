@@ -67,7 +67,8 @@ class TestAfterUpload (unittest.TestCase):
         for filename in ('null-plan.dbf', 'null-plan.prj', 'null-plan.shp', 'null-plan.shx'):
             self.assertTrue(os.path.exists(os.path.join(self.tempdir, filename)))
     
-    def test_ordered_districts(self):
+    @unittest.mock.patch('sys.stdout')
+    def test_ordered_districts(self, stdout):
         '''
         '''
         ds1 = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'unordered1.geojson'))

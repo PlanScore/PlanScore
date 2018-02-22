@@ -59,6 +59,8 @@ def ordered_districts(layer):
         return None, features
     
     name = sorted(fields)[-1][1]
+    
+    print('Sorting layer on', name)
 
     return name, sorted(features, key=lambda f: int(f.GetField(name)))
 
