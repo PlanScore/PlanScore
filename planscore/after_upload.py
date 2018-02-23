@@ -6,7 +6,7 @@ starts and observer process with planscore.score function.
 import boto3, pprint, os, io, json, urllib.parse, gzip, functools, zipfile, \
     itertools, time, math, shutil
 import osgeo.ogr
-from . import util, data, score, website, prepare_state, districts, constants
+from . import util, data, score, website, prepare_state, districts, constants, tiles
 
 FUNCTION_NAME = 'PlanScore-AfterUpload'
 
@@ -93,11 +93,15 @@ def commence_upload_scoring(s3, bucket, upload):
         district_blanks = [None] * len(geometry_keys)
         forward_upload = upload.clone(model=model, districts=district_blanks)
         
+        # 
+        storage = data.Storage(s3, bucket, model.key_prefix)
+        fan_out_tile_lambdas(storage, forward_upload)
+        
         # Do this second-to-last - localstack invokes Lambda functions synchronously
         fan_out_district_lambdas(bucket, model.key_prefix, forward_upload, geometry_keys)
         
         # Do this last.
-        start_observer_score_lambda(data.Storage(s3, bucket, model.key_prefix), forward_upload)
+        start_observer_score_lambda(storage, forward_upload)
 
 def put_district_geometries(s3, bucket, upload, path):
     '''
@@ -125,6 +129,32 @@ def put_district_geometries(s3, bucket, upload, path):
         keys.append(key)
     
     return keys
+
+def fan_out_tile_lambdas(storage, upload):
+    '''
+    '''
+    print('fan_out_tile_lambdas:', (storage.bucket, upload.model.key_prefix))
+    try:
+        lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
+        
+        storage.s3.put_object(Bucket=storage.bucket, Key='tiles.txt',
+            Body=json.dumps(dict(Bucket=storage.bucket, Prefix=upload.model.key_prefix)).encode('utf8'),
+            ContentType='text/plain', ACL='public-read')
+
+        response = storage.s3.list_objects(Bucket=storage.bucket, MaxKeys=4,
+            Prefix=upload.model.key_prefix)
+
+        keys = [object['Key'] for object in response['Contents']]
+        
+        for (index, key) in enumerate(keys):
+            payload = dict(upload=upload.to_dict(), storage=storage.to_event(),
+                index=index, key=key)
+
+            lam.invoke(FunctionName=tiles.FUNCTION_NAME, InvocationType='Event',
+                Payload=json.dumps(payload).encode('utf8'))
+
+    except Exception as e:
+        print('Exception in fan_out_tile_lambdas:', e)
 
 def fan_out_district_lambdas(bucket, prefix, upload, geometry_keys):
     '''
