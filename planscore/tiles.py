@@ -7,6 +7,27 @@ FUNCTION_NAME = 'PlanScore-RunTile'
 # Borrow some Modest Maps tile math
 _mercator = ModestMaps.OpenStreetMap.Provider().projection
 
+def load_upload_geometries(storage, upload):
+    ''' Get OGR geometries for an upload.
+    '''
+    geometries = {}
+    
+    geoms_prefix = posixpath.dirname(data.UPLOAD_GEOMETRIES_KEY).format(id=upload.id)
+    response = storage.s3.list_objects(Bucket=storage.bucket, Prefix=f'{geoms_prefix}/')
+
+    geometry_keys = [object['Key'] for object in response['Contents']]
+    
+    for geometry_key in geometry_keys:
+        object = storage.s3.get_object(Bucket=storage.bucket, Key=geometry_key)
+
+        if object.get('ContentEncoding') == 'gzip':
+            object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
+    
+        district_geom = osgeo.ogr.CreateGeometryFromWkt(object['Body'].read().decode('utf8'))
+        geometries[geometry_key] = district_geom
+    
+    return geometries
+
 def load_tile_precincts(storage, tile_zxy):
     ''' Get GeoJSON features for a specific tile.
     '''
@@ -129,23 +150,18 @@ def lambda_handler(event, context):
 
     try:
         tile_zxy = get_tile_zxy(upload.model.key_prefix, event['key'])
-        precincts = load_tile_precincts(storage, tile_zxy)
-        tile_key = data.UPLOAD_TILES_KEY.format(id=upload.id, zxy=tile_zxy)
-    
-        geoms_prefix = posixpath.dirname(data.UPLOAD_GEOMETRIES_KEY).format(id=upload.id)
-        response = s3.list_objects(Bucket=storage.bucket, Prefix=geoms_prefix)
-        geometry_keys = [object['Key'] for object in response['Contents']]
+        output_key = data.UPLOAD_TILES_KEY.format(id=upload.id, zxy=tile_zxy)
         tile_geom = tile_geometry(tile_zxy)
-    
+
         totals = {}
+        precincts = load_tile_precincts(storage, tile_zxy)
+        geometries = load_upload_geometries(storage, upload)
     
-        for geometry_key in geometry_keys:
-            object = s3.get_object(Bucket=storage.bucket, Key=geometry_key)
-            district_geom = osgeo.ogr.CreateGeometryFromWkt(object['Body'].read().decode('utf8'))
+        for (geometry_key, district_geom) in geometries.items():
             totals[geometry_key] = score_district(district_geom, precincts, tile_geom)
     except Exception as err:
         totals = str(err)
 
-    s3.put_object(Bucket=storage.bucket, Key=tile_key,
-        Body=json.dumps(dict(event, tile_key=tile_key, geoms_prefix=geoms_prefix, totals=totals, precinct_count=len(precincts))).encode('utf8'),
+    s3.put_object(Bucket=storage.bucket, Key=output_key,
+        Body=json.dumps(dict(event, totals=totals)).encode('utf8'),
         ContentType='text/plain', ACL='public-read')
