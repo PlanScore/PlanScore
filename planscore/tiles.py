@@ -1,4 +1,4 @@
-import json, io, gzip, posixpath, functools
+import json, io, gzip, posixpath, functools, collections
 import osgeo.ogr, boto3, botocore.exceptions, ModestMaps.OpenStreetMap, ModestMaps.Core
 from . import constants, data, util, prepare_state, score
 
@@ -46,7 +46,7 @@ def tile_geometry(tile_zxy):
 def score_district(district_geom, precincts, tile_geom):
     ''' Return weighted precinct totals for a district over a tile.
     '''
-    totals = {}
+    totals = collections.defaultdict(int)
     
     if district_geom.Disjoint(tile_geom):
         return totals
@@ -55,8 +55,8 @@ def score_district(district_geom, precincts, tile_geom):
 
     for precinct_feat in precincts:
         subtotals = score_precinct(partial_district_geom, precinct_feat, tile_geom)
-        totals.update({name: round(value + totals.get(name, 0), constants.ROUND_COUNT)
-            for (name, value) in subtotals.items()})
+        for (name, value) in subtotals.items():
+            totals[name] = round(value + totals[name], constants.ROUND_COUNT)
 
     return totals
 

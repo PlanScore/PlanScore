@@ -19,7 +19,8 @@ class TestUtil (unittest.TestCase):
         self.assertEqual(data, buffer.getvalue())
         self.assertFalse(os.path.exists(path))
     
-    def test_unzip_shapefile(self):
+    @unittest.mock.patch('sys.stdout')
+    def test_unzip_shapefile(self, stdout):
         ''' Shapefile is found within a zip file.
         '''
         zip_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
