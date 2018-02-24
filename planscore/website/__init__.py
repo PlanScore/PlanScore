@@ -85,7 +85,7 @@ def get_upload_interstitial():
 
 @app.route('/interstitial.html')
 def get_interstitial():
-    return 'Yo'
+    return flask.render_template('interstitial.html')
 
 @app.route('/plan.html')
 def get_plan():
