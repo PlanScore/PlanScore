@@ -43,8 +43,25 @@ def tile_geometry(tile_zxy):
 
     return osgeo.ogr.CreateGeometryFromWkt(wkt)
 
+def score_district(district_geom, precincts, tile_geom):
+    ''' Return weighted precinct totals for a district over a tile.
+    '''
+    totals = {}
+    
+    if district_geom.Disjoint(tile_geom):
+        return totals
+    
+    partial_district_geom = district_geom.Intersection(tile_geom)
+
+    for precinct_feat in precincts:
+        subtotals = score_precinct(partial_district_geom, precinct_feat, tile_geom)
+        totals.update({name: round(value + totals.get(name, 0), constants.ROUND_COUNT)
+            for (name, value) in subtotals.items()})
+
+    return totals
+
 def score_precinct(partial_district_geom, precinct_feat, tile_geom):
-    ''' Return weighted totals for a precinct features within a tile geometry.
+    ''' Return weighted single-district totals for a precinct feature within a tile.
         
         partial_district_geom is the intersection of district and tile geometries.
     '''
@@ -125,13 +142,7 @@ def lambda_handler(event, context):
         for geometry_key in geometry_keys:
             object = s3.get_object(Bucket=storage.bucket, Key=geometry_key)
             district_geom = osgeo.ogr.CreateGeometryFromWkt(object['Body'].read().decode('utf8'))
-            partial_district_geom = district_geom.Intersection(tile_geom)
-            district_totals = {}
-            for precinct_feat in precincts:
-                precinct_totals = score_precinct(partial_district_geom, precinct_feat, tile_geom)
-                district_totals.update({k: round(v + district_totals.get(k, 0), 2)
-                    for (k, v) in precinct_totals.items()})
-            totals[geometry_key] = district_totals
+            totals[geometry_key] = score_district(district_geom, precincts, tile_geom)
     except Exception as err:
         totals = str(err)
 

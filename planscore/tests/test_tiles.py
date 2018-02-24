@@ -1,6 +1,6 @@
 import unittest, unittest.mock, os, json, io, gzip, itertools
 import osgeo.ogr, botocore.exceptions
-from .. import tiles, data
+from .. import tiles, data, constants
 
 should_gzip = itertools.cycle([True, False])
 
@@ -41,7 +41,7 @@ class TestTiles (unittest.TestCase):
         self.assertAlmostEqual(n2, 37.857507156252, 9)
 
     def test_load_tile_precincts(self):
-        '''
+        ''' Expected tiles are loaded from S3.
         '''
         s3 = unittest.mock.Mock()
         s3.get_object.side_effect = mock_s3_get_object
@@ -53,6 +53,35 @@ class TestTiles (unittest.TestCase):
 
         precincts2 = tiles.load_tile_precincts(storage, '12/-1/-1')
         self.assertEqual(len(precincts2), 0)
+    
+    @unittest.mock.patch('planscore.tiles.score_precinct')
+    def test_score_district(self, score_precinct):
+        ''' Correct values appears in totals dict after scoring a district.
+        '''
+        score_precinct.return_value = {'Voters': 1.111111111}
+        
+        district_geom, tile_geom = unittest.mock.Mock(), unittest.mock.Mock()
+        precincts = [unittest.mock.Mock(), unittest.mock.Mock()]
+        intersection = district_geom.Intersection.return_value
+        district_geom.Disjoint.return_value = False
+
+        totals = tiles.score_district(district_geom, precincts, tile_geom)
+        self.assertEqual(totals['Voters'], round(2.222222222, constants.ROUND_COUNT))
+        
+        self.assertEqual(len(score_precinct.mock_calls), 2)
+        self.assertEqual(score_precinct.mock_calls[0][1], (intersection, precincts[0], tile_geom))
+        self.assertEqual(score_precinct.mock_calls[1][1], (intersection, precincts[1], tile_geom))
+    
+    @unittest.mock.patch('planscore.tiles.score_precinct')
+    def test_score_district_disjoint(self, score_precinct):
+        ''' No precincts are scored for a disjoint tile/district.
+        '''
+        district_geom, tile_geom = unittest.mock.Mock(), unittest.mock.Mock()
+        precincts = [unittest.mock.Mock(), unittest.mock.Mock()]
+        district_geom.Disjoint.return_value = True
+
+        tiles.score_district(district_geom, precincts, tile_geom)
+        self.assertEqual(len(score_precinct.mock_calls), 0)
     
     def test_score_precinct(self):
         ''' Correct values appears in totals dict after scoring a precinct.
