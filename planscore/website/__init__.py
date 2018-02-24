@@ -78,14 +78,14 @@ def get_upload():
     return flask.render_template('upload.html', upload_fields_url=upload_fields_url)
 
 @app.route('/upload-new.html')
-def get_upload_interstitial():
+def get_upload_incumbency():
     upload_fields_url = get_function_url('get_localstack_lambda', constants.API_UPLOAD_RELPATH)
-    upload_fields_url += '?interstitial=yes'
-    return flask.render_template('upload.html', interstitial='yes', upload_fields_url=upload_fields_url)
+    upload_fields_url += '?incumbency=yes'
+    return flask.render_template('upload.html', incumbency='yes', upload_fields_url=upload_fields_url)
 
-@app.route('/interstitial.html')
-def get_interstitial():
-    return flask.render_template('interstitial.html')
+@app.route('/incumbency.html')
+def get_incumbency():
+    return flask.render_template('incumbency.html')
 
 @app.route('/plan.html')
 def get_plan():

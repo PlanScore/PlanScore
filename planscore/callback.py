@@ -40,9 +40,9 @@ def lambda_handler(event, context):
             'body': 'Bad ID'
             }
     
-    if query.get('interstitial') == 'yes':
+    if query.get('incumbency') == 'yes':
         rules = {rule.endpoint: str(rule) for rule in website.app.url_map.iter_rules()}
-        redirect_url = urllib.parse.urljoin(website_base, rules['get_interstitial'])
+        redirect_url = urllib.parse.urljoin(website_base, rules['get_incumbency'])
         return {
             'statusCode': '302',
             'headers': {'Location': redirect_url},
