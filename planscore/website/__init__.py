@@ -77,6 +77,16 @@ def get_upload():
     upload_fields_url = get_function_url('get_localstack_lambda', constants.API_UPLOAD_RELPATH)
     return flask.render_template('upload.html', upload_fields_url=upload_fields_url)
 
+@app.route('/upload-new.html')
+def get_upload_incumbency():
+    upload_fields_url = get_function_url('get_localstack_lambda', constants.API_UPLOAD_RELPATH)
+    upload_fields_url += '?incumbency=yes'
+    return flask.render_template('upload.html', incumbency='yes', upload_fields_url=upload_fields_url)
+
+@app.route('/incumbency.html')
+def get_incumbency():
+    return flask.render_template('incumbency.html')
+
 @app.route('/plan.html')
 def get_plan():
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
