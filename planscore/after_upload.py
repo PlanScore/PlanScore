@@ -3,8 +3,7 @@
 Fans out asynchronous parallel calls to planscore.district function, then
 starts and observer process with planscore.score function.
 '''
-import boto3, pprint, os, io, json, urllib.parse, gzip, functools, zipfile, \
-    itertools, time, math, shutil
+import boto3, pprint, os, io, json, urllib.parse, gzip, functools, time, math
 import osgeo.ogr
 from . import util, data, score, website, prepare_state, districts, constants, tiles
 
@@ -13,34 +12,6 @@ FUNCTION_NAME = 'PlanScore-AfterUpload'
 osgeo.ogr.UseExceptions()
 
 states_path = os.path.join(os.path.dirname(__file__), 'geodata', 'cb_2013_us_state_20m.geojson')
-
-def unzip_shapefile(zip_path, zip_dir):
-    ''' Unzip shapefile found within zip file into named directory.
-    '''
-    zf = zipfile.ZipFile(zip_path)
-    unzipped_path = None
-    
-    # Sort names so "real"-looking paths come last: not dot-names, not in '__MACOSX'
-    namelist = sorted(zf.namelist(), reverse=True,
-        key=lambda n: (os.path.basename(n).startswith('.'), n.startswith('__MACOSX')))
-    
-    for (file1, file2) in itertools.product(namelist, namelist):
-        base1, ext1 = os.path.splitext(file1)
-        base2, ext2 = os.path.splitext(file2)
-        
-        if ext1.lower() == '.shp' and base2.lower() == base1.lower():
-            print('Extracting', file2)
-            zf.extract(file2, zip_dir)
-            
-            if file2 != file2.lower():
-                oldname = os.path.join(zip_dir, file2)
-                newname = os.path.join(zip_dir, file2.lower())
-                print('Moving', oldname, 'to', newname)
-                shutil.move(oldname, newname)
-            
-            unzipped_path = os.path.join(zip_dir, file1.lower())
-    
-    return unzipped_path
 
 def ordered_districts(layer):
     ''' Return field name and list of layer features ordered by guessed district numbers.
@@ -81,7 +52,7 @@ def commence_upload_scoring(s3, bucket, upload):
     with util.temporary_buffer_file(os.path.basename(upload.key), object['Body']) as ul_path:
         if os.path.splitext(ul_path)[1] == '.zip':
             # Assume a shapefile
-            ds_path = unzip_shapefile(ul_path, os.path.dirname(ul_path))
+            ds_path = util.unzip_shapefile(ul_path, os.path.dirname(ul_path))
         else:
             ds_path = ul_path
         model = guess_state_model(ds_path)

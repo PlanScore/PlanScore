@@ -1,4 +1,4 @@
-import unittest, unittest.mock, io, os, contextlib, tempfile, shutil
+import unittest, unittest.mock, io, os, contextlib
 from .. import after_upload, data, districts, constants
 from osgeo import ogr
 
@@ -9,14 +9,12 @@ class TestAfterUpload (unittest.TestCase):
         self.prev_website, constants.WEBSITE_BASE = constants.WEBSITE_BASE, 'https://example.com/'
         self.prev_s3_url, constants.S3_ENDPOINT_URL = constants.S3_ENDPOINT_URL, None
         self.prev_lam_url, constants.LAMBDA_ENDPOINT_URL = constants.LAMBDA_ENDPOINT_URL, None
-        self.tempdir = tempfile.mkdtemp(prefix='TestAfterUpload-')
     
     def tearDown(self):
         constants.SECRET = self.prev_secret
         constants.WEBSITE_BASE = self.prev_website
         constants.S3_ENDPOINT_URL = self.prev_s3_url
         constants.LAMBDA_ENDPOINT_URL = self.prev_lam_url
-        shutil.rmtree(self.tempdir)
 
     @unittest.mock.patch('planscore.after_upload.commence_upload_scoring')
     def test_lambda_handler_success(self, commence_upload_scoring):
@@ -55,17 +53,6 @@ class TestAfterUpload (unittest.TestCase):
         self.assertEqual(len(put_upload_index.mock_calls), 1)
         self.assertEqual(put_upload_index.mock_calls[0][1][2].message,
             "Can't score this plan: Bad time")
-    
-    def test_unzip_shapefile(self):
-        ''' Shapefile is found within a zip file.
-        '''
-        zip_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
-        shp_path = after_upload.unzip_shapefile(zip_path, self.tempdir)
-
-        self.assertEqual(shp_path, os.path.join(self.tempdir, 'null-plan.shp'))
-        
-        for filename in ('null-plan.dbf', 'null-plan.prj', 'null-plan.shp', 'null-plan.shx'):
-            self.assertTrue(os.path.exists(os.path.join(self.tempdir, filename)))
     
     @unittest.mock.patch('sys.stdout')
     def test_ordered_districts(self, stdout):
@@ -285,7 +272,7 @@ class TestAfterUpload (unittest.TestCase):
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.score.put_upload_index')
     @unittest.mock.patch('planscore.after_upload.put_geojson_file')
-    @unittest.mock.patch('planscore.after_upload.unzip_shapefile')
+    @unittest.mock.patch('planscore.util.unzip_shapefile')
     @unittest.mock.patch('planscore.after_upload.put_district_geometries')
     @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
     @unittest.mock.patch('planscore.after_upload.start_observer_score_lambda')
