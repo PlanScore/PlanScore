@@ -7,6 +7,7 @@ UPLOAD_PLAINTEXT_KEY = 'uploads/{id}/index.txt'
 UPLOAD_GEOMETRY_KEY = 'uploads/{id}/geometry.json'
 UPLOAD_DISTRICTS_KEY = 'uploads/{id}/districts/{index}.json'
 UPLOAD_GEOMETRIES_KEY = 'uploads/{id}/geometries/{index}.wkt'
+UPLOAD_TILES_KEY = 'uploads/{id}/tiles/{zxy}.json'
 
 class State (enum.Enum):
     XX = 'XX'

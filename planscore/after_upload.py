@@ -107,11 +107,6 @@ def fan_out_tile_lambdas(storage, upload):
     print('fan_out_tile_lambdas:', (storage.bucket, upload.model.key_prefix))
     try:
         lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
-        
-        storage.s3.put_object(Bucket=storage.bucket, Key='tiles.txt',
-            Body=json.dumps(dict(Bucket=storage.bucket, Prefix=upload.model.key_prefix)).encode('utf8'),
-            ContentType='text/plain', ACL='public-read')
-
         response = storage.s3.list_objects(Bucket=storage.bucket, MaxKeys=4,
             Prefix=upload.model.key_prefix)
 
