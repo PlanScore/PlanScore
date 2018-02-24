@@ -24,11 +24,11 @@ def load_tile_precincts(storage, tile_zxy):
     geojson = json.load(object['Body'])
     return geojson['features']
 
-def get_tile_xzy(model_key_prefix, tile_key):
+def get_tile_zxy(model_key_prefix, tile_key):
     '''
     '''
-    tile_xzy, _ = posixpath.splitext(posixpath.relpath(tile_key, model_key_prefix))
-    return tile_xzy
+    tile_zxy, _ = posixpath.splitext(posixpath.relpath(tile_key, model_key_prefix))
+    return tile_zxy
 
 @functools.lru_cache(maxsize=16)
 def tile_geometry(tile_zxy):
@@ -53,7 +53,10 @@ def score_precinct(partial_district_geom, precinct_feat, tile_geom):
     precinct_geom = osgeo.ogr.CreateGeometryFromJson(json.dumps(precinct_feat['geometry']))
     
     if precinct_geom is None or precinct_geom.IsEmpty():
-        # If there's no geometry here, don't bother.
+        # If there's no precinct geometry here, don't bother.
+        return totals
+    elif partial_district_geom is None or partial_district_geom.IsEmpty():
+        # If there's no district geometry here, don't bother.
         return totals
     elif precinct_geom.GetGeometryType() in (osgeo.ogr.wkbPoint,
         osgeo.ogr.wkbPoint25D, osgeo.ogr.wkbMultiPoint, osgeo.ogr.wkbMultiPoint25D):
@@ -84,12 +87,12 @@ def score_precinct(partial_district_geom, precinct_feat, tile_geom):
                 # Sometimes, a precinct geometry can be invalid
                 # so inflate it by a tiny amount to smooth out problems
                 precinct_geom = precinct_geom.Buffer(0.0000001)
-                overlap_geom = precinct_geom.Intersection(partial.geometry)
+                overlap_geom = precinct_geom.Intersection(partial_district_geom)
             else:
                 raise
         if precinct_geom.Area() == 0:
             # If we're about to divide by zero, don't bother.
-            return
+            return totals
 
         overlap_area = overlap_geom.Area() / precinct_geom.Area()
         precinct_fraction = overlap_area * precinct_frac
@@ -107,14 +110,31 @@ def lambda_handler(event, context):
     storage = data.Storage.from_event(event['storage'], s3)
     upload = data.Upload.from_dict(event['upload'])
 
-    tile_zxy = get_tile_xzy(upload.model.key_prefix, event['key'])
-    precinct_count = len(load_tile_precincts(storage, tile_zxy))
-    tile_key = data.UPLOAD_TILES_KEY.format(id=upload.id, zxy=tile_zxy)
+    try:
+        tile_zxy = get_tile_zxy(upload.model.key_prefix, event['key'])
+        precincts = load_tile_precincts(storage, tile_zxy)
+        tile_key = data.UPLOAD_TILES_KEY.format(id=upload.id, zxy=tile_zxy)
     
-    geoms_prefix = posixpath.dirname(data.UPLOAD_GEOMETRIES_KEY).format(id=upload.id)
-    response = s3.list_objects(Bucket=storage.bucket, Prefix=geoms_prefix)
-    district_keys = [object['Key'] for object in response['Contents']]
+        geoms_prefix = posixpath.dirname(data.UPLOAD_GEOMETRIES_KEY).format(id=upload.id)
+        response = s3.list_objects(Bucket=storage.bucket, Prefix=geoms_prefix)
+        geometry_keys = [object['Key'] for object in response['Contents']]
+        tile_geom = tile_geometry(tile_zxy)
+    
+        totals = {}
+    
+        for geometry_key in geometry_keys:
+            object = s3.get_object(Bucket=storage.bucket, Key=geometry_key)
+            district_geom = osgeo.ogr.CreateGeometryFromWkt(object['Body'].read().decode('utf8'))
+            partial_district_geom = district_geom.Intersection(tile_geom)
+            district_totals = {}
+            for precinct_feat in precincts:
+                precinct_totals = score_precinct(partial_district_geom, precinct_feat, tile_geom)
+                district_totals.update({k: round(v + district_totals.get(k, 0), 2)
+                    for (k, v) in precinct_totals.items()})
+            totals[geometry_key] = district_totals
+    except Exception as err:
+        totals = str(err)
 
     s3.put_object(Bucket=storage.bucket, Key=tile_key,
-        Body=json.dumps(dict(event, tile_key=tile_key, geoms_prefix=geoms_prefix, district_keys=district_keys, precinct_count=precinct_count)).encode('utf8'),
+        Body=json.dumps(dict(event, tile_key=tile_key, geoms_prefix=geoms_prefix, totals=totals, precinct_count=len(precincts))).encode('utf8'),
         ContentType='text/plain', ACL='public-read')

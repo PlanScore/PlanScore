@@ -19,11 +19,11 @@ def mock_s3_get_object(Bucket, Key):
 
 class TestTiles (unittest.TestCase):
 
-    def test_get_tile_xzy(self):
+    def test_get_tile_zxy(self):
         '''
         '''
         prefix, key = 'data/XX/002', 'data/XX/002/12/2047/2047.geojson'
-        self.assertEqual(tiles.get_tile_xzy(prefix, key), '12/2047/2047')
+        self.assertEqual(tiles.get_tile_zxy(prefix, key), '12/2047/2047')
     
     def test_tile_geometry(self):
         ''' Correct tile geometries are returned from tile_geometry().
