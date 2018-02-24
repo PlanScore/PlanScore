@@ -77,6 +77,16 @@ def get_upload():
     upload_fields_url = get_function_url('get_localstack_lambda', constants.API_UPLOAD_RELPATH)
     return flask.render_template('upload.html', upload_fields_url=upload_fields_url)
 
+@app.route('/upload-new.html')
+def get_upload_interstitial():
+    upload_fields_url = get_function_url('get_localstack_lambda', constants.API_UPLOAD_RELPATH)
+    upload_fields_url += '?interstitial=yes'
+    return flask.render_template('upload.html', interstitial='yes', upload_fields_url=upload_fields_url)
+
+@app.route('/interstitial.html')
+def get_interstitial():
+    return 'Yo'
+
 @app.route('/plan.html')
 def get_plan():
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])

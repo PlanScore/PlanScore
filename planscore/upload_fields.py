@@ -53,6 +53,13 @@ def lambda_handler(event, context):
     creds = boto3.session.Session().get_credentials()
     url, fields = get_upload_fields(s3, creds, request_url, constants.SECRET)
     
+    if util.event_query_args(event).get('interstitial') == 'yes':
+        _, signed_id = generate_signed_id(constants.SECRET)
+        redirect_query = urllib.parse.urlencode(dict(id=signed_id, interstitial='yes'))
+        redirect_path = '{}?{}'.format(constants.API_UPLOADED_RELPATH, redirect_query)
+        redirect_url = urllib.parse.urljoin(request_url, redirect_path)
+        fields['success_action_redirect'] = redirect_url
+    
     return {
         'statusCode': '200',
         'headers': {'Access-Control-Allow-Origin': '*'},
