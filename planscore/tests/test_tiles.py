@@ -25,6 +25,21 @@ class TestTiles (unittest.TestCase):
         prefix, key = 'data/XX/002', 'data/XX/002/12/2047/2047.geojson'
         self.assertEqual(tiles.get_tile_xzy(prefix, key), '12/2047/2047')
     
+    def test_tile_geometry(self):
+        ''' Correct tile geometries are returned from tile_geometry().
+        '''
+        w1, e1, s1, n1 = tiles.tile_geometry('0/0/0').GetEnvelope()
+        self.assertAlmostEqual(w1, -180, 9)
+        self.assertAlmostEqual(e1,  180, 9)
+        self.assertAlmostEqual(s1, -85.051128780, 9)
+        self.assertAlmostEqual(n1,  85.051128780, 9)
+
+        w2, e2, s2, n2 = tiles.tile_geometry('12/656/1582').GetEnvelope()
+        self.assertAlmostEqual(w2, -122.34375, 9)
+        self.assertAlmostEqual(e2, -122.255859375, 9)
+        self.assertAlmostEqual(s2, 37.788081384120, 9)
+        self.assertAlmostEqual(n2, 37.857507156252, 9)
+
     def test_load_tile_precincts(self):
         '''
         '''
