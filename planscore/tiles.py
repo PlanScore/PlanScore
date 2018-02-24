@@ -149,7 +149,7 @@ def lambda_handler(event, context):
     upload = data.Upload.from_dict(event['upload'])
 
     try:
-        tile_zxy = get_tile_zxy(upload.model.key_prefix, event['key'])
+        tile_zxy = get_tile_zxy(upload.model.key_prefix, event['tile_key'])
         output_key = data.UPLOAD_TILES_KEY.format(id=upload.id, zxy=tile_zxy)
         tile_geom = tile_geometry(tile_zxy)
 

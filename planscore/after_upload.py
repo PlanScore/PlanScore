@@ -110,11 +110,11 @@ def fan_out_tile_lambdas(storage, upload):
         response = storage.s3.list_objects(Bucket=storage.bucket, MaxKeys=4,
             Prefix=upload.model.key_prefix)
 
-        keys = [object['Key'] for object in response['Contents']]
+        tile_keys = [object['Key'] for object in response['Contents']]
         
-        for (index, key) in enumerate(keys):
+        for tile_key in tile_keys:
             payload = dict(upload=upload.to_dict(), storage=storage.to_event(),
-                index=index, key=key)
+                tile_key=tile_key)
 
             lam.invoke(FunctionName=tiles.FUNCTION_NAME, InvocationType='Event',
                 Payload=json.dumps(payload).encode('utf8'))
