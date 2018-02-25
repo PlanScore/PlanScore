@@ -4,6 +4,8 @@ import boto3, ModestMaps.Geo, ModestMaps.Core
 from . import constants
 
 TILE_ZOOM = 12
+MAX_FEATURE_COUNT = 750 # ~15sec processing time per tile
+MIN_TILE_ZOOM, MAX_TILE_ZOOM = 9, 14
 FRACTION_FIELD = 'PlanScore:Fraction'
 KEY_FORMAT = 'data/{directory}/{zxy}.geojson'
 
@@ -107,19 +109,39 @@ def main():
     args = parser.parse_args()
     s3 = boto3.client('s3') if args.s3 else None
 
+    print('...', args.filename)
     ds = ogr.Open(args.filename)
     layer = ds.GetLayer(0)
     
     layer_defn = layer.GetLayerDefn()
     layer_defn.AddFieldDefn(ogr.FieldDefn(FRACTION_FIELD, ogr.OFTReal))
     
-    for (tile, bbox_wkt) in iter_extent_tiles(layer.GetExtent(), args.zoom):
-        bbox_geom = ogr.CreateGeometryFromWkt(bbox_wkt)
+    tile_stack = list(iter_extent_coords(layer.GetExtent(), MIN_TILE_ZOOM))
+    print('tile_stack:', len(tile_stack))
+    
+    while tile_stack:
+        tile = tile_stack.pop(0)
+        print('?', tile)
+        bbox_geom = ogr.CreateGeometryFromWkt(coord_wkt(tile))
         layer.SetSpatialFilter(bbox_geom)
+        bbox_features = list(layer)
+        print('=', len(bbox_features))
         
+        if len(bbox_features) == 0:
+            # Nothing here, forget about it.
+            continue
+
+        if tile.zoom < MAX_TILE_ZOOM and len(bbox_features) > MAX_FEATURE_COUNT:
+            # Too many features, zoom in and try again later.
+            tile_ul = tile.zoomBy(1)
+            tile_ur, tile_ll = tile_ul.right(), tile_ul.down()
+            tile_lr = tile_ll.right()
+            tile_stack.extend((tile_ul, tile_ur, tile_ll, tile_lr))
+            continue
+
         features_json = []
     
-        for feature in layer:
+        for feature in bbox_features:
             features_json.append(excerpt_feature(feature, bbox_geom)
                 .ExportToJson(options=['COORDINATE_PRECISION=7']))
         
@@ -131,7 +153,7 @@ def main():
         print(',\n'.join(features_json), file=buffer)
         print(']}', file=buffer)
         
-        tile_zxy = '{zoom}/{column}/{row}'.format(**tile.__dict__)
+        tile_zxy = '{zoom:.0f}/{column:.0f}/{row:.0f}'.format(**tile.__dict__)
         key = KEY_FORMAT.format(directory=args.directory, zxy=tile_zxy)
         
         if args.s3:
