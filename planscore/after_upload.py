@@ -104,8 +104,8 @@ def put_district_geometries(s3, bucket, upload, path):
 def load_model_tiles(storage, model):
     '''
     '''
-    response = storage.s3.list_objects(Bucket=storage.bucket, MaxKeys=4,
-        Prefix=model.key_prefix)
+    response = storage.s3.list_objects(Bucket=storage.bucket,
+        Prefix=model.key_prefix, MaxKeys=constants.MAX_TILES_RUN)
 
     # Sort largest items first
     contents = sorted(response['Contents'], key=lambda obj: obj['Size'], reverse=True)

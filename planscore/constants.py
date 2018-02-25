@@ -61,3 +61,7 @@ UPLOAD_TIME_LIMIT = 30 * 60
 
 ROUND_COUNT = 2
 ROUND_FLOAT = 4
+
+# For now, limit the number of tiles to run in parallel
+
+MAX_TILES_RUN = 4
