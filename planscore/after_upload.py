@@ -101,21 +101,28 @@ def put_district_geometries(s3, bucket, upload, path):
     
     return keys
 
+def load_model_tiles(storage, model):
+    '''
+    '''
+    response = storage.s3.list_objects(Bucket=storage.bucket, MaxKeys=4,
+        Prefix=model.key_prefix)
+
+    # Sort largest items first
+    contents = sorted(response['Contents'], key=lambda obj: obj['Size'], reverse=True)
+
+    return [object['Key'] for object in contents]
+
 def fan_out_tile_lambdas(storage, upload):
     '''
     '''
     print('fan_out_tile_lambdas:', (storage.bucket, upload.model.key_prefix))
     try:
         lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
-        response = storage.s3.list_objects(Bucket=storage.bucket, MaxKeys=4,
-            Prefix=upload.model.key_prefix)
-
-        tile_keys = [object['Key'] for object in response['Contents']]
         
-        for tile_key in tile_keys:
+        for tile_key in load_model_tiles(storage, upload.model):
             payload = dict(upload=upload.to_dict(), storage=storage.to_event(),
                 tile_key=tile_key)
-
+            
             lam.invoke(FunctionName=tiles.FUNCTION_NAME, InvocationType='Event',
                 Payload=json.dumps(payload).encode('utf8'))
 
