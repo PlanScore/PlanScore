@@ -19,10 +19,12 @@ class TestUploadFields (unittest.TestCase):
         self.assertEqual(signer.sign(unsigned_id.encode('utf8')).decode('utf8'), signed_id)
     
     @unittest.mock.patch('planscore.util.event_url')
+    @unittest.mock.patch('planscore.upload_fields.get_assumed_role')
     @unittest.mock.patch('planscore.upload_fields.get_upload_fields')
-    def test_lambda_handler(self, get_upload_fields, event_url):
+    def test_lambda_handler(self, get_upload_fields, get_assumed_role, event_url):
         get_upload_fields.return_value = 'https://s3.example.com', {'field': 'value'}
         event_url.return_value = 'http://example.com'
+        get_assumed_role.return_value = {}
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
         response = upload_fields.lambda_handler({}, None)
