@@ -3,44 +3,15 @@
 Fans out asynchronous parallel calls to planscore.district function, then
 starts and observer process with planscore.score function.
 '''
-import boto3, pprint, os, io, json, urllib.parse, gzip, functools, zipfile, \
-    itertools, time, math, shutil
+import boto3, pprint, os, io, json, urllib.parse, gzip, functools, time, math
 import osgeo.ogr
-from . import util, data, score, website, prepare_state, districts, constants
+from . import util, data, score, website, prepare_state, districts, constants, tiles
 
 FUNCTION_NAME = 'PlanScore-AfterUpload'
 
 osgeo.ogr.UseExceptions()
 
 states_path = os.path.join(os.path.dirname(__file__), 'geodata', 'cb_2013_us_state_20m.geojson')
-
-def unzip_shapefile(zip_path, zip_dir):
-    ''' Unzip shapefile found within zip file into named directory.
-    '''
-    zf = zipfile.ZipFile(zip_path)
-    unzipped_path = None
-    
-    # Sort names so "real"-looking paths come last: not dot-names, not in '__MACOSX'
-    namelist = sorted(zf.namelist(), reverse=True,
-        key=lambda n: (os.path.basename(n).startswith('.'), n.startswith('__MACOSX')))
-    
-    for (file1, file2) in itertools.product(namelist, namelist):
-        base1, ext1 = os.path.splitext(file1)
-        base2, ext2 = os.path.splitext(file2)
-        
-        if ext1.lower() == '.shp' and base2.lower() == base1.lower():
-            print('Extracting', file2)
-            zf.extract(file2, zip_dir)
-            
-            if file2 != file2.lower():
-                oldname = os.path.join(zip_dir, file2)
-                newname = os.path.join(zip_dir, file2.lower())
-                print('Moving', oldname, 'to', newname)
-                shutil.move(oldname, newname)
-            
-            unzipped_path = os.path.join(zip_dir, file1.lower())
-    
-    return unzipped_path
 
 def ordered_districts(layer):
     ''' Return field name and list of layer features ordered by guessed district numbers.
@@ -81,7 +52,7 @@ def commence_upload_scoring(s3, bucket, upload):
     with util.temporary_buffer_file(os.path.basename(upload.key), object['Body']) as ul_path:
         if os.path.splitext(ul_path)[1] == '.zip':
             # Assume a shapefile
-            ds_path = unzip_shapefile(ul_path, os.path.dirname(ul_path))
+            ds_path = util.unzip_shapefile(ul_path, os.path.dirname(ul_path))
         else:
             ds_path = ul_path
         model = guess_state_model(ds_path)
@@ -93,11 +64,15 @@ def commence_upload_scoring(s3, bucket, upload):
         district_blanks = [None] * len(geometry_keys)
         forward_upload = upload.clone(model=model, districts=district_blanks)
         
+        # 
+        storage = data.Storage(s3, bucket, model.key_prefix)
+        fan_out_tile_lambdas(storage, forward_upload)
+        
         # Do this second-to-last - localstack invokes Lambda functions synchronously
         fan_out_district_lambdas(bucket, model.key_prefix, forward_upload, geometry_keys)
         
         # Do this last.
-        start_observer_score_lambda(data.Storage(s3, bucket, model.key_prefix), forward_upload)
+        start_observer_score_lambda(storage, forward_upload)
 
 def put_district_geometries(s3, bucket, upload, path):
     '''
@@ -125,6 +100,34 @@ def put_district_geometries(s3, bucket, upload, path):
         keys.append(key)
     
     return keys
+
+def load_model_tiles(storage, model):
+    '''
+    '''
+    response = storage.s3.list_objects(Bucket=storage.bucket,
+        Prefix=model.key_prefix, MaxKeys=constants.MAX_TILES_RUN)
+
+    # Sort largest items first
+    contents = sorted(response['Contents'], key=lambda obj: obj['Size'], reverse=True)
+
+    return [object['Key'] for object in contents]
+
+def fan_out_tile_lambdas(storage, upload):
+    '''
+    '''
+    print('fan_out_tile_lambdas:', (storage.bucket, upload.model.key_prefix))
+    try:
+        lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
+        
+        for tile_key in load_model_tiles(storage, upload.model):
+            payload = dict(upload=upload.to_dict(), storage=storage.to_event(),
+                tile_key=tile_key)
+            
+            lam.invoke(FunctionName=tiles.FUNCTION_NAME, InvocationType='Event',
+                Payload=json.dumps(payload).encode('utf8'))
+
+    except Exception as e:
+        print('Exception in fan_out_tile_lambdas:', e)
 
 def fan_out_district_lambdas(bucket, prefix, upload, geometry_keys):
     '''

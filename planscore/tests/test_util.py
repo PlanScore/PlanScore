@@ -1,7 +1,13 @@
-import unittest, unittest.mock, io, os, logging
+import unittest, unittest.mock, io, os, logging, tempfile, shutil
 from .. import util, constants
 
 class TestUtil (unittest.TestCase):
+
+    def setUp(self):
+        self.tempdir = tempfile.mkdtemp(prefix='TestUtil-')
+    
+    def tearDown(self):
+        shutil.rmtree(self.tempdir)
 
     def test_temporary_buffer_file(self):
         buffer = io.BytesIO(b'Hello world')
@@ -12,6 +18,18 @@ class TestUtil (unittest.TestCase):
         
         self.assertEqual(data, buffer.getvalue())
         self.assertFalse(os.path.exists(path))
+    
+    @unittest.mock.patch('sys.stdout')
+    def test_unzip_shapefile(self, stdout):
+        ''' Shapefile is found within a zip file.
+        '''
+        zip_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
+        shp_path = util.unzip_shapefile(zip_path, self.tempdir)
+
+        self.assertEqual(shp_path, os.path.join(self.tempdir, 'null-plan.shp'))
+        
+        for filename in ('null-plan.dbf', 'null-plan.prj', 'null-plan.shp', 'null-plan.shx'):
+            self.assertTrue(os.path.exists(os.path.join(self.tempdir, filename)))
     
     def test_event_url(self):
         url1 = util.event_url({'headers': {'Host': 'example.org'}})
