@@ -192,14 +192,17 @@ class TestAfterUpload (unittest.TestCase):
         storage, model = unittest.mock.Mock(), unittest.mock.Mock()
         model.key_prefix = 'data/XX'
         storage.s3.list_objects.return_value = {'Contents': [
-            {'Key': 'data/XX/a.geojson', 'Size': 1},
-            {'Key': 'data/XX/b.geojson', 'Size': 3},
-            {'Key': 'data/XX/c.geojson', 'Size': 2},
+            {'Key': 'data/XX/a.geojson', 'Size': 2},
+            {'Key': 'data/XX/b.geojson', 'Size': 4},
+            {'Key': 'data/XX/c.geojson', 'Size': 3},
+            {'Key': 'data/XX/d.geojson', 'Size': 0},
+            {'Key': 'data/XX/e.geojson', 'Size': 1},
             ]}
         
         tile_keys = after_upload.load_model_tiles(storage, model)
         
-        self.assertEqual(tile_keys, ['data/XX/b.geojson', 'data/XX/c.geojson', 'data/XX/a.geojson'])
+        self.assertEqual(tile_keys, ['data/XX/b.geojson', 'data/XX/c.geojson',
+            'data/XX/a.geojson', 'data/XX/e.geojson'][:constants.MAX_TILES_RUN])
     
     @unittest.mock.patch('planscore.after_upload.load_model_tiles')
     @unittest.mock.patch('sys.stdout')

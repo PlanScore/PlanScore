@@ -104,13 +104,11 @@ def put_district_geometries(s3, bucket, upload, path):
 def load_model_tiles(storage, model):
     '''
     '''
-    response = storage.s3.list_objects(Bucket=storage.bucket,
-        Prefix=model.key_prefix, MaxKeys=constants.MAX_TILES_RUN)
-
     # Sort largest items first
+    response = storage.s3.list_objects(Bucket=storage.bucket, Prefix=model.key_prefix)
     contents = sorted(response['Contents'], key=lambda obj: obj['Size'], reverse=True)
 
-    return [object['Key'] for object in contents]
+    return [object['Key'] for object in contents][:constants.MAX_TILES_RUN]
 
 def fan_out_tile_lambdas(storage, upload):
     '''
