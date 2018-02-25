@@ -242,8 +242,9 @@ def lambda_handler(event, context):
         error_upload = upload.clone(message="Can't score this plan: {}".format(err))
         score.put_upload_index(s3, event['bucket'], error_upload)
     except Exception:
-        error_upload = upload.clone(message="Can't score this plan: something went wrong, giving up")
+        error_upload = upload.clone(message="Can't score this plan: something went wrong, giving up.")
         score.put_upload_index(s3, event['bucket'], error_upload)
+        raise
 
 if __name__ == '__main__':
     pass
