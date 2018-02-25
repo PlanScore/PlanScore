@@ -8,6 +8,26 @@ import json, pprint, urllib.parse, datetime, random, os
 import boto3, itsdangerous
 from . import util, data, constants
 
+def get_assumed_role(arn):
+    ''' 
+    '''
+    try:
+        sts = boto3.client('sts')
+        resp = sts.assume_role(RoleArn=arn, RoleSessionName='S3POST')
+    except:
+        creds = boto3.session.Session().get_credentials()
+        return dict(
+            aws_access_key_id=creds.access_key,
+            aws_secret_access_key=creds.secret_key,
+            aws_session_token=creds.token,
+            )
+    else:
+        return dict(
+            aws_access_key_id=resp['Credentials']['AccessKeyId'],
+            aws_secret_access_key=resp['Credentials']['SecretAccessKey'],
+            aws_session_token=resp['Credentials']['SessionToken'],
+            )
+
 def get_upload_fields(s3, creds, request_url, secret):
     '''
     '''
@@ -59,6 +79,18 @@ def lambda_handler(event, context):
         redirect_path = '{}?{}'.format(constants.API_UPLOADED_RELPATH, redirect_query)
         redirect_url = urllib.parse.urljoin(request_url, redirect_path)
         fields['success_action_redirect'] = redirect_url
+    
+    # sts:AssumeRole experiment here
+    try:
+        role = get_assumed_role('arn:aws:iam::466184106004:role/ModelEC2Instance')
+        s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL, **role)
+        key = fields['key'].replace('${filename}', 'assumed-role.txt')
+        s3.put_object(Bucket=constants.S3_BUCKET, Key=key,
+            ACL='bucket-owner-full-control', Body=json.dumps(role).encode('utf8'))
+    except Exception as err:
+        print('Exception:', err)
+    else:
+        print('That went well:', key)
     
     return {
         'statusCode': '200',
