@@ -5,3 +5,4 @@ from planscore.districts import lambda_handler as run_district
 from planscore.score import lambda_handler as score_plan
 from planscore.empty_queue import lambda_handler as empty_queue
 from planscore.tiles import lambda_handler as run_tile
+from planscore.observe import lambda_handler as observe_tiles

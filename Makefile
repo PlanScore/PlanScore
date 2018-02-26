@@ -5,7 +5,7 @@ live-lambda: planscore-lambda.zip
 		parallel -j9 ./deploy.py planscore-lambda.zip \
 		::: PlanScore-UploadFields PlanScore-Callback PlanScore-AfterUpload \
 		    PlanScore-RunDistrict PlanScore-ScoreDistrictPlan PlanScore-EmptyEqueue \
-		    PlanScore-RunTile
+		    PlanScore-RunTile PlanScore-ObserveTiles
 
 live-website: planscore/website/build
 	# Two-part sync with deletion after to maintain consistency for web visitors

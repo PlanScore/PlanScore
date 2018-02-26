@@ -270,10 +270,11 @@ class TestAfterUpload (unittest.TestCase):
     @unittest.mock.patch('planscore.after_upload.put_geojson_file')
     @unittest.mock.patch('planscore.after_upload.put_district_geometries')
     @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
+    @unittest.mock.patch('planscore.after_upload.start_tile_observer_lambda')
     @unittest.mock.patch('planscore.after_upload.fan_out_tile_lambdas')
     @unittest.mock.patch('planscore.after_upload.start_observer_score_lambda')
     @unittest.mock.patch('planscore.after_upload.guess_state_model')
-    def test_commence_upload_scoring_good_file(self, guess_state_model, start_observer_score_lambda, fan_out_tile_lambdas, fan_out_district_lambdas, put_district_geometries, put_geojson_file, put_upload_index, temporary_buffer_file):
+    def test_commence_upload_scoring_good_file(self, guess_state_model, start_observer_score_lambda, fan_out_tile_lambdas, start_tile_observer_lambda, fan_out_district_lambdas, put_district_geometries, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
@@ -322,10 +323,11 @@ class TestAfterUpload (unittest.TestCase):
     @unittest.mock.patch('planscore.util.unzip_shapefile')
     @unittest.mock.patch('planscore.after_upload.put_district_geometries')
     @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
+    @unittest.mock.patch('planscore.after_upload.start_tile_observer_lambda')
     @unittest.mock.patch('planscore.after_upload.fan_out_tile_lambdas')
     @unittest.mock.patch('planscore.after_upload.start_observer_score_lambda')
     @unittest.mock.patch('planscore.after_upload.guess_state_model')
-    def test_commence_upload_scoring_zipped_file(self, guess_state_model, start_observer_score_lambda, fan_out_tile_lambdas, fan_out_district_lambdas, put_district_geometries, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
+    def test_commence_upload_scoring_zipped_file(self, guess_state_model, start_observer_score_lambda, fan_out_tile_lambdas, start_tile_observer_lambda, fan_out_district_lambdas, put_district_geometries, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'
