@@ -3,8 +3,8 @@
 Fans out asynchronous parallel calls to planscore.district function, then
 starts and observer process with planscore.score function.
 '''
-import boto3, pprint, os, io, json, urllib.parse, gzip, functools, time, math
-import osgeo.ogr
+import os, io, json, urllib.parse, gzip, functools, time, math, threading
+import boto3, osgeo.ogr
 from . import util, data, score, website, prepare_state, districts, constants, tiles
 
 FUNCTION_NAME = 'PlanScore-AfterUpload'
@@ -113,19 +113,40 @@ def load_model_tiles(storage, model):
 def fan_out_tile_lambdas(storage, upload):
     '''
     '''
-    print('fan_out_tile_lambdas:', (storage.bucket, upload.model.key_prefix))
-    try:
+    def invoke_lambda(tile_keys, upload, storage):
+        '''
+        '''
         lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
         
-        for tile_key in load_model_tiles(storage, upload.model):
+        while True:
+            try:
+                tile_key = tile_keys.pop(0)
+            except IndexError:
+                break
+
             payload = dict(upload=upload.to_dict(), storage=storage.to_event(),
                 tile_key=tile_key)
             
             lam.invoke(FunctionName=tiles.FUNCTION_NAME, InvocationType='Event',
                 Payload=json.dumps(payload).encode('utf8'))
+    
+    tile_keys = load_model_tiles(storage, upload.model)
+    threads, start_time = [], time.time()
+    
+    print('fan_out_tile_lambdas: starting threads for',
+        len(tile_keys), 'tile_keys from', upload.model.key_prefix)
 
-    except Exception as e:
-        print('Exception in fan_out_tile_lambdas:', e)
+    for i in range(4):
+        threads.append(threading.Thread(target=invoke_lambda,
+            args=(tile_keys, upload, storage)))
+        
+        threads[-1].start()
+
+    for thread in threads:
+        thread.join()
+
+    print('fan_out_tile_lambdas: completed threads after',
+        int(time.time() - start_time), 'seconds.')
 
 def fan_out_district_lambdas(bucket, prefix, upload, geometry_keys):
     '''
