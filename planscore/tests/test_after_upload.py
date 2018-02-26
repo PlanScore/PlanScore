@@ -201,8 +201,9 @@ class TestAfterUpload (unittest.TestCase):
         
         tile_keys = after_upload.load_model_tiles(storage, model)
         
-        self.assertEqual(tile_keys, ['data/XX/b.geojson', 'data/XX/c.geojson',
-            'data/XX/a.geojson', 'data/XX/e.geojson'][:constants.MAX_TILES_RUN])
+        self.assertEqual(tile_keys,
+            ['data/XX/b.geojson', 'data/XX/c.geojson', 'data/XX/a.geojson',
+            'data/XX/e.geojson', 'data/XX/d.geojson'][:constants.MAX_TILES_RUN])
     
     @unittest.mock.patch('planscore.after_upload.load_model_tiles')
     @unittest.mock.patch('sys.stdout')
