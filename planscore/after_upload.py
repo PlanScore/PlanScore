@@ -5,7 +5,7 @@ starts and observer process with planscore.score function.
 '''
 import os, io, json, urllib.parse, gzip, functools, time, math, threading
 import boto3, osgeo.ogr
-from . import util, data, score, website, prepare_state, districts, constants, tiles
+from . import util, data, score, website, prepare_state, districts, constants, tiles, observe
 
 FUNCTION_NAME = 'PlanScore-AfterUpload'
 
@@ -67,6 +67,7 @@ def commence_upload_scoring(s3, bucket, upload):
         # 
         storage = data.Storage(s3, bucket, model.key_prefix)
         fan_out_tile_lambdas(storage, forward_upload)
+        start_tile_observer_lambda(storage, forward_upload)
         
         # Do this second-to-last - localstack invokes Lambda functions synchronously
         fan_out_district_lambdas(bucket, model.key_prefix, forward_upload, geometry_keys)
@@ -133,6 +134,10 @@ def fan_out_tile_lambdas(storage, upload):
     tile_keys = load_model_tiles(storage, upload.model)
     threads, start_time = [], time.time()
     
+    storage.s3.put_object(Bucket=storage.bucket, ACL='bucket-owner-full-control',
+        Key=data.UPLOAD_TILE_INDEX_KEY.format(id=upload.id),
+        Body=json.dumps(tile_keys).encode('utf8'))
+    
     print('fan_out_tile_lambdas: starting threads for',
         len(tile_keys), 'tile_keys from', upload.model.key_prefix)
 
@@ -147,6 +152,16 @@ def fan_out_tile_lambdas(storage, upload):
 
     print('fan_out_tile_lambdas: completed threads after',
         int(time.time() - start_time), 'seconds.')
+
+def start_tile_observer_lambda(storage, upload):
+    '''
+    '''
+    lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
+
+    payload = dict(upload=upload.to_dict(), storage=storage.to_event())
+
+    lam.invoke(FunctionName=observe.FUNCTION_NAME, InvocationType='Event',
+        Payload=json.dumps(payload).encode('utf8'))
 
 def fan_out_district_lambdas(bucket, prefix, upload, geometry_keys):
     '''

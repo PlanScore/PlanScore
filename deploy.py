@@ -17,6 +17,7 @@ functions = {
     'PlanScore-ScoreDistrictPlan': dict(Handler='lambda.score_plan', Timeout=300, **common),
     'PlanScore-EmptyEqueue': dict(Handler='lambda.empty_queue', Timeout=300, **common),
     'PlanScore-RunTile': dict(Handler='lambda.run_tile', Timeout=300, MemorySize=2048, **common),
+    'PlanScore-ObserveTiles': dict(Handler='lambda.observe_tiles', Timeout=60, MemorySize=512, **common),
     }
 
 def publish_function(lam, name, path, env, role):
