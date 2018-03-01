@@ -52,7 +52,7 @@ def lambda_handler(event, context):
         # Wait for one expected tile
         while True:
             try:
-                resp = storage.s3.list_objects(Bucket=storage.bucket, Prefix=expected_tile)
+                resp = storage.s3.get_object(Bucket=storage.bucket, Key=expected_tile)
             except botocore.exceptions.ClientError:
                 # Did not find the expected tile, wait a little before checking
                 time.sleep(3)
