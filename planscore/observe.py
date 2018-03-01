@@ -34,6 +34,8 @@ def lambda_handler(event, context):
     expected_tiles = [data.UPLOAD_TILES_KEY.format(id=upload.id,
         zxy=tiles.get_tile_zxy(upload.model.key_prefix, tile_key))
         for tile_key in enqueued_tiles]
+    
+    next_update = time.time()
 
     # Look for each expected tile in turn
     for (index, expected_tile) in enumerate(expected_tiles):
@@ -42,25 +44,31 @@ def lambda_handler(event, context):
             message='Scoring this newly-uploaded plan. {} of {} parts'
                 ' complete. Reload this page to see the result.'.format(*progress.to_list()))
 
-        put_upload_index(storage, upload)
+        # Update S3, if it's time
+        if time.time() > next_update:
+            put_upload_index(storage, upload)
+            next_update = time.time() + 3
 
         # Wait for one expected tile
         while True:
-            resp = storage.s3.list_objects(Bucket=storage.bucket, Prefix=expected_tile)
-            remain_msec = context.get_remaining_time_in_millis()
-
-            if bool(resp.get('Contents')):
+            try:
+                resp = storage.s3.list_objects(Bucket=storage.bucket, Prefix=expected_tile)
+            except botocore.exceptions.ClientError:
+                # Did not find the expected tile, wait a little before checking
+                time.sleep(3)
+            else:
+                print(expected_tile, json.load(resp['Body']).keys())
+            
                 # Found the expected tile, break out of this loop
                 break
-            
+
+            remain_msec = context.get_remaining_time_in_millis()
+
             if remain_msec < 5000:
                 # Out of time, just stop
                 overdue_upload = upload.clone(message="Giving up on this plan after it took too long, sorry.")
                 put_upload_index(storage, overdue_upload)
                 return
-    
-            # Did not find the expected tile, wait a little before checking
-            time.sleep(3)
 
     complete_upload = upload.clone(message='Finished scoring this plan.',
         progress=data.Progress(len(expected_tiles), len(expected_tiles)))
