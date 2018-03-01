@@ -1,4 +1,4 @@
-import boto3, time, json, posixpath
+import boto3, botocore.exceptions, time, json, posixpath
 from . import data, constants, tiles
 
 FUNCTION_NAME = 'PlanScore-ObserveTiles'
