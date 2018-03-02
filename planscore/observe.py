@@ -34,7 +34,7 @@ def get_district_index(geometry_key, upload):
     
     return int(base)
 
-def iterate_totals(expected_tiles, storage, upload, context):
+def iterate_tile_totals(expected_tiles, storage, upload, context):
     '''
     '''
     next_update = time.time()
@@ -75,19 +75,19 @@ def iterate_totals(expected_tiles, storage, upload, context):
                 put_upload_index(storage, overdue_upload)
                 return
 
-def accumulate_totals(input_totals, upload):
+def accumulate_district_totals(tile_totals, upload):
     '''
     '''
-    output_totals = collections.defaultdict(lambda: collections.defaultdict(float))
+    districts = collections.defaultdict(lambda: dict(totals=collections.defaultdict(float)))
     
-    for input_total in input_totals:
-        for (geometry_key, input_values) in input_total.items():
+    for tile_total in tile_totals:
+        for (geometry_key, input_values) in tile_total.items():
             geometry_index = get_district_index(geometry_key, upload)
-            output_total = output_totals[geometry_index]
+            district = districts[geometry_index]['totals']
             for (key, value) in input_values.items():
-                output_total[key] = round(output_total[key] + value, constants.ROUND_COUNT)
+                district[key] = round(district[key] + value, constants.ROUND_COUNT)
     
-    return [output_total for (_, output_total) in sorted(output_totals.items())]
+    return [district for (_, district) in sorted(districts.items())]
 
 def lambda_handler(event, context):
     '''
@@ -103,42 +103,11 @@ def lambda_handler(event, context):
     expected_tiles = [get_expected_tile(tile_key, upload)
         for tile_key in enqueued_tiles]
     
-    next_update = time.time()
-
-    # Look for each expected tile in turn
-    for (index, expected_tile) in enumerate(expected_tiles):
-        progress = data.Progress(index, len(expected_tiles))
-        upload = upload.clone(progress=progress,
-            message='Scoring this newly-uploaded plan. {} of {} parts'
-                ' complete. Reload this page to see the result.'.format(*progress.to_list()))
-
-        # Update S3, if it's time
-        if time.time() > next_update:
-            put_upload_index(storage, upload)
-            next_update = time.time() + 3
-
-        # Wait for one expected tile
-        while True:
-            try:
-                resp = storage.s3.get_object(Bucket=storage.bucket, Key=expected_tile)
-            except botocore.exceptions.ClientError:
-                # Did not find the expected tile, wait a little before checking
-                time.sleep(3)
-            else:
-                print(expected_tile, json.load(resp['Body']).keys())
-            
-                # Found the expected tile, break out of this loop
-                break
-
-            remain_msec = context.get_remaining_time_in_millis()
-
-            if remain_msec < 5000:
-                # Out of time, just stop
-                overdue_upload = upload.clone(message="Giving up on this plan after it took too long, sorry.")
-                put_upload_index(storage, overdue_upload)
-                return
-
+    tile_totals = iterate_tile_totals(expected_tiles, storage, upload, context)
+    districts = accumulate_district_totals(tile_totals, upload)
+    
     complete_upload = upload.clone(message='Finished scoring this plan.',
-        progress=data.Progress(len(expected_tiles), len(expected_tiles)))
+        progress=data.Progress(len(expected_tiles), len(expected_tiles)),
+        districts=districts)
 
     put_upload_index(storage, complete_upload)
