@@ -1,5 +1,5 @@
-import boto3, botocore.exceptions, time, json, posixpath
-from . import data, constants, tiles
+import boto3, botocore.exceptions, time, json, posixpath, io, gzip, collections, copy
+from . import data, constants, tiles, score
 
 FUNCTION_NAME = 'PlanScore-ObserveTiles'
 
@@ -20,21 +20,23 @@ def put_upload_index(storage, upload):
     storage.s3.put_object(Bucket=storage.bucket, Key=key2, Body=body2,
         ContentType='text/plain', ACL='public-read')
 
-def lambda_handler(event, context):
+def get_expected_tile(enqueued_key, upload):
+    ''' Return an expect tile key for an enqueued one.
+    '''
+    return data.UPLOAD_TILES_KEY.format(id=upload.id,
+        zxy=tiles.get_tile_zxy(upload.model.key_prefix, enqueued_key))
+
+def get_district_index(geometry_key, upload):
+    ''' Return numeric index for a given geometry key.
+    '''
+    dirname = posixpath.dirname(data.UPLOAD_GEOMETRIES_KEY).format(id=upload.id)
+    base, _ = posixpath.splitext(posixpath.relpath(geometry_key, dirname))
+    
+    return int(base)
+
+def iterate_tile_totals(expected_tiles, storage, upload, context):
     '''
     '''
-    s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
-    storage = data.Storage.from_event(event['storage'], s3)
-    upload = data.Upload.from_dict(event['upload'])
-    
-    obj = storage.s3.get_object(Bucket=storage.bucket,
-        Key=data.UPLOAD_TILE_INDEX_KEY.format(id=upload.id))
-    
-    enqueued_tiles = json.load(obj['Body'])
-    expected_tiles = [data.UPLOAD_TILES_KEY.format(id=upload.id,
-        zxy=tiles.get_tile_zxy(upload.model.key_prefix, tile_key))
-        for tile_key in enqueued_tiles]
-    
     next_update = time.time()
 
     # Look for each expected tile in turn
@@ -46,18 +48,22 @@ def lambda_handler(event, context):
 
         # Update S3, if it's time
         if time.time() > next_update:
+            print('iterate_tile_totals: {}/{} tiles complete'.format(*progress.to_list()))
             put_upload_index(storage, upload)
-            next_update = time.time() + 3
+            next_update = time.time() + 1
 
         # Wait for one expected tile
         while True:
             try:
-                resp = storage.s3.get_object(Bucket=storage.bucket, Key=expected_tile)
+                object = storage.s3.get_object(Bucket=storage.bucket, Key=expected_tile)
             except botocore.exceptions.ClientError:
                 # Did not find the expected tile, wait a little before checking
                 time.sleep(3)
             else:
-                print(expected_tile, json.load(resp['Body']).keys())
+                if object.get('ContentEncoding') == 'gzip':
+                    object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
+        
+                yield json.load(object['Body']).get('totals')
             
                 # Found the expected tile, break out of this loop
                 break
@@ -70,7 +76,63 @@ def lambda_handler(event, context):
                 put_upload_index(storage, overdue_upload)
                 return
 
-    complete_upload = upload.clone(message='Finished scoring this plan.',
+    print('iterate_tile_totals: all tiles complete')
+
+def accumulate_district_totals(tile_totals, upload):
+    '''
+    '''
+    districts = []
+    
+    # copy districts from the upload
+    for upload_district in upload.districts:
+        # use a defaultdict to accept new values
+        totals = collections.defaultdict(float)
+        
+        if upload_district is None:
+            # initialize a new district
+            new_district = dict(totals=totals)
+        else:
+            # use a copy of existing district to preserve values
+            new_district = copy.deepcopy(upload_district)
+            new_district['totals'] = totals
+            
+            # copy existing totals, if any exist
+            if 'totals' in upload_district:
+                new_district['totals'].update(upload_district['totals'])
+
+        districts.append(new_district)
+    
+    # update districts with tile totals
+    for tile_total in tile_totals:
+        for (geometry_key, input_values) in tile_total.items():
+            geometry_index = get_district_index(geometry_key, upload)
+            district = districts[geometry_index]['totals']
+            for (key, value) in input_values.items():
+                district[key] = round(district[key] + value, constants.ROUND_COUNT)
+    
+    return districts
+
+def lambda_handler(event, context):
+    '''
+    '''
+    s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
+    storage = data.Storage.from_event(event['storage'], s3)
+    upload1 = data.Upload.from_dict(event['upload'])
+    
+    obj = storage.s3.get_object(Bucket=storage.bucket,
+        Key=data.UPLOAD_TILE_INDEX_KEY.format(id=upload1.id))
+    
+    enqueued_tiles = json.load(obj['Body'])
+    expected_tiles = [get_expected_tile(tile_key, upload1)
+        for tile_key in enqueued_tiles]
+    
+    tile_totals = iterate_tile_totals(expected_tiles, storage, upload1, context)
+    districts = accumulate_district_totals(tile_totals, upload1)
+    upload2 = upload1.clone(districts=districts)
+    upload3 = score.calculate_bias(upload2)
+    upload4 = score.calculate_biases(upload3)
+
+    complete_upload = upload4.clone(message='Finished scoring this plan.',
         progress=data.Progress(len(expected_tiles), len(expected_tiles)))
 
     put_upload_index(storage, complete_upload)
