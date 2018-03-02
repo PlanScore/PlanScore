@@ -1,5 +1,5 @@
 import boto3, botocore.exceptions, time, json, posixpath, io, gzip, collections
-from . import data, constants, tiles
+from . import data, constants, tiles, score
 
 FUNCTION_NAME = 'PlanScore-ObserveTiles'
 
@@ -94,20 +94,22 @@ def lambda_handler(event, context):
     '''
     s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
     storage = data.Storage.from_event(event['storage'], s3)
-    upload = data.Upload.from_dict(event['upload'])
+    upload1 = data.Upload.from_dict(event['upload'])
     
     obj = storage.s3.get_object(Bucket=storage.bucket,
-        Key=data.UPLOAD_TILE_INDEX_KEY.format(id=upload.id))
+        Key=data.UPLOAD_TILE_INDEX_KEY.format(id=upload1.id))
     
     enqueued_tiles = json.load(obj['Body'])
-    expected_tiles = [get_expected_tile(tile_key, upload)
+    expected_tiles = [get_expected_tile(tile_key, upload1)
         for tile_key in enqueued_tiles]
     
-    tile_totals = iterate_tile_totals(expected_tiles, storage, upload, context)
-    districts = accumulate_district_totals(tile_totals, upload)
-    
-    complete_upload = upload.clone(message='Finished scoring this plan.',
-        progress=data.Progress(len(expected_tiles), len(expected_tiles)),
-        districts=districts)
+    tile_totals = iterate_tile_totals(expected_tiles, storage, upload1, context)
+    districts = accumulate_district_totals(tile_totals, upload1)
+    upload2 = upload1.clone(districts=districts)
+    upload3 = score.calculate_bias(upload2)
+    upload4 = score.calculate_biases(upload3)
+
+    complete_upload = upload4.clone(message='Finished scoring this plan.',
+        progress=data.Progress(len(expected_tiles), len(expected_tiles)))
 
     put_upload_index(storage, complete_upload)
