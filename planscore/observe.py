@@ -20,6 +20,12 @@ def put_upload_index(storage, upload):
     storage.s3.put_object(Bucket=storage.bucket, Key=key2, Body=body2,
         ContentType='text/plain', ACL='public-read')
 
+def get_expected_tile(enqueued_key, upload):
+    ''' Return an expect tile key for an enqueued one.
+    '''
+    return data.UPLOAD_TILES_KEY.format(id=upload.id,
+        zxy=tiles.get_tile_zxy(upload.model.key_prefix, enqueued_key))
+
 def lambda_handler(event, context):
     '''
     '''
@@ -31,8 +37,7 @@ def lambda_handler(event, context):
         Key=data.UPLOAD_TILE_INDEX_KEY.format(id=upload.id))
     
     enqueued_tiles = json.load(obj['Body'])
-    expected_tiles = [data.UPLOAD_TILES_KEY.format(id=upload.id,
-        zxy=tiles.get_tile_zxy(upload.model.key_prefix, tile_key))
+    expected_tiles = [get_expected_tile(tile_key, upload)
         for tile_key in enqueued_tiles]
     
     next_update = time.time()
