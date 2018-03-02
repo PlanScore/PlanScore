@@ -14,6 +14,7 @@ setup(
         'planscore.website': ['templates/*.html', 'static/*.*'],
         'planscore.tests': ['data/*.*', 'data/*/*/*/*.geojson',
             'data/uploads/sample-plan/districts/?.json',
+            'data/uploads/sample-plan/tiles/*/*/*.json',
             'data/uploads/sample-plan/geometries/?.wkt'],
         },
     install_requires = [

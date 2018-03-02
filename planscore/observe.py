@@ -1,4 +1,4 @@
-import boto3, botocore.exceptions, time, json, posixpath
+import boto3, botocore.exceptions, time, json, posixpath, io, gzip
 from . import data, constants, tiles
 
 FUNCTION_NAME = 'PlanScore-ObserveTiles'
@@ -25,6 +25,47 @@ def get_expected_tile(enqueued_key, upload):
     '''
     return data.UPLOAD_TILES_KEY.format(id=upload.id,
         zxy=tiles.get_tile_zxy(upload.model.key_prefix, enqueued_key))
+
+def iterate_totals(expected_tiles, storage, upload, context):
+    '''
+    '''
+    next_update = time.time()
+
+    # Look for each expected tile in turn
+    for (index, expected_tile) in enumerate(expected_tiles):
+        progress = data.Progress(index, len(expected_tiles))
+        upload = upload.clone(progress=progress,
+            message='Scoring this newly-uploaded plan. {} of {} parts'
+                ' complete. Reload this page to see the result.'.format(*progress.to_list()))
+
+        # Update S3, if it's time
+        if time.time() > next_update:
+            put_upload_index(storage, upload)
+            next_update = time.time() + 3
+
+        # Wait for one expected tile
+        while True:
+            try:
+                object = storage.s3.get_object(Bucket=storage.bucket, Key=expected_tile)
+            except botocore.exceptions.ClientError:
+                # Did not find the expected tile, wait a little before checking
+                time.sleep(3)
+            else:
+                if object.get('ContentEncoding') == 'gzip':
+                    object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
+        
+                yield json.load(object['Body']).get('totals')
+            
+                # Found the expected tile, break out of this loop
+                break
+
+            remain_msec = context.get_remaining_time_in_millis()
+
+            if remain_msec < 5000:
+                # Out of time, just stop
+                overdue_upload = upload.clone(message="Giving up on this plan after it took too long, sorry.")
+                put_upload_index(storage, overdue_upload)
+                return
 
 def lambda_handler(event, context):
     '''
