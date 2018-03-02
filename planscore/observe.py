@@ -1,4 +1,4 @@
-import boto3, botocore.exceptions, time, json, posixpath, io, gzip
+import boto3, botocore.exceptions, time, json, posixpath, io, gzip, collections
 from . import data, constants, tiles
 
 FUNCTION_NAME = 'PlanScore-ObserveTiles'
@@ -66,6 +66,19 @@ def iterate_totals(expected_tiles, storage, upload, context):
                 overdue_upload = upload.clone(message="Giving up on this plan after it took too long, sorry.")
                 put_upload_index(storage, overdue_upload)
                 return
+
+def accumulate_totals(input_totals):
+    '''
+    '''
+    output_totals = collections.defaultdict(lambda: collections.defaultdict(float))
+    
+    for input_total in input_totals:
+        for (geometry_key, input_values) in input_total.items():
+            output_total = output_totals[geometry_key]
+            for (key, value) in input_values.items():
+                output_total[key] = round(output_total[key] + value, constants.ROUND_COUNT)
+    
+    return output_totals
 
 def lambda_handler(event, context):
     '''

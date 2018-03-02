@@ -1,4 +1,4 @@
-import unittest, unittest.mock, os, io, itertools, gzip
+import unittest, unittest.mock, os, io, itertools, gzip, json
 import botocore.exceptions
 from .. import observe
 
@@ -76,3 +76,20 @@ class TestObserveTiles (unittest.TestCase):
         self.assertEqual(totals[1]['uploads/sample-plan/geometries/1.wkt']['Voters'],  15.94)
         self.assertEqual(totals[2]['uploads/sample-plan/geometries/1.wkt']['Voters'], 455.99)
         self.assertEqual(totals[3]['uploads/sample-plan/geometries/1.wkt']['Voters'], 373.76)
+    
+    def test_accumulate_totals(self):
+        '''
+        '''
+        inputs = []
+        
+        for zxy in ('12/2047/2047', '12/2047/2048', '12/2048/2047', '12/2048/2048'):
+            tile_key = f'uploads/sample-plan/tiles/{zxy}.json'
+            filename = os.path.join(os.path.dirname(__file__), 'data', tile_key)
+            with open(filename) as file:
+                inputs.append(json.load(file).get('totals'))
+        
+        totals = observe.accumulate_totals(inputs)
+        
+        self.assertEqual(len(totals), 2)
+        self.assertEqual(totals['uploads/sample-plan/geometries/0.wkt']['Voters'], 567.09)
+        self.assertEqual(totals['uploads/sample-plan/geometries/1.wkt']['Voters'], 932.89)
