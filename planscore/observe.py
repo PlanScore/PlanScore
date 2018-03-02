@@ -1,4 +1,4 @@
-import boto3, botocore.exceptions, time, json, posixpath, io, gzip, collections
+import boto3, botocore.exceptions, time, json, posixpath, io, gzip, collections, copy
 from . import data, constants, tiles, score
 
 FUNCTION_NAME = 'PlanScore-ObserveTiles'
@@ -48,8 +48,9 @@ def iterate_tile_totals(expected_tiles, storage, upload, context):
 
         # Update S3, if it's time
         if time.time() > next_update:
+            print('iterate_tile_totals: {}/{} tiles complete'.format(*progress.to_list()))
             put_upload_index(storage, upload)
-            next_update = time.time() + 3
+            next_update = time.time() + 1
 
         # Wait for one expected tile
         while True:
@@ -75,11 +76,33 @@ def iterate_tile_totals(expected_tiles, storage, upload, context):
                 put_upload_index(storage, overdue_upload)
                 return
 
+    print('iterate_tile_totals: all tiles complete')
+
 def accumulate_district_totals(tile_totals, upload):
     '''
     '''
-    districts = collections.defaultdict(lambda: dict(totals=collections.defaultdict(float)))
+    districts = []
     
+    # copy districts from the upload
+    for upload_district in upload.districts:
+        # use a defaultdict to accept new values
+        totals = collections.defaultdict(float)
+        
+        if upload_district is None:
+            # initialize a new district
+            new_district = dict(totals=totals)
+        else:
+            # use a copy of existing district to preserve values
+            new_district = copy.deepcopy(upload_district)
+            new_district['totals'] = totals
+            
+            # copy existing totals, if any exist
+            if 'totals' in upload_district:
+                new_district['totals'].update(upload_district['totals'])
+
+        districts.append(new_district)
+    
+    # update districts with tile totals
     for tile_total in tile_totals:
         for (geometry_key, input_values) in tile_total.items():
             geometry_index = get_district_index(geometry_key, upload)
@@ -87,7 +110,7 @@ def accumulate_district_totals(tile_totals, upload):
             for (key, value) in input_values.items():
                 district[key] = round(district[key] + value, constants.ROUND_COUNT)
     
-    return [district for (_, district) in sorted(districts.items())]
+    return districts
 
 def lambda_handler(event, context):
     '''

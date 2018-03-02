@@ -65,7 +65,8 @@ class TestObserveTiles (unittest.TestCase):
         with self.assertRaises(ValueError):
             observe.get_district_index('uploads/ID/geometries/xx.wkt', upload)
     
-    def test_iterate_tile_totals(self):
+    @unittest.mock.patch('sys.stdout')
+    def test_iterate_tile_totals(self, stdout):
         ''' Expected counts are returned from tiles.
         '''
         upload = unittest.mock.Mock()
@@ -103,8 +104,31 @@ class TestObserveTiles (unittest.TestCase):
             with open(filename) as file:
                 inputs.append(json.load(file).get('totals'))
         
-        districts = observe.accumulate_district_totals(inputs, upload)
+        upload.districts = [None, None]
+        districts1 = observe.accumulate_district_totals(inputs, upload)
         
-        self.assertEqual(len(districts), 2)
-        self.assertEqual(districts[0]['totals']['Voters'], 567.09)
-        self.assertEqual(districts[1]['totals']['Voters'], 932.89)
+        self.assertEqual(len(districts1), 2)
+        self.assertNotIn('compactness', districts1[0])
+        self.assertNotIn('compactness', districts1[1])
+        self.assertEqual(districts1[0]['totals']['Voters'], 567.09)
+        self.assertEqual(districts1[1]['totals']['Voters'], 932.89)
+
+        upload.districts = [{'compactness': True}, {'compactness': False}]
+        districts2 = observe.accumulate_district_totals(inputs, upload)
+        
+        self.assertEqual(len(districts2), 2)
+        self.assertTrue(districts2[0]['compactness'])
+        self.assertFalse(districts2[1]['compactness'])
+        self.assertEqual(districts2[0]['totals']['Voters'], 567.09)
+        self.assertEqual(districts2[1]['totals']['Voters'], 932.89)
+
+        upload.districts = [{'totals': {'X': 1}}, {'totals': {'X': 2}}]
+        districts3 = observe.accumulate_district_totals(inputs, upload)
+        
+        self.assertEqual(len(districts3), 2)
+        self.assertNotIn('compactness', districts3[0])
+        self.assertNotIn('compactness', districts3[1])
+        self.assertEqual(districts3[0]['totals']['X'], 1)
+        self.assertEqual(districts3[1]['totals']['X'], 2)
+        self.assertEqual(districts3[0]['totals']['Voters'], 567.09)
+        self.assertEqual(districts3[1]['totals']['Voters'], 932.89)
