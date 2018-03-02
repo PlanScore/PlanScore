@@ -52,6 +52,19 @@ class TestObserveTiles (unittest.TestCase):
         
         self.assertEqual(observe.get_expected_tile(enqueued_key, upload), expected_key)
     
+    def test_get_district_index(self):
+        '''
+        '''
+        upload = unittest.mock.Mock()
+        upload.id = 'ID'
+
+        self.assertEqual(observe.get_district_index('uploads/ID/geometries/0.wkt', upload), 0)
+        self.assertEqual(observe.get_district_index('uploads/ID/geometries/09.wkt', upload), 9)
+        self.assertEqual(observe.get_district_index('uploads/ID/geometries/11.wkt', upload), 11)
+        
+        with self.assertRaises(ValueError):
+            observe.get_district_index('uploads/ID/geometries/xx.wkt', upload)
+    
     def test_iterate_totals(self):
         ''' Expected counts are returned from tiles.
         '''
@@ -80,6 +93,8 @@ class TestObserveTiles (unittest.TestCase):
     def test_accumulate_totals(self):
         '''
         '''
+        upload = unittest.mock.Mock()
+        upload.id = 'sample-plan'
         inputs = []
         
         for zxy in ('12/2047/2047', '12/2047/2048', '12/2048/2047', '12/2048/2048'):
@@ -88,8 +103,8 @@ class TestObserveTiles (unittest.TestCase):
             with open(filename) as file:
                 inputs.append(json.load(file).get('totals'))
         
-        totals = observe.accumulate_totals(inputs)
+        totals = observe.accumulate_totals(inputs, upload)
         
         self.assertEqual(len(totals), 2)
-        self.assertEqual(totals['uploads/sample-plan/geometries/0.wkt']['Voters'], 567.09)
-        self.assertEqual(totals['uploads/sample-plan/geometries/1.wkt']['Voters'], 932.89)
+        self.assertEqual(totals[0]['Voters'], 567.09)
+        self.assertEqual(totals[1]['Voters'], 932.89)

@@ -26,6 +26,14 @@ def get_expected_tile(enqueued_key, upload):
     return data.UPLOAD_TILES_KEY.format(id=upload.id,
         zxy=tiles.get_tile_zxy(upload.model.key_prefix, enqueued_key))
 
+def get_district_index(geometry_key, upload):
+    ''' Return numeric index for a given geometry key.
+    '''
+    dirname = posixpath.dirname(data.UPLOAD_GEOMETRIES_KEY).format(id=upload.id)
+    base, _ = posixpath.splitext(posixpath.relpath(geometry_key, dirname))
+    
+    return int(base)
+
 def iterate_totals(expected_tiles, storage, upload, context):
     '''
     '''
@@ -67,18 +75,19 @@ def iterate_totals(expected_tiles, storage, upload, context):
                 put_upload_index(storage, overdue_upload)
                 return
 
-def accumulate_totals(input_totals):
+def accumulate_totals(input_totals, upload):
     '''
     '''
     output_totals = collections.defaultdict(lambda: collections.defaultdict(float))
     
     for input_total in input_totals:
         for (geometry_key, input_values) in input_total.items():
-            output_total = output_totals[geometry_key]
+            geometry_index = get_district_index(geometry_key, upload)
+            output_total = output_totals[geometry_index]
             for (key, value) in input_values.items():
                 output_total[key] = round(output_total[key] + value, constants.ROUND_COUNT)
     
-    return output_totals
+    return [output_total for (_, output_total) in sorted(output_totals.items())]
 
 def lambda_handler(event, context):
     '''
