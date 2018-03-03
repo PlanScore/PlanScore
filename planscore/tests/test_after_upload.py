@@ -129,7 +129,7 @@ class TestAfterUpload (unittest.TestCase):
         ''' Test that guess_state_model() guesses the correct U.S. state and house.
         '''
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
-        self.assertEqual(after_upload.guess_state_model(null_plan_path).key_prefix, 'data/XX/002')
+        self.assertEqual(after_upload.guess_state_model(null_plan_path).key_prefix, 'data/XX/003')
 
         nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
         self.assertEqual(after_upload.guess_state_model(nc_plan_path).key_prefix, 'data/NC/004-ushouse')
@@ -147,7 +147,7 @@ class TestAfterUpload (unittest.TestCase):
 
         # Real tests
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 2, 'XX'
-        self.assertEqual(after_upload.guess_state_model('districts.shp').key_prefix, 'data/XX/002')
+        self.assertEqual(after_upload.guess_state_model('districts.shp').key_prefix, 'data/XX/003')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 11, 'NC'
         self.assertEqual(after_upload.guess_state_model('districts.shp').key_prefix, 'data/NC/004-ushouse')
@@ -280,7 +280,7 @@ class TestAfterUpload (unittest.TestCase):
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
-        guess_state_model.return_value = data.Model(data.State.XX, None, 2, 'data/XX/002')
+        guess_state_model.return_value = data.Model(data.State.XX, None, 2, 'data/XX/003')
         
         @contextlib.contextmanager
         def nullplan_file(*args):
@@ -310,7 +310,7 @@ class TestAfterUpload (unittest.TestCase):
         self.assertIs(fan_out_tile_lambdas.mock_calls[0][1][1].id, upload.id)
 
         self.assertEqual(len(fan_out_district_lambdas.mock_calls), 1)
-        self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/002'))
+        self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/003'))
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][2].key, upload.key)
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][3], put_district_geometries.return_value)
         
@@ -333,7 +333,7 @@ class TestAfterUpload (unittest.TestCase):
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.shp.zip'
-        guess_state_model.return_value = data.Model(data.State.XX, None, 2, 'data/XX/002')
+        guess_state_model.return_value = data.Model(data.State.XX, None, 2, 'data/XX/003')
         
         @contextlib.contextmanager
         def nullplan_file(*args):
@@ -366,7 +366,7 @@ class TestAfterUpload (unittest.TestCase):
         self.assertIs(fan_out_tile_lambdas.mock_calls[0][1][1].id, upload.id)
 
         self.assertEqual(len(fan_out_district_lambdas.mock_calls), 1)
-        self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/002'))
+        self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/003'))
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][2].key, upload.key)
         self.assertIs(fan_out_district_lambdas.mock_calls[0][1][3], put_district_geometries.return_value)
         

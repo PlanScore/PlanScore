@@ -188,7 +188,7 @@ class Upload:
 # Active version of each state model
 
 MODELS = [
-    Model(State.XX, House.statehouse,    2, 'data/XX/002'),
+    Model(State.XX, House.statehouse,    2, 'data/XX/003'),
     Model(State.NC, House.ushouse,      13, 'data/NC/004-ushouse'),
     Model(State.NC, House.statesenate,  50, 'data/NC/004-ncsenate'),
     Model(State.NC, House.statehouse,  120, 'data/NC/004-nchouse'),
