@@ -170,7 +170,7 @@ def lambda_handler(event, context):
         return
     
     # If we reached here, we are all done
-    partial.upload = adjust_household_income(partial.upload)
+    partial.totals = adjust_household_income(partial.totals)
     post_score_results(storage, partial)
 
 def post_score_results(storage, partial):
@@ -278,18 +278,16 @@ def score_precinct(partial, precinct, tile_zxy):
 
         partial.totals[name] = round(partial.totals[name] + precinct_value, constants.ROUND_COUNT)
 
-def adjust_household_income(upload):
+def adjust_household_income(input_totals):
     '''
     '''
-    districts = copy.deepcopy(upload.districts)
+    totals = copy.deepcopy(input_totals)
     
-    for district in districts:
-        totals = district['totals']
-        if 'Households 2016' in totals and 'Sum Household Income 2016' in totals:
-            totals['Household Income 2016'] = totals['Sum Household Income 2016'] / totals['Households 2016']
-            del totals['Sum Household Income 2016']
+    if 'Households 2016' in totals and 'Sum Household Income 2016' in totals:
+        totals['Household Income 2016'] = totals['Sum Household Income 2016'] / totals['Households 2016']
+        del totals['Sum Household Income 2016']
     
-    return upload.clone(districts=districts)
+    return totals
 
 def get_tile_metadata(storage, tile_zxy):
     ''' Get metadata dictionary for a specific tile.

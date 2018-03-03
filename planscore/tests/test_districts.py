@@ -152,15 +152,13 @@ class TestDistricts (unittest.TestCase):
             'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
             'geometry_key': 'geom.wkt'}
 
-        adjust_household_income.return_value.id = event['upload']['id']
-
         districts.lambda_handler(event, None)
         storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
-            (-1, {}, [], ['12/2047/2047', '12/2047/2048'], 'ID'))
+            (-1, adjust_household_income.return_value, [], ['12/2047/2047', '12/2047/2048'], 'ID'))
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 0)
         self.assertEqual(len(adjust_household_income.mock_calls), 1)
-        self.assertIs(partial.upload, adjust_household_income.return_value)
+        self.assertIs(partial.totals, adjust_household_income.return_value)
         post_score_results.assert_called_once_with(storage, partial)
 
         get_scores.assert_called_once_with(partial.geometry)
@@ -221,15 +219,13 @@ class TestDistricts (unittest.TestCase):
             'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
             'geometry_key': 'geom.wkt', 'compactness': {'Reock': -1}}
 
-        adjust_household_income.return_value.id = event['upload']['id']
-
         districts.lambda_handler(event, None)
         storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
-            (-1, {}, [{'Totals': 1}], ['12/2047/2048'], 'ID'))
+            (-1, adjust_household_income.return_value, [{'Totals': 1}], ['12/2047/2048'], 'ID'))
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 0)
         self.assertEqual(len(adjust_household_income.mock_calls), 1)
-        self.assertIs(partial.upload, adjust_household_income.return_value)
+        self.assertIs(partial.totals, adjust_household_income.return_value)
         post_score_results.assert_called_once_with(storage, partial)
         
         self.assertEqual(len(get_scores.mock_calls), 0,
@@ -253,14 +249,12 @@ class TestDistricts (unittest.TestCase):
             'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
             'geometry_key': 'geom.wkt'}
 
-        adjust_household_income.return_value.id = event['upload']['id']
-
         districts.lambda_handler(event, None)
         storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
-            (-1, {}, [], ['12/2047/2047', '12/2047/2048'], 'ID'))
+            (-1, adjust_household_income.return_value, [], ['12/2047/2047', '12/2047/2048'], 'ID'))
         self.assertEqual(len(adjust_household_income.mock_calls), 1)
-        self.assertIs(partial.upload, adjust_household_income.return_value)
+        self.assertIs(partial.totals, adjust_household_income.return_value)
         post_score_results.assert_called_once_with(storage, partial)
 
     @unittest.mock.patch('sys.stdout')
@@ -593,17 +587,17 @@ class TestDistricts (unittest.TestCase):
     def test_adjust_household_income(self):
         '''
         '''
-        upload_input = data.Upload(None, None, districts=[
-            {'totals': {'Households 2016': 1000, 'Sum Household Income 2016': 59000000}},
-            {'totals': {'Households 2016': 100, 'Sum Household Income 2016': 5900000}},
-            ])
+        totals1 = {'Households 2016': 1000, 'Sum Household Income 2016': 59000000}
+        totals2 = districts.adjust_household_income(totals1)
         
-        upload_output = districts.adjust_household_income(upload_input)
+        self.assertEqual(totals2['Households 2016'], 1000)
+        self.assertEqual(totals2['Household Income 2016'], 59000)
+
+        totals3 = {'Households 2016': 1000, 'Voters': 2000}
+        totals4 = districts.adjust_household_income(totals3)
         
-        self.assertEqual(upload_output.districts[0]['totals']['Households 2016'], 1000)
-        self.assertEqual(upload_output.districts[1]['totals']['Households 2016'], 100)
-        self.assertEqual(upload_output.districts[0]['totals']['Household Income 2016'], 59000)
-        self.assertEqual(upload_output.districts[1]['totals']['Household Income 2016'], 59000)
+        self.assertEqual(totals4['Households 2016'], 1000)
+        self.assertEqual(totals4['Voters'], 2000)
     
     def test_get_tile_metadata(self):
         '''
