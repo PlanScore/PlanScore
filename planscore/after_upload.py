@@ -105,10 +105,21 @@ def put_district_geometries(s3, bucket, upload, path):
 def load_model_tiles(storage, model):
     '''
     '''
+    marker, contents = '', []
+    
+    while True:
+        print('load_model_tiles() starting from', repr(marker))
+        response = storage.s3.list_objects(Bucket=storage.bucket, Prefix=model.key_prefix)
+        contents.extend(response['Contents'])
+        is_truncated = response['IsTruncated']
+        
+        if not is_truncated:
+            break
+        
+        marker = keys[-1]['Key']
+    
     # Sort largest items first
-    response = storage.s3.list_objects(Bucket=storage.bucket, Prefix=model.key_prefix)
-    contents = sorted(response['Contents'], key=lambda obj: obj['Size'], reverse=True)
-
+    contents.sort(key=lambda obj: obj['Size'], reverse=True)
     return [object['Key'] for object in contents][:constants.MAX_TILES_RUN]
 
 def fan_out_tile_lambdas(storage, upload):

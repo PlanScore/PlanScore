@@ -186,7 +186,8 @@ class TestAfterUpload (unittest.TestCase):
         keys = after_upload.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
         self.assertEqual(keys, ['uploads/ID/geometries/0.wkt', 'uploads/ID/geometries/1.wkt'])
     
-    def test_load_model_tiles(self):
+    @unittest.mock.patch('sys.stdout')
+    def test_load_model_tiles(self, stdout):
         '''
         '''
         storage, model = unittest.mock.Mock(), unittest.mock.Mock()
@@ -197,7 +198,7 @@ class TestAfterUpload (unittest.TestCase):
             {'Key': 'data/XX/c.geojson', 'Size': 3},
             {'Key': 'data/XX/d.geojson', 'Size': 0},
             {'Key': 'data/XX/e.geojson', 'Size': 1},
-            ]}
+            ], 'IsTruncated': False}
         
         tile_keys = after_upload.load_model_tiles(storage, model)
         
