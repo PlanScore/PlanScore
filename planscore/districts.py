@@ -284,7 +284,8 @@ def adjust_household_income(input_totals):
     totals = copy.deepcopy(input_totals)
     
     if 'Households 2016' in totals and 'Sum Household Income 2016' in totals:
-        totals['Household Income 2016'] = totals['Sum Household Income 2016'] / totals['Households 2016']
+        totals['Household Income 2016'] = round(totals['Sum Household Income 2016']
+            / totals['Households 2016'], constants.ROUND_COUNT)
         del totals['Sum Household Income 2016']
     
     return totals

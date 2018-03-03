@@ -112,6 +112,10 @@ class TestObserveTiles (unittest.TestCase):
         self.assertNotIn('compactness', districts1[1])
         self.assertEqual(districts1[0]['totals']['Voters'], 567.09)
         self.assertEqual(districts1[1]['totals']['Voters'], 932.89)
+        self.assertEqual(districts1[0]['totals']['Households 2016'], 283.55)
+        self.assertEqual(districts1[1]['totals']['Households 2016'], 466.45)
+        self.assertAlmostEqual(districts1[0]['totals']['Household Income 2016'], 59000, -1)
+        self.assertAlmostEqual(districts1[1]['totals']['Household Income 2016'], 59000, -1)
 
         upload.districts = [{'compactness': True}, {'compactness': False}]
         districts2 = observe.accumulate_district_totals(inputs, upload)
@@ -132,3 +136,18 @@ class TestObserveTiles (unittest.TestCase):
         self.assertEqual(districts3[1]['totals']['X'], 2)
         self.assertEqual(districts3[0]['totals']['Voters'], 567.09)
         self.assertEqual(districts3[1]['totals']['Voters'], 932.89)
+
+    def test_adjust_household_income(self):
+        '''
+        '''
+        totals1 = {'Households 2016': 1000, 'Sum Household Income 2016': 59000000}
+        totals2 = observe.adjust_household_income(totals1)
+        
+        self.assertEqual(totals2['Households 2016'], 1000)
+        self.assertEqual(totals2['Household Income 2016'], 59000)
+
+        totals3 = {'Households 2016': 1000, 'Voters': 2000}
+        totals4 = observe.adjust_household_income(totals3)
+        
+        self.assertEqual(totals4['Households 2016'], 1000)
+        self.assertEqual(totals4['Voters'], 2000)
