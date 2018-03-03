@@ -192,7 +192,7 @@ MODELS = [
     Model(State.NC, House.ushouse,      13, 'data/NC/004-ushouse'),
     Model(State.NC, House.statesenate,  50, 'data/NC/004-ncsenate'),
     Model(State.NC, House.statehouse,  120, 'data/NC/004-nchouse'),
-    Model(State.PA, House.ushouse,      18, 'data/PA/002-ushouse'), # ab6f87293
+    Model(State.PA, House.ushouse,      18, 'data/PA/005-ushouse'), # 668eec46a
     Model(State.PA, House.statesenate,  50, 'data/PA/002-statesenate'), # ab6f87293
     Model(State.PA, House.statehouse,  203, 'data/WI/002-statehouse'), # ab6f87293
     #Model(State.WI, House.ushouse,       8, 'data/WI/001-ushouse'),
