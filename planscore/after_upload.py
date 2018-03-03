@@ -109,7 +109,9 @@ def load_model_tiles(storage, model):
     
     while True:
         print('load_model_tiles() starting from', repr(marker))
-        response = storage.s3.list_objects(Bucket=storage.bucket, Prefix=model.key_prefix)
+        response = storage.s3.list_objects(Bucket=storage.bucket,
+            Prefix=model.key_prefix, Marker=marker)
+
         contents.extend(response['Contents'])
         is_truncated = response['IsTruncated']
         
