@@ -3,7 +3,8 @@
 Performs as many tile-based accumulations of district votes as possible within
 AWS Lambda time limit before recursively calling for remaining tiles.
 '''
-import collections, json, io, gzip, statistics, time, base64, posixpath, pickle, functools, logging, time
+import collections, json, io, gzip, statistics, time, base64, posixpath, \
+    pickle, functools, logging, time, copy
 from osgeo import ogr
 import boto3, botocore.exceptions, ModestMaps.OpenStreetMap, ModestMaps.Core
 from . import prepare_state, score, data, constants, compactness, util
@@ -169,6 +170,7 @@ def lambda_handler(event, context):
         return
     
     # If we reached here, we are all done
+    partial.totals = adjust_household_income(partial.totals)
     post_score_results(storage, partial)
 
 def post_score_results(storage, partial):
@@ -261,8 +263,32 @@ def score_precinct(partial, precinct, tile_zxy):
     for name in score.FIELD_NAMES:
         if name not in precinct['properties']:
             continue
+
         precinct_value = precinct_fraction * (precinct['properties'][name] or 0)
+        
+        if name == 'Household Income 2016' and 'Households 2016' in precinct['properties']:
+            # Household income can't be summed up like populations,
+            # and needs to be weighted by number of households.
+            precinct_value *= (precinct['properties']['Households 2016'] or 0)
+            partial.totals['Sum Household Income 2016'] = \
+                round(partial.totals.get('Sum Household Income 2016', 0)
+                    + precinct_value, constants.ROUND_COUNT)
+
+            continue
+
         partial.totals[name] = round(partial.totals[name] + precinct_value, constants.ROUND_COUNT)
+
+def adjust_household_income(input_totals):
+    '''
+    '''
+    totals = copy.deepcopy(input_totals)
+    
+    if 'Households 2016' in totals and 'Sum Household Income 2016' in totals:
+        totals['Household Income 2016'] = round(totals['Sum Household Income 2016']
+            / totals['Households 2016'], constants.ROUND_COUNT)
+        del totals['Sum Household Income 2016']
+    
+    return totals
 
 def get_tile_metadata(storage, tile_zxy):
     ''' Get metadata dictionary for a specific tile.

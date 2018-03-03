@@ -110,7 +110,22 @@ def accumulate_district_totals(tile_totals, upload):
             for (key, value) in input_values.items():
                 district[key] = round(district[key] + value, constants.ROUND_COUNT)
     
+    for district in districts:
+        district['totals'] = adjust_household_income(district['totals'])
+    
     return districts
+
+def adjust_household_income(input_totals):
+    '''
+    '''
+    totals = copy.deepcopy(input_totals)
+    
+    if 'Households 2016' in totals and 'Sum Household Income 2016' in totals:
+        totals['Household Income 2016'] = round(totals['Sum Household Income 2016']
+            / totals['Households 2016'], constants.ROUND_COUNT)
+        del totals['Sum Household Income 2016']
+    
+    return totals
 
 def lambda_handler(event, context):
     '''

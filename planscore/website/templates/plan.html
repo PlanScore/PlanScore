@@ -125,12 +125,15 @@
         <table class="table table-hover" id="districts">
             {# this table will be populated by load_plan_score() #}
         </table>
+        <br>
+        <a href="#" id="text-link">Download raw data as tab-delimited text</a>.
     </div>
     </section>
 	<script language="javascript">
 	    var plan_id = location.search.replace('?', ''),
 	        plan_url = format_url('{{ data_url_pattern }}', plan_id),
 	        geom_url = format_url('{{ geom_url_pattern }}', plan_id),
+	        text_url = format_url('{{ text_url_pattern }}', plan_id),
 	        eg_metric_url = '{{ url_for("get_efficiencygap_page") }}',
 	        pb_metric_url = '{{ url_for("get_partisanbias_page") }}',
 	        mm_metric_url = '{{ url_for("get_meanmedian_page") }}';
@@ -144,6 +147,7 @@
 	        document.getElementById('score-partisan-bias'),
 	        document.getElementById('score-mean-median'),
 	        document.getElementById('score-sensitivity'),
+	        text_url, document.getElementById('text-link'),
 	        geom_url, document.getElementById('map'));
 	</script>
 

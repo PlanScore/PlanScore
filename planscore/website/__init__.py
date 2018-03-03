@@ -14,6 +14,9 @@ def get_data_url_pattern(bucket):
 def get_geom_url_pattern(bucket):
     return constants.S3_URL_PATTERN.format(b=bucket, k=data.UPLOAD_GEOMETRY_KEY)
 
+def get_text_url_pattern(bucket):
+    return constants.S3_URL_PATTERN.format(b=bucket, k=data.UPLOAD_PLAINTEXT_KEY)
+
 def get_function_url(endpoint, relpath):
     planscore_api_base = flask.current_app.config['PLANSCORE_API_BASE']
     if planscore_api_base:
@@ -91,8 +94,10 @@ def get_incumbency():
 def get_plan():
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     geom_url_pattern = get_geom_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
+    text_url_pattern = get_text_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     return flask.render_template('plan.html', fields=score.FIELD_NAMES,
-        data_url_pattern=data_url_pattern, geom_url_pattern=geom_url_pattern)
+        data_url_pattern=data_url_pattern, geom_url_pattern=geom_url_pattern,
+        text_url_pattern=text_url_pattern)
 
 @app.route('/models/')
 def get_models():

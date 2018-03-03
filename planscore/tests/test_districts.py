@@ -1,4 +1,4 @@
-import unittest, unittest.mock, os, json, io, gzip, itertools
+import unittest, unittest.mock, os, json, io, gzip, itertools, collections
 from osgeo import ogr
 import botocore.exceptions
 from .. import districts, data, score
@@ -136,10 +136,11 @@ class TestDistricts (unittest.TestCase):
     @unittest.mock.patch('boto3.client')
     @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.post_score_results')
+    @unittest.mock.patch('planscore.districts.adjust_household_income')
     @unittest.mock.patch('planscore.districts.consume_tiles')
     @unittest.mock.patch('planscore.util.add_sqs_logging_handler')
     def test_lambda_handler_init(self, add_sqs_logging_handler, consume_tiles,
-        post_score_results, get_scores, boto3_client, stdout):
+        adjust_household_income, post_score_results, get_scores, boto3_client, stdout):
         ''' Lambda event data with just geometry starts the process.
         '''
         s3 = boto3_client.return_value
@@ -154,8 +155,10 @@ class TestDistricts (unittest.TestCase):
         districts.lambda_handler(event, None)
         storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
-            (-1, {}, [], ['12/2047/2047', '12/2047/2048'], 'ID'))
+            (-1, adjust_household_income.return_value, [], ['12/2047/2047', '12/2047/2048'], 'ID'))
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 0)
+        self.assertEqual(len(adjust_household_income.mock_calls), 1)
+        self.assertIs(partial.totals, adjust_household_income.return_value)
         post_score_results.assert_called_once_with(storage, partial)
 
         get_scores.assert_called_once_with(partial.geometry)
@@ -165,10 +168,11 @@ class TestDistricts (unittest.TestCase):
     @unittest.mock.patch('boto3.client')
     @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.post_score_results')
+    @unittest.mock.patch('planscore.districts.adjust_household_income')
     @unittest.mock.patch('planscore.districts.consume_tiles')
     @unittest.mock.patch('planscore.util.add_sqs_logging_handler')
     def test_lambda_handler_timeout(self, add_sqs_logging_handler, consume_tiles,
-        post_score_results, get_scores, boto3_client, stdout):
+        adjust_household_income, post_score_results, get_scores, boto3_client, stdout):
         ''' Lambda event hands off the process when no time is left.
         '''
         s3 = boto3_client.return_value
@@ -193,16 +197,18 @@ class TestDistricts (unittest.TestCase):
         self.assertIn(event['bucket'].encode('utf8'), kwargs['Payload'])
         self.assertIn(event['prefix'].encode('utf8'), kwargs['Payload'])
 
+        self.assertEqual(len(adjust_household_income.mock_calls), 0)
         self.assertEqual(len(post_score_results.mock_calls), 0)
 
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
     @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.post_score_results')
+    @unittest.mock.patch('planscore.districts.adjust_household_income')
     @unittest.mock.patch('planscore.districts.consume_tiles')
     @unittest.mock.patch('planscore.util.add_sqs_logging_handler')
     def test_lambda_handler_continue(self, add_sqs_logging_handler, consume_tiles,
-        post_score_results, get_scores, boto3_client, stdout):
+        adjust_household_income, post_score_results, get_scores, boto3_client, stdout):
         ''' Lambda event data with existing totals continues the process.
         '''
         s3 = boto3_client.return_value
@@ -216,8 +222,10 @@ class TestDistricts (unittest.TestCase):
         districts.lambda_handler(event, None)
         storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
-            (-1, {}, [{'Totals': 1}], ['12/2047/2048'], 'ID'))
+            (-1, adjust_household_income.return_value, [{'Totals': 1}], ['12/2047/2048'], 'ID'))
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 0)
+        self.assertEqual(len(adjust_household_income.mock_calls), 1)
+        self.assertIs(partial.totals, adjust_household_income.return_value)
         post_score_results.assert_called_once_with(storage, partial)
         
         self.assertEqual(len(get_scores.mock_calls), 0,
@@ -227,10 +235,11 @@ class TestDistricts (unittest.TestCase):
     @unittest.mock.patch('boto3.client')
     @unittest.mock.patch('planscore.compactness.get_scores')
     @unittest.mock.patch('planscore.districts.post_score_results')
+    @unittest.mock.patch('planscore.districts.adjust_household_income')
     @unittest.mock.patch('planscore.districts.consume_tiles')
     @unittest.mock.patch('planscore.util.add_sqs_logging_handler')
     def test_lambda_handler_final(self, add_sqs_logging_handler, consume_tiles,
-        post_score_results, get_scores, boto3_client, stdout):
+        adjust_household_income, post_score_results, get_scores, boto3_client, stdout):
         ''' Lambda event for the final district does not hand off to the score function.
         '''
         s3 = boto3_client.return_value
@@ -243,7 +252,9 @@ class TestDistricts (unittest.TestCase):
         districts.lambda_handler(event, None)
         storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
-            (-1, {}, [], ['12/2047/2047', '12/2047/2048'], 'ID'))
+            (-1, adjust_household_income.return_value, [], ['12/2047/2047', '12/2047/2048'], 'ID'))
+        self.assertEqual(len(adjust_household_income.mock_calls), 1)
+        self.assertIs(partial.totals, adjust_household_income.return_value)
         post_score_results.assert_called_once_with(storage, partial)
 
     @unittest.mock.patch('sys.stdout')
@@ -367,7 +378,7 @@ class TestDistricts (unittest.TestCase):
     def test_score_precinct(self):
         ''' Correct values appears in totals dict after scoring a precinct.
         '''
-        totals = {"Voters": 0, "Red Votes": 0, "REP999": 0, "Blue Votes": 0, "DEM999": 0}
+        totals = collections.defaultdict(int)
         geometry = ogr.CreateGeometryFromWkt('POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))')
         precinct = {"type": "Feature", "properties": {"GEOID": "3", "NAME": "Precinct 3", "Voters": 4, "Red Votes": 3, "REP999": 3, "Blue Votes": 0, "DEM999": 0, "PlanScore:Fraction": 0.563558429345361}, "geometry": {"type": "Polygon", "coordinates": [[[-0.0003853, 0.0], [-0.0003819, 2.5e-06], [-0.0003824, 1.16e-05], [-0.0003895, 1.16e-05], [-0.000391, 1.47e-05], [-0.0003922, 2.1e-05], [-0.0003832, 3.27e-05], [-0.0003844, 3.81e-05], [-0.0003751, 5.2e-05], [-0.0003683, 5.48e-05], [-0.0003685, 5.99e-05], [-0.0003642, 6.45e-05], [-0.0003597, 6.45e-05], [-0.0003531, 6.45e-05], [-0.0003432, 6.91e-05], [-0.0003379, 6.96e-05], [-0.0003321, 7.06e-05], [-0.0003273, 7.72e-05], [-0.0003268, 8.46e-05], [-0.0003185, 8.97e-05], [-0.0003109, 9.04e-05], [-0.0003064, 9.5e-05], [-0.0002973, 9.45e-05], [-0.0002978, 0.0001047], [-0.0002887, 0.0001103], [-0.0002826, 0.0001067], [-0.0002746, 0.0001042], [-0.0002756, 0.0001164], [-0.0002852, 0.0001179], [-0.0002852, 0.0001245], [-0.0002776, 0.0001291], [-0.0002776, 0.0001438], [-0.0002756, 0.0001464], [-0.00027, 0.0001474], [-0.0002644, 0.0001606], [-0.0002619, 0.0001657], [-0.0002518, 0.0001632], [-0.0002463, 0.0001738], [-0.0002397, 0.0001728], [-0.0002286, 0.0001815], [-0.0002225, 0.0001815], [-0.0002205, 0.0001922], [-0.0002154, 0.0001947], [-0.0002114, 0.0002049], [-0.0001973, 0.0002166], [-0.0001952, 0.0002237], [-0.0001811, 0.0002181], [-0.0001821, 0.000213], [-0.0001882, 0.0002038], [-0.0001856, 0.0001988], [-0.0001856, 0.0001942], [-0.0001882, 0.000184], [-0.0001826, 0.000184], [-0.000176, 0.0001749], [-0.0001715, 0.0001754], [-0.0001634, 0.0001866], [-0.0001594, 0.0001876], [-0.0001538, 0.0001916], [-0.0001478, 0.0001855], [-0.0001382, 0.0001922], [-0.0001255, 0.0001906], [-0.000125, 0.000183], [-0.000118, 0.0001825], [-0.0001175, 0.0001898], [-3.16e-05, 0.0], [-0.0003853, 0.0]]]}}
         partial = districts.Partial(None, totals, None, None, None, None, None, geometry)
@@ -381,6 +392,40 @@ class TestDistricts (unittest.TestCase):
         self.assertAlmostEqual(partial.totals['REP999'], 1.69067528, places=2)
         self.assertAlmostEqual(partial.totals['Blue Votes'], 0, places=2)
         self.assertAlmostEqual(partial.totals['DEM999'], 0, places=2)
+    
+    def test_score_precinct_incomes(self):
+        ''' Correct values appears in totals dict after scoring a precinct.
+        '''
+        totals = collections.defaultdict(int)
+        geometry = ogr.CreateGeometryFromWkt('POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))')
+        precinct = {"type": "Feature", "properties": {"GEOID": "3", "NAME": "Precinct 3", "Voters": 6, "Households 2016": 3, "Household Income 2016": 59039, "PlanScore:Fraction": 0.563558429345361}, "geometry": {"type": "Polygon", "coordinates": [[[-0.0003853, 0.0], [-0.0003819, 2.5e-06], [-0.0003824, 1.16e-05], [-0.0003895, 1.16e-05], [-0.000391, 1.47e-05], [-0.0003922, 2.1e-05], [-0.0003832, 3.27e-05], [-0.0003844, 3.81e-05], [-0.0003751, 5.2e-05], [-0.0003683, 5.48e-05], [-0.0003685, 5.99e-05], [-0.0003642, 6.45e-05], [-0.0003597, 6.45e-05], [-0.0003531, 6.45e-05], [-0.0003432, 6.91e-05], [-0.0003379, 6.96e-05], [-0.0003321, 7.06e-05], [-0.0003273, 7.72e-05], [-0.0003268, 8.46e-05], [-0.0003185, 8.97e-05], [-0.0003109, 9.04e-05], [-0.0003064, 9.5e-05], [-0.0002973, 9.45e-05], [-0.0002978, 0.0001047], [-0.0002887, 0.0001103], [-0.0002826, 0.0001067], [-0.0002746, 0.0001042], [-0.0002756, 0.0001164], [-0.0002852, 0.0001179], [-0.0002852, 0.0001245], [-0.0002776, 0.0001291], [-0.0002776, 0.0001438], [-0.0002756, 0.0001464], [-0.00027, 0.0001474], [-0.0002644, 0.0001606], [-0.0002619, 0.0001657], [-0.0002518, 0.0001632], [-0.0002463, 0.0001738], [-0.0002397, 0.0001728], [-0.0002286, 0.0001815], [-0.0002225, 0.0001815], [-0.0002205, 0.0001922], [-0.0002154, 0.0001947], [-0.0002114, 0.0002049], [-0.0001973, 0.0002166], [-0.0001952, 0.0002237], [-0.0001811, 0.0002181], [-0.0001821, 0.000213], [-0.0001882, 0.0002038], [-0.0001856, 0.0001988], [-0.0001856, 0.0001942], [-0.0001882, 0.000184], [-0.0001826, 0.000184], [-0.000176, 0.0001749], [-0.0001715, 0.0001754], [-0.0001634, 0.0001866], [-0.0001594, 0.0001876], [-0.0001538, 0.0001916], [-0.0001478, 0.0001855], [-0.0001382, 0.0001922], [-0.0001255, 0.0001906], [-0.000125, 0.000183], [-0.000118, 0.0001825], [-0.0001175, 0.0001898], [-3.16e-05, 0.0], [-0.0003853, 0.0]]]}}
+        partial = districts.Partial(None, totals, None, None, None, None, None, geometry)
+        
+        # Check each overlapping tile
+        for tile_zxy in ('12/2047/2047', '12/2047/2048', '12/2048/2047', '12/2048/2048'):
+            districts.score_precinct(partial, precinct, tile_zxy)
+        
+        self.assertAlmostEqual(partial.totals['Voters'], 3.381350576, places=2)
+        self.assertAlmostEqual(partial.totals['Households 2016'], 1.690675288, places=2)
+        self.assertAlmostEqual(partial.totals['Sum Household Income 2016'], 99815.77833, places=2)
+        self.assertNotIn('Household Income 2016', partial.totals)
+    
+    def test_score_precinct_incomplete_incomes(self):
+        ''' Correct values appears in totals dict after scoring a precinct.
+        '''
+        totals = collections.defaultdict(int)
+        geometry = ogr.CreateGeometryFromWkt('POLYGON ((-0.0002360 0.0004532,-0.0006812 0.0002467,-0.0006356 -0.0003486,-0.0000268 -0.0004693,-0.0000187 -0.0000214,-0.0002360 0.0004532))')
+        precinct = {"type": "Feature", "properties": {"GEOID": "3", "NAME": "Precinct 3", "Voters": 6, "Households 2016": None, "Household Income 2016": None, "PlanScore:Fraction": 0.563558429345361}, "geometry": {"type": "Polygon", "coordinates": [[[-0.0003853, 0.0], [-0.0003819, 2.5e-06], [-0.0003824, 1.16e-05], [-0.0003895, 1.16e-05], [-0.000391, 1.47e-05], [-0.0003922, 2.1e-05], [-0.0003832, 3.27e-05], [-0.0003844, 3.81e-05], [-0.0003751, 5.2e-05], [-0.0003683, 5.48e-05], [-0.0003685, 5.99e-05], [-0.0003642, 6.45e-05], [-0.0003597, 6.45e-05], [-0.0003531, 6.45e-05], [-0.0003432, 6.91e-05], [-0.0003379, 6.96e-05], [-0.0003321, 7.06e-05], [-0.0003273, 7.72e-05], [-0.0003268, 8.46e-05], [-0.0003185, 8.97e-05], [-0.0003109, 9.04e-05], [-0.0003064, 9.5e-05], [-0.0002973, 9.45e-05], [-0.0002978, 0.0001047], [-0.0002887, 0.0001103], [-0.0002826, 0.0001067], [-0.0002746, 0.0001042], [-0.0002756, 0.0001164], [-0.0002852, 0.0001179], [-0.0002852, 0.0001245], [-0.0002776, 0.0001291], [-0.0002776, 0.0001438], [-0.0002756, 0.0001464], [-0.00027, 0.0001474], [-0.0002644, 0.0001606], [-0.0002619, 0.0001657], [-0.0002518, 0.0001632], [-0.0002463, 0.0001738], [-0.0002397, 0.0001728], [-0.0002286, 0.0001815], [-0.0002225, 0.0001815], [-0.0002205, 0.0001922], [-0.0002154, 0.0001947], [-0.0002114, 0.0002049], [-0.0001973, 0.0002166], [-0.0001952, 0.0002237], [-0.0001811, 0.0002181], [-0.0001821, 0.000213], [-0.0001882, 0.0002038], [-0.0001856, 0.0001988], [-0.0001856, 0.0001942], [-0.0001882, 0.000184], [-0.0001826, 0.000184], [-0.000176, 0.0001749], [-0.0001715, 0.0001754], [-0.0001634, 0.0001866], [-0.0001594, 0.0001876], [-0.0001538, 0.0001916], [-0.0001478, 0.0001855], [-0.0001382, 0.0001922], [-0.0001255, 0.0001906], [-0.000125, 0.000183], [-0.000118, 0.0001825], [-0.0001175, 0.0001898], [-3.16e-05, 0.0], [-0.0003853, 0.0]]]}}
+        partial = districts.Partial(None, totals, None, None, None, None, None, geometry)
+        
+        # Check each overlapping tile
+        for tile_zxy in ('12/2047/2047', '12/2047/2048', '12/2048/2047', '12/2048/2048'):
+            districts.score_precinct(partial, precinct, tile_zxy)
+        
+        self.assertAlmostEqual(partial.totals['Voters'], 3.381350576, places=2)
+        self.assertAlmostEqual(partial.totals['Households 2016'], 0, places=2)
+        self.assertAlmostEqual(partial.totals['Sum Household Income 2016'], 0, places=2)
+        self.assertNotIn('Household Income 2016', partial.totals)
     
     # Precinct and Census block (represented as points) score cases:
     #
@@ -555,6 +600,21 @@ class TestDistricts (unittest.TestCase):
             self.assertEqual(actual, expected)
         
         self.assertEqual(len(load_tile_precincts.mock_calls), expected_calls)
+    
+    def test_adjust_household_income(self):
+        '''
+        '''
+        totals1 = {'Households 2016': 1000, 'Sum Household Income 2016': 59000000}
+        totals2 = districts.adjust_household_income(totals1)
+        
+        self.assertEqual(totals2['Households 2016'], 1000)
+        self.assertEqual(totals2['Household Income 2016'], 59000)
+
+        totals3 = {'Households 2016': 1000, 'Voters': 2000}
+        totals4 = districts.adjust_household_income(totals3)
+        
+        self.assertEqual(totals4['Households 2016'], 1000)
+        self.assertEqual(totals4['Voters'], 2000)
     
     def test_get_tile_metadata(self):
         '''
