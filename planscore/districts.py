@@ -269,7 +269,7 @@ def score_precinct(partial, precinct, tile_zxy):
         if name == 'Household Income 2016' and 'Households 2016' in precinct['properties']:
             # Household income can't be summed up like populations,
             # and needs to be weighted by number of households.
-            precinct_value *= precinct['properties']['Households 2016']
+            precinct_value *= (precinct['properties']['Households 2016'] or 0)
             partial.totals['Sum Household Income 2016'] = \
                 round(partial.totals.get('Sum Household Income 2016', 0)
                     + precinct_value, constants.ROUND_COUNT)

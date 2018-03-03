@@ -141,7 +141,7 @@ def score_precinct(partial_district_geom, precinct_feat, tile_geom):
         if name == 'Household Income 2016' and 'Households 2016' in precinct_feat['properties']:
             # Household income can't be summed up like populations,
             # and needs to be weighted by number of households.
-            precinct_value *= precinct_feat['properties']['Households 2016']
+            precinct_value *= (precinct_feat['properties']['Households 2016'] or 0)
             totals['Sum Household Income 2016'] = \
                 round(totals.get('Sum Household Income 2016', 0)
                     + precinct_value, constants.ROUND_COUNT)
