@@ -116,7 +116,7 @@ def load_model_tiles(storage, model):
         if not is_truncated:
             break
         
-        marker = keys[-1]['Key']
+        marker = contents[-1]['Key']
     
     # Sort largest items first
     contents.sort(key=lambda obj: obj['Size'], reverse=True)
