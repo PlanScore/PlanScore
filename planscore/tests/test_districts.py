@@ -152,12 +152,14 @@ class TestDistricts (unittest.TestCase):
             'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
             'geometry_key': 'geom.wkt'}
 
+        adjust_household_income.return_value.id = event['upload']['id']
+
         districts.lambda_handler(event, None)
         storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
             (-1, {}, [], ['12/2047/2047', '12/2047/2048'], 'ID'))
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 0)
-        adjust_household_income.assert_called_once_with(partial.upload)
+        self.assertEqual(len(adjust_household_income.mock_calls), 1)
         self.assertIs(partial.upload, adjust_household_income.return_value)
         post_score_results.assert_called_once_with(storage, partial)
 
@@ -219,12 +221,14 @@ class TestDistricts (unittest.TestCase):
             'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
             'geometry_key': 'geom.wkt', 'compactness': {'Reock': -1}}
 
+        adjust_household_income.return_value.id = event['upload']['id']
+
         districts.lambda_handler(event, None)
         storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
             (-1, {}, [{'Totals': 1}], ['12/2047/2048'], 'ID'))
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 0)
-        adjust_household_income.assert_called_once_with(partial.upload)
+        self.assertEqual(len(adjust_household_income.mock_calls), 1)
         self.assertIs(partial.upload, adjust_household_income.return_value)
         post_score_results.assert_called_once_with(storage, partial)
         
@@ -249,11 +253,13 @@ class TestDistricts (unittest.TestCase):
             'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
             'geometry_key': 'geom.wkt'}
 
+        adjust_household_income.return_value.id = event['upload']['id']
+
         districts.lambda_handler(event, None)
         storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
             (-1, {}, [], ['12/2047/2047', '12/2047/2048'], 'ID'))
-        adjust_household_income.assert_called_once_with(partial.upload)
+        self.assertEqual(len(adjust_household_income.mock_calls), 1)
         self.assertIs(partial.upload, adjust_household_income.return_value)
         post_score_results.assert_called_once_with(storage, partial)
 

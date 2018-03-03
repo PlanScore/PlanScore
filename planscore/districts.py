@@ -3,7 +3,8 @@
 Performs as many tile-based accumulations of district votes as possible within
 AWS Lambda time limit before recursively calling for remaining tiles.
 '''
-import collections, json, io, gzip, statistics, time, base64, posixpath, pickle, functools, logging, time
+import collections, json, io, gzip, statistics, time, base64, posixpath, \
+    pickle, functools, logging, time, copy
 from osgeo import ogr
 import boto3, botocore.exceptions, ModestMaps.OpenStreetMap, ModestMaps.Core
 from . import prepare_state, score, data, constants, compactness, util
@@ -268,7 +269,15 @@ def score_precinct(partial, precinct, tile_zxy):
 def adjust_household_income(upload):
     '''
     '''
-    pass
+    districts = copy.deepcopy(upload.districts)
+    
+    for district in districts:
+        totals = district['totals']
+        if 'Households 2016' in totals and 'Sum Household Income 2016' in totals:
+            totals['Household Income 2016'] = totals['Sum Household Income 2016'] / totals['Households 2016']
+            del totals['Sum Household Income 2016']
+    
+    return upload.clone(districts=districts)
 
 def get_tile_metadata(storage, tile_zxy):
     ''' Get metadata dictionary for a specific tile.
