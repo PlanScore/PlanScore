@@ -169,6 +169,7 @@ def lambda_handler(event, context):
         return
     
     # If we reached here, we are all done
+    partial.upload = adjust_household_income(partial.upload)
     post_score_results(storage, partial)
 
 def post_score_results(storage, partial):
@@ -263,6 +264,11 @@ def score_precinct(partial, precinct, tile_zxy):
             continue
         precinct_value = precinct_fraction * (precinct['properties'][name] or 0)
         partial.totals[name] = round(partial.totals[name] + precinct_value, constants.ROUND_COUNT)
+
+def adjust_household_income(upload):
+    '''
+    '''
+    pass
 
 def get_tile_metadata(storage, tile_zxy):
     ''' Get metadata dictionary for a specific tile.
