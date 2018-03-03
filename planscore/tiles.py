@@ -135,8 +135,19 @@ def score_precinct(partial_district_geom, precinct_feat, tile_geom):
         overlap_area = overlap_geom.Area() / precinct_geom.Area()
         precinct_fraction = overlap_area * precinct_frac
     
-    for name in totals:
+    for name in list(totals.keys()):
         precinct_value = precinct_fraction * (precinct_feat['properties'][name] or 0)
+        
+        if name == 'Household Income 2016' and 'Households 2016' in precinct_feat['properties']:
+            # Household income can't be summed up like populations,
+            # and needs to be weighted by number of households.
+            precinct_value *= precinct_feat['properties']['Households 2016']
+            totals['Sum Household Income 2016'] = \
+                round(totals.get('Sum Household Income 2016', 0)
+                    + precinct_value, constants.ROUND_COUNT)
+
+            continue
+
         totals[name] = round(precinct_value, constants.ROUND_COUNT)
     
     return totals
