@@ -66,14 +66,14 @@ def commence_upload_scoring(s3, bucket, upload):
         
         # 
         storage = data.Storage(s3, bucket, model.key_prefix)
-        fan_out_tile_lambdas(storage, forward_upload)
-        start_tile_observer_lambda(storage, forward_upload)
         
-        # Do this second-to-last - localstack invokes Lambda functions synchronously
+        # Do these second-to-last - localstack invokes Lambda functions synchronously
         fan_out_district_lambdas(bucket, model.key_prefix, forward_upload, geometry_keys)
+        fan_out_tile_lambdas(storage, forward_upload)
         
-        # Do this last.
+        # Do these last.
         start_observer_score_lambda(storage, forward_upload)
+        start_tile_observer_lambda(storage, forward_upload)
 
 def put_district_geometries(s3, bucket, upload, path):
     '''
