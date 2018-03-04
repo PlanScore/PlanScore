@@ -8,7 +8,7 @@ FUNCTION_NAME = 'PlanScore-RunTile'
 _mercator = ModestMaps.OpenStreetMap.Provider().projection
 
 def load_upload_geometries(storage, upload):
-    ''' Get OGR geometries for an upload.
+    ''' Get dictionary of OGR geometries for an upload.
     '''
     geometries = {}
     
