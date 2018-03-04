@@ -143,18 +143,18 @@ class TestData (unittest.TestCase):
         '''
         upload1 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
             districts=[
-                { "totals": { "Democratic Votes": 100, "Population 2015": 200, "Republican Votes": 300 } },
-                { "totals": { "Democratic Votes": 400, "Population 2015": 500, "Republican Votes": 600 } },
-                { "totals": { "Democratic Votes": 700, "Population 2015": 800, "Republican Votes": 900 } }
+                { "totals": { "Democratic Votes": 100, "Population 2015": 200, "Republican Votes": 300 }, "compactness": { "Reock": .2 } },
+                { "totals": { "Democratic Votes": 400, "Population 2015": 500, "Republican Votes": 600 }, "compactness": { "Reock": .3 } },
+                { "totals": { "Democratic Votes": 700, "Population 2015": 800, "Republican Votes": 900 }, "compactness": { "Reock": .4 } }
               ])
         
         plaintext1 = upload1.to_plaintext()
         head, row1, row2, row3, tail = plaintext1.split('\r\n', 4)
         
-        self.assertEqual(head, 'District\tDemocratic Votes\tRepublican Votes\tPopulation 2015')
-        self.assertEqual(row1, '1\t100\t300\t200')
-        self.assertEqual(row2, '2\t400\t600\t500')
-        self.assertEqual(row3, '3\t700\t900\t800')
+        self.assertEqual(head, 'District\tDemocratic Votes\tRepublican Votes\tPopulation 2015\tReock')
+        self.assertEqual(row1, '1\t100\t300\t200\t0.2')
+        self.assertEqual(row2, '2\t400\t600\t500\t0.3')
+        self.assertEqual(row3, '3\t700\t900\t800\t0.4')
         self.assertEqual(tail, '')
 
         upload2 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',

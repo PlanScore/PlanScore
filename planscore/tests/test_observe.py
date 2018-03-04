@@ -1,6 +1,6 @@
 import unittest, unittest.mock, os, io, itertools, gzip, json
 import botocore.exceptions
-from .. import observe
+from .. import observe, data
 
 should_gzip = itertools.cycle([True, False])
 
@@ -64,6 +64,38 @@ class TestObserveTiles (unittest.TestCase):
         
         with self.assertRaises(ValueError):
             observe.get_district_index('uploads/ID/geometries/xx.wkt', upload)
+    
+    def test_load_upload_geometries(self):
+        ''' Expected geometries are retrieved from S3.
+        '''
+        s3, upload = unittest.mock.Mock(), unittest.mock.Mock()
+        storage = data.Storage(s3, 'bucket-name', 'XX')
+        upload.id = 'sample-plan'
+
+        s3.get_object.side_effect = mock_s3_get_object
+        s3.list_objects.return_value = {'Contents': [
+            {'Key': "uploads/sample-plan/geometries/0.wkt"},
+            {'Key': "uploads/sample-plan/geometries/1.wkt"}
+            ]}
+
+        geometries = observe.load_upload_geometries(storage, upload)
+
+        self.assertIs(type(geometries), list)
+        self.assertEqual(len(geometries), 2)
+        
+        s3.list_objects.assert_called_once_with(Bucket='bucket-name',
+            Prefix="uploads/sample-plan/geometries/")
+
+    @unittest.mock.patch('planscore.compactness.get_scores')
+    def test_populate_compactness(self, get_scores):
+        '''
+        '''
+        geometries = [unittest.mock.Mock()]
+        districts = observe.populate_compactness(geometries)
+        
+        get_scores.assert_called_once_with(geometries[0])
+        self.assertEqual(len(districts), len(geometries))
+        self.assertEqual(districts[0]['compactness'], get_scores.return_value)
     
     @unittest.mock.patch('sys.stdout')
     def test_iterate_tile_totals(self, stdout):

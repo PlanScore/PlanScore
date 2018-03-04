@@ -1,5 +1,6 @@
 import boto3, botocore.exceptions, time, json, posixpath, io, gzip, collections, copy
-from . import data, constants, tiles, score
+from . import data, constants, tiles, score, compactness
+import osgeo.ogr
 
 FUNCTION_NAME = 'PlanScore-ObserveTiles'
 
@@ -33,6 +34,36 @@ def get_district_index(geometry_key, upload):
     base, _ = posixpath.splitext(posixpath.relpath(geometry_key, dirname))
     
     return int(base)
+
+def load_upload_geometries(storage, upload):
+    ''' Get ordered list of OGR geometries for an upload.
+    '''
+    geometries = {}
+    
+    geoms_prefix = posixpath.dirname(data.UPLOAD_GEOMETRIES_KEY).format(id=upload.id)
+    response = storage.s3.list_objects(Bucket=storage.bucket, Prefix=f'{geoms_prefix}/')
+
+    geometry_keys = [object['Key'] for object in response['Contents']]
+    
+    for geometry_key in geometry_keys:
+        district_index = get_district_index(geometry_key, upload)
+        object = storage.s3.get_object(Bucket=storage.bucket, Key=geometry_key)
+
+        if object.get('ContentEncoding') == 'gzip':
+            object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
+    
+        district_geom = osgeo.ogr.CreateGeometryFromWkt(object['Body'].read().decode('utf8'))
+        geometries[district_index] = district_geom
+    
+    return [geom for (_, geom) in sorted(geometries.items())]
+
+def populate_compactness(geometries):
+    '''
+    '''
+    districts = [dict(compactness=compactness.get_scores(geometry))
+        for geometry in geometries]
+    
+    return districts
 
 def iterate_tile_totals(expected_tiles, storage, upload, context):
     '''
@@ -79,7 +110,7 @@ def iterate_tile_totals(expected_tiles, storage, upload, context):
     print('iterate_tile_totals: all tiles complete')
 
 def accumulate_district_totals(tile_totals, upload):
-    '''
+    ''' Return new district array for an upload, preserving existing values.
     '''
     districts = []
     
@@ -141,13 +172,15 @@ def lambda_handler(event, context):
     expected_tiles = [get_expected_tile(tile_key, upload1)
         for tile_key in enqueued_tiles]
     
-    tile_totals = iterate_tile_totals(expected_tiles, storage, upload1, context)
-    districts = accumulate_district_totals(tile_totals, upload1)
-    upload2 = upload1.clone(districts=districts)
-    upload3 = score.calculate_bias(upload2)
-    upload4 = score.calculate_biases(upload3)
+    geometries = load_upload_geometries(storage, upload1)
+    upload2 = upload1.clone(districts=populate_compactness(geometries))
+    tile_totals = iterate_tile_totals(expected_tiles, storage, upload2, context)
+    districts = accumulate_district_totals(tile_totals, upload2)
+    upload3 = upload2.clone(districts=districts)
+    upload4 = score.calculate_bias(upload3)
+    upload5 = score.calculate_biases(upload4)
 
-    complete_upload = upload4.clone(message='Finished scoring this plan.',
+    complete_upload = upload5.clone(message='Finished scoring this plan.',
         progress=data.Progress(len(expected_tiles), len(expected_tiles)))
 
     put_upload_index(storage, complete_upload)
