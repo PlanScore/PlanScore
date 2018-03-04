@@ -154,7 +154,7 @@ def fan_out_tile_lambdas(storage, upload):
     print('fan_out_tile_lambdas: starting threads for',
         len(tile_keys), 'tile_keys from', upload.model.key_prefix)
 
-    for i in range(4):
+    for i in range(8):
         threads.append(threading.Thread(target=invoke_lambda,
             args=(tile_keys, upload, storage)))
         
