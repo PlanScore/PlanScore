@@ -56,16 +56,14 @@ def commence_upload_scoring(s3, bucket, upload):
         else:
             ds_path = ul_path
         model = guess_state_model(ds_path)
-        observe.put_upload_index(s3, bucket, upload)
+        storage = data.Storage(s3, bucket, model.key_prefix)
+        observe.put_upload_index(storage, upload)
         put_geojson_file(s3, bucket, upload, ds_path)
         geometry_keys = put_district_geometries(s3, bucket, upload, ds_path)
         
         # Used so that the length of the upload districts array is correct
         district_blanks = [None] * len(geometry_keys)
         forward_upload = upload.clone(model=model, districts=district_blanks)
-        
-        # 
-        storage = data.Storage(s3, bucket, model.key_prefix)
         
         # Start up the old way first to preserve user experience
         start_observer_score_lambda(storage, forward_upload)
@@ -284,16 +282,17 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
+    storage = data.Storage(s3, event['bucket'], None)
     upload = data.Upload.from_dict(event)
     
     try:
         commence_upload_scoring(s3, event['bucket'], upload)
     except RuntimeError as err:
         error_upload = upload.clone(message="Can't score this plan: {}".format(err))
-        observe.put_upload_index(s3, event['bucket'], error_upload)
+        observe.put_upload_index(storage, error_upload)
     except Exception:
         error_upload = upload.clone(message="Can't score this plan: something went wrong, giving up.")
-        observe.put_upload_index(s3, event['bucket'], error_upload)
+        observe.put_upload_index(storage, error_upload)
         raise
 
 if __name__ == '__main__':

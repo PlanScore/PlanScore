@@ -51,7 +51,7 @@ class TestAfterUpload (unittest.TestCase):
         after_upload.lambda_handler(event, None)
         
         self.assertEqual(len(put_upload_index.mock_calls), 1)
-        self.assertEqual(put_upload_index.mock_calls[0][1][2].message,
+        self.assertEqual(put_upload_index.mock_calls[0][1][1].message,
             "Can't score this plan: Bad time")
     
     @unittest.mock.patch('sys.stdout')
@@ -314,7 +314,8 @@ class TestAfterUpload (unittest.TestCase):
         temporary_buffer_file.assert_called_once_with('null-plan.geojson', None)
         self.assertIsNone(info)
     
-        put_upload_index.assert_called_once_with(s3, bucket, upload)
+        self.assertEqual(len(put_upload_index.mock_calls), 1)
+        self.assertEqual(put_upload_index.mock_calls[0][1][1], upload)
         put_geojson_file.assert_called_once_with(s3, bucket, upload, nullplan_path)
         
         self.assertEqual(len(put_district_geometries.mock_calls), 1)
@@ -376,7 +377,8 @@ class TestAfterUpload (unittest.TestCase):
         temporary_buffer_file.assert_called_once_with('null-plan.shp.zip', None)
         self.assertIsNone(info)
     
-        put_upload_index.assert_called_once_with(s3, bucket, upload)
+        self.assertEqual(len(put_upload_index.mock_calls), 1)
+        self.assertEqual(put_upload_index.mock_calls[0][1][1], upload)
         
         self.assertEqual(put_geojson_file.mock_calls[0][1][:3], (s3, bucket, upload))
         self.assertIs(put_geojson_file.mock_calls[0][1][3], unzip_shapefile.return_value)
