@@ -206,10 +206,9 @@ class TestAfterUpload (unittest.TestCase):
             ['data/XX/b.geojson', 'data/XX/c.geojson', 'data/XX/a.geojson',
             'data/XX/e.geojson', 'data/XX/d.geojson'][:constants.MAX_TILES_RUN])
     
-    @unittest.mock.patch('planscore.after_upload.load_model_tiles')
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
-    def test_fan_out_tile_lambdas(self, boto3_client, stdout, load_model_tiles):
+    def test_fan_out_tile_lambdas(self, boto3_client, stdout):
         ''' Test that tile Lambda fan-out is invoked correctly.
         '''
         storage = unittest.mock.Mock()
@@ -218,16 +217,30 @@ class TestAfterUpload (unittest.TestCase):
 
         storage.to_event.return_value = None
         upload.model.to_dict.return_value = None
-        load_model_tiles.return_value = ['data/XX/a.geojson', 'data/XX/b.geojson']
 
-        after_upload.fan_out_tile_lambdas(storage, upload)
-        
-        load_model_tiles.assert_called_once_with(storage, upload.model)
+        after_upload.fan_out_tile_lambdas(storage, upload,
+            ['data/XX/a.geojson', 'data/XX/b.geojson'])
         
         invocations = boto3_client.return_value.invoke.mock_calls
         self.assertEqual(len(invocations), 2)
         self.assertIn(b'data/XX/a.geojson', invocations[0][2]['Payload'])
         self.assertIn(b'data/XX/b.geojson', invocations[1][2]['Payload'])
+    
+    @unittest.mock.patch('time.time')
+    @unittest.mock.patch('boto3.client')
+    def test_start_tile_observer_lambda(self, boto3_client, time_time):
+        '''
+        '''
+        storage, upload = unittest.mock.Mock(), unittest.mock.Mock()
+        storage.to_event.return_value = dict()
+        upload.to_dict.return_value = dict(start_time=1)
+        
+        after_upload.start_tile_observer_lambda(storage, upload,
+            ['data/XX/a.geojson', 'data/XX/b.geojson'])
+        
+        self.assertEqual(len(storage.s3.put_object.mock_calls), 1)
+        self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 1)
+        self.assertIn(b'"start_time": 1', boto3_client.return_value.invoke.mock_calls[0][2]['Payload'])
     
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
@@ -274,8 +287,9 @@ class TestAfterUpload (unittest.TestCase):
     @unittest.mock.patch('planscore.after_upload.start_tile_observer_lambda')
     @unittest.mock.patch('planscore.after_upload.fan_out_tile_lambdas')
     @unittest.mock.patch('planscore.after_upload.start_observer_score_lambda')
+    @unittest.mock.patch('planscore.after_upload.load_model_tiles')
     @unittest.mock.patch('planscore.after_upload.guess_state_model')
-    def test_commence_upload_scoring_good_file(self, guess_state_model, start_observer_score_lambda, fan_out_tile_lambdas, start_tile_observer_lambda, fan_out_district_lambdas, put_district_geometries, put_geojson_file, put_upload_index, temporary_buffer_file):
+    def test_commence_upload_scoring_good_file(self, guess_state_model, load_model_tiles, start_observer_score_lambda, fan_out_tile_lambdas, start_tile_observer_lambda, fan_out_district_lambdas, put_district_geometries, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
@@ -306,9 +320,16 @@ class TestAfterUpload (unittest.TestCase):
         self.assertEqual(len(put_district_geometries.mock_calls), 1)
         self.assertEqual(put_district_geometries.mock_calls[0][1][3], nullplan_path)
 
+        self.assertEqual(len(load_model_tiles.mock_calls), 1)
+        
         self.assertEqual(len(fan_out_tile_lambdas.mock_calls), 1)
         self.assertIs(fan_out_tile_lambdas.mock_calls[0][1][0].s3, s3)
         self.assertIs(fan_out_tile_lambdas.mock_calls[0][1][1].id, upload.id)
+        self.assertIs(fan_out_tile_lambdas.mock_calls[0][1][2], load_model_tiles.return_value)
+
+        self.assertEqual(len(start_tile_observer_lambda.mock_calls), 1)
+        self.assertEqual(start_tile_observer_lambda.mock_calls[0][1][1].id, upload.id)
+        self.assertIs(start_tile_observer_lambda.mock_calls[0][1][2], load_model_tiles.return_value)
 
         self.assertEqual(len(fan_out_district_lambdas.mock_calls), 1)
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/003'))
@@ -327,8 +348,9 @@ class TestAfterUpload (unittest.TestCase):
     @unittest.mock.patch('planscore.after_upload.start_tile_observer_lambda')
     @unittest.mock.patch('planscore.after_upload.fan_out_tile_lambdas')
     @unittest.mock.patch('planscore.after_upload.start_observer_score_lambda')
+    @unittest.mock.patch('planscore.after_upload.load_model_tiles')
     @unittest.mock.patch('planscore.after_upload.guess_state_model')
-    def test_commence_upload_scoring_zipped_file(self, guess_state_model, start_observer_score_lambda, fan_out_tile_lambdas, start_tile_observer_lambda, fan_out_district_lambdas, put_district_geometries, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
+    def test_commence_upload_scoring_zipped_file(self, guess_state_model, load_model_tiles, start_observer_score_lambda, fan_out_tile_lambdas, start_tile_observer_lambda, fan_out_district_lambdas, put_district_geometries, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'
@@ -361,10 +383,17 @@ class TestAfterUpload (unittest.TestCase):
         
         self.assertEqual(len(put_district_geometries.mock_calls), 1)
         self.assertEqual(put_district_geometries.mock_calls[0][1][3], unzip_shapefile.return_value)
+
+        self.assertEqual(len(load_model_tiles.mock_calls), 1)
         
         self.assertEqual(len(fan_out_tile_lambdas.mock_calls), 1)
         self.assertIs(fan_out_tile_lambdas.mock_calls[0][1][0].s3, s3)
         self.assertIs(fan_out_tile_lambdas.mock_calls[0][1][1].id, upload.id)
+        self.assertIs(fan_out_tile_lambdas.mock_calls[0][1][2], load_model_tiles.return_value)
+        
+        self.assertEqual(len(start_tile_observer_lambda.mock_calls), 1)
+        self.assertEqual(start_tile_observer_lambda.mock_calls[0][1][1].id, upload.id)
+        self.assertIs(start_tile_observer_lambda.mock_calls[0][1][2], load_model_tiles.return_value)
 
         self.assertEqual(len(fan_out_district_lambdas.mock_calls), 1)
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/003'))

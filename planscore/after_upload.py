@@ -72,8 +72,9 @@ def commence_upload_scoring(s3, bucket, upload):
         fan_out_district_lambdas(bucket, model.key_prefix, forward_upload, geometry_keys)
         
         # New tile-based method is still pretty slow
-        start_tile_observer_lambda(storage, forward_upload)
-        fan_out_tile_lambdas(storage, forward_upload)
+        tile_keys = load_model_tiles(storage, forward_upload.model)
+        start_tile_observer_lambda(storage, forward_upload, tile_keys)
+        fan_out_tile_lambdas(storage, forward_upload, tile_keys)
 
 def put_district_geometries(s3, bucket, upload, path):
     '''
@@ -124,7 +125,7 @@ def load_model_tiles(storage, model):
     contents.sort(key=lambda obj: obj['Size'], reverse=True)
     return [object['Key'] for object in contents][:constants.MAX_TILES_RUN]
 
-def fan_out_tile_lambdas(storage, upload):
+def fan_out_tile_lambdas(storage, upload, tile_keys):
     '''
     '''
     def invoke_lambda(tile_keys, upload, storage):
@@ -144,12 +145,7 @@ def fan_out_tile_lambdas(storage, upload):
             lam.invoke(FunctionName=tiles.FUNCTION_NAME, InvocationType='Event',
                 Payload=json.dumps(payload).encode('utf8'))
     
-    tile_keys = load_model_tiles(storage, upload.model)
     threads, start_time = [], time.time()
-    
-    storage.s3.put_object(Bucket=storage.bucket, ACL='bucket-owner-full-control',
-        Key=data.UPLOAD_TILE_INDEX_KEY.format(id=upload.id),
-        Body=json.dumps(tile_keys).encode('utf8'))
     
     print('fan_out_tile_lambdas: starting threads for',
         len(tile_keys), 'tile_keys from', upload.model.key_prefix)
@@ -166,9 +162,13 @@ def fan_out_tile_lambdas(storage, upload):
     print('fan_out_tile_lambdas: completed threads after',
         int(time.time() - start_time), 'seconds.')
 
-def start_tile_observer_lambda(storage, upload):
+def start_tile_observer_lambda(storage, upload, tile_keys):
     '''
     '''
+    storage.s3.put_object(Bucket=storage.bucket, ACL='bucket-owner-full-control',
+        Key=data.UPLOAD_TILE_INDEX_KEY.format(id=upload.id),
+        Body=json.dumps(tile_keys).encode('utf8'))
+    
     lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
 
     payload = dict(upload=upload.to_dict(), storage=storage.to_event())
