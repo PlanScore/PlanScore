@@ -56,7 +56,7 @@ def commence_upload_scoring(s3, bucket, upload):
         else:
             ds_path = ul_path
         model = guess_state_model(ds_path)
-        score.put_upload_index(s3, bucket, upload)
+        observe.put_upload_index(s3, bucket, upload)
         put_geojson_file(s3, bucket, upload, ds_path)
         geometry_keys = put_district_geometries(s3, bucket, upload, ds_path)
         
@@ -290,10 +290,10 @@ def lambda_handler(event, context):
         commence_upload_scoring(s3, event['bucket'], upload)
     except RuntimeError as err:
         error_upload = upload.clone(message="Can't score this plan: {}".format(err))
-        score.put_upload_index(s3, event['bucket'], error_upload)
+        observe.put_upload_index(s3, event['bucket'], error_upload)
     except Exception:
         error_upload = upload.clone(message="Can't score this plan: something went wrong, giving up.")
-        score.put_upload_index(s3, event['bucket'], error_upload)
+        observe.put_upload_index(s3, event['bucket'], error_upload)
         raise
 
 if __name__ == '__main__':

@@ -15,7 +15,7 @@ class TestCallback (unittest.TestCase):
         constants.S3_ENDPOINT_URL = self.prev_s3_url
         constants.LAMBDA_ENDPOINT_URL = self.prev_lam_url
     
-    @unittest.mock.patch('planscore.score.put_upload_index')
+    @unittest.mock.patch('planscore.observe.put_upload_index')
     def test_create_upload(self, put_upload_index):
         ''' create_upload() makes the right call to put_upload_index().
         '''

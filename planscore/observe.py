@@ -7,14 +7,12 @@ FUNCTION_NAME = 'PlanScore-ObserveTiles'
 def put_upload_index(storage, upload):
     ''' Save a JSON index and a plaintext file for this upload.
     '''
-    key1 = 'uploads/{}/index-tiles.json'.format(upload.id)
+    key1 = upload.index_key()
     body1 = upload.to_json().encode('utf8')
 
     storage.s3.put_object(Bucket=storage.bucket, Key=key1, Body=body1,
         ContentType='text/json', ACL='public-read')
 
-    return
-    
     key2 = upload.plaintext_key()
     body2 = upload.to_plaintext().encode('utf8')
 

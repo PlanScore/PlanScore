@@ -33,7 +33,7 @@ class TestAfterUpload (unittest.TestCase):
         self.assertEqual(upload.id, event['id'])
         self.assertEqual(upload.key, event['key'])
     
-    @unittest.mock.patch('planscore.score.put_upload_index')
+    @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.after_upload.commence_upload_scoring')
     def test_lambda_handler_failure(self, commence_upload_scoring, put_upload_index):
         ''' Lambda event triggers the right message after a failure
@@ -280,7 +280,7 @@ class TestAfterUpload (unittest.TestCase):
         self.assertIn(b'"start_time": 1', boto3_client.return_value.invoke.mock_calls[0][2]['Payload'])
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
-    @unittest.mock.patch('planscore.score.put_upload_index')
+    @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.after_upload.put_geojson_file')
     @unittest.mock.patch('planscore.after_upload.put_district_geometries')
     @unittest.mock.patch('planscore.after_upload.fan_out_district_lambdas')
@@ -340,7 +340,7 @@ class TestAfterUpload (unittest.TestCase):
         self.assertEqual(start_observer_score_lambda.mock_calls[0][1][1].id, upload.id)
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
-    @unittest.mock.patch('planscore.score.put_upload_index')
+    @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.after_upload.put_geojson_file')
     @unittest.mock.patch('planscore.util.unzip_shapefile')
     @unittest.mock.patch('planscore.after_upload.put_district_geometries')
