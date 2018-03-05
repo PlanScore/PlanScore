@@ -21,6 +21,12 @@ class TestData (unittest.TestCase):
         self.assertFalse(p1.is_complete())
         self.assertTrue(p2.is_complete())
         self.assertTrue(p3.is_complete())
+        
+        self.assertEqual(p1.to_list(), [1, 2])
+        self.assertEqual(p1.to_percentage(), '50%')
+
+        p4 = data.Progress(0, 0)
+        self.assertEqual(p4.to_percentage(), '???%')
     
     def test_model(self):
         '''

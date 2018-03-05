@@ -286,14 +286,17 @@ class TestScore (unittest.TestCase):
         ''' Upload index file is posted to S3
         '''
         s3, bucket, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
+        upload.id = 'ID'
         score.put_upload_index(s3, bucket, upload)
         
-        put_call1, put_call2 = s3.put_object.mock_calls
+        (put_call1, ) = s3.put_object.mock_calls
         
         self.assertEqual(put_call1[2], dict(Bucket=bucket,
-            Key=upload.index_key.return_value,
+            Key='uploads/ID/index-districts.json',
             Body=upload.to_json.return_value.encode.return_value,
             ACL='public-read', ContentType='text/json'))
+        
+        return
         
         self.assertEqual(put_call2[2], dict(Bucket=bucket,
             Key=upload.plaintext_key.return_value,

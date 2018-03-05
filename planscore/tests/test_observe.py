@@ -23,17 +23,14 @@ class TestObserveTiles (unittest.TestCase):
         ''' Upload index file is posted to S3
         '''
         storage, upload = unittest.mock.Mock(), unittest.mock.Mock()
-        upload.id = 'ID'
         observe.put_upload_index(storage, upload)
         
-        (put_call1, ) = storage.s3.put_object.mock_calls
+        put_call1, put_call2 = storage.s3.put_object.mock_calls
         
         self.assertEqual(put_call1[2], dict(Bucket=storage.bucket,
-            Key='uploads/ID/index-tiles.json',
+            Key=upload.index_key.return_value,
             Body=upload.to_json.return_value.encode.return_value,
             ACL='public-read', ContentType='text/json'))
-        
-        return
         
         self.assertEqual(put_call2[2], dict(Bucket=storage.bucket,
             Key=upload.plaintext_key.return_value,

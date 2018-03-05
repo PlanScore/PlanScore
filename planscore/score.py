@@ -235,12 +235,14 @@ def calculate_biases(upload):
 def put_upload_index(s3, bucket, upload):
     ''' Save a JSON index and a plaintext file for this upload.
     '''
-    key1 = upload.index_key()
+    key1 = 'uploads/{}/index-districts.json'.format(upload.id)
     body1 = upload.to_json().encode('utf8')
 
     s3.put_object(Bucket=bucket, Key=key1, Body=body1,
         ContentType='text/json', ACL='public-read')
 
+    return
+    
     key2 = upload.plaintext_key()
     body2 = upload.to_plaintext().encode('utf8')
 

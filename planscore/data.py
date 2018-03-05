@@ -46,6 +46,12 @@ class Progress:
     def to_list(self):
         return [self.completed, self.expected]
     
+    def to_percentage(self):
+        try:
+            return '{:.0f}%'.format(100 * self.completed / self.expected)
+        except ZeroDivisionError:
+            return '???%'
+    
     def is_complete(self):
         return bool(self.completed >= self.expected)
     

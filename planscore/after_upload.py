@@ -56,7 +56,8 @@ def commence_upload_scoring(s3, bucket, upload):
         else:
             ds_path = ul_path
         model = guess_state_model(ds_path)
-        score.put_upload_index(s3, bucket, upload)
+        storage = data.Storage(s3, bucket, model.key_prefix)
+        observe.put_upload_index(storage, upload)
         put_geojson_file(s3, bucket, upload, ds_path)
         geometry_keys = put_district_geometries(s3, bucket, upload, ds_path)
         
@@ -64,16 +65,14 @@ def commence_upload_scoring(s3, bucket, upload):
         district_blanks = [None] * len(geometry_keys)
         forward_upload = upload.clone(model=model, districts=district_blanks)
         
-        # 
-        storage = data.Storage(s3, bucket, model.key_prefix)
+        # New tile-based method comes first to preserve user experience
+        tile_keys = load_model_tiles(storage, forward_upload.model)
+        start_tile_observer_lambda(storage, forward_upload, tile_keys)
+        fan_out_tile_lambdas(storage, forward_upload, tile_keys)
         
-        # Start up the old way first to preserve user experience
+        # Keep the old way around for the time being
         start_observer_score_lambda(storage, forward_upload)
         fan_out_district_lambdas(bucket, model.key_prefix, forward_upload, geometry_keys)
-        
-        # New tile-based method is still pretty slow
-        start_tile_observer_lambda(storage, forward_upload)
-        fan_out_tile_lambdas(storage, forward_upload)
 
 def put_district_geometries(s3, bucket, upload, path):
     '''
@@ -124,7 +123,7 @@ def load_model_tiles(storage, model):
     contents.sort(key=lambda obj: obj['Size'], reverse=True)
     return [object['Key'] for object in contents][:constants.MAX_TILES_RUN]
 
-def fan_out_tile_lambdas(storage, upload):
+def fan_out_tile_lambdas(storage, upload, tile_keys):
     '''
     '''
     def invoke_lambda(tile_keys, upload, storage):
@@ -144,12 +143,7 @@ def fan_out_tile_lambdas(storage, upload):
             lam.invoke(FunctionName=tiles.FUNCTION_NAME, InvocationType='Event',
                 Payload=json.dumps(payload).encode('utf8'))
     
-    tile_keys = load_model_tiles(storage, upload.model)
     threads, start_time = [], time.time()
-    
-    storage.s3.put_object(Bucket=storage.bucket, ACL='bucket-owner-full-control',
-        Key=data.UPLOAD_TILE_INDEX_KEY.format(id=upload.id),
-        Body=json.dumps(tile_keys).encode('utf8'))
     
     print('fan_out_tile_lambdas: starting threads for',
         len(tile_keys), 'tile_keys from', upload.model.key_prefix)
@@ -166,9 +160,13 @@ def fan_out_tile_lambdas(storage, upload):
     print('fan_out_tile_lambdas: completed threads after',
         int(time.time() - start_time), 'seconds.')
 
-def start_tile_observer_lambda(storage, upload):
+def start_tile_observer_lambda(storage, upload, tile_keys):
     '''
     '''
+    storage.s3.put_object(Bucket=storage.bucket, ACL='bucket-owner-full-control',
+        Key=data.UPLOAD_TILE_INDEX_KEY.format(id=upload.id),
+        Body=json.dumps(tile_keys).encode('utf8'))
+    
     lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
 
     payload = dict(upload=upload.to_dict(), storage=storage.to_event())
@@ -284,16 +282,17 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
+    storage = data.Storage(s3, event['bucket'], None)
     upload = data.Upload.from_dict(event)
     
     try:
         commence_upload_scoring(s3, event['bucket'], upload)
     except RuntimeError as err:
         error_upload = upload.clone(message="Can't score this plan: {}".format(err))
-        score.put_upload_index(s3, event['bucket'], error_upload)
+        observe.put_upload_index(storage, error_upload)
     except Exception:
         error_upload = upload.clone(message="Can't score this plan: something went wrong, giving up.")
-        score.put_upload_index(s3, event['bucket'], error_upload)
+        observe.put_upload_index(storage, error_upload)
         raise
 
 if __name__ == '__main__':

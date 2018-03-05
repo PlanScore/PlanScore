@@ -6,14 +6,14 @@ More details on "success_action_redirect" in browser-based S3 uploads:
     http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-post-example.html
 '''
 import boto3, itsdangerous, urllib.parse, json
-from . import after_upload, constants, util, website, data, score
+from . import after_upload, constants, util, website, data, score, observe
 
 def create_upload(s3, bucket, key, id):
     '''
     '''
     upload = data.Upload(id, key, [],
         message='Scoring this newly-uploaded plan. Reload this page to see the result.')
-    score.put_upload_index(s3, bucket, upload)
+    observe.put_upload_index(data.Storage(s3, bucket, None), upload)
     return upload
 
 def get_redirect_url(website_base, id):
