@@ -72,8 +72,8 @@ def iterate_tile_totals(expected_tiles, storage, upload, context):
     for (index, expected_tile) in enumerate(expected_tiles):
         progress = data.Progress(index, len(expected_tiles))
         upload = upload.clone(progress=progress,
-            message='Scoring this newly-uploaded plan. {} of {} parts'
-                ' complete. Reload this page to see the result.'.format(*progress.to_list()))
+            message='Scoring this newly-uploaded plan. {} complete.'
+                ' Reload this page to see the result.'.format(progress.to_percentage()))
 
         # Update S3, if it's time
         if time.time() > next_update:
