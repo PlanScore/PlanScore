@@ -4,7 +4,7 @@ import boto3, ModestMaps.Geo, ModestMaps.Core
 from . import constants
 
 TILE_ZOOM = 12
-MAX_FEATURE_COUNT = 750 # ~15sec processing time per tile
+MAX_FEATURE_COUNT = 1000 # ~20sec processing time per tile
 MIN_TILE_ZOOM, MAX_TILE_ZOOM = 9, 14
 FRACTION_FIELD = 'PlanScore:Fraction'
 KEY_FORMAT = 'data/{directory}/{zxy}.geojson'
