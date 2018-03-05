@@ -133,6 +133,11 @@ def accumulate_district_totals(tile_totals, upload):
     
     # update districts with tile totals
     for tile_total in tile_totals:
+        if type(tile_total) is str:
+            # Not unheard-of
+            print('weird tile:', repr(tile_total))
+            continue
+            
         for (geometry_key, input_values) in tile_total.items():
             geometry_index = get_district_index(geometry_key, upload)
             district = districts[geometry_index]['totals']
