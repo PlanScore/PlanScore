@@ -202,6 +202,10 @@ class TestAfterUpload (unittest.TestCase):
         
         tile_keys = after_upload.load_model_tiles(storage, model)
         
+        self.assertEqual(storage.s3.list_objects.mock_calls[0][2]['Bucket'], storage.bucket)
+        self.assertEqual(storage.s3.list_objects.mock_calls[0][2]['Prefix'], 'data/XX/')
+        self.assertEqual(storage.s3.list_objects.mock_calls[0][2]['Marker'], '')
+        
         self.assertEqual(tile_keys,
             ['data/XX/b.geojson', 'data/XX/c.geojson', 'data/XX/a.geojson',
             'data/XX/e.geojson', 'data/XX/d.geojson'][:constants.MAX_TILES_RUN])

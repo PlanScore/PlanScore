@@ -104,12 +104,13 @@ def put_district_geometries(s3, bucket, upload, path):
 def load_model_tiles(storage, model):
     '''
     '''
+    prefix = '{}/'.format(model.key_prefix.rstrip('/'))
     marker, contents = '', []
     
     while True:
         print('load_model_tiles() starting from', repr(marker))
         response = storage.s3.list_objects(Bucket=storage.bucket,
-            Prefix=model.key_prefix, Marker=marker)
+            Prefix=prefix, Marker=marker)
 
         contents.extend(response['Contents'])
         is_truncated = response['IsTruncated']
