@@ -120,6 +120,8 @@ def tile_geometry(tile_zxy):
 def lambda_handler(event, context):
     '''
     '''
+    raise NotImplementedError('No {} for you'.format(FUNCTION_NAME))
+    
     # Set up SQS logger
     util.add_sqs_logging_handler(LOGGER_NAME)
 

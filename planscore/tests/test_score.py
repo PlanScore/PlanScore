@@ -379,8 +379,11 @@ class TestScore (unittest.TestCase):
         '''
         district_completeness.return_value = data.Progress(2, 2)
 
-        score.lambda_handler({'bucket': 'bucket-name', 'id': 'sample-plan',
-            'key': 'uploads/sample-plan/upload/file.geojson'}, None)
+        with self.assertRaises(NotImplementedError):
+            score.lambda_handler({'bucket': 'bucket-name', 'id': 'sample-plan',
+                'key': 'uploads/sample-plan/upload/file.geojson'}, None)
+        
+        return
         
         self.assertEqual(len(combine_district_scores.mock_calls), 1)
         self.assertEqual(combine_district_scores.mock_calls[0][1][1].id, 'sample-plan')
@@ -402,7 +405,10 @@ class TestScore (unittest.TestCase):
         event = {'bucket': 'bucket-name', 'id': 'sample-plan',
             'prefix': 'XX', 'key': 'uploads/sample-plan/upload/file.geojson'}
 
-        score.lambda_handler(event, context)
+        with self.assertRaises(NotImplementedError):
+            score.lambda_handler(event, context)
+        
+        return
         
         self.assertEqual(len(combine_district_scores.mock_calls), 0)
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 1)
@@ -431,8 +437,11 @@ class TestScore (unittest.TestCase):
             'prefix': 'XX', 'key': 'uploads/sample-plan/upload/file.geojson',
             'start_time': 1}
 
-        score.lambda_handler(event, context)
+        with self.assertRaises(NotImplementedError):
+            score.lambda_handler(event, context)
 
+        return
+        
         self.assertEqual(len(put_upload_index.mock_calls), 2)
         self.assertEqual(put_upload_index.mock_calls[-1][1][2].message,
             "Giving up on this plan after it took too long, sorry.")

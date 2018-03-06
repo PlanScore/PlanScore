@@ -336,6 +336,11 @@ class TestAfterUpload (unittest.TestCase):
         self.assertEqual(start_tile_observer_lambda.mock_calls[0][1][1].id, upload.id)
         self.assertIs(start_tile_observer_lambda.mock_calls[0][1][2], load_model_tiles.return_value)
 
+        self.assertEqual(len(fan_out_district_lambdas.mock_calls), 0)
+        self.assertEqual(len(start_observer_score_lambda.mock_calls), 0)
+        
+        return
+
         self.assertEqual(len(fan_out_district_lambdas.mock_calls), 1)
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/003'))
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][2].key, upload.key)
@@ -400,6 +405,11 @@ class TestAfterUpload (unittest.TestCase):
         self.assertEqual(len(start_tile_observer_lambda.mock_calls), 1)
         self.assertEqual(start_tile_observer_lambda.mock_calls[0][1][1].id, upload.id)
         self.assertIs(start_tile_observer_lambda.mock_calls[0][1][2], load_model_tiles.return_value)
+
+        self.assertEqual(len(fan_out_district_lambdas.mock_calls), 0)
+        self.assertEqual(len(start_observer_score_lambda.mock_calls), 0)
+        
+        return
 
         self.assertEqual(len(fan_out_district_lambdas.mock_calls), 1)
         self.assertEqual(fan_out_district_lambdas.mock_calls[0][1][:2], (bucket, 'data/XX/003'))
