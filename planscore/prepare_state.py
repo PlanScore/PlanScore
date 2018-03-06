@@ -4,6 +4,8 @@ import boto3, ModestMaps.Geo, ModestMaps.Core
 from . import constants
 
 TILE_ZOOM = 12
+MAX_FEATURE_COUNT = 1000 # ~20sec processing time per tile
+MIN_TILE_ZOOM, MAX_TILE_ZOOM = 9, 14
 FRACTION_FIELD = 'PlanScore:Fraction'
 KEY_FORMAT = 'data/{directory}/{zxy}.geojson'
 
@@ -41,6 +43,38 @@ def iter_extent_tiles(xxyy_extent, zoom):
         
         yield (tile_ul, bbox_wkt)
 
+def iter_extent_coords(xxyy_extent, zoom):
+    ''' Generate a stream of MMaps Coordinate tuples.
+    
+        Extent is given as four-elements (xmin, xmax, ymin, ymax) to match
+        values returned from layer.GetExtent() and geometry.GetEnvelope().
+    '''
+    mercator = get_projection()
+    
+    w, e, s, n = xxyy_extent
+    nw, se = ModestMaps.Geo.Location(n, w), ModestMaps.Geo.Location(s, e)
+    ul, lr = [mercator.locationCoordinate(loc).zoomTo(zoom).container() for loc in (nw, se)]
+    rows, columns = range(ul.row, lr.row + 1), range(ul.column, lr.column + 1)
+    
+    for (row, column) in itertools.product(rows, columns):
+        yield ModestMaps.Core.Coordinate(row, column, zoom)
+
+def coord_wkt(coord_ul):
+    ''' Get a well-known text geometry representation for a MMaps Coordinate.
+    '''
+    mercator = get_projection()
+    wkt_format = 'POLYGON(({x1:.7f} {y1:.7f}, {x1:.7f} {y2:.7f}, {x2:.7f} ' \
+        '{y2:.7f}, {x2:.7f} {y1:.7f}, {x1:.7f} {y1:.7f}))'
+    
+    coord_lr = coord_ul.down().right()
+    coord_nw = mercator.coordinateLocation(coord_ul)
+    coord_se = mercator.coordinateLocation(coord_lr)
+    
+    x1, y1, x2, y2 = coord_nw.lon, coord_se.lat, coord_se.lon, coord_nw.lat
+    bbox_wkt = wkt_format.format(**locals())
+    
+    return bbox_wkt
+
 def excerpt_feature(original_feature, bbox_geom):
     ''' Return a cloned feature trimmed to the bbox and marked with a fraction.
     '''
@@ -75,19 +109,39 @@ def main():
     args = parser.parse_args()
     s3 = boto3.client('s3') if args.s3 else None
 
+    print('...', args.filename)
     ds = ogr.Open(args.filename)
     layer = ds.GetLayer(0)
     
     layer_defn = layer.GetLayerDefn()
     layer_defn.AddFieldDefn(ogr.FieldDefn(FRACTION_FIELD, ogr.OFTReal))
     
-    for (tile, bbox_wkt) in iter_extent_tiles(layer.GetExtent(), args.zoom):
-        bbox_geom = ogr.CreateGeometryFromWkt(bbox_wkt)
+    tile_stack = list(iter_extent_coords(layer.GetExtent(), MIN_TILE_ZOOM))
+    print('tile_stack:', len(tile_stack))
+    
+    while tile_stack:
+        tile = tile_stack.pop(0)
+        print('?', tile)
+        bbox_geom = ogr.CreateGeometryFromWkt(coord_wkt(tile))
         layer.SetSpatialFilter(bbox_geom)
+        bbox_features = list(layer)
+        print('=', len(bbox_features))
         
+        if len(bbox_features) == 0:
+            # Nothing here, forget about it.
+            continue
+
+        if tile.zoom < MAX_TILE_ZOOM and len(bbox_features) > MAX_FEATURE_COUNT:
+            # Too many features, zoom in and try again later.
+            tile_ul = tile.zoomBy(1)
+            tile_ur, tile_ll = tile_ul.right(), tile_ul.down()
+            tile_lr = tile_ll.right()
+            tile_stack.extend((tile_ul, tile_ur, tile_ll, tile_lr))
+            continue
+
         features_json = []
     
-        for feature in layer:
+        for feature in bbox_features:
             features_json.append(excerpt_feature(feature, bbox_geom)
                 .ExportToJson(options=['COORDINATE_PRECISION=7']))
         
@@ -99,7 +153,7 @@ def main():
         print(',\n'.join(features_json), file=buffer)
         print(']}', file=buffer)
         
-        tile_zxy = '{zoom}/{column}/{row}'.format(**tile.__dict__)
+        tile_zxy = '{zoom:.0f}/{column:.0f}/{row:.0f}'.format(**tile.__dict__)
         key = KEY_FORMAT.format(directory=args.directory, zxy=tile_zxy)
         
         if args.s3:
