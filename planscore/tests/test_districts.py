@@ -152,7 +152,11 @@ class TestDistricts (unittest.TestCase):
             'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
             'geometry_key': 'geom.wkt'}
 
-        districts.lambda_handler(event, None)
+        with self.assertRaises(NotImplementedError):
+            districts.lambda_handler(event, None)
+        
+        return
+        
         storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
             (-1, adjust_household_income.return_value, [], ['12/2047/2047', '12/2047/2048'], 'ID'))
@@ -186,7 +190,11 @@ class TestDistricts (unittest.TestCase):
         context.get_remaining_time_in_millis.return_value = 0
         consume_tiles.return_value = [None]
 
-        districts.lambda_handler(event, context)
+        with self.assertRaises(NotImplementedError):
+            districts.lambda_handler(event, context)
+        
+        return
+        
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 1)
 
         kwargs = boto3_client.return_value.invoke.mock_calls[0][2]
@@ -219,7 +227,11 @@ class TestDistricts (unittest.TestCase):
             'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
             'geometry_key': 'geom.wkt', 'compactness': {'Reock': -1}}
 
-        districts.lambda_handler(event, None)
+        with self.assertRaises(NotImplementedError):
+            districts.lambda_handler(event, None)
+        
+        return
+        
         storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
             (-1, adjust_household_income.return_value, [{'Totals': 1}], ['12/2047/2048'], 'ID'))
@@ -249,7 +261,11 @@ class TestDistricts (unittest.TestCase):
             'upload': {'id': 'ID', 'key': 'uploads/ID/upload/file.geojson'},
             'geometry_key': 'geom.wkt'}
 
-        districts.lambda_handler(event, None)
+        with self.assertRaises(NotImplementedError):
+            districts.lambda_handler(event, None)
+        
+        return
+        
         storage, partial = consume_tiles.mock_calls[0][1]
         self.assertEqual((partial.index, partial.totals, partial.precincts, partial.tiles, partial.upload.id),
             (-1, adjust_household_income.return_value, [], ['12/2047/2047', '12/2047/2048'], 'ID'))
@@ -277,6 +293,11 @@ class TestDistricts (unittest.TestCase):
         context.get_remaining_time_in_millis.return_value = 0
         consume_tiles.return_value = [None]
 
+        with self.assertRaises(NotImplementedError):
+            districts.lambda_handler(event, context)
+        
+        return
+        
         with self.assertRaises(RuntimeError):
             districts.lambda_handler(event, context)
 

@@ -70,9 +70,9 @@ def commence_upload_scoring(s3, bucket, upload):
         start_tile_observer_lambda(storage, forward_upload, tile_keys)
         fan_out_tile_lambdas(storage, forward_upload, tile_keys)
         
-        # Keep the old way around for the time being
-        start_observer_score_lambda(storage, forward_upload)
-        fan_out_district_lambdas(bucket, model.key_prefix, forward_upload, geometry_keys)
+        # # Keep the old way around for the time being
+        # start_observer_score_lambda(storage, forward_upload)
+        # fan_out_district_lambdas(bucket, model.key_prefix, forward_upload, geometry_keys)
 
 def put_district_geometries(s3, bucket, upload, path):
     '''

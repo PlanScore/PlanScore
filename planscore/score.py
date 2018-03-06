@@ -303,6 +303,8 @@ def combine_district_scores(storage, input_upload):
 def lambda_handler(event, context):
     '''
     '''
+    raise NotImplementedError('No {} for you'.format(FUNCTION_NAME))
+    
     print('Event:', json.dumps(event))
 
     upload = data.Upload.from_dict(event)
