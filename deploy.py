@@ -12,12 +12,12 @@ if 'AWS_LAMBDA_DLQ_ARN' in os.environ:
 functions = {
     'PlanScore-UploadFields': dict(Handler='lambda.upload_fields', Timeout=3, **common),
     'PlanScore-Callback': dict(Handler='lambda.callback', Timeout=3, **common),
-    'PlanScore-AfterUpload': dict(Handler='lambda.after_upload', Timeout=300, MemorySize=512, **common),
+    'PlanScore-AfterUpload': dict(Handler='lambda.after_upload', Timeout=300, MemorySize=1024, **common),
     #'PlanScore-RunDistrict': dict(Handler='lambda.run_district', Timeout=300, MemorySize=2048, **common),
     #'PlanScore-ScoreDistrictPlan': dict(Handler='lambda.score_plan', Timeout=300, **common),
     'PlanScore-EmptyEqueue': dict(Handler='lambda.empty_queue', Timeout=300, **common),
-    'PlanScore-RunTile': dict(Handler='lambda.run_tile', Timeout=300, MemorySize=512, **common),
-    'PlanScore-ObserveTiles': dict(Handler='lambda.observe_tiles', Timeout=300, MemorySize=128, **common),
+    'PlanScore-RunTile': dict(Handler='lambda.run_tile', Timeout=300, MemorySize=2048, **common),
+    'PlanScore-ObserveTiles': dict(Handler='lambda.observe_tiles', Timeout=300, MemorySize=512, **common),
     }
 
 def publish_function(lam, name, path, env, role):
