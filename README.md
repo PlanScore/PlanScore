@@ -20,7 +20,7 @@ Lambda, and SQS. To make local development possible, use Docker and the local
 AWS development stack [LocalStack](https://github.com/localstack/localstack).
 
 1.  Clone the PlanScore git repository and prepare a
-    [Python virtual environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/#virtualenv).
+    [Python virtual environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/#virtualenv) running Python 3.6.
 
 2.  Install GDAL 2.1.3, a binary dependency required by PlanScore.
     See _GDAL_ section below for more details on operating systems.
