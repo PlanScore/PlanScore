@@ -1,4 +1,4 @@
-import argparse, math, itertools, io, gzip, os
+import argparse, math, itertools, io, gzip, os, json, tempfile
 from osgeo import ogr, osr
 import boto3, ModestMaps.Geo, ModestMaps.Core
 from . import constants
@@ -6,6 +6,7 @@ from . import constants
 TILE_ZOOM = 12
 MAX_FEATURE_COUNT = 1000 # ~20sec processing time per tile
 MIN_TILE_ZOOM, MAX_TILE_ZOOM = 9, 14
+INDEX_FIELD = 'PlanScore:Index'
 FRACTION_FIELD = 'PlanScore:Fraction'
 KEY_FORMAT = 'data/{directory}/{zxy}.geojson'
 
@@ -94,6 +95,32 @@ def excerpt_feature(original_feature, bbox_geom):
         new_feature.UnsetField(FRACTION_FIELD)
     
     return new_feature
+
+def load_geojson(filename):
+    ''' Load GeoJSON into property-free OGR datasource and property-only list.
+    '''
+    with open(filename, 'rb') as file1:
+        features = json.load(file1)['features']
+    
+    # Make a list with just original properties
+    properties_only = [feature['properties'] for feature in features]
+    
+    # Create a temporary GeoJSON file with no original properties
+    handle, tmp_path = tempfile.mkstemp(prefix='load_geojson-', suffix='.geojson')
+    os.close(handle)
+    
+    geometry_geojson = {'type': 'FeatureCollection',
+        'features': [{'type': 'Feature', 'geometry': feature['geometry'],
+            'id': index, 'properties': {INDEX_FIELD: index}}
+            for (index, feature) in enumerate(features)]}
+    
+    with open(tmp_path, 'w') as file2:
+        json.dump(geometry_geojson, file2)
+    
+    # Return geometry-only OGR datasource and properties-only list
+    datasource = ogr.Open(tmp_path)
+    
+    return datasource, properties_only
 
 parser = argparse.ArgumentParser(description='YESS')
 

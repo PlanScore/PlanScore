@@ -1,4 +1,4 @@
-import unittest
+import unittest, os
 import ModestMaps.Core
 from osgeo import ogr
 from .. import prepare_state
@@ -182,3 +182,19 @@ class TestPrepareState (unittest.TestCase):
         self.assertEqual(feature_e.GetField('Population'), feature.GetField('Population'))
         self.assertIsNone(feature_e.GetField(prepare_state.FRACTION_FIELD))
         self.assertTrue(feature_e.GetGeometryRef().IsEmpty())
+    
+    def test_load_geojson(self):
+        ''' load_geojson() returns property-free OGR datasource and property-only list.
+        '''
+        filename = os.path.join(os.path.dirname(__file__), 'data/null-island-sims-precincts.geojson')
+        ds, properties = prepare_state.load_geojson(filename)
+        
+        layer = ds.GetLayer(0)
+        layer_defn = layer.GetLayerDefn()
+        
+        self.assertEqual(len(layer), len(properties))
+        self.assertEqual(layer_defn.GetFieldCount(), 1)
+        self.assertEqual(layer_defn.GetFieldDefn(0).GetName(), prepare_state.INDEX_FIELD)
+        
+        for obj in properties:
+            self.assertNotIn(prepare_state.INDEX_FIELD, obj)
