@@ -111,7 +111,7 @@ def load_geojson(filename):
     
     geometry_geojson = {'type': 'FeatureCollection',
         'features': [{'type': 'Feature', 'geometry': feature['geometry'],
-            'id': index, 'properties': {INDEX_FIELD: index}}
+            'id': index, 'properties': {INDEX_FIELD: index, FRACTION_FIELD: 1}}
             for (index, feature) in enumerate(features)]}
     
     with open(tmp_path, 'w') as file2:
@@ -151,11 +151,8 @@ def main():
     s3 = boto3.client('s3') if args.s3 else None
 
     print('...', args.filename)
-    ds = ogr.Open(args.filename)
+    ds, properties = load_geojson(args.filename)
     layer = ds.GetLayer(0)
-    
-    layer_defn = layer.GetLayerDefn()
-    layer_defn.AddFieldDefn(ogr.FieldDefn(FRACTION_FIELD, ogr.OFTReal))
     
     tile_stack = list(iter_extent_coords(layer.GetExtent(), MIN_TILE_ZOOM))
     print('tile_stack:', len(tile_stack))
@@ -183,8 +180,9 @@ def main():
         features_json = []
     
         for feature in bbox_features:
-            features_json.append(excerpt_feature(feature, bbox_geom)
-                .ExportToJson(options=['COORDINATE_PRECISION=7']))
+            ogr_feature = excerpt_feature(feature, bbox_geom)
+            feature_properties = properties[feature.GetField(INDEX_FIELD)]
+            features_json.append(feature_geojson(ogr_feature, feature_properties))
         
         if not features_json:
             continue

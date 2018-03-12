@@ -193,11 +193,14 @@ class TestPrepareState (unittest.TestCase):
         layer_defn = layer.GetLayerDefn()
         
         self.assertEqual(len(layer), len(properties))
-        self.assertEqual(layer_defn.GetFieldCount(), 1)
-        self.assertEqual(layer_defn.GetFieldDefn(0).GetName(), prepare_state.INDEX_FIELD)
+        self.assertEqual(layer_defn.GetFieldCount(), 2)
+        self.assertEqual({layer_defn.GetFieldDefn(0).GetName(),
+            layer_defn.GetFieldDefn(1).GetName()}, {prepare_state.INDEX_FIELD,
+            prepare_state.FRACTION_FIELD})
         
         for obj in properties:
             self.assertNotIn(prepare_state.INDEX_FIELD, obj)
+            self.assertNotIn(prepare_state.FRACTION_FIELD, obj)
     
     def test_feature_geojson(self):
         ''' feature_geojson() returns right geometry and properties in a JSON string.
