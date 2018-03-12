@@ -1,4 +1,4 @@
-import unittest
+import unittest, os, json
 import ModestMaps.Core
 from osgeo import ogr
 from .. import prepare_state
@@ -182,3 +182,48 @@ class TestPrepareState (unittest.TestCase):
         self.assertEqual(feature_e.GetField('Population'), feature.GetField('Population'))
         self.assertIsNone(feature_e.GetField(prepare_state.FRACTION_FIELD))
         self.assertTrue(feature_e.GetGeometryRef().IsEmpty())
+    
+    def test_load_geojson(self):
+        ''' load_geojson() returns property-free OGR datasource and property-only list.
+        '''
+        filename = os.path.join(os.path.dirname(__file__), 'data/null-island-sims-precincts.geojson')
+        ds, properties = prepare_state.load_geojson(filename)
+        
+        layer = ds.GetLayer(0)
+        layer_defn = layer.GetLayerDefn()
+        
+        self.assertEqual(len(layer), len(properties))
+        self.assertEqual(layer_defn.GetFieldCount(), 2)
+        self.assertEqual({layer_defn.GetFieldDefn(0).GetName(),
+            layer_defn.GetFieldDefn(1).GetName()}, {prepare_state.INDEX_FIELD,
+            prepare_state.FRACTION_FIELD})
+        
+        for obj in properties:
+            self.assertNotIn(prepare_state.INDEX_FIELD, obj)
+            self.assertNotIn(prepare_state.FRACTION_FIELD, obj)
+    
+    def test_feature_geojson(self):
+        ''' feature_geojson() returns right geometry and properties in a JSON string.
+        '''
+        feature_defn = ogr.FeatureDefn()
+        feature_defn.AddFieldDefn(ogr.FieldDefn(prepare_state.INDEX_FIELD, ogr.OFTInteger))
+        feature_defn.AddFieldDefn(ogr.FieldDefn(prepare_state.FRACTION_FIELD, ogr.OFTReal))
+        
+        ogr_feature = ogr.Feature(feature_defn)
+        ogr_feature.SetField(prepare_state.INDEX_FIELD, 0)
+        ogr_feature.SetField(prepare_state.FRACTION_FIELD, .5)
+        
+        geometry = ogr.CreateGeometryFromJson('{"type": "Polygon", '
+            '"coordinates": [[[1, 1], [1, 2], [2, 2], [2, 1], [1, 1]]]}')
+        geometry.AssignSpatialReference(prepare_state.EPSG4326)
+        ogr_feature.SetGeometry(geometry)
+        
+        feature = json.loads(prepare_state.feature_geojson(ogr_feature, {'Population': 999}))
+        
+        self.assertEqual(feature['properties']['Population'], 999)
+        self.assertEqual(feature['properties'][prepare_state.INDEX_FIELD], 0)
+        self.assertEqual(feature['properties'][prepare_state.FRACTION_FIELD], .5)
+        
+        self.assertEqual(feature['geometry']['type'], 'Polygon')
+        self.assertEqual(len(feature['geometry']['coordinates'][0]), 5)
+        self.assertEqual(feature['geometry']['coordinates'][0][0], [1, 1])

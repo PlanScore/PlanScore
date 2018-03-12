@@ -1,4 +1,4 @@
-import argparse, math, itertools, io, gzip, os
+import argparse, math, itertools, io, gzip, os, json, tempfile
 from osgeo import ogr, osr
 import boto3, ModestMaps.Geo, ModestMaps.Core
 from . import constants
@@ -6,6 +6,7 @@ from . import constants
 TILE_ZOOM = 12
 MAX_FEATURE_COUNT = 1000 # ~20sec processing time per tile
 MIN_TILE_ZOOM, MAX_TILE_ZOOM = 9, 14
+INDEX_FIELD = 'PlanScore:Index'
 FRACTION_FIELD = 'PlanScore:Fraction'
 KEY_FORMAT = 'data/{directory}/{zxy}.geojson'
 
@@ -95,6 +96,46 @@ def excerpt_feature(original_feature, bbox_geom):
     
     return new_feature
 
+def load_geojson(filename):
+    ''' Load GeoJSON into property-free OGR datasource and property-only list.
+    '''
+    with open(filename, 'rb') as file1:
+        features = json.load(file1)['features']
+    
+    # Make a list with just original properties
+    properties_only = [feature['properties'] for feature in features]
+    
+    # Create a temporary GeoJSON file with no original properties
+    handle, tmp_path = tempfile.mkstemp(prefix='load_geojson-', suffix='.geojson')
+    os.close(handle)
+    
+    geometry_geojson = {'type': 'FeatureCollection',
+        'features': [{'type': 'Feature', 'geometry': feature['geometry'],
+            'id': index, 'properties': {INDEX_FIELD: index, FRACTION_FIELD: 1}}
+            for (index, feature) in enumerate(features)]}
+    
+    with open(tmp_path, 'w') as file2:
+        json.dump(geometry_geojson, file2)
+    
+    # Return geometry-only OGR datasource and properties-only list
+    datasource = ogr.Open(tmp_path)
+    
+    return datasource, properties_only
+
+def feature_geojson(ogr_feature, properties):
+    ''' Return GeoJSON feature string for an OGR feature and properties dict.
+    '''
+    feature = dict(type='Feature', properties={}, geometry={})
+    
+    ogr_properties = {field: ogr_feature.GetField(field)
+        for field in (INDEX_FIELD, FRACTION_FIELD)}
+    
+    properties_json = json.dumps(dict(properties, **ogr_properties))
+    geometry_json = ogr_feature.GetGeometryRef().ExportToJson(options=['COORDINATE_PRECISION=7'])
+    
+    return ''.join(('{"type": "Feature", "properties": ', properties_json,
+        ', "geometry": ', geometry_json, '}'))
+
 parser = argparse.ArgumentParser(description='YESS')
 
 parser.add_argument('filename', help='Name of geographic file with precinct data')
@@ -109,26 +150,25 @@ def main():
     args = parser.parse_args()
     s3 = boto3.client('s3') if args.s3 else None
 
-    print('...', args.filename)
-    ds = ogr.Open(args.filename)
+    print('Loading', args.filename, '...')
+    ds, properties = load_geojson(args.filename)
+    print('Loaded', len(properties), 'features and made', ds.name)
     layer = ds.GetLayer(0)
     
-    layer_defn = layer.GetLayerDefn()
-    layer_defn.AddFieldDefn(ogr.FieldDefn(FRACTION_FIELD, ogr.OFTReal))
-    
     tile_stack = list(iter_extent_coords(layer.GetExtent(), MIN_TILE_ZOOM))
-    print('tile_stack:', len(tile_stack))
     
     while tile_stack:
         tile = tile_stack.pop(0)
-        print('?', tile)
+        tile_zxy = '{zoom:.0f}/{column:.0f}/{row:.0f}'.format(**tile.__dict__)
+        stack_str = '{:6d}'.format(len(tile_stack))
+
         bbox_geom = ogr.CreateGeometryFromWkt(coord_wkt(tile))
         layer.SetSpatialFilter(bbox_geom)
         bbox_features = list(layer)
-        print('=', len(bbox_features))
         
         if len(bbox_features) == 0:
             # Nothing here, forget about it.
+            print(stack_str, 'Skip', tile_zxy)
             continue
 
         if tile.zoom < MAX_TILE_ZOOM and len(bbox_features) > MAX_FEATURE_COUNT:
@@ -137,13 +177,15 @@ def main():
             tile_ur, tile_ll = tile_ul.right(), tile_ul.down()
             tile_lr = tile_ll.right()
             tile_stack.extend((tile_ul, tile_ur, tile_ll, tile_lr))
+            print(stack_str, 'Defer', tile_zxy)
             continue
 
         features_json = []
     
         for feature in bbox_features:
-            features_json.append(excerpt_feature(feature, bbox_geom)
-                .ExportToJson(options=['COORDINATE_PRECISION=7']))
+            ogr_feature = excerpt_feature(feature, bbox_geom)
+            feature_properties = properties[feature.GetField(INDEX_FIELD)]
+            features_json.append(feature_geojson(ogr_feature, feature_properties))
         
         if not features_json:
             continue
@@ -153,18 +195,17 @@ def main():
         print(',\n'.join(features_json), file=buffer)
         print(']}', file=buffer)
         
-        tile_zxy = '{zoom:.0f}/{column:.0f}/{row:.0f}'.format(**tile.__dict__)
         key = KEY_FORMAT.format(directory=args.directory, zxy=tile_zxy)
         
         if args.s3:
             body = gzip.compress(buffer.getvalue().encode('utf8'))
-            print(key, '-', '{:.1f}KB'.format(len(body) / 1024))
+            print(stack_str, 'Write', key, '-', '{:.1f}KB'.format(len(body) / 1024))
     
             s3.put_object(Bucket=constants.S3_BUCKET, Key=key, Body=body,
                 ContentEncoding='gzip', ContentType='text/json', ACL='public-read')
         else:
             os.makedirs(os.path.dirname(key), exist_ok=True)
-            print(key)
+            print(stack_str, 'Write', key)
     
             with open(key, 'w') as file:
                 file.write(buffer.getvalue())
