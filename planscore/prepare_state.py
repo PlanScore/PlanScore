@@ -122,6 +122,20 @@ def load_geojson(filename):
     
     return datasource, properties_only
 
+def feature_geojson(ogr_feature, properties):
+    ''' Return GeoJSON feature string for an OGR feature and properties dict.
+    '''
+    feature = dict(type='Feature', properties={}, geometry={})
+    
+    ogr_properties = {field: ogr_feature.GetField(field)
+        for field in (INDEX_FIELD, FRACTION_FIELD)}
+    
+    properties_json = json.dumps(dict(properties, **ogr_properties))
+    geometry_json = ogr_feature.GetGeometryRef().ExportToJson(options=['COORDINATE_PRECISION=7'])
+    
+    return ''.join(('{"type": "Feature", "properties": ', properties_json,
+        ', "geometry": ', geometry_json, '}'))
+
 parser = argparse.ArgumentParser(description='YESS')
 
 parser.add_argument('filename', help='Name of geographic file with precinct data')

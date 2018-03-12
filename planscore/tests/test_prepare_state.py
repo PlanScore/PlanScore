@@ -1,4 +1,4 @@
-import unittest, os
+import unittest, os, json
 import ModestMaps.Core
 from osgeo import ogr
 from .. import prepare_state
@@ -198,3 +198,29 @@ class TestPrepareState (unittest.TestCase):
         
         for obj in properties:
             self.assertNotIn(prepare_state.INDEX_FIELD, obj)
+    
+    def test_feature_geojson(self):
+        ''' feature_geojson() returns right geometry and properties in a JSON string.
+        '''
+        feature_defn = ogr.FeatureDefn()
+        feature_defn.AddFieldDefn(ogr.FieldDefn(prepare_state.INDEX_FIELD, ogr.OFTInteger))
+        feature_defn.AddFieldDefn(ogr.FieldDefn(prepare_state.FRACTION_FIELD, ogr.OFTReal))
+        
+        ogr_feature = ogr.Feature(feature_defn)
+        ogr_feature.SetField(prepare_state.INDEX_FIELD, 0)
+        ogr_feature.SetField(prepare_state.FRACTION_FIELD, .5)
+        
+        geometry = ogr.CreateGeometryFromJson('{"type": "Polygon", '
+            '"coordinates": [[[1, 1], [1, 2], [2, 2], [2, 1], [1, 1]]]}')
+        geometry.AssignSpatialReference(prepare_state.EPSG4326)
+        ogr_feature.SetGeometry(geometry)
+        
+        feature = json.loads(prepare_state.feature_geojson(ogr_feature, {'Population': 999}))
+        
+        self.assertEqual(feature['properties']['Population'], 999)
+        self.assertEqual(feature['properties'][prepare_state.INDEX_FIELD], 0)
+        self.assertEqual(feature['properties'][prepare_state.FRACTION_FIELD], .5)
+        
+        self.assertEqual(feature['geometry']['type'], 'Polygon')
+        self.assertEqual(len(feature['geometry']['coordinates'][0]), 5)
+        self.assertEqual(feature['geometry']['coordinates'][0][0], [1, 1])
