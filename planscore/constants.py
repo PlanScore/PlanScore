@@ -43,15 +43,12 @@ API_UPLOADED_RELPATH = 'uploaded'
 # localstack mock services. See also setup-localstack.py.
 
 S3_ENDPOINT_URL = os.environ.get('S3_ENDPOINT_URL', _local_url(4572))
-SQS_ENDPOINT_URL = os.environ.get('SQS_ENDPOINT_URL', _local_url(4561))
 LAMBDA_ENDPOINT_URL = os.environ.get('LAMBDA_ENDPOINT_URL', _local_url(4574))
 S3_URL_PATTERN = urllib.parse.urljoin(S3_ENDPOINT_URL, '/{b}/{k}')
-SQS_QUEUEURL = urllib.parse.urljoin(SQS_ENDPOINT_URL, '/queue/tiles')
 
 if os.environ.get('AWS') == 'amazonaws.com':
-    S3_ENDPOINT_URL, SQS_ENDPOINT_URL, LAMBDA_ENDPOINT_URL = None, None, None
+    S3_ENDPOINT_URL, LAMBDA_ENDPOINT_URL = None, None
     S3_URL_PATTERN = 'https://{b}.s3.amazonaws.com/{k}'
-    SQS_QUEUEURL = os.environ.get('SQS_QUEUEURL')
 
 # Time limit to process an upload, in seconds
 
