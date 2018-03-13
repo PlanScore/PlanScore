@@ -1,11 +1,11 @@
-''' After successful upload, divides up districts into planscore.district calls.
+''' After successful upload, divides up districts into planscore.tiles calls.
 
 Fans out asynchronous parallel calls to planscore.district function, then
 starts and observer process with planscore.score function.
 '''
 import os, io, json, urllib.parse, gzip, functools, time, math, threading
 import boto3, osgeo.ogr
-from . import util, data, score, website, prepare_state, districts, constants, tiles, observe
+from . import util, data, score, website, prepare_state, constants, tiles, observe
 
 FUNCTION_NAME = 'PlanScore-AfterUpload'
 
@@ -69,10 +69,6 @@ def commence_upload_scoring(s3, bucket, upload):
         tile_keys = load_model_tiles(storage, forward_upload.model)
         start_tile_observer_lambda(storage, forward_upload, tile_keys)
         fan_out_tile_lambdas(storage, forward_upload, tile_keys)
-        
-        # # Keep the old way around for the time being
-        # start_observer_score_lambda(storage, forward_upload)
-        # fan_out_district_lambdas(bucket, model.key_prefix, forward_upload, geometry_keys)
 
 def put_district_geometries(s3, bucket, upload, path):
     '''
@@ -174,33 +170,6 @@ def start_tile_observer_lambda(storage, upload, tile_keys):
 
     lam.invoke(FunctionName=observe.FUNCTION_NAME, InvocationType='Event',
         Payload=json.dumps(payload).encode('utf8'))
-
-def fan_out_district_lambdas(bucket, prefix, upload, geometry_keys):
-    '''
-    '''
-    print('fan_out_district_lambdas:', (bucket, prefix))
-    try:
-        lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
-        
-        for (index, geometry_key) in enumerate(geometry_keys):
-            partial = districts.Partial(index, None, None, None, None, geometry_key, upload, None)
-            payload = dict(partial.to_event(), bucket=bucket, prefix=prefix)
-
-            lam.invoke(FunctionName=districts.FUNCTION_NAME, InvocationType='Event',
-                Payload=json.dumps(payload).encode('utf8'))
-
-    except Exception as e:
-        print('Exception in fan_out_district_lambdas:', e)
-
-def start_observer_score_lambda(storage, upload):
-    '''
-    '''
-    event = upload.to_dict()
-    event.update(storage.to_event())
-
-    lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
-    lam.invoke(FunctionName=score.FUNCTION_NAME, InvocationType='Event',
-        Payload=json.dumps(event).encode('utf8'))
 
 def guess_state_model(path):
     ''' Guess state model for the given input path.

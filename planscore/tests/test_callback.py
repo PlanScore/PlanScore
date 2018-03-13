@@ -1,5 +1,5 @@
 import unittest, unittest.mock, os
-from .. import callback, data, districts, constants
+from .. import callback, data, constants
 
 class TestCallback (unittest.TestCase):
 
