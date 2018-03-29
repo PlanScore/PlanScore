@@ -12,7 +12,7 @@ UPLOAD_TILES_KEY = 'uploads/{id}/tiles/{zxy}.json'
 
 class State (enum.Enum):
     XX = 'XX'
-    NC = 'NC'; PA = 'PA'; WI = 'WI'
+    MD = 'MD'; NC = 'NC'; PA = 'PA'; WI = 'WI'
 
 class House (enum.Enum):
     ushouse = 'ushouse'; statesenate = 'statesenate'; statehouse = 'statehouse'
@@ -198,6 +198,7 @@ class Upload:
 
 MODELS = [
     Model(State.XX, House.statehouse,    2, 'data/XX/003'),
+    Model(State.MD, House.ushouse,       8, 'data/MD/001-ushouse-open'),
     Model(State.NC, House.ushouse,      13, 'data/NC/004-ushouse'),
     Model(State.NC, House.statesenate,  50, 'data/NC/004-ncsenate'),
     Model(State.NC, House.statehouse,  120, 'data/NC/004-nchouse'),
