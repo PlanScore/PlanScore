@@ -218,6 +218,20 @@ function show_partisan_bias_score(plan, score_PB)
     }
 }
 
+function hide_partisan_bias_score(score_PB, reason)
+{
+    for(node = score_PB.firstChild; node = node.nextSibling; node)
+    {
+        if(node.nodeName == 'DIV')
+        {
+            clear_element(node);
+
+        } else if(node.nodeName == 'P') {
+            node.innerHTML += ' ' + reason;
+        }
+    }
+}
+
 function show_mean_median_score(plan, score_MM)
 {
     var diff = plan.summary['Mean-Median'],
@@ -443,6 +457,34 @@ function plan_array(plan)
     return all_rows;
 }
 
+function plan_voteshare(plan)
+{
+    var red_votes = 0, blue_votes = 0,
+        red_fields = ['Republican Votes'],
+        blue_fields = ['Democratic Votes'];
+
+    for(var i in plan.districts)
+    {
+        for(var j in red_fields)
+        {
+            if(red_fields[j] in plan.districts[i].totals)
+            {
+                red_votes += plan.districts[i].totals[red_fields[j]];
+            }
+        }
+
+        for(var k in blue_fields)
+        {
+            if(blue_fields[k] in plan.districts[i].totals)
+            {
+                blue_votes += plan.districts[i].totals[blue_fields[k]];
+            }
+        }
+    }
+    
+    return Math.abs(blue_votes - red_votes) / (blue_votes + red_votes);
+}
+
 function get_description(plan, modified_at)
 {
     var states = {
@@ -558,9 +600,15 @@ function load_plan_score(url, message_section, score_section,
         
         // Populate scores.
         show_efficiency_gap_score(plan, score_EG);
-        show_partisan_bias_score(plan, score_PB);
         show_mean_median_score(plan, score_MM);
         show_sensitivity_test(plan, score_sense);
+        
+        if(plan_voteshare(plan) > .1) {
+            hide_partisan_bias_score(score_PB,
+                'Difference in party vote share is greater than 10%.');
+        } else {
+            show_partisan_bias_score(plan, score_PB);
+        }
 
         // Go on to load the map.
         load_plan_map(map_url, map_div, plan);
