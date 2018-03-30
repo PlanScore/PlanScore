@@ -605,7 +605,7 @@ function load_plan_score(url, message_section, score_section,
         
         if(plan_voteshare(plan) > .1) {
             hide_partisan_bias_score(score_PB,
-                'Difference in party vote share is greater than 10%.');
+                'Partisan Bias is only shown for states with each party’s vote share within 10%.');
         } else {
             show_partisan_bias_score(plan, score_PB);
         }
