@@ -53,33 +53,3 @@ class TestUtil (unittest.TestCase):
 
         args4 = util.event_query_args({'queryStringParameters': {'foo': 'bar'}})
         self.assertEqual(args4, {'foo': 'bar'})
-    
-    def test_sqs_log_handler(self):
-        ''' Log events sent to SQS arrive as intended
-        '''
-        client = unittest.mock.Mock()
-        handler = util.SQSLoggingHandler(client, 'http://example.com/queue')
-        
-        logger = logging.getLogger()
-        logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
-        logger.info('{"hello": "world"}')
-        logger.debug('{"too much": "information"}')
-        logger.removeHandler(handler)
-        
-        client.send_message.assert_called_once_with(MessageBody='{"hello": "world"}',
-            QueueUrl='http://example.com/queue')
-    
-    @unittest.mock.patch('logging.getLogger')
-    @unittest.mock.patch('planscore.util.SQSLoggingHandler')
-    @unittest.mock.patch('boto3.client')
-    def test_add_sqs_logging_handler(self, boto3_client, SQSLoggingHandler, getLogger):
-        '''
-        '''
-        logger = getLogger.return_value
-        util.add_sqs_logging_handler('yo')
-        
-        SQSLoggingHandler.assert_called_once_with(boto3_client.return_value, constants.SQS_QUEUEURL)
-        logger.addHandler.assert_called_once_with(SQSLoggingHandler.return_value)
-        logger.setLevel.assert_called_once_with(logging.INFO)
-        getLogger.assert_called_once_with('yo')

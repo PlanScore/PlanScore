@@ -1,4 +1,4 @@
-''' Called from final planscore.after_upload to observe process.
+''' Functions used for scoring district symmetry.
 
 When all districts are added up and present on S3, performs complete scoring
 of district plan and uploads summary JSON file.
@@ -55,8 +55,6 @@ FIELD_NAMES = (
 # Fields for simulated election vote totals
 FIELD_NAMES += tuple([f'REP{sim:03d}' for sim in range(1000)])
 FIELD_NAMES += tuple([f'DEM{sim:03d}' for sim in range(1000)])
-
-FUNCTION_NAME = 'PlanScore-ScoreDistrictPlan'
 
 def swing_vote(red_districts, blue_districts, amount):
     ''' Swing the vote by a percentage, positive toward blue.
@@ -232,123 +230,3 @@ def calculate_biases(upload):
     
     rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
     return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
-
-def put_upload_index(s3, bucket, upload):
-    ''' Save a JSON index and a plaintext file for this upload.
-    '''
-    key1 = 'uploads/{}/index-districts.json'.format(upload.id)
-    body1 = upload.to_json().encode('utf8')
-
-    s3.put_object(Bucket=bucket, Key=key1, Body=body1,
-        ContentType='text/json', ACL='public-read')
-
-    return
-    
-    key2 = upload.plaintext_key()
-    body2 = upload.to_plaintext().encode('utf8')
-
-    s3.put_object(Bucket=bucket, Key=key2, Body=body2,
-        ContentType='text/plain', ACL='public-read')
-
-def district_completeness(storage, upload):
-    ''' Return number of upload districts completed vs. number expected.
-    '''
-    # Look for the other expected districts.
-    prefix = posixpath.dirname(upload.district_key(-1))
-    listed_objects = storage.s3.list_objects(Bucket=storage.bucket, Prefix=prefix)
-    existing_keys = [obj.get('Key') for obj in listed_objects.get('Contents', [])]
-    
-    completed, expected = 0, len(upload.districts)
-    
-    for index in range(len(upload.districts)):
-        if upload.district_key(index) in existing_keys:
-            completed += 1
-    
-    return data.Progress(completed, expected)
-
-def combine_district_scores(storage, input_upload):
-    '''
-    '''
-    # Look for all expected districts.
-    prefix = posixpath.dirname(input_upload.district_key(-1))
-    listed_objects = storage.s3.list_objects(Bucket=storage.bucket, Prefix=prefix)
-    existing_keys = [obj.get('Key') for obj in listed_objects.get('Contents', [])]
-    existing_keys.sort(key=lambda k: int(posixpath.splitext(posixpath.basename(k))[0]))
-
-    print('existing_keys:', json.dumps(existing_keys))
-    
-    new_districts = []
-    
-    for key in existing_keys:
-        try:
-            object = storage.s3.get_object(Bucket=storage.bucket, Key=key)
-        except botocore.exceptions.ClientError as error:
-            if error.response['Error']['Code'] == 'NoSuchKey':
-                continue
-            raise
-
-        if object.get('ContentEncoding') == 'gzip':
-            object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
-        
-        new_district = {key: value for (key, value)
-            in json.load(object['Body']).items()
-            if key in ('totals', 'compactness')}
-        
-        new_districts.append(new_district)
-
-    interim_upload = calculate_bias(input_upload.clone(districts=new_districts))
-    output_upload = calculate_biases(interim_upload)
-    put_upload_index(storage.s3, storage.bucket, output_upload)
-
-def lambda_handler(event, context):
-    '''
-    '''
-    raise NotImplementedError('No {} for you'.format(FUNCTION_NAME))
-    
-    print('Event:', json.dumps(event))
-
-    upload = data.Upload.from_dict(event)
-    storage = data.Storage.from_event(event, boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL))
-    delays = itertools.chain(range(15), itertools.repeat(15))
-    
-    for delay in delays:
-        progress = district_completeness(storage, upload)
-        upload = upload.clone(progress=progress,
-            message='Scoring this newly-uploaded plan. {} of {} districts'
-                ' complete. Reload this page to see the result.'.format(*progress.to_list()))
-    
-        if upload.progress.is_complete():
-            # All done
-            return combine_district_scores(storage, upload)
-        
-        # Let them know there's more to be done
-        put_upload_index(storage.s3, storage.bucket, upload)
-
-        if upload.is_overdue():
-            # Out of time, generally
-            overdue_upload = upload.clone(message="Giving up on this plan after it took too long, sorry.")
-            put_upload_index(storage.s3, storage.bucket, overdue_upload)
-            return
-        
-        remain_msec = context.get_remaining_time_in_millis()
-
-        if remain_msec > 30000: # 30 seconds for Lambda
-            # There's time to do more
-            time.sleep(delay)
-            continue
-        
-        # There's no time to do more
-        print('Iteration:', json.dumps(upload.to_dict()))
-        print('Stopping with', remain_msec, 'msec')
-
-        event = upload.to_dict()
-        event.update(storage.to_event())
-        
-        payload = json.dumps(event).encode('utf8')
-        print('Sending payload of', len(payload), 'bytes...')
-
-        lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
-        lam.invoke(FunctionName=FUNCTION_NAME, InvocationType='Event',
-            Payload=payload)
-        
-        return

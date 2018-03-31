@@ -4,8 +4,7 @@ live-lambda: planscore-lambda.zip
 	env AWS=amazonaws.com WEBSITE_BASE=https://planscore.org/ \
 		parallel -j9 ./deploy.py planscore-lambda.zip \
 		::: PlanScore-UploadFields PlanScore-Callback PlanScore-AfterUpload \
-		    PlanScore-RunTile PlanScore-ObserveTiles PlanScore-EmptyEqueue \
-		  # PlanScore-RunDistrict PlanScore-ScoreDistrictPlan
+		    PlanScore-RunTile PlanScore-ObserveTiles
 
 live-website: planscore/website/build
 	# Two-part sync with deletion after to maintain consistency for web visitors
