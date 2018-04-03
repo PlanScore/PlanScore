@@ -218,16 +218,17 @@ function show_partisan_bias_score(plan, score_PB)
     }
 }
 
-function hide_partisan_bias_score(score_PB, reason)
+function hide_score_with_reason(score_node, reason)
 {
-    for(node = score_PB.firstChild; node = node.nextSibling; node)
+    for(node = score_node.firstChild; node = node.nextSibling; node)
     {
         if(node.nodeName == 'DIV')
         {
             clear_element(node);
 
         } else if(node.nodeName == 'P') {
-            node.innerHTML += ' ' + reason;
+            clear_element(node);
+            node.appendChild(document.createTextNode(reason));
         }
     }
 }
@@ -600,14 +601,16 @@ function load_plan_score(url, message_section, score_section,
         
         // Populate scores.
         show_efficiency_gap_score(plan, score_EG);
-        show_mean_median_score(plan, score_MM);
         show_sensitivity_test(plan, score_sense);
         
         if(plan_voteshare(plan) > .1) {
-            hide_partisan_bias_score(score_PB,
-                'Partisan Bias is only shown for states with each party’s vote share within 10%.');
+            hide_score_with_reason(score_PB,
+                'Partisan Bias is shown only where the statewide vote share falls between 45% and 55%. Outside this range the metric\'s assumptions are not plausible.');
+            hide_score_with_reason(score_MM,
+                'Mean-Median Difference is shown only where the statewide vote share falls between 45% and 55%. Outside this range the metric\'s assumptions are not plausible.');
         } else {
             show_partisan_bias_score(plan, score_PB);
+            show_mean_median_score(plan, score_MM);
         }
 
         // Go on to load the map.
