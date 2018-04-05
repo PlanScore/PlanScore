@@ -603,7 +603,10 @@ function load_plan_score(url, message_section, score_section,
         show_efficiency_gap_score(plan, score_EG);
         show_sensitivity_test(plan, score_sense);
         
-        if(plan_voteshare(plan) > .1) {
+        if(plan_voteshare(plan) < .1 || location.hash.match(/\bshowall\b/)) {
+            show_partisan_bias_score(plan, score_PB);
+            show_mean_median_score(plan, score_MM);
+        } else {
             hide_score_with_reason(score_PB,
                 'This state’s vote share is '
                 + nice_percent(.5 - plan_voteshare(plan)/2) + '/' + nice_percent(.5 + plan_voteshare(plan)/2) + '.'
@@ -614,9 +617,6 @@ function load_plan_score(url, message_section, score_section,
                 + nice_percent(.5 - plan_voteshare(plan)/2) + '/' + nice_percent(.5 + plan_voteshare(plan)/2) + '.'
                 + ' Mean-Median Difference is shown only where the statewide vote share falls between 45% and 55%.'
                 + ' Outside this range the metric’s assumptions are not plausible.');
-        } else {
-            show_partisan_bias_score(plan, score_PB);
-            show_mean_median_score(plan, score_MM);
         }
 
         // Go on to load the map.
