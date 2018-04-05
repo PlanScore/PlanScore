@@ -605,9 +605,15 @@ function load_plan_score(url, message_section, score_section,
         
         if(plan_voteshare(plan) > .1) {
             hide_score_with_reason(score_PB,
-                'Partisan Bias is shown only where the statewide vote share falls between 45% and 55%. Outside this range the metric\'s assumptions are not plausible.');
+                'This state’s vote share is '
+                + nice_percent(.5 - plan_voteshare(plan)/2) + '/' + nice_percent(.5 + plan_voteshare(plan)/2) + '.'
+                + ' Partisan Bias is shown only where the statewide vote share falls between 45% and 55%.'
+                + ' Outside this range the metric’s assumptions are not plausible.');
             hide_score_with_reason(score_MM,
-                'Mean-Median Difference is shown only where the statewide vote share falls between 45% and 55%. Outside this range the metric\'s assumptions are not plausible.');
+                'This state’s vote share is '
+                + nice_percent(.5 - plan_voteshare(plan)/2) + '/' + nice_percent(.5 + plan_voteshare(plan)/2) + '.'
+                + ' Mean-Median Difference is shown only where the statewide vote share falls between 45% and 55%.'
+                + ' Outside this range the metric’s assumptions are not plausible.');
         } else {
             show_partisan_bias_score(plan, score_PB);
             show_mean_median_score(plan, score_MM);
