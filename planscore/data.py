@@ -205,7 +205,7 @@ MODELS = [
     Model(State.PA, House.ushouse,      18, 'data/PA/006-ushouse-multizoom'), # 25d464159
     Model(State.PA, House.statesenate,  50, 'data/PA/006-statesenate-multizoom'), # 25d464159
     Model(State.PA, House.statehouse,  203, 'data/WI/006-statehouse-multizoom'), # 25d464159
-    #Model(State.WI, House.ushouse,       8, 'data/WI/001-ushouse'),
-    #Model(State.WI, House.statesenate,  33, 'data/WI/001-senate'),
-    #Model(State.WI, House.statehouse,   99, 'data/WI/001-assembly'),
+    Model(State.WI, House.ushouse,       8, 'data/WI/002-ushouse'),
+    Model(State.WI, House.statesenate,  33, 'data/WI/002-statesenate'),
+    Model(State.WI, House.statehouse,   99, 'data/WI/002-stateassembly'),
     ]
