@@ -486,6 +486,35 @@ function plan_voteshare(plan)
     return Math.abs(blue_votes - red_votes) / (blue_votes + red_votes);
 }
 
+function nice_plan_voteshare(plan)
+{
+    var red_votes = 0, blue_votes = 0,
+        red_fields = ['Republican Votes'],
+        blue_fields = ['Democratic Votes'];
+
+    for(var i in plan.districts)
+    {
+        for(var j in red_fields)
+        {
+            if(red_fields[j] in plan.districts[i].totals)
+            {
+                red_votes += plan.districts[i].totals[red_fields[j]];
+            }
+        }
+
+        for(var k in blue_fields)
+        {
+            if(blue_fields[k] in plan.districts[i].totals)
+            {
+                blue_votes += plan.districts[i].totals[blue_fields[k]];
+            }
+        }
+    }
+    
+    return (nice_percent(blue_votes / (blue_votes + red_votes)) + ' (Democratic) '
+        + 'and ' + nice_percent(red_votes / (blue_votes + red_votes)) + ' (Republican)');
+}
+
 function get_description(plan, modified_at)
 {
     var states = {
@@ -608,14 +637,12 @@ function load_plan_score(url, message_section, score_section,
             show_mean_median_score(plan, score_MM);
         } else {
             hide_score_with_reason(score_PB,
-                'This state’s vote share is '
-                + nice_percent(.5 - plan_voteshare(plan)/2) + '/' + nice_percent(.5 + plan_voteshare(plan)/2) + '.'
-                + ' Partisan Bias is shown only where the statewide vote share falls between 45% and 55%.'
+                'The parties’ statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
+                + ' Partisan bias is shown only where the parties’ statewide vote shares fall between 45% and 55%.'
                 + ' Outside this range the metric’s assumptions are not plausible.');
             hide_score_with_reason(score_MM,
-                'This state’s vote share is '
-                + nice_percent(.5 - plan_voteshare(plan)/2) + '/' + nice_percent(.5 + plan_voteshare(plan)/2) + '.'
-                + ' Mean-Median Difference is shown only where the statewide vote share falls between 45% and 55%.'
+                'The parties’ statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
+                + ' The mean-median difference is shown only where the parties’ statewide vote shares fall between 45% and 55%.'
                 + ' Outside this range the metric’s assumptions are not plausible.');
         }
 
