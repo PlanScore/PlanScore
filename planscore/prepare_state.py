@@ -109,9 +109,10 @@ def load_geojson(filename):
     handle, tmp_path = tempfile.mkstemp(prefix='load_geojson-', suffix='.geojson')
     os.close(handle)
     
+    # Use a floating-point 1.0 for fraction field to avoid integer field type
     geometry_geojson = {'type': 'FeatureCollection',
         'features': [{'type': 'Feature', 'geometry': feature['geometry'],
-            'id': index, 'properties': {INDEX_FIELD: index, FRACTION_FIELD: 1}}
+            'id': index, 'properties': {INDEX_FIELD: index, FRACTION_FIELD: 1.0}}
             for (index, feature) in enumerate(features)]}
     
     with open(tmp_path, 'w') as file2:
