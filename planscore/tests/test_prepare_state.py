@@ -198,6 +198,15 @@ class TestPrepareState (unittest.TestCase):
             layer_defn.GetFieldDefn(1).GetName()}, {prepare_state.INDEX_FIELD,
             prepare_state.FRACTION_FIELD})
         
+        index_index = layer_defn.GetFieldIndex(prepare_state.INDEX_FIELD)
+        index_defn = layer_defn.GetFieldDefn(index_index)
+        self.assertEqual(index_defn.GetName(), prepare_state.INDEX_FIELD)
+        
+        fraction_index = layer_defn.GetFieldIndex(prepare_state.FRACTION_FIELD)
+        fraction_defn = layer_defn.GetFieldDefn(fraction_index)
+        self.assertEqual(fraction_defn.GetName(), prepare_state.FRACTION_FIELD)
+        self.assertEqual(fraction_defn.GetType(), ogr.OFTReal)
+        
         for obj in properties:
             self.assertNotIn(prepare_state.INDEX_FIELD, obj)
             self.assertNotIn(prepare_state.FRACTION_FIELD, obj)
