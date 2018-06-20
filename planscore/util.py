@@ -23,16 +23,13 @@ def unzip_shapefile(zip_path, zip_dir):
     namelist = sorted(zf.namelist(), reverse=True,
         key=lambda n: (os.path.basename(n).startswith('.'), n.startswith('__MACOSX')))
     
-    for name in namelist:
-        print('-->', name)
-    
     for (file1, file2) in itertools.product(namelist, namelist):
         base1, ext1 = os.path.splitext(file1)
         base2, ext2 = os.path.splitext(file2)
         
         if ext1.lower() == '.shp' and base2.lower() == base1.lower():
             print('Extracting', file2)
-            print('Extracted', zf.extract(file2, zip_dir))
+            zf.extract(file2, zip_dir)
             
             if file2 != file2.lower():
                 oldname = os.path.join(zip_dir, file2)
