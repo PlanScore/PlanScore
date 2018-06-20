@@ -31,6 +31,54 @@ class TestUtil (unittest.TestCase):
         for filename in ('null-plan.dbf', 'null-plan.prj', 'null-plan.shp', 'null-plan.shx'):
             self.assertTrue(os.path.exists(os.path.join(self.tempdir, filename)))
     
+    @unittest.mock.patch('sys.stdout')
+    def test_unzip_shapefile_nested(self, stdout):
+        ''' Shapefile is found within a zip file with nested subdirectory.
+        '''
+        zip_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-nested.shp.zip')
+        shp_path = util.unzip_shapefile(zip_path, self.tempdir)
+
+        self.assertEqual(shp_path, os.path.join(self.tempdir, 'null-plan', 'null-plan.shp'))
+        
+        for filename in ('null-plan.dbf', 'null-plan.prj', 'null-plan.shp', 'null-plan.shx'):
+            self.assertTrue(os.path.exists(os.path.join(self.tempdir, 'null-plan', filename)))
+    
+    @unittest.mock.patch('sys.stdout')
+    def test_unzip_shapefile_dircase(self, stdout):
+        ''' Shapefile is found within a zip file with mixed-case nested subdirectory.
+        '''
+        zip_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-dircase.shp.zip')
+        shp_path = util.unzip_shapefile(zip_path, self.tempdir)
+
+        self.assertEqual(shp_path, os.path.join(self.tempdir, 'null plan', 'null-plan.shp'))
+        
+        for filename in ('null-plan.dbf', 'null-plan.prj', 'null-plan.shp', 'null-plan.shx'):
+            self.assertTrue(os.path.exists(os.path.join(self.tempdir, 'null plan', filename)))
+    
+    @unittest.mock.patch('sys.stdout')
+    def test_unzip_shapefile_mixedcase(self, stdout):
+        ''' Shapefile is found within a zip file with mixed-case file names.
+        '''
+        zip_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-mixedcase.shp.zip')
+        shp_path = util.unzip_shapefile(zip_path, self.tempdir)
+
+        self.assertEqual(shp_path, os.path.join(self.tempdir, 'null-plan.shp'))
+        
+        for filename in ('null-plan.dbf', 'null-plan.prj', 'null-plan.shp', 'null-plan.shx'):
+            self.assertTrue(os.path.exists(os.path.join(self.tempdir, filename)))
+    
+    @unittest.mock.patch('sys.stdout')
+    def test_unzip_shapefile_macosx(self, stdout):
+        ''' Shapefile is found within a zip file with Mac OSX resource fork files.
+        '''
+        zip_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-macosx.shp.zip')
+        shp_path = util.unzip_shapefile(zip_path, self.tempdir)
+
+        self.assertEqual(shp_path, os.path.join(self.tempdir, 'null-plan.shp'))
+        
+        for filename in ('null-plan.dbf', 'null-plan.prj', 'null-plan.shp', 'null-plan.shx'):
+            self.assertTrue(os.path.exists(os.path.join(self.tempdir, filename)))
+    
     def test_event_url(self):
         url1 = util.event_url({'headers': {'Host': 'example.org'}})
         self.assertEqual(url1, 'http://example.org/')
