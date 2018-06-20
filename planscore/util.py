@@ -38,6 +38,8 @@ def unzip_shapefile(zip_path, zip_dir):
                 oldname = os.path.join(zip_dir, file2)
                 newname = os.path.join(zip_dir, file2.lower())
                 print('Moving', oldname, 'to', newname)
+                if not os.path.exists(os.path.dirname(newname)):
+                    os.makedirs(os.path.dirname(newname), exist_ok=True)
                 shutil.move(oldname, newname)
             
             unzipped_path = os.path.join(zip_dir, file1.lower())
