@@ -3,6 +3,8 @@ from osgeo import ogr, osr
 import boto3, ModestMaps.Geo, ModestMaps.Core
 from . import constants
 
+ogr.UseExceptions()
+
 TILE_ZOOM = 12
 MAX_FEATURE_COUNT = 1000 # ~20sec processing time per tile
 MIN_TILE_ZOOM, MAX_TILE_ZOOM = 9, 14
@@ -81,8 +83,19 @@ def excerpt_feature(original_feature, bbox_geom):
     '''
     original_geometry = original_feature.GetGeometryRef()
     new_feature = original_feature.Clone()
-    intersection_geometry = original_geometry.Clone().Intersection(bbox_geom)
-    intersection_geometry.TransformTo(EPSG4326)
+    try:
+        intersection_geometry = original_geometry.Clone().Intersection(bbox_geom)
+    except RuntimeError as e:
+        if 'TopologyException' in str(e) and not original_geometry.IsValid():
+            # Sometimes, a precinct geometry can be invalid
+            # so inflate it by a tiny amount to smooth out problems
+            buffered_geometry = original_geometry.Buffer(0.0000001)
+            intersection_geometry = buffered_geometry.Intersection(bbox_geom)
+            print('WHELP')
+        else:
+            raise
+    if intersection_geometry.GetSpatialReference():
+        intersection_geometry.TransformTo(EPSG4326)
     new_feature.SetGeometry(intersection_geometry)
     
     if original_geometry.GetGeometryType() in (ogr.wkbPolygon,
