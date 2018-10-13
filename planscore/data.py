@@ -12,7 +12,7 @@ UPLOAD_TILES_KEY = 'uploads/{id}/tiles/{zxy}.json'
 
 class State (enum.Enum):
     XX = 'XX'
-    MD = 'MD'; NC = 'NC'; PA = 'PA'; WI = 'WI'
+    MD = 'MD'; NC = 'NC'; PA = 'PA'; VA = 'VA'; WI = 'WI'
 
 class House (enum.Enum):
     ushouse = 'ushouse'; statesenate = 'statesenate'; statehouse = 'statehouse'
@@ -204,7 +204,8 @@ MODELS = [
     Model(State.NC, House.statehouse,  120, 'data/NC/004-nchouse'),
     Model(State.PA, House.ushouse,      18, 'data/PA/008-ushouse'), # 8c546bb
     Model(State.PA, House.statesenate,  50, 'data/PA/006-statesenate-multizoom'), # 25d464159
-    Model(State.PA, House.statehouse,  203, 'data/WI/006-statehouse-multizoom'), # 25d464159
+    Model(State.PA, House.statehouse,  203, 'data/PA/006-statehouse-multizoom'), # 25d464159
+    Model(State.VA, House.statehouse,  100, 'data/VA/001-statehouse-open'), # d2f65a55f
     Model(State.WI, House.ushouse,       8, 'data/WI/002-ushouse'),
     Model(State.WI, House.statesenate,  33, 'data/WI/002-statesenate'),
     Model(State.WI, House.statehouse,   99, 'data/WI/003-stateassembly-open'), # a073026
