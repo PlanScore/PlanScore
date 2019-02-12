@@ -179,9 +179,19 @@ def guess_state_model(path):
     if not ds:
         raise RuntimeError('Could not open file to guess U.S. state')
     
+    def _union_safely(a, b):
+        if a is None and b is None:
+            return None
+        elif a is None:
+            return b
+        elif b is None:
+            return a
+        else:
+            return a.Union(b)
+    
     features = list(ds.GetLayer(0))
     geometries = [feature.GetGeometryRef() for feature in features]
-    footprint = functools.reduce(lambda a, b: a.Union(b), geometries)
+    footprint = functools.reduce(_union_safely, geometries)
     
     if footprint.GetSpatialReference():
         footprint.TransformTo(prepare_state.EPSG4326)

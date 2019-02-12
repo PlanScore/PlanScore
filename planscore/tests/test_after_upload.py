@@ -176,6 +176,12 @@ class TestAfterUpload (unittest.TestCase):
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 130, 'NC'
         self.assertEqual(after_upload.guess_state_model('file.gpkg').key_prefix, 'data/NC/004-nchouse')
     
+    def test_guess_state_model_missing_geometries(self):
+        ''' Test that guess_state_model() guesses the correct U.S. state and house.
+        '''
+        null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-missing-geometries.geojson')
+        self.assertEqual(after_upload.guess_state_model(null_plan_path).key_prefix, 'data/XX/003')
+    
     @unittest.mock.patch('sys.stdout')
     def test_put_district_geometries(self, stdout):
         '''
