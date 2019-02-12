@@ -233,7 +233,7 @@ def put_geojson_file(s3, bucket, upload, path):
     _, features = ordered_districts(ds.GetLayer(0))
     
     for (index, feature) in enumerate(features):
-        geometry = feature.GetGeometryRef()
+        geometry = feature.GetGeometryRef() or EMPTY_GEOMETRY
         if geometry.GetSpatialReference():
             geometry.TransformTo(prepare_state.EPSG4326)
         geometries.append(geometry.ExportToJson(options=['COORDINATE_PRECISION=7']))
