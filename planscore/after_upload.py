@@ -8,6 +8,7 @@ import boto3, osgeo.ogr
 from . import util, data, score, website, prepare_state, constants, tiles, observe
 
 FUNCTION_NAME = 'PlanScore-AfterUpload'
+EMPTY_GEOMETRY = osgeo.ogr.Geometry(osgeo.ogr.wkbGeometryCollection)
 
 osgeo.ogr.UseExceptions()
 
@@ -83,7 +84,7 @@ def put_district_geometries(s3, bucket, upload, path):
     _, features = ordered_districts(ds.GetLayer(0))
     
     for (index, feature) in enumerate(features):
-        geometry = feature.GetGeometryRef()
+        geometry = feature.GetGeometryRef() or EMPTY_GEOMETRY
 
         if geometry.GetSpatialReference():
             geometry.TransformTo(prepare_state.EPSG4326)
@@ -179,9 +180,19 @@ def guess_state_model(path):
     if not ds:
         raise RuntimeError('Could not open file to guess U.S. state')
     
+    def _union_safely(a, b):
+        if a is None and b is None:
+            return None
+        elif a is None:
+            return b
+        elif b is None:
+            return a
+        else:
+            return a.Union(b)
+    
     features = list(ds.GetLayer(0))
     geometries = [feature.GetGeometryRef() for feature in features]
-    footprint = functools.reduce(lambda a, b: a.Union(b), geometries)
+    footprint = functools.reduce(_union_safely, geometries)
     
     if footprint.GetSpatialReference():
         footprint.TransformTo(prepare_state.EPSG4326)
