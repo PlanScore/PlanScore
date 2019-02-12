@@ -193,6 +193,20 @@ class TestAfterUpload (unittest.TestCase):
         self.assertEqual(keys, ['uploads/ID/geometries/0.wkt', 'uploads/ID/geometries/1.wkt'])
     
     @unittest.mock.patch('sys.stdout')
+    def test_put_district_geometries_missing_geometries(self, stdout):
+        '''
+        '''
+        s3 = unittest.mock.Mock()
+        upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
+        null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-missing-geometries.geojson')
+        keys = after_upload.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
+        self.assertEqual(keys, ['uploads/ID/geometries/0.wkt', 'uploads/ID/geometries/1.wkt', 'uploads/ID/geometries/2.wkt'])
+        
+        put_kwargs = s3.put_object.mock_calls[2][2]
+        self.assertEqual(put_kwargs['Key'], 'uploads/ID/geometries/2.wkt')
+        self.assertEqual(put_kwargs['Body'], 'GEOMETRYCOLLECTION EMPTY')
+    
+    @unittest.mock.patch('sys.stdout')
     def test_load_model_tiles(self, stdout):
         '''
         '''

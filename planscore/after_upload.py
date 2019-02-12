@@ -8,6 +8,7 @@ import boto3, osgeo.ogr
 from . import util, data, score, website, prepare_state, constants, tiles, observe
 
 FUNCTION_NAME = 'PlanScore-AfterUpload'
+EMPTY_GEOMETRY = osgeo.ogr.Geometry(osgeo.ogr.wkbGeometryCollection)
 
 osgeo.ogr.UseExceptions()
 
@@ -83,7 +84,7 @@ def put_district_geometries(s3, bucket, upload, path):
     _, features = ordered_districts(ds.GetLayer(0))
     
     for (index, feature) in enumerate(features):
-        geometry = feature.GetGeometryRef()
+        geometry = feature.GetGeometryRef() or EMPTY_GEOMETRY
 
         if geometry.GetSpatialReference():
             geometry.TransformTo(prepare_state.EPSG4326)
