@@ -280,6 +280,11 @@ window.initLoadStartingConditions = () => {
     selectMetric(metric);
     selectElectionOrPlan(year, planyear);
     selectBoundaryType(district);
+
+    if(SELECTED_STATE + district == 'North Carolina' + 'ushouse')
+    {
+        document.getElementById('special-NC-pre-2018').style.display = 'block';
+    }
 };
 
 
