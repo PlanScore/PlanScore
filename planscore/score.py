@@ -192,8 +192,8 @@ def calculate_biases(upload):
         sim_red_districts, sim_blue_districts = list(), list()
 
         for (i, district) in enumerate(copied_districts):
-            red_votes = district['totals'].pop(f'REP{sim:03d}')
-            blue_votes = district['totals'].pop(f'DEM{sim:03d}')
+            red_votes = district['totals'].pop(f'REP{sim:03d}', 0)
+            blue_votes = district['totals'].pop(f'DEM{sim:03d}', 0)
             sim_red_districts.append(red_votes)
             sim_blue_districts.append(blue_votes)
             all_red_districts[i].append(red_votes)

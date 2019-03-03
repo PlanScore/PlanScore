@@ -281,3 +281,52 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.districts[2]['totals']['Democratic Votes'], 6/2)
         self.assertEqual(output.districts[3]['totals']['Republican Votes'], 11/2)
         self.assertEqual(output.districts[3]['totals']['Democratic Votes'], 5/2)
+
+    @unittest.mock.patch('planscore.score.calculate_MMD')
+    @unittest.mock.patch('planscore.score.calculate_PB')
+    @unittest.mock.patch('planscore.score.calculate_EG')
+    def test_calculate_gap_blanks(self, calculate_EG, calculate_PB, calculate_MMD):
+        ''' Efficiency gap can be correctly calculated using input sims with blank districts.
+        '''
+        input = data.Upload(id=None, key=None,
+            districts = [
+                dict(totals={"REP000": 2, "DEM000": 6, "REP001": 1, "DEM001": 7}, tile=None),
+                dict(totals={"REP000": 3, "DEM000": 5, "REP001": 5, "DEM001": 3}, tile=None),
+                dict(totals={"REP000": 5, "DEM000": 3, "REP001": 5, "DEM001": 3}, tile=None),
+                dict(totals={"REP000": 6, "DEM000": 2, "REP001": 5, "DEM001": 3}, tile=None),
+                dict(totals={}, tile=None),
+                ])
+        
+        calculate_MMD.return_value = 0
+        calculate_PB.return_value = 0
+        calculate_EG.return_value = 0
+        output = score.calculate_biases(score.calculate_bias(input))
+        self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
+        self.assertEqual(output.summary['Mean-Median SD'], 0)
+        self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
+        self.assertEqual(output.summary['Partisan Bias SD'], 0)
+        self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
+        self.assertEqual(output.summary['Efficiency Gap SD'], 0)
+        self.assertIn('Efficiency Gap +1 Dem', output.summary)
+        self.assertIn('Efficiency Gap +1 Dem SD', output.summary)
+        self.assertIn('Efficiency Gap +1 Rep', output.summary)
+        self.assertIn('Efficiency Gap +1 Rep SD', output.summary)
+        self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6, 0], [6, 5, 3, 2, 0], 0))
+        self.assertEqual(calculate_EG.mock_calls[1][1], ([2, 3, 5, 6, 0], [6, 5, 3, 2, 0], .01))
+        self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6, 0], [6, 5, 3, 2, 0], -.01))
+        self.assertEqual(calculate_EG.mock_calls[11][1], ([1, 5, 5, 5, 0], [7, 3, 3, 3, 0], 0))
+        self.assertEqual(calculate_EG.mock_calls[12][1], ([1, 5, 5, 5, 0], [7, 3, 3, 3, 0], .01))
+        self.assertEqual(calculate_EG.mock_calls[13][1], ([1, 5, 5, 5, 0], [7, 3, 3, 3, 0], -.01))
+        
+        for field in ('REP000', 'DEM000', 'REP001', 'DEM001'):
+            for district in output.districts:
+                self.assertNotIn(field, district['totals'])
+
+        self.assertEqual(output.districts[0]['totals']['Republican Votes'], 3/2)
+        self.assertEqual(output.districts[0]['totals']['Democratic Votes'], 13/2)
+        self.assertEqual(output.districts[1]['totals']['Republican Votes'], 8/2)
+        self.assertEqual(output.districts[1]['totals']['Democratic Votes'], 8/2)
+        self.assertEqual(output.districts[2]['totals']['Republican Votes'], 10/2)
+        self.assertEqual(output.districts[2]['totals']['Democratic Votes'], 6/2)
+        self.assertEqual(output.districts[3]['totals']['Republican Votes'], 11/2)
+        self.assertEqual(output.districts[3]['totals']['Democratic Votes'], 5/2)
