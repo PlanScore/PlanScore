@@ -72,8 +72,14 @@ workflows:
   everything:
     jobs:
       - Test
-      - Build
+      - Build:
+          filters:
+            branches:
+              only: master
       - Deploy:
           requires:
             - Test
             - Build
+          filters:
+            branches:
+              only: master
