@@ -9,8 +9,8 @@ var NC_index = require('data/sample-NC-1-992/index.json'),
 
 // Old-style red vs. blue plan
 
-assert.equal(plan.what_score_description_html(NC_simple_index),
-    '<i>No description provided</i>', 'Should find the right description');
+assert.equal(plan.what_score_description_text(NC_simple_index),
+    false, 'Should find the right description');
 
 assert.equal(plan.which_score_summary_name(NC_simple_index),
     'Efficiency Gap', 'Should pick out the right summary name');
@@ -29,8 +29,8 @@ assert.equal(plan_array1.length, 14, 'Should have a header with 13 districts');
 
 // Incomplete plan, seen just after upload but before scoring is complete
 
-assert.equal(plan.what_score_description_html(NC_incomplete_index),
-    '<i>No description provided</i>', 'Should find the right description');
+assert.equal(plan.what_score_description_text(NC_incomplete_index),
+    false, 'Should find the right description');
 
 assert.strictEqual(plan.which_score_summary_name(NC_incomplete_index),
     null, 'Should return a null summary name');
@@ -43,7 +43,7 @@ assert.equal(plan_array2, undefined, 'Should have an undefined table');
 
 // North Carolina plan with named house and parties
 
-assert.equal(plan.what_score_description_html(NC_index),
+assert.equal(plan.what_score_description_text(NC_index),
     'This plan is okay.', 'Should find the right description');
 
 assert.equal(plan.which_score_summary_name(NC_index),
@@ -67,8 +67,8 @@ assert.equal(plan_array3.length, 14, 'Should have a header with 13 districts');
 
 // New-style North Carolina plan with confidence intervals from simulations
 
-assert.equal(plan.what_score_description_html(NC_multisim_index),
-    '<i>No description provided</i>', 'Should find the right description');
+assert.equal(plan.what_score_description_text(NC_multisim_index),
+    false, 'Should find the right description');
 
 assert.equal(plan.which_score_summary_name(NC_multisim_index),
     'Efficiency Gap', 'Should pick out the right summary name');
@@ -109,6 +109,9 @@ assert.equal(plan.get_description(NC_multisim_index, new Date(2018, 0, 14)),
 
 var plan_array5 = plan.plan_array(NC_public_index);
 assert.equal(plan_array5.length, 14, 'Should have a header with 13 districts');
+
+assert.equal(plan.what_score_description_text(NC_public_index),
+    "Here is a great plan.", 'Should find the right description');
 
 assert.deepEqual(plan_array5[0],
     ['District', 'Population 2010', 'Population 2015', 'Black Population 2015',
