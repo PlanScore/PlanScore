@@ -68,14 +68,14 @@ function date_age(date)
     return (new Date()).getTime() / 1000 - date.getTime() / 1000;
 }
 
-function what_score_description_html(plan)
+function what_score_description_text(plan)
 {
     if(typeof plan['description'] === 'string')
     {
         return plan['description'];
     }
 
-    return '<i>No description provided</i>';
+    return false; // No description provided
 }
 
 function which_score_summary_name(plan)
@@ -590,6 +590,11 @@ function load_plan_score(url, message_section, score_section,
 
         // Clear out and repopulate description.
         clear_element(description);
+        if(what_score_description_text(plan)) {
+            description.appendChild(document.createElement('p'));
+            description.lastChild.appendChild(
+                document.createTextNode(what_score_description_text(plan)));
+        }
         description.appendChild(document.createElement('i'));
         description.lastChild.appendChild(
             document.createTextNode(get_description(plan, modified_at)));
@@ -736,7 +741,7 @@ if(typeof module !== 'undefined' && module.exports)
     module.exports = {
         format_url: format_url, nice_count: nice_count, nice_string: nice_string,
         nice_percent: nice_percent, nice_gap: nice_gap, date_age: date_age,
-        what_score_description_html: what_score_description_html,
+        what_score_description_text: what_score_description_text,
         which_score_summary_name: which_score_summary_name,
         which_score_column_names: which_score_column_names,
         which_district_color: which_district_color,
