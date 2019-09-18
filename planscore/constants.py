@@ -35,6 +35,7 @@ API_NAME = 'PlanScore'
 # environment variables like WEBSITE_BASE and API_BASE via URL path joins.
 
 API_UPLOAD_RELPATH = 'upload'
+API_ANNOTATE_RELPATH = 'annotate'
 API_UPLOADED_RELPATH = 'uploaded'
 
 # AWS endpoint URLs, used when running under localstack.

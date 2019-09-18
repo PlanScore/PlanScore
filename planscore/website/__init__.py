@@ -85,7 +85,8 @@ def get_upload_incumbency():
 
 @app.route('/incumbency.html')
 def get_incumbency():
-    return flask.render_template('incumbency.html')
+    annotate_url = get_function_url(constants.API_ANNOTATE_RELPATH)
+    return flask.render_template('incumbency.html', annotate_url=annotate_url)
 
 @app.route('/plan.html')
 def get_plan():

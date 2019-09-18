@@ -16,13 +16,24 @@
         Almost Done!
     </h2>
 
-    <p>
-        <label>
-            Name this plan:
-            <input type="text" name="name" value="Pennsylvania U.S. House Plan" size="32">
-        </label>
-        <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary" disabled>
-    </p>
+    <form id="annotate" action="{{annotate_url}}" method="post">
+        <p>
+            <label>
+                Name this plan:
+                <input type="text" name="name" value="Pennsylvania U.S. House Plan" size="32">
+            </label>
+            <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary" disabled>
+        </p>
+    </form>
+	<script language="javascript">
+	
+	    var form = document.getElementById('annotate'),
+	        plan_id = location.search.replace('?', '');
+	    
+        form.elements['submission'].disabled = false;
+        form.elements['name'].value = plan_id;
+
+	</script>
     
     <p>
         If you know which districts have incumbents running for re-election,

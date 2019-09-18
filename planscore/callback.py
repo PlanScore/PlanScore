@@ -24,6 +24,14 @@ def get_redirect_url(website_base, id):
 
     return '{}?{}'.format(redirect_url, id)
 
+def get_incumbency_url(website_base, id):
+    '''
+    '''
+    rules = {rule.endpoint: str(rule) for rule in website.app.url_map.iter_rules()}
+    redirect_url = urllib.parse.urljoin(website_base, rules['get_incumbency'])
+
+    return '{}?{}'.format(redirect_url, id)
+
 def lambda_handler(event, context):
     '''
     '''
@@ -43,6 +51,7 @@ def lambda_handler(event, context):
     if query.get('incumbency') == 'yes':
         rules = {rule.endpoint: str(rule) for rule in website.app.url_map.iter_rules()}
         redirect_url = urllib.parse.urljoin(website_base, rules['get_incumbency'])
+        redirect_url = get_incumbency_url(website_base, query['id'])
         return {
             'statusCode': '302',
             'headers': {'Location': redirect_url},
