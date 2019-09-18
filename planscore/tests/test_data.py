@@ -78,6 +78,12 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload6.key, 'KEY')
         self.assertEqual(upload6.model.state, data.State.NC)
         self.assertEqual(upload6.model.seats, 13)
+
+        upload7 = data.Upload.from_json('{"id": "ID", "key": "KEY", '
+            '"description": "A fine new plan"}')
+        self.assertEqual(upload7.id, 'ID')
+        self.assertEqual(upload7.key, 'KEY')
+        self.assertEqual(upload7.description, 'A fine new plan')
     
     def test_upload_overdue(self):
         ''' data.Upload self-reports correct overdue state
@@ -143,6 +149,14 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload12.id, upload11.id)
         self.assertEqual(upload12.key, upload11.key)
         self.assertEqual(upload12.message, upload11.message)
+    
+        upload13 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
+            description='I have uploaded the plan that was on your laptop')
+        upload14 = data.Upload.from_json(upload13.to_json())
+
+        self.assertEqual(upload14.id, upload13.id)
+        self.assertEqual(upload14.key, upload13.key)
+        self.assertEqual(upload14.description, upload13.description)
     
     def test_upload_plaintext(self):
         ''' data.Upload instances can be converted to plaintext
