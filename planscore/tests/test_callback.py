@@ -1,4 +1,4 @@
-import unittest, unittest.mock, os
+import unittest, unittest.mock, os, urllib.parse
 from .. import callback, data, constants
 
 class TestCallback (unittest.TestCase):
@@ -35,19 +35,19 @@ class TestCallback (unittest.TestCase):
     def test_lambda_handler(self, boto3_client, create_upload):
         ''' Lambda event triggers the right call to create_upload()
         '''
-        query = {'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson',
+        form = {'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson',
             'id': 'id.k0_XwbOLGLUdv241zsPluNc3HYs', 'bucket': 'planscore-bucket'}
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
 
-        create_upload.return_value = data.Upload(query['id'], query['key'])
-        response = callback.lambda_handler({'queryStringParameters': query}, None)
+        create_upload.return_value = data.Upload(form['id'], form['key'])
+        response = callback.lambda_handler({'body': urllib.parse.urlencode(form)}, None)
         
         self.assertEqual(response['statusCode'], '302')
         self.assertEqual(response['headers']['Location'], 'https://example.com/plan.html?id')
         
         self.assertEqual(create_upload.mock_calls[0][1][1:],
-            (query['bucket'], query['key'], 'id'))
+            (form['bucket'], form['key'], 'id'))
         
         lambda_dict = boto3_client.return_value.invoke.mock_calls[0][2]
         
@@ -62,7 +62,7 @@ class TestCallback (unittest.TestCase):
         ''' Lambda event with an incorrectly-signed ID fails as expected
         '''
         event = {
-            'queryStringParameters': {'id': 'id.WRONG'}
+            'body': 'id=id.WRONG'
             }
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')

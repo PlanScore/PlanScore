@@ -60,3 +60,8 @@ def event_query_args(event):
     '''
     '''
     return event.get('queryStringParameters') or {}
+
+def event_post_args(event):
+    '''
+    '''
+    return dict(urllib.parse.parse_qsl(event.get('body')))

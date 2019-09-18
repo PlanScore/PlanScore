@@ -36,11 +36,11 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
-    query = util.event_query_args(event)
+    form = util.event_post_args(event)
     website_base = constants.WEBSITE_BASE
 
     try:
-        id = itsdangerous.Signer(constants.SECRET).unsign(query['id']).decode('utf8')
+        id = itsdangerous.Signer(constants.SECRET).unsign(form['id']).decode('utf8')
     except itsdangerous.BadSignature:
         return {
             'statusCode': '400',
@@ -61,7 +61,7 @@ def lambda_handler(event, context):
     upload = create_upload(s3, query['bucket'], query['key'], id)
     redirect_url = get_redirect_url(website_base, id)
     
-    event = dict(bucket=query['bucket'])
+    event = dict(bucket=form['bucket'])
     event.update(upload.to_dict())
 
     lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)

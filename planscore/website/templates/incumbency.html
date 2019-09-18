@@ -16,11 +16,11 @@
         Almost Done!
     </h2>
 
-    <form id="annotate" action="{{annotate_url}}" method="post">
+    <form id="annotate" action="{{uploaded_url}}" method="post">
         <p>
             <label>
                 Name this plan:
-                <input type="text" name="name" placeholder="Legislative District Plan" size="32">
+                <input type="text" name="description" placeholder="New Plan" size="32">
             </label>
             <input type="hidden" name="id">
             <input type="hidden" name="bucket">
@@ -42,6 +42,7 @@
 	    var form = document.getElementById('annotate'),
 	        plan_id = location.search.replace('?', '');
 	    
+        form.elements['description'].value = getUrlParameter('key').replace(/^.+\/([^\/]+)$/, '$1');
         form.elements['id'].value = getUrlParameter('id');
         form.elements['bucket'].value = getUrlParameter('bucket');
         form.elements['key'].value = getUrlParameter('key');
