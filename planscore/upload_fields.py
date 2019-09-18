@@ -6,7 +6,7 @@ More details on browser-based S3 uploads using HTTP POST:
 '''
 import json, pprint, urllib.parse, datetime, random, os
 import boto3, itsdangerous
-from . import util, data, constants
+from . import util, data, constants, website
 
 def get_assumed_role(arn):
     ''' 
@@ -68,6 +68,9 @@ def generate_signed_id(secret):
 def lambda_handler(event, context):
     '''
     '''
+    rules = {rule.endpoint: str(rule) for rule in website.app.url_map.iter_rules()}
+    website_base = constants.WEBSITE_BASE
+
     request_url = util.event_url(event)
 
     # Get longer-lasting credentials with sts:AssumeRole
@@ -79,9 +82,9 @@ def lambda_handler(event, context):
     
     if util.event_query_args(event).get('incumbency') == 'yes':
         _, signed_id = generate_signed_id(constants.SECRET)
-        redirect_query = urllib.parse.urlencode(dict(id=signed_id, incumbency='yes'))
-        redirect_path = '{}?{}'.format(constants.API_UPLOADED_RELPATH, redirect_query)
-        redirect_url = urllib.parse.urljoin(request_url, redirect_path)
+        redirect_query = urllib.parse.urlencode(dict(id=signed_id))
+        redirect_path = '{}?{}'.format(rules['get_incumbency'], redirect_query)
+        redirect_url = urllib.parse.urljoin(website_base, redirect_path)
         fields['success_action_redirect'] = redirect_url
     
     return {

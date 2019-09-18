@@ -20,18 +20,31 @@
         <p>
             <label>
                 Name this plan:
-                <input type="text" name="name" value="Pennsylvania U.S. House Plan" size="32">
+                <input type="text" name="name" placeholder="Legislative District Plan" size="32">
             </label>
-            <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary" disabled>
+            <input type="hidden" name="id">
+            <input type="hidden" name="bucket">
+            <input type="hidden" name="key">
+            <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary">
         </p>
     </form>
 	<script language="javascript">
 	
+        // Copied from https://davidwalsh.name/query-string-javascript
+        function getUrlParameter(name)
+        {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
 	    var form = document.getElementById('annotate'),
 	        plan_id = location.search.replace('?', '');
 	    
-        form.elements['submission'].disabled = false;
-        form.elements['name'].value = plan_id;
+        form.elements['id'].value = getUrlParameter('id');
+        form.elements['bucket'].value = getUrlParameter('bucket');
+        form.elements['key'].value = getUrlParameter('key');
 
 	</script>
     
