@@ -31,10 +31,14 @@ def get_assumed_role(arn):
 def get_upload_fields(s3, creds, request_url, secret):
     '''
     '''
+    rules = {rule.endpoint: str(rule) for rule in website.app.url_map.iter_rules()}
+    website_base = constants.WEBSITE_BASE
+    acl = 'bucket-owner-full-control'
+
     unsigned_id, signed_id = generate_signed_id(secret)
     redirect_query = urllib.parse.urlencode(dict(id=signed_id))
-    redirect_path = '{}?{}'.format(constants.API_UPLOADED_RELPATH, redirect_query)
-    acl, redirect_url = 'bucket-owner-full-control', urllib.parse.urljoin(request_url, redirect_path)
+    redirect_path = '{}?{}'.format(rules['get_incumbency'], redirect_query)
+    redirect_url = urllib.parse.urljoin(request_url, redirect_path)
     
     presigned = s3.generate_presigned_post(
         constants.S3_BUCKET,
@@ -68,9 +72,6 @@ def generate_signed_id(secret):
 def lambda_handler(event, context):
     '''
     '''
-    rules = {rule.endpoint: str(rule) for rule in website.app.url_map.iter_rules()}
-    website_base = constants.WEBSITE_BASE
-
     request_url = util.event_url(event)
 
     # Get longer-lasting credentials with sts:AssumeRole
@@ -79,13 +80,6 @@ def lambda_handler(event, context):
     creds = boto3.session.Session(**role).get_credentials()
 
     url, fields = get_upload_fields(s3, creds, request_url, constants.SECRET)
-    
-    if util.event_query_args(event).get('incumbency') == 'yes':
-        _, signed_id = generate_signed_id(constants.SECRET)
-        redirect_query = urllib.parse.urlencode(dict(id=signed_id))
-        redirect_path = '{}?{}'.format(rules['get_incumbency'], redirect_query)
-        redirect_url = urllib.parse.urljoin(website_base, redirect_path)
-        fields['success_action_redirect'] = redirect_url
     
     return {
         'statusCode': '200',
