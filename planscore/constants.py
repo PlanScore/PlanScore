@@ -6,7 +6,10 @@ def _local_url(port):
         Host addresses will be different from localhost or 127.0.0.1, so that
         localstack S3 can be accessible from localstack Lambda in Docker.
     '''
-    host_address = socket.gethostbyname(socket.gethostname())
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+        s.connect(('8.8.8.8', 8)) # don't need to actually connect...
+        host_address, _ = s.getsockname() # ...just need a local network address
+
     return 'http://{}:{}'.format(host_address, port)
 
 @functools.lru_cache()

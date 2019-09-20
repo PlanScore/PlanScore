@@ -9,7 +9,9 @@ arguments = parser.parse_args()
 
 # Names of things
 
-host_address = socket.gethostbyname(socket.gethostname())
+with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+    s.connect(('8.8.8.8', 8)) # don't need to actually connect...
+    host_address, _ = s.getsockname() # ...just need a local network address
 
 BUCKETNAME = 'planscore'
 ENDPOINT_S3 = 'http://{}:4572'.format(host_address)
