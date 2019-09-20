@@ -50,6 +50,9 @@ def event_url(event):
     hostname = event.get('headers', {}).get('Host', 'example.com')
     path = event.get('path', '/')
     
+    if constants.API_ENDPOINT_URL:
+        return urllib.parse.urljoin(constants.API_ENDPOINT_URL, path.lstrip('/'))
+    
     return urllib.parse.urlunparse((scheme, hostname, path, None, None, None))
 
 def event_query_args(event):

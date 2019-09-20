@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys, argparse, boto3, glob, socket, posixpath as pp
+import sys, argparse, boto3, glob, socket, posixpath as pp, time, random, urllib.parse
 import botocore.exceptions
 import deploy
 
@@ -14,6 +14,7 @@ host_address = socket.gethostbyname(socket.gethostname())
 BUCKETNAME = 'planscore'
 ENDPOINT_S3 = 'http://{}:4572'.format(host_address)
 ENDPOINT_LAM = 'http://{}:4574'.format(host_address)
+ENDPOINT_API = 'http://{}:4567'.format(host_address)
 AWS_CREDS = dict(aws_access_key_id='nobody', aws_secret_access_key='nothing')
 CODE_PATH = arguments.code_path
 
@@ -74,10 +75,12 @@ upload(prefix6, basedir6, pp.join(basedir6, '*', '*.*'))
 
 print('--> Set up Lambda', ENDPOINT_LAM)
 lam = boto3.client('lambda', endpoint_url=ENDPOINT_LAM, region_name='us-east-1', **AWS_CREDS)
+api = boto3.client('apigateway', endpoint_url=ENDPOINT_API, region_name='us-east-1', **AWS_CREDS)
 
 env = {
     'PLANSCORE_SECRET': 'localstack',
     'WEBSITE_BASE': 'http://127.0.0.1:5000/',
+    'API_BASE': urllib.parse.urljoin(ENDPOINT_API, '/restapis/dtozykecfh/test/_user_request_/'),
     'S3_ENDPOINT_URL': ENDPOINT_S3,
     'LAMBDA_ENDPOINT_URL': ENDPOINT_LAM,
     }
@@ -85,4 +88,10 @@ env = {
 print('    Environment:', ' '.join(['='.join(kv) for kv in env.items()]))
 
 for function_name in deploy.functions.keys():
-    deploy.publish_function(lam, function_name, CODE_PATH, env, 'nobody')
+    arn = deploy.publish_function(lam, function_name, CODE_PATH, env, 'nobody')
+    if function_name not in deploy.api_methods:
+        print('   - No API Gateway for', function_name, file=sys.stderr)
+        continue
+    rest_api_id = deploy.update_api(api, 'PlanScore', arn, function_name, 'nobody')
+    time.sleep(random.randint(0, 5))
+    deploy.deploy_api(api, rest_api_id)
