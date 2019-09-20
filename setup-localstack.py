@@ -83,6 +83,7 @@ env = {
     'API_BASE': urllib.parse.urljoin(ENDPOINT_API, '/restapis/dtozykecfh/test/_user_request_/'),
     'S3_ENDPOINT_URL': ENDPOINT_S3,
     'LAMBDA_ENDPOINT_URL': ENDPOINT_LAM,
+    'API_ENDPOINT_URL': ENDPOINT_API,
     }
 
 print('    Environment:', ' '.join(['='.join(kv) for kv in env.items()]))
@@ -90,7 +91,7 @@ print('    Environment:', ' '.join(['='.join(kv) for kv in env.items()]))
 for function_name in deploy.functions.keys():
     arn = deploy.publish_function(lam, function_name, CODE_PATH, env, 'nobody')
     if function_name not in deploy.api_methods:
-        print('   - No API Gateway for', function_name, file=sys.stderr)
+        print('    - No API Gateway for', function_name, file=sys.stderr)
         continue
     rest_api_id = deploy.update_api(api, 'PlanScore', arn, function_name, 'nobody')
     time.sleep(random.randint(0, 5))

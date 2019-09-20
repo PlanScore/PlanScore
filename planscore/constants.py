@@ -15,6 +15,9 @@ SECRET = os.environ.get('PLANSCORE_SECRET', 'fake')
 # S3 bucket name, which should generally be left alone.
 S3_BUCKET = os.environ.get('S3_BUCKET', 'planscore')
 
+# API Gateway name
+API_NAME = 'PlanScore'
+
 # Website and API URLs.
 #
 # Used to coordinate links, form actions, and redirects between Flask app
