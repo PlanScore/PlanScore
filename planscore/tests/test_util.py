@@ -79,7 +79,7 @@ class TestUtil (unittest.TestCase):
         for filename in ('null-plan.dbf', 'null-plan.prj', 'null-plan.shp', 'null-plan.shx'):
             self.assertTrue(os.path.exists(os.path.join(self.tempdir, filename)))
     
-    @unittest.mock.patch('planscore.util.localstack_api_base')
+    @unittest.mock.patch('planscore.constants.localstack_api_base')
     def test_event_url(self, localstack_api_base):
         constants.API_ENDPOINT_URL = None
     

@@ -1,5 +1,4 @@
-import urllib.parse, tempfile, shutil, os, contextlib, logging, zipfile, itertools, shutil, functools
-import boto3
+import urllib.parse, tempfile, shutil, os, contextlib, logging, zipfile, itertools, shutil
 from . import constants
 
 @contextlib.contextmanager
@@ -43,22 +42,13 @@ def unzip_shapefile(zip_path, zip_dir):
     
     return unzipped_path
 
-@functools.lru_cache()
-def localstack_api_base(API_ENDPOINT_URL, API_NAME):
-    '''
-    '''
-    api = boto3.client('apigateway', endpoint_url=API_ENDPOINT_URL)
-    rest_api_id = [item for item in api.get_rest_apis()['items']
-                   if item['name'] == API_NAME][0]['id']
-    return f'{api._endpoint.host}/restapis/{rest_api_id}/test/_user_request_/'
-
 def event_url(event):
     '''
     '''
     path = event.get('path', '/')
     
     if constants.API_ENDPOINT_URL:
-        api_base = localstack_api_base(constants.API_ENDPOINT_URL, constants.API_NAME)
+        api_base = constants.localstack_api_base(constants.API_ENDPOINT_URL, constants.API_NAME)
         return urllib.parse.urljoin(api_base, path.lstrip('/'))
     
     scheme = event.get('headers', {}).get('X-Forwarded-Proto', 'http')

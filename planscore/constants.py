@@ -1,4 +1,4 @@
-import os, socket, urllib.parse
+import os, socket, urllib.parse, functools, boto3
 
 def _local_url(port):
     ''' Generate a local URL with a given port number.
@@ -9,6 +9,16 @@ def _local_url(port):
     host_address = socket.gethostbyname(socket.gethostname())
     return 'http://{}:{}'.format(host_address, port)
 
+@functools.lru_cache()
+def localstack_api_base(api_endpoint_url, api_name):
+    '''
+    '''
+    api = boto3.client('apigateway', endpoint_url=api_endpoint_url,
+        region_name='us-east-1', aws_access_key_id='nobody', aws_secret_access_key='nothing')
+    rest_api_id = [item for item in api.get_rest_apis()['items']
+                   if item['name'] == api_name][0]['id']
+    return f'{api._endpoint.host}/restapis/{rest_api_id}/test/_user_request_/'
+
 # Signing secret for securing redirects between front-end and back-end.
 SECRET = os.environ.get('PLANSCORE_SECRET', 'fake')
 
@@ -17,15 +27,6 @@ S3_BUCKET = os.environ.get('S3_BUCKET', 'planscore')
 
 # API Gateway name
 API_NAME = 'PlanScore'
-
-# Website and API URLs.
-#
-# Used to coordinate links, form actions, and redirects between Flask app
-# and Lambda functions. In production, these will be set to values such as
-# 'http://planscore.org/'.
-
-WEBSITE_BASE = os.environ.get('WEBSITE_BASE')
-API_BASE = os.environ.get('API_BASE')
 
 # Relative URL paths for AWS Lambda functions.
 #
@@ -53,6 +54,21 @@ S3_URL_PATTERN = urllib.parse.urljoin(S3_ENDPOINT_URL, '/{b}/{k}')
 if os.environ.get('AWS') == 'amazonaws.com':
     S3_ENDPOINT_URL, LAMBDA_ENDPOINT_URL, API_ENDPOINT_URL = None, None, None
     S3_URL_PATTERN = 'https://{b}.s3.amazonaws.com/{k}'
+
+# Website and API URLs.
+#
+# Used to coordinate links, form actions, and redirects between Flask app
+# and Lambda functions. In production, these will be set to values such as
+# 'http://planscore.org/'.
+
+WEBSITE_BASE = os.environ.get('WEBSITE_BASE')
+API_BASE = os.environ.get('API_BASE')
+
+if os.environ.get('AWS') != 'amazonaws.com':
+    try:
+        API_BASE = localstack_api_base(API_ENDPOINT_URL, API_NAME)
+    except:
+        pass # leave it alone
 
 # Time limit to process an upload, in seconds
 
