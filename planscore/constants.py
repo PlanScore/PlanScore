@@ -25,7 +25,7 @@ SECRET = os.environ.get('PLANSCORE_SECRET', 'fake')
 # S3 bucket name, which should generally be left alone.
 S3_BUCKET = os.environ.get('S3_BUCKET', 'planscore')
 
-# API Gateway name
+# API Gateway name, which should generally be left alone.
 API_NAME = 'PlanScore'
 
 # Relative URL paths for AWS Lambda functions.
@@ -59,12 +59,12 @@ if os.environ.get('AWS') == 'amazonaws.com':
 #
 # Used to coordinate links, form actions, and redirects between Flask app
 # and Lambda functions. In production, these will be set to values such as
-# 'http://planscore.org/'.
+# 'https://planscore.org/' and 'https://api.planscore.org/'.
 
 WEBSITE_BASE = os.environ.get('WEBSITE_BASE')
 API_BASE = os.environ.get('API_BASE')
 
-if os.environ.get('AWS') != 'amazonaws.com':
+if not (os.environ.get('AWS') == 'amazonaws.com' or API_BASE):
     try:
         API_BASE = localstack_api_base(API_ENDPOINT_URL, API_NAME)
     except:

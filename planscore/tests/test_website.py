@@ -1,4 +1,4 @@
-import unittest, os
+import unittest, unittest.mock, os
 from .. import website, constants
 
 class TestWebsite (unittest.TestCase):
@@ -20,3 +20,14 @@ class TestWebsite (unittest.TestCase):
         html = self.app.get('/plan.html?12345').data.decode('utf8')
         self.assertIn(constants.S3_URL_PATTERN.format(b='fake-bucket', k='uploads/{id}/index.json'), html)
         self.assertIn(constants.S3_URL_PATTERN.format(b='fake-bucket', k='uploads/{id}/geometry.json'), html)
+    
+    @unittest.mock.patch('flask.current_app')
+    def test_get_function_url(self, current_app):
+        current_app.config = dict(PLANSCORE_API_BASE='http://example.com/yolo/')
+
+        url1 = website.get_function_url('good-times')
+        self.assertEqual(url1, 'http://example.com/yolo/good-times')
+
+        url2 = website.get_function_url('/good-times')
+        self.assertEqual(url2, 'http://example.com/good-times')
+        
