@@ -77,10 +77,13 @@ print('--> Set up Lambda', ENDPOINT_LAM)
 lam = boto3.client('lambda', endpoint_url=ENDPOINT_LAM, region_name='us-east-1', **AWS_CREDS)
 api = boto3.client('apigateway', endpoint_url=ENDPOINT_API, region_name='us-east-1', **AWS_CREDS)
 
+rest_api_id, _ = deploy.prepare_api(api, 'PlanScore')
+api_base = f'{api._endpoint.host}/restapis/{rest_api_id}/test/_user_request_/'
+
 env = {
     'PLANSCORE_SECRET': 'localstack',
     'WEBSITE_BASE': 'http://127.0.0.1:5000/',
-    'API_BASE': urllib.parse.urljoin(ENDPOINT_API, '/restapis/dtozykecfh/test/_user_request_/'),
+    'API_BASE': api_base,
     'S3_ENDPOINT_URL': ENDPOINT_S3,
     'LAMBDA_ENDPOINT_URL': ENDPOINT_LAM,
     'API_ENDPOINT_URL': ENDPOINT_API,

@@ -39,6 +39,7 @@ api_integrations = {
         #requestParameters={'integration.request.querystring.layer': 'method.request.querystring.layer'},
         ),
     }
+
 def publish_function(lam, name, path, env, role):
     ''' Create or update the named function to Lambda, return its ARN.
     '''
@@ -71,11 +72,9 @@ def publish_function(lam, name, path, env, role):
     
     return arn
 
-def update_api(api, api_name, function_arn, function_name, role):
+def prepare_api(api, api_name):
     '''
     '''
-    path = api_paths[function_name]
-    
     try:
         print('    * get API', api_name, file=sys.stderr)
         rest_api = [item for item in api.get_rest_apis()['items']
@@ -87,7 +86,15 @@ def update_api(api, api_name, function_arn, function_name, role):
         rest_api_id = rest_api['id']
         api_kwargs = dict(restApiId=rest_api_id,
             parentId=api.get_resources(restApiId=rest_api_id)['items'][0]['id'])
+    
+    return rest_api_id, api_kwargs
 
+def update_api(api, api_name, function_arn, function_name, role):
+    '''
+    '''
+    path = api_paths[function_name]
+    rest_api_id, api_kwargs = prepare_api(api, api_name)
+    
     try:
         print('    * get resource', rest_api_id, path, file=sys.stderr)
         resource = [item for item in api.get_resources(restApiId=rest_api_id)['items']
