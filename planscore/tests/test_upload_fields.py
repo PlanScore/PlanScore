@@ -8,6 +8,7 @@ class TestUploadFields (unittest.TestCase):
         self.prev_bucket, constants.S3_BUCKET = constants.S3_BUCKET, 'the-bucket'
     
     def tearDown(self):
+        constants.WEBSITE_BASE = None
         constants.SECRET = self.prev_secret
         constants.S3_BUCKET = self.prev_bucket
 
@@ -35,15 +36,17 @@ class TestUploadFields (unittest.TestCase):
         self.assertIn('"field": "value"', response['body'])
         
         self.assertEqual(len(get_upload_fields.mock_calls), 1)
-        self.assertEqual(get_upload_fields.mock_calls[0][1][2:], ('http://example.com', 'fake-secret'))
+        self.assertEqual(get_upload_fields.mock_calls[0][1][2:], ('fake-secret', ))
     
     @unittest.mock.patch('planscore.upload_fields.generate_signed_id')
     def test_with_token(self, generate_signed_id):
+        constants.WEBSITE_BASE = 'https://example.org'
+
         s3, creds = unittest.mock.Mock(), unittest.mock.Mock()
         s3.generate_presigned_post.return_value = {'url': None, 'fields': {}}
 
         generate_signed_id.return_value = 'id', 'id.sig'
-        url, fields = upload_fields.get_upload_fields(s3, creds, 'https://example.org', 'sec')
+        url, fields = upload_fields.get_upload_fields(s3, creds, 'sec')
         
         s3.generate_presigned_post.assert_called_once_with('the-bucket',
             'uploads/id/upload/${filename}', Conditions=[{'acl': 'bucket-owner-full-control'},
@@ -56,12 +59,14 @@ class TestUploadFields (unittest.TestCase):
     
     @unittest.mock.patch('planscore.upload_fields.generate_signed_id')
     def test_without_token(self, generate_signed_id):
+        constants.WEBSITE_BASE = 'https://example.org'
+
         s3, creds = unittest.mock.Mock(), unittest.mock.Mock()
         s3.generate_presigned_post.return_value = {'url': None, 'fields': {}}
         creds.token = None
 
         generate_signed_id.return_value = 'id', 'id.sig'
-        url, fields = upload_fields.get_upload_fields(s3, creds, 'https://example.org', 'sec')
+        url, fields = upload_fields.get_upload_fields(s3, creds, 'sec')
         
         s3.generate_presigned_post.assert_called_once_with('the-bucket',
             'uploads/id/upload/${filename}', Conditions=[{'acl': 'bucket-owner-full-control'},
