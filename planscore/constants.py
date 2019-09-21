@@ -31,13 +31,8 @@ S3_BUCKET = os.environ.get('S3_BUCKET', 'planscore')
 # API Gateway name, which should generally be left alone.
 API_NAME = 'PlanScore'
 
-# Relative URL paths for AWS Lambda functions.
-#
-# These values interact with environment variables like WEBSITE_BASE and
-# API_BASE via URL path joins. When developing locally, Lambda URLs will look
-# like 'http://127.0.0.1:5000/localstack/upload' for use with localstack mock
-# services. In production, Lamdba URLs will look like
-# 'https://api.planscore.org/upload'.
+# Relative URL paths for AWS Lambda functions. These values interact with
+# environment variables like WEBSITE_BASE and API_BASE via URL path joins.
 
 API_UPLOAD_RELPATH = 'upload'
 API_UPLOADED_RELPATH = 'uploaded'
@@ -62,7 +57,9 @@ if os.environ.get('AWS') == 'amazonaws.com':
 #
 # Used to coordinate links, form actions, and redirects between Flask app
 # and Lambda functions. In production, these will be set to values such as
-# 'https://planscore.org/' and 'https://api.planscore.org/'.
+# 'https://planscore.org/' and 'https://api.planscore.org/'. When running
+# without AWS='amazonaws.com' and a defined API_BASE env var, inspect
+# localstack API Gateway to find correct API base URL value.
 
 WEBSITE_BASE = os.environ.get('WEBSITE_BASE')
 API_BASE = os.environ.get('API_BASE')
