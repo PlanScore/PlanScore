@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys, argparse, boto3, os, copy, time
+import sys, argparse, boto3, os, copy, time, random
 import botocore.exceptions
 
 common = dict(
@@ -24,19 +24,29 @@ api_paths = {
 
 api_methods = {
     'PlanScore-UploadFields': dict(httpMethod='GET', authorizationType='NONE',
-        requestParameters={'method.request.querystring.layer': True},
+        #requestParameters={'method.request.querystring.incumbency': True},
         ),
     'PlanScore-Callback': dict(httpMethod='GET', authorizationType='NONE',
-        requestParameters={'method.request.querystring.layer': True},
+        #requestParameters={
+        #    'method.request.querystring.id': True,
+        #    'method.request.querystring.bucket': True,
+        #    'method.request.querystring.key': True,
+        #    'method.request.querystring.incumbency': True,
+        #    },
         ),
     }
 
 api_integrations = {
     'PlanScore-UploadFields': dict(httpMethod='GET',
-        #requestParameters={'integration.request.querystring.layer': 'method.request.querystring.layer'},
+        #requestParameters={'integration.request.querystring.incumbency': 'method.request.querystring.incumbency'},
         ),
     'PlanScore-Callback': dict(httpMethod='GET',
-        #requestParameters={'integration.request.querystring.layer': 'method.request.querystring.layer'},
+        #requestParameters={
+        #    'integration.request.querystring.id': 'method.request.querystring.id',
+        #    'integration.request.querystring.bucket': 'method.request.querystring.bucket',
+        #    'integration.request.querystring.key': 'method.request.querystring.key',
+        #    'integration.request.querystring.incumbency': 'method.request.querystring.incumbency',
+        #    },
         ),
     }
 
@@ -133,9 +143,18 @@ parser.add_argument('name', help='Function name')
 
 if __name__ == '__main__':
     args = parser.parse_args()
+    role = os.environ.get('AWS_IAM_ROLE')
+    lam = boto3.client('lambda', region_name='us-east-1')
+    api = boto3.client('apigateway', region_name='us-east-1')
+
     env = {k: os.environ[k]
         for k in ('PLANSCORE_SECRET', 'WEBSITE_BASE', 'AWS')
         if k in os.environ}
     
-    lam = boto3.client('lambda', region_name='us-east-1')
-    publish_function(lam, args.name, args.path, env, os.environ.get('AWS_IAM_ROLE'))
+    arn = publish_function(lam, args.name, args.path, env, role)
+    if args.name not in api_methods:
+        print('    - No API Gateway for', args.name, file=sys.stderr)
+        exit()
+    rest_api_id = update_api(api, 'PlanScore', arn, args.name, role)
+    time.sleep(random.randint(0, 5))
+    deploy_api(api, rest_api_id)
