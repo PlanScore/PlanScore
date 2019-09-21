@@ -1,5 +1,4 @@
 import urllib.parse, tempfile, shutil, os, contextlib, logging, zipfile, itertools, shutil
-import boto3
 from . import constants
 
 @contextlib.contextmanager
@@ -46,10 +45,15 @@ def unzip_shapefile(zip_path, zip_dir):
 def event_url(event):
     '''
     '''
-    scheme = event.get('headers', {}).get('X-Forwarded-Proto', 'http')
-    hostname = event.get('headers', {}).get('Host', 'example.com')
     path = event.get('path', '/')
     
+    if constants.API_ENDPOINT_URL:
+        api_base = constants.localstack_api_base(constants.API_ENDPOINT_URL, constants.API_NAME)
+        return urllib.parse.urljoin(api_base, path.lstrip('/'))
+    
+    scheme = event.get('headers', {}).get('X-Forwarded-Proto', 'http')
+    hostname = event.get('headers', {}).get('Host', 'example.com')
+
     return urllib.parse.urlunparse((scheme, hostname, path, None, None, None))
 
 def event_query_args(event):

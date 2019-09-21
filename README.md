@@ -44,7 +44,7 @@ AWS development stack [LocalStack](https://github.com/localstack/localstack).
     
 7.  In a separate window, run LocalStack.
     
-        env SERVICES=s3,lambda LAMBDA_EXECUTOR=docker localstack start
+        env SERVICES=s3,lambda,apigateway LAMBDA_EXECUTOR=docker localstack start --host
     
     Wait for the expected output.
     
