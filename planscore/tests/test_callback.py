@@ -1,4 +1,4 @@
-import unittest, unittest.mock, os
+import unittest, unittest.mock, os, urllib.parse
 from .. import callback, data, constants
 
 class TestCallback (unittest.TestCase):
@@ -20,7 +20,7 @@ class TestCallback (unittest.TestCase):
         ''' create_upload() makes the right call to put_upload_index().
         '''
         s3, bucket = unittest.mock.Mock(), unittest.mock.Mock()
-        callback.create_upload(s3, bucket, 'example-key', 'example-id')
+        callback.create_upload(s3, bucket, 'example-key', 'example-id', 'Yo')
         
         self.assertEqual(len(put_upload_index.mock_calls), 1)
         self.assertEqual(len(put_upload_index.mock_calls[0][1]), 2)
@@ -29,6 +29,7 @@ class TestCallback (unittest.TestCase):
         self.assertEqual(put_upload_index.mock_calls[0][1][0].bucket, bucket)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, 'example-id')
         self.assertEqual(put_upload_index.mock_calls[0][1][1].key, 'example-key')
+        self.assertEqual(put_upload_index.mock_calls[0][1][1].description, 'Yo')
 
     @unittest.mock.patch('planscore.callback.create_upload')
     @unittest.mock.patch('boto3.client')
@@ -36,7 +37,8 @@ class TestCallback (unittest.TestCase):
         ''' Lambda event triggers the right call to create_upload()
         '''
         query = {'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson',
-            'id': 'id.k0_XwbOLGLUdv241zsPluNc3HYs', 'bucket': 'planscore-bucket'}
+            'id': 'id.k0_XwbOLGLUdv241zsPluNc3HYs', 'bucket': 'planscore-bucket',
+            'description': 'A fine new plan'}
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
 
@@ -47,7 +49,7 @@ class TestCallback (unittest.TestCase):
         self.assertEqual(response['headers']['Location'], 'https://example.com/plan.html?id')
         
         self.assertEqual(create_upload.mock_calls[0][1][1:],
-            (query['bucket'], query['key'], 'id'))
+            (query['bucket'], query['key'], 'id', query['description']))
         
         lambda_dict = boto3_client.return_value.invoke.mock_calls[0][2]
         

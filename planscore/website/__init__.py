@@ -77,15 +77,10 @@ def get_upload():
     upload_fields_url = get_function_url(constants.API_UPLOAD_RELPATH)
     return flask.render_template('upload.html', upload_fields_url=upload_fields_url)
 
-@app.route('/upload-new.html')
-def get_upload_incumbency():
-    upload_fields_url = get_function_url(constants.API_UPLOAD_RELPATH)
-    upload_fields_url += '?incumbency=yes'
-    return flask.render_template('upload.html', incumbency='yes', upload_fields_url=upload_fields_url)
-
-@app.route('/incumbency.html')
-def get_incumbency():
-    return flask.render_template('incumbency.html')
+@app.route('/annotate.html')
+def get_annotate():
+    uploaded_url = get_function_url(constants.API_UPLOADED_RELPATH)
+    return flask.render_template('annotate.html', uploaded_url=uploaded_url)
 
 @app.route('/plan.html')
 def get_plan():

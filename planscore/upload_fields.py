@@ -6,7 +6,7 @@ More details on browser-based S3 uploads using HTTP POST:
 '''
 import json, pprint, urllib.parse, datetime, random, os
 import boto3, itsdangerous
-from . import util, data, constants
+from . import util, data, constants, website
 
 def get_assumed_role(arn):
     ''' 
@@ -28,13 +28,17 @@ def get_assumed_role(arn):
             aws_session_token=resp['Credentials']['SessionToken'],
             )
 
-def get_upload_fields(s3, creds, request_url, secret):
+def get_upload_fields(s3, creds, secret):
     '''
     '''
+    rules = {rule.endpoint: str(rule) for rule in website.app.url_map.iter_rules()}
+    website_base = constants.WEBSITE_BASE
+    acl = 'bucket-owner-full-control'
+
     unsigned_id, signed_id = generate_signed_id(secret)
     redirect_query = urllib.parse.urlencode(dict(id=signed_id))
-    redirect_path = '{}?{}'.format(constants.API_UPLOADED_RELPATH, redirect_query)
-    acl, redirect_url = 'bucket-owner-full-control', urllib.parse.urljoin(request_url, redirect_path)
+    redirect_path = '{}?{}'.format(rules['get_annotate'], redirect_query)
+    redirect_url = urllib.parse.urljoin(constants.WEBSITE_BASE, redirect_path)
     
     presigned = s3.generate_presigned_post(
         constants.S3_BUCKET,
@@ -68,21 +72,12 @@ def generate_signed_id(secret):
 def lambda_handler(event, context):
     '''
     '''
-    request_url = util.event_url(event)
-
     # Get longer-lasting credentials with sts:AssumeRole
     role = get_assumed_role('arn:aws:iam::466184106004:role/ModelEC2Instance')
     s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL, **role)
     creds = boto3.session.Session(**role).get_credentials()
 
-    url, fields = get_upload_fields(s3, creds, request_url, constants.SECRET)
-    
-    if util.event_query_args(event).get('incumbency') == 'yes':
-        _, signed_id = generate_signed_id(constants.SECRET)
-        redirect_query = urllib.parse.urlencode(dict(id=signed_id, incumbency='yes'))
-        redirect_path = '{}?{}'.format(constants.API_UPLOADED_RELPATH, redirect_query)
-        redirect_url = urllib.parse.urljoin(request_url, redirect_path)
-        fields['success_action_redirect'] = redirect_url
+    url, fields = get_upload_fields(s3, creds, constants.SECRET)
     
     return {
         'statusCode': '200',

@@ -8,11 +8,12 @@ More details on "success_action_redirect" in browser-based S3 uploads:
 import boto3, itsdangerous, urllib.parse, json
 from . import after_upload, constants, util, website, data, score, observe
 
-def create_upload(s3, bucket, key, id):
+def create_upload(s3, bucket, key, id, description):
     '''
     '''
     upload = data.Upload(id, key, [],
-        message='Scoring this newly-uploaded plan. Reload this page to see the result.')
+        message='Scoring this newly-uploaded plan. Reload this page to see the result.',
+        description=description)
     observe.put_upload_index(data.Storage(s3, bucket, None), upload)
     return upload
 
@@ -40,16 +41,7 @@ def lambda_handler(event, context):
             'body': 'Bad ID'
             }
     
-    if query.get('incumbency') == 'yes':
-        rules = {rule.endpoint: str(rule) for rule in website.app.url_map.iter_rules()}
-        redirect_url = urllib.parse.urljoin(website_base, rules['get_incumbency'])
-        return {
-            'statusCode': '302',
-            'headers': {'Location': redirect_url},
-            'body': ''
-            }
-
-    upload = create_upload(s3, query['bucket'], query['key'], id)
+    upload = create_upload(s3, query['bucket'], query['key'], id, query['description'])
     redirect_url = get_redirect_url(website_base, id)
     
     event = dict(bucket=query['bucket'])
