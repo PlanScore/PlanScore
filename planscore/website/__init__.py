@@ -77,10 +77,10 @@ def get_upload():
     upload_fields_url = get_function_url(constants.API_UPLOAD_RELPATH)
     return flask.render_template('upload.html', upload_fields_url=upload_fields_url)
 
-@app.route('/incumbency.html')
-def get_incumbency():
-    annotate_url = get_function_url(constants.API_ANNOTATE_RELPATH)
-    return flask.render_template('incumbency.html', annotate_url=annotate_url)
+@app.route('/annotate.html')
+def get_annotate():
+    uploaded_url = get_function_url(constants.API_UPLOADED_RELPATH)
+    return flask.render_template('annotate.html', uploaded_url=uploaded_url)
 
 @app.route('/plan.html')
 def get_plan():

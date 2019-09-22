@@ -37,7 +37,7 @@ def get_upload_fields(s3, creds, secret):
 
     unsigned_id, signed_id = generate_signed_id(secret)
     redirect_query = urllib.parse.urlencode(dict(id=signed_id))
-    redirect_path = '{}?{}'.format(rules['get_incumbency'], redirect_query)
+    redirect_path = '{}?{}'.format(rules['get_annotate'], redirect_query)
     redirect_url = urllib.parse.urljoin(constants.WEBSITE_BASE, redirect_path)
     
     presigned = s3.generate_presigned_post(

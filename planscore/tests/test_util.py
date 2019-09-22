@@ -113,19 +113,3 @@ class TestUtil (unittest.TestCase):
 
         args4 = util.event_query_args({'queryStringParameters': {'foo': 'bar'}})
         self.assertEqual(args4, {'foo': 'bar'})
-    
-    def test_event_post_args(self):
-        args1 = util.event_post_args({})
-        self.assertEqual(args1, {})
-
-        args2 = util.event_post_args({'body': None})
-        self.assertEqual(args2, {})
-
-        args3 = util.event_post_args({'body': ''})
-        self.assertEqual(args3, {})
-
-        args4 = util.event_post_args({'body': 'foo=bar'})
-        self.assertEqual(args4, {'foo': 'bar'})
-
-        args5 = util.event_post_args({'body': 'foo=bar&baz=quux&foo=baz'})
-        self.assertEqual(args5, {'foo': 'baz', 'baz': 'quux'})

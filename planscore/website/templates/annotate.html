@@ -1,5 +1,5 @@
 {% extends "patternlibrary.html" %}
-{% block title %}Plan Incumbency{% endblock %}
+{% block title %}Annotate Plan{% endblock %}
 {% block head %}
     <style lang="text/css">
     
@@ -16,7 +16,7 @@
         Almost Done!
     </h2>
 
-    <form id="annotate" action="{{uploaded_url}}" method="post">
+    <form id="annotate" action="{{uploaded_url}}" method="get">
         <p>
             <label>
                 Name this plan:
@@ -49,6 +49,7 @@
 
 	</script>
     
+    {#
     <p>
         If you know which districts have incumbents running for re-election,
         select their party affiliation below for a more accurate prediction.
@@ -178,6 +179,7 @@
     <p>
         <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary" disabled>
     </p>
+    #}
 
 	{% include 'olark-embed.html' %}
 

@@ -36,20 +36,20 @@ class TestCallback (unittest.TestCase):
     def test_lambda_handler(self, boto3_client, create_upload):
         ''' Lambda event triggers the right call to create_upload()
         '''
-        form = {'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson',
+        query = {'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson',
             'id': 'id.k0_XwbOLGLUdv241zsPluNc3HYs', 'bucket': 'planscore-bucket',
             'description': 'A fine new plan'}
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
 
-        create_upload.return_value = data.Upload(form['id'], form['key'])
-        response = callback.lambda_handler({'body': urllib.parse.urlencode(form)}, None)
+        create_upload.return_value = data.Upload(query['id'], query['key'])
+        response = callback.lambda_handler({'queryStringParameters': query}, None)
         
         self.assertEqual(response['statusCode'], '302')
         self.assertEqual(response['headers']['Location'], 'https://example.com/plan.html?id')
         
         self.assertEqual(create_upload.mock_calls[0][1][1:],
-            (form['bucket'], form['key'], 'id', form['description']))
+            (query['bucket'], query['key'], 'id', query['description']))
         
         lambda_dict = boto3_client.return_value.invoke.mock_calls[0][2]
         
@@ -64,7 +64,7 @@ class TestCallback (unittest.TestCase):
         ''' Lambda event with an incorrectly-signed ID fails as expected
         '''
         event = {
-            'body': 'id=id.WRONG'
+            'queryStringParameters': {'id': 'id.WRONG'}
             }
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
