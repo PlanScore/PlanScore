@@ -203,7 +203,7 @@ class Upload:
 MODELS = [
     Model(State.XX, House.statehouse,    2, 'data/XX/003'),
     Model(State.MD, House.ushouse,       8, 'data/MD/001-ushouse-open'),
-    Model(State.NC, House.ushouse,      13, 'data/NC/004-ushouse'),
+    Model(State.NC, House.ushouse,      13, 'data/NC/006-ushouse'),
     Model(State.NC, House.statesenate,  50, 'data/NC/006-ncsenate'),
     Model(State.NC, House.statehouse,  120, 'data/NC/006-nchouse'),
     Model(State.PA, House.ushouse,      18, 'data/PA/008-ushouse'), # 8c546bb
