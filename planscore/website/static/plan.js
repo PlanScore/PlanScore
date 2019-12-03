@@ -344,7 +344,7 @@ function update_heading_titles(head)
     }
 }
 
-function update_vote_percentages(head, row)
+function update_vote_percentages(head, row, source_row)
 {
     var dem_index = head.indexOf('Democratic Votes'),
         rep_index = head.indexOf('Republican Votes'),
@@ -355,6 +355,13 @@ function update_vote_percentages(head, row)
         vote_count = (row[dem_index] + row[rep_index]);
         row[dem_index] = nice_percent(row[dem_index] / vote_count);
         row[rep_index] = nice_percent(row[rep_index] / vote_count);
+
+        if(typeof source_row['Democratic Votes SD'] === 'number'
+        && typeof source_row['Republican Votes SD'] === 'number')
+        {
+            row[dem_index] += ' (±' + nice_percent(2 * source_row['Democratic Votes SD'] / vote_count) + ')';
+            row[rep_index] += ' (±' + nice_percent(2 * source_row['Republican Votes SD'] / vote_count) + ')';
+        }
     }
 }
 
@@ -456,7 +463,7 @@ function plan_array(plan)
     
     for(var j = 1; j < all_rows.length; j++)
     {
-        update_vote_percentages(head_row, all_rows[j]);
+        update_vote_percentages(head_row, all_rows[j], plan.districts[j - 1].totals);
         update_acs2015_percentages(head_row, all_rows[j]);
         update_acs2016_percentages(head_row, all_rows[j]);
         update_cvap2015_percentages(head_row, all_rows[j]);
