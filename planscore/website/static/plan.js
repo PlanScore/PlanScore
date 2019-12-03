@@ -126,7 +126,7 @@ function which_district_color(district, plan)
     var totals = district.totals,
         color_red = '#D45557',
         color_blue = '#4D90D1',
-        color_unknown = '#4d90d1';
+        color_unknown = '#7d857d';
 
     if(typeof plan.summary['Efficiency Gap SD'] === 'number')
     {
