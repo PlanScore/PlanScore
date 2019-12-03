@@ -123,10 +123,14 @@ function which_score_column_names(plan)
 
 function which_district_color(district, plan)
 {
+    // Colors from http://chromatron.s3-website-us-east-1.amazonaws.com/#eNpVz8EKgzAQBNB/mV5z2JhsYvIrpQc1tkilgqXQIv57NYkNZa77mNkF3TRO8xP+vGAI8CRwHcYRHicdHAUJgTe8dizwgZdWCszwNa0iAVlA0MxsE6ikSsC4CCT9RFVErfYkodjlCopCmwOoAlo2vWkyIPUHTHUAXYAJddNSfkLavMlGwG69CLRNd7/N0+sR4iLas90Pj9Bvhtcv8ANJtQ==
+
     var totals = district.totals,
         color_red = '#D45557',
         color_blue = '#4D90D1',
-        color_unknown = '#7d857d';
+        color_unknown = '#838383',
+        color_reddish = '#b56e6a',
+        color_blueish = '#6d8ab0';
 
     if(typeof plan.summary['Efficiency Gap SD'] === 'number')
     {
@@ -139,6 +143,10 @@ function which_district_color(district, plan)
             return color_blue;
         } else if((dem_votes + dem_votes_sd) < (rep_votes - rep_votes_sd)) {
             return color_red;
+        } else if((dem_votes - dem_votes_sd/2) > (rep_votes + rep_votes_sd/2)) {
+            return color_blueish;
+        } else if((dem_votes + dem_votes_sd/2) < (rep_votes - rep_votes_sd/2)) {
+            return color_reddish;
         } else {
             return color_unknown;
         }
