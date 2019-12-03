@@ -125,14 +125,22 @@ function which_district_color(district, plan)
 {
     var totals = district.totals,
         color_red = '#D45557',
-        color_blue = '#4D90D1';
+        color_blue = '#4D90D1',
+        color_unknown = '#4d90d1';
 
     if(typeof plan.summary['Efficiency Gap SD'] === 'number')
     {
-        if(totals['Democratic Votes'] > totals['Republican Votes']) {
+        var dem_votes = totals['Democratic Votes'],
+            rep_votes = totals['Republican Votes'],
+            dem_votes_sd = totals['Democratic Votes SD'],
+            rep_votes_sd = totals['Republican Votes SD'];
+    
+        if((dem_votes - dem_votes_sd) > (rep_votes + rep_votes_sd)) {
             return color_blue;
-        } else {
+        } else if((dem_votes + dem_votes_sd) < (rep_votes - rep_votes_sd)) {
             return color_red;
+        } else {
+            return color_unknown;
         }
     }
 
