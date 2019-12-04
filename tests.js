@@ -95,11 +95,11 @@ assert.deepEqual(plan_array4[0],
     'Should pick out the right column names');
 
 assert.deepEqual(plan_array4[1],
-    ['1', '47.4%', '52.6%'],
+    ['1', '47.4% (±0.9%)', '52.6% (±0.9%)'],
     'Should pick out the right column values');
 
 assert.deepEqual(plan_array4[13],
-    ['13', '42.3%', '57.7%'],
+    ['13', '42.3% (±1.0%)', '57.7% (±1.0%)'],
     'Should pick out the right column values');
 
 assert.equal(plan.get_description(NC_multisim_index, new Date(2018, 0, 14)),
@@ -120,15 +120,24 @@ assert.deepEqual(plan_array5[0],
     'Should pick out the right column names');
 
 assert.deepEqual(plan_array5[1],
-    ['1', 733460.0, 734814.32, '46.3%', '8.3%', '66.1%', '33.9%'/*, 0.1992, 0.3469*/],
+    ['1', 733460.0, 734814.32, '46.3%', '8.3%', '66.1% (±0.9%)', '33.9% (±0.9%)'/*, 0.1992, 0.3469*/],
     'Should pick out the right column values');
 
 assert.deepEqual(plan_array5[13],
-    ['13', 733505.0, 747501.53, '22.8%', '7.5%', '43.9%', '56.1%'/*, 0.2274, 0.3557*/],
+    ['13', 733505.0, 747501.53, '22.8%', '7.5%', '43.9% (±0.6%)', '56.1% (±0.6%)'/*, 0.2274, 0.3557*/],
     'Should pick out the right column values');
 
 assert.equal(plan.get_description(NC_public_index, undefined),
     'North Carolina U.S. House plan uploaded on 1/14/2018');
+
+assert.equal(plan.which_district_color(NC_public_index.districts[0], NC_public_index),
+    '#4D90D1', 'Should return the blue district color');
+
+assert.equal(plan.which_district_color(NC_public_index.districts[1], NC_public_index),
+    '#838383', 'Should return the unknown district color');
+
+assert.equal(plan.which_district_color(NC_public_index.districts[2], NC_public_index),
+    '#D45557', 'Should return the red district color');
 
 // Display preparation functions
 
@@ -143,15 +152,15 @@ assert.deepEqual(head2, ['Citizen Voting-Age Population 2015',
     'Black Non-Hispanic CVAP 2015', 'Hispanic CVAP 2015']);
 
 var row1 = [4, 6];
-plan.update_vote_percentages(['Democratic Votes', 'Republican Votes'], row1);
+plan.update_vote_percentages(['Democratic Votes', 'Republican Votes'], row1, {});
 assert.deepEqual(row1, ['40.0%', '60.0%']);
 
 var row2 = [4, 6];
-plan.update_vote_percentages(['Democratic Votes', 'Republican Smokes'], row2);
+plan.update_vote_percentages(['Democratic Votes', 'Republican Smokes'], row2, {});
 assert.deepEqual(row2, [4, 6]);
 
 var row3 = [4, 6];
-plan.update_vote_percentages(['Democratic Jokes', 'Republican Votes'], row3);
+plan.update_vote_percentages(['Democratic Jokes', 'Republican Votes'], row3, {});
 assert.deepEqual(row3, [4, 6]);
 
 var row4 = [10, 4, 6];
@@ -205,6 +214,21 @@ assert.deepEqual(row14, [10, 4, 6]);
 var row15 = [10, 4, 6];
 plan.update_acs2016_percentages(['Population 2010', 'Black Population 2016', 'Hispanic Population 2016'], row15);
 assert.deepEqual(row15, [10, 4, 6]);
+
+var row16 = [4, 6];
+plan.update_vote_percentages(['Democratic Votes', 'Republican Votes'], row16,
+    {'Democratic Votes SD': 1, 'Republican Votes SD': 1});
+assert.deepEqual(row16, ['40.0% (±20.0%)', '60.0% (±20.0%)']);
+
+var row17 = [4, 6];
+plan.update_vote_percentages(['Democratic Votes', 'Republican Votes'], row17,
+    {'Democratic Votes SD': 0, 'Republican Votes SD': 0});
+assert.deepEqual(row17, ['40.0% (±0.0%)', '60.0% (±0.0%)']);
+
+var row18 = [4, 6];
+plan.update_vote_percentages(['Democratic Votes', 'Republican Votes'], row18,
+    {'Democratic Votes SD': 'no', 'Republican Votes SD': 'no'});
+assert.deepEqual(row18, ['40.0%', '60.0%']);
 
 // Assorted functions
 

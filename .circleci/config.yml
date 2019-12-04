@@ -24,12 +24,13 @@ jobs:
             - /opt/circleci/.pyenv
           key: test-dependencies-{{ checksum "setup.py" }}
       - run: python3 setup.py test
+      - run: NODE_PATH=`pwd` node tests.js
       - run: make planscore/website/build
       - persist_to_workspace:
           root: ~/repo
           paths:
             - planscore/website/build
-
+  
   # Prepare Lambda package for use in Deploy step.
   # Optimistically prepares images in parallel with Test step.
   Build:
