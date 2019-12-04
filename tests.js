@@ -130,6 +130,15 @@ assert.deepEqual(plan_array5[13],
 assert.equal(plan.get_description(NC_public_index, undefined),
     'North Carolina U.S. House plan uploaded on 1/14/2018');
 
+assert.equal(plan.which_district_color(NC_public_index.districts[0], NC_public_index),
+    '#4D90D1', 'Should return the blue district color');
+
+assert.equal(plan.which_district_color(NC_public_index.districts[1], NC_public_index),
+    '#838383', 'Should return the unknown district color');
+
+assert.equal(plan.which_district_color(NC_public_index.districts[2], NC_public_index),
+    '#D45557', 'Should return the red district color');
+
 // Display preparation functions
 
 var head1 = ['Democratic Votes', 'Republican Votes'];
