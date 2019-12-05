@@ -65,8 +65,14 @@
         Loading plan…
     </section>
     <section id="plan-score">
-    <p id="plan-description">Blah blah blah</p>
-    <p><a id="plan-model-link" href="{{ url_for('get_models') }}">More information about this plan</a></p>
+    <p id="plan-description">(Loading)</p>
+    <p>
+        PlanScore bases its scores on predicted precinct-level votes for each
+        office (State House, State Senate, and U.S. House) built from past
+        election results and U.S. Census data.
+        <a id="plan-model-link" href="{{ url_for('get_models') }}">More
+            information about the predictive model used to score this plan</a>.
+    </p>
 
     {# these list items will be populated by load_plan_score() #}
 
