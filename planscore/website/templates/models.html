@@ -4,7 +4,7 @@
     <h2>Models</h2>
     <ul>
         {% for model in models %}
-            <li><a href="{{ url_for('get_model', name=model) }}">{{ model }}</a></li>
+            <li><a href="{{ url_for('get_model_description', prefix=model) }}">{{ model }}</a></li>
         {% endfor %}
     </ul>
 {% endblock %}

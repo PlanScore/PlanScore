@@ -592,8 +592,8 @@ function get_explanation(plan)
 }
 
 function load_plan_score(url, message_section, score_section,
-    description, table, score_EG, score_PB, score_MM, score_sense, text_url,
-    text_link, map_url, map_div)
+    description, model_link, table, score_EG, score_PB, score_MM, score_sense,
+    text_url, text_link, map_url, map_div)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -624,6 +624,11 @@ function load_plan_score(url, message_section, score_section,
         description.appendChild(document.createElement('br'));
         description.appendChild(
             document.createTextNode(get_explanation(plan)));
+        
+        if(plan.model && plan.model.key_prefix)
+        {
+            model_link.href += plan.model.key_prefix;
+        }
 
         // Build the results table
         var table_array = plan_array(plan),

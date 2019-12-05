@@ -105,23 +105,24 @@ def get_models():
 
     return flask.render_template('models.html', models=model_names)
 
-@app.route('/models/<name>/')
-def get_model(name):
-    model_basedir = os.path.join(MODELS_BASEDIR, name)
+# @app.route('/models/<name>/')
+# def get_model(name):
+#     model_basedir = os.path.join(MODELS_BASEDIR, name)
+# 
+#     with open(os.path.join(model_basedir, 'README.md')) as file:
+#         model_readme = markdown.markdown(file.read())
+# 
+#     model_files = list()
+#     for (base, _, files) in os.walk(model_basedir):
+#         model_files.extend([
+#             os.path.relpath(os.path.join(base, file), model_basedir)
+#             for file in files if file != 'README.md'])
+# 
+#     return flask.render_template('model.html', name=name,
+#         readme=model_readme, files=model_files)
 
-    with open(os.path.join(model_basedir, 'README.md')) as file:
-        model_readme = markdown.markdown(file.read())
-
-    model_files = list()
-    for (base, _, files) in os.walk(model_basedir):
-        model_files.extend([
-            os.path.relpath(os.path.join(base, file), model_basedir)
-            for file in files if file != 'README.md'])
-
-    return flask.render_template('model.html', name=name,
-        readme=model_readme, files=model_files)
-
-@app.route('/models/<name>/<path:path>')
-def get_model_file(name, path):
-    dirname, filename = os.path.split(os.path.join(MODELS_BASEDIR, name, path))
+@app.route('/models/<path:prefix>/')
+def get_model_description(prefix):
+    dirname, filename = os.path.split(os.path.join(MODELS_BASEDIR, prefix))
+    return repr((dirname, filename))
     return flask.send_from_directory(dirname, filename)

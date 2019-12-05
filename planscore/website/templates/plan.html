@@ -66,6 +66,7 @@
     </section>
     <section id="plan-score">
     <p id="plan-description">Blah blah blah</p>
+    <p><a id="plan-model-link" href="{{ url_for('get_models') }}">More information about this plan</a></p>
 
     {# these list items will be populated by load_plan_score() #}
 
@@ -142,6 +143,7 @@
 	        document.getElementById('message'),
 	        document.getElementById('plan-score'),
 	        document.getElementById('plan-description'),
+	        document.getElementById('plan-model-link'),
 	        document.getElementById('districts'),
 	        document.getElementById('score-efficiency-gap'),
 	        document.getElementById('score-partisan-bias'),

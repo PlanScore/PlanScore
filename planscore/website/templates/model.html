@@ -6,7 +6,7 @@
     <h3>Files</h3>
     <ul>
         {% for file in files %}
-            <li><a href="{{ url_for('get_model_file', name=name, path=file) }}">{{ file }}</a></li>
+            <li><a href="{{ url_for('get_model_description', prefix=file) }}">{{ file }}</a></li>
         {% endfor %}
     </ul>
 {% endblock %}
