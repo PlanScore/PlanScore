@@ -101,18 +101,31 @@ def get_models():
 
     for (base, _, files) in os.walk(MODELS_BASEDIR):
         for file in files:
-            if file.endswith('.md'):
-                path, _ = os.path.splitext(os.path.join(base, file))
+            if file == 'README.md':
+                path, _ = os.path.splitext(base)
                 model_names.append(os.path.relpath(path, MODELS_BASEDIR))
 
     return flask.render_template('models.html', models=model_names)
 
 @app.route('/models/<path:prefix>/')
-def get_model_description(prefix):
-    filename = os.path.join(MODELS_BASEDIR, prefix) + '.md'
+@app.route('/models/<path:prefix>/<file>')
+def get_model_description(prefix, file=None):
+    if file is not None:
+        # Individual file is specified by name
+        file_path = os.path.join(MODELS_BASEDIR, prefix, file)
+        return flask.send_from_directory(*os.path.split(file_path))
 
-    with open(filename) as file:
+    model_basedir = os.path.join(MODELS_BASEDIR, prefix)
+    index_path = os.path.join(model_basedir, 'README.md')
+
+    with open(index_path) as file:
         model_readme = markdown.markdown(file.read())
 
+    model_files = list()
+    for (base, _, files) in os.walk(model_basedir):
+        model_files.extend([
+            os.path.relpath(os.path.join(base, file), model_basedir)
+            for file in files if file != 'README.md'])
+
     return flask.render_template('model.html', name=prefix,
-        readme=model_readme, files=[])
+        readme=model_readme, files=model_files)
