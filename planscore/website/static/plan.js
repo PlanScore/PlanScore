@@ -581,8 +581,8 @@ function get_description(plan, modified_at)
 }
 
 function load_plan_score(url, message_section, score_section,
-    description, model_link, table, score_EG, score_PB, score_MM, score_sense,
-    text_url, text_link, map_url, map_div)
+    description, model_link, model_url_pattern, table, score_EG, score_PB,
+    score_MM, score_sense, text_url, text_link, map_url, map_div)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -613,7 +613,7 @@ function load_plan_score(url, message_section, score_section,
         
         if(plan.model && plan.model.key_prefix)
         {
-            model_link.href += plan.model.key_prefix;
+            model_link.href = model_url_pattern.replace('KEY_PREFIX', plan.model.key_prefix);
         }
 
         // Build the results table

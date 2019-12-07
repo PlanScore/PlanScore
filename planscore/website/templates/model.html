@@ -13,10 +13,12 @@
 {% block content %}
     <!--<p><a href="{{ url_for('get_models') }}">&#11013;&#65038; All Models</a></p>-->
     {{ readme|safe }}
+    {% if files %}
     <h3>Files</h3>
     <ul>
         {% for file in files %}
             <li><a href="{{ file }}">{{ file }}</a></li>
         {% endfor %}
     </ul>
+    {% endif %}
 {% endblock %}
