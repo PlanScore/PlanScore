@@ -613,7 +613,7 @@ function load_plan_score(url, message_section, score_section,
         
         if(plan.model && plan.model.key_prefix)
         {
-            model_link.href = model_url_pattern.replace('KEY_PREFIX', plan.model.key_prefix);
+            model_link.href = model_url_pattern.replace('data/XX/003', plan.model.key_prefix);
         }
 
         // Build the results table
