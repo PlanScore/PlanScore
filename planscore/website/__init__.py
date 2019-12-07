@@ -97,15 +97,16 @@ def get_webinar_mar23():
 
 @app.route('/models/')
 def get_models():
-    model_names = list()
+    model_names, assorted_files = list(), list()
 
     for (base, _, files) in os.walk(MODELS_BASEDIR):
         for file in files:
             if file == 'README.md':
-                path, _ = os.path.splitext(base)
-                model_names.append(os.path.relpath(path, MODELS_BASEDIR))
+                model_names.append(os.path.relpath(base, MODELS_BASEDIR))
+            elif 'data' in base:
+                assorted_files.append((os.path.relpath(base, MODELS_BASEDIR), file))
 
-    return flask.render_template('models.html', models=model_names)
+    return flask.render_template('models.html', models=model_names, files=assorted_files)
 
 @app.route('/models/<path:prefix>/')
 @app.route('/models/<path:prefix>/<file>')

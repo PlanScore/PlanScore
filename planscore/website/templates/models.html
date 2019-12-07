@@ -7,4 +7,13 @@
             <li><a href="{{ url_for('get_model_description', prefix=model) }}">{{ model }}</a></li>
         {% endfor %}
     </ul>
+
+    {# this bit is just here to ensure all the model files get made #}
+    <ul style="display: none">
+        {% for (model, file) in files %}
+            <li>
+                <a href="{{ url_for('get_model_description', prefix=model, file=file) }}">{{ model }} / {{ file }}</a>
+            </li>
+        {% endfor %}
+    </ul>
 {% endblock %}
