@@ -1,12 +1,24 @@
-{% extends "layout.html" %}
+{% extends "patternlibrary.html" %}
 {% block title %}Model{% endblock %}
+{% block head %}
+    <style lang="text/css">
+    
+        img
+        {
+            width: 100%
+        }
+        
+    </style>
+{% endblock %}
 {% block content %}
-    <p><a href="{{ url_for('get_models') }}">&#11013;&#65038; All Models</a></p>
+    <!--<p><a href="{{ url_for('get_models') }}">&#11013;&#65038; All Models</a></p>-->
     {{ readme|safe }}
+    {% if files %}
     <h3>Files</h3>
     <ul>
         {% for file in files %}
-            <li><a href="{{ url_for('get_model_file', name=name, path=file) }}">{{ file }}</a></li>
+            <li><a href="{{ file }}">{{ file }}</a></li>
         {% endfor %}
     </ul>
+    {% endif %}
 {% endblock %}

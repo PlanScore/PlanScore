@@ -65,7 +65,14 @@
         Loading plan…
     </section>
     <section id="plan-score">
-    <p id="plan-description">Blah blah blah</p>
+    <p id="plan-description">(Loading)</p>
+    <p>
+        PlanScore bases its scores on predicted precinct-level votes for each
+        office (State House, State Senate, and U.S. House) built from past
+        election results and U.S. Census data.
+        <a id="plan-model-link" href="{{ url_for('get_models') }}">More
+            information about the predictive model used to score this plan</a>.
+    </p>
 
     {# these list items will be populated by load_plan_score() #}
 
@@ -136,12 +143,15 @@
 	        text_url = format_url('{{ text_url_pattern }}', plan_id),
 	        eg_metric_url = '{{ url_for("get_efficiencygap_page") }}',
 	        pb_metric_url = '{{ url_for("get_partisanbias_page") }}',
-	        mm_metric_url = '{{ url_for("get_meanmedian_page") }}';
+	        mm_metric_url = '{{ url_for("get_meanmedian_page") }}',
+	        model_url_pattern = '{{ url_for("get_model_description", prefix="data/XX/003") }}';
 
 	    load_plan_score(plan_url,
 	        document.getElementById('message'),
 	        document.getElementById('plan-score'),
 	        document.getElementById('plan-description'),
+	        document.getElementById('plan-model-link'),
+	        model_url_pattern,
 	        document.getElementById('districts'),
 	        document.getElementById('score-efficiency-gap'),
 	        document.getElementById('score-partisan-bias'),
