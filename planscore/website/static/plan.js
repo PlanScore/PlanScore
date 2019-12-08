@@ -6,6 +6,12 @@ var FIELDS = ['Population 2010', 'Population 2015', 'Black Population 2015',
     'Democratic Votes', 'Republican Votes'
     /*, 'Polsby-Popper', 'Reock'*/];
 
+var BLUE_COLOR_HEX = '#4D90D1',
+    RED_COLOR_HEX = '#D45557',
+    BLUEISH_COLOR_HEX = '#6D8AB0',
+    REDDISH_COLOR_HEX = '#B56E6A',
+    UNKNOWN_COLOR_HEX = '#838383';
+
 function format_url(url_pattern, id)
 {
     return url_pattern.replace('{id}', id);
@@ -125,12 +131,7 @@ function which_district_color(district, plan)
 {
     // Colors from http://chromatron.s3-website-us-east-1.amazonaws.com/#eNpVz8EKgzAQBNB/mV5z2JhsYvIrpQc1tkilgqXQIv57NYkNZa77mNkF3TRO8xP+vGAI8CRwHcYRHicdHAUJgTe8dizwgZdWCszwNa0iAVlA0MxsE6ikSsC4CCT9RFVErfYkodjlCopCmwOoAlo2vWkyIPUHTHUAXYAJddNSfkLavMlGwG69CLRNd7/N0+sR4iLas90Pj9Bvhtcv8ANJtQ==
 
-    var totals = district.totals,
-        color_red = '#D45557',
-        color_blue = '#4D90D1',
-        color_unknown = '#838383',
-        color_reddish = '#b56e6a',
-        color_blueish = '#6d8ab0';
+    var totals = district.totals;
 
     if(typeof plan.summary['Efficiency Gap SD'] === 'number')
     {
@@ -140,33 +141,33 @@ function which_district_color(district, plan)
             rep_votes_sd = totals['Republican Votes SD'];
     
         if((dem_votes - dem_votes_sd) > (rep_votes + rep_votes_sd)) {
-            return color_blue;
+            return BLUE_COLOR_HEX;
         } else if((dem_votes + dem_votes_sd) < (rep_votes - rep_votes_sd)) {
-            return color_red;
+            return RED_COLOR_HEX;
         } else if((dem_votes - dem_votes_sd/2) > (rep_votes + rep_votes_sd/2)) {
-            return color_blueish;
+            return BLUEISH_COLOR_HEX;
         } else if((dem_votes + dem_votes_sd/2) < (rep_votes - rep_votes_sd/2)) {
-            return color_reddish;
+            return REDDISH_COLOR_HEX;
         } else {
-            return color_unknown;
+            return UNKNOWN_COLOR_HEX;
         }
     }
 
     if(typeof plan.summary['US House Efficiency Gap'] === 'number')
     {
         if(totals['US House Dem Votes'] > totals['US House Rep Votes']) {
-            return color_blue;
+            return BLUE_COLOR_HEX;
         } else {
-            return color_red;
+            return RED_COLOR_HEX;
         }
     }
 
     if(typeof plan.summary['Efficiency Gap'] === 'number')
     {
         if(totals['Blue Votes'] > totals['Red Votes']) {
-            return color_blue;
+            return BLUE_COLOR_HEX;
         } else {
-            return color_red;
+            return RED_COLOR_HEX;
         }
     }
 
@@ -705,6 +706,9 @@ function load_plan_map(url, div, plan)
 
         console.log('GeoJSON bounds:', geojson.getBounds());
 
+        // 
+        add_map_pattern_support();
+        
         // Initialize the map on the passed div in the middle of the ocean
         var map = L.map(div, {
             scrollWheelZoom: false,
@@ -747,6 +751,124 @@ function load_plan_map(url, div, plan)
 
     request.onerror = function() { /* There was a connection error of some sort */ };
     request.send();
+}
+
+function add_map_pattern_support()
+{
+    if(L.Browser.svg)
+    {
+        L.SVG.include({
+        
+            // Exact copy of Leaflet SVG _updateStyle with additional awareness of unknown color
+            // https://github.com/Leaflet/Leaflet/blob/b1e59c9/src/layer/vector/SVG.js#L141-L176
+            _updateStyle: function _updateStyle(layer) {
+                var path = layer._path,
+                    options = layer.options;
+
+                if (!path) { return; }
+
+                if (options.stroke) {
+                    path.setAttribute('stroke', options.color);
+                    path.setAttribute('stroke-opacity', options.opacity);
+                    path.setAttribute('stroke-width', options.weight);
+                    path.setAttribute('stroke-linecap', options.lineCap);
+                    path.setAttribute('stroke-linejoin', options.lineJoin);
+
+                    if (options.dashArray) {
+                        path.setAttribute('stroke-dasharray', options.dashArray);
+                    } else {
+                        path.removeAttribute('stroke-dasharray');
+                    }
+
+                    if (options.dashOffset) {
+                        path.setAttribute('stroke-dashoffset', options.dashOffset);
+                    } else {
+                        path.removeAttribute('stroke-dashoffset');
+                    }
+                } else {
+                    path.setAttribute('stroke', 'none');
+                }
+
+                if (options.fill)
+                {
+                    var pattern_colors = [UNKNOWN_COLOR_HEX, REDDISH_COLOR_HEX, BLUEISH_COLOR_HEX];
+                
+                    if (typeof options.color == "string" && pattern_colors.indexOf(options.color) >= 0) {
+                        // Add support for unknown color, a gray
+                        this.__fillPattern(layer);
+                    } else {
+                        path.setAttribute('fill', options.fillColor || options.color);
+                    }
+                    path.setAttribute('fill-opacity', options.fillOpacity);
+                    path.setAttribute('fill-rule', options.fillRule || 'evenodd');
+                } else {
+                    path.setAttribute('fill', 'none');
+                }
+            },
+
+            // Close adaptation of __fillPattern from PlanScore static site visualization
+            // https://github.com/PlanScore/PlanScore/blob/b48188b/_common/jslibs/leaflet-polygon.fillPattern.js
+            __fillPattern: function __fillPattern(layer) {
+                var path = layer._path,
+                    options = layer.options;
+
+                if (!this._defs) {
+                    this._defs = L.SVG.create('defs');
+                    this._container.appendChild(this._defs);
+                }
+                
+                if(options.color == UNKNOWN_COLOR_HEX) {
+                    var _img_url = UNKNOWN_PATTERN_URL;
+                    var _ref_id = 'UNKNOWN_PATTERN_URL' + new Date().getUTCMilliseconds();
+                } else if(options.color == REDDISH_COLOR_HEX) {
+                    var _img_url = REDDISH_PATTERN_URL;
+                    var _ref_id = 'REDDISH_PATTERN_URL' + new Date().getUTCMilliseconds();
+                } else if(options.color == BLUEISH_COLOR_HEX) {
+                    var _img_url = BLUEISH_PATTERN_URL;
+                    var _ref_id = 'BLUEISH_PATTERN_URL' + new Date().getUTCMilliseconds();
+                }
+                
+                var _p = document.getElementById(_ref_id);
+                if (!_p) {
+                    var _im = new Image();
+                    _im.src = _img_url;
+
+                    _p = L.SVG.create('pattern');
+                    _p.setAttribute('id', _ref_id);
+                    _p.setAttribute('x', '0');
+                    _p.setAttribute('y', '0');
+                    _p.setAttribute('patternUnits', 'userSpaceOnUse');
+                    _p.setAttribute('width', '24');
+                    _p.setAttribute('height', '24');
+                    var _rect = L.SVG.create('rect');
+                    _rect.setAttribute('width', 24);
+                    _rect.setAttribute('height', 24);
+                    _rect.setAttribute('x', 0);
+                    _rect.setAttribute('x', 0);
+                    _rect.setAttribute('fill', options.fillColor || options.color);
+
+                    _p.appendChild(_rect);
+                    this._defs.appendChild(_p);
+
+                    var _img = L.SVG.create('image');
+                    _img.setAttribute('x', '0');
+                    _img.setAttribute('y', '0');
+                    _img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', _img_url);
+                    _img.setAttribute('width', '24');
+                    _img.setAttribute('height', '24');
+                    _p.appendChild(_img);
+
+                    _im.onload = function () {
+                        _p.setAttribute('width', _im.width);
+                        _p.setAttribute('height', _im.height);
+                        _img.setAttribute('width', _im.width);
+                        _img.setAttribute('height', _im.height);
+                    };
+                }
+                path.setAttribute('fill', "url(#" + _ref_id + ")");
+            }
+        });
+    }
 }
 
 // Export functions for testing
