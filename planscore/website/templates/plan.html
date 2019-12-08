@@ -137,6 +137,10 @@
     </div>
     </section>
 	<script language="javascript">
+	    var BLUEISH_PATTERN_URL = "{{ url_for('static', filename='blueish-pattern.png') }}",
+	        REDDISH_PATTERN_URL = "{{ url_for('static', filename='reddish-pattern.png') }}",
+	        UNKNOWN_PATTERN_URL = "{{ url_for('static', filename='unknown-pattern.png') }}";
+	    
 	    var plan_id = location.search.replace('?', ''),
 	        plan_url = format_url('{{ data_url_pattern }}', plan_id),
 	        geom_url = format_url('{{ geom_url_pattern }}', plan_id),
