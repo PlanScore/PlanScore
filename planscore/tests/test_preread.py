@@ -44,7 +44,9 @@ class TestPreread (unittest.TestCase):
         response = preread.lambda_handler({'queryStringParameters': query}, None)
         
         self.assertEqual(response['statusCode'], '302')
-        self.assertEqual(response['headers']['Location'], 'https://example.com/plan.html?id')
+        self.assertEqual(response['headers']['Location'],
+            'https://example.com/annotate-new.html?id=id.k0_XwbOLGLUdv241zsPluNc3HYs'\
+            '&bucket=planscore-bucket&key=uploads%2Fid%2Fupload%2Ffile.geojson')
         
         self.assertEqual(create_upload.mock_calls[0][1][1:],
             (query['bucket'], query['key'], 'id'))

@@ -17,13 +17,16 @@ def create_upload(s3, bucket, key, id):
     observe.put_upload_index(data.Storage(s3, bucket, None), upload)
     return upload
 
-def get_redirect_url(website_base, id):
+def get_redirect_url(website_base, bucket, key, signed_id):
     '''
     '''
     rules = {rule.endpoint: str(rule) for rule in website.app.url_map.iter_rules()}
-    redirect_url = urllib.parse.urljoin(website_base, rules['get_plan'])
 
-    return '{}?{}'.format(redirect_url, id)
+    redirect_query = urllib.parse.urlencode(dict(id=signed_id, bucket=bucket, key=key))
+    redirect_path = '{}?{}'.format(rules['get_annotate_new'], redirect_query)
+    redirect_url = urllib.parse.urljoin(website_base, redirect_path)
+
+    return redirect_url
 
 def lambda_handler(event, context):
     '''
@@ -33,7 +36,8 @@ def lambda_handler(event, context):
     website_base = constants.WEBSITE_BASE
 
     try:
-        id = itsdangerous.Signer(constants.SECRET).unsign(query['id']).decode('utf8')
+        signed_id = query['id']
+        id = itsdangerous.Signer(constants.SECRET).unsign(signed_id).decode('utf8')
     except itsdangerous.BadSignature:
         return {
             'statusCode': '400',
@@ -42,7 +46,7 @@ def lambda_handler(event, context):
             }
     
     upload = create_upload(s3, query['bucket'], query['key'], id)
-    redirect_url = get_redirect_url(website_base, id)
+    redirect_url = get_redirect_url(website_base, query['bucket'], query['key'], signed_id)
     
     event = dict(bucket=query['bucket'])
     event.update(upload.to_dict())
