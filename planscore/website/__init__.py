@@ -80,7 +80,9 @@ def get_upload():
 @app.route('/upload-new.html')
 def get_upload_new():
     upload_fields_url = get_function_url(constants.API_UPLOAD_NEW_RELPATH)
-    return flask.render_template('upload-new.html', upload_fields_url=upload_fields_url)
+    preread_url = get_function_url(constants.API_PREREAD_RELPATH)
+    return flask.render_template('upload-new.html',
+        preread_url=preread_url, upload_fields_url=upload_fields_url)
 
 @app.route('/annotate.html')
 def get_annotate():

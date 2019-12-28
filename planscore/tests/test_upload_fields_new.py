@@ -1,4 +1,4 @@
-import unittest, unittest.mock, itsdangerous, os
+import unittest, unittest.mock, itsdangerous, os, urllib.parse
 from .. import upload_fields_new, constants
 
 class TestUploadFields (unittest.TestCase):
@@ -50,11 +50,11 @@ class TestUploadFields (unittest.TestCase):
         
         s3.generate_presigned_post.assert_called_once_with('the-bucket',
             'uploads/id/upload/${filename}', Conditions=[{'acl': 'bucket-owner-full-control'},
-            {'success_action_redirect': 'https://example.org/annotate.html?id=id.sig'},
+            {'success_action_redirect': urllib.parse.urljoin(constants.API_BASE, 'preread?id=id.sig')},
             ['starts-with', '$key', 'uploads/id/upload/']], ExpiresIn=300)
 
         generate_signed_id.assert_called_once_with('sec')
-        self.assertEqual(fields['success_action_redirect'], 'https://example.org/annotate.html?id=id.sig')
+        self.assertEqual(fields['success_action_redirect'], urllib.parse.urljoin(constants.API_BASE, 'preread?id=id.sig'))
         self.assertIs(fields['x-amz-security-token'], creds.token)
     
     @unittest.mock.patch('planscore.upload_fields_new.generate_signed_id')
@@ -70,9 +70,9 @@ class TestUploadFields (unittest.TestCase):
         
         s3.generate_presigned_post.assert_called_once_with('the-bucket',
             'uploads/id/upload/${filename}', Conditions=[{'acl': 'bucket-owner-full-control'},
-            {'success_action_redirect': 'https://example.org/annotate.html?id=id.sig'},
+            {'success_action_redirect': urllib.parse.urljoin(constants.API_BASE, 'preread?id=id.sig')},
             ['starts-with', '$key', 'uploads/id/upload/']], ExpiresIn=300)
 
         generate_signed_id.assert_called_once_with('sec')
-        self.assertEqual(fields['success_action_redirect'], 'https://example.org/annotate.html?id=id.sig')
+        self.assertEqual(fields['success_action_redirect'], urllib.parse.urljoin(constants.API_BASE, 'preread?id=id.sig'))
         self.assertNotIn('x-amz-security-token', fields)
