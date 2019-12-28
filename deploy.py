@@ -13,6 +13,7 @@ functions = {
     'PlanScore-UploadFields': dict(Handler='lambda.upload_fields', Timeout=3, **common),
     'PlanScore-UploadFieldsNew': dict(Handler='lambda.upload_fields_new', Timeout=3, **common),
     'PlanScore-Preread': dict(Handler='lambda.preread', Timeout=3, **common),
+    'PlanScore-PrereadFollowup': dict(Handler='lambda.preread_followup', Timeout=300, MemorySize=1024, **common),
     'PlanScore-Callback': dict(Handler='lambda.callback', Timeout=3, **common),
     'PlanScore-AfterUpload': dict(Handler='lambda.after_upload', Timeout=300, MemorySize=1024, **common),
     'PlanScore-RunTile': dict(Handler='lambda.run_tile', Timeout=300, MemorySize=2048, **common),

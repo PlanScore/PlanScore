@@ -1,18 +1,18 @@
 ''' Called via HTTP from S3 redirect, redirects to plan page in turn.
 
-Also asynchronously invokes planscore.after_upload function.
+Also asynchronously invokes planscore.preread_followup function.
 More details on "success_action_redirect" in browser-based S3 uploads:
 
     http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-post-example.html
 '''
 import boto3, itsdangerous, urllib.parse, json
-from . import after_upload, constants, util, website, data, score, observe
+from . import preread_followup, constants, util, website, data, score, observe
 
 def create_upload(s3, bucket, key, id):
     '''
     '''
     upload = data.Upload(id, key, [],
-        message='Scoring this newly-uploaded plan. Reload this page to see the result.',
+        message='Reading this newly-uploaded plan. Reload this page to see the result.',
         )
     observe.put_upload_index(data.Storage(s3, bucket, None), upload)
     return upload
@@ -48,7 +48,7 @@ def lambda_handler(event, context):
     event.update(upload.to_dict())
 
     lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
-    lam.invoke(FunctionName=after_upload.FUNCTION_NAME, InvocationType='Event',
+    lam.invoke(FunctionName=preread_followup.FUNCTION_NAME, InvocationType='Event',
         Payload=json.dumps(event).encode('utf8'))
     
     return {

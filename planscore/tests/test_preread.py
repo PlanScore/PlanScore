@@ -1,5 +1,5 @@
 import unittest, unittest.mock, os, urllib.parse
-from .. import preread, data, constants
+from .. import preread, preread_followup, data, constants
 
 class TestPreread (unittest.TestCase):
 
@@ -51,7 +51,7 @@ class TestPreread (unittest.TestCase):
         
         lambda_dict = boto3_client.return_value.invoke.mock_calls[0][2]
         
-        self.assertEqual(lambda_dict['FunctionName'], 'PlanScore-AfterUpload')
+        self.assertEqual(lambda_dict['FunctionName'], preread_followup.FUNCTION_NAME)
         self.assertEqual(lambda_dict['InvocationType'], 'Event')
         self.assertIn(b'"id": "id.k0_XwbOLGLUdv241zsPluNc3HYs"', lambda_dict['Payload'])
         self.assertIn(b'"key": "uploads/id/upload/file.geojson"', lambda_dict['Payload'])
