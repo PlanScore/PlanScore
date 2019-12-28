@@ -36,6 +36,7 @@ API_NAME = 'PlanScore'
 
 API_UPLOAD_RELPATH = 'upload'
 API_UPLOADED_RELPATH = 'uploaded'
+API_UPLOAD_NEW_RELPATH = 'upload-new'
 
 # AWS endpoint URLs, used when running under localstack.
 #

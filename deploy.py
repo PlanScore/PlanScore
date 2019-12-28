@@ -11,6 +11,7 @@ if 'AWS_LAMBDA_DLQ_ARN' in os.environ:
 
 functions = {
     'PlanScore-UploadFields': dict(Handler='lambda.upload_fields', Timeout=3, **common),
+    'PlanScore-UploadFieldsNew': dict(Handler='lambda.upload_fields_new', Timeout=3, **common),
     'PlanScore-Callback': dict(Handler='lambda.callback', Timeout=3, **common),
     'PlanScore-AfterUpload': dict(Handler='lambda.after_upload', Timeout=300, MemorySize=1024, **common),
     'PlanScore-RunTile': dict(Handler='lambda.run_tile', Timeout=300, MemorySize=2048, **common),
@@ -20,10 +21,14 @@ functions = {
 api_paths = {
     'PlanScore-UploadFields': 'upload',
     'PlanScore-Callback': 'uploaded',
+    'PlanScore-UploadFieldsNew': 'upload-new',
     }
 
 api_methods = {
     'PlanScore-UploadFields': dict(httpMethod='GET', authorizationType='NONE',
+        #requestParameters={'method.request.querystring.incumbency': True},
+        ),
+    'PlanScore-UploadFieldsNew': dict(httpMethod='GET', authorizationType='NONE',
         #requestParameters={'method.request.querystring.incumbency': True},
         ),
     'PlanScore-Callback': dict(httpMethod='GET', authorizationType='NONE',
@@ -38,6 +43,9 @@ api_methods = {
 
 api_integrations = {
     'PlanScore-UploadFields': dict(httpMethod='GET',
+        #requestParameters={'integration.request.querystring.incumbency': 'method.request.querystring.incumbency'},
+        ),
+    'PlanScore-UploadFieldsNew': dict(httpMethod='GET',
         #requestParameters={'integration.request.querystring.incumbency': 'method.request.querystring.incumbency'},
         ),
     'PlanScore-Callback': dict(httpMethod='GET',
