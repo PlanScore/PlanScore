@@ -1,0 +1,30 @@
+{
+  "description": null,
+  "districts": [
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null,
+    null
+  ],
+  "id": "20191229T184708.315233888Z",
+  "key": "uploads/20191229T184708.315233888Z/upload/geometry.json",
+  "message": "Found 13 districts in the \"data/NC/006-ushouse\" House.ushouse plan with 13 seats.",
+  "model": {
+    "house": "ushouse",
+    "key_prefix": "data/NC/006-ushouse",
+    "seats": 13,
+    "state": "NC"
+  },
+  "progress": null,
+  "start_time": 1577558850,
+  "summary": {}
+}

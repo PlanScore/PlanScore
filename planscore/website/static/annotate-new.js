@@ -32,7 +32,72 @@ function hide_message(preread_section, message_section)
     message_section.style.display = 'none';
 }
 
-function load_plan_preread(url, message_section, preread_section, first_incumbent_row)
+function clear_element(el)
+{
+    while(el.lastChild)
+    {
+        el.removeChild(el.lastChild);
+    }
+}
+
+function date_age(date)
+{
+    return (new Date()).getTime() / 1000 - date.getTime() / 1000;
+}
+
+function which_plan_districts_count(plan)
+{
+    if(typeof plan.districts == 'object' && plan.districts.length !== undefined)
+    {
+        return plan.districts.length;
+    }
+
+    return null;
+}
+
+function get_description(plan, modified_at)
+{
+    var states = {
+        'XX': 'Null Island',
+        'AL': 'Alabama', 'NE': 'Nebraska', 'AK': 'Alaska', 'NV': 'Nevada',
+        'AZ': 'Arizona', 'NH': 'New Hampshire', 'AR': 'Arkansas',
+        'NJ': 'New Jersey', 'CA': 'California', 'NM': 'New Mexico',
+        'CO': 'Colorado', 'NY': 'New York', 'CT': 'Connecticut',
+        'NC': 'North Carolina', 'DE': 'Delaware', 'ND': 'North Dakota',
+        'DC': 'District of Columbia', 'OH': 'Ohio', 'FL': 'Florida',
+        'OK': 'Oklahoma', 'GA': 'Georgia', 'OR': 'Oregon', 'HI': 'Hawaii',
+        'PA': 'Pennsylvania', 'ID': 'Idaho', 'PR': 'Puerto Rico',
+        'IL': 'Illinois', 'RI': 'Rhode Island', 'IN': 'Indiana',
+        'SC': 'South Carolina', 'IA': 'Iowa', 'SD': 'South Dakota',
+        'KS': 'Kansas', 'TN': 'Tennessee', 'KY': 'Kentucky', 'TX': 'Texas',
+        'LA': 'Louisiana', 'UT': 'Utah', 'ME': 'Maine', 'VT': 'Vermont',
+        'MD': 'Maryland', 'VA': 'Virginia', 'MA': 'Massachusetts',
+        'VI': 'Virgin Islands', 'MI': 'Michigan', 'WA': 'Washington',
+        'MN': 'Minnesota', 'WV': 'West Virginia', 'MS': 'Mississippi',
+        'WI': 'Wisconsin', 'MO': 'Missouri', 'WY': 'Wyoming',
+        'MT': 'Montana'
+        };
+    
+    var description = ['Plan uploaded'], houses = {'ushouse': 'U.S. House',
+        'statesenate': 'State Senate', 'statehouse': 'State House'};
+    
+    if(plan['start_time'])
+    {
+        modified_at = new Date(plan.start_time * 1000);
+    }
+    
+    if(plan['model'])
+    {
+        description = [states[plan.model.state],
+            houses[plan.model.house], 'plan uploaded'].join(' ');
+    }
+
+    return (date_age(modified_at) > 86400)
+            ? [description, 'on', modified_at.toLocaleDateString()].join(' ')
+            : [description, 'at', modified_at.toLocaleString()].join(' ');
+}
+
+function load_plan_preread(url, message_section, preread_section, description, first_incumbent_row)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -41,7 +106,20 @@ function load_plan_preread(url, message_section, preread_section, first_incumben
 
     function on_loaded_preread(plan, modified_at)
     {
-        hide_message(preread_section, message_section);
+        if(which_plan_districts_count(plan) === null) {
+            show_message(plan['message'] ? plan.message : 'District plan failed to load.',
+                preread_section, message_section);
+            return;
+
+        } else {
+            hide_message(preread_section, message_section);
+        }
+
+        // Clear out and repopulate description.
+        clear_element(description);
+        description.appendChild(document.createElement('i'));
+        description.lastChild.appendChild(
+            document.createTextNode(get_description(plan, modified_at)));
         
         var table_body = first_incumbent_row.parentNode,
             template_row = table_body.removeChild(first_incumbent_row);
@@ -87,6 +165,8 @@ function load_plan_preread(url, message_section, preread_section, first_incumben
 if(typeof module !== 'undefined' && module.exports)
 {
     module.exports = {
-        format_url: format_url, getUrlParameter: getUrlParameter
+        format_url: format_url, getUrlParameter: getUrlParameter,
+        which_plan_districts_count: which_plan_districts_count,
+        get_description: get_description, date_age: date_age
         };
 }
