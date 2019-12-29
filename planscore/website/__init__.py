@@ -90,7 +90,9 @@ def get_annotate():
 @app.route('/annotate-new.html')
 def get_annotate_new():
     uploaded_url = get_function_url(constants.API_UPLOADED_RELPATH)
-    return flask.render_template('annotate-new.html', uploaded_url=uploaded_url)
+    data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
+    return flask.render_template('annotate-new.html',
+        uploaded_url=uploaded_url, data_url_pattern=data_url_pattern)
 
 @app.route('/plan.html')
 def get_plan():
