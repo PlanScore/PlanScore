@@ -1,0 +1,94 @@
+{% extends "patternlibrary.html" %}
+{% block title %}Annotate Plan{% endblock %}
+{% block head %}
+    <script src="{{ digested_static_url('annotate-new.js') }}"></script>
+    <style lang="text/css">
+    
+        table td input[type='radio']
+        {
+            margin-right: .5em;
+        }
+
+    </style>
+{% endblock %}
+{% block content %}
+    <section id="message">
+        Loading plan…
+    </section>
+    <section id="plan-preread">
+
+    <h2>
+        Almost Done!
+    </h2>
+
+    <form id="annotate" action="{{uploaded_url}}" method="get">
+        <p>
+            <label>
+                Name this plan:
+                <input type="text" name="description" placeholder="New Plan" size="32">
+            </label>
+            <input type="hidden" name="id">
+            <input type="hidden" name="bucket">
+            <input type="hidden" name="key">
+            <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary">
+        </p>
+        
+        <h3>Optional: Party Incumbents</h3>
+
+        <p>
+            If you know which districts have incumbents running for re-election,
+            select their party affiliation below for a more accurate prediction.
+        </p>
+
+        <div class="table-responsive ">
+            <table class="table table-hover"> 
+                <thead>
+                    <tr>
+                        <th>District</th>
+                        <th colspan="3">Incumbency</th>
+                    </tr> 
+                </thead> 
+                <tbody> 
+                    <tr id="first-incumbent">
+                        <td>0</td>
+                        <td><label><input type="radio" name="incumbent-0" value="D"> Democratic Incumbent</label></td>
+                        <td><label><input type="radio" name="incumbent-0" value="" checked> Unknown or No Incumbent</label></td>
+                        <td><label><input type="radio" name="incumbent-0" value="R"> Republican Incumbent</label></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </form>
+
+    </section>
+	<script language="javascript">
+	
+	    var model_url_pattern = '{{ url_for("get_model_description", prefix="data/XX/003") }}';
+	    
+	    var signed_id = getUrlParameter('id'),
+	        s3_key = getUrlParameter('key'),
+	        s3_bucket = getUrlParameter('bucket'),
+	        form = document.getElementById('annotate'),
+	        plan_desc = s3_key.replace(/^.+\/([^\/]+)$/, '$1'),
+	        plan_id = signed_id.replace(/^(.+)\.[\w\-]+$/, '$1'),
+	        plan_url = format_url('{{ data_url_pattern }}', plan_id);
+	    
+        form.elements['description'].value = plan_desc;
+        form.elements['id'].value = signed_id;
+        form.elements['bucket'].value = s3_bucket;
+        form.elements['key'].value = s3_key;
+
+	    load_plan_preread(plan_url,
+	        document.getElementById('message'),
+	        document.getElementById('plan-preread'),
+	        document.getElementById('first-incumbent'));
+
+	</script>
+    
+    <p>
+        <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary">
+    </p>
+
+	{% include 'olark-embed.html' %}
+
+{% endblock %}
