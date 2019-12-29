@@ -43,9 +43,6 @@ function load_plan_preread(url, message_section, preread_section, first_incumben
     {
         hide_message(preread_section, message_section);
         
-        console.log(plan.districts.length);
-        console.log(first_incumbent_row);
-        
         var table_body = first_incumbent_row.parentNode,
             template_row = table_body.removeChild(first_incumbent_row);
         

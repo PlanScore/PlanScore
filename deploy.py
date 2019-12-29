@@ -175,7 +175,7 @@ if __name__ == '__main__':
     api = boto3.client('apigateway', region_name='us-east-1')
 
     env = {k: os.environ[k]
-        for k in ('PLANSCORE_SECRET', 'WEBSITE_BASE', 'AWS')
+        for k in ('PLANSCORE_SECRET', 'WEBSITE_BASE', 'API_BASE', 'AWS')
         if k in os.environ}
     
     arn = publish_function(lam, args.name, args.path, env, role)
