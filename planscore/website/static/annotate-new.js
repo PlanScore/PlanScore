@@ -4,11 +4,11 @@ function format_url(url_pattern, id)
 }
 
 // Copied from https://davidwalsh.name/query-string-javascript
-function getUrlParameter(name)
+function getUrlParameter(name, search)
 {
     name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
     var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-    var results = regex.exec(location.search);
+    var results = regex.exec(search);
     return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
 }
 
@@ -81,4 +81,12 @@ function load_plan_preread(url, message_section, preread_section, first_incumben
 
     request.onerror = function() { /* There was a connection error of some sort */ };
     request.send();
+}
+
+// Export functions for testing
+if(typeof module !== 'undefined' && module.exports)
+{
+    module.exports = {
+        format_url: format_url, getUrlParameter: getUrlParameter
+        };
 }

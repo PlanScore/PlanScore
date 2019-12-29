@@ -65,9 +65,9 @@
 	
 	    var model_url_pattern = '{{ url_for("get_model_description", prefix="data/XX/003") }}';
 	    
-	    var signed_id = getUrlParameter('id'),
-	        s3_key = getUrlParameter('key'),
-	        s3_bucket = getUrlParameter('bucket'),
+	    var signed_id = getUrlParameter('id', location.search),
+	        s3_key = getUrlParameter('key', location.search),
+	        s3_bucket = getUrlParameter('bucket', location.search),
 	        form = document.getElementById('annotate'),
 	        plan_desc = s3_key.replace(/^.+\/([^\/]+)$/, '$1'),
 	        plan_id = signed_id.replace(/^(.+)\.[\w\-]+$/, '$1'),

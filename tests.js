@@ -1,5 +1,6 @@
 assert = require('assert');
 plan = require('planscore/website/static/plan.js');
+annotate_new = require('planscore/website/static/annotate-new.js');
 
 var NC_index = require('data/sample-NC-1-992/index.json'),
     NC_incomplete_index = require('data/sample-NC-1-992-incomplete/index.json'),
@@ -254,3 +255,21 @@ assert.equal(plan.nice_gap(.1), '+10.0% for Democrats', 'Positive gaps should be
 assert.equal(plan.nice_gap(-.1), '+10.0% for Republicans', 'Negative gaps should be red');
 
 assert.equal(plan.nice_string('yo'), '&#121;&#111;');
+
+// Annotate page
+
+assert.equal(annotate_new.format_url('https://example.com/{id}.html', 'xyz'),
+    'https://example.com/xyz.html', 'URL should format correctly');
+
+var search = ("?bucket=planscore"
+    + "&key=uploads%2F20191229T183809.446949066Z%2Fupload%2Fnull-plan.gpkg"
+    + "&id=20191229T183809.446949066Z.zapI6N-eiLykEsa1QVj2TrmldZk");
+
+assert.equal(annotate_new.getUrlParameter('bucket', search),
+    'planscore', 'Should get correct URL bucket');
+
+assert.equal(annotate_new.getUrlParameter('key', search),
+    'uploads/20191229T183809.446949066Z/upload/null-plan.gpkg', 'Should get correct URL key');
+
+assert.equal(annotate_new.getUrlParameter('id', search),
+    '20191229T183809.446949066Z.zapI6N-eiLykEsa1QVj2TrmldZk', 'Should get correct URL id');
