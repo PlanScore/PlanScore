@@ -17,9 +17,7 @@
     </section>
     <section id="plan-preread">
 
-    <h2>
-        Almost Done!
-    </h2>
+    <h2>Add Plan Details</h2>
 
     <form id="annotate" action="{{uploaded_url}}" method="get">
         <p>
@@ -32,6 +30,7 @@
             <input type="hidden" name="key">
             <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary">
         </p>
+        <p id="plan-description">(Loading)</p>
         
         <h3>Optional: Party Incumbents</h3>
 
@@ -65,9 +64,9 @@
 	
 	    var model_url_pattern = '{{ url_for("get_model_description", prefix="data/XX/003") }}';
 	    
-	    var signed_id = getUrlParameter('id'),
-	        s3_key = getUrlParameter('key'),
-	        s3_bucket = getUrlParameter('bucket'),
+	    var signed_id = getUrlParameter('id', location.search),
+	        s3_key = getUrlParameter('key', location.search),
+	        s3_bucket = getUrlParameter('bucket', location.search),
 	        form = document.getElementById('annotate'),
 	        plan_desc = s3_key.replace(/^.+\/([^\/]+)$/, '$1'),
 	        plan_id = signed_id.replace(/^(.+)\.[\w\-]+$/, '$1'),
@@ -81,6 +80,7 @@
 	    load_plan_preread(plan_url,
 	        document.getElementById('message'),
 	        document.getElementById('plan-preread'),
+	        document.getElementById('plan-description'),
 	        document.getElementById('first-incumbent'));
 
 	</script>

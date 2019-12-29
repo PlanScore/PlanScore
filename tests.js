@@ -1,11 +1,14 @@
 assert = require('assert');
 plan = require('planscore/website/static/plan.js');
+annotate_new = require('planscore/website/static/annotate-new.js');
 
 var NC_index = require('data/sample-NC-1-992/index.json'),
     NC_incomplete_index = require('data/sample-NC-1-992-incomplete/index.json'),
     NC_simple_index = require('data/sample-NC-1-992-simple/index.json'),
     NC_multisim_index = require('data/sample-NC-simulations/index.json'),
-    NC_public_index = require('data/sample-NC5.1/index.json');
+    NC_public_index = require('data/sample-NC5.1/index.json'),
+    NC_2019_preread_start = require('data/sample-NC2019/index-preread-start.json'),
+    NC_2019_preread_end = require('data/sample-NC2019/index-preread-end.json');
 
 // Old-style red vs. blue plan
 
@@ -235,6 +238,9 @@ assert.deepEqual(row18, ['40.0%', '60.0%']);
 assert(plan.date_age(new Date('1970-01-01')) > 86400 * 365);
 assert(plan.date_age(new Date('2017-10-01')) < 86400 * 365 * 5);
 assert(plan.date_age(new Date()) < 1);
+assert(annotate_new.date_age(new Date('1970-01-01')) > 86400 * 365);
+assert(annotate_new.date_age(new Date('2017-10-01')) < 86400 * 365 * 5);
+assert(annotate_new.date_age(new Date()) < 1);
 
 assert.equal(plan.nice_count(7654321), '7,654,321', 'Should have a thousands separator');
 assert.equal(plan.nice_count(654321), '654,321', 'Should have a thousands separator');
@@ -254,3 +260,33 @@ assert.equal(plan.nice_gap(.1), '+10.0% for Democrats', 'Positive gaps should be
 assert.equal(plan.nice_gap(-.1), '+10.0% for Republicans', 'Negative gaps should be red');
 
 assert.equal(plan.nice_string('yo'), '&#121;&#111;');
+
+// Annotate page
+
+assert.equal(annotate_new.format_url('https://example.com/{id}.html', 'xyz'),
+    'https://example.com/xyz.html', 'URL should format correctly');
+
+var search = ("?bucket=planscore"
+    + "&key=uploads%2F20191229T183809.446949066Z%2Fupload%2Fnull-plan.gpkg"
+    + "&id=20191229T183809.446949066Z.zapI6N-eiLykEsa1QVj2TrmldZk");
+
+assert.equal(annotate_new.getUrlParameter('bucket', search),
+    'planscore', 'Should get correct URL bucket');
+
+assert.equal(annotate_new.getUrlParameter('key', search),
+    'uploads/20191229T183809.446949066Z/upload/null-plan.gpkg', 'Should get correct URL key');
+
+assert.equal(annotate_new.getUrlParameter('id', search),
+    '20191229T183809.446949066Z.zapI6N-eiLykEsa1QVj2TrmldZk', 'Should get correct URL id');
+
+assert.equal(annotate_new.which_plan_districts_count({districts: 'no'}),
+    null, 'Should return no defined count');
+
+assert.equal(annotate_new.which_plan_districts_count(NC_2019_preread_start),
+    0, 'Should return correct district count');
+
+assert.equal(annotate_new.which_plan_districts_count(NC_2019_preread_end),
+    13, 'Should return correct district count');
+
+assert.equal(annotate_new.get_description(NC_2019_preread_end, undefined),
+    'North Carolina U.S. House plan uploaded on 12/28/2019');
