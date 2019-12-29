@@ -184,4 +184,3 @@ if __name__ == '__main__':
         exit()
     rest_api_id = update_api(api, 'PlanScore', arn, args.name, role)
     time.sleep(random.randint(0, 5))
-    deploy_api(api, rest_api_id)
