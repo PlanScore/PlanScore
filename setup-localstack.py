@@ -99,5 +99,6 @@ for function_name in deploy.functions.keys():
         print('    - No API Gateway for', function_name, file=sys.stderr)
         continue
     rest_api_id = deploy.update_api(api, 'PlanScore', arn, function_name, 'nobody')
-    time.sleep(random.randint(0, 5))
-    deploy.deploy_api(api, rest_api_id)
+
+time.sleep(random.randint(0, 5))
+deploy.deploy_api(api, rest_api_id)
