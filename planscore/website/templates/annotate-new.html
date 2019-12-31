@@ -57,9 +57,14 @@
                 </tbody>
             </table>
         </div>
+    
+        <p>
+            <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary">
+        </p>
     </form>
 
     </section>
+
 	<script language="javascript">
 	
 	    var model_url_pattern = '{{ url_for("get_model_description", prefix="data/XX/003") }}';
@@ -84,10 +89,6 @@
 	        document.getElementById('first-incumbent'));
 
 	</script>
-    
-    <p>
-        <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary">
-    </p>
 
 	{% include 'olark-embed.html' %}
 
