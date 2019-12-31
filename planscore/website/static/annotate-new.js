@@ -106,7 +106,7 @@ function load_plan_preread(url, message_section, preread_section, description, f
 
     function on_loaded_preread(plan, modified_at)
     {
-        if(which_plan_districts_count(plan) === null) {
+        if(!which_plan_districts_count(plan)) {
             show_message(plan['message'] ? plan.message : 'District plan failed to load.',
                 preread_section, message_section);
             return;
