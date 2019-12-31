@@ -1,4 +1,4 @@
-import unittest, unittest.mock, io, os, contextlib, json, gzip, itertools
+import unittest, unittest.mock, io, os, contextlib, json, gzip, itertools, statistics, random
 from .. import score, data
 import botocore.exceptions
 from osgeo import ogr, gdal
@@ -237,8 +237,8 @@ class TestScore (unittest.TestCase):
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_sims(self, calculate_EG, calculate_PB, calculate_MMD):
-        ''' Efficiency gap can be correctly calculated using input sims.
+    def test_calculate_gap_fewsims(self, calculate_EG, calculate_PB, calculate_MMD):
+        ''' Efficiency gap can be correctly calculated using a few input sims.
         '''
         input = data.Upload(id=None, key=None,
             districts = [
@@ -281,6 +281,73 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.districts[2]['totals']['Democratic Votes'], 6/2)
         self.assertEqual(output.districts[3]['totals']['Republican Votes'], 11/2)
         self.assertEqual(output.districts[3]['totals']['Democratic Votes'], 5/2)
+
+    @unittest.mock.patch('planscore.score.calculate_MMD')
+    @unittest.mock.patch('planscore.score.calculate_PB')
+    @unittest.mock.patch('planscore.score.calculate_EG')
+    def test_calculate_gap_manysims(self, calculate_EG, calculate_PB, calculate_MMD):
+        ''' Efficiency gap can be correctly calculated using many input sims.
+        '''
+        # Vote counts, Dem vote shares, and margins of error borrowed
+        # from https://planscore.org/plan.html?20191231T193106.915384310Z
+        (V1, D1, MoE1), (V2, D2, MoE2) = (22, .287, .068), (33, .662, .063)
+        
+        # Simulations
+        SIMS = 1000
+        dem_shares1 = [random.normalvariate(D1, MoE1/2) for f in range(SIMS)]
+        dem_shares2 = [random.normalvariate(D2, MoE2/2) for f in range(SIMS)]
+        
+        vote_sims = [
+            {f'DEM{i:03d}': V1 * d for (i, d) in enumerate(dem_shares1)},
+            {f'DEM{i:03d}': V2 * d for (i, d) in enumerate(dem_shares2)},
+            {f'REP{i:03d}': V1 * (1-d) for (i, d) in enumerate(dem_shares1)},
+            {f'REP{i:03d}': V2 * (1-d) for (i, d) in enumerate(dem_shares2)},
+            ]
+        
+        input = data.Upload(id=None, key=None,
+            districts = [
+                dict(totals=dict(vote_sims[0], **vote_sims[2]), tile=None),
+                dict(totals=dict(vote_sims[1], **vote_sims[3]), tile=None),
+                ])
+        
+        calculate_MMD.return_value = 0
+        calculate_PB.return_value = 0
+        calculate_EG.return_value = 0
+        output = score.calculate_biases(score.calculate_bias(input))
+        
+        self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
+        self.assertEqual(output.summary['Mean-Median SD'], 0)
+        self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
+        self.assertEqual(output.summary['Partisan Bias SD'], 0)
+        self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
+        self.assertEqual(output.summary['Efficiency Gap SD'], 0)
+        self.assertIn('Efficiency Gap +1 Dem', output.summary)
+        self.assertIn('Efficiency Gap +1 Dem SD', output.summary)
+        self.assertIn('Efficiency Gap +1 Rep', output.summary)
+        self.assertIn('Efficiency Gap +1 Rep SD', output.summary)
+
+        self.assertEqual(len(calculate_EG.mock_calls), 11 * SIMS, 'Should see EGs for all sims')
+        in_ranges = []
+        
+        for offset in range(0, 11 * SIMS, 11):
+            (d1R, d2R), (d1D, d2D) = calculate_EG.mock_calls[offset+0][1][:2]
+            
+            in_ranges.append(int(V1 * (1 - D1 - MoE1) < d1R < V1 * (1 - D1 + MoE1)))
+            in_ranges.append(int(V1 * (    D1 - MoE1) < d1D < V1 * (    D1 + MoE1)))
+            in_ranges.append(int(V2 * (1 - D2 - MoE2) < d2R < V2 * (1 - D2 + MoE2)))
+            in_ranges.append(int(V2 * (    D2 - MoE2) < d2D < V2 * (    D2 + MoE2)))
+        
+            self.assertEqual(calculate_EG.mock_calls[offset+0][1], ([d1R, d2R], [d1D, d2D], 0.0))
+            self.assertEqual(calculate_EG.mock_calls[offset+1][1], ([d1R, d2R], [d1D, d2D], .01))
+            self.assertEqual(calculate_EG.mock_calls[offset+2][1], ([d1R, d2R], [d1D, d2D], -.01))
+        
+        self.assertTrue(sum(in_ranges)/len(in_ranges) > .9,
+            'District totals should fall within margin of error most of the time')
+        
+        for vote_sim in vote_sims:
+            for field in vote_sim.keys():
+                for district in output.districts:
+                    self.assertNotIn(field, district['totals'])
 
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
