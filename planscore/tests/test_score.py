@@ -317,6 +317,9 @@ class TestScore (unittest.TestCase):
             ]
         
         input = data.Upload(id=None, key=None,
+            # These should be ignored for lack of "O:DEM000"-style vote properties
+            incumbents = ['D', 'R', 'O'],
+            
             districts = [
                 dict(totals=dict(vote_sims[0], **vote_sims[2]), tile=None),
                 dict(totals=dict(vote_sims[1], **vote_sims[3]), tile=None),
