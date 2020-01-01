@@ -17,6 +17,11 @@ class State (enum.Enum):
 class House (enum.Enum):
     ushouse = 'ushouse'; statesenate = 'statesenate'; statehouse = 'statehouse'
 
+class Incumbency (enum.Enum):
+    Open = 'O'
+    Democrat = 'D'
+    Republican = 'R'
+
 class Storage:
     ''' Wrapper for S3-related details.
     '''
@@ -106,7 +111,7 @@ class Upload:
         self.description = description
         
         if not incumbents:
-            self.incumbents = ['O' for i in range(len(self.districts))]
+            self.incumbents = [Incumbency.Open.value for i in range(len(self.districts))]
     
     def is_overdue(self):
         return bool(time.time() > (self.start_time + constants.UPLOAD_TIME_LIMIT))

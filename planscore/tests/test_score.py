@@ -383,7 +383,7 @@ class TestScore (unittest.TestCase):
         dem_shares2 = [random.normalvariate(D2, MoE2/2) for f in range(SIMS)]
         dem_shares3 = [random.normalvariate(D3, MoE3/2) for f in range(SIMS)]
         
-        O = score.Incumbents.Open.value
+        O = data.Incumbency.Open.value
         
         vote_sims = [
             [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent=O), V1 * d)
@@ -470,9 +470,9 @@ class TestScore (unittest.TestCase):
         dem_shares2 = [random.normalvariate(D2, MoE2/2) for f in range(SIMS)]
         dem_shares3 = [random.normalvariate(D3, MoE3/2) for f in range(SIMS)]
         
-        O = score.Incumbents.Open.value
-        D = score.Incumbents.Democrat.value
-        R = score.Incumbents.Republican.value
+        O = data.Incumbency.Open.value
+        D = data.Incumbency.Democrat.value
+        R = data.Incumbency.Republican.value
         
         vote_sims = [
             [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent=O), V1 * d)

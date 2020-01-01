@@ -3,7 +3,7 @@
 When all districts are added up and present on S3, performs complete scoring
 of district plan and uploads summary JSON file.
 '''
-import io, os, gzip, posixpath, json, statistics, copy, time, itertools, enum
+import io, os, gzip, posixpath, json, statistics, copy, time, itertools
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import data, constants
@@ -58,11 +58,6 @@ FIELD_NAMES += tuple([f'DEM{sim:03d}' for sim in range(1000)])
 
 # Template for simulated election vote totals with incumbency
 FIELD_TMPL = '{incumbent}:{party}{sim:03d}'
-
-class Incumbents (enum.Enum):
-    Open = 'O'
-    Democrat = 'D'
-    Republican = 'R'
 
 def swing_vote(red_districts, blue_districts, amount):
     ''' Swing the vote by a percentage, positive toward blue.
@@ -249,7 +244,8 @@ def calculate_biases(upload):
     
         Look for "O:DEM000"-style vote properties from PlanScore models starting 2020.
     '''
-    if FIELD_TMPL.format(party='DEM', sim=0, incumbent=Incumbents.Open.value) not in upload.districts[0]['totals']:
+    if FIELD_TMPL.format(party='DEM', sim=0, incumbent=data.Incumbency.Open.value) \
+            not in upload.districts[0]['totals']:
         # Skip everything if we don't see an "O:DEM000"-style vote property
         return upload.clone()
     
@@ -264,7 +260,8 @@ def calculate_biases(upload):
 
     # Iterate over all simulations, tracking EG and vote totals
     for sim in range(1000):
-        if FIELD_TMPL.format(party='DEM', sim=sim, incumbent=Incumbents.Open.value) not in first_totals:
+        if FIELD_TMPL.format(party='DEM', sim=sim, incumbent=data.Incumbency.Open.value) \
+                not in first_totals:
             # Skip if we don't seem to have sims up to this iteration
             continue
         
@@ -284,7 +281,7 @@ def calculate_biases(upload):
             
             # Clear out vote total fields for all conditions in the current sim
             for party in ('DEM', 'REP'):
-                for incumbent in list(Incumbents):
+                for incumbent in list(data.Incumbency):
                     kwargs = dict(incumbent=incumbent.value, party=party, sim=sim)
                     district['totals'].pop(FIELD_TMPL.format(**kwargs), None)
     
