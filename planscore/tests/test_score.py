@@ -356,6 +356,9 @@ class TestScore (unittest.TestCase):
         self.assertTrue(sum(in_ranges)/len(in_ranges) > .9,
             'District totals should fall within margin of error most of the time')
         
+        self.assertTrue(sum(in_ranges)/len(in_ranges) < 1.,
+            'District totals should fall outside margin of error some of the time')
+        
         for vote_sim in vote_sims:
             for field in vote_sim.keys():
                 for district in output.districts:
@@ -375,23 +378,25 @@ class TestScore (unittest.TestCase):
             = (18, .656, .064), (22, .280, .073), (15, .565, .050)
         
         # Simulations
-        SIMS = 333
+        SIMS = 1000
         dem_shares1 = [random.normalvariate(D1, MoE1/2) for f in range(SIMS)]
         dem_shares2 = [random.normalvariate(D2, MoE2/2) for f in range(SIMS)]
         dem_shares3 = [random.normalvariate(D3, MoE3/2) for f in range(SIMS)]
         
+        O = score.Incumbents.Open.value
+        
         vote_sims = [
-            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='O'), V1 * d)
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent=O), V1 * d)
                 for (i, d) in enumerate(dem_shares1)],
-            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='O'), V2 * d)
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent=O), V2 * d)
                 for (i, d) in enumerate(dem_shares2)],
-            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='O'), V3 * d)
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent=O), V3 * d)
                 for (i, d) in enumerate(dem_shares3)],
-            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='O'), V1 * (1-d))
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent=O), V1 * (1-d))
                 for (i, d) in enumerate(dem_shares1)],
-            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='O'), V2 * (1-d))
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent=O), V2 * (1-d))
                 for (i, d) in enumerate(dem_shares2)],
-            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='O'), V3 * (1-d))
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent=O), V3 * (1-d))
                 for (i, d) in enumerate(dem_shares3)],
             ]
         
@@ -438,6 +443,9 @@ class TestScore (unittest.TestCase):
         self.assertTrue(sum(in_ranges)/len(in_ranges) > .9,
             'District totals should fall within margin of error most of the time')
         
+        self.assertTrue(sum(in_ranges)/len(in_ranges) < 1.,
+            'District totals should fall outside margin of error some of the time')
+        
         for vote_sim in vote_sims:
             for (field, _) in vote_sim:
                 for district in output.districts:
@@ -457,51 +465,56 @@ class TestScore (unittest.TestCase):
             = (18, .656, .064), (22, .280, .073), (15, .565, .050)
         
         # Simulations
-        SIMS, SWING = 333, .05
+        SIMS, SWING = 1000, .05
         dem_shares1 = [random.normalvariate(D1, MoE1/2) for f in range(SIMS)]
         dem_shares2 = [random.normalvariate(D2, MoE2/2) for f in range(SIMS)]
         dem_shares3 = [random.normalvariate(D3, MoE3/2) for f in range(SIMS)]
         
+        O = score.Incumbents.Open.value
+        D = score.Incumbents.Democrat.value
+        R = score.Incumbents.Republican.value
+        
         vote_sims = [
-            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='O'), V1 * d)
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent=O), V1 * d)
                 for (i, d) in enumerate(dem_shares1)],
-            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='O'), V2 * d)
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent=O), V2 * d)
                 for (i, d) in enumerate(dem_shares2)],
-            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='O'), V3 * d)
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent=O), V3 * d)
                 for (i, d) in enumerate(dem_shares3)],
-            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='O'), V1 * (1-d))
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent=O), V1 * (1-d))
                 for (i, d) in enumerate(dem_shares1)],
-            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='O'), V2 * (1-d))
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent=O), V2 * (1-d))
                 for (i, d) in enumerate(dem_shares2)],
-            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='O'), V3 * (1-d))
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent=O), V3 * (1-d))
                 for (i, d) in enumerate(dem_shares3)],
-            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='D'), V1 * (d+SWING))
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent=D), V1 * (d+SWING))
                 for (i, d) in enumerate(dem_shares1)],
-            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='D'), V2 * (d+SWING))
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent=D), V2 * (d+SWING))
                 for (i, d) in enumerate(dem_shares2)],
-            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='D'), V3 * (d+SWING))
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent=D), V3 * (d+SWING))
                 for (i, d) in enumerate(dem_shares3)],
-            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='D'), V1 * (1-(d+SWING)))
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent=D), V1 * (1-(d+SWING)))
                 for (i, d) in enumerate(dem_shares1)],
-            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='D'), V2 * (1-(d+SWING)))
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent=D), V2 * (1-(d+SWING)))
                 for (i, d) in enumerate(dem_shares2)],
-            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='D'), V3 * (1-(d+SWING)))
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent=D), V3 * (1-(d+SWING)))
                 for (i, d) in enumerate(dem_shares3)],
-            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='R'), V1 * (d-SWING))
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent=R), V1 * (d-SWING))
                 for (i, d) in enumerate(dem_shares1)],
-            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='R'), V2 * (d-SWING))
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent=R), V2 * (d-SWING))
                 for (i, d) in enumerate(dem_shares2)],
-            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='R'), V3 * (d-SWING))
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent=R), V3 * (d-SWING))
                 for (i, d) in enumerate(dem_shares3)],
-            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='R'), V1 * (1-(d-SWING)))
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent=R), V1 * (1-(d-SWING)))
                 for (i, d) in enumerate(dem_shares1)],
-            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='R'), V2 * (1-(d-SWING)))
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent=R), V2 * (1-(d-SWING)))
                 for (i, d) in enumerate(dem_shares2)],
-            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='R'), V3 * (1-(d-SWING)))
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent=R), V3 * (1-(d-SWING)))
                 for (i, d) in enumerate(dem_shares3)],
             ]
         
         input = data.Upload(id=None, key=None,
+            incumbents = [D, R, O],
             districts = [
                 dict(totals=dict(vote_sims[0] + vote_sims[3] + vote_sims[6]
                                + vote_sims[9] + vote_sims[12] + vote_sims[15]), tile=None),
@@ -533,10 +546,10 @@ class TestScore (unittest.TestCase):
         for offset in range(0, 11 * SIMS, 11):
             (d1R, d2R, d3R), (d1D, d2D, d3D) = calculate_EG.mock_calls[offset+0][1][:2]
             
-            in_ranges.append(int(V1 * (1 - D1 - MoE1) < d1R < V1 * (1 - D1 + MoE1)))
-            in_ranges.append(int(V1 * (    D1 - MoE1) < d1D < V1 * (    D1 + MoE1)))
-            in_ranges.append(int(V2 * (1 - D2 - MoE2) < d2R < V2 * (1 - D2 + MoE2)))
-            in_ranges.append(int(V2 * (    D2 - MoE2) < d2D < V2 * (    D2 + MoE2)))
+            in_ranges.append(int(V1 * (1 - (D1+SWING) - MoE1) < d1R < V1 * (1 - (D1+SWING) + MoE1)))
+            in_ranges.append(int(V1 * (    (D1+SWING) - MoE1) < d1D < V1 * (    (D1+SWING) + MoE1)))
+            in_ranges.append(int(V2 * (1 - (D2-SWING) - MoE2) < d2R < V2 * (1 - (D2-SWING) + MoE2)))
+            in_ranges.append(int(V2 * (    (D2-SWING) - MoE2) < d2D < V2 * (    (D2-SWING) + MoE2)))
             in_ranges.append(int(V3 * (1 - D3 - MoE3) < d3R < V3 * (1 - D3 + MoE3)))
             in_ranges.append(int(V3 * (    D3 - MoE3) < d3D < V3 * (    D3 + MoE3)))
         
@@ -546,6 +559,9 @@ class TestScore (unittest.TestCase):
         
         self.assertTrue(sum(in_ranges)/len(in_ranges) > .9,
             'District totals should fall within margin of error most of the time')
+        
+        self.assertTrue(sum(in_ranges)/len(in_ranges) < 1.,
+            'District totals should fall outside margin of error some of the time')
         
         for vote_sim in vote_sims:
             for (field, _) in vote_sim:

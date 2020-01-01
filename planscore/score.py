@@ -3,7 +3,7 @@
 When all districts are added up and present on S3, performs complete scoring
 of district plan and uploads summary JSON file.
 '''
-import io, os, gzip, posixpath, json, statistics, copy, time, itertools
+import io, os, gzip, posixpath, json, statistics, copy, time, itertools, enum
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import data, constants
@@ -58,6 +58,11 @@ FIELD_NAMES += tuple([f'DEM{sim:03d}' for sim in range(1000)])
 
 # Template for simulated election vote totals with incumbency
 FIELD_TMPL = '{incumbent}:{party}{sim:03d}'
+
+class Incumbents (enum.Enum):
+    Open = 'O'
+    Democrat = 'D'
+    Republican = 'R'
 
 def swing_vote(red_districts, blue_districts, amount):
     ''' Swing the vote by a percentage, positive toward blue.
@@ -132,6 +137,8 @@ def calculate_PB(red_districts, blue_districts):
 
 def calculate_bias(upload):
     ''' Calculate partisan metrics for districts with plain vote counts.
+        
+        Look for obsolete vote properties from early 2018 PlanScore models.
     '''
     summary_dict, gaps = {}, {
         'Red/Blue': ('Red Votes', 'Blue Votes'),
@@ -174,14 +181,17 @@ def calculate_bias(upload):
 
 def calculate_open_biases(upload):
     ''' Calculate partisan metrics for districts with multiple simulations.
+
+        Look for "DEM000"-style vote properties from 2018 and 2019 PlanScore models.
     '''
+    if f'DEM000' not in upload.districts[0]['totals']:
+        # Skip everything if we don't see a "DEM000"-style vote property
+        return upload.clone()
+    
     MMDs, PBs = list(), list()
     EGs = {swing: list() for swing in (0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5)}
     summary_dict, copied_districts = dict(), copy.deepcopy(upload.districts)
     first_totals = copied_districts[0]['totals']
-    
-    if f'REP000' not in first_totals or f'DEM000' not in first_totals:
-        return upload.clone()
     
     # Prepare place for simulation vote totals in each district
     all_red_districts = [list() for d in copied_districts]
@@ -235,18 +245,18 @@ def calculate_open_biases(upload):
     return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
 
 def calculate_biases(upload):
-    ''' Calculate partisan metrics for districts with multiple simulations.
+    ''' Calculate partisan metrics for districts with simulations and incumbency.
+    
+        Look for "O:DEM000"-style vote properties from PlanScore models starting 2020.
     '''
+    if FIELD_TMPL.format(party='DEM', sim=0, incumbent=Incumbents.Open.value) not in upload.districts[0]['totals']:
+        # Skip everything if we don't see an "O:DEM000"-style vote property
+        return upload.clone()
+    
     MMDs, PBs = list(), list()
     EGs = {swing: list() for swing in (0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5)}
     summary_dict, copied_districts = dict(), copy.deepcopy(upload.districts)
     first_totals = copied_districts[0]['totals']
-    
-    DEMnnn = FIELD_TMPL.format(party='DEM', sim=0, incumbent='O')
-    REPnnn = FIELD_TMPL.format(party='REP', sim=0, incumbent='O')
-    
-    if REPnnn not in first_totals or DEMnnn not in first_totals:
-        return upload.clone()
     
     # Prepare place for simulation vote totals in each district
     all_red_districts = [list() for d in copied_districts]
@@ -254,21 +264,29 @@ def calculate_biases(upload):
 
     # Iterate over all simulations, tracking EG and vote totals
     for sim in range(1000):
-        DEMnnn = FIELD_TMPL.format(party='DEM', sim=sim, incumbent='O')
-        REPnnn = FIELD_TMPL.format(party='REP', sim=sim, incumbent='O')
-    
-        if REPnnn not in first_totals or DEMnnn not in first_totals:
+        if FIELD_TMPL.format(party='DEM', sim=sim, incumbent=Incumbents.Open.value) not in first_totals:
+            # Skip if we don't seem to have sims up to this iteration
             continue
         
         sim_red_districts, sim_blue_districts = list(), list()
 
         for (i, district) in enumerate(copied_districts):
-            red_votes = district['totals'].pop(REPnnn, 0)
-            blue_votes = district['totals'].pop(DEMnnn, 0)
+            incumbent = upload.incumbents[i]
+            oDEMnnn = FIELD_TMPL.format(party='DEM', sim=sim, incumbent=incumbent)
+            oREPnnn = FIELD_TMPL.format(party='REP', sim=sim, incumbent=incumbent)
+        
+            red_votes = district['totals'].pop(oREPnnn, 0)
+            blue_votes = district['totals'].pop(oDEMnnn, 0)
             sim_red_districts.append(red_votes)
             sim_blue_districts.append(blue_votes)
             all_red_districts[i].append(red_votes)
             all_blue_districts[i].append(blue_votes)
+            
+            # Clear out vote total fields for all conditions in the current sim
+            for party in ('DEM', 'REP'):
+                for incumbent in list(Incumbents):
+                    kwargs = dict(incumbent=incumbent.value, party=party, sim=sim)
+                    district['totals'].pop(FIELD_TMPL.format(**kwargs), None)
     
         MMDs.append(calculate_MMD(sim_red_districts, sim_blue_districts))
         PBs.append(calculate_PB(sim_red_districts, sim_blue_districts))

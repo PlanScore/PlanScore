@@ -92,17 +92,21 @@ class Model:
 
 class Upload:
 
-    def __init__(self, id, key, model:Model=None, districts=None, summary=None,
+    def __init__(self, id, key, model:Model=None, districts=None, incumbents=None, summary=None,
             progress=None, start_time=None, message=None, description=None, **ignored):
         self.id = id
         self.key = key
         self.model = model
         self.districts = districts or []
+        self.incumbents = incumbents or []
         self.summary = summary or {}
         self.progress = progress
         self.start_time = start_time or time.time()
         self.message = message
         self.description = description
+        
+        if not incumbents:
+            self.incumbents = ['O' for i in range(len(self.districts))]
     
     def is_overdue(self):
         return bool(time.time() > (self.start_time + constants.UPLOAD_TIME_LIMIT))
@@ -135,11 +139,12 @@ class Upload:
             column_names.extend(self.districts[0]['compactness'].keys())
         
             out = io.StringIO()
-            rows = csv.DictWriter(out, ['District'] + column_names, dialect='excel-tab')
+            rows = csv.DictWriter(out, ['District', 'Incumbent'] + column_names, dialect='excel-tab')
             rows.writeheader()
             for (index, district) in enumerate(self.districts):
                 totals, compactness = district['totals'], district['compactness']
-                rows.writerow(dict(District=index+1, **dict(totals, **compactness)))
+                rows.writerow(dict(District=index+1, Incumbent=self.incumbents[index],
+                    **dict(totals, **compactness)))
         
         except Exception as e:
             return f'Error: {e}\n'
@@ -155,6 +160,7 @@ class Upload:
             key = self.key,
             model = (self.model.to_dict() if self.model else None),
             districts = self.districts,
+            incumbents = self.incumbents,
             summary = self.summary,
             progress = progress,
             start_time = self.start_time,
@@ -165,11 +171,12 @@ class Upload:
     def to_json(self):
         return json.dumps(self.to_dict(), sort_keys=True, indent=2)
     
-    def clone(self, model=None, districts=None, summary=None, progress=None,
+    def clone(self, model=None, districts=None, incumbents=None, summary=None, progress=None,
         start_time=None, message=None, description=None):
         return Upload(self.id, self.key,
             model = model or self.model,
             districts = districts or self.districts,
+            incumbents = incumbents or self.incumbents,
             summary = summary or self.summary,
             progress = progress if (progress is not None) else self.progress,
             start_time = start_time or self.start_time,
@@ -187,6 +194,7 @@ class Upload:
             key = data['key'],
             model = model,
             districts = data.get('districts'),
+            incumbents = data.get('incumbents'),
             summary = data.get('summary'),
             progress = progress,
             start_time = data.get('start_time'),
