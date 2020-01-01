@@ -124,7 +124,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={'Voters': 10, 'Red Votes': 6, 'Blue Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_biases(score.calculate_bias(input))
+        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
 
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
@@ -155,7 +155,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={'US House Rep Votes': 6, 'US House Dem Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_biases(score.calculate_bias(input))
+        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
 
         self.assertEqual(output.summary['US House Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
@@ -186,7 +186,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={'SLDU Rep Votes': 6, 'SLDU Dem Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_biases(score.calculate_bias(input))
+        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
 
         self.assertEqual(output.summary['SLDU Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
@@ -217,7 +217,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={'SLDL Rep Votes': 6, 'SLDL Dem Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_biases(score.calculate_bias(input))
+        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
 
         self.assertEqual(output.summary['SLDL Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
@@ -251,7 +251,7 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_biases(score.calculate_bias(input))
+        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
         self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
@@ -313,7 +313,7 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_biases(score.calculate_bias(input))
+        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
@@ -361,31 +361,64 @@ class TestScore (unittest.TestCase):
             = (18, .656, .064), (22, .280, .073), (15, .565, .050)
         
         # Simulations
-        SIMS = 1000
+        SIMS, SWING = 333, .05
         dem_shares1 = [random.normalvariate(D1, MoE1/2) for f in range(SIMS)]
         dem_shares2 = [random.normalvariate(D2, MoE2/2) for f in range(SIMS)]
         dem_shares3 = [random.normalvariate(D3, MoE3/2) for f in range(SIMS)]
         
         vote_sims = [
-            {f'DEM{i:03d}': V1 * d for (i, d) in enumerate(dem_shares1)},
-            {f'DEM{i:03d}': V2 * d for (i, d) in enumerate(dem_shares2)},
-            {f'DEM{i:03d}': V3 * d for (i, d) in enumerate(dem_shares3)},
-            {f'REP{i:03d}': V1 * (1-d) for (i, d) in enumerate(dem_shares1)},
-            {f'REP{i:03d}': V2 * (1-d) for (i, d) in enumerate(dem_shares2)},
-            {f'REP{i:03d}': V3 * (1-d) for (i, d) in enumerate(dem_shares3)},
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='O'), V1 * d)
+                for (i, d) in enumerate(dem_shares1)],
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='O'), V2 * d)
+                for (i, d) in enumerate(dem_shares2)],
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='O'), V3 * d)
+                for (i, d) in enumerate(dem_shares3)],
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='O'), V1 * (1-d))
+                for (i, d) in enumerate(dem_shares1)],
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='O'), V2 * (1-d))
+                for (i, d) in enumerate(dem_shares2)],
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='O'), V3 * (1-d))
+                for (i, d) in enumerate(dem_shares3)],
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='D'), V1 * (d+SWING))
+                for (i, d) in enumerate([         ])],
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='D'), V2 * (d+SWING))
+                for (i, d) in enumerate([         ])],
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='D'), V3 * (d+SWING))
+                for (i, d) in enumerate([         ])],
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='D'), V1 * (1-(d+SWING)))
+                for (i, d) in enumerate([         ])],
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='D'), V2 * (1-(d+SWING)))
+                for (i, d) in enumerate([         ])],
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='D'), V3 * (1-(d+SWING)))
+                for (i, d) in enumerate([         ])],
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='R'), V1 * (d-SWING))
+                for (i, d) in enumerate([         ])],
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='R'), V2 * (d-SWING))
+                for (i, d) in enumerate([         ])],
+            [(score.FIELD_TMPL.format(party='DEM', sim=i, incumbent='R'), V3 * (d-SWING))
+                for (i, d) in enumerate([         ])],
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='R'), V1 * (1-(d-SWING)))
+                for (i, d) in enumerate([         ])],
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='R'), V2 * (1-(d-SWING)))
+                for (i, d) in enumerate([         ])],
+            [(score.FIELD_TMPL.format(party='REP', sim=i, incumbent='R'), V3 * (1-(d-SWING)))
+                for (i, d) in enumerate([         ])],
             ]
         
         input = data.Upload(id=None, key=None,
             districts = [
-                dict(totals=dict(vote_sims[0], **vote_sims[3]), tile=None),
-                dict(totals=dict(vote_sims[1], **vote_sims[4]), tile=None),
-                dict(totals=dict(vote_sims[2], **vote_sims[5]), tile=None),
+                dict(totals=dict(vote_sims[0] + vote_sims[3] + vote_sims[6]
+                               + vote_sims[9] + vote_sims[12] + vote_sims[15]), tile=None),
+                dict(totals=dict(vote_sims[1] + vote_sims[4] + vote_sims[7]
+                               + vote_sims[10] + vote_sims[13] + vote_sims[16]), tile=None),
+                dict(totals=dict(vote_sims[2] + vote_sims[5] + vote_sims[8]
+                               + vote_sims[11] + vote_sims[14] + vote_sims[17]), tile=None),
                 ])
         
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_biases(score.calculate_bias(input))
+        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
@@ -419,7 +452,7 @@ class TestScore (unittest.TestCase):
             'District totals should fall within margin of error most of the time')
         
         for vote_sim in vote_sims:
-            for field in vote_sim.keys():
+            for (field, _) in vote_sim:
                 for district in output.districts:
                     self.assertNotIn(field, district['totals'])
 
@@ -441,7 +474,7 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_biases(score.calculate_bias(input))
+        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
         self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)

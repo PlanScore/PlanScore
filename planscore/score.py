@@ -56,6 +56,9 @@ FIELD_NAMES = (
 FIELD_NAMES += tuple([f'REP{sim:03d}' for sim in range(1000)])
 FIELD_NAMES += tuple([f'DEM{sim:03d}' for sim in range(1000)])
 
+# Template for simulated election vote totals with incumbency
+FIELD_TMPL = '{incumbent}:{party}{sim:03d}'
+
 def swing_vote(red_districts, blue_districts, amount):
     ''' Swing the vote by a percentage, positive toward blue.
     '''
@@ -169,7 +172,7 @@ def calculate_bias(upload):
     
     return upload.clone(summary=summary_dict)
 
-def calculate_biases(upload):
+def calculate_open_biases(upload):
     ''' Calculate partisan metrics for districts with multiple simulations.
     '''
     MMDs, PBs = list(), list()
@@ -194,6 +197,74 @@ def calculate_biases(upload):
         for (i, district) in enumerate(copied_districts):
             red_votes = district['totals'].pop(f'REP{sim:03d}', 0)
             blue_votes = district['totals'].pop(f'DEM{sim:03d}', 0)
+            sim_red_districts.append(red_votes)
+            sim_blue_districts.append(blue_votes)
+            all_red_districts[i].append(red_votes)
+            all_blue_districts[i].append(blue_votes)
+    
+        MMDs.append(calculate_MMD(sim_red_districts, sim_blue_districts))
+        PBs.append(calculate_PB(sim_red_districts, sim_blue_districts))
+        
+        for swing in EGs:
+            EGs[swing].append(calculate_EG(sim_red_districts, sim_blue_districts, swing/100))
+    
+    # Finalize per-district vote totals and confidence intervals
+    for (i, district) in enumerate(copied_districts):
+        red_votes, blue_votes = all_red_districts[i], all_blue_districts[i]
+        district['totals'].update({
+            'Democratic Votes': round(statistics.mean(blue_votes), constants.ROUND_COUNT),
+            'Republican Votes': round(statistics.mean(red_votes), constants.ROUND_COUNT),
+            'Democratic Votes SD': round(statistics.stdev(blue_votes), constants.ROUND_COUNT),
+            'Republican Votes SD': round(statistics.stdev(red_votes), constants.ROUND_COUNT)
+            })
+
+    summary_dict['Mean-Median'] = statistics.mean(MMDs)
+    summary_dict['Mean-Median SD'] = statistics.stdev(MMDs)
+    summary_dict['Partisan Bias'] = statistics.mean(PBs)
+    summary_dict['Partisan Bias SD'] = statistics.stdev(PBs)
+    summary_dict['Efficiency Gap'] = statistics.mean(EGs[0])
+    summary_dict['Efficiency Gap SD'] = statistics.stdev(EGs[0])
+    
+    for swing in (1, 2, 3, 4, 5):
+        summary_dict[f'Efficiency Gap +{swing} Dem'] = statistics.mean(EGs[swing])
+        summary_dict[f'Efficiency Gap +{swing} Rep'] = statistics.mean(EGs[-swing])
+        summary_dict[f'Efficiency Gap +{swing} Dem SD'] = statistics.stdev(EGs[swing])
+        summary_dict[f'Efficiency Gap +{swing} Rep SD'] = statistics.stdev(EGs[-swing])
+    
+    rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
+    return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
+
+def calculate_biases(upload):
+    ''' Calculate partisan metrics for districts with multiple simulations.
+    '''
+    MMDs, PBs = list(), list()
+    EGs = {swing: list() for swing in (0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5)}
+    summary_dict, copied_districts = dict(), copy.deepcopy(upload.districts)
+    first_totals = copied_districts[0]['totals']
+    
+    DEMnnn = FIELD_TMPL.format(party='DEM', sim=0, incumbent='O')
+    REPnnn = FIELD_TMPL.format(party='REP', sim=0, incumbent='O')
+    
+    if REPnnn not in first_totals or DEMnnn not in first_totals:
+        return upload.clone()
+    
+    # Prepare place for simulation vote totals in each district
+    all_red_districts = [list() for d in copied_districts]
+    all_blue_districts = [list() for d in copied_districts]
+
+    # Iterate over all simulations, tracking EG and vote totals
+    for sim in range(1000):
+        DEMnnn = FIELD_TMPL.format(party='DEM', sim=sim, incumbent='O')
+        REPnnn = FIELD_TMPL.format(party='REP', sim=sim, incumbent='O')
+    
+        if REPnnn not in first_totals or DEMnnn not in first_totals:
+            continue
+        
+        sim_red_districts, sim_blue_districts = list(), list()
+
+        for (i, district) in enumerate(copied_districts):
+            red_votes = district['totals'].pop(REPnnn, 0)
+            blue_votes = district['totals'].pop(DEMnnn, 0)
             sim_red_districts.append(red_votes)
             sim_blue_districts.append(blue_votes)
             all_red_districts[i].append(red_votes)
