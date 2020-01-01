@@ -50,9 +50,9 @@
                 <tbody> 
                     <tr id="first-incumbent">
                         <td>0</td>
-                        <td><label><input type="radio" name="incumbent-0" value="D"> Democratic Incumbent</label></td>
-                        <td><label><input type="radio" name="incumbent-0" value="" checked> Unknown or No Incumbent</label></td>
-                        <td><label><input type="radio" name="incumbent-0" value="R"> Republican Incumbent</label></td>
+                        <td><label><input type="radio" name="incumbent-0" value="{{ Incumbency.Democrat.value }}"> Democratic Incumbent</label></td>
+                        <td><label><input type="radio" name="incumbent-0" value="{{ Incumbency.Open.value }}" checked> Unknown or No Incumbent</label></td>
+                        <td><label><input type="radio" name="incumbent-0" value="{{ Incumbency.Republican.value }}"> Republican Incumbent</label></td>
                     </tr>
                 </tbody>
             </table>
