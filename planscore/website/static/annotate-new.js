@@ -136,9 +136,7 @@ function load_plan_preread(url, message_section, preread_section, description, f
             row_inputs[2].name = 'incumbent-' + (i + 1);
             
             table_body.appendChild(new_row);
-            row_inputs[0].disabled = true;
             row_inputs[1].checked = true;
-            row_inputs[2].disabled = true;
         }
     }
 

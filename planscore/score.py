@@ -52,12 +52,17 @@ FIELD_NAMES = (
     'US Senate 2016 - DEM', 'US Senate 2016 - REP'
     )
 
-# Fields for simulated election vote totals
+# Fields for "DEM000"-style simulated election vote totals from 2018 and 2019 PlanScore models.
 FIELD_NAMES += tuple([f'REP{sim:03d}' for sim in range(1000)])
 FIELD_NAMES += tuple([f'DEM{sim:03d}' for sim in range(1000)])
 
 # Template for simulated election vote totals with incumbency
 FIELD_TMPL = '{incumbent}:{party}{sim:03d}'
+
+# Fields for "O:DEM000"-style simulated election vote totals from PlanScore models starting 2020.
+for (party, incumbent) in itertools.product(('DEM', 'REP'), list(data.Incumbency)):
+    kwargs = dict(incumbent=incumbent.value, party=party)
+    FIELD_NAMES += tuple([FIELD_TMPL.format(sim=sim, **kwargs) for sim in range(1000)])
 
 def swing_vote(red_districts, blue_districts, amount):
     ''' Swing the vote by a percentage, positive toward blue.
@@ -280,10 +285,9 @@ def calculate_biases(upload):
             all_blue_districts[i].append(blue_votes)
             
             # Clear out vote total fields for all conditions in the current sim
-            for party in ('DEM', 'REP'):
-                for incumbent in list(data.Incumbency):
-                    kwargs = dict(incumbent=incumbent.value, party=party, sim=sim)
-                    district['totals'].pop(FIELD_TMPL.format(**kwargs), None)
+            for (party, incumbent) in itertools.product(('DEM', 'REP'), list(data.Incumbency)):
+                kwargs = dict(incumbent=incumbent.value, party=party, sim=sim)
+                district['totals'].pop(FIELD_TMPL.format(**kwargs), None)
     
         MMDs.append(calculate_MMD(sim_red_districts, sim_blue_districts))
         PBs.append(calculate_PB(sim_red_districts, sim_blue_districts))

@@ -20,7 +20,7 @@ class TestCallback (unittest.TestCase):
         ''' create_upload() makes the right call to put_upload_index().
         '''
         s3, bucket = unittest.mock.Mock(), unittest.mock.Mock()
-        callback.create_upload(s3, bucket, 'example-key', 'example-id', 'Yo')
+        callback.create_upload(s3, bucket, 'example-key', 'example-id', 'Yo', ['O'])
         
         self.assertEqual(len(put_upload_index.mock_calls), 1)
         self.assertEqual(len(put_upload_index.mock_calls[0][1]), 2)
@@ -30,6 +30,7 @@ class TestCallback (unittest.TestCase):
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, 'example-id')
         self.assertEqual(put_upload_index.mock_calls[0][1][1].key, 'example-key')
         self.assertEqual(put_upload_index.mock_calls[0][1][1].description, 'Yo')
+        self.assertEqual(put_upload_index.mock_calls[0][1][1].incumbents, ['O'])
 
     @unittest.mock.patch('planscore.callback.create_upload')
     @unittest.mock.patch('boto3.client')
@@ -38,7 +39,7 @@ class TestCallback (unittest.TestCase):
         '''
         query = {'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson',
             'id': 'id.k0_XwbOLGLUdv241zsPluNc3HYs', 'bucket': 'planscore-bucket',
-            'description': 'A fine new plan'}
+            'description': 'A fine new plan', 'incumbent-1': 'D', 'incumbent-2': 'R'}
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
 
@@ -49,7 +50,7 @@ class TestCallback (unittest.TestCase):
         self.assertEqual(response['headers']['Location'], 'https://example.com/plan.html?id')
         
         self.assertEqual(create_upload.mock_calls[0][1][1:],
-            (query['bucket'], query['key'], 'id', query['description']))
+            (query['bucket'], query['key'], 'id', query['description'], ['D', 'R']))
         
         lambda_dict = boto3_client.return_value.invoke.mock_calls[0][2]
         
