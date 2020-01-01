@@ -421,7 +421,8 @@ function plan_array(plan)
     var fields = FIELDS.slice();
 
     // Build list of columns
-    var head_row = ['District'],
+    var incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'},
+        head_row = ['District', 'Candidate Scenario'],
         all_rows = [head_row],
         field, current_row, field_missing;
 
@@ -432,7 +433,14 @@ function plan_array(plan)
     
     for(var j = 0; j < plan.districts.length; j++)
     {
-        all_rows.push([(j + 1).toString()]);
+        var district_number = (j + 1).toString(),
+            candidate_scenario = incumbency['O']
+        
+        if(plan.incumbents && plan.incumbents.length == plan.districts.length) {
+            candidate_scenario = incumbency[plan.incumbents[j]];
+        }
+
+        all_rows.push([district_number, candidate_scenario]);
     }
     
     for(var i in fields)

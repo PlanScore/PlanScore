@@ -1,0 +1,425 @@
+{
+  "description": "New Model geometry.json",
+  "incumbents": ["O", "D", "R", "O", "D", "R", "O", "D", "R", "O", "D", "R", "O"],
+  "districts": [
+    {
+      "compactness": {
+        "Polsby-Popper": 0.2264,
+        "Reock": 0.3426
+      },
+      "totals": {
+        "Black Population 2016": 341436.39,
+        "Black Population 2016, Error": 56931.95,
+        "Democratic Votes": 153634.12,
+        "Democratic Votes SD": 4547.17,
+        "Education Population 2016": 496945.14,
+        "Education Population 2016, Error": 44896.16,
+        "High School or GED 2016": 139714.06,
+        "High School or GED 2016, Error": 31687.81,
+        "Hispanic Population 2016": 64283.41,
+        "Hispanic Population 2016, Error": 31333.88,
+        "Household Income 2016": 45574.23,
+        "Household Income 2016, Error": 1236804.18,
+        "Households 2016": 290165.4,
+        "Households 2016, Error": 22147.69,
+        "Population 2010": 730943.0,
+        "Population 2016": 738237.35,
+        "Population 2016, Error": 68869.19,
+        "Republican Votes": 59026.96,
+        "Republican Votes SD": 2472.93,
+        "Voting-Age Population 2016": 577978.65,
+        "Voting-Age Population 2016, Error": 63696.02
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.1949,
+        "Reock": 0.3155
+      },
+      "totals": {
+        "Black Population 2016": 175904.85,
+        "Black Population 2016, Error": 40864.02,
+        "Democratic Votes": 109933.39,
+        "Democratic Votes SD": 3232.0,
+        "Education Population 2016": 544745.02,
+        "Education Population 2016, Error": 41273.53,
+        "High School or GED 2016": 131458.55,
+        "High School or GED 2016, Error": 29658.35,
+        "Hispanic Population 2016": 79938.99,
+        "Hispanic Population 2016, Error": 35852.07,
+        "Household Income 2016": 69949.82,
+        "Household Income 2016, Error": 1381960.0,
+        "Households 2016": 295878.03,
+        "Households 2016, Error": 19277.18,
+        "Population 2010": 734253.0,
+        "Population 2016": 824484.63,
+        "Population 2016, Error": 64025.02,
+        "Republican Votes": 106546.94,
+        "Republican Votes SD": 3106.26,
+        "Voting-Age Population 2016": 606899.07,
+        "Voting-Age Population 2016, Error": 59605.6
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.052,
+        "Reock": 0.3341
+      },
+      "totals": {
+        "Black Population 2016": 164730.19,
+        "Black Population 2016, Error": 39553.59,
+        "Democratic Votes": 80393.02,
+        "Democratic Votes SD": 2932.6,
+        "Education Population 2016": 456701.88,
+        "Education Population 2016, Error": 42902.09,
+        "High School or GED 2016": 129650.98,
+        "High School or GED 2016, Error": 30471.86,
+        "Hispanic Population 2016": 55889.06,
+        "Hispanic Population 2016, Error": 28354.84,
+        "Household Income 2016": 49199.53,
+        "Household Income 2016, Error": 1347155.27,
+        "Households 2016": 269353.23,
+        "Households 2016, Error": 23462.17,
+        "Population 2010": 732416.0,
+        "Population 2016": 708958.98,
+        "Population 2016, Error": 65449.5,
+        "Republican Votes": 102039.37,
+        "Republican Votes SD": 3377.03,
+        "Voting-Age Population 2016": 551859.18,
+        "Voting-Age Population 2016, Error": 60690.22
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.2108,
+        "Reock": 0.3098
+      },
+      "totals": {
+        "Black Population 2016": 191718.66,
+        "Black Population 2016, Error": 46478.49,
+        "Democratic Votes": 168390.4,
+        "Democratic Votes SD": 4656.98,
+        "Education Population 2016": 534307.43,
+        "Education Population 2016, Error": 45053.08,
+        "High School or GED 2016": 79330.65,
+        "High School or GED 2016, Error": 25180.94,
+        "Hispanic Population 2016": 82473.7,
+        "Hispanic Population 2016, Error": 37850.41,
+        "Household Income 2016": 73047.03,
+        "Household Income 2016, Error": 1676850.58,
+        "Households 2016": 313090.44,
+        "Households 2016, Error": 18917.91,
+        "Population 2010": 733835.0,
+        "Population 2016": 812441.59,
+        "Population 2016, Error": 67541.94,
+        "Republican Votes": 59320.6,
+        "Republican Votes SD": 2242.44,
+        "Voting-Age Population 2016": 632286.5,
+        "Voting-Age Population 2016, Error": 68483.81
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.3534,
+        "Reock": 0.3565
+      },
+      "totals": {
+        "Black Population 2016": 115784.77,
+        "Black Population 2016, Error": 32268.98,
+        "Democratic Votes": 103744.85,
+        "Democratic Votes SD": 3513.7,
+        "Education Population 2016": 510182.19,
+        "Education Population 2016, Error": 44188.83,
+        "High School or GED 2016": 146322.08,
+        "High School or GED 2016, Error": 32515.14,
+        "Hispanic Population 2016": 70868.08,
+        "Hispanic Population 2016, Error": 36519.32,
+        "Household Income 2016": 47059.59,
+        "Household Income 2016, Error": 1389160.42,
+        "Households 2016": 298404.89,
+        "Households 2016, Error": 22950.75,
+        "Population 2010": 733787.0,
+        "Population 2016": 749125.56,
+        "Population 2016, Error": 69003.84,
+        "Republican Votes": 123957.04,
+        "Republican Votes SD": 4248.16,
+        "Voting-Age Population 2016": 587992.5,
+        "Voting-Age Population 2016, Error": 64050.48
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.3395,
+        "Reock": 0.4996
+      },
+      "totals": {
+        "Black Population 2016": 163010.14,
+        "Black Population 2016, Error": 38118.43,
+        "Democratic Votes": 100944.16,
+        "Democratic Votes SD": 3197.33,
+        "Education Population 2016": 520143.86,
+        "Education Population 2016, Error": 42764.67,
+        "High School or GED 2016": 152630.94,
+        "High School or GED 2016, Error": 32488.87,
+        "Hispanic Population 2016": 74404.91,
+        "Hispanic Population 2016, Error": 35176.63,
+        "Household Income 2016": 50157.17,
+        "Household Income 2016, Error": 1229651.41,
+        "Households 2016": 296382.54,
+        "Households 2016, Error": 21784.93,
+        "Population 2010": 732821.0,
+        "Population 2016": 756452.62,
+        "Population 2016, Error": 64390.19,
+        "Republican Votes": 107797.24,
+        "Republican Votes SD": 3503.9,
+        "Voting-Age Population 2016": 583621.02,
+        "Voting-Age Population 2016, Error": 61068.6
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.3884,
+        "Reock": 0.4811
+      },
+      "totals": {
+        "Black Population 2016": 161141.85,
+        "Black Population 2016, Error": 42473.71,
+        "Democratic Votes": 94795.76,
+        "Democratic Votes SD": 3219.52,
+        "Education Population 2016": 539460.26,
+        "Education Population 2016, Error": 48120.77,
+        "High School or GED 2016": 152290.39,
+        "High School or GED 2016, Error": 34189.77,
+        "Hispanic Population 2016": 73235.19,
+        "Hispanic Population 2016, Error": 36920.06,
+        "Household Income 2016": 48283.36,
+        "Household Income 2016, Error": 1382144.74,
+        "Households 2016": 308021.42,
+        "Households 2016, Error": 24343.35,
+        "Population 2010": 733259.0,
+        "Population 2016": 778903.71,
+        "Population 2016, Error": 74786.22,
+        "Republican Votes": 107767.32,
+        "Republican Votes SD": 3457.29,
+        "Voting-Age Population 2016": 612118.52,
+        "Voting-Age Population 2016, Error": 66422.31
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.2606,
+        "Reock": 0.248
+      },
+      "totals": {
+        "Black Population 2016": 195195.61,
+        "Black Population 2016, Error": 40065.47,
+        "Democratic Votes": 95767.17,
+        "Democratic Votes SD": 3412.16,
+        "Education Population 2016": 509488.49,
+        "Education Population 2016, Error": 42610.11,
+        "High School or GED 2016": 138085.45,
+        "High School or GED 2016, Error": 29979.58,
+        "Hispanic Population 2016": 77310.08,
+        "Hispanic Population 2016, Error": 32713.5,
+        "Household Income 2016": 52770.97,
+        "Household Income 2016, Error": 1161187.82,
+        "Households 2016": 290314.3,
+        "Households 2016, Error": 20269.46,
+        "Population 2010": 732600.0,
+        "Population 2016": 777133.04,
+        "Population 2016, Error": 67103.12,
+        "Republican Votes": 103927.65,
+        "Republican Votes SD": 3577.79,
+        "Voting-Age Population 2016": 588233.93,
+        "Voting-Age Population 2016, Error": 59708.62
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.236,
+        "Reock": 0.2312
+      },
+      "totals": {
+        "Black Population 2016": 158439.24,
+        "Black Population 2016, Error": 37813.95,
+        "Democratic Votes": 101112.09,
+        "Democratic Votes SD": 3398.24,
+        "Education Population 2016": 511538.15,
+        "Education Population 2016, Error": 37975.92,
+        "High School or GED 2016": 129179.55,
+        "High School or GED 2016, Error": 27367.41,
+        "Hispanic Population 2016": 62178.44,
+        "Hispanic Population 2016, Error": 29883.4,
+        "Household Income 2016": 64782.52,
+        "Household Income 2016, Error": 1553362.0,
+        "Households 2016": 281650.59,
+        "Households 2016, Error": 17667.66,
+        "Population 2010": 735328.0,
+        "Population 2016": 776248.22,
+        "Population 2016, Error": 58860.78,
+        "Republican Votes": 102326.43,
+        "Republican Votes SD": 3470.94,
+        "Voting-Age Population 2016": 578512.41,
+        "Voting-Age Population 2016, Error": 56235.12
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.3117,
+        "Reock": 0.3526
+      },
+      "totals": {
+        "Black Population 2016": 99046.64,
+        "Black Population 2016, Error": 36194.4,
+        "Democratic Votes": 91245.11,
+        "Democratic Votes SD": 3107.75,
+        "Education Population 2016": 523414.89,
+        "Education Population 2016, Error": 47201.48,
+        "High School or GED 2016": 156498.28,
+        "High School or GED 2016, Error": 35094.17,
+        "Hispanic Population 2016": 47458.92,
+        "Hispanic Population 2016, Error": 30045.98,
+        "Household Income 2016": 47705.78,
+        "Household Income 2016, Error": 1529244.17,
+        "Households 2016": 293646.11,
+        "Households 2016, Error": 23199.14,
+        "Population 2010": 734139.0,
+        "Population 2016": 746469.06,
+        "Population 2016, Error": 71754.0,
+        "Republican Votes": 115442.1,
+        "Republican Votes SD": 3670.2,
+        "Voting-Age Population 2016": 585592.63,
+        "Voting-Age Population 2016, Error": 64473.24
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.2479,
+        "Reock": 0.2562
+      },
+      "totals": {
+        "Black Population 2016": 30273.92,
+        "Black Population 2016, Error": 18457.25,
+        "Democratic Votes": 95070.42,
+        "Democratic Votes SD": 3222.51,
+        "Education Population 2016": 542132.97,
+        "Education Population 2016, Error": 50601.69,
+        "High School or GED 2016": 156965.34,
+        "High School or GED 2016, Error": 35531.6,
+        "Hispanic Population 2016": 45035.33,
+        "Hispanic Population 2016, Error": 29821.66,
+        "Household Income 2016": 44730.5,
+        "Household Income 2016, Error": 1319711.43,
+        "Households 2016": 307243.25,
+        "Households 2016, Error": 26379.77,
+        "Population 2010": 732764.0,
+        "Population 2016": 748376.78,
+        "Population 2016, Error": 74444.53,
+        "Republican Votes": 139398.4,
+        "Republican Votes SD": 4668.49,
+        "Voting-Age Population 2016": 603038.37,
+        "Voting-Age Population 2016, Error": 65283.7
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.3008,
+        "Reock": 0.4439
+      },
+      "totals": {
+        "Black Population 2016": 321015.98,
+        "Black Population 2016, Error": 61358.49,
+        "Democratic Votes": 136636.23,
+        "Democratic Votes SD": 4370.78,
+        "Education Population 2016": 541670.77,
+        "Education Population 2016, Error": 49194.7,
+        "High School or GED 2016": 106157.94,
+        "High School or GED 2016, Error": 31070.43,
+        "Hispanic Population 2016": 120031.28,
+        "Hispanic Population 2016, Error": 44918.72,
+        "Household Income 2016": 61936.72,
+        "Household Income 2016, Error": 1748876.09,
+        "Households 2016": 313779.89,
+        "Households 2016, Error": 18831.79,
+        "Population 2010": 732957.0,
+        "Population 2016": 823694.64,
+        "Population 2016, Error": 75714.57,
+        "Republican Votes": 48968.07,
+        "Republican Votes SD": 1810.19,
+        "Voting-Age Population 2016": 622532.7,
+        "Voting-Age Population 2016, Error": 72291.06
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.2593,
+        "Reock": 0.3558
+      },
+      "totals": {
+        "Black Population 2016": 175150.9,
+        "Black Population 2016, Error": 42619.39,
+        "Democratic Votes": 111639.66,
+        "Democratic Votes SD": 3877.55,
+        "Education Population 2016": 514812.06,
+        "Education Population 2016, Error": 45513.85,
+        "High School or GED 2016": 142192.3,
+        "High School or GED 2016, Error": 33284.9,
+        "Hispanic Population 2016": 59168.24,
+        "Hispanic Population 2016, Error": 35642.25,
+        "Household Income 2016": 52831.21,
+        "Household Income 2016, Error": 1520583.88,
+        "Households 2016": 294773.35,
+        "Households 2016, Error": 21332.86,
+        "Population 2010": 733845.0,
+        "Population 2016": 759184.21,
+        "Population 2016, Error": 69780.57,
+        "Republican Votes": 106753.49,
+        "Republican Votes SD": 3513.47,
+        "Voting-Age Population 2016": 589563.86,
+        "Voting-Age Population 2016, Error": 65184.6
+      }
+    }
+  ],
+  "id": "20191229T184708.315233888Z",
+  "key": "uploads/20191229T184708.315233888Z/upload/geometry.json",
+  "message": "Finished scoring this plan.",
+  "model": {
+    "house": "ushouse",
+    "key_prefix": "data/NC/006-ushouse",
+    "seats": 13,
+    "state": "NC"
+  },
+  "progress": [
+    727,
+    727
+  ],
+  "start_time": 1577558850,
+  "summary": {
+    "Efficiency Gap": -0.1561,
+    "Efficiency Gap +1 Dem": -0.1058,
+    "Efficiency Gap +1 Dem SD": 0.0429,
+    "Efficiency Gap +1 Rep": -0.2366,
+    "Efficiency Gap +1 Rep SD": 0.0545,
+    "Efficiency Gap +2 Dem": -0.044,
+    "Efficiency Gap +2 Dem SD": 0.0526,
+    "Efficiency Gap +2 Rep": -0.2781,
+    "Efficiency Gap +2 Rep SD": 0.0275,
+    "Efficiency Gap +3 Dem": 0.0173,
+    "Efficiency Gap +3 Dem SD": 0.0449,
+    "Efficiency Gap +3 Rep": -0.2684,
+    "Efficiency Gap +3 Rep SD": 0.0095,
+    "Efficiency Gap +4 Dem": 0.0644,
+    "Efficiency Gap +4 Dem SD": 0.0446,
+    "Efficiency Gap +4 Rep": -0.2491,
+    "Efficiency Gap +4 Rep SD": 0.0067,
+    "Efficiency Gap +5 Dem": 0.1079,
+    "Efficiency Gap +5 Dem SD": 0.0472,
+    "Efficiency Gap +5 Rep": -0.2291,
+    "Efficiency Gap +5 Rep SD": 0.0067,
+    "Efficiency Gap SD": 0.0475,
+    "Mean-Median": -0.0444,
+    "Mean-Median SD": 0.0047,
+    "Partisan Bias": -0.2981,
+    "Partisan Bias SD": 0.0069
+  }
+}
