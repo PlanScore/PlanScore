@@ -142,7 +142,7 @@ class TestAfterUpload (unittest.TestCase):
         ''' Test that guess_state_model() guesses the correct U.S. state and house.
         '''
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
-        self.assertEqual(after_upload.guess_state_model(null_plan_path).key_prefix, 'data/XX/003')
+        self.assertEqual(after_upload.guess_state_model(null_plan_path).key_prefix, 'data/XX/004')
 
         nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
         self.assertEqual(after_upload.guess_state_model(nc_plan_path).key_prefix, 'data/NC/006-ushouse')
@@ -160,7 +160,7 @@ class TestAfterUpload (unittest.TestCase):
 
         # Real tests
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 2, 'XX'
-        self.assertEqual(after_upload.guess_state_model('districts.shp').key_prefix, 'data/XX/003')
+        self.assertEqual(after_upload.guess_state_model('districts.shp').key_prefix, 'data/XX/004')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 11, 'NC'
         self.assertEqual(after_upload.guess_state_model('districts.shp').key_prefix, 'data/NC/006-ushouse')
@@ -193,7 +193,7 @@ class TestAfterUpload (unittest.TestCase):
         ''' Test that guess_state_model() guesses the correct U.S. state and house.
         '''
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-missing-geometries.geojson')
-        self.assertEqual(after_upload.guess_state_model(null_plan_path).key_prefix, 'data/XX/003')
+        self.assertEqual(after_upload.guess_state_model(null_plan_path).key_prefix, 'data/XX/004')
     
     @unittest.mock.patch('sys.stdout')
     def test_put_district_geometries(self, stdout):
@@ -293,7 +293,7 @@ class TestAfterUpload (unittest.TestCase):
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
-        guess_state_model.return_value = data.Model(data.State.XX, None, 2, False, 'data/XX/003')
+        guess_state_model.return_value = data.Model(data.State.XX, None, 2, True, 'data/XX/004')
         
         @contextlib.contextmanager
         def nullplan_file(*args):
@@ -345,7 +345,7 @@ class TestAfterUpload (unittest.TestCase):
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.shp.zip'
-        guess_state_model.return_value = data.Model(data.State.XX, None, 2, False, 'data/XX/003')
+        guess_state_model.return_value = data.Model(data.State.XX, None, 2, True, 'data/XX/004')
         
         @contextlib.contextmanager
         def nullplan_file(*args):
