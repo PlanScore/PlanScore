@@ -194,10 +194,10 @@ class TestData (unittest.TestCase):
         plaintext1 = upload1.to_plaintext()
         head, row1, row2, row3, tail = plaintext1.split('\r\n', 4)
         
-        self.assertEqual(head, 'District\tIncumbent\tDemocratic Votes\tRepublican Votes\tPopulation 2015\tReock')
-        self.assertEqual(row1, '1\tO\t100\t300\t200\t0.2')
-        self.assertEqual(row2, '2\tO\t400\t600\t500\t0.3')
-        self.assertEqual(row3, '3\tO\t700\t900\t800\t0.4')
+        self.assertEqual(head, 'District\tDemocratic Votes\tRepublican Votes\tPopulation 2015\tReock')
+        self.assertEqual(row1, '1\t100\t300\t200\t0.2')
+        self.assertEqual(row2, '2\t400\t600\t500\t0.3')
+        self.assertEqual(row3, '3\t700\t900\t800\t0.4')
         self.assertEqual(tail, '')
 
         upload2 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
@@ -207,6 +207,7 @@ class TestData (unittest.TestCase):
         self.assertEqual(plaintext2, "Error: 'totals'\n")
 
         upload3 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
+            model=data.Model(data.State.XX, data.House.statehouse, 2, True, 'data/XX/000'),
             incumbents=['O', 'D', 'R'],
             districts=[
                 { "totals": { "Democratic Votes": 100, "Population 2015": 200, "Republican Votes": 300 }, "compactness": { "Reock": .2 } },
@@ -217,7 +218,7 @@ class TestData (unittest.TestCase):
         plaintext3 = upload3.to_plaintext()
         head, row1, row2, row3, tail = plaintext3.split('\r\n', 4)
         
-        self.assertEqual(head, 'District\tIncumbent\tDemocratic Votes\tRepublican Votes\tPopulation 2015\tReock')
+        self.assertEqual(head, 'District\tCandidate Scenario\tDemocratic Votes\tRepublican Votes\tPopulation 2015\tReock')
         self.assertEqual(row1, '1\tO\t100\t300\t200\t0.2')
         self.assertEqual(row2, '2\tD\t400\t600\t500\t0.3')
         self.assertEqual(row3, '3\tR\t700\t900\t800\t0.4')
