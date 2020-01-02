@@ -8,7 +8,8 @@ var NC_index = require('data/sample-NC-1-992/index.json'),
     NC_multisim_index = require('data/sample-NC-simulations/index.json'),
     NC_public_index = require('data/sample-NC5.1/index.json'),
     NC_2019_preread_start = require('data/sample-NC2019/index-preread-start.json'),
-    NC_2019_preread_end = require('data/sample-NC2019/index-preread-end.json');
+    NC_2019_preread_end = require('data/sample-NC2019/index-preread-end.json'),
+    NC_2019_no_incumbency = require('data/sample-NC2019/index-no-incumbency.json'),
     NC_2019_incumbency = require('data/sample-NC2019/index-incumbency.json');
 
 // Old-style red vs. blue plan
@@ -145,26 +146,49 @@ assert.equal(plan.which_district_color(NC_public_index.districts[1], NC_public_i
 assert.equal(plan.which_district_color(NC_public_index.districts[2], NC_public_index),
     '#D45557', 'Should return the red district color');
 
-// Plan with defined incumbency
+// Plan with default incumbency and no model support
 
-var plan_array6 = plan.plan_array(NC_2019_incumbency);
+var plan_array6 = plan.plan_array(NC_2019_no_incumbency);
 assert.equal(plan_array6.length, 14, 'Should have a header with 13 districts');
 
 assert.deepEqual(plan_array6[0],
-    ['District', 'Candidate Scenario', 'Population 2010', 'Population 2016',
+    ['District', 'Population 2010', 'Population 2016',
     'Black Population 2016', 'Hispanic Population 2016',
     'Predicted Democratic Vote Share', 'Predicted Republican Vote Share'],
     'Should pick out the right column names');
 
 assert.deepEqual(plan_array6[1],
-    ['1', 'Open Seat', 730943, 738237.35, '46.3%', '8.7%', '72.2% (±4.3%)', '27.8% (±2.3%)'],
+    ['1', 730943, 738237.35, '46.3%', '8.7%', '72.2% (±4.3%)', '27.8% (±2.3%)'],
     'Should pick out the right column values');
 
 assert.deepEqual(plan_array6[2],
-    ['2', 'Democratic Incumbent', 734253, 824484.63, '21.3%', '9.7%', '50.8% (±3.0%)', '49.2% (±2.9%)'],
+    ['2', 734253, 824484.63, '21.3%', '9.7%', '50.8% (±3.0%)', '49.2% (±2.9%)'],
     'Should pick out the right column values');
 
 assert.deepEqual(plan_array6[3],
+    ['3', 732416, 708958.98, '23.2%', '7.9%', '44.1% (±3.2%)', '55.9% (±3.7%)'],
+    'Should pick out the right column values');
+
+// Plan with defined incumbency and a supporting model
+
+var plan_array7 = plan.plan_array(NC_2019_incumbency);
+assert.equal(plan_array7.length, 14, 'Should have a header with 13 districts');
+
+assert.deepEqual(plan_array7[0],
+    ['District', 'Candidate Scenario', 'Population 2010', 'Population 2016',
+    'Black Population 2016', 'Hispanic Population 2016',
+    'Predicted Democratic Vote Share', 'Predicted Republican Vote Share'],
+    'Should pick out the right column names');
+
+assert.deepEqual(plan_array7[1],
+    ['1', 'Open Seat', 730943, 738237.35, '46.3%', '8.7%', '72.2% (±4.3%)', '27.8% (±2.3%)'],
+    'Should pick out the right column values');
+
+assert.deepEqual(plan_array7[2],
+    ['2', 'Democratic Incumbent', 734253, 824484.63, '21.3%', '9.7%', '50.8% (±3.0%)', '49.2% (±2.9%)'],
+    'Should pick out the right column values');
+
+assert.deepEqual(plan_array7[3],
     ['3', 'Republican Incumbent', 732416, 708958.98, '23.2%', '7.9%', '44.1% (±3.2%)', '55.9% (±3.7%)'],
     'Should pick out the right column values');
 

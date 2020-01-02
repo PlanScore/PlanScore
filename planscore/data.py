@@ -140,19 +140,23 @@ class Upload:
             'US President 2016 - DEM', 'US President 2016 - REP',
             'US Senate 2016 - DEM', 'US Senate 2016 - REP'))})
         
+        has_incumbency = bool(self.model and self.model.incumbency)
+        
         try:
             column_names = sorted(self.districts[0]['totals'].keys(),
                 key=lambda k: (sorting_hints.get(k, 999), k))
             
             column_names.extend(self.districts[0]['compactness'].keys())
-        
+            extra_columns = ['Candidate Scenario'] if has_incumbency else []
+                
             out = io.StringIO()
-            rows = csv.DictWriter(out, ['District', 'Incumbent'] + column_names, dialect='excel-tab')
+            rows = csv.DictWriter(out,
+                ['District'] + extra_columns + column_names, dialect='excel-tab')
             rows.writeheader()
             for (index, district) in enumerate(self.districts):
                 totals, compactness = district['totals'], district['compactness']
-                rows.writerow(dict(District=index+1, Incumbent=self.incumbents[index],
-                    **dict(totals, **compactness)))
+                extra_values = {'Candidate Scenario': self.incumbents[index]} if has_incumbency else {}
+                rows.writerow(dict(District=index+1, **dict(totals, **dict(compactness, **extra_values))))
         
         except Exception as e:
             return f'Error: {e}\n'

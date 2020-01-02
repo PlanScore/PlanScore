@@ -419,7 +419,8 @@ function update_cvap2015_percentages(head, row)
 function plan_array(plan)
 {
     var incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'},
-        has_incumbency = (plan.incumbents && plan.incumbents.length == plan.districts.length),
+        has_incumbency = (plan.model && plan.model.incumbency 
+            && plan.incumbents && plan.incumbents.length == plan.districts.length),
         fields = FIELDS.slice();
 
     // Build list of columns
