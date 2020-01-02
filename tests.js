@@ -95,16 +95,16 @@ var plan_array4 = plan.plan_array(NC_multisim_index);
 assert.equal(plan_array4.length, 14, 'Should have a header with 13 districts');
 
 assert.deepEqual(plan_array4[0],
-    ['District', 'Candidate Scenario', 'Predicted Democratic Vote Share',
+    ['District', 'Predicted Democratic Vote Share',
     'Predicted Republican Vote Share'],
     'Should pick out the right column names');
 
 assert.deepEqual(plan_array4[1],
-    ['1', 'Open Seat', '47.4% (±0.9%)', '52.6% (±0.9%)'],
+    ['1', '47.4% (±0.9%)', '52.6% (±0.9%)'],
     'Should pick out the right column values');
 
 assert.deepEqual(plan_array4[13],
-    ['13', 'Open Seat', '42.3% (±1.0%)', '57.7% (±1.0%)'],
+    ['13', '42.3% (±1.0%)', '57.7% (±1.0%)'],
     'Should pick out the right column values');
 
 assert.equal(plan.get_description(NC_multisim_index, new Date(2018, 0, 14)),
@@ -119,18 +119,18 @@ assert.equal(plan.what_score_description_text(NC_public_index),
     "Here is a great plan.", 'Should find the right description');
 
 assert.deepEqual(plan_array5[0],
-    ['District', 'Candidate Scenario', 'Population 2010', 'Population 2015',
+    ['District', 'Population 2010', 'Population 2015',
     'Black Population 2015', 'Hispanic Population 2015',
     'Predicted Democratic Vote Share', 'Predicted Republican Vote Share'
     /*, 'Polsby-Popper', 'Reock'*/],
     'Should pick out the right column names');
 
 assert.deepEqual(plan_array5[1],
-    ['1', 'Open Seat', 733460.0, 734814.32, '46.3%', '8.3%', '66.1% (±0.9%)', '33.9% (±0.9%)'/*, 0.1992, 0.3469*/],
+    ['1', 733460.0, 734814.32, '46.3%', '8.3%', '66.1% (±0.9%)', '33.9% (±0.9%)'/*, 0.1992, 0.3469*/],
     'Should pick out the right column values');
 
 assert.deepEqual(plan_array5[13],
-    ['13', 'Open Seat', 733505.0, 747501.53, '22.8%', '7.5%', '43.9% (±0.6%)', '56.1% (±0.6%)'/*, 0.2274, 0.3557*/],
+    ['13', 733505.0, 747501.53, '22.8%', '7.5%', '43.9% (±0.6%)', '56.1% (±0.6%)'/*, 0.2274, 0.3557*/],
     'Should pick out the right column values');
 
 assert.equal(plan.get_description(NC_public_index, undefined),

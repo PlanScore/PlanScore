@@ -32,6 +32,15 @@
         </p>
         <p id="plan-description">(Loading)</p>
         
+        <section id="incumbency-unavailable" style="display: none">
+            <h3>Unavailable: Incumbent Candidates</h3>
+            <p>
+                This model does not calculate scenarios for incumbent party
+                candidates. All scores will assume open seat races.
+            </p>
+        </section>
+
+        <section id="incumbency-scenarios">
         <h3>Optional: Incumbent Candidates</h3>
 
         <p>
@@ -61,6 +70,8 @@
         <p>
             <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary">
         </p>
+
+        </section>
     </form>
 
     </section>
@@ -86,6 +97,8 @@
 	        document.getElementById('message'),
 	        document.getElementById('plan-preread'),
 	        document.getElementById('plan-description'),
+	        document.getElementById('incumbency-unavailable'),
+	        document.getElementById('incumbency-scenarios'),
 	        document.getElementById('first-incumbent'));
 
 	</script>

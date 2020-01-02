@@ -418,13 +418,18 @@ function update_cvap2015_percentages(head, row)
  */
 function plan_array(plan)
 {
-    var fields = FIELDS.slice();
+    var incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'},
+        has_incumbency = (plan.incumbents && plan.incumbents.length == plan.districts.length),
+        fields = FIELDS.slice();
 
     // Build list of columns
-    var incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'},
-        head_row = ['District', 'Candidate Scenario'],
+    var head_row = ['District'],
         all_rows = [head_row],
         field, current_row, field_missing;
+    
+    if(has_incumbency) {
+        head_row.push('Candidate Scenario');
+    }
 
     if(plan.districts.length == 0)
     {
@@ -433,14 +438,13 @@ function plan_array(plan)
     
     for(var j = 0; j < plan.districts.length; j++)
     {
-        var district_number = (j + 1).toString(),
-            candidate_scenario = incumbency['O']
+        var new_row = [(j + 1).toString()];
         
-        if(plan.incumbents && plan.incumbents.length == plan.districts.length) {
-            candidate_scenario = incumbency[plan.incumbents[j]];
+        if(has_incumbency) {
+            new_row.push(incumbency[plan.incumbents[j]]);
         }
 
-        all_rows.push([district_number, candidate_scenario]);
+        all_rows.push(new_row);
     }
     
     for(var i in fields)
