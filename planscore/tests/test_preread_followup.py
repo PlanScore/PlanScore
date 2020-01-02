@@ -119,7 +119,7 @@ class TestPrereadFollowup (unittest.TestCase):
         self.assertEqual(preread_followup.guess_state_model(null_plan_path).key_prefix, 'data/XX/004')
 
         nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
-        self.assertEqual(preread_followup.guess_state_model(nc_plan_path).key_prefix, 'data/NC/006-ushouse')
+        self.assertEqual(preread_followup.guess_state_model(nc_plan_path).house, data.House.ushouse)
     
     @unittest.mock.patch('osgeo.ogr')
     def test_guess_state_model_imagined(self, osgeo_ogr):
@@ -137,31 +137,31 @@ class TestPrereadFollowup (unittest.TestCase):
         self.assertEqual(preread_followup.guess_state_model('districts.shp').key_prefix, 'data/XX/004')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 11, 'NC'
-        self.assertEqual(preread_followup.guess_state_model('districts.shp').key_prefix, 'data/NC/006-ushouse')
+        self.assertEqual(preread_followup.guess_state_model('districts.shp').house, data.House.ushouse)
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 13, 'NC'
-        self.assertEqual(preread_followup.guess_state_model('districts.shp').key_prefix, 'data/NC/006-ushouse')
+        self.assertEqual(preread_followup.guess_state_model('districts.shp').house, data.House.ushouse)
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 15, 'NC'
-        self.assertEqual(preread_followup.guess_state_model('districts.shp').key_prefix, 'data/NC/006-ushouse')
+        self.assertEqual(preread_followup.guess_state_model('districts.shp').house, data.House.ushouse)
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 40, 'NC'
-        self.assertEqual(preread_followup.guess_state_model('districts.shp').key_prefix, 'data/NC/006-ncsenate')
+        self.assertEqual(preread_followup.guess_state_model('districts.shp').house, data.House.statesenate)
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 50, 'NC'
-        self.assertEqual(preread_followup.guess_state_model('districts.shp').key_prefix, 'data/NC/006-ncsenate')
+        self.assertEqual(preread_followup.guess_state_model('districts.shp').house, data.House.statesenate)
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 60, 'NC'
-        self.assertEqual(preread_followup.guess_state_model('districts.shp').key_prefix, 'data/NC/006-ncsenate')
+        self.assertEqual(preread_followup.guess_state_model('districts.shp').house, data.House.statesenate)
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 110, 'NC'
-        self.assertEqual(preread_followup.guess_state_model('districts.shp').key_prefix, 'data/NC/006-nchouse')
+        self.assertEqual(preread_followup.guess_state_model('districts.shp').house, data.House.statehouse)
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 120, 'NC'
-        self.assertEqual(preread_followup.guess_state_model('districts.shp').key_prefix, 'data/NC/006-nchouse')
+        self.assertEqual(preread_followup.guess_state_model('districts.shp').house, data.House.statehouse)
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 130, 'NC'
-        self.assertEqual(preread_followup.guess_state_model('file.gpkg').key_prefix, 'data/NC/006-nchouse')
+        self.assertEqual(preread_followup.guess_state_model('file.gpkg').house, data.House.statehouse)
     
     def test_guess_state_model_missing_geometries(self):
         ''' Test that guess_state_model() guesses the correct U.S. state and house.
