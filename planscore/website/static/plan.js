@@ -725,6 +725,7 @@ function load_plan_map(url, div, plan)
         // Initialize the map on the passed div in the middle of the ocean
         var map = L.map(div, {
             scrollWheelZoom: false,
+            zoomControl: false,
             center: [0, 0],
             zoom: 8
         });
@@ -749,6 +750,9 @@ function load_plan_map(url, div, plan)
             pane: 'labels',
             maxZoom: 18
         }).addTo(map);
+        
+        map.addControl(L.control.zoom({'position': 'topright'}));
+        map.addControl(new L.Control.PartyLegend({'position': 'topleft'}));
     }
 
     request.onload = function()
@@ -768,6 +772,46 @@ function load_plan_map(url, div, plan)
 
 function add_map_pattern_support()
 {
+    // Custom map legend control copied from
+    // https://github.com/PlanScore/PlanScore/blob/b48188b/_common/jslibs/leaflet-control-partylegend.js
+    L.Control.PartyLegend = L.Control.extend({
+        options: {
+            position: 'topright',
+        },
+
+        initialize: function(options) {
+            L.Util.setOptions(this, options);
+        },
+
+        onAdd: function (map) {
+            var container = L.DomUtil.create('div', 'planscore-partylegend');
+
+            var row_d    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
+            var swatch_d = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-democrat', row_d);
+            var words_d  = L.DomUtil.create('div', 'planscore-partylegend-words', row_d);
+            words_d.innerHTML = 'Democratic';
+
+            var row_r    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
+            var swatch_r = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-republican', row_r);
+            var words_r  = L.DomUtil.create('div', 'planscore-partylegend-words', row_r);
+            words_r.innerHTML = 'Republican';
+
+            var row_x    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
+            var swatch_x = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-both', row_x);
+            var words_x  = L.DomUtil.create('div', 'planscore-partylegend-words', row_x);
+            words_x.innerHTML = 'Uncertain';
+
+            /*
+            var row_0    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
+            var swatch_0 = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-nodata', row_0);
+            var words_0  = L.DomUtil.create('div', 'planscore-partylegend-words', row_0);
+            words_0.innerHTML = 'No Data';
+            */
+
+            return container;
+        },
+    });
+
     if(L.Browser.svg)
     {
         L.SVG.include({

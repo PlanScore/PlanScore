@@ -1,9 +1,10 @@
 {% extends "patternlibrary.html" %}
 {% block title %}Plan{% endblock %}
 {% block head %}
-    <script src="{{ digested_static_url('plan.js') }}"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="{{ digested_static_url('plan.css') }}" />
+    <script src="{{ digested_static_url('plan.js') }}"></script>
 
     <!-- Highcharts does charts and also maps -->
     <script src="https://code.highcharts.com/highcharts.js"></script>
@@ -56,6 +57,11 @@
         #score-sensitivity
         {
             height: 200px;
+        }
+
+        div.planscore-partylegend div.planscore-partylegend-swatch-both
+        {
+            background-image: url({{ url_for('static', filename='unknown-pattern.png') }});
         }
 
     </style>
