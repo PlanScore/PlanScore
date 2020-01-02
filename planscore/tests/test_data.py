@@ -36,12 +36,20 @@ class TestData (unittest.TestCase):
         self.assertEqual(model1.house, data.House.ushouse)
         self.assertEqual(model1.seats, 13)
         self.assertEqual(model1.key_prefix, 'data/NC/001')
+        self.assertEqual(model1.incumbency, False)
         
         with self.assertRaises(KeyError) as e:
             model2 = data.Model.from_json('{}')
         
         with self.assertRaises(KeyError) as e:
             model3 = data.Model.from_json('{"state": "-1", "house": "ushouse", "seats": 13, "key_prefix": "data/NC/001"}')
+
+        model4 = data.Model.from_json('{"state": "NC", "house": "ushouse", "seats": 13, "key_prefix": "data/NC/001", "incumbency": true}')
+        self.assertEqual(model4.state, data.State.NC)
+        self.assertEqual(model4.house, data.House.ushouse)
+        self.assertEqual(model4.seats, 13)
+        self.assertEqual(model4.key_prefix, 'data/NC/001')
+        self.assertEqual(model4.incumbency, True)
 
     def test_upload_storage(self):
         ''' Past and future data.Upload instances are readable
@@ -84,6 +92,13 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload7.id, 'ID')
         self.assertEqual(upload7.key, 'KEY')
         self.assertEqual(upload7.description, 'A fine new plan')
+
+        upload8 = data.Upload.from_json('{"id": "ID", "key": "KEY", '
+            '"description": "A fine new plan", "incumbents": ["D", "R"]}')
+        self.assertEqual(upload8.id, 'ID')
+        self.assertEqual(upload8.key, 'KEY')
+        self.assertEqual(upload8.description, 'A fine new plan')
+        self.assertEqual(upload8.incumbents, ['D', 'R'])
     
     def test_upload_overdue(self):
         ''' data.Upload self-reports correct overdue state
@@ -132,7 +147,7 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload8.start_time, upload7.start_time)
     
         upload9 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
-            model=data.Model(data.State.NC, data.House.ushouse, 13, 'data/NC/001'))
+            model=data.Model(data.State.NC, data.House.ushouse, 13, False, 'data/NC/001'))
         upload10 = data.Upload.from_json(upload9.to_json())
 
         self.assertEqual(upload10.id, upload9.id)
@@ -158,6 +173,14 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload14.key, upload13.key)
         self.assertEqual(upload14.description, upload13.description)
     
+        upload15 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
+            incumbents=['O', 'D', 'R'])
+        upload16 = data.Upload.from_json(upload15.to_json())
+
+        self.assertEqual(upload16.id, upload15.id)
+        self.assertEqual(upload16.key, upload15.key)
+        self.assertEqual(upload16.incumbents, upload15.incumbents)
+    
     def test_upload_plaintext(self):
         ''' data.Upload instances can be converted to plaintext
         '''
@@ -171,10 +194,10 @@ class TestData (unittest.TestCase):
         plaintext1 = upload1.to_plaintext()
         head, row1, row2, row3, tail = plaintext1.split('\r\n', 4)
         
-        self.assertEqual(head, 'District\tDemocratic Votes\tRepublican Votes\tPopulation 2015\tReock')
-        self.assertEqual(row1, '1\t100\t300\t200\t0.2')
-        self.assertEqual(row2, '2\t400\t600\t500\t0.3')
-        self.assertEqual(row3, '3\t700\t900\t800\t0.4')
+        self.assertEqual(head, 'District\tIncumbent\tDemocratic Votes\tRepublican Votes\tPopulation 2015\tReock')
+        self.assertEqual(row1, '1\tO\t100\t300\t200\t0.2')
+        self.assertEqual(row2, '2\tO\t400\t600\t500\t0.3')
+        self.assertEqual(row3, '3\tO\t700\t900\t800\t0.4')
         self.assertEqual(tail, '')
 
         upload2 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
@@ -182,6 +205,23 @@ class TestData (unittest.TestCase):
         
         plaintext2 = upload2.to_plaintext()
         self.assertEqual(plaintext2, "Error: 'totals'\n")
+
+        upload3 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
+            incumbents=['O', 'D', 'R'],
+            districts=[
+                { "totals": { "Democratic Votes": 100, "Population 2015": 200, "Republican Votes": 300 }, "compactness": { "Reock": .2 } },
+                { "totals": { "Democratic Votes": 400, "Population 2015": 500, "Republican Votes": 600 }, "compactness": { "Reock": .3 } },
+                { "totals": { "Democratic Votes": 700, "Population 2015": 800, "Republican Votes": 900 }, "compactness": { "Reock": .4 } }
+              ])
+        
+        plaintext3 = upload3.to_plaintext()
+        head, row1, row2, row3, tail = plaintext3.split('\r\n', 4)
+        
+        self.assertEqual(head, 'District\tIncumbent\tDemocratic Votes\tRepublican Votes\tPopulation 2015\tReock')
+        self.assertEqual(row1, '1\tO\t100\t300\t200\t0.2')
+        self.assertEqual(row2, '2\tD\t400\t600\t500\t0.3')
+        self.assertEqual(row3, '3\tR\t700\t900\t800\t0.4')
+        self.assertEqual(tail, '')
 
     def test_upload_index_key(self):
         ''' data.Upload.index_key() correctly munges Upload.key
@@ -212,13 +252,16 @@ class TestData (unittest.TestCase):
         '''
         model1, model2 = unittest.mock.Mock(), unittest.mock.Mock()
         districts1, districts2 = unittest.mock.Mock(), unittest.mock.Mock()
+        incumbents1, incumbents2 = unittest.mock.Mock(), unittest.mock.Mock()
         summary1, summary2 = unittest.mock.Mock(), unittest.mock.Mock()
         progress1, progress2 = unittest.mock.Mock(), unittest.mock.Mock()
         start_time1, start_time2 = unittest.mock.Mock(), unittest.mock.Mock()
         input = data.Upload(id='ID', key='whatever.json', districts=districts1,
-            model=model1, summary=summary1, progress=progress1, start_time=start_time1)
+            model=model1, summary=summary1, progress=progress1, start_time=start_time1,
+            incumbents=incumbents1)
 
         self.assertIs(input.districts, districts1)
+        self.assertIs(input.incumbents, incumbents1)
         self.assertIs(input.summary, summary1)
         self.assertIs(input.progress, progress1)
 
@@ -261,3 +304,8 @@ class TestData (unittest.TestCase):
         self.assertEqual(output7.id, input.id)
         self.assertEqual(output7.key, input.key)
         self.assertIs(output7.message, 'Yo')
+
+        output8 = input.clone(incumbents=incumbents2)
+        self.assertEqual(output8.id, input.id)
+        self.assertEqual(output8.key, input.key)
+        self.assertIs(output8.incumbents, incumbents2)

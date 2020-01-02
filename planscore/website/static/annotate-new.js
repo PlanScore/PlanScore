@@ -97,7 +97,8 @@ function get_description(plan, modified_at)
             : [description, 'at', modified_at.toLocaleString()].join(' ');
 }
 
-function load_plan_preread(url, message_section, preread_section, description, first_incumbent_row)
+function load_plan_preread(url, message_section, preread_section, description,
+    incumbency_unavailable, incumbency_scenarios, first_incumbent_row)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -121,6 +122,12 @@ function load_plan_preread(url, message_section, preread_section, description, f
         description.lastChild.appendChild(
             document.createTextNode(get_description(plan, modified_at)));
         
+        if(!plan.model.incumbency)
+        {
+            incumbency_unavailable.style.display = 'block';
+            incumbency_scenarios.style.display = 'none';
+        }
+        
         var table_body = first_incumbent_row.parentNode,
             template_row = table_body.removeChild(first_incumbent_row);
         
@@ -136,9 +143,7 @@ function load_plan_preread(url, message_section, preread_section, description, f
             row_inputs[2].name = 'incumbent-' + (i + 1);
             
             table_body.appendChild(new_row);
-            row_inputs[0].disabled = true;
             row_inputs[1].checked = true;
-            row_inputs[2].disabled = true;
         }
     }
 

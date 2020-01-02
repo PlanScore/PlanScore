@@ -181,9 +181,10 @@ def lambda_handler(event, context):
     districts = accumulate_district_totals(tile_totals, upload2)
     upload3 = upload2.clone(districts=districts)
     upload4 = score.calculate_bias(upload3)
-    upload5 = score.calculate_biases(upload4)
+    upload5 = score.calculate_open_biases(upload4)
+    upload6 = score.calculate_biases(upload5)
 
-    complete_upload = upload5.clone(message='Finished scoring this plan.',
+    complete_upload = upload6.clone(message='Finished scoring this plan.',
         progress=data.Progress(len(expected_tiles), len(expected_tiles)))
 
     put_upload_index(storage, complete_upload)

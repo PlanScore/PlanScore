@@ -9,6 +9,7 @@ var NC_index = require('data/sample-NC-1-992/index.json'),
     NC_public_index = require('data/sample-NC5.1/index.json'),
     NC_2019_preread_start = require('data/sample-NC2019/index-preread-start.json'),
     NC_2019_preread_end = require('data/sample-NC2019/index-preread-end.json');
+    NC_2019_incumbency = require('data/sample-NC2019/index-incumbency.json');
 
 // Old-style red vs. blue plan
 
@@ -94,7 +95,8 @@ var plan_array4 = plan.plan_array(NC_multisim_index);
 assert.equal(plan_array4.length, 14, 'Should have a header with 13 districts');
 
 assert.deepEqual(plan_array4[0],
-    ['District', 'Predicted Democratic Vote Share', 'Predicted Republican Vote Share'],
+    ['District', 'Predicted Democratic Vote Share',
+    'Predicted Republican Vote Share'],
     'Should pick out the right column names');
 
 assert.deepEqual(plan_array4[1],
@@ -117,9 +119,10 @@ assert.equal(plan.what_score_description_text(NC_public_index),
     "Here is a great plan.", 'Should find the right description');
 
 assert.deepEqual(plan_array5[0],
-    ['District', 'Population 2010', 'Population 2015', 'Black Population 2015',
-    'Hispanic Population 2015', 'Predicted Democratic Vote Share',
-    'Predicted Republican Vote Share'/*, 'Polsby-Popper', 'Reock'*/],
+    ['District', 'Population 2010', 'Population 2015',
+    'Black Population 2015', 'Hispanic Population 2015',
+    'Predicted Democratic Vote Share', 'Predicted Republican Vote Share'
+    /*, 'Polsby-Popper', 'Reock'*/],
     'Should pick out the right column names');
 
 assert.deepEqual(plan_array5[1],
@@ -141,6 +144,29 @@ assert.equal(plan.which_district_color(NC_public_index.districts[1], NC_public_i
 
 assert.equal(plan.which_district_color(NC_public_index.districts[2], NC_public_index),
     '#D45557', 'Should return the red district color');
+
+// Plan with defined incumbency
+
+var plan_array6 = plan.plan_array(NC_2019_incumbency);
+assert.equal(plan_array6.length, 14, 'Should have a header with 13 districts');
+
+assert.deepEqual(plan_array6[0],
+    ['District', 'Candidate Scenario', 'Population 2010', 'Population 2016',
+    'Black Population 2016', 'Hispanic Population 2016',
+    'Predicted Democratic Vote Share', 'Predicted Republican Vote Share'],
+    'Should pick out the right column names');
+
+assert.deepEqual(plan_array6[1],
+    ['1', 'Open Seat', 730943, 738237.35, '46.3%', '8.7%', '72.2% (±4.3%)', '27.8% (±2.3%)'],
+    'Should pick out the right column values');
+
+assert.deepEqual(plan_array6[2],
+    ['2', 'Democratic Incumbent', 734253, 824484.63, '21.3%', '9.7%', '50.8% (±3.0%)', '49.2% (±2.9%)'],
+    'Should pick out the right column values');
+
+assert.deepEqual(plan_array6[3],
+    ['3', 'Republican Incumbent', 732416, 708958.98, '23.2%', '7.9%', '44.1% (±3.2%)', '55.9% (±3.7%)'],
+    'Should pick out the right column values');
 
 // Display preparation functions
 

@@ -32,7 +32,16 @@
         </p>
         <p id="plan-description">(Loading)</p>
         
-        <h3>Optional: Party Incumbents</h3>
+        <section id="incumbency-unavailable" style="display: none">
+            <h3>Unavailable: Incumbent Candidates</h3>
+            <p>
+                This model does not calculate scenarios for incumbent party
+                candidates. All scores will assume open seat races.
+            </p>
+        </section>
+
+        <section id="incumbency-scenarios">
+        <h3>Optional: Incumbent Candidates</h3>
 
         <p>
             If you know which districts have incumbents running for re-election,
@@ -44,15 +53,15 @@
                 <thead>
                     <tr>
                         <th>District</th>
-                        <th colspan="3">Incumbency</th>
+                        <th colspan="3">Candidate Scenario</th>
                     </tr> 
                 </thead> 
                 <tbody> 
                     <tr id="first-incumbent">
                         <td>0</td>
-                        <td><label><input type="radio" name="incumbent-0" value="D"> Democratic Incumbent</label></td>
-                        <td><label><input type="radio" name="incumbent-0" value="" checked> Unknown or No Incumbent</label></td>
-                        <td><label><input type="radio" name="incumbent-0" value="R"> Republican Incumbent</label></td>
+                        <td><label><input type="radio" name="incumbent-0" value="{{ Incumbency.Democrat.value }}"> Democratic Incumbent</label></td>
+                        <td><label><input type="radio" name="incumbent-0" value="{{ Incumbency.Open.value }}" checked> Unknown or Open Seat</label></td>
+                        <td><label><input type="radio" name="incumbent-0" value="{{ Incumbency.Republican.value }}"> Republican Incumbent</label></td>
                     </tr>
                 </tbody>
             </table>
@@ -61,6 +70,8 @@
         <p>
             <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary">
         </p>
+
+        </section>
     </form>
 
     </section>
@@ -86,6 +97,8 @@
 	        document.getElementById('message'),
 	        document.getElementById('plan-preread'),
 	        document.getElementById('plan-description'),
+	        document.getElementById('incumbency-unavailable'),
+	        document.getElementById('incumbency-scenarios'),
 	        document.getElementById('first-incumbent'));
 
 	</script>
