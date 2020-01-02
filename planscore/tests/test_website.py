@@ -1,5 +1,5 @@
 import unittest, unittest.mock, os
-from .. import website, constants
+from .. import website, constants, data
 
 class TestWebsite (unittest.TestCase):
     
@@ -31,3 +31,10 @@ class TestWebsite (unittest.TestCase):
         url2 = website.get_function_url('/good-times')
         self.assertEqual(url2, 'http://example.com/good-times')
         
+    def test_model_descriptions(self):
+        ''' Every current, active model should have a decription page
+        '''
+        for model in data.MODELS:
+            path = '/models/{key_prefix}/'.format(**model.to_dict())
+            html = self.app.get(path).data.decode('utf8')
+            self.assertIn('Model', html)
