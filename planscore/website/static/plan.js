@@ -140,13 +140,13 @@ function which_district_color(district, plan)
             dem_votes_sd = totals['Democratic Votes SD'],
             rep_votes_sd = totals['Republican Votes SD'];
     
-        if((dem_votes - dem_votes_sd) > (rep_votes + rep_votes_sd)) {
+        if((dem_votes - dem_votes_sd*2) > (rep_votes + rep_votes_sd*2)) {
             return BLUE_COLOR_HEX;
-        } else if((dem_votes + dem_votes_sd) < (rep_votes - rep_votes_sd)) {
+        } else if((dem_votes + dem_votes_sd*2) < (rep_votes - rep_votes_sd*2)) {
             return RED_COLOR_HEX;
-        } else if((dem_votes - dem_votes_sd/2) > (rep_votes + rep_votes_sd/2)) {
+        } else if((dem_votes - dem_votes_sd) > (rep_votes + rep_votes_sd)) {
             return BLUEISH_COLOR_HEX;
-        } else if((dem_votes + dem_votes_sd/2) < (rep_votes - rep_votes_sd/2)) {
+        } else if((dem_votes + dem_votes_sd) < (rep_votes - rep_votes_sd)) {
             return REDDISH_COLOR_HEX;
         } else {
             return UNKNOWN_COLOR_HEX;

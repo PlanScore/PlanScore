@@ -10,7 +10,8 @@ var NC_index = require('data/sample-NC-1-992/index.json'),
     NC_2019_preread_start = require('data/sample-NC2019/index-preread-start.json'),
     NC_2019_preread_end = require('data/sample-NC2019/index-preread-end.json'),
     NC_2019_no_incumbency = require('data/sample-NC2019/index-no-incumbency.json'),
-    NC_2019_incumbency = require('data/sample-NC2019/index-incumbency.json');
+    NC_2019_incumbency = require('data/sample-NC2019/index-incumbency.json'),
+    NC_2020 = require('data/sample-NC2020/index.json');
 
 // Old-style red vs. blue plan
 
@@ -191,6 +192,50 @@ assert.deepEqual(plan_array7[2],
 assert.deepEqual(plan_array7[3],
     ['3', 'Republican Incumbent', 732416, 708958.98, '23.2%', '7.9%', '44.1% (±3.2%)', '55.9% (±3.7%)'],
     'Should pick out the right column values');
+
+// Plan with defined incumbency and a supporting model
+
+var plan_array8 = plan.plan_array(NC_2020);
+assert.equal(plan_array8.length, 14, 'Should have a header with 13 districts');
+
+assert.equal(plan.which_district_color(NC_2020.districts[0], NC_2020),
+    '#4D90D1', 'Should return the blue district color for District 1');
+
+assert.equal(plan.which_district_color(NC_2020.districts[1], NC_2020),
+    '#838383', 'Should return the unknown district color for District 2');
+
+assert.equal(plan.which_district_color(NC_2020.districts[2], NC_2020),
+    '#D45557', 'Should return the red district color for District 3');
+
+assert.equal(plan.which_district_color(NC_2020.districts[3], NC_2020),
+    '#4D90D1', 'Should return the blue district color for District 4');
+
+assert.equal(plan.which_district_color(NC_2020.districts[4], NC_2020),
+    '#D45557', 'Should return the red district color for District 5');
+
+assert.equal(plan.which_district_color(NC_2020.districts[5], NC_2020),
+    '#B56E6A', 'Should return the reddish district color for District 6');
+
+assert.equal(plan.which_district_color(NC_2020.districts[6], NC_2020),
+    '#D45557', 'Should return the red district color for District 7');
+
+assert.equal(plan.which_district_color(NC_2020.districts[7], NC_2020),
+    '#D45557', 'Should return the red district color for District 8');
+
+assert.equal(plan.which_district_color(NC_2020.districts[8], NC_2020),
+    '#D45557', 'Should return the red district color for District 9');
+
+assert.equal(plan.which_district_color(NC_2020.districts[9], NC_2020),
+    '#D45557', 'Should return the red district color for District 10');
+
+assert.equal(plan.which_district_color(NC_2020.districts[10], NC_2020),
+    '#D45557', 'Should return the red district color for District 11');
+
+assert.equal(plan.which_district_color(NC_2020.districts[11], NC_2020),
+    '#4D90D1', 'Should return the blue district color for District 12');
+
+assert.equal(plan.which_district_color(NC_2020.districts[12], NC_2020),
+    '#D45557', 'Should return the red district color for District 13');
 
 // Display preparation functions
 
