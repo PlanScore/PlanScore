@@ -709,13 +709,27 @@ function load_plan_map(url, div, plan)
 
     function on_loaded_geojson(data)
     {
+        function district_popup_content(layer)
+        {
+            var index = data.features.indexOf(layer.feature),
+                incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'},
+                has_incumbency = (plan.model && plan.model.incumbency 
+                    && plan.incumbents && plan.incumbents.length == plan.districts.length);
+
+            if(has_incumbency) {
+                return 'District ' + (index + 1) + '<br>' + incumbency[plan.incumbents[index]];
+            }
+
+            return 'District ' + (index + 1);
+        }
+
         var geojson = L.geoJSON(data, {
             style: function(feature)
             {
                 var district = plan.districts[data.features.indexOf(feature)];
                 return { weight: 2, fillOpacity: .5, color: which_district_color(district, plan) };
             }
-            });
+            }).bindPopup(district_popup_content);
 
         console.log('GeoJSON bounds:', geojson.getBounds());
 
