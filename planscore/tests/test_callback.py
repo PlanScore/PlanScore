@@ -32,6 +32,32 @@ class TestCallback (unittest.TestCase):
         self.assertEqual(put_upload_index.mock_calls[0][1][1].description, 'Yo')
         self.assertEqual(put_upload_index.mock_calls[0][1][1].incumbents, ['O'])
 
+    def test_ordered_incumbents(self):
+        ''' ordered_incumbents() returns incumbents in the right order.
+        '''
+        order1 = callback.ordered_incumbents({'incumbent-1': 'A'})
+        self.assertEqual(order1, ['A'])
+        
+        order2 = callback.ordered_incumbents({'incumbent-1': 'A', 'other': 'C'})
+        self.assertEqual(order2, ['A'])
+        
+        order3 = callback.ordered_incumbents({'incumbent-1': 'A', 'incumbent-2': 'B'})
+        self.assertEqual(order3, ['A', 'B'])
+        
+        order4 = callback.ordered_incumbents({})
+        self.assertEqual(order4, [])
+        
+        order5 = callback.ordered_incumbents({'incumbent-1': 'A', 'incumbent-n': 'B'})
+        self.assertEqual(order5, ['A'])
+        
+        order6 = callback.ordered_incumbents({'Incumbent-1': 'A', 'INCUMBENT-2': 'B'})
+        self.assertEqual(order6, ['A', 'B'])
+        
+        incumbents9 = {f'incumbent-{n}': chr(n + 64) for n in range(1, 27)}
+        expected9 = [chr(n + 64) for n in range(1, 27)]
+        order9 = callback.ordered_incumbents(incumbents9)
+        self.assertEqual(order9, expected9)
+
     @unittest.mock.patch('planscore.callback.create_upload')
     @unittest.mock.patch('boto3.client')
     def test_lambda_handler(self, boto3_client, create_upload):
