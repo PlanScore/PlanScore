@@ -73,6 +73,12 @@ basedir6 = pp.join(pp.dirname(__file__), 'data', 'sample-NC5.1')
 upload(prefix6, basedir6, pp.join(basedir6, '*.*'))
 upload(prefix6, basedir6, pp.join(basedir6, '*', '*.*'))
 
+prefix7 = pp.join('uploads', 'sample-NC2020')
+basedir7 = pp.join(pp.dirname(__file__), 'data', 'sample-NC2020')
+
+upload(prefix7, basedir7, pp.join(basedir7, '*.*'))
+upload(prefix7, basedir7, pp.join(basedir7, '*', '*.*'))
+
 # Lambda function setup
 
 print('--> Set up Lambda', ENDPOINT_LAM)
