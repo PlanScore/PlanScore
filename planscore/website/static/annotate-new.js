@@ -98,7 +98,7 @@ function get_description(plan, modified_at)
 }
 
 function load_plan_preread(url, message_section, preread_section, description,
-    incumbency_unavailable, incumbency_scenarios, first_incumbent_row)
+    incumbency_unavailable, incumbency_scenarios, first_incumbent_row, map_url, map_div)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -145,6 +145,9 @@ function load_plan_preread(url, message_section, preread_section, description,
             table_body.appendChild(new_row);
             row_inputs[1].checked = true;
         }
+
+        // Go on to load the map.
+        load_plan_map(map_url, map_div, plan);
     }
 
     request.onload = function()
@@ -160,6 +163,79 @@ function load_plan_preread(url, message_section, preread_section, description,
         }
         
         show_message('The district plan failed to load.', preread_section, message_section);
+    };
+
+    request.onerror = function() { /* There was a connection error of some sort */ };
+    request.send();
+}
+
+function load_plan_map(url, div, plan)
+{
+    var request = new XMLHttpRequest();
+    request.open('GET', url, true);
+
+    function on_loaded_geojson(data)
+    {
+        var geojson = L.geoJSON(data, {
+            style: { weight: 2, fillOpacity: .5, color: '#999', fillColor: '#ccc' }
+            /*
+            style: function(feature)
+            {
+                var district = plan.districts[data.features.indexOf(feature)];
+                return { weight: 2, fillOpacity: .5, color: which_district_color(district, plan) };
+            }
+            */
+            }).bindPopup(function(layer) {
+            
+            var district = 1 + data.features.indexOf(layer.feature);
+            return 'District ' + district;
+            
+            });
+
+        console.log('GeoJSON bounds:', geojson.getBounds());
+        
+        // Initialize the map on the passed div in the middle of the ocean
+        var map = L.map(div, {
+            scrollWheelZoom: false,
+            zoomControl: false,
+            center: [0, 0],
+            zoom: 8
+        });
+
+        var pane = map.createPane('labels');
+        pane.style.zIndex = 650; // http://leafletjs.com/examples/map-panes/
+        pane.style.pointerEvents = 'none';
+
+        // Add Toner tiles for base map
+        L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy;<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy;<a href="https://carto.com/attribution">CARTO</a>',
+            maxZoom: 18
+        }).addTo(map);
+
+        // Add a GeoJSON layer and fit it into view
+        geojson.addTo(map);
+        map.fitBounds(geojson.getBounds());
+
+        // Add Toner label tiles for base map
+        L.tileLayer('https://stamen-tiles.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy;<a href="http://stamen.com/">Stamen</a>',
+            pane: 'labels',
+            maxZoom: 18
+        }).addTo(map);
+        
+        map.addControl(L.control.zoom({'position': 'topright'}));
+        //map.addControl(new L.Control.PartyLegend({'position': 'topleft'}));
+    }
+
+    request.onload = function()
+    {
+        if(request.status >= 200 && request.status < 400)
+        {
+            // Returns a GeoJSON dictionary
+            var data = JSON.parse(request.responseText);
+            console.log('Loaded map:', data);
+            on_loaded_geojson(data);
+        }
     };
 
     request.onerror = function() { /* There was a connection error of some sort */ };

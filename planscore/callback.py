@@ -5,7 +5,7 @@ More details on "success_action_redirect" in browser-based S3 uploads:
 
     http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-post-example.html
 '''
-import boto3, itsdangerous, urllib.parse, json
+import boto3, itsdangerous, urllib.parse, json, re
 from . import after_upload, constants, util, website, data, score, observe
 
 def create_upload(s3, bucket, key, id, description, incumbents):
@@ -16,6 +16,16 @@ def create_upload(s3, bucket, key, id, description, incumbents):
         description=description, incumbents=incumbents)
     observe.put_upload_index(data.Storage(s3, bucket, None), upload)
     return upload
+
+def ordered_incumbents(query):
+    '''
+    '''
+    pattern = re.compile(r'^incumbent-(\d+)$', re.I)
+    
+    incumbents = [(int(pattern.match(key).group(1)), value)
+        for (key, value) in query.items() if pattern.match(key)]
+    
+    return [value for (key, value) in sorted(incumbents)]
 
 def get_redirect_url(website_base, id):
     '''
@@ -41,8 +51,7 @@ def lambda_handler(event, context):
             'body': 'Bad ID'
             }
     
-    incumbents = [value for (key, value) in sorted(query.items())
-        if key.startswith('incumbent')]
+    incumbents = ordered_incumbents(query)
     
     upload = create_upload(s3, query['bucket'], query['key'],
         id, query['description'], incumbents)
