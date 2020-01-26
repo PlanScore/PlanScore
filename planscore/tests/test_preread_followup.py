@@ -106,6 +106,32 @@ class TestPrereadFollowup (unittest.TestCase):
         self.assertEqual([f.GetField(name7) for f in features7],
             [str(i + 1) for i in range(18)])
     
+    @unittest.mock.patch('gzip.compress')
+    def test_put_geojson_file(self, compress):
+        ''' Geometry GeoJSON file is posted to S3
+        '''
+        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.gpkg')
+        s3, bucket, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
+        preread_followup.put_geojson_file(s3, bucket, upload, nullplan_path)
+        compress.assert_called_once_with(b'{"type": "FeatureCollection", "features": [\n{"type": "Feature", "properties": {}, "geometry": { "type": "Polygon", "coordinates": [ [ [ -0.000236, 0.0004533 ], [ -0.0006813, 0.0002468 ], [ -0.0006357, -0.0003487 ], [ -0.0000268, -0.0004694 ], [ -0.0000188, -0.0000215 ], [ -0.000236, 0.0004533 ] ] ] }},\n{"type": "Feature", "properties": {}, "geometry": { "type": "Polygon", "coordinates": [ [ [ -0.0002259, 0.0004311 ], [ 0.000338, 0.0006759 ], [ 0.0004452, 0.0006142 ], [ 0.0005525, 0.000059 ], [ 0.0005257, -0.0005069 ], [ 0.0003862, -0.0005659 ], [ -0.0000939, -0.0004935 ], [ -0.0001016, -0.0004546 ], [ -0.0000268, -0.0004694 ], [ -0.0000188, -0.0000215 ], [ -0.0002259, 0.0004311 ] ] ] }}\n]}')
+        s3.put_object.assert_called_once_with(Bucket=bucket,
+            Key=upload.geometry_key.return_value,
+            Body=compress.return_value, ContentEncoding='gzip',
+            ACL='public-read', ContentType='text/json')
+    
+    @unittest.mock.patch('gzip.compress')
+    def test_put_geojson_file_missing_geometries(self, compress):
+        ''' Geometry GeoJSON file is posted to S3
+        '''
+        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-missing-geometries.geojson')
+        s3, bucket, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
+        preread_followup.put_geojson_file(s3, bucket, upload, nullplan_path)
+        compress.assert_called_once_with(b'{"type": "FeatureCollection", "features": [\n{"type": "Feature", "properties": {}, "geometry": { "type": "Polygon", "coordinates": [ [ [ -0.000236, 0.0004533 ], [ -0.0006813, 0.0002468 ], [ -0.0006357, -0.0003487 ], [ -0.0000268, -0.0004694 ], [ -0.0000188, -0.0000215 ], [ -0.000236, 0.0004533 ] ] ] }},\n{"type": "Feature", "properties": {}, "geometry": { "type": "Polygon", "coordinates": [ [ [ -0.0002259, 0.0004311 ], [ 0.000338, 0.0006759 ], [ 0.0004452, 0.0006142 ], [ 0.0005525, 0.000059 ], [ 0.0005257, -0.0005069 ], [ 0.0003862, -0.0005659 ], [ -0.0000939, -0.0004935 ], [ -0.0001016, -0.0004546 ], [ -0.0000268, -0.0004694 ], [ -0.0000188, -0.0000215 ], [ -0.0002259, 0.0004311 ] ] ] }},\n{"type": "Feature", "properties": {}, "geometry": { "type": "GeometryCollection", "geometries": [ ] }}\n]}')
+        s3.put_object.assert_called_once_with(Bucket=bucket,
+            Key=upload.geometry_key.return_value,
+            Body=compress.return_value, ContentEncoding='gzip',
+            ACL='public-read', ContentType='text/json')
+    
     def test_get_redirect_url(self):
         ''' Expected redirect URL is returned from get_redirect_url()
         '''
@@ -227,10 +253,11 @@ class TestPrereadFollowup (unittest.TestCase):
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.observe.put_upload_index')
+    @unittest.mock.patch('planscore.preread_followup.put_geojson_file')
     @unittest.mock.patch('planscore.util.unzip_shapefile')
     @unittest.mock.patch('planscore.preread_followup.count_district_geometries')
     @unittest.mock.patch('planscore.preread_followup.guess_state_model')
-    def test_commence_upload_parsing_zipped_file(self, guess_state_model, count_district_geometries, unzip_shapefile, put_upload_index, temporary_buffer_file):
+    def test_commence_upload_parsing_zipped_file(self, guess_state_model, count_district_geometries, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'
@@ -256,6 +283,9 @@ class TestPrereadFollowup (unittest.TestCase):
         temporary_buffer_file.assert_called_once_with('null-plan.shp.zip', None)
         self.assertIsNone(info)
     
+        self.assertEqual(put_geojson_file.mock_calls[0][1][:3], (s3, bucket, upload))
+        self.assertIs(put_geojson_file.mock_calls[0][1][3], unzip_shapefile.return_value)
+
         self.assertEqual(len(put_upload_index.mock_calls), 1)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
         self.assertEqual(len(put_upload_index.mock_calls[0][1][1].districts), 2)
