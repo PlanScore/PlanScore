@@ -98,7 +98,7 @@ function get_description(plan, modified_at)
 }
 
 function load_plan_preread(url, message_section, preread_section, description,
-    incumbency_unavailable, incumbency_scenarios, first_incumbent_row)
+    incumbency_unavailable, incumbency_scenarios, first_incumbent_row, map_url, map_div)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -145,6 +145,9 @@ function load_plan_preread(url, message_section, preread_section, description,
             table_body.appendChild(new_row);
             row_inputs[1].checked = true;
         }
+
+        // Go on to load the map.
+        load_plan_map(map_url, map_div, plan);
     }
 
     request.onload = function()
@@ -160,6 +163,39 @@ function load_plan_preread(url, message_section, preread_section, description,
         }
         
         show_message('The district plan failed to load.', preread_section, message_section);
+    };
+
+    request.onerror = function() { /* There was a connection error of some sort */ };
+    request.send();
+}
+
+function load_plan_map(url, div, plan)
+{
+    var request = new XMLHttpRequest();
+    request.open('GET', url, true);
+
+    function on_loaded_geojson(data)
+    {
+        var geojson = L.geoJSON(data, {
+            style: function(feature)
+            {
+                var district = plan.districts[data.features.indexOf(feature)];
+                return { weight: 2, fillOpacity: .5, color: which_district_color(district, plan) };
+            }
+            });
+
+        console.log('GeoJSON bounds:', geojson.getBounds());
+    }
+
+    request.onload = function()
+    {
+        if(request.status >= 200 && request.status < 400)
+        {
+            // Returns a GeoJSON dictionary
+            var data = JSON.parse(request.responseText);
+            console.log('Loaded map:', data);
+            on_loaded_geojson(data);
+        }
     };
 
     request.onerror = function() { /* There was a connection error of some sort */ };
