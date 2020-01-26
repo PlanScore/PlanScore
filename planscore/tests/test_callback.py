@@ -53,8 +53,8 @@ class TestCallback (unittest.TestCase):
         order6 = callback.ordered_incumbents({'Incumbent-1': 'A', 'INCUMBENT-2': 'B'})
         self.assertEqual(order6, ['A', 'B'])
         
-        incumbents9 = {f'incumbent-{n}': chr(n + 64) for n in range(1, 27)}
-        expected9 = [chr(n + 64) for n in range(1, 27)]
+        incumbents9 = {f'incumbent-{n}': chr(n) for n in range(128)}
+        expected9 = [chr(n) for n in range(128)]
         order9 = callback.ordered_incumbents(incumbents9)
         self.assertEqual(order9, expected9)
 
