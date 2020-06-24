@@ -25,8 +25,8 @@ jobs:
       - run: pip3 install awscli
       - attach_workspace:
           at: ~/repo
-      - run: aws s3 sync --dryrun --acl public-read --cache-control 'public, max-age=300' WEBSITE_OUTPUT/ s3://planscore.org-static-site/
-      - run: aws s3 sync --dryrun --acl public-read --cache-control 'public, max-age=300' --delete WEBSITE_OUTPUT/ s3://planscore.org-static-site/
+      - run: aws s3 sync --acl public-read --cache-control 'public, max-age=300' WEBSITE_OUTPUT/ s3://planscore.org-static-site/
+      - run: aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete WEBSITE_OUTPUT/ s3://planscore.org-static-site/
 
 workflows:
   version: 2
@@ -40,4 +40,3 @@ workflows:
             branches:
               only:
                 - static-site
-                - migurski/fix-circleci-static
