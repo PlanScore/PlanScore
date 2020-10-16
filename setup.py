@@ -25,6 +25,7 @@ setup(
         'Jinja2 == 2.9.6',
         'Frozen-Flask == 0.14',
         'Markdown == 2.6.8',
+        'numpy == 1.19.2',
         ],
     extras_require = {
         'GDAL': ['GDAL == 2.1.3'],
