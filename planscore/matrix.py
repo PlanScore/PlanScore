@@ -41,3 +41,16 @@ def load_model(state, year):
     args = values + [numpy.array(values)]
     
     return Model(*args)
+
+def apply_model(districts, model):
+    ''' districts is an array of two-element tuples:
+        - Democratic vote portion from 0. to 1.
+        - -1 for Republican, 0 for open seat, and 1 for Democratic incumbents
+    '''
+    AD = numpy.array([
+        [1, vote + VOTE_ADJUST, incumbency] * 3
+        for (vote, incumbency)
+        in districts
+    ])
+
+    return AD.dot(model.array)

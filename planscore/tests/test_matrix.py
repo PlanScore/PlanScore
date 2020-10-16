@@ -29,3 +29,31 @@ class TestMatrix (unittest.TestCase):
         self.assertAlmostEqual(model.array[6,0], 0.04267097)
         self.assertAlmostEqual(model.array[7,0], -0.14404704)
         self.assertAlmostEqual(model.array[8,0], 0.00550084)
+    
+    def test_apply_model(self):
+        model = matrix.load_model('ca', '2012')
+        
+        R = matrix.apply_model(
+            [
+                (.4, -1),
+                (.5, -1),
+                (.6, -1),
+                (.4, 0),
+                (.5, 0),
+                (.6, 0),
+                (.4, 1),
+                (.5, 1),
+                (.6, 1),
+            ],
+            model,
+        )
+        
+        # In identical incumbent scenarios, predicted vote tracks presidential vote
+        self.assertTrue(R[0].sum() < R[1].sum() and R[1].sum() < R[2].sum())
+        self.assertTrue(R[3].sum() < R[4].sum() and R[4].sum() < R[5].sum())
+        self.assertTrue(R[6].sum() < R[7].sum() and R[7].sum() < R[8].sum())
+
+        # In identical vote scenarios, predicted vote tracks party incumbency
+        self.assertTrue(R[0].sum() < R[3].sum() and R[3].sum() < R[6].sum())
+        self.assertTrue(R[1].sum() < R[4].sum() and R[4].sum() < R[7].sum())
+        self.assertTrue(R[2].sum() < R[5].sum() and R[5].sum() < R[8].sum())
