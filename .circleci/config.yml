@@ -1,0 +1,42 @@
+version: 2
+jobs:
+
+  # Run tests.
+  Test:
+    docker:
+      - image: circleci/node:8.2
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run: yarn install
+      - run: npm run build
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - WEBSITE_OUTPUT
+  
+  # Deploy to S3.
+  Deploy:
+    docker:
+      - image: circleci/python:3.8
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run: pip3 install awscli
+      - attach_workspace:
+          at: ~/repo
+      - run: aws s3 sync --acl public-read --cache-control 'public, max-age=300' WEBSITE_OUTPUT/ s3://planscore.org-static-site/
+      - run: aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete WEBSITE_OUTPUT/ s3://planscore.org-static-site/
+
+workflows:
+  version: 2
+  everything:
+    jobs:
+      - Test
+      - Deploy:
+          requires:
+            - Test
+          filters:
+            branches:
+              only:
+                - static-site
