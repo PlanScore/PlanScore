@@ -56,7 +56,7 @@ export const drawBiasBellChart = (whichone, datavalue, htmldivid, boundtype, pla
     // replace CSS classes to change which curve image is being displayed as the backdrop
     const $div = $(`#${htmldivid}`);
     $div.removeClass('pb').removeClass('eg').removeClass('mm').addClass(whichone);
-    $div.removeClass('ushouse').removeClass('statehouse').removeClass('statesentate').addClass(boundtype);
+    $div.removeClass('ushouse').removeClass('statehouse').removeClass('statesenate').addClass(boundtype);
     $div.removeClass('election').removeClass('plan').addClass(planorelection);
 
     // normalize the value into a range of 0% to 100% within that range, to form an X axis position
