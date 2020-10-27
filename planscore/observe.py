@@ -4,6 +4,13 @@ import osgeo.ogr
 
 FUNCTION_NAME = 'PlanScore-ObserveTiles'
 
+def get_upload_index(storage, key):
+    '''
+    '''
+    got = storage.s3.get_object(Bucket=storage.bucket, Key=key)
+    
+    return data.Upload.from_json(got['Body'].read())
+
 def put_upload_index(storage, upload):
     ''' Save a JSON index and a plaintext file for this upload.
     '''
