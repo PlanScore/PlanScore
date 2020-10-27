@@ -7,6 +7,10 @@ class TestMatrix (unittest.TestCase):
     def test_adjustment(self):
         self.assertAlmostEqual(0. + matrix.VOTE_ADJUST, -.5, 2)
         self.assertAlmostEqual(1. + matrix.VOTE_ADJUST, .5, 2)
+    
+    def test_states(self):
+        for state in data.State:
+            self.assertIn(state, matrix.STATE, f'{state.value} should be in matrix.STATE')
 
     def test_load_model(self):
         model = matrix.load_model('ca', '2012')

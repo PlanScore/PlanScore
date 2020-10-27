@@ -631,7 +631,7 @@ class TestScore (unittest.TestCase):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
-            model = data.Model(data.State.NC, data.House.ushouse, 4, False, None),
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, None),
             districts = [
                 dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
                 dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
@@ -660,7 +660,7 @@ class TestScore (unittest.TestCase):
              [2.6, 5.4]],
         ])
         output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
-        self.assertEqual(model_votes.mock_calls[0][1], (data.State.NC, 2016, [(6, 2, 'O'), (5, 3, 'O'), (3, 5, 'O'), (2, 6, 'O')]))
+        self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, 2016, [(6, 2, 'O'), (5, 3, 'O'), (3, 5, 'O'), (2, 6, 'O')]))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2.7, 3.6, 5.2, 6.1], [5.3, 4.4, 2.8, 1.9]))
@@ -690,7 +690,7 @@ class TestScore (unittest.TestCase):
         ''' Incumbency values are correctly passedon for presidential vote only
         '''
         input = data.Upload(id=None, key=None,
-            model = data.Model(data.State.NC, data.House.ushouse, 4, False, None),
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, None),
             incumbents = ['R', 'D', 'R', 'D'],
             districts = [
                 dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
@@ -720,4 +720,4 @@ class TestScore (unittest.TestCase):
              [2.6, 5.4]],
         ])
         output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
-        self.assertEqual(model_votes.mock_calls[0][1], (data.State.NC, 2016, [(6, 2, 'R'), (5, 3, 'D'), (3, 5, 'R'), (2, 6, 'D')]))
+        self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, 2016, [(6, 2, 'R'), (5, 3, 'D'), (3, 5, 'R'), (2, 6, 'D')]))

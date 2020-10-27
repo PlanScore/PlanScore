@@ -19,6 +19,8 @@ INCUMBENCY = {
 }
 
 STATE = {
+    data.State.XX: 'ks', # Null Ranch
+    
     data.State.MD: 'md',
     data.State.NC: 'nc',
     data.State.PA: 'pa',
