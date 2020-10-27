@@ -224,7 +224,7 @@ class TestPrereadFollowup (unittest.TestCase):
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
-        guess_state_model.return_value = data.Model(data.State.XX, None, 2, True, 'data/XX/004')
+        guess_state_model.return_value = data.Model(data.State.XX, None, 2, True, '2020', 'data/XX/005-unified')
         
         @contextlib.contextmanager
         def nullplan_file(*args):
@@ -247,7 +247,7 @@ class TestPrereadFollowup (unittest.TestCase):
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
         self.assertEqual(len(put_upload_index.mock_calls[0][1][1].districts), 2)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].message,
-            'Found 2 districts in the "data/XX/004" None plan with 2 seats.')
+            'Found 2 districts in the "data/XX/005-unified" None plan with 2 seats.')
         
         self.assertEqual(len(count_district_geometries.mock_calls), 1)
         self.assertEqual(count_district_geometries.mock_calls[0][1][2], nullplan_path)
@@ -264,7 +264,7 @@ class TestPrereadFollowup (unittest.TestCase):
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.shp.zip'
-        guess_state_model.return_value = data.Model(data.State.XX, None, 2, True, 'data/XX/004')
+        guess_state_model.return_value = data.Model(data.State.XX, None, 2, True, '2020', 'data/XX/005-unified')
         
         @contextlib.contextmanager
         def nullplan_file(*args):
@@ -291,7 +291,7 @@ class TestPrereadFollowup (unittest.TestCase):
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
         self.assertEqual(len(put_upload_index.mock_calls[0][1][1].districts), 2)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].message,
-            'Found 2 districts in the "data/XX/004" None plan with 2 seats.')
+            'Found 2 districts in the "data/XX/005-unified" None plan with 2 seats.')
         
         self.assertEqual(len(count_district_geometries.mock_calls), 1)
         self.assertEqual(count_district_geometries.mock_calls[0][1][2], unzip_shapefile.return_value)

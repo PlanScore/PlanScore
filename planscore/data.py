@@ -65,12 +65,13 @@ class Progress:
 
 class Model:
 
-    def __init__(self, state:State, house:House, seats:int, incumbency:bool, key_prefix:str):
+    def __init__(self, state:State, house:House, seats:int, incumbency:bool, version:str, key_prefix:str):
         self.state = state
         self.house = house
         self.seats = seats
         self.key_prefix = key_prefix
         self.incumbency = incumbency
+        self.version = version
     
     def to_dict(self):
         return dict(
@@ -79,6 +80,7 @@ class Model:
             seats = self.seats,
             key_prefix = self.key_prefix,
             incumbency = self.incumbency,
+            version = self.version,
             )
     
     def to_json(self):
@@ -92,6 +94,7 @@ class Model:
             seats = int(data['seats']),
             key_prefix = str(data['key_prefix']),
             incumbency = bool(data.get('incumbency')),
+            version = str(data.get('version', '2017')),
             )
     
     @staticmethod
@@ -221,23 +224,23 @@ class Upload:
 # Active version of each state model
 
 MODELS2017 = [
-    Model(State.XX, House.statehouse,    2,  True, 'data/XX/004'),
-    Model(State.MD, House.ushouse,       8, False, 'data/MD/001-ushouse-open'),
-    Model(State.NC, House.ushouse,      13,  True, 'data/NC/008-ushouse'), # 0116f23
-    Model(State.NC, House.statesenate,  50, False, 'data/NC/006-ncsenate'),
-    Model(State.NC, House.statehouse,  120, False, 'data/NC/006-nchouse'),
-    Model(State.PA, House.ushouse,      18, False, 'data/PA/008-ushouse'), # 8c546bb
-    Model(State.PA, House.statesenate,  50, False, 'data/PA/006-statesenate-multizoom'), # 25d464159
-    Model(State.PA, House.statehouse,  203, False, 'data/PA/006-statehouse-multizoom'), # 25d464159
-    Model(State.VA, House.statehouse,  100, False, 'data/VA/001-statehouse-open'), # d2f65a55f
-    Model(State.WI, House.ushouse,       8, False, 'data/WI/002-ushouse'),
-    Model(State.WI, House.statesenate,  33, False, 'data/WI/002-statesenate'),
-    Model(State.WI, House.statehouse,   99, False, 'data/WI/003-stateassembly-open'), # a073026
+    Model(State.XX, House.statehouse,    2,  True, '2017', 'data/XX/004'),
+    Model(State.MD, House.ushouse,       8, False, '2017', 'data/MD/001-ushouse-open'),
+    Model(State.NC, House.ushouse,      13,  True, '2017', 'data/NC/008-ushouse'), # 0116f23
+    Model(State.NC, House.statesenate,  50, False, '2017', 'data/NC/006-ncsenate'),
+    Model(State.NC, House.statehouse,  120, False, '2017', 'data/NC/006-nchouse'),
+    Model(State.PA, House.ushouse,      18, False, '2017', 'data/PA/008-ushouse'), # 8c546bb
+    Model(State.PA, House.statesenate,  50, False, '2017', 'data/PA/006-statesenate-multizoom'), # 25d464159
+    Model(State.PA, House.statehouse,  203, False, '2017', 'data/PA/006-statehouse-multizoom'), # 25d464159
+    Model(State.VA, House.statehouse,  100, False, '2017', 'data/VA/001-statehouse-open'), # d2f65a55f
+    Model(State.WI, House.ushouse,       8, False, '2017', 'data/WI/002-ushouse'),
+    Model(State.WI, House.statesenate,  33, False, '2017', 'data/WI/002-statesenate'),
+    Model(State.WI, House.statehouse,   99, False, '2017', 'data/WI/003-stateassembly-open'), # a073026
     ]
 
 MODELS2020 = [
-    Model(State.XX, House.statehouse,    2,  True, 'data/XX/005-unified'), # b8e19879
-    Model(State.NC, House.ushouse,      13,  True, 'data/NC/009-unified'), # ec28001
-    Model(State.NC, House.statesenate,  50,  True, 'data/NC/009-unified'), # ec28001
-    Model(State.NC, House.statehouse,  120,  True, 'data/NC/009-unified'), # ec28001
+    Model(State.XX, House.statehouse,    2,  True, '2020', 'data/XX/005-unified'), # b8e19879
+    Model(State.NC, House.ushouse,      13,  True, '2020', 'data/NC/009-unified'), # ec28001
+    Model(State.NC, House.statesenate,  50,  True, '2020', 'data/NC/009-unified'), # ec28001
+    Model(State.NC, House.statehouse,  120,  True, '2020', 'data/NC/009-unified'), # ec28001
     ]
