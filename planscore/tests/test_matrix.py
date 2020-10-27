@@ -1,5 +1,6 @@
 import unittest, unittest.mock
 from .. import matrix, data
+import numpy
 
 class TestMatrix (unittest.TestCase):
 
@@ -58,39 +59,35 @@ class TestMatrix (unittest.TestCase):
         self.assertTrue(R[1].sum() < R[4].sum() and R[4].sum() < R[7].sum())
         self.assertTrue(R[2].sum() < R[5].sum() and R[5].sum() < R[8].sum())
     
-    def test_model_votes(self):
+    @unittest.mock.patch('planscore.matrix.load_model')
+    @unittest.mock.patch('planscore.matrix.apply_model')
+    def test_model_votes(self, apply_model, load_model):
+        apply_model.return_value = numpy.array([
+            [0.3, 0.4],
+            [0.45, 0.55],
+            [0.6, 0.7]
+        ])
+
         R = matrix.model_votes(
             data.State.NC,
             2016,
             [
                 (4, 6, 'R'),
-                (5, 5, 'R'),
-                (6, 4, 'R'),
-                (4, 6, 'O'),
                 (5, 5, 'O'),
-                (6, 4, 'O'),
-                (4, 6, 'D'),
-                (5, 5, 'D'),
                 (6, 4, 'D'),
             ],
         )
         
-        # In identical incumbent scenarios, predicted vote tracks presidential vote
-        self.assertTrue(R[0,:,0].sum() < R[1,:,0].sum() and R[1,:,0].sum() < R[2,:,0].sum())
-        self.assertTrue(R[3,:,0].sum() < R[4,:,0].sum() and R[4,:,0].sum() < R[5,:,0].sum())
-        self.assertTrue(R[6,:,0].sum() < R[7,:,0].sum() and R[7,:,0].sum() < R[8,:,0].sum())
+        self.assertEqual(apply_model.mock_calls[0][1], ([(.4, -1), (.5, 0), (.6, 1)], load_model.return_value))
+        self.assertEqual(load_model.mock_calls[0][1], ('nc', 2016))
 
-        # Repeat tests for Republican vote
-        self.assertTrue(R[0,:,1].sum() > R[1,:,1].sum() and R[1,:,1].sum() > R[2,:,1].sum())
-        self.assertTrue(R[3,:,1].sum() > R[4,:,1].sum() and R[4,:,1].sum() > R[5,:,1].sum())
-        self.assertTrue(R[6,:,1].sum() > R[7,:,1].sum() and R[7,:,1].sum() > R[8,:,1].sum())
+        self.assertEqual(R.tolist(), [
+            [[3.0, 7.0],
+             [4.0, 6.0]],
 
-        # In identical vote scenarios, predicted vote tracks party incumbency
-        self.assertTrue(R[0,:,0].sum() < R[3,:,0].sum() and R[3,:,0].sum() < R[6,:,0].sum())
-        self.assertTrue(R[1,:,0].sum() < R[4,:,0].sum() and R[4,:,0].sum() < R[7,:,0].sum())
-        self.assertTrue(R[2,:,0].sum() < R[5,:,0].sum() and R[5,:,0].sum() < R[8,:,0].sum())
+            [[4.5, 5.5],
+             [5.5, 4.5]],
 
-        # Repeat tests for Republican vote
-        self.assertTrue(R[0,:,1].sum() > R[3,:,1].sum() and R[3,:,1].sum() > R[6,:,1].sum())
-        self.assertTrue(R[1,:,1].sum() > R[4,:,1].sum() and R[4,:,1].sum() > R[7,:,1].sum())
-        self.assertTrue(R[2,:,1].sum() > R[5,:,1].sum() and R[5,:,1].sum() > R[8,:,1].sum())
+            [[6.0, 4.0],
+             [7.0, 3.0]],
+        ])
