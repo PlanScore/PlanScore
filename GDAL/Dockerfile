@@ -44,7 +44,7 @@ RUN \
 
 RUN \
   mkdir -p /tmp/gdal-2.1.3 && \
-  curl -L https://github.com/OSGeo/gdal/archive/tags/2.1.3.tar.gz | tar zxf - -C /tmp/gdal-2.1.3 --strip-components=1
+  curl -L https://github.com/OSGeo/gdal/archive/tags/v2.1.3.tar.gz | tar zxf - -C /tmp/gdal-2.1.3 --strip-components=1
 
 # Build + install GDAL
 
@@ -94,7 +94,7 @@ RUN \
 
 ENV PATH /tmp/virtualenv/bin:/var/task/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-RUN pip install 'GDAL == 2.1.3'
+RUN pip install 'numpy == 1.19.2' 'GDAL == 2.1.3'
 
 # Add Python deps to the function tarball
 
@@ -103,6 +103,9 @@ WORKDIR /tmp/virtualenv/lib/python3.6/site-packages
 RUN \
   tar -rvf \
     /tmp/task.tar \
+    numpy \
+    numpy-1.19.2.dist-info \
+    numpy.libs \
     gdalconst.py \
     ogr.py \
     osr.py \
