@@ -336,9 +336,8 @@ def calculate_district_biases(upload):
         # Skip everything if we don't see 2016 presidential votes
         return upload.clone()
     
-    print('=' * 40)
-    
-    districts = [
+    # Simple presidential vote input
+    input_districts = [
         (
             district['totals']['US President 2016 - DEM'],
             district['totals']['US President 2016 - REP'],
@@ -348,28 +347,24 @@ def calculate_district_biases(upload):
         in zip(upload.districts, upload.incumbents)
     ]
 
-    results = matrix.model_votes(upload.model.state, YEAR, districts)
+    # Get large number of simulated outputs
+    output_votes = matrix.model_votes(upload.model.state, YEAR, input_districts)
     
-    print('Model:', upload.model.to_json())
-    print('Districts:', districts)
-    print('Result:', results)
-    
+    # For each sim, a list of red votes and a list of blue votes in districts
     red_votes_blue_votes = [
-        (results[:,sim,1].tolist(), results[:,sim,0].tolist())
-        for sim in range(results.shape[1])
+        (output_votes[:,sim,1].tolist(), output_votes[:,sim,0].tolist())
+        for sim in range(output_votes.shape[1])
     ]
     
-    # EG alone gets a sensitivity test
+    # Calculate partisanship metrics for all simulations
+    MMDs = [calculate_MMD(r, b) for (r, b) in red_votes_blue_votes]
+    PBs = [calculate_PB(r, b) for (r, b) in red_votes_blue_votes]
+    
+    # EG alone also gets a sensitivity test for vote swing scenarios
     EGs = {
         swing: [calculate_EG(r, b, swing/100) for (r, b) in red_votes_blue_votes]
         for swing in (0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5)
     }
-    MMDs = [calculate_MMD(r, b) for (r, b) in red_votes_blue_votes]
-    PBs = [calculate_PB(r, b) for (r, b) in red_votes_blue_votes]
-
-    print(EGs)
-    print(MMDs)
-    print(PBs)
 
     summary_dict = {
         'Mean-Median': statistics.mean(MMDs),
@@ -388,8 +383,5 @@ def calculate_district_biases(upload):
             f'Efficiency Gap +{swing} Rep SD': statistics.stdev(EGs[-swing]),
         })
 
-    print('=' * 40)
-
     rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
     return upload.clone(summary=rounded_summary_dict)
-    

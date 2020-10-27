@@ -126,7 +126,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={'Voters': 10, 'Red Votes': 6, 'Blue Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
 
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
@@ -159,7 +159,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={'US House Rep Votes': 6, 'US House Dem Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
 
         self.assertEqual(output.summary['US House Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
@@ -192,7 +192,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={'SLDU Rep Votes': 6, 'SLDU Dem Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
 
         self.assertEqual(output.summary['SLDU Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
@@ -225,7 +225,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={'SLDL Rep Votes': 6, 'SLDL Dem Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
 
         self.assertEqual(output.summary['SLDL Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
@@ -261,7 +261,7 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
         self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
@@ -328,7 +328,7 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
@@ -413,7 +413,7 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
@@ -530,7 +530,7 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
@@ -591,7 +591,7 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
         self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
@@ -642,9 +642,10 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_district_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
         
         print('-' * 80)
+        print(input.to_json())
         print(output.to_json())
         print('-' * 80)
 
