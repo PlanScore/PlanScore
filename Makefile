@@ -5,6 +5,7 @@ live-lambda: planscore-lambda.zip
 		parallel -j9 ./deploy.py planscore-lambda.zip \
 		::: PlanScore-UploadFields PlanScore-Callback PlanScore-AfterUpload \
 		    PlanScore-UploadFieldsNew PlanScore-Preread PlanScore-PrereadFollowup \
+		    PlanScore-PostreadCallback PlanScore-PostreadCalculate \
 		    PlanScore-RunTile PlanScore-ObserveTiles
 	
 	./deploy-apigateway.py
