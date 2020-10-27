@@ -682,6 +682,15 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['Efficiency Gap +1 Rep'], calculate_EG.return_value)
         self.assertEqual(calculate_EG.mock_calls[SIMS*2][1], ([2.7, 3.6, 5.2, 6.1], [5.3, 4.4, 2.8, 1.9], -.01))
 
+        self.assertEqual(output.districts[0]['totals']['Republican Votes'], 2.27)
+        self.assertEqual(output.districts[0]['totals']['Democratic Votes'], 5.73)
+        self.assertEqual(output.districts[1]['totals']['Republican Votes'], 3.1)
+        self.assertEqual(output.districts[1]['totals']['Democratic Votes'], 4.9)
+        self.assertEqual(output.districts[2]['totals']['Republican Votes'], 4.77)
+        self.assertEqual(output.districts[2]['totals']['Democratic Votes'], 3.23)
+        self.assertEqual(output.districts[3]['totals']['Republican Votes'], 5.6)
+        self.assertEqual(output.districts[3]['totals']['Democratic Votes'], 2.4)
+
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')

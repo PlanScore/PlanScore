@@ -337,7 +337,7 @@ def calculate_district_biases(upload):
         return upload.clone()
     
     # Simple presidential vote input
-    input_districts = [
+    input_district_data = [
         (
             district['totals']['US President 2016 - DEM'],
             district['totals']['US President 2016 - REP'],
@@ -348,7 +348,19 @@ def calculate_district_biases(upload):
     ]
 
     # Get large number of simulated outputs
-    output_votes = matrix.model_votes(upload.model.state, YEAR, input_districts)
+    output_votes = matrix.model_votes(upload.model.state, YEAR, input_district_data)
+    
+    # Record per-district vote totals and confidence intervals
+    copied_districts = copy.deepcopy(upload.districts)
+    
+    for (i, district) in enumerate(copied_districts):
+        red_votes, blue_votes = output_votes[i,:,1], output_votes[i,:,0]
+        district['totals'].update({
+            'Democratic Votes': round(statistics.mean(blue_votes), constants.ROUND_COUNT),
+            'Republican Votes': round(statistics.mean(red_votes), constants.ROUND_COUNT),
+            'Democratic Votes SD': round(statistics.stdev(blue_votes), constants.ROUND_COUNT),
+            'Republican Votes SD': round(statistics.stdev(red_votes), constants.ROUND_COUNT)
+            })
     
     # For each sim, a list of red votes and a list of blue votes in districts
     red_votes_blue_votes = [
@@ -384,4 +396,4 @@ def calculate_district_biases(upload):
         })
 
     rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
-    return upload.clone(summary=rounded_summary_dict)
+    return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
