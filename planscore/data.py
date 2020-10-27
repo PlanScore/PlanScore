@@ -220,7 +220,7 @@ class Upload:
 
 # Active version of each state model
 
-MODELS = [
+MODELS2017 = [
     Model(State.XX, House.statehouse,    2,  True, 'data/XX/004'),
     Model(State.MD, House.ushouse,       8, False, 'data/MD/001-ushouse-open'),
     Model(State.NC, House.ushouse,      13,  True, 'data/NC/008-ushouse'), # 0116f23
@@ -233,4 +233,11 @@ MODELS = [
     Model(State.WI, House.ushouse,       8, False, 'data/WI/002-ushouse'),
     Model(State.WI, House.statesenate,  33, False, 'data/WI/002-statesenate'),
     Model(State.WI, House.statehouse,   99, False, 'data/WI/003-stateassembly-open'), # a073026
+    ]
+
+MODELS2020 = [
+    Model(State.XX, House.statehouse,    2,  True, 'data/XX/005-unified'), # b8e19879
+    Model(State.NC, House.ushouse,      13,  True, 'data/NC/009-unified'), # ec28001
+    Model(State.NC, House.statesenate,  50,  True, 'data/NC/009-unified'), # ec28001
+    Model(State.NC, House.statehouse,  120,  True, 'data/NC/009-unified'), # ec28001
     ]

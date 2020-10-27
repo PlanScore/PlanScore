@@ -164,6 +164,7 @@ class TestAfterUpload (unittest.TestCase):
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 11, 'NC'
         self.assertEqual(after_upload.guess_state_model('districts.shp').house, data.House.ushouse)
+        self.assertEqual(after_upload.guess_state_model('districts.shp').key_prefix, 'data/NC/008-ushouse')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 13, 'NC'
         self.assertEqual(after_upload.guess_state_model('districts.shp').house, data.House.ushouse)

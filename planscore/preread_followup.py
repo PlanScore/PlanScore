@@ -121,7 +121,7 @@ def guess_state_model(path):
 
     # Sort by log(seats) to findest smallest difference
     model_guesses = [(abs(math.log(len(features) / model.seats)), model)
-        for model in data.MODELS
+        for model in data.MODELS2020
         if model.state.value == state_abbr]
     
     return sorted(model_guesses)[0][1]

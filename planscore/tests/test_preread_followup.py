@@ -142,7 +142,7 @@ class TestPrereadFollowup (unittest.TestCase):
         ''' Test that guess_state_model() guesses the correct U.S. state and house.
         '''
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
-        self.assertEqual(preread_followup.guess_state_model(null_plan_path).key_prefix, 'data/XX/004')
+        self.assertEqual(preread_followup.guess_state_model(null_plan_path).key_prefix, 'data/XX/005-unified')
 
         nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
         self.assertEqual(preread_followup.guess_state_model(nc_plan_path).house, data.House.ushouse)
@@ -160,10 +160,11 @@ class TestPrereadFollowup (unittest.TestCase):
 
         # Real tests
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 2, 'XX'
-        self.assertEqual(preread_followup.guess_state_model('districts.shp').key_prefix, 'data/XX/004')
+        self.assertEqual(preread_followup.guess_state_model('districts.shp').key_prefix, 'data/XX/005-unified')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 11, 'NC'
         self.assertEqual(preread_followup.guess_state_model('districts.shp').house, data.House.ushouse)
+        self.assertEqual(preread_followup.guess_state_model('districts.shp').key_prefix, 'data/NC/009-unified')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 13, 'NC'
         self.assertEqual(preread_followup.guess_state_model('districts.shp').house, data.House.ushouse)
@@ -193,7 +194,7 @@ class TestPrereadFollowup (unittest.TestCase):
         ''' Test that guess_state_model() guesses the correct U.S. state and house.
         '''
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-missing-geometries.geojson')
-        self.assertEqual(preread_followup.guess_state_model(null_plan_path).key_prefix, 'data/XX/004')
+        self.assertEqual(preread_followup.guess_state_model(null_plan_path).key_prefix, 'data/XX/005-unified')
     
     @unittest.mock.patch('sys.stdout')
     def test_count_district_geometries(self, stdout):
