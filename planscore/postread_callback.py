@@ -64,7 +64,6 @@ def lambda_handler(event, context):
     event.update(upload.to_dict())
 
     lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
-    raise NotImplementedError()
     lam.invoke(FunctionName=postread_calculate.FUNCTION_NAME, InvocationType='Event',
         Payload=json.dumps(event).encode('utf8'))
     

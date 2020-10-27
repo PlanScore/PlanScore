@@ -15,6 +15,7 @@ functions = {
     'PlanScore-Preread': dict(Handler='lambda.preread', Timeout=3, **common),
     'PlanScore-PrereadFollowup': dict(Handler='lambda.preread_followup', Timeout=300, MemorySize=1024, **common),
     'PlanScore-PostreadCallback': dict(Handler='lambda.postread_callback', Timeout=300, MemorySize=1024, **common),
+    'PlanScore-PostreadCalculate': dict(Handler='lambda.postread_calculate', Timeout=300, MemorySize=1024, **common),
     'PlanScore-Callback': dict(Handler='lambda.callback', Timeout=3, **common),
     'PlanScore-AfterUpload': dict(Handler='lambda.after_upload', Timeout=300, MemorySize=1024, **common),
     'PlanScore-RunTile': dict(Handler='lambda.run_tile', Timeout=300, MemorySize=2048, **common),

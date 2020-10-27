@@ -66,26 +66,25 @@ class TestPostreadCallback (unittest.TestCase):
         get_upload_index.return_value = data.Upload(
             query['id'], query['key'], description=query['description'])
         
-        with self.assertRaises(NotImplementedError):
-            response = postread_callback.lambda_handler({'queryStringParameters': query}, None)
+        response = postread_callback.lambda_handler({'queryStringParameters': query}, None)
 
         self.assertEqual(get_upload_index.mock_calls[0][1][0].bucket, query['bucket'])
         self.assertEqual(get_upload_index.mock_calls[0][1][1], data.UPLOAD_INDEX_KEY.format(id=query['id']))
         
         self.assertEqual(dummy_upload.mock_calls[0][1], (query['key'], 'id'))
         
-        return # stop due to NotImplementedError
-        
         self.assertEqual(response['statusCode'], '302')
         self.assertEqual(response['headers']['Location'], 'https://example.com/plan.html?id')
         
         lambda_dict = boto3_client.return_value.invoke.mock_calls[0][2]
         
-        self.assertEqual(lambda_dict['FunctionName'], 'PlanScore-AfterUpload')
+        self.assertEqual(lambda_dict['FunctionName'], 'PlanScore-PostreadCalculate')
         self.assertEqual(lambda_dict['InvocationType'], 'Event')
         self.assertIn(b'"id": "id.k0_XwbOLGLUdv241zsPluNc3HYs"', lambda_dict['Payload'])
         self.assertIn(b'"key": "uploads/id/upload/file.geojson"', lambda_dict['Payload'])
         self.assertIn(b'"bucket": "planscore-bucket"', lambda_dict['Payload'])
+        self.assertIn(b'"description": "A fine new plan"', lambda_dict['Payload'])
+        self.assertIn(b'"incumbents": ["D", "R"]', lambda_dict['Payload'])
     
     @unittest.mock.patch('planscore.postread_callback.dummy_upload')
     def test_lambda_handler_bad_id(self, dummy_upload):
