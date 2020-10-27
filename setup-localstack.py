@@ -79,6 +79,11 @@ basedir7 = pp.join(pp.dirname(__file__), 'data', 'sample-NC2020')
 upload(prefix7, basedir7, pp.join(basedir7, '*.*'))
 upload(prefix7, basedir7, pp.join(basedir7, '*', '*.*'))
 
+prefix8 = pp.join('data', 'XX', '005-unified')
+basedir8 = pp.join(pp.dirname(__file__), 'planscore', 'tests', 'data', 'XX-unified')
+
+upload(prefix8, basedir8, pp.join(basedir8, '9', '*', '*.geojson'))
+
 # Lambda function setup
 
 print('--> Set up Lambda', ENDPOINT_LAM)
@@ -95,6 +100,10 @@ env = {
     'S3_ENDPOINT_URL': ENDPOINT_S3,
     'LAMBDA_ENDPOINT_URL': ENDPOINT_LAM,
     'API_ENDPOINT_URL': ENDPOINT_API,
+    
+    # boto3.session.Session().get_credentials() needs these to be set:
+    'AWS_ACCESS_KEY_ID': AWS_CREDS['aws_access_key_id'],
+    'AWS_SECRET_ACCESS_KEY': AWS_CREDS['aws_secret_access_key'],
     }
 
 print('    Environment:', ' '.join(['='.join(kv) for kv in env.items()]))

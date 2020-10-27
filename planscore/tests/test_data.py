@@ -50,6 +50,14 @@ class TestData (unittest.TestCase):
         self.assertEqual(model4.seats, 13)
         self.assertEqual(model4.key_prefix, 'data/NC/001')
         self.assertEqual(model4.incumbency, True)
+        self.assertEqual(model4.version, '2017')
+
+        model5 = data.Model.from_json('{"state": "NC", "house": "ushouse", "seats": 13, "key_prefix": "data/NC/001", "version": "2020"}')
+        self.assertEqual(model5.state, data.State.NC)
+        self.assertEqual(model5.house, data.House.ushouse)
+        self.assertEqual(model5.seats, 13)
+        self.assertEqual(model5.key_prefix, 'data/NC/001')
+        self.assertEqual(model5.version, '2020')
 
     def test_upload_storage(self):
         ''' Past and future data.Upload instances are readable
@@ -147,7 +155,7 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload8.start_time, upload7.start_time)
     
         upload9 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
-            model=data.Model(data.State.NC, data.House.ushouse, 13, False, 'data/NC/001'))
+            model=data.Model(data.State.NC, data.House.ushouse, 13, False, '2020', 'data/NC/001'))
         upload10 = data.Upload.from_json(upload9.to_json())
 
         self.assertEqual(upload10.id, upload9.id)
@@ -207,7 +215,7 @@ class TestData (unittest.TestCase):
         self.assertEqual(plaintext2, "Error: 'totals'\n")
 
         upload3 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
-            model=data.Model(data.State.XX, data.House.statehouse, 2, True, 'data/XX/000'),
+            model=data.Model(data.State.XX, data.House.statehouse, 2, True, '2020', 'data/XX/000'),
             incumbents=['O', 'D', 'R'],
             districts=[
                 { "totals": { "Democratic Votes": 100, "Population 2015": 200, "Republican Votes": 300 }, "compactness": { "Reock": .2 } },

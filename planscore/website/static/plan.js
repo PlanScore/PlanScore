@@ -3,7 +3,8 @@ var FIELDS = ['Population 2010', 'Population 2015', 'Black Population 2015',
     'Hispanic Population 2016', 'Citizen Voting-Age Population 2015',
     'Black Citizen Voting-Age Population 2015',
     'Hispanic Citizen Voting-Age Population 2015',
-    'Democratic Votes', 'Republican Votes'
+    'Democratic Votes', 'Republican Votes',
+    'US President 2016 - DEM', 'US President 2016 - REP'
     /*, 'Polsby-Popper', 'Reock'*/];
 
 var BLUE_COLOR_HEX = '#4D90D1',
@@ -342,6 +343,12 @@ function update_heading_titles(head)
     {
         head[head.indexOf('Democratic Votes')] = 'Predicted Democratic Vote Share';
         head[head.indexOf('Republican Votes')] = 'Predicted Republican Vote Share';
+    }
+
+    if(head.indexOf('US President 2016 - DEM') >= 0 && head.indexOf('US President 2016 - REP') >= 0)
+    {
+        head[head.indexOf('US President 2016 - DEM')] = 'US President 2016: Clinton (D)';
+        head[head.indexOf('US President 2016 - REP')] = 'US President 2016: Trump (R)';
     }
 
     if(head.indexOf('Citizen Voting-Age Population 2015') >= 0

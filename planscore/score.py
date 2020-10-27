@@ -6,9 +6,12 @@ of district plan and uploads summary JSON file.
 import io, os, gzip, posixpath, json, statistics, copy, time, itertools
 from osgeo import ogr
 import boto3, botocore.exceptions
-from . import data, constants
+from . import data, constants, matrix
 
 ogr.UseExceptions()
+
+# The hard-coded year to use for matrix, for now
+YEAR = 2016
 
 FIELD_NAMES = (
     # Toy fields
@@ -47,9 +50,11 @@ FIELD_NAMES = (
     # Census 2010 fields
     'Population 2010',
     
-    # Extra fields
+    # Fields for new unified, district-level plans
     'US President 2016 - DEM', 'US President 2016 - REP',
-    'US Senate 2016 - DEM', 'US Senate 2016 - REP'
+    
+    # Extra fields
+    'US Senate 2016 - DEM', 'US Senate 2016 - REP',
     )
 
 # Fields for "DEM000"-style simulated election vote totals from 2018 and 2019 PlanScore models.
@@ -318,5 +323,77 @@ def calculate_biases(upload):
         summary_dict[f'Efficiency Gap +{swing} Dem SD'] = statistics.stdev(EGs[swing])
         summary_dict[f'Efficiency Gap +{swing} Rep SD'] = statistics.stdev(EGs[-swing])
     
+    rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
+    return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
+
+def calculate_district_biases(upload):
+    ''' Calculate partisan metrics using district matrix with presidential vote only.
+    
+        Look for 2016 presidential vote totals to use national PlanScore model.
+    '''
+    if 'US President 2016 - DEM' not in upload.districts[0]['totals'] \
+    or 'US President 2016 - REP' not in upload.districts[0]['totals']:
+        # Skip everything if we don't see 2016 presidential votes
+        return upload.clone()
+    
+    # Simple presidential vote input
+    input_district_data = [
+        (
+            district['totals']['US President 2016 - DEM'],
+            district['totals']['US President 2016 - REP'],
+            incumbency,
+        )
+        for (district, incumbency)
+        in zip(upload.districts, upload.incumbents)
+    ]
+
+    # Get large number of simulated outputs
+    output_votes = matrix.model_votes(upload.model.state, YEAR, input_district_data)
+    
+    # Record per-district vote totals and confidence intervals
+    copied_districts = copy.deepcopy(upload.districts)
+    
+    for (i, district) in enumerate(copied_districts):
+        red_votes, blue_votes = output_votes[i,:,1], output_votes[i,:,0]
+        district['totals'].update({
+            'Democratic Votes': round(statistics.mean(blue_votes), constants.ROUND_COUNT),
+            'Republican Votes': round(statistics.mean(red_votes), constants.ROUND_COUNT),
+            'Democratic Votes SD': round(statistics.stdev(blue_votes), constants.ROUND_COUNT),
+            'Republican Votes SD': round(statistics.stdev(red_votes), constants.ROUND_COUNT)
+            })
+    
+    # For each sim, a list of red votes and a list of blue votes in districts
+    red_votes_blue_votes = [
+        (output_votes[:,sim,1].tolist(), output_votes[:,sim,0].tolist())
+        for sim in range(output_votes.shape[1])
+    ]
+    
+    # Calculate partisanship metrics for all simulations
+    MMDs = [calculate_MMD(r, b) for (r, b) in red_votes_blue_votes]
+    PBs = [calculate_PB(r, b) for (r, b) in red_votes_blue_votes]
+    
+    # EG alone also gets a sensitivity test for vote swing scenarios
+    EGs = {
+        swing: [calculate_EG(r, b, swing/100) for (r, b) in red_votes_blue_votes]
+        for swing in (0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5)
+    }
+
+    summary_dict = {
+        'Mean-Median': statistics.mean(MMDs),
+        'Mean-Median SD': statistics.stdev(MMDs),
+        'Partisan Bias': statistics.mean(PBs),
+        'Partisan Bias SD': statistics.stdev(PBs),
+        'Efficiency Gap': statistics.mean(EGs[0]),
+        'Efficiency Gap SD': statistics.stdev(EGs[0]),
+    }
+    
+    for swing in (1, 2, 3, 4, 5):
+        summary_dict.update({
+            f'Efficiency Gap +{swing} Dem': statistics.mean(EGs[swing]),
+            f'Efficiency Gap +{swing} Rep': statistics.mean(EGs[-swing]),
+            f'Efficiency Gap +{swing} Dem SD': statistics.stdev(EGs[swing]),
+            f'Efficiency Gap +{swing} Rep SD': statistics.stdev(EGs[-swing]),
+        })
+
     rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
     return upload.clone(districts=copied_districts, summary=rounded_summary_dict)

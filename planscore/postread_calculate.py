@@ -7,7 +7,7 @@ import os, io, json, urllib.parse, gzip, functools, time, math, threading
 import boto3, osgeo.ogr
 from . import util, data, score, website, prepare_state, constants, tiles, observe
 
-FUNCTION_NAME = 'PlanScore-AfterUpload'
+FUNCTION_NAME = 'PlanScore-PostreadCalculate'
 EMPTY_GEOMETRY = osgeo.ogr.Geometry(osgeo.ogr.wkbGeometryCollection)
 
 osgeo.ogr.UseExceptions()
@@ -56,20 +56,15 @@ def commence_upload_scoring(s3, bucket, upload):
             ds_path = util.unzip_shapefile(ul_path, os.path.dirname(ul_path))
         else:
             ds_path = ul_path
-        model = guess_state_model(ds_path)
-        storage = data.Storage(s3, bucket, model.key_prefix)
+        storage = data.Storage(s3, bucket, upload.model.key_prefix)
         observe.put_upload_index(storage, upload)
         put_geojson_file(s3, bucket, upload, ds_path)
         geometry_keys = put_district_geometries(s3, bucket, upload, ds_path)
         
-        # Used so that the length of the upload districts array is correct
-        district_blanks = [None] * len(geometry_keys)
-        forward_upload = upload.clone(model=model, districts=district_blanks)
-        
         # New tile-based method comes first to preserve user experience
-        tile_keys = load_model_tiles(storage, forward_upload.model)
-        start_tile_observer_lambda(storage, forward_upload, tile_keys)
-        fan_out_tile_lambdas(storage, forward_upload, tile_keys)
+        tile_keys = load_model_tiles(storage, upload.model)
+        start_tile_observer_lambda(storage, upload, tile_keys)
+        fan_out_tile_lambdas(storage, upload, tile_keys)
 
 def put_district_geometries(s3, bucket, upload, path):
     '''
@@ -171,54 +166,6 @@ def start_tile_observer_lambda(storage, upload, tile_keys):
 
     lam.invoke(FunctionName=observe.FUNCTION_NAME, InvocationType='Event',
         Payload=json.dumps(payload).encode('utf8'))
-
-def guess_state_model(path):
-    ''' Guess state model for the given input path.
-    '''
-    ds = osgeo.ogr.Open(path)
-    
-    if not ds:
-        raise RuntimeError('Could not open file to guess U.S. state')
-    
-    def _union_safely(a, b):
-        if a is None and b is None:
-            return None
-        elif a is None:
-            return b
-        elif b is None:
-            return a
-        else:
-            return a.Union(b)
-    
-    features = list(ds.GetLayer(0))
-    geometries = [feature.GetGeometryRef() for feature in features]
-    footprint = functools.reduce(_union_safely, geometries)
-    
-    if footprint.GetSpatialReference():
-        footprint.TransformTo(prepare_state.EPSG4326)
-    
-    states_ds = osgeo.ogr.Open(states_path)
-    states_layer = states_ds.GetLayer(0)
-    states_layer.SetSpatialFilter(footprint)
-    state_guesses = []
-    
-    for state_feature in states_layer:
-        overlap = state_feature.GetGeometryRef().Intersection(footprint)
-        state_guesses.append((overlap.Area(), state_feature.GetField('STUSPS')))
-    
-    if state_guesses:
-        # Sort by area to findest largest overlap
-        state_abbr = [abbr for (_, abbr) in sorted(state_guesses)][-1]
-    else:
-        # Fall back to Null Island
-        state_abbr = 'XX'
-
-    # Sort by log(seats) to findest smallest difference
-    model_guesses = [(abs(math.log(len(features) / model.seats)), model)
-        for model in data.MODELS2017
-        if model.state.value == state_abbr]
-    
-    return sorted(model_guesses)[0][1]
 
 def put_geojson_file(s3, bucket, upload, path):
     ''' Save a property-less GeoJSON file for this upload.

@@ -2,6 +2,7 @@ import unittest, unittest.mock, io, os, contextlib, json, gzip, itertools, stati
 from .. import score, data
 import botocore.exceptions
 from osgeo import ogr, gdal
+import numpy
 
 should_gzip = itertools.cycle([True, False])
 
@@ -126,7 +127,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={'Voters': 10, 'Red Votes': 6, 'Blue Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
 
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
@@ -159,7 +160,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={'US House Rep Votes': 6, 'US House Dem Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
 
         self.assertEqual(output.summary['US House Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
@@ -192,7 +193,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={'SLDU Rep Votes': 6, 'SLDU Dem Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
 
         self.assertEqual(output.summary['SLDU Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
@@ -225,7 +226,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={'SLDL Rep Votes': 6, 'SLDL Dem Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
 
         self.assertEqual(output.summary['SLDL Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
@@ -261,7 +262,7 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
         self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
@@ -328,7 +329,7 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
@@ -413,7 +414,7 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
@@ -530,7 +531,7 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
@@ -591,7 +592,7 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
         self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
@@ -621,3 +622,111 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.districts[2]['totals']['Democratic Votes'], 6/2)
         self.assertEqual(output.districts[3]['totals']['Republican Votes'], 11/2)
         self.assertEqual(output.districts[3]['totals']['Democratic Votes'], 5/2)
+
+    @unittest.mock.patch('planscore.score.calculate_MMD')
+    @unittest.mock.patch('planscore.score.calculate_PB')
+    @unittest.mock.patch('planscore.score.calculate_EG')
+    @unittest.mock.patch('planscore.matrix.model_votes')
+    def test_calculate_gap_unified(self, model_votes, calculate_EG, calculate_PB, calculate_MMD):
+        ''' Efficiency gap can be correctly calculated from presidential vote only
+        '''
+        input = data.Upload(id=None, key=None,
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, '2020', None),
+            districts = [
+                dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
+                dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
+                dict(totals={'US President 2016 - REP': 5, 'US President 2016 - DEM': 3}, tile=None),
+                dict(totals={'US President 2016 - REP': 6, 'US President 2016 - DEM': 2}, tile=None),
+                ])
+        
+        calculate_MMD.return_value = 0
+        calculate_PB.return_value = 0
+        calculate_EG.return_value = 0
+        model_votes.return_value = numpy.array([
+            [[5.3, 2.7],
+             [6.0, 2.0],
+             [5.9, 2.1]],
+
+            [[4.4, 3.6],
+             [5.2, 2.8],
+             [5.1, 2.9]],
+
+            [[2.8, 5.2],
+             [3.5, 4.5],
+             [3.4, 4.6]],
+
+            [[1.9, 6.1],
+             [2.7, 5.3],
+             [2.6, 5.4]],
+        ])
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
+        self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, 2016, [(6, 2, 'O'), (5, 3, 'O'), (3, 5, 'O'), (2, 6, 'O')]))
+        
+        self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
+        self.assertEqual(calculate_MMD.mock_calls[0][1], ([2.7, 3.6, 5.2, 6.1], [5.3, 4.4, 2.8, 1.9]))
+
+        self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
+        self.assertEqual(calculate_PB.mock_calls[0][1], ([2.7, 3.6, 5.2, 6.1], [5.3, 4.4, 2.8, 1.9]))
+        
+        SIMS = model_votes.return_value.shape[1]
+
+        # First round of sims
+        self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[SIMS*0][1], ([2.7, 3.6, 5.2, 6.1], [5.3, 4.4, 2.8, 1.9], 0.))
+
+        # Second round of sims
+        self.assertEqual(output.summary['Efficiency Gap +1 Dem'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[SIMS*1][1], ([2.7, 3.6, 5.2, 6.1], [5.3, 4.4, 2.8, 1.9], .01))
+
+        # Third round of sims
+        self.assertEqual(output.summary['Efficiency Gap +1 Rep'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[SIMS*2][1], ([2.7, 3.6, 5.2, 6.1], [5.3, 4.4, 2.8, 1.9], -.01))
+
+        self.assertEqual(output.districts[0]['totals']['Republican Votes'], 2.27)
+        self.assertEqual(output.districts[0]['totals']['Democratic Votes'], 5.73)
+        self.assertEqual(output.districts[1]['totals']['Republican Votes'], 3.1)
+        self.assertEqual(output.districts[1]['totals']['Democratic Votes'], 4.9)
+        self.assertEqual(output.districts[2]['totals']['Republican Votes'], 4.77)
+        self.assertEqual(output.districts[2]['totals']['Democratic Votes'], 3.23)
+        self.assertEqual(output.districts[3]['totals']['Republican Votes'], 5.6)
+        self.assertEqual(output.districts[3]['totals']['Democratic Votes'], 2.4)
+
+    @unittest.mock.patch('planscore.score.calculate_MMD')
+    @unittest.mock.patch('planscore.score.calculate_PB')
+    @unittest.mock.patch('planscore.score.calculate_EG')
+    @unittest.mock.patch('planscore.matrix.model_votes')
+    def test_calculate_gap_unified_incumbents(self, model_votes, calculate_EG, calculate_PB, calculate_MMD):
+        ''' Incumbency values are correctly passedon for presidential vote only
+        '''
+        input = data.Upload(id=None, key=None,
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, '2017', None),
+            incumbents = ['R', 'D', 'R', 'D'],
+            districts = [
+                dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
+                dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
+                dict(totals={'US President 2016 - REP': 5, 'US President 2016 - DEM': 3}, tile=None),
+                dict(totals={'US President 2016 - REP': 6, 'US President 2016 - DEM': 2}, tile=None),
+                ])
+        
+        calculate_MMD.return_value = 0
+        calculate_PB.return_value = 0
+        calculate_EG.return_value = 0
+        model_votes.return_value = numpy.array([
+            [[5.3, 2.7],
+             [6.0, 2.0],
+             [5.9, 2.1]],
+
+            [[4.4, 3.6],
+             [5.2, 2.8],
+             [5.1, 2.9]],
+
+            [[2.8, 5.2],
+             [3.5, 4.5],
+             [3.4, 4.6]],
+
+            [[1.9, 6.1],
+             [2.7, 5.3],
+             [2.6, 5.4]],
+        ])
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
+        self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, 2016, [(6, 2, 'R'), (5, 3, 'D'), (3, 5, 'R'), (2, 6, 'D')]))

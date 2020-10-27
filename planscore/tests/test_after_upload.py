@@ -164,6 +164,7 @@ class TestAfterUpload (unittest.TestCase):
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 11, 'NC'
         self.assertEqual(after_upload.guess_state_model('districts.shp').house, data.House.ushouse)
+        self.assertEqual(after_upload.guess_state_model('districts.shp').key_prefix, 'data/NC/008-ushouse')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 13, 'NC'
         self.assertEqual(after_upload.guess_state_model('districts.shp').house, data.House.ushouse)
@@ -293,7 +294,7 @@ class TestAfterUpload (unittest.TestCase):
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
-        guess_state_model.return_value = data.Model(data.State.XX, None, 2, True, 'data/XX/004')
+        guess_state_model.return_value = data.Model(data.State.XX, None, 2, True, '2017', 'data/XX/004')
         
         @contextlib.contextmanager
         def nullplan_file(*args):
@@ -345,7 +346,7 @@ class TestAfterUpload (unittest.TestCase):
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.shp.zip'
-        guess_state_model.return_value = data.Model(data.State.XX, None, 2, True, 'data/XX/004')
+        guess_state_model.return_value = data.Model(data.State.XX, None, 2, True, '2017', 'data/XX/004')
         
         @contextlib.contextmanager
         def nullplan_file(*args):

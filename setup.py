@@ -10,7 +10,7 @@ setup(
         ],
     test_suite = 'planscore.tests',
     package_data = {
-        'planscore': ['geodata/*.*'],
+        'planscore': ['geodata/*.*', 'model/*.csv'],
         'planscore.website': ['templates/*.html', 'static/*.*'],
         'planscore.tests': ['data/*.*', 'data/*/*/*/*.geojson',
             'data/uploads/sample-plan/districts/?.json',
@@ -27,7 +27,7 @@ setup(
         'Markdown == 2.6.8',
         ],
     extras_require = {
-        'GDAL': ['GDAL == 2.1.3'],
+        'compiled': ['GDAL == 2.1.3', 'numpy == 1.19.2'],
         },
     entry_points = dict(
         console_scripts = [

@@ -4,6 +4,13 @@ import osgeo.ogr
 
 FUNCTION_NAME = 'PlanScore-ObserveTiles'
 
+def get_upload_index(storage, key):
+    '''
+    '''
+    got = storage.s3.get_object(Bucket=storage.bucket, Key=key)
+    
+    return data.Upload.from_json(got['Body'].read())
+
 def put_upload_index(storage, upload):
     ''' Save a JSON index and a plaintext file for this upload.
     '''
@@ -183,8 +190,9 @@ def lambda_handler(event, context):
     upload4 = score.calculate_bias(upload3)
     upload5 = score.calculate_open_biases(upload4)
     upload6 = score.calculate_biases(upload5)
+    upload7 = score.calculate_district_biases(upload6)
 
-    complete_upload = upload6.clone(message='Finished scoring this plan.',
+    complete_upload = upload7.clone(message='Finished scoring this plan.',
         progress=data.Progress(len(expected_tiles), len(expected_tiles)))
 
     put_upload_index(storage, complete_upload)

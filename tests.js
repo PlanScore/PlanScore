@@ -84,7 +84,8 @@ assert.deepEqual(plan.which_score_column_names(NC_multisim_index),
     'Population 2016', 'Black Population 2016', 'Hispanic Population 2016',
     'Citizen Voting-Age Population 2015', 'Black Citizen Voting-Age Population 2015',
     'Hispanic Citizen Voting-Age Population 2015', 'Democratic Votes',
-    'Republican Votes'/*, 'Polsby-Popper', 'Reock'*/],
+    'Republican Votes', 'US President 2016 - DEM',
+    'US President 2016 - REP'/*, 'Polsby-Popper', 'Reock'*/],
     'Should pick out the right column names');
 
 assert.equal(plan.which_district_color(NC_multisim_index.districts[0], NC_multisim_index),
@@ -123,16 +124,17 @@ assert.equal(plan.what_score_description_text(NC_public_index),
 assert.deepEqual(plan_array5[0],
     ['District', 'Population 2010', 'Population 2015',
     'Black Population 2015', 'Hispanic Population 2015',
-    'Predicted Democratic Vote Share', 'Predicted Republican Vote Share'
+    'Predicted Democratic Vote Share', 'Predicted Republican Vote Share',
+    'US President 2016: Clinton (D)', 'US President 2016: Trump (R)'
     /*, 'Polsby-Popper', 'Reock'*/],
     'Should pick out the right column names');
 
 assert.deepEqual(plan_array5[1],
-    ['1', 733460.0, 734814.32, '46.3%', '8.3%', '66.1% (±0.9%)', '33.9% (±0.9%)'/*, 0.1992, 0.3469*/],
+    ['1', 733460.0, 734814.32, '46.3%', '8.3%', '66.1% (±0.9%)', '33.9% (±0.9%)', 229243.28, 110009.85/*, 0.1992, 0.3469*/],
     'Should pick out the right column values');
 
 assert.deepEqual(plan_array5[13],
-    ['13', 733505.0, 747501.53, '22.8%', '7.5%', '43.9% (±0.6%)', '56.1% (±0.6%)'/*, 0.2274, 0.3557*/],
+    ['13', 733505.0, 747501.53, '22.8%', '7.5%', '43.9% (±0.6%)', '56.1% (±0.6%)', 158659.94, 192109.37/*, 0.2274, 0.3557*/],
     'Should pick out the right column values');
 
 assert.equal(plan.get_description(NC_public_index, undefined),
@@ -248,6 +250,10 @@ var head2 = ['Citizen Voting-Age Population 2015',
 plan.update_heading_titles(head2)
 assert.deepEqual(head2, ['Citizen Voting-Age Population 2015',
     'Black Non-Hispanic CVAP 2015', 'Hispanic CVAP 2015']);
+
+var head3 = ['US President 2016 - DEM', 'US President 2016 - REP'];
+plan.update_heading_titles(head3)
+assert.deepEqual(head3, ['US President 2016: Clinton (D)', 'US President 2016: Trump (R)']);
 
 var row1 = [4, 6];
 plan.update_vote_percentages(['Democratic Votes', 'Republican Votes'], row1, {});

@@ -19,6 +19,22 @@ def mock_s3_get_object(Bucket, Key):
 
 class TestObserveTiles (unittest.TestCase):
 
+    def test_get_upload_index(self):
+        ''' Upload index file is retrieved from S3
+        '''
+        storage, key = unittest.mock.Mock(), 'fake-key'
+        
+        body = unittest.mock.Mock()
+        body.read.return_value = '{"id": "fake-id", "key": "fake-key"}'
+        storage.s3.get_object.return_value = {'Body': body}
+        
+        result = observe.get_upload_index(storage, key)
+
+        get_call = storage.s3.get_object.mock_calls[0]
+        
+        self.assertEqual(get_call[2], dict(Bucket=storage.bucket, Key=key))
+        self.assertEqual(result.id, 'fake-id')
+    
     def test_put_upload_index(self):
         ''' Upload index file is posted to S3
         '''

@@ -34,7 +34,7 @@ class TestWebsite (unittest.TestCase):
     def test_model_descriptions(self):
         ''' Every current, active model should have a decription page
         '''
-        for model in data.MODELS:
+        for model in data.MODELS2017:
             key_prefix = model.key_prefix
             path = '/models/{}/'.format(key_prefix)
             html = self.app.get(path).data.decode('utf8')
