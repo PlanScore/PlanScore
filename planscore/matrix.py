@@ -4,11 +4,27 @@ import collections
 
 import numpy
 
+from . import data
+
 # The presidential vote in the model is mean-deviated, so you have to subtract
 # this adjustment value from the presidential vote values in each district.
 # Values are given as Democratic vote portion from 0. to 1. and become
 # approximately -0.5 to +0.5.
 VOTE_ADJUST = -0.496875
+
+INCUMBENCY = {
+    data.Incumbency.Open.value: 0,
+    data.Incumbency.Democrat.value: 1,
+    data.Incumbency.Republican.value: -1,
+}
+
+STATE = {
+    data.State.MD: 'md',
+    data.State.NC: 'nc',
+    data.State.PA: 'pa',
+    data.State.VA: 'va',
+    data.State.WI: 'wi',
+}
 
 Model = collections.namedtuple('Model', (
     'intercept', 'vote', 'incumbent',
@@ -54,3 +70,39 @@ def apply_model(districts, model):
     ])
 
     return AD.dot(model.array)
+
+def model_votes(state, year, districts):
+    ''' Convert presidential votes to range of possible modeled chamber votes.
+        
+        state is from data.State enum, year is an integer.
+        districts is an array of three-element tuples:
+        - Input Democratic vote count
+        - Input Republican vote count
+        - Incumbency: "O" for open, "R", or "D"
+        
+        Return is a DxSx2 matrix for D districts, S simulations, and Dem/Rep parties.
+    '''
+    # Get DxS array from apply_model() with modeled vote fractions
+    fractions = apply_model(
+        [
+            (dem / (dem + rep), INCUMBENCY[inc]) for (dem, rep, inc) in districts
+        ],
+        load_model(STATE[state], year),
+    )
+    
+    # Make DxS array with total vote counts for each district and simulation
+    scale = numpy.repeat(
+        [[dem + rep] for (dem, rep, _) in districts],
+        fractions.shape[1],
+        axis=1,
+        )
+    
+    # Build DxSx2 array with per-party vote totals for each district and simulation
+    votes_dem = (fractions * scale).round(1)
+    votes_rep = ((1 - fractions) * scale).round(1)
+    votes = numpy.concatenate(
+        (numpy.expand_dims(votes_dem, 2), numpy.expand_dims(votes_rep, 2)),
+        axis=2,
+    )
+    
+    return votes

@@ -1,5 +1,5 @@
 import unittest, unittest.mock
-from .. import matrix
+from .. import matrix, data
 
 class TestMatrix (unittest.TestCase):
 
@@ -57,3 +57,40 @@ class TestMatrix (unittest.TestCase):
         self.assertTrue(R[0].sum() < R[3].sum() and R[3].sum() < R[6].sum())
         self.assertTrue(R[1].sum() < R[4].sum() and R[4].sum() < R[7].sum())
         self.assertTrue(R[2].sum() < R[5].sum() and R[5].sum() < R[8].sum())
+    
+    def test_model_votes(self):
+        R = matrix.model_votes(
+            data.State.NC,
+            2016,
+            [
+                (4, 6, 'R'),
+                (5, 5, 'R'),
+                (6, 4, 'R'),
+                (4, 6, 'O'),
+                (5, 5, 'O'),
+                (6, 4, 'O'),
+                (4, 6, 'D'),
+                (5, 5, 'D'),
+                (6, 4, 'D'),
+            ],
+        )
+        
+        # In identical incumbent scenarios, predicted vote tracks presidential vote
+        self.assertTrue(R[0,:,0].sum() < R[1,:,0].sum() and R[1,:,0].sum() < R[2,:,0].sum())
+        self.assertTrue(R[3,:,0].sum() < R[4,:,0].sum() and R[4,:,0].sum() < R[5,:,0].sum())
+        self.assertTrue(R[6,:,0].sum() < R[7,:,0].sum() and R[7,:,0].sum() < R[8,:,0].sum())
+
+        # Repeat tests for Republican vote
+        self.assertTrue(R[0,:,1].sum() > R[1,:,1].sum() and R[1,:,1].sum() > R[2,:,1].sum())
+        self.assertTrue(R[3,:,1].sum() > R[4,:,1].sum() and R[4,:,1].sum() > R[5,:,1].sum())
+        self.assertTrue(R[6,:,1].sum() > R[7,:,1].sum() and R[7,:,1].sum() > R[8,:,1].sum())
+
+        # In identical vote scenarios, predicted vote tracks party incumbency
+        self.assertTrue(R[0,:,0].sum() < R[3,:,0].sum() and R[3,:,0].sum() < R[6,:,0].sum())
+        self.assertTrue(R[1,:,0].sum() < R[4,:,0].sum() and R[4,:,0].sum() < R[7,:,0].sum())
+        self.assertTrue(R[2,:,0].sum() < R[5,:,0].sum() and R[5,:,0].sum() < R[8,:,0].sum())
+
+        # Repeat tests for Republican vote
+        self.assertTrue(R[0,:,1].sum() > R[3,:,1].sum() and R[3,:,1].sum() > R[6,:,1].sum())
+        self.assertTrue(R[1,:,1].sum() > R[4,:,1].sum() and R[4,:,1].sum() > R[7,:,1].sum())
+        self.assertTrue(R[2,:,1].sum() > R[5,:,1].sum() and R[5,:,1].sum() > R[8,:,1].sum())
