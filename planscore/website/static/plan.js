@@ -48,9 +48,15 @@ function nice_percent(value)
     return (100 * value).toFixed(1) + '%';
 }
 
-function nice_whole_percent(value)
+function nice_round_percent(value)
 {
-    return (100 * value).toFixed(0) + '%';
+    if(value < .01) {
+        return '<1%';
+    } else if(value > .99) {
+        return '>99%';
+    } else {
+        return (100 * value).toFixed(0) + '%';
+    }
 }
 
 function nice_gap(value)
@@ -138,6 +144,17 @@ function which_district_color(district, plan)
     // Colors from http://chromatron.s3-website-us-east-1.amazonaws.com/#eNpVz8EKgzAQBNB/mV5z2JhsYvIrpQc1tkilgqXQIv57NYkNZa77mNkF3TRO8xP+vGAI8CRwHcYRHicdHAUJgTe8dizwgZdWCszwNa0iAVlA0MxsE6ikSsC4CCT9RFVErfYkodjlCopCmwOoAlo2vWkyIPUHTHUAXYAJddNSfkLavMlGwG69CLRNd7/N0+sR4iLas90Pj9Bvhtcv8ANJtQ==
 
     var totals = district.totals;
+    
+    if(typeof totals['Democratic Wins'] === 'number')
+    {
+        if(totals['Democratic Wins'] > .8) {
+            return BLUE_COLOR_HEX;
+        } else if (totals['Democratic Wins'] < .2) {
+            return RED_COLOR_HEX;
+        } else {
+            return UNKNOWN_COLOR_HEX;
+        }
+    }
 
     if(typeof plan.summary['Efficiency Gap SD'] === 'number')
     {
@@ -344,10 +361,22 @@ function hide_message(score_section, message_section)
 
 function update_heading_titles(head)
 {
-    if(head.indexOf('Democratic Votes') >= 0 && head.indexOf('Republican Votes') >= 0)
+    var dem_index = head.indexOf('Democratic Votes'),
+        rep_index = head.indexOf('Republican Votes'),
+        wins_index = head.indexOf('Democratic Wins');
+
+    if(wins_index >= 0)
     {
-        head[head.indexOf('Democratic Votes')] = 'Predicted Democratic Vote Share';
-        head[head.indexOf('Republican Votes')] = 'Predicted Republican Vote Share';
+        head[wins_index] = 'Chance of Democratic Win';
+        
+        if(dem_index >= 0 && rep_index >= 0)
+        {
+            head[dem_index] = 'Predicted Vote Shares';
+            head.splice(rep_index, 1);
+        }
+    } else if(dem_index >= 0 && rep_index >= 0) {
+        head[dem_index] = 'Predicted Democratic Vote Share';
+        head[rep_index] = 'Predicted Republican Vote Share';
     }
 
     if(head.indexOf('US President 2016 - DEM') >= 0 && head.indexOf('US President 2016 - REP') >= 0)
@@ -371,9 +400,21 @@ function update_vote_percentages(head, row, source_row)
         rep_index = head.indexOf('Republican Votes'),
         wins_index = head.indexOf('Democratic Wins'),
         vote_count;
-
-    if(dem_index >= 0 && rep_index >= 0)
+    
+    if(wins_index >= 0)
     {
+        row[wins_index] = nice_round_percent(row[wins_index]);
+
+        if(dem_index >= 0 && rep_index >= 0)
+        {
+            vote_count = (row[dem_index] + row[rep_index]);
+            row[dem_index] = [
+                nice_round_percent(row[dem_index] / vote_count), ' D / ',
+                nice_round_percent(row[rep_index] / vote_count), ' R'
+            ].join('');
+            row.splice(rep_index, 1);
+        }
+    } else if(dem_index >= 0 && rep_index >= 0) {
         vote_count = (row[dem_index] + row[rep_index]);
         row[dem_index] = nice_percent(row[dem_index] / vote_count);
         row[rep_index] = nice_percent(row[rep_index] / vote_count);
@@ -384,11 +425,6 @@ function update_vote_percentages(head, row, source_row)
             row[dem_index] += ' (±' + nice_percent(2 * source_row['Democratic Votes SD'] / vote_count) + ')';
             row[rep_index] += ' (±' + nice_percent(2 * source_row['Republican Votes SD'] / vote_count) + ')';
         }
-    }
-    
-    if(wins_index >= 0)
-    {
-        row[wins_index] = nice_whole_percent(row[wins_index]);
     }
 }
 
@@ -965,7 +1001,7 @@ if(typeof module !== 'undefined' && module.exports)
 {
     module.exports = {
         format_url: format_url, nice_count: nice_count, nice_string: nice_string,
-        nice_percent: nice_percent, nice_whole_percent: nice_whole_percent,
+        nice_percent: nice_percent, nice_round_percent: nice_round_percent,
         nice_gap: nice_gap, date_age: date_age,
         what_score_description_text: what_score_description_text,
         which_score_summary_name: which_score_summary_name,

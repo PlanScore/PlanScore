@@ -11,7 +11,8 @@ var NC_index = require('data/sample-NC-1-992/index.json'),
     NC_2019_preread_end = require('data/sample-NC2019/index-preread-end.json'),
     NC_2019_no_incumbency = require('data/sample-NC2019/index-no-incumbency.json'),
     NC_2019_incumbency = require('data/sample-NC2019/index-incumbency.json'),
-    NC_2020 = require('data/sample-NC2020/index.json');
+    NC_2020 = require('data/sample-NC2020/index.json'),
+    NC_2020_unified = require('data/sample-NC-unified/index.json');
 
 // Old-style red vs. blue plan
 
@@ -239,6 +240,48 @@ assert.equal(plan.which_district_color(NC_2020.districts[11], NC_2020),
 assert.equal(plan.which_district_color(NC_2020.districts[12], NC_2020),
     '#D45557', 'Should return the red district color for District 13');
 
+var plan_array9 = plan.plan_array(NC_2020_unified);
+assert.equal(plan_array9.length, 14, 'Should have a header with 13 districts');
+
+assert.equal(plan.which_district_color(NC_2020_unified.districts[0], NC_2020_unified),
+    '#D45557', 'Should return the red district color for District 1');
+
+assert.equal(plan.which_district_color(NC_2020_unified.districts[1], NC_2020_unified),
+    '#D45557', 'Should return the red district color for District 2');
+
+assert.equal(plan.which_district_color(NC_2020_unified.districts[2], NC_2020_unified),
+    '#D45557', 'Should return the red district color for District 3');
+
+assert.equal(plan.which_district_color(NC_2020_unified.districts[3], NC_2020_unified),
+    '#838383', 'Should return the unknown district color for District 4');
+
+assert.equal(plan.which_district_color(NC_2020_unified.districts[4], NC_2020_unified),
+    '#4D90D1', 'Should return the blue district color for District 5');
+
+assert.equal(plan.which_district_color(NC_2020_unified.districts[5], NC_2020_unified),
+    '#4D90D1', 'Should return the blue district color for District 6');
+
+assert.equal(plan.which_district_color(NC_2020_unified.districts[6], NC_2020_unified),
+    '#838383', 'Should return the unknown district color for District 7');
+
+assert.equal(plan.which_district_color(NC_2020_unified.districts[7], NC_2020_unified),
+    '#838383', 'Should return the unknown district color for District 8');
+
+assert.equal(plan.which_district_color(NC_2020_unified.districts[8], NC_2020_unified),
+    '#4D90D1', 'Should return the blue district color for District 9');
+
+assert.equal(plan.which_district_color(NC_2020_unified.districts[9], NC_2020_unified),
+    '#838383', 'Should return the unknown district color for District 10');
+
+assert.equal(plan.which_district_color(NC_2020_unified.districts[10], NC_2020_unified),
+    '#D45557', 'Should return the red district color for District 11');
+
+assert.equal(plan.which_district_color(NC_2020_unified.districts[11], NC_2020_unified),
+    '#D45557', 'Should return the red district color for District 12');
+
+assert.equal(plan.which_district_color(NC_2020_unified.districts[12], NC_2020_unified),
+    '#838383', 'Should return the unknown district color for District 13');
+
 // Display preparation functions
 
 var head1 = ['Democratic Votes', 'Republican Votes'];
@@ -254,6 +297,14 @@ assert.deepEqual(head2, ['Citizen Voting-Age Population 2015',
 var head3 = ['US President 2016 - DEM', 'US President 2016 - REP'];
 plan.update_heading_titles(head3)
 assert.deepEqual(head3, ['US President 2016: Clinton (D)', 'US President 2016: Trump (R)']);
+
+var head4 = ['Democratic Wins'];
+plan.update_heading_titles(head4)
+assert.deepEqual(head4, ['Chance of Democratic Win']);
+
+var head5 = ['Democratic Wins', 'Democratic Votes', 'Republican Votes'];
+plan.update_heading_titles(head5)
+assert.deepEqual(head5, ['Chance of Democratic Win', 'Predicted Vote Shares']);
 
 var row1 = [4, 6];
 plan.update_vote_percentages(['Democratic Votes', 'Republican Votes'], row1, {});
@@ -338,6 +389,10 @@ var row19 = [.3149];
 plan.update_vote_percentages(['Democratic Wins'], row19, {});
 assert.deepEqual(row19, ['31%']);
 
+var row20 = [.3142, .6180, .3820];
+plan.update_vote_percentages(['Democratic Wins', 'Democratic Votes', 'Republican Votes'], row20, {});
+assert.deepEqual(row20, ['31%', '62% D / 38% R']);
+
 // Assorted functions
 
 assert(plan.date_age(new Date('1970-01-01')) > 86400 * 365);
@@ -360,10 +415,12 @@ assert.equal(plan.nice_percent(1), '100.0%', 'Should see one decimal place');
 assert.equal(plan.nice_percent(.1), '10.0%', 'Should see one decimal place');
 assert.equal(plan.nice_percent(.01), '1.0%', 'Should see one decimal place');
 assert.equal(plan.nice_percent(.001), '0.1%', 'Should see one decimal place');
-assert.equal(plan.nice_whole_percent(1), '100%', 'Should see no decimal places');
-assert.equal(plan.nice_whole_percent(.1), '10%', 'Should see no decimal places');
-assert.equal(plan.nice_whole_percent(.01), '1%', 'Should see no decimal places');
-assert.equal(plan.nice_whole_percent(.001), '0%', 'Should see no decimal places');
+assert.equal(plan.nice_round_percent(.989), '99%', 'Should see no decimal places');
+assert.equal(plan.nice_round_percent(.011), '1%', 'Should see no decimal places');
+assert.equal(plan.nice_round_percent(.009), '<1%', 'Should see no decimal places and not-quite zero value');
+assert.equal(plan.nice_round_percent(0.00), '<1%', 'Should see no decimal places and not-quite zero value');
+assert.equal(plan.nice_round_percent(.991), '>99%', 'Should see no decimal places and not-quite zero value');
+assert.equal(plan.nice_round_percent(1.00), '>99%', 'Should see no decimal places and not-quite zero value');
 
 assert.equal(plan.nice_gap(.1), '+10.0% for Democrats', 'Positive gaps should be blue');
 assert.equal(plan.nice_gap(-.1), '+10.0% for Republicans', 'Negative gaps should be red');
