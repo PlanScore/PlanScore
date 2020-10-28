@@ -49,7 +49,7 @@ def load_model(state, year):
             row['']: [
                 float(value)
                 for (key, value) in row.items()
-                if key in ('V1', 'V10', 'V100', 'V1000')
+                if key.startswith('V')
             ]
             for row in csv.DictReader(file)
             if row[''] in keys
