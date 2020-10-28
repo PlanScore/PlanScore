@@ -84,6 +84,12 @@ basedir8 = pp.join(pp.dirname(__file__), 'planscore', 'tests', 'data', 'XX-unifi
 
 upload(prefix8, basedir8, pp.join(basedir8, '9', '*', '*.geojson'))
 
+prefix9 = pp.join('uploads', 'sample-NC-unified')
+basedir9 = pp.join(pp.dirname(__file__), 'data', 'sample-NC-unified')
+
+upload(prefix9, basedir9, pp.join(basedir9, '*.*'))
+upload(prefix9, basedir9, pp.join(basedir9, '*', '*.*'))
+
 # Lambda function setup
 
 print('--> Set up Lambda', ENDPOINT_LAM)
