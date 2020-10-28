@@ -21,7 +21,7 @@ FIELD_NAMES = (
     'SLDU Rep Votes', 'SLDU Dem Votes', 'SLDL Rep Votes', 'SLDL Dem Votes',
 
     # Real fields
-    'Democratic Votes', 'Republican Votes',
+    'Democratic Votes', 'Republican Votes', 'Democratic Wins',
     
     # ACS 2015 fields
     'Black Population 2015', 'Black Population 2015, Error',
@@ -356,6 +356,7 @@ def calculate_district_biases(upload):
     for (i, district) in enumerate(copied_districts):
         red_votes, blue_votes = output_votes[i,:,1], output_votes[i,:,0]
         district['totals'].update({
+            'Democratic Wins': (blue_votes > red_votes).astype(int).sum() / output_votes.shape[1],
             'Democratic Votes': round(statistics.mean(blue_votes), constants.ROUND_COUNT),
             'Republican Votes': round(statistics.mean(red_votes), constants.ROUND_COUNT),
             'Democratic Votes SD': round(statistics.stdev(blue_votes), constants.ROUND_COUNT),

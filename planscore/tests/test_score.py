@@ -647,13 +647,13 @@ class TestScore (unittest.TestCase):
              [6.0, 2.0],
              [5.9, 2.1]],
 
-            [[4.4, 3.6],
-             [5.2, 2.8],
+            [[3.9, 4.1],
+             [5.7, 2.3],
              [5.1, 2.9]],
 
             [[2.8, 5.2],
-             [3.5, 4.5],
-             [3.4, 4.6]],
+             [4.1, 3.9],
+             [2.8, 5.2]],
 
             [[1.9, 6.1],
              [2.7, 5.3],
@@ -663,24 +663,24 @@ class TestScore (unittest.TestCase):
         self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, 2016, [(6, 2, 'O'), (5, 3, 'O'), (3, 5, 'O'), (2, 6, 'O')]))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
-        self.assertEqual(calculate_MMD.mock_calls[0][1], ([2.7, 3.6, 5.2, 6.1], [5.3, 4.4, 2.8, 1.9]))
+        self.assertEqual(calculate_MMD.mock_calls[0][1], ([2.7, 4.1, 5.2, 6.1], [5.3, 3.9, 2.8, 1.9]))
 
         self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
-        self.assertEqual(calculate_PB.mock_calls[0][1], ([2.7, 3.6, 5.2, 6.1], [5.3, 4.4, 2.8, 1.9]))
+        self.assertEqual(calculate_PB.mock_calls[0][1], ([2.7, 4.1, 5.2, 6.1], [5.3, 3.9, 2.8, 1.9]))
         
         SIMS = model_votes.return_value.shape[1]
 
         # First round of sims
         self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
-        self.assertEqual(calculate_EG.mock_calls[SIMS*0][1], ([2.7, 3.6, 5.2, 6.1], [5.3, 4.4, 2.8, 1.9], 0.))
+        self.assertEqual(calculate_EG.mock_calls[SIMS*0][1], ([2.7, 4.1, 5.2, 6.1], [5.3, 3.9, 2.8, 1.9], 0.))
 
         # Second round of sims
         self.assertEqual(output.summary['Efficiency Gap +1 Dem'], calculate_EG.return_value)
-        self.assertEqual(calculate_EG.mock_calls[SIMS*1][1], ([2.7, 3.6, 5.2, 6.1], [5.3, 4.4, 2.8, 1.9], .01))
+        self.assertEqual(calculate_EG.mock_calls[SIMS*1][1], ([2.7, 4.1, 5.2, 6.1], [5.3, 3.9, 2.8, 1.9], .01))
 
         # Third round of sims
         self.assertEqual(output.summary['Efficiency Gap +1 Rep'], calculate_EG.return_value)
-        self.assertEqual(calculate_EG.mock_calls[SIMS*2][1], ([2.7, 3.6, 5.2, 6.1], [5.3, 4.4, 2.8, 1.9], -.01))
+        self.assertEqual(calculate_EG.mock_calls[SIMS*2][1], ([2.7, 4.1, 5.2, 6.1], [5.3, 3.9, 2.8, 1.9], -.01))
 
         self.assertEqual(output.districts[0]['totals']['Republican Votes'], 2.27)
         self.assertEqual(output.districts[0]['totals']['Democratic Votes'], 5.73)
@@ -690,6 +690,11 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.districts[2]['totals']['Democratic Votes'], 3.23)
         self.assertEqual(output.districts[3]['totals']['Republican Votes'], 5.6)
         self.assertEqual(output.districts[3]['totals']['Democratic Votes'], 2.4)
+
+        self.assertAlmostEqual(output.districts[0]['totals']['Democratic Wins'], 1.)
+        self.assertAlmostEqual(output.districts[1]['totals']['Democratic Wins'], 0.6666667)
+        self.assertAlmostEqual(output.districts[2]['totals']['Democratic Wins'], 0.3333333)
+        self.assertAlmostEqual(output.districts[3]['totals']['Democratic Wins'], 0.)
 
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')

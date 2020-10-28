@@ -83,9 +83,9 @@ assert.deepEqual(plan.which_score_column_names(NC_multisim_index),
     ['Population 2010', 'Population 2015', 'Black Population 2015', 'Hispanic Population 2015',
     'Population 2016', 'Black Population 2016', 'Hispanic Population 2016',
     'Citizen Voting-Age Population 2015', 'Black Citizen Voting-Age Population 2015',
-    'Hispanic Citizen Voting-Age Population 2015', 'Democratic Votes',
-    'Republican Votes', 'US President 2016 - DEM',
-    'US President 2016 - REP'/*, 'Polsby-Popper', 'Reock'*/],
+    'Hispanic Citizen Voting-Age Population 2015',
+    'Democratic Wins', 'Democratic Votes', 'Republican Votes',
+    'US President 2016 - DEM', 'US President 2016 - REP'/*, 'Polsby-Popper', 'Reock'*/],
     'Should pick out the right column names');
 
 assert.equal(plan.which_district_color(NC_multisim_index.districts[0], NC_multisim_index),
@@ -334,6 +334,10 @@ plan.update_vote_percentages(['Democratic Votes', 'Republican Votes'], row18,
     {'Democratic Votes SD': 'no', 'Republican Votes SD': 'no'});
 assert.deepEqual(row18, ['40.0%', '60.0%']);
 
+var row19 = [.3149];
+plan.update_vote_percentages(['Democratic Wins'], row19, {});
+assert.deepEqual(row19, ['31%']);
+
 // Assorted functions
 
 assert(plan.date_age(new Date('1970-01-01')) > 86400 * 365);
@@ -356,6 +360,10 @@ assert.equal(plan.nice_percent(1), '100.0%', 'Should see one decimal place');
 assert.equal(plan.nice_percent(.1), '10.0%', 'Should see one decimal place');
 assert.equal(plan.nice_percent(.01), '1.0%', 'Should see one decimal place');
 assert.equal(plan.nice_percent(.001), '0.1%', 'Should see one decimal place');
+assert.equal(plan.nice_whole_percent(1), '100%', 'Should see no decimal places');
+assert.equal(plan.nice_whole_percent(.1), '10%', 'Should see no decimal places');
+assert.equal(plan.nice_whole_percent(.01), '1%', 'Should see no decimal places');
+assert.equal(plan.nice_whole_percent(.001), '0%', 'Should see no decimal places');
 
 assert.equal(plan.nice_gap(.1), '+10.0% for Democrats', 'Positive gaps should be blue');
 assert.equal(plan.nice_gap(-.1), '+10.0% for Republicans', 'Negative gaps should be red');

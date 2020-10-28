@@ -3,7 +3,7 @@ var FIELDS = ['Population 2010', 'Population 2015', 'Black Population 2015',
     'Hispanic Population 2016', 'Citizen Voting-Age Population 2015',
     'Black Citizen Voting-Age Population 2015',
     'Hispanic Citizen Voting-Age Population 2015',
-    'Democratic Votes', 'Republican Votes',
+    'Democratic Wins', 'Democratic Votes', 'Republican Votes',
     'US President 2016 - DEM', 'US President 2016 - REP'
     /*, 'Polsby-Popper', 'Reock'*/];
 
@@ -46,6 +46,11 @@ function nice_count(value)
 function nice_percent(value)
 {
     return (100 * value).toFixed(1) + '%';
+}
+
+function nice_whole_percent(value)
+{
+    return (100 * value).toFixed(0) + '%';
 }
 
 function nice_gap(value)
@@ -364,6 +369,7 @@ function update_vote_percentages(head, row, source_row)
 {
     var dem_index = head.indexOf('Democratic Votes'),
         rep_index = head.indexOf('Republican Votes'),
+        wins_index = head.indexOf('Democratic Wins'),
         vote_count;
 
     if(dem_index >= 0 && rep_index >= 0)
@@ -378,6 +384,11 @@ function update_vote_percentages(head, row, source_row)
             row[dem_index] += ' (±' + nice_percent(2 * source_row['Democratic Votes SD'] / vote_count) + ')';
             row[rep_index] += ' (±' + nice_percent(2 * source_row['Republican Votes SD'] / vote_count) + ')';
         }
+    }
+    
+    if(wins_index >= 0)
+    {
+        row[wins_index] = nice_whole_percent(row[wins_index]);
     }
 }
 
@@ -954,7 +965,8 @@ if(typeof module !== 'undefined' && module.exports)
 {
     module.exports = {
         format_url: format_url, nice_count: nice_count, nice_string: nice_string,
-        nice_percent: nice_percent, nice_gap: nice_gap, date_age: date_age,
+        nice_percent: nice_percent, nice_whole_percent: nice_whole_percent,
+        nice_gap: nice_gap, date_age: date_age,
         what_score_description_text: what_score_description_text,
         which_score_summary_name: which_score_summary_name,
         which_score_column_names: which_score_column_names,
