@@ -16,6 +16,7 @@ jobs:
             - WEBSITE_OUTPUT
       - store_artifacts:
           path: WEBSITE_OUTPUT
+          destination: .
   
   # Deploy to S3.
   Deploy:
