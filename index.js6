@@ -245,8 +245,15 @@ window.loadDataForSelectedBoundaryAndYear = (options={}) => {
                         const qx = Math.abs(q - parseInt(CURRENT_VIEW.year));
                         return (px != qx) ? (px > qx ? 1 : -1) : (p > q ? -1 : 1); // order by diff from desired year; or else by higher-year if equal spread
                     });
-                    const closestyear = wehavetheseyears[0];
+                    let closestyear = wehavetheseyears[0];
 
+                    // special behavior, issue 228
+                    // if they selected State Senates 2004 or 2014, snap to 2002 or 2012 instead because we have more data there
+                    // this will likely need to be updated a few times as we get more data and 2004 & 2014 become acceptably populated, and/or more data-poor years are added which we want to rewrite
+                    if      (CURRENT_VIEW.boundtype == 'statesenate' && closestyear == 2014) closestyear = 2012;
+                    else if (CURRENT_VIEW.boundtype == 'statesenate' && closestyear == 2004) closestyear = 2002;
+
+                    // done, go ahead and select THIS year for them
                     setTimeout(function () {
                         selectYear(closestyear);
                     }, 1);

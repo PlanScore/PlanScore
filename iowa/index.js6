@@ -597,15 +597,38 @@ window.updateMetricsSummary = (yeardata) => {
     const metrics_favor_d = [ favor_party_eg, favor_party_pb, favor_party_mm ].filter((biasinfo) => { return biasinfo.isbiased && biasinfo.partycode == 'd'; }).length;
     const metrics_favor_r = [ favor_party_eg, favor_party_pb, favor_party_mm ].filter((biasinfo) => { return biasinfo.isbiased && biasinfo.partycode == 'r'; }).length;
 
-    // compose the sentence, with 2 out of 3 being the minimum worth mentioning
+    // compose a sentence on how biased this plan is according to how many metrics favor each party
+    // with 2 out of 3 biases being worth calling out (and only if we have data for all 3)
+    const howmanymetrics = [eg_score, pb_score, mm_score ].filter((score) => ! isNaN(score) ).length;
+    const metriccountwords = {
+        1: 'one metric',
+        2: 'two metrics',
+        3: 'three metrics',
+    }[howmanymetrics];
+    const biascountstatement  = `We used ${metriccountwords} to analyze this plan.`;
+
     let biasstatement = "The metrics do not consistently indicate a skew in either party’s favor.";
-    if      (metrics_favor_d == 3) biasstatement = "All three metrics indicate a pro-Democrat skew.";
-    else if (metrics_favor_r == 3) biasstatement = "All three metrics indicate a pro-Republican skew.";
-    else if (metrics_favor_d == 2 && metrics_favor_r == 0) biasstatement = "Two of the three metrics indicate a pro-Democrat skew.";
-    else if (metrics_favor_r == 2 && metrics_favor_d == 0) biasstatement = "Two of the three metrics indicate a pro-Republican skew.";
+    switch (howmanymetrics) {
+        case 3:
+            if      (metrics_favor_d == 3) biasstatement = "All three metrics indicate a pro-Democrat skew.";
+            else if (metrics_favor_r == 3) biasstatement = "All three metrics indicate a pro-Republican skew.";
+            else if (metrics_favor_d == 2 && metrics_favor_r == 0) biasstatement = "Two of the three metrics indicate a pro-Democrat skew.";
+            else if (metrics_favor_r == 2 && metrics_favor_d == 0) biasstatement = "Two of the three metrics indicate a pro-Republican skew.";
+            break;
+        case 2:
+            if      (metrics_favor_d == 2) biasstatement = "Both metrics indicate a pro-Democrat skew.";
+            else if (metrics_favor_r == 2) biasstatement = "Both metrics indicate a pro-Republican skew.";
+            break;
+        case 1:
+            if      (metrics_favor_d == 1) biasstatement = "This one metric indicates a pro-Democrat skew.";
+            else if (metrics_favor_r == 1) biasstatement = "This one metric indicates a pro-Republican skew.";
+            else                           biasstatement = "This one metric does not indicate a skew in either party’s favor.";
+            break;
+    }
 
     // fill it in
-    $('#maincontent span[data-metric="biasstatement"]').text(biasstatement);
+    $('#maincontent span[data-metric="biasstatementconclusion"]').text(biasstatement);
+    $('#maincontent span[data-metric="biasstatementhowmanymetrics"]').text(biascountstatement);
 };
 
 window.updateMetricsTabs = (yeardata) => {
@@ -673,6 +696,41 @@ window.updateMetricsTabs = (yeardata) => {
         let $swatch = $('#maincontent ul.nav-tabs a[href="#tab-meanmedian"] span.biasicon');
         $swatch.removeClass('republican').removeClass('democratic').text(' ');
         if (isbiased_mm) $swatch.addClass(cssclass_mm).text(favor_code_mm);
+    }
+
+    // show/hide the data-have-metric content, depending on whether we have each of the 3 metrics
+    // some state & year & district have only 1 or 2 of the 3 metrics
+    // the rest of the processing below, still works through even if we have a null/NaN for the values, they look bad but since we're hiding them...
+    {
+        if (isNaN(eg_score)) {
+            const nodatatext = `We did not calculate Efficiency Gap for ${SELECTED_STATE}’s ${CURRENT_VIEW.year} Redistricting Plan`;
+            $('#tab-efficiencygap span[data-have-metric="true"]').hide();
+            $('#tab-efficiencygap span[data-have-metric="false"]').show().find('h2').text(nodatatext);
+        }
+        else {
+            $('#tab-efficiencygap span[data-have-metric="true"]').show();
+            $('#tab-efficiencygap span[data-have-metric="false"]').hide();
+        }
+
+        if (isNaN(pb_score)) {
+            const nodatatext = `We did not calculate Partisan Bias for ${SELECTED_STATE}’s ${CURRENT_VIEW.year} Redistricting Plan`;
+            $('#tab-partisanbias span[data-have-metric="true"]').hide();
+            $('#tab-partisanbias span[data-have-metric="false"]').show().find('h2').text(nodatatext);
+        }
+        else {
+            $('#tab-partisanbias span[data-have-metric="true"]').show();
+            $('#tab-partisanbias span[data-have-metric="false"]').hide();
+        }
+
+        if (isNaN(mm_score)) {
+            const nodatatext = `We did not calculate Mean-Median for ${SELECTED_STATE}’s ${CURRENT_VIEW.year} Redistricting Plan`;
+            $('#tab-meanmedian span[data-have-metric="true"]').hide();
+            $('#tab-meanmedian span[data-have-metric="false"]').show().find('h2').text(nodatatext);
+        }
+        else {
+            $('#tab-meanmedian span[data-have-metric="true"]').show();
+            $('#tab-meanmedian span[data-have-metric="false"]').hide();
+        }
     }
 
     // fill in those +DR% numbers and the summary texts, at the top of the metric tabs

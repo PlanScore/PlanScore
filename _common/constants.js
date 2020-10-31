@@ -9,7 +9,7 @@ export const PLAN_YEARS = [
     1980, 1982, 1984, 1986, 1988,
     1990, 1992, 1994, 1996, 1998,
     2000, 2002, 2004, 2006, 2008,
-    2010, 2012, 2014, 2016,
+    2010, 2012, 2014, 2016, 2018
 ];
 
 // the color gradient from Republican red to Democrat blue
@@ -193,19 +193,19 @@ export const STATE_BOUNDING_BOXES = {
 // see drawBiasBellChart() where we interpolate a value and position a marker line indicating a value
 export const BELLCURVE_SPREAD = {
     statehouse: {
-        eg: 0.15,
-        mm: 0.10,
-        pb: 0.25,
+        eg: 0.175,
+        mm: 0.09,
+        pb: 0.18,
     },
     ushouse: {
-        eg: 0.22,
-        mm: 0.11,
-        pb: 0.30,
+        eg: 0.25,
+        mm: 0.12,
+        pb: 0.25,
     },
     statesenate: {
         eg: 0.22,
-        mm: 0.11,
-        pb: 0.30,
+        mm: 0.13,
+        pb: 0.19,
     },
 };
 
