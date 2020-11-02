@@ -12,7 +12,24 @@ https://planscore.github.io/PlanScore/home/
 
 The datasets which power the site, are under the `WEBSITE_OUTPUT/data/` folder. Most of `WEBSITE_OUTPUT` is gitignored, with the exception of this folder and static images.
 
-Data dictionary for bias CSVs: https://docs.google.com/spreadsheets/d/1eMwwL8eaxD3aAyiy410yt79Cik2GV31WrXWyzFsiSTs/edit#gid=1340292617
+Data dictionary for bias CSVs: https://docs.google.com/spreadsheets/d/1aBffpd3Fv0tCvz6waMk2fGhyV3ZfSSUaWyJKrzi-HL8/edit#gid=1340292617
+
+
+## Quick Build
+
+1.  Use Docker to cover for Mac/Linux case-sensitive `sed`, with Circle CI image matching Node version used in test/deploy script:
+    
+        docker pull circleci/node:8.2
+
+2.  Install required Node packages:
+    
+        docker run --rm -it -v `pwd`:/vol -w /vol circleci/node:8.2 yarn install
+
+3.  Build content of `WEBSITE_OUTPUT` and serve it locally at http://0.0.0.0:8000 (this step may take time to build):
+    
+        docker run --rm -it -v `pwd`:/vol -w /vol -p 8000:8000 circleci/node:8.2 npm run serve
+
+4.  Update raw data in `WEBSITE_OUTPUT/data` directory.
 
 
 ## Development and Code Layout
