@@ -164,7 +164,7 @@ class TestPrereadFollowup (unittest.TestCase):
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 11, 'NC'
         self.assertEqual(preread_followup.guess_state_model('districts.shp').house, data.House.ushouse)
-        self.assertEqual(preread_followup.guess_state_model('districts.shp').key_prefix, 'data/NC/009-unified')
+        self.assertEqual(preread_followup.guess_state_model('districts.shp').key_prefix, 'data/NC/010-unified')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 13, 'NC'
         self.assertEqual(preread_followup.guess_state_model('districts.shp').house, data.House.ushouse)
