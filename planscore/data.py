@@ -242,7 +242,7 @@ MODELS2020 = [
     Model(State.XX, House.statehouse,    2,  True, '2020', 'data/XX/005-unified'), # b8e19879
     Model(State.MD, House.ushouse,       8,  True, '2020', 'data/MD/002-unified'), # d30a99b
     Model(State.MD, House.statesenate,  47,  True, '2020', 'data/MD/002-unified'), # d30a99b
-    Model(State.MD, House.statehouse,  141,  True, '2020', 'data/MD/002-unified'), # d30a99b
+    Model(State.MD, House.statehouse,   68,  True, '2020', 'data/MD/002-unified'), # d30a99b
     Model(State.NC, House.ushouse,      13,  True, '2020', 'data/NC/010-unified'), # 514e73a
     Model(State.NC, House.statesenate,  50,  True, '2020', 'data/NC/010-unified'), # 514e73a
     Model(State.NC, House.statehouse,  120,  True, '2020', 'data/NC/010-unified'), # 514e73a
