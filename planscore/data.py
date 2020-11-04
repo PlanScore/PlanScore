@@ -240,7 +240,19 @@ MODELS2017 = [
 
 MODELS2020 = [
     Model(State.XX, House.statehouse,    2,  True, '2020', 'data/XX/005-unified'), # b8e19879
-    Model(State.NC, House.ushouse,      13,  True, '2020', 'data/NC/009-unified'), # ec28001
-    Model(State.NC, House.statesenate,  50,  True, '2020', 'data/NC/009-unified'), # ec28001
-    Model(State.NC, House.statehouse,  120,  True, '2020', 'data/NC/009-unified'), # ec28001
+    Model(State.MD, House.ushouse,       8,  True, '2020', 'data/MD/002-unified'), # d30a99b
+    Model(State.MD, House.statesenate,  47,  True, '2020', 'data/MD/002-unified'), # d30a99b
+    Model(State.MD, House.statehouse,  141,  True, '2020', 'data/MD/002-unified'), # d30a99b
+    Model(State.NC, House.ushouse,      13,  True, '2020', 'data/NC/010-unified'), # 514e73a
+    Model(State.NC, House.statesenate,  50,  True, '2020', 'data/NC/010-unified'), # 514e73a
+    Model(State.NC, House.statehouse,  120,  True, '2020', 'data/NC/010-unified'), # 514e73a
+    Model(State.PA, House.ushouse,      18,  True, '2020', 'data/PA/009-unified'), # d9fcd35
+    Model(State.PA, House.statesenate,  50,  True, '2020', 'data/PA/009-unified'), # d9fcd35
+    Model(State.PA, House.statehouse,  203,  True, '2020', 'data/PA/009-unified'), # d9fcd35
+    Model(State.VA, House.ushouse,      11,  True, '2020', 'data/VA/002-unified'), # 08df871
+    Model(State.VA, House.statesenate,  40,  True, '2020', 'data/VA/002-unified'), # 08df871
+    Model(State.VA, House.statehouse,  100,  True, '2020', 'data/VA/002-unified'), # 08df871
+    Model(State.WI, House.ushouse,       8,  True, '2020', 'data/WI/004-unified'), # 17e16d3
+    Model(State.WI, House.statesenate,  33,  True, '2020', 'data/WI/004-unified'), # 17e16d3
+    Model(State.WI, House.statehouse,   99,  True, '2020', 'data/WI/004-unified'), # 17e16d3
     ]
