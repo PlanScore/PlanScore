@@ -870,12 +870,22 @@ function add_map_pattern_support()
             var words_r  = L.DomUtil.create('div', 'planscore-partylegend-words', row_r);
             words_r.innerHTML = 'Republican';
 
+            var row_ld    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
+            var swatch_ld = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-lean-democrat', row_ld);
+            var words_ld  = L.DomUtil.create('div', 'planscore-partylegend-words', row_ld);
+            words_ld.innerHTML = 'Leans Dem.';
+
+            var row_lr    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
+            var swatch_lr = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-lean-republican', row_lr);
+            var words_lr  = L.DomUtil.create('div', 'planscore-partylegend-words', row_lr);
+            words_lr.innerHTML = 'Leans Rep.';
+
+            /*
             var row_x    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
             var swatch_x = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-both', row_x);
             var words_x  = L.DomUtil.create('div', 'planscore-partylegend-words', row_x);
             words_x.innerHTML = 'Uncertain';
 
-            /*
             var row_0    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
             var swatch_0 = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-nodata', row_0);
             var words_0  = L.DomUtil.create('div', 'planscore-partylegend-words', row_0);

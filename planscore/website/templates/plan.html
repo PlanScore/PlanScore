@@ -59,6 +59,16 @@
             height: 200px;
         }
 
+        div.planscore-partylegend div.planscore-partylegend-swatch-lean-democrat
+        {
+            background-image: url({{ url_for('static', filename='lean-blue-pattern.png') }});
+        }
+
+        div.planscore-partylegend div.planscore-partylegend-swatch-lean-republican
+        {
+            background-image: url({{ url_for('static', filename='lean-red-pattern.png') }});
+        }
+
         div.planscore-partylegend div.planscore-partylegend-swatch-both
         {
             background-image: url({{ url_for('static', filename='unknown-pattern.png') }});
