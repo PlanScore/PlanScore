@@ -253,7 +253,7 @@ assert.equal(plan.which_district_color(NC_2020_unified.districts[2], NC_2020_uni
     '#D45557', 'Should return the red district color for District 3');
 
 assert.equal(plan.which_district_color(NC_2020_unified.districts[3], NC_2020_unified),
-    '#838383', 'Should return the unknown district color for District 4');
+    '#D45557', 'Should return the red district color for District 4');
 
 assert.equal(plan.which_district_color(NC_2020_unified.districts[4], NC_2020_unified),
     '#4D90D1', 'Should return the blue district color for District 5');
@@ -262,16 +262,16 @@ assert.equal(plan.which_district_color(NC_2020_unified.districts[5], NC_2020_uni
     '#4D90D1', 'Should return the blue district color for District 6');
 
 assert.equal(plan.which_district_color(NC_2020_unified.districts[6], NC_2020_unified),
-    '#838383', 'Should return the unknown district color for District 7');
+    '#6D8AB1', 'Should return the lean-blue district color for District 7');
 
 assert.equal(plan.which_district_color(NC_2020_unified.districts[7], NC_2020_unified),
-    '#838383', 'Should return the unknown district color for District 8');
+    '#6D8AB1', 'Should return the lean-blue district color for District 8');
 
 assert.equal(plan.which_district_color(NC_2020_unified.districts[8], NC_2020_unified),
     '#4D90D1', 'Should return the blue district color for District 9');
 
 assert.equal(plan.which_district_color(NC_2020_unified.districts[9], NC_2020_unified),
-    '#838383', 'Should return the unknown district color for District 10');
+    '#B56E6B', 'Should return the lean-red district color for District 10');
 
 assert.equal(plan.which_district_color(NC_2020_unified.districts[10], NC_2020_unified),
     '#D45557', 'Should return the red district color for District 11');
@@ -280,7 +280,7 @@ assert.equal(plan.which_district_color(NC_2020_unified.districts[11], NC_2020_un
     '#D45557', 'Should return the red district color for District 12');
 
 assert.equal(plan.which_district_color(NC_2020_unified.districts[12], NC_2020_unified),
-    '#838383', 'Should return the unknown district color for District 13');
+    '#6D8AB1', 'Should return the lean-blue district color for District 13');
 
 // Display preparation functions
 
