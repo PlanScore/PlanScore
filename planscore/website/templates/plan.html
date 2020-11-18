@@ -59,6 +59,16 @@
             height: 200px;
         }
 
+        div.planscore-partylegend div.planscore-partylegend-swatch-lean-democrat
+        {
+            background-image: url({{ url_for('static', filename='lean-blue-pattern.png') }});
+        }
+
+        div.planscore-partylegend div.planscore-partylegend-swatch-lean-republican
+        {
+            background-image: url({{ url_for('static', filename='lean-red-pattern.png') }});
+        }
+
         div.planscore-partylegend div.planscore-partylegend-swatch-both
         {
             background-image: url({{ url_for('static', filename='unknown-pattern.png') }});
@@ -143,7 +153,9 @@
     </div>
     </section>
 	<script language="javascript">
-	    var BLUEISH_PATTERN_URL = "{{ url_for('static', filename='blueish-pattern.png') }}",
+	    var LEAN_BLUE_PATTERN_URL = "{{ url_for('static', filename='lean-blue-pattern.png') }}",
+	        LEAN_RED_PATTERN_URL = "{{ url_for('static', filename='lean-red-pattern.png') }}",
+	        BLUEISH_PATTERN_URL = "{{ url_for('static', filename='blueish-pattern.png') }}",
 	        REDDISH_PATTERN_URL = "{{ url_for('static', filename='reddish-pattern.png') }}",
 	        UNKNOWN_PATTERN_URL = "{{ url_for('static', filename='unknown-pattern.png') }}";
 	    

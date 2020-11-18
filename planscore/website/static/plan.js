@@ -9,6 +9,8 @@ var FIELDS = ['Population 2010', 'Population 2015', 'Black Population 2015',
 
 var BLUE_COLOR_HEX = '#4D90D1',
     RED_COLOR_HEX = '#D45557',
+    LEAN_BLUE_COLOR_HEX = '#6D8AB1',
+    LEAN_RED_COLOR_HEX = '#B56E6B',
     BLUEISH_COLOR_HEX = '#6D8AB0',
     REDDISH_COLOR_HEX = '#B56E6A',
     UNKNOWN_COLOR_HEX = '#838383';
@@ -147,10 +149,14 @@ function which_district_color(district, plan)
     
     if(typeof totals['Democratic Wins'] === 'number')
     {
-        if(totals['Democratic Wins'] > .8) {
+        if(totals['Democratic Wins'] > .75) {
             return BLUE_COLOR_HEX;
-        } else if (totals['Democratic Wins'] < .2) {
+        } else if (totals['Democratic Wins'] < .25) {
             return RED_COLOR_HEX;
+        } else if (totals['Democratic Wins'] > .5) {
+            return LEAN_BLUE_COLOR_HEX;
+        } else if (totals['Democratic Wins'] < .5) {
+            return LEAN_RED_COLOR_HEX;
         } else {
             return UNKNOWN_COLOR_HEX;
         }
@@ -864,12 +870,22 @@ function add_map_pattern_support()
             var words_r  = L.DomUtil.create('div', 'planscore-partylegend-words', row_r);
             words_r.innerHTML = 'Republican';
 
+            var row_ld    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
+            var swatch_ld = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-lean-democrat', row_ld);
+            var words_ld  = L.DomUtil.create('div', 'planscore-partylegend-words', row_ld);
+            words_ld.innerHTML = 'Leans Dem.';
+
+            var row_lr    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
+            var swatch_lr = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-lean-republican', row_lr);
+            var words_lr  = L.DomUtil.create('div', 'planscore-partylegend-words', row_lr);
+            words_lr.innerHTML = 'Leans Rep.';
+
+            /*
             var row_x    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
             var swatch_x = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-both', row_x);
             var words_x  = L.DomUtil.create('div', 'planscore-partylegend-words', row_x);
             words_x.innerHTML = 'Uncertain';
 
-            /*
             var row_0    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
             var swatch_0 = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-nodata', row_0);
             var words_0  = L.DomUtil.create('div', 'planscore-partylegend-words', row_0);
@@ -916,7 +932,8 @@ function add_map_pattern_support()
 
                 if (options.fill)
                 {
-                    var pattern_colors = [UNKNOWN_COLOR_HEX, REDDISH_COLOR_HEX, BLUEISH_COLOR_HEX];
+                    var pattern_colors = [UNKNOWN_COLOR_HEX, REDDISH_COLOR_HEX,
+                        BLUEISH_COLOR_HEX, LEAN_BLUE_COLOR_HEX, LEAN_RED_COLOR_HEX];
                 
                     if (typeof options.color == "string" && pattern_colors.indexOf(options.color) >= 0) {
                         // Add support for unknown color, a gray
@@ -945,6 +962,12 @@ function add_map_pattern_support()
                 if(options.color == UNKNOWN_COLOR_HEX) {
                     var _img_url = UNKNOWN_PATTERN_URL;
                     var _ref_id = 'UNKNOWN_PATTERN_URL' + new Date().getUTCMilliseconds();
+                } else if(options.color == LEAN_RED_COLOR_HEX) {
+                    var _img_url = LEAN_RED_PATTERN_URL;
+                    var _ref_id = 'LEAN_RED_PATTERN_URL' + new Date().getUTCMilliseconds();
+                } else if(options.color == LEAN_BLUE_COLOR_HEX) {
+                    var _img_url = LEAN_BLUE_PATTERN_URL;
+                    var _ref_id = 'LEAN_BLUE_PATTERN_URL' + new Date().getUTCMilliseconds();
                 } else if(options.color == REDDISH_COLOR_HEX) {
                     var _img_url = REDDISH_PATTERN_URL;
                     var _ref_id = 'REDDISH_PATTERN_URL' + new Date().getUTCMilliseconds();
