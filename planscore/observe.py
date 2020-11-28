@@ -4,6 +4,8 @@ import osgeo.ogr
 
 FUNCTION_NAME = 'PlanScore-ObserveTiles'
 
+Tile = collections.namedtuple('Tile', ('totals', ))
+
 def get_upload_index(storage, key):
     '''
     '''
@@ -99,7 +101,7 @@ def iterate_tile_totals(expected_tiles, storage, upload, context):
                 if object.get('ContentEncoding') == 'gzip':
                     object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
         
-                yield json.load(object['Body']).get('totals')
+                yield Tile(json.load(object['Body']).get('totals'))
             
                 # Found the expected tile, break out of this loop
                 break
@@ -140,12 +142,12 @@ def accumulate_district_totals(tile_totals, upload):
     
     # update districts with tile totals
     for tile_total in tile_totals:
-        if type(tile_total) is str:
-            # Not unheard-of
-            print('weird tile:', repr(tile_total))
+        if type(tile_total.totals) is str:
+            # Not unheard-of, this is where errors get stashed for now
+            print('weird tile:', repr(tile_total.totals))
             continue
             
-        for (geometry_key, input_values) in tile_total.items():
+        for (geometry_key, input_values) in tile_total.totals.items():
             geometry_index = get_district_index(geometry_key, upload)
             district = districts[geometry_index]['totals']
             for (key, value) in input_values.items():

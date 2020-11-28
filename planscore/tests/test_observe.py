@@ -124,17 +124,43 @@ class TestObserveTiles (unittest.TestCase):
         expected_tiles = [f'uploads/sample-plan/tiles/{zxy}.json' for zxy
             in ('12/2047/2047', '12/2047/2048', '12/2048/2047', '12/2048/2048')]
         
-        totals = list(observe.iterate_tile_totals(expected_tiles, storage, upload, context))
+        tile_totals = list(observe.iterate_tile_totals(expected_tiles, storage, upload, context))
         
-        self.assertEqual(len(totals), 4)
-        self.assertEqual(totals[0]['uploads/sample-plan/geometries/0.wkt']['Voters'], 252.45)
-        self.assertEqual(totals[1]['uploads/sample-plan/geometries/0.wkt']['Voters'], 314.64)
-        self.assertNotIn('Voters', totals[2]['uploads/sample-plan/geometries/0.wkt'])
-        self.assertNotIn('Voters', totals[3]['uploads/sample-plan/geometries/0.wkt'])
-        self.assertEqual(totals[0]['uploads/sample-plan/geometries/1.wkt']['Voters'],  87.2)
-        self.assertEqual(totals[1]['uploads/sample-plan/geometries/1.wkt']['Voters'],  15.94)
-        self.assertEqual(totals[2]['uploads/sample-plan/geometries/1.wkt']['Voters'], 455.99)
-        self.assertEqual(totals[3]['uploads/sample-plan/geometries/1.wkt']['Voters'], 373.76)
+        self.assertEqual(len(tile_totals), 4)
+        self.assertEqual(tile_totals[0].totals['uploads/sample-plan/geometries/0.wkt']['Voters'], 252.45)
+        self.assertEqual(tile_totals[1].totals['uploads/sample-plan/geometries/0.wkt']['Voters'], 314.64)
+        self.assertNotIn('Voters', tile_totals[2].totals['uploads/sample-plan/geometries/0.wkt'])
+        self.assertNotIn('Voters', tile_totals[3].totals['uploads/sample-plan/geometries/0.wkt'])
+        self.assertEqual(tile_totals[0].totals['uploads/sample-plan/geometries/1.wkt']['Voters'],  87.2)
+        self.assertEqual(tile_totals[1].totals['uploads/sample-plan/geometries/1.wkt']['Voters'],  15.94)
+        self.assertEqual(tile_totals[2].totals['uploads/sample-plan/geometries/1.wkt']['Voters'], 455.99)
+        self.assertEqual(tile_totals[3].totals['uploads/sample-plan/geometries/1.wkt']['Voters'], 373.76)
+    
+    @unittest.mock.patch('sys.stdout')
+    def test_iterate_tile_totals2(self, stdout):
+        ''' Expected counts are returned from tiles.
+        '''
+        upload = unittest.mock.Mock()
+        context = unittest.mock.Mock()
+        context.get_remaining_time_in_millis.return_value = 9999
+        
+        storage = unittest.mock.Mock()
+        storage.s3.get_object.side_effect = mock_s3_get_object
+
+        expected_tiles = [f'uploads/sample-plan2/tiles/{zxy}.json' for zxy
+            in ('9/255/255', '9/255/256', '9/256/255', '9/256/256')]
+        
+        tile_totals = list(observe.iterate_tile_totals(expected_tiles, storage, upload, context))
+        
+        self.assertEqual(len(tile_totals), 4)
+        self.assertEqual(tile_totals[0].totals['uploads/sample-plan2/geometries/0.wkt']['Voters'], 252.45)
+        self.assertEqual(tile_totals[1].totals['uploads/sample-plan2/geometries/0.wkt']['Voters'], 314.64)
+        self.assertNotIn('Voters', tile_totals[2].totals['uploads/sample-plan2/geometries/0.wkt'])
+        self.assertNotIn('Voters', tile_totals[3].totals['uploads/sample-plan2/geometries/0.wkt'])
+        self.assertEqual(tile_totals[0].totals['uploads/sample-plan2/geometries/1.wkt']['Voters'],  87.2)
+        self.assertEqual(tile_totals[1].totals['uploads/sample-plan2/geometries/1.wkt']['Voters'],  15.94)
+        self.assertEqual(tile_totals[2].totals['uploads/sample-plan2/geometries/1.wkt']['Voters'], 455.99)
+        self.assertEqual(tile_totals[3].totals['uploads/sample-plan2/geometries/1.wkt']['Voters'], 373.76)
     
     def test_accumulate_district_totals(self):
         '''
@@ -147,7 +173,7 @@ class TestObserveTiles (unittest.TestCase):
             tile_key = f'uploads/sample-plan/tiles/{zxy}.json'
             filename = os.path.join(os.path.dirname(__file__), 'data', tile_key)
             with open(filename) as file:
-                inputs.append(json.load(file).get('totals'))
+                inputs.append(observe.Tile(json.load(file).get('totals')))
         
         upload.districts = [None, None]
         districts1 = observe.accumulate_district_totals(inputs, upload)
