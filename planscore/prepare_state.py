@@ -6,7 +6,7 @@ from . import constants
 ogr.UseExceptions()
 
 TILE_ZOOM = 12
-MAX_FEATURE_COUNT = 1000 # ~20sec processing time per tile
+MAX_FEATURE_COUNT = 5000 # ~20sec processing time per tile
 MIN_TILE_ZOOM, MAX_TILE_ZOOM = 9, 14
 INDEX_FIELD = 'PlanScore:Index'
 FRACTION_FIELD = 'PlanScore:Fraction'
