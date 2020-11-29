@@ -1,8 +1,10 @@
-import boto3, botocore.exceptions, time, json, posixpath, io, gzip, collections, copy
+import boto3, botocore.exceptions, time, json, posixpath, io, gzip, collections, copy, csv
 from . import data, constants, tiles, score, compactness
 import osgeo.ogr
 
 FUNCTION_NAME = 'PlanScore-ObserveTiles'
+
+Tile = collections.namedtuple('Tile', ('totals', 'timing'))
 
 def get_upload_index(storage, key):
     '''
@@ -99,7 +101,8 @@ def iterate_tile_totals(expected_tiles, storage, upload, context):
                 if object.get('ContentEncoding') == 'gzip':
                     object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
         
-                yield json.load(object['Body']).get('totals')
+                content = json.load(object['Body'])
+                yield Tile(content.get('totals'), content.get('timing', {}))
             
                 # Found the expected tile, break out of this loop
                 break
@@ -113,6 +116,21 @@ def iterate_tile_totals(expected_tiles, storage, upload, context):
                 return
 
     print('iterate_tile_totals: all tiles complete')
+
+def put_tile_timings(storage, upload, tiles):
+    ''' Write a CSV report on tile timing
+    '''
+    key = data.UPLOAD_TIMING_KEY.format(id=upload.id)
+    
+    buffer = io.StringIO()
+    out = csv.DictWriter(buffer, ('features', 'start_time', 'elapsed_time'))
+    out.writeheader()
+    
+    for tile in tiles:
+        out.writerow({k: tile.timing.get(k) for k in out.fieldnames})
+
+    storage.s3.put_object(Bucket=storage.bucket, Key=key,
+        Body=buffer.getvalue(), ContentType='text/csv', ACL='public-read')
 
 def accumulate_district_totals(tile_totals, upload):
     ''' Return new district array for an upload, preserving existing values.
@@ -140,12 +158,12 @@ def accumulate_district_totals(tile_totals, upload):
     
     # update districts with tile totals
     for tile_total in tile_totals:
-        if type(tile_total) is str:
-            # Not unheard-of
-            print('weird tile:', repr(tile_total))
+        if type(tile_total.totals) is str:
+            # Not unheard-of, this is where errors get stashed for now
+            print('weird tile:', repr(tile_total.totals))
             continue
             
-        for (geometry_key, input_values) in tile_total.items():
+        for (geometry_key, input_values) in tile_total.totals.items():
             geometry_index = get_district_index(geometry_key, upload)
             district = districts[geometry_index]['totals']
             for (key, value) in input_values.items():
@@ -168,6 +186,16 @@ def adjust_household_income(input_totals):
     
     return totals
 
+def clean_up_tiles(storage, tile_keys):
+    '''
+    '''
+    head_keys, tail_keys = tile_keys[:1000], tile_keys[1000:]
+    
+    while len(head_keys):
+        to_delete = {'Objects': [{'Key': key} for key in head_keys]}
+        storage.s3.delete_objects(Bucket=storage.bucket, Delete=to_delete)
+        head_keys, tail_keys = tail_keys[:1000], tail_keys[1000:]
+
 def lambda_handler(event, context):
     '''
     '''
@@ -184,8 +212,8 @@ def lambda_handler(event, context):
     
     geometries = load_upload_geometries(storage, upload1)
     upload2 = upload1.clone(districts=populate_compactness(geometries))
-    tile_totals = iterate_tile_totals(expected_tiles, storage, upload2, context)
-    districts = accumulate_district_totals(tile_totals, upload2)
+    tiles = list(iterate_tile_totals(expected_tiles, storage, upload2, context))
+    districts = accumulate_district_totals(tiles, upload2)
     upload3 = upload2.clone(districts=districts)
     upload4 = score.calculate_bias(upload3)
     upload5 = score.calculate_open_biases(upload4)
@@ -196,3 +224,5 @@ def lambda_handler(event, context):
         progress=data.Progress(len(expected_tiles), len(expected_tiles)))
 
     put_upload_index(storage, complete_upload)
+    put_tile_timings(storage, upload2, tiles)
+    clean_up_tiles(storage, expected_tiles)

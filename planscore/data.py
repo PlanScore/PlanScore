@@ -9,6 +9,7 @@ UPLOAD_DISTRICTS_KEY = 'uploads/{id}/districts/{index}.json'
 UPLOAD_GEOMETRIES_KEY = 'uploads/{id}/geometries/{index}.wkt'
 UPLOAD_TILE_INDEX_KEY = 'uploads/{id}/tiles.json'
 UPLOAD_TILES_KEY = 'uploads/{id}/tiles/{zxy}.json'
+UPLOAD_TIMING_KEY = 'uploads/{id}/timing.csv'
 
 class State (enum.Enum):
     XX = 'XX'
