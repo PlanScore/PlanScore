@@ -186,6 +186,16 @@ def adjust_household_income(input_totals):
     
     return totals
 
+def clean_up_tiles(storage, tile_keys):
+    '''
+    '''
+    head_keys, tail_keys = tile_keys[:1000], tile_keys[1000:]
+    
+    while len(head_keys):
+        to_delete = {'Objects': [{'Key': key} for key in head_keys]}
+        storage.s3.delete_objects(Bucket=storage.bucket, Delete=to_delete)
+        head_keys, tail_keys = tail_keys[:1000], tail_keys[1000:]
+
 def lambda_handler(event, context):
     '''
     '''
@@ -204,7 +214,6 @@ def lambda_handler(event, context):
     upload2 = upload1.clone(districts=populate_compactness(geometries))
     tiles = list(iterate_tile_totals(expected_tiles, storage, upload2, context))
     districts = accumulate_district_totals(tiles, upload2)
-    put_tile_timings(storage, upload2, tiles)
     upload3 = upload2.clone(districts=districts)
     upload4 = score.calculate_bias(upload3)
     upload5 = score.calculate_open_biases(upload4)
@@ -215,3 +224,5 @@ def lambda_handler(event, context):
         progress=data.Progress(len(expected_tiles), len(expected_tiles)))
 
     put_upload_index(storage, complete_upload)
+    put_tile_timings(storage, upload2, tiles)
+    clean_up_tiles(storage, expected_tiles)

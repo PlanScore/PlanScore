@@ -243,3 +243,19 @@ class TestObserveTiles (unittest.TestCase):
         
         self.assertEqual(totals4['Households 2016'], 1000)
         self.assertEqual(totals4['Voters'], 2000)
+    
+    def test_clean_up_tiles(self):
+        '''
+        '''
+        storage = unittest.mock.Mock()
+        tile_keys = ['foo'] * 1001
+
+        observe.clean_up_tiles(storage, tile_keys)
+        
+        (delete_call1, delete_call2) = storage.s3.delete_objects.mock_calls
+        
+        self.assertEqual(delete_call1[2],
+            dict(Bucket=storage.bucket, Delete={'Objects': [{'Key': 'foo'}] * 1000}))
+        
+        self.assertEqual(delete_call2[2],
+            dict(Bucket=storage.bucket, Delete={'Objects': [{'Key': 'foo'}]}))
