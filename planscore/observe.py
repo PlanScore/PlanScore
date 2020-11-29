@@ -1,10 +1,10 @@
-import boto3, botocore.exceptions, time, json, posixpath, io, gzip, collections, copy
+import boto3, botocore.exceptions, time, json, posixpath, io, gzip, collections, copy, csv
 from . import data, constants, tiles, score, compactness
 import osgeo.ogr
 
 FUNCTION_NAME = 'PlanScore-ObserveTiles'
 
-Tile = collections.namedtuple('Tile', ('totals', ))
+Tile = collections.namedtuple('Tile', ('totals', 'timing'))
 
 def get_upload_index(storage, key):
     '''
@@ -101,7 +101,8 @@ def iterate_tile_totals(expected_tiles, storage, upload, context):
                 if object.get('ContentEncoding') == 'gzip':
                     object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
         
-                yield Tile(json.load(object['Body']).get('totals'))
+                content = json.load(object['Body'])
+                yield Tile(content.get('totals'), content.get('timing', {}))
             
                 # Found the expected tile, break out of this loop
                 break
@@ -115,6 +116,21 @@ def iterate_tile_totals(expected_tiles, storage, upload, context):
                 return
 
     print('iterate_tile_totals: all tiles complete')
+
+def put_tile_timings(storage, upload, tiles):
+    ''' Write a CSV report on tile timing
+    '''
+    key = data.UPLOAD_TIMING_KEY.format(id=upload.id)
+    
+    buffer = io.StringIO()
+    out = csv.DictWriter(buffer, ('elapsed_time', 'features'))
+    out.writeheader()
+    
+    for tile in tiles:
+        out.writerow({k: tile.timing.get(k) for k in out.fieldnames})
+
+    storage.s3.put_object(Bucket=storage.bucket, Key=key,
+        Body=buffer.getvalue(), ContentType='text/csv', ACL='public-read')
 
 def accumulate_district_totals(tile_totals, upload):
     ''' Return new district array for an upload, preserving existing values.
@@ -186,8 +202,9 @@ def lambda_handler(event, context):
     
     geometries = load_upload_geometries(storage, upload1)
     upload2 = upload1.clone(districts=populate_compactness(geometries))
-    tile_totals = iterate_tile_totals(expected_tiles, storage, upload2, context)
-    districts = accumulate_district_totals(tile_totals, upload2)
+    tiles = list(iterate_tile_totals(expected_tiles, storage, upload2, context))
+    districts = accumulate_district_totals(tiles, upload2)
+    put_tile_timings(storage, upload2, tiles)
     upload3 = upload2.clone(districts=districts)
     upload4 = score.calculate_bias(upload3)
     upload5 = score.calculate_open_biases(upload4)

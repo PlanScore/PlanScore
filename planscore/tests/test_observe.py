@@ -53,6 +53,23 @@ class TestObserveTiles (unittest.TestCase):
             Body=upload.to_plaintext.return_value.encode.return_value,
             ACL='public-read', ContentType='text/plain'))
 
+    def test_put_tile_timings(self):
+        ''' Upload timing file is posted to S3
+        '''
+        storage, upload = unittest.mock.Mock(), unittest.mock.Mock()
+        upload.id = 'fake-id'
+        observe.put_tile_timings(storage, upload, [
+            observe.Tile(None, dict(elapsed_time=1.1, features=2)),
+            observe.Tile(None, dict(elapsed_time=3.3, features=4)),
+        ])
+        
+        (put_call, ) = storage.s3.put_object.mock_calls
+        
+        self.assertEqual(put_call[2], dict(Bucket=storage.bucket,
+            Key=data.UPLOAD_TIMING_KEY.format(id=upload.id),
+            Body='elapsed_time,features\r\n1.1,2\r\n3.3,4\r\n',
+            ACL='public-read', ContentType='text/csv'))
+
     def test_expected_tile(self):
         ''' Expected tile is returned for an enqueued one.
         '''
@@ -173,7 +190,11 @@ class TestObserveTiles (unittest.TestCase):
             tile_key = f'uploads/sample-plan/tiles/{zxy}.json'
             filename = os.path.join(os.path.dirname(__file__), 'data', tile_key)
             with open(filename) as file:
-                inputs.append(observe.Tile(json.load(file).get('totals')))
+                content = json.load(file)
+                inputs.append(observe.Tile(
+                    content.get('totals'),
+                    content.get('timing'),
+                ))
         
         upload.districts = [None, None]
         districts1 = observe.accumulate_district_totals(inputs, upload)

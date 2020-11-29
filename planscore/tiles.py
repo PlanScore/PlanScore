@@ -1,4 +1,4 @@
-import json, io, gzip, posixpath, functools, collections
+import json, io, gzip, posixpath, functools, collections, time
 import osgeo.ogr, boto3, botocore.exceptions, ModestMaps.OpenStreetMap, ModestMaps.Core
 from . import constants, data, util, prepare_state, score
 
@@ -155,6 +155,7 @@ def score_precinct(partial_district_geom, precinct_feat, tile_geom):
 def lambda_handler(event, context):
     '''
     '''
+    start_time = time.time()
     s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
     storage = data.Storage.from_event(event['storage'], s3)
     upload = data.Upload.from_dict(event['upload'])
@@ -172,7 +173,12 @@ def lambda_handler(event, context):
             totals[geometry_key] = score_district(district_geom, precincts, tile_geom)
     except Exception as err:
         totals = str(err)
+        feature_count = None
+    else:
+        feature_count = len(precincts)
+
+    timing = dict(elapsed_time=time.time() - start_time, features=feature_count)
 
     s3.put_object(Bucket=storage.bucket, Key=output_key,
-        Body=json.dumps(dict(event, totals=totals)).encode('utf8'),
+        Body=json.dumps(dict(event, totals=totals, timing=timing)).encode('utf8'),
         ContentType='text/plain', ACL='public-read')
