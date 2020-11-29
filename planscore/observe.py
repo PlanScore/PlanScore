@@ -123,7 +123,7 @@ def put_tile_timings(storage, upload, tiles):
     key = data.UPLOAD_TIMING_KEY.format(id=upload.id)
     
     buffer = io.StringIO()
-    out = csv.DictWriter(buffer, ('elapsed_time', 'features'))
+    out = csv.DictWriter(buffer, ('features', 'start_time', 'elapsed_time'))
     out.writeheader()
     
     for tile in tiles:

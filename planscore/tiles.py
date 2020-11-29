@@ -177,7 +177,11 @@ def lambda_handler(event, context):
     else:
         feature_count = len(precincts)
 
-    timing = dict(elapsed_time=time.time() - start_time, features=feature_count)
+    timing = dict(
+        start_time=round(start_time, 3),
+        elapsed_time=round(time.time() - start_time, 3),
+        features=feature_count,
+    )
 
     s3.put_object(Bucket=storage.bucket, Key=output_key,
         Body=json.dumps(dict(event, totals=totals, timing=timing)).encode('utf8'),

@@ -59,15 +59,15 @@ class TestObserveTiles (unittest.TestCase):
         storage, upload = unittest.mock.Mock(), unittest.mock.Mock()
         upload.id = 'fake-id'
         observe.put_tile_timings(storage, upload, [
-            observe.Tile(None, dict(elapsed_time=1.1, features=2)),
-            observe.Tile(None, dict(elapsed_time=3.3, features=4)),
+            observe.Tile(None, dict(start_time=1.1, elapsed_time=2.2, features=3)),
+            observe.Tile(None, dict(start_time=4.4, elapsed_time=5.5, features=6)),
         ])
         
         (put_call, ) = storage.s3.put_object.mock_calls
         
         self.assertEqual(put_call[2], dict(Bucket=storage.bucket,
             Key=data.UPLOAD_TIMING_KEY.format(id=upload.id),
-            Body='elapsed_time,features\r\n1.1,2\r\n3.3,4\r\n',
+            Body='features,start_time,elapsed_time\r\n3,1.1,2.2\r\n6,4.4,5.5\r\n',
             ACL='public-read', ContentType='text/csv'))
 
     def test_expected_tile(self):
