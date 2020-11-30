@@ -1,11 +1,27 @@
-var FIELDS = ['Population 2010', 'Population 2015', 'Black Population 2015',
-    'Hispanic Population 2015', 'Population 2016', 'Black Population 2016',
-    'Hispanic Population 2016', 'Citizen Voting-Age Population 2015',
+var FIELDS = [
+    'Population 2010',
+    'Population 2015',
+    'Black Population 2015',
+    'Hispanic Population 2015',
+    'Population 2016',
+    'Black Population 2016',
+    'Hispanic Population 2016',
+    'Population 2018',
+    'Black Population 2018',
+    'Hispanic Population 2018',
+    'Citizen Voting-Age Population 2015',
     'Black Citizen Voting-Age Population 2015',
     'Hispanic Citizen Voting-Age Population 2015',
-    'Democratic Wins', 'Democratic Votes', 'Republican Votes',
-    'US President 2016 - DEM', 'US President 2016 - REP'
-    /*, 'Polsby-Popper', 'Reock'*/];
+    'Citizen Voting-Age Population 2018',
+    'Black Citizen Voting-Age Population 2018',
+    'Hispanic Citizen Voting-Age Population 2018',
+    'Democratic Wins',
+    'Democratic Votes',
+    'Republican Votes',
+    'US President 2016 - DEM',
+    'US President 2016 - REP'
+    /*, 'Polsby-Popper', 'Reock'*/
+];
 
 var BLUE_COLOR_HEX = '#4D90D1',
     RED_COLOR_HEX = '#D45557',
@@ -460,11 +476,37 @@ function update_acs2016_percentages(head, row)
     }
 }
 
+function update_acs2018_percentages(head, row)
+{
+    var total_index = head.indexOf('Population 2018'),
+        black_index = head.indexOf('Black Population 2018'),
+        latin_index = head.indexOf('Hispanic Population 2018');
+
+    if(total_index >= 0 && black_index >= 0 && latin_index >= 0)
+    {
+        row[black_index] = nice_percent(row[black_index] / row[total_index]);
+        row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
+    }
+}
+
 function update_cvap2015_percentages(head, row)
 {
     var total_index = head.indexOf('Citizen Voting-Age Population 2015'),
         black_index = head.indexOf('Black Citizen Voting-Age Population 2015'),
         latin_index = head.indexOf('Hispanic Citizen Voting-Age Population 2015');
+
+    if(total_index >= 0 && black_index >= 0 && latin_index >= 0)
+    {
+        row[black_index] = nice_percent(row[black_index] / row[total_index]);
+        row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
+    }
+}
+
+function update_cvap2018_percentages(head, row)
+{
+    var total_index = head.indexOf('Citizen Voting-Age Population 2018'),
+        black_index = head.indexOf('Black Citizen Voting-Age Population 2018'),
+        latin_index = head.indexOf('Hispanic Citizen Voting-Age Population 2018');
 
     if(total_index >= 0 && black_index >= 0 && latin_index >= 0)
     {
@@ -548,7 +590,9 @@ function plan_array(plan)
         update_vote_percentages(head_row, all_rows[j], plan.districts[j - 1].totals);
         update_acs2015_percentages(head_row, all_rows[j]);
         update_acs2016_percentages(head_row, all_rows[j]);
+        update_acs2018_percentages(head_row, all_rows[j]);
         update_cvap2015_percentages(head_row, all_rows[j]);
+        update_cvap2018_percentages(head_row, all_rows[j]);
     }
     
     update_heading_titles(head_row);

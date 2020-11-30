@@ -81,12 +81,30 @@ assert.equal(plan.which_score_summary_name(NC_multisim_index),
     'Efficiency Gap', 'Should pick out the right summary name');
 
 assert.deepEqual(plan.which_score_column_names(NC_multisim_index),
-    ['Population 2010', 'Population 2015', 'Black Population 2015', 'Hispanic Population 2015',
-    'Population 2016', 'Black Population 2016', 'Hispanic Population 2016',
-    'Citizen Voting-Age Population 2015', 'Black Citizen Voting-Age Population 2015',
-    'Hispanic Citizen Voting-Age Population 2015',
-    'Democratic Wins', 'Democratic Votes', 'Republican Votes',
-    'US President 2016 - DEM', 'US President 2016 - REP'/*, 'Polsby-Popper', 'Reock'*/],
+    [
+        'Population 2010',
+        'Population 2015',
+        'Black Population 2015',
+        'Hispanic Population 2015',
+        'Population 2016',
+        'Black Population 2016',
+        'Hispanic Population 2016',
+        'Population 2018',
+        'Black Population 2018',
+        'Hispanic Population 2018',
+        'Citizen Voting-Age Population 2015',
+        'Black Citizen Voting-Age Population 2015',
+        'Hispanic Citizen Voting-Age Population 2015',
+        'Citizen Voting-Age Population 2018',
+        'Black Citizen Voting-Age Population 2018',
+        'Hispanic Citizen Voting-Age Population 2018',
+        'Democratic Wins',
+        'Democratic Votes',
+        'Republican Votes',
+        'US President 2016 - DEM',
+        'US President 2016 - REP'
+        /*, 'Polsby-Popper', 'Reock'*/
+    ],
     'Should pick out the right column names');
 
 assert.equal(plan.which_district_color(NC_multisim_index.districts[0], NC_multisim_index),
