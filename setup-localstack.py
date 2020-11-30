@@ -90,6 +90,12 @@ basedir9 = pp.join(pp.dirname(__file__), 'data', 'sample-NC-unified')
 upload(prefix9, basedir9, pp.join(basedir9, '*.*'))
 upload(prefix9, basedir9, pp.join(basedir9, '*', '*.*'))
 
+prefix10 = pp.join('uploads', 'sample-NC-festblocks')
+basedir10 = pp.join(pp.dirname(__file__), 'data', 'sample-NC-festblocks')
+
+upload(prefix10, basedir10, pp.join(basedir10, '*.*'))
+upload(prefix10, basedir10, pp.join(basedir10, '*', '*.*'))
+
 # Lambda function setup
 
 print('--> Set up Lambda', ENDPOINT_LAM)
