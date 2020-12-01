@@ -253,7 +253,7 @@ MODELS2020 = [
     Model(State.VA, House.ushouse,      11,  True, '2020', 'data/VA/002-unified'), # 08df871
     Model(State.VA, House.statesenate,  40,  True, '2020', 'data/VA/002-unified'), # 08df871
     Model(State.VA, House.statehouse,  100,  True, '2020', 'data/VA/002-unified'), # 08df871
-    Model(State.WI, House.ushouse,       8,  True, '2020', 'data/WI/004-unified'), # 17e16d3
-    Model(State.WI, House.statesenate,  33,  True, '2020', 'data/WI/004-unified'), # 17e16d3
-    Model(State.WI, House.statehouse,   99,  True, '2020', 'data/WI/004-unified'), # 17e16d3
+    Model(State.WI, House.ushouse,       8,  True, '2020', 'data/WI/005-festblocks'), # b909e6f
+    Model(State.WI, House.statesenate,  33,  True, '2020', 'data/WI/005-festblocks'), # b909e6f
+    Model(State.WI, House.statehouse,   99,  True, '2020', 'data/WI/005-festblocks'), # b909e6f
     ]
