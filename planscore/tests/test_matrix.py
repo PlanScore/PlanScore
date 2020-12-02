@@ -63,6 +63,20 @@ class TestMatrix (unittest.TestCase):
         self.assertTrue(R[1].sum() < R[4].sum() and R[4].sum() < R[7].sum())
         self.assertTrue(R[2].sum() < R[5].sum() and R[5].sum() < R[8].sum())
     
+    def test_apply_model_with_zeros(self):
+        model = matrix.load_model('ca', '2012')
+        
+        R = matrix.apply_model(
+            [
+                (numpy.nan, -1),
+                (numpy.nan, 1),
+                (numpy.nan, 0),
+            ],
+            model,
+        )
+        
+        self.assertTrue(numpy.isnan(R).all(), 'Everything should be NaN')
+    
     @unittest.mock.patch('planscore.matrix.load_model')
     @unittest.mock.patch('planscore.matrix.apply_model')
     def test_model_votes(self, apply_model, load_model):
@@ -95,3 +109,35 @@ class TestMatrix (unittest.TestCase):
             [[6.0, 4.0],
              [7.0, 3.0]],
         ])
+    
+    @unittest.mock.patch('planscore.matrix.load_model')
+    @unittest.mock.patch('planscore.matrix.apply_model')
+    def test_model_votes_with_zeros(self, apply_model, load_model):
+        apply_model.return_value = numpy.array([
+            [0.3, 0.4],
+            [numpy.nan, numpy.nan]
+        ])
+
+        R = matrix.model_votes(
+            data.State.NC,
+            2016,
+            [
+                (4, 6, 'R'),
+                (0, 0, 'O'),
+            ],
+        )
+
+        # Can't just check NaN == NaN
+        self.assertEqual(apply_model.mock_calls[0][1][0][0], (.4, -1))
+        self.assertTrue(numpy.isnan(apply_model.mock_calls[0][1][0][1][0]))
+        self.assertEqual(apply_model.mock_calls[0][1][0][1][1], 0)
+        self.assertEqual(apply_model.mock_calls[0][1][1], load_model.return_value)
+        
+        self.assertEqual(load_model.mock_calls[0][1], ('nc', 2016))
+
+        self.assertEqual(R[0].tolist(), [
+            [3.0, 7.0],
+            [4.0, 6.0],
+        ])
+        
+        self.assertEqual(R[1].sum(), 0)
