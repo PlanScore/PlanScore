@@ -12,6 +12,11 @@ class TestMatrix (unittest.TestCase):
         for state in data.State:
             self.assertIn(state, matrix.STATE, f'{state.value} should be in matrix.STATE')
 
+    def test_dropna(self):
+        self.assertTrue((matrix.dropna(numpy.array([numpy.nan])) == numpy.array([])).all())
+        self.assertTrue((matrix.dropna(numpy.array([1, numpy.nan])) == numpy.array([1])).all())
+        self.assertTrue((matrix.dropna(numpy.array([numpy.nan, 1])) == numpy.array([1])).all())
+    
     def test_load_model(self):
         model = matrix.load_model('ca', '2012')
         
@@ -140,4 +145,4 @@ class TestMatrix (unittest.TestCase):
             [4.0, 6.0],
         ])
         
-        self.assertEqual(R[1].sum(), 0)
+        self.assertTrue(numpy.isnan(R[1]).all())

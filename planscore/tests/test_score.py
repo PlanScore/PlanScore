@@ -747,6 +747,9 @@ class TestScore (unittest.TestCase):
             model = data.Model(data.State.XX, data.House.ushouse, 4, False, '2020', None),
             districts = [
                 dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
+                dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
+                dict(totals={'US President 2016 - REP': 5, 'US President 2016 - DEM': 3}, tile=None),
+                dict(totals={'US President 2016 - REP': 6, 'US President 2016 - DEM': 2}, tile=None),
                 dict(totals={'US President 2016 - REP': 0, 'US President 2016 - DEM': 0}, tile=None),
                 ])
         
@@ -758,37 +761,53 @@ class TestScore (unittest.TestCase):
              [6.0, 2.0],
              [5.9, 2.1]],
 
-            [[0.0, 0.0],
-             [0.0, 0.0],
-             [0.0, 0.0]],
+            [[3.9, 4.1],
+             [5.7, 2.3],
+             [5.1, 2.9]],
+
+            [[2.8, 5.2],
+             [4.1, 3.9],
+             [2.8, 5.2]],
+
+            [[1.9, 6.1],
+             [2.7, 5.3],
+             [2.6, 5.4]],
+
+            [[numpy.nan, numpy.nan],
+             [numpy.nan, numpy.nan],
+             [numpy.nan, numpy.nan]],
         ])
         output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
-        self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, 2016, [(6, 2, 'O'), (0, 0, 'O')]))
+        self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, 2016, [(6, 2, 'O'), (5, 3, 'O'), (3, 5, 'O'), (2, 6, 'O'), (0, 0, 'O')]))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
-        self.assertEqual(calculate_MMD.mock_calls[0][1], ([2.7, 0.0], [5.3, 0.0]))
+        self.assertEqual(len(calculate_MMD.mock_calls[0][1][0]), 4, 'Should skip empty 5th district')
+        self.assertEqual(len(calculate_MMD.mock_calls[0][1][1]), 4, 'Should skip empty 5th district')
 
         self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
-        self.assertEqual(calculate_PB.mock_calls[0][1], ([2.7, 0.0], [5.3, 0.0]))
+        self.assertEqual(len(calculate_PB.mock_calls[0][1][0]), 4, 'Should skip empty 5th district')
+        self.assertEqual(len(calculate_PB.mock_calls[0][1][1]), 4, 'Should skip empty 5th district')
         
         SIMS = model_votes.return_value.shape[1]
 
         # First round of sims
         self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
-        self.assertEqual(calculate_EG.mock_calls[SIMS*0][1], ([2.7, 0.0], [5.3, 0.0], 0.))
+        self.assertEqual(len(calculate_EG.mock_calls[SIMS*0][1][0]), 4, 'Should skip empty 5th district')
+        self.assertEqual(len(calculate_EG.mock_calls[SIMS*0][1][1]), 4, 'Should skip empty 5th district')
+        self.assertEqual(calculate_EG.mock_calls[SIMS*0][1][2], 0)
 
         # Second round of sims
         self.assertEqual(output.summary['Efficiency Gap +1 Dem'], calculate_EG.return_value)
-        self.assertEqual(calculate_EG.mock_calls[SIMS*1][1], ([2.7, 0.0], [5.3, 0.0], .01))
+        self.assertEqual(len(calculate_EG.mock_calls[SIMS*1][1][0]), 4, 'Should skip empty 5th district')
+        self.assertEqual(len(calculate_EG.mock_calls[SIMS*1][1][1]), 4, 'Should skip empty 5th district')
+        self.assertEqual(calculate_EG.mock_calls[SIMS*1][1][2], .01)
 
         # Third round of sims
         self.assertEqual(output.summary['Efficiency Gap +1 Rep'], calculate_EG.return_value)
-        self.assertEqual(calculate_EG.mock_calls[SIMS*2][1], ([2.7, 0.0], [5.3, 0.0], -.01))
+        self.assertEqual(len(calculate_EG.mock_calls[SIMS*2][1][0]), 4, 'Should skip empty 5th district')
+        self.assertEqual(len(calculate_EG.mock_calls[SIMS*2][1][1]), 4, 'Should skip empty 5th district')
+        self.assertEqual(calculate_EG.mock_calls[SIMS*2][1][2], -.01)
 
-        self.assertEqual(output.districts[0]['totals']['Republican Votes'], 2.27)
-        self.assertEqual(output.districts[0]['totals']['Democratic Votes'], 5.73)
-        self.assertEqual(output.districts[1]['totals']['Republican Votes'], 0.0)
-        self.assertEqual(output.districts[1]['totals']['Democratic Votes'], 0.0)
-
-        self.assertAlmostEqual(output.districts[0]['totals']['Democratic Wins'], 1.)
-        self.assertAlmostEqual(output.districts[1]['totals']['Democratic Wins'], 0.)
+        self.assertIsNone(output.districts[-1]['totals']['Republican Votes'])
+        self.assertIsNone(output.districts[-1]['totals']['Democratic Votes'])
+        self.assertIsNone(output.districts[-1]['totals']['Democratic Wins'])
