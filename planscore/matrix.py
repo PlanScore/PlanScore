@@ -115,4 +115,7 @@ def model_votes(state, year, districts):
         axis=2,
     )
     
+    # Set all the NaNs to zeros
+    votes[numpy.isnan(votes)] = 0
+    
     return votes
