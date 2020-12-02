@@ -73,7 +73,7 @@ def apply_model(districts, model):
         - -1 for Republican, 0 for open seat, and 1 for Democratic incumbents
     '''
     AD = numpy.array([
-        [1, vote + VOTE_ADJUST, incumbency] * 3
+        [1, numpy.nan if numpy.isnan(vote) else (vote + VOTE_ADJUST), incumbency] * 3
         for (vote, incumbency)
         in districts
     ])
@@ -94,7 +94,8 @@ def model_votes(state, year, districts):
     # Get DxS array from apply_model() with modeled vote fractions
     fractions = apply_model(
         [
-            (dem / (dem + rep), INCUMBENCY[inc]) for (dem, rep, inc) in districts
+            (dem / ((dem + rep) or numpy.nan), INCUMBENCY[inc])
+            for (dem, rep, inc) in districts
         ],
         load_model(STATE[state], year),
     )
