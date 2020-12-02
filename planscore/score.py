@@ -386,7 +386,10 @@ def calculate_district_biases(upload):
     
     # For each sim, a list of red votes and a list of blue votes in districts
     red_votes_blue_votes = [
-        (output_votes[:,sim,1].tolist(), output_votes[:,sim,0].tolist())
+        (
+            matrix.dropna(output_votes[:,sim,1]).tolist(),
+            matrix.dropna(output_votes[:,sim,0]).tolist(),
+        )
         for sim in range(output_votes.shape[1])
     ]
     

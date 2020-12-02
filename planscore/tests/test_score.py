@@ -781,34 +781,33 @@ class TestScore (unittest.TestCase):
         self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, 2016, [(6, 2, 'O'), (5, 3, 'O'), (3, 5, 'O'), (2, 6, 'O'), (0, 0, 'O')]))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
-        self.assertTrue(numpy.isnan(calculate_MMD.mock_calls[0][1][0][-1]))
-        self.assertTrue(numpy.isnan(calculate_MMD.mock_calls[0][1][1][-1]))
+        self.assertEqual(len(calculate_MMD.mock_calls[0][1][0]), 4, 'Should skip empty 5th district')
+        self.assertEqual(len(calculate_MMD.mock_calls[0][1][1]), 4, 'Should skip empty 5th district')
 
         self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
-        self.assertTrue(numpy.isnan(calculate_PB.mock_calls[0][1][0][-1]))
-        self.assertTrue(numpy.isnan(calculate_PB.mock_calls[0][1][1][-1]))
+        self.assertEqual(len(calculate_PB.mock_calls[0][1][0]), 4, 'Should skip empty 5th district')
+        self.assertEqual(len(calculate_PB.mock_calls[0][1][1]), 4, 'Should skip empty 5th district')
         
         SIMS = model_votes.return_value.shape[1]
 
         # First round of sims
         self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
-        self.assertTrue(numpy.isnan(calculate_EG.mock_calls[SIMS*0][1][0][-1]))
-        self.assertTrue(numpy.isnan(calculate_EG.mock_calls[SIMS*0][1][1][-1]))
+        self.assertEqual(len(calculate_EG.mock_calls[SIMS*0][1][0]), 4, 'Should skip empty 5th district')
+        self.assertEqual(len(calculate_EG.mock_calls[SIMS*0][1][1]), 4, 'Should skip empty 5th district')
         self.assertEqual(calculate_EG.mock_calls[SIMS*0][1][2], 0)
 
         # Second round of sims
         self.assertEqual(output.summary['Efficiency Gap +1 Dem'], calculate_EG.return_value)
-        self.assertTrue(numpy.isnan(calculate_EG.mock_calls[SIMS*1][1][0][-1]))
-        self.assertTrue(numpy.isnan(calculate_EG.mock_calls[SIMS*1][1][1][-1]))
+        self.assertEqual(len(calculate_EG.mock_calls[SIMS*1][1][0]), 4, 'Should skip empty 5th district')
+        self.assertEqual(len(calculate_EG.mock_calls[SIMS*1][1][1]), 4, 'Should skip empty 5th district')
         self.assertEqual(calculate_EG.mock_calls[SIMS*1][1][2], .01)
 
         # Third round of sims
         self.assertEqual(output.summary['Efficiency Gap +1 Rep'], calculate_EG.return_value)
-        self.assertTrue(numpy.isnan(calculate_EG.mock_calls[SIMS*2][1][0][-1]))
-        self.assertTrue(numpy.isnan(calculate_EG.mock_calls[SIMS*2][1][1][-1]))
+        self.assertEqual(len(calculate_EG.mock_calls[SIMS*2][1][0]), 4, 'Should skip empty 5th district')
+        self.assertEqual(len(calculate_EG.mock_calls[SIMS*2][1][1]), 4, 'Should skip empty 5th district')
         self.assertEqual(calculate_EG.mock_calls[SIMS*2][1][2], -.01)
 
         self.assertIsNone(output.districts[-1]['totals']['Republican Votes'])
         self.assertIsNone(output.districts[-1]['totals']['Democratic Votes'])
-
         self.assertIsNone(output.districts[-1]['totals']['Democratic Wins'])
