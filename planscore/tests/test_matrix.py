@@ -140,4 +140,4 @@ class TestMatrix (unittest.TestCase):
             [4.0, 6.0],
         ])
         
-        self.assertEqual(R[1].sum(), 0)
+        self.assertTrue(numpy.isnan(R[1]).all())

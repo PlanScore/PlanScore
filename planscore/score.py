@@ -365,14 +365,24 @@ def calculate_district_biases(upload):
     copied_districts = copy.deepcopy(upload.districts)
     
     for (i, district) in enumerate(copied_districts):
-        red_votes, blue_votes = output_votes[i,:,1], output_votes[i,:,0]
-        district['totals'].update({
-            'Democratic Wins': (blue_votes > red_votes).astype(int).sum() / output_votes.shape[1],
-            'Democratic Votes': round(statistics.mean(blue_votes), constants.ROUND_COUNT),
-            'Republican Votes': round(statistics.mean(red_votes), constants.ROUND_COUNT),
-            'Democratic Votes SD': round(statistics.stdev(blue_votes), constants.ROUND_COUNT),
-            'Republican Votes SD': round(statistics.stdev(red_votes), constants.ROUND_COUNT)
-            })
+        red_votes = matrix.dropna(output_votes[i,:,1])
+        blue_votes = matrix.dropna(output_votes[i,:,0])
+        try:
+            district['totals'].update({
+                'Democratic Wins': (blue_votes > red_votes).astype(int).sum() / output_votes.shape[1],
+                'Democratic Votes': round(statistics.mean(blue_votes), constants.ROUND_COUNT),
+                'Republican Votes': round(statistics.mean(red_votes), constants.ROUND_COUNT),
+                'Democratic Votes SD': round(statistics.stdev(blue_votes), constants.ROUND_COUNT),
+                'Republican Votes SD': round(statistics.stdev(red_votes), constants.ROUND_COUNT)
+                })
+        except statistics.StatisticsError:
+            district['totals'].update({
+                'Democratic Wins': None,
+                'Democratic Votes': None,
+                'Republican Votes': None,
+                'Democratic Votes SD': None,
+                'Republican Votes SD': None,
+                })
     
     # For each sim, a list of red votes and a list of blue votes in districts
     red_votes_blue_votes = [

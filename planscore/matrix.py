@@ -42,6 +42,9 @@ Model = collections.namedtuple('Model', (
     'array',
     ))
 
+def dropna(a):
+    return a[~numpy.isnan(a)]
+
 def load_model(state, year):
     path = os.path.join(os.path.dirname(__file__), 'model', 'C_matrix.csv')
     
@@ -114,8 +117,5 @@ def model_votes(state, year, districts):
         (numpy.expand_dims(votes_dem, 2), numpy.expand_dims(votes_rep, 2)),
         axis=2,
     )
-    
-    # Set all the NaNs to zeros
-    votes[numpy.isnan(votes)] = 0
     
     return votes
