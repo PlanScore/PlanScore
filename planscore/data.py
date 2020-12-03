@@ -242,40 +242,67 @@ MODELS2017 = [
 
 MODELS2020 = [
     Model(State.XX, House.statehouse,    2,  True, '2020', 'data/XX/005-unified'), # b8e19879
-    Model(State.FL, House.ushouse,      27,  True, '2020', 'data/FL/001-festblocks'), # b909e6f
-    Model(State.FL, House.statesenate,  40,  True, '2020', 'data/FL/001-festblocks'), # b909e6f
-    Model(State.FL, House.statehouse,  120,  True, '2020', 'data/FL/001-festblocks'), # b909e6f
-    Model(State.GA, House.ushouse,      14,  True, '2020', 'data/GA/001-festblocks'), # b909e6f
-    Model(State.GA, House.statesenate,  56,  True, '2020', 'data/GA/001-festblocks'), # b909e6f
-    Model(State.GA, House.statehouse,  180,  True, '2020', 'data/GA/001-festblocks'), # b909e6f
-    Model(State.IL, House.ushouse,      18,  True, '2020', 'data/IL/001-festblocks'), # b909e6f
-    Model(State.IL, House.statesenate,  59,  True, '2020', 'data/IL/001-festblocks'), # b909e6f
-    Model(State.IL, House.statehouse,  118,  True, '2020', 'data/IL/001-festblocks'), # b909e6f
-    Model(State.MA, House.ushouse,       9,  True, '2020', 'data/MA/001-festblocks'), # b909e6f
-    Model(State.MA, House.statesenate,  40,  True, '2020', 'data/MA/001-festblocks'), # b909e6f
-    Model(State.MA, House.statehouse,  160,  True, '2020', 'data/MA/001-festblocks'), # b909e6f
-    Model(State.MD, House.ushouse,       8,  True, '2020', 'data/MD/003-festblocks'), # c12cba3
-    Model(State.MD, House.statesenate,  47,  True, '2020', 'data/MD/003-festblocks'), # c12cba3
-    Model(State.MD, House.statehouse,   68,  True, '2020', 'data/MD/003-festblocks'), # c12cba3
-    Model(State.MI, House.ushouse,      14,  True, '2020', 'data/MI/001-festblocks'), # b909e6f
-    Model(State.MI, House.statesenate,  38,  True, '2020', 'data/MI/001-festblocks'), # b909e6f
-    Model(State.MI, House.statehouse,  110,  True, '2020', 'data/MI/001-festblocks'), # b909e6f
-    Model(State.NC, House.ushouse,      13,  True, '2020', 'data/NC/013-festblocks'), # c12cba3
-    Model(State.NC, House.statesenate,  50,  True, '2020', 'data/NC/013-festblocks'), # c12cba3
-    Model(State.NC, House.statehouse,  120,  True, '2020', 'data/NC/013-festblocks'), # c12cba3
+    #Model(State.DE, House.ushouse,        ,  True, '2020', 'data/DE/001-festblocks'), # 56f7c85
+    #Model(State.DE, House.statesenate,    ,  True, '2020', 'data/DE/001-festblocks'), # 56f7c85
+    #Model(State.DE, House.statehouse,     ,  True, '2020', 'data/DE/001-festblocks'), # 56f7c85
+    Model(State.FL, House.ushouse,      27,  True, '2020', 'data/FL/002-festblocks'), # 56f7c85
+    Model(State.FL, House.statesenate,  40,  True, '2020', 'data/FL/002-festblocks'), # 56f7c85
+    Model(State.FL, House.statehouse,  120,  True, '2020', 'data/FL/002-festblocks'), # 56f7c85
+    Model(State.GA, House.ushouse,      14,  True, '2020', 'data/GA/002-festblocks'), # 56f7c85
+    Model(State.GA, House.statesenate,  56,  True, '2020', 'data/GA/002-festblocks'), # 56f7c85
+    Model(State.GA, House.statehouse,  180,  True, '2020', 'data/GA/002-festblocks'), # 56f7c85
+    Model(State.IL, House.ushouse,      18,  True, '2020', 'data/IL/002-festblocks'), # 56f7c85
+    Model(State.IL, House.statesenate,  59,  True, '2020', 'data/IL/002-festblocks'), # 56f7c85
+    Model(State.IL, House.statehouse,  118,  True, '2020', 'data/IL/002-festblocks'), # 56f7c85
+    Model(State.MA, House.ushouse,       9,  True, '2020', 'data/MA/002-festblocks'), # 56f7c85
+    Model(State.MA, House.statesenate,  40,  True, '2020', 'data/MA/002-festblocks'), # 56f7c85
+    Model(State.MA, House.statehouse,  160,  True, '2020', 'data/MA/002-festblocks'), # 56f7c85
+    Model(State.MD, House.ushouse,       8,  True, '2020', 'data/MD/004-festblocks'), # 56f7c85
+    Model(State.MD, House.statesenate,  47,  True, '2020', 'data/MD/004-festblocks'), # 56f7c85
+    Model(State.MD, House.statehouse,   68,  True, '2020', 'data/MD/004-festblocks'), # 56f7c85
+    #Model(State.ME, House.ushouse,        ,  True, '2020', 'data/ME/001-festblocks'), # 56f7c85
+    #Model(State.ME, House.statesenate,    ,  True, '2020', 'data/ME/001-festblocks'), # 56f7c85
+    #Model(State.ME, House.statehouse,     ,  True, '2020', 'data/ME/001-festblocks'), # 56f7c85
+    Model(State.MI, House.ushouse,      14,  True, '2020', 'data/MI/002-festblocks'), # 56f7c85
+    Model(State.MI, House.statesenate,  38,  True, '2020', 'data/MI/002-festblocks'), # 56f7c85
+    Model(State.MI, House.statehouse,  110,  True, '2020', 'data/MI/002-festblocks'), # 56f7c85
+    #Model(State.MT, House.ushouse,        ,  True, '2020', 'data/MT/001-festblocks'), # 56f7c85
+    #Model(State.MT, House.statesenate,    ,  True, '2020', 'data/MT/001-festblocks'), # 56f7c85
+    #Model(State.MT, House.statehouse,     ,  True, '2020', 'data/MT/001-festblocks'), # 56f7c85
+    Model(State.NC, House.ushouse,      13,  True, '2020', 'data/NC/014-festblocks'), # 56f7c85
+    Model(State.NC, House.statesenate,  50,  True, '2020', 'data/NC/014-festblocks'), # 56f7c85
+    Model(State.NC, House.statehouse,  120,  True, '2020', 'data/NC/014-festblocks'), # 56f7c85
+    #Model(State.ND, House.ushouse,        ,  True, '2020', 'data/ND/001-festblocks'), # 56f7c85
+    #Model(State.ND, House.statesenate,    ,  True, '2020', 'data/ND/001-festblocks'), # 56f7c85
+    #Model(State.ND, House.statehouse,     ,  True, '2020', 'data/ND/001-festblocks'), # 56f7c85
+    #Model(State.NH, House.ushouse,        ,  True, '2020', 'data/NH/001-festblocks'), # 56f7c85
+    #Model(State.NH, House.statesenate,    ,  True, '2020', 'data/NH/001-festblocks'), # 56f7c85
+    #Model(State.NH, House.statehouse,     ,  True, '2020', 'data/NH/001-festblocks'), # 56f7c85
     Model(State.PA, House.ushouse,      18,  True, '2020', 'data/PA/009-unified'), # d9fcd35
     Model(State.PA, House.statesenate,  50,  True, '2020', 'data/PA/009-unified'), # d9fcd35
     Model(State.PA, House.statehouse,  203,  True, '2020', 'data/PA/009-unified'), # d9fcd35
-    Model(State.TN, House.ushouse,       9,  True, '2020', 'data/TN/001-festblocks'), # b909e6f
-    Model(State.TN, House.statesenate,  33,  True, '2020', 'data/TN/001-festblocks'), # b909e6f
-    Model(State.TN, House.statehouse,   99,  True, '2020', 'data/TN/001-festblocks'), # b909e6f
-    Model(State.TX, House.ushouse,      36,  True, '2020', 'data/TX/001-festblocks'), # b909e6f
-    Model(State.TX, House.statesenate,  31,  True, '2020', 'data/TX/001-festblocks'), # b909e6f
-    Model(State.TX, House.statehouse,  150,  True, '2020', 'data/TX/001-festblocks'), # b909e6f
+    #Model(State.RI, House.ushouse,        ,  True, '2020', 'data/RI/001-festblocks'), # 56f7c85
+    #Model(State.RI, House.statesenate,    ,  True, '2020', 'data/RI/001-festblocks'), # 56f7c85
+    #Model(State.RI, House.statehouse,     ,  True, '2020', 'data/RI/001-festblocks'), # 56f7c85
+    #Model(State.SD, House.ushouse,        ,  True, '2020', 'data/SD/001-festblocks'), # 56f7c85
+    #Model(State.SD, House.statesenate,    ,  True, '2020', 'data/SD/001-festblocks'), # 56f7c85
+    #Model(State.SD, House.statehouse,     ,  True, '2020', 'data/SD/001-festblocks'), # 56f7c85
+    Model(State.TN, House.ushouse,       9,  True, '2020', 'data/TN/002-festblocks'), # 56f7c85
+    Model(State.TN, House.statesenate,  33,  True, '2020', 'data/TN/002-festblocks'), # 56f7c85
+    Model(State.TN, House.statehouse,   99,  True, '2020', 'data/TN/002-festblocks'), # 56f7c85
+    Model(State.TX, House.ushouse,      36,  True, '2020', 'data/TX/002-festblocks'), # 56f7c85
+    Model(State.TX, House.statesenate,  31,  True, '2020', 'data/TX/002-festblocks'), # 56f7c85
+    Model(State.TX, House.statehouse,  150,  True, '2020', 'data/TX/002-festblocks'), # 56f7c85
     Model(State.VA, House.ushouse,      11,  True, '2020', 'data/VA/002-unified'), # 08df871
     Model(State.VA, House.statesenate,  40,  True, '2020', 'data/VA/002-unified'), # 08df871
     Model(State.VA, House.statehouse,  100,  True, '2020', 'data/VA/002-unified'), # 08df871
-    Model(State.WI, House.ushouse,       8,  True, '2020', 'data/WI/005-festblocks'), # b909e6f
-    Model(State.WI, House.statesenate,  33,  True, '2020', 'data/WI/005-festblocks'), # b909e6f
-    Model(State.WI, House.statehouse,   99,  True, '2020', 'data/WI/005-festblocks'), # b909e6f
+    #Model(State.VT, House.ushouse,        ,  True, '2020', 'data/VT/001-festblocks'), # 56f7c85
+    #Model(State.VT, House.statesenate,    ,  True, '2020', 'data/VT/001-festblocks'), # 56f7c85
+    #Model(State.VT, House.statehouse,     ,  True, '2020', 'data/VT/001-festblocks'), # 56f7c85
+    Model(State.WI, House.ushouse,       8,  True, '2020', 'data/WI/006-festblocks'), # 56f7c85
+    Model(State.WI, House.statesenate,  33,  True, '2020', 'data/WI/006-festblocks'), # 56f7c85
+    Model(State.WI, House.statehouse,   99,  True, '2020', 'data/WI/006-festblocks'), # 56f7c85
+    #Model(State.WY, House.ushouse,        ,  True, '2020', 'data/WY/001-festblocks'), # 56f7c85
+    #Model(State.WY, House.statesenate,    ,  True, '2020', 'data/WY/001-festblocks'), # 56f7c85
+    #Model(State.WY, House.statehouse,     ,  True, '2020', 'data/WY/001-festblocks'), # 56f7c85
     ]
