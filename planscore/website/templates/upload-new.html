@@ -93,8 +93,8 @@
             </p>
             <p>
                 <input type="file" name="file" id="file">
-                <label for="file" class="btn btn-default">Choose A File</label>
-                <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary" disabled>
+                <label for="file" class="btn btn-default">1) Choose A File</label>
+                <input type="submit" name="submission" value="2) Score This Plan" class="btn btn-primary" disabled>
             </p>
             <p>
                 These file types and states are currently supported:
@@ -123,10 +123,10 @@
 	    file_input.addEventListener('change', function(e)
 	    {
 	        if(this.files.length) {
-	            file_label.innerText = this.files[0].name;
+	            file_label.innerText = '1) File: ' + this.files[0].name;
 	        
 	        } else {
-	            file_label.innerText = 'Choose A File';
+	            file_label.innerText = '1) Choose A File';
 	        }
 	    });
 	    
