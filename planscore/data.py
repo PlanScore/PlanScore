@@ -234,7 +234,7 @@ MODELS2017 = [
     Model(State.PA, House.ushouse,      18, False, '2017', 'data/PA/008-ushouse'), # 8c546bb
     Model(State.PA, House.statesenate,  50, False, '2017', 'data/PA/006-statesenate-multizoom'), # 25d464159
     Model(State.PA, House.statehouse,  203, False, '2017', 'data/PA/006-statehouse-multizoom'), # 25d464159
-    Model(State.VA, House.statehouse,  100, False, '2017', 'data/VA/001-statehouse-open'), # d2f65a55f
+    Model(State.VA, House.statehouse,  100, False, '2017', 'data/VA/001-statehouse-open'), # 08df8715f
     Model(State.WI, House.ushouse,       8, False, '2017', 'data/WI/002-ushouse'),
     Model(State.WI, House.statesenate,  33, False, '2017', 'data/WI/002-statesenate'),
     Model(State.WI, House.statehouse,   99, False, '2017', 'data/WI/003-stateassembly-open'), # a073026

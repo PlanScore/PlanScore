@@ -77,11 +77,11 @@ workflows:
       - Build:
           filters:
             branches:
-              only: master
+              only: main
       - Deploy:
           requires:
             - Test
             - Build
           filters:
             branches:
-              only: master
+              only: main
