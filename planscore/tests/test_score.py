@@ -663,15 +663,18 @@ class TestScore (unittest.TestCase):
         self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, 2016, [(6, 2, 'O'), (5, 3, 'O'), (3, 5, 'O'), (2, 6, 'O')]))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
+        self.assertEqual(output.summary['Mean-Median Positives'], 0.0)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2.7, 4.1, 5.2, 6.1], [5.3, 3.9, 2.8, 1.9]))
 
         self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
+        self.assertEqual(output.summary['Partisan Bias Positives'], 0.0)
         self.assertEqual(calculate_PB.mock_calls[0][1], ([2.7, 4.1, 5.2, 6.1], [5.3, 3.9, 2.8, 1.9]))
         
         SIMS = model_votes.return_value.shape[1]
 
         # First round of sims
         self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
+        self.assertEqual(output.summary['Efficiency Gap Positives'], 0.0)
         self.assertEqual(calculate_EG.mock_calls[SIMS*0][1], ([2.7, 4.1, 5.2, 6.1], [5.3, 3.9, 2.8, 1.9], 0.))
 
         # Second round of sims
