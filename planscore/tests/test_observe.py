@@ -41,7 +41,7 @@ class TestObserveTiles (unittest.TestCase):
         storage, upload = unittest.mock.Mock(), unittest.mock.Mock()
         observe.put_upload_index(storage, upload)
         
-        put_call1, put_call2 = storage.s3.put_object.mock_calls
+        put_call1, put_call2, put_call3 = storage.s3.put_object.mock_calls
         
         self.assertEqual(put_call1[2], dict(Bucket=storage.bucket,
             Key=upload.index_key.return_value,
@@ -51,6 +51,11 @@ class TestObserveTiles (unittest.TestCase):
         self.assertEqual(put_call2[2], dict(Bucket=storage.bucket,
             Key=upload.plaintext_key.return_value,
             Body=upload.to_plaintext.return_value.encode.return_value,
+            ACL='public-read', ContentType='text/plain'))
+        
+        self.assertEqual(put_call3[2], dict(Bucket=storage.bucket,
+            Key=upload.logentry_key.return_value,
+            Body=upload.to_logentry.return_value.encode.return_value,
             ACL='public-read', ContentType='text/plain'))
 
     def test_put_tile_timings(self):

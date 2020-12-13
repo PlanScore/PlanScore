@@ -231,6 +231,32 @@ class TestData (unittest.TestCase):
         self.assertEqual(row2, '2\tD\t400\t600\t500\t0.3')
         self.assertEqual(row3, '3\tR\t700\t900\t800\t0.4')
         self.assertEqual(tail, '')
+    
+    @unittest.mock.patch('time.time')
+    def test_upload_to_logentry(self, time):
+        ''' data.Upload instances can be converted to log entry
+        '''
+        time.return_value = -999
+        
+        upload1 = data.Upload(id='ID', message='Yo.', key='whatever')
+        logentry1 = upload1.to_logentry()
+        self.assertEqual(logentry1, 'ID\t-999\tYo.\t\t\t\r\n')
+
+        upload2 = data.Upload(id='ID', message="Hell's Bells", key='whatever')
+        logentry2 = upload2.to_logentry()
+        self.assertEqual(logentry2, "ID\t-999\tHell's Bells\t\t\t\r\n")
+
+        upload3 = data.Upload(id='ID', message="Oh, really?", key='whatever')
+        logentry3 = upload3.to_logentry()
+        self.assertEqual(logentry3, 'ID\t-999\tOh, really?\t\t\t\r\n')
+        
+        upload4 = data.Upload(
+            id='ID', message='Yo.', key='whatever',
+            model=data.Model.from_json('{"state": "NC", "house": "ushouse", "seats": 13, "key_prefix": "data/NC/001", "version": "2020"}')
+        )
+        logentry4 = upload4.to_logentry()
+        self.assertEqual(logentry4, 'ID\t-999\tYo.\tNC\tushouse\t'
+            '{"house":"ushouse","incumbency":false,"key_prefix":"data/NC/001","seats":13,"state":"NC","version":"2020"}\r\n')
 
     def test_upload_index_key(self):
         ''' data.Upload.index_key() correctly munges Upload.key
@@ -255,6 +281,12 @@ class TestData (unittest.TestCase):
         '''
         upload = data.Upload(id='ID', key='uploads/ID/upload/whatever.json')
         self.assertEqual(upload.district_key(999), 'uploads/ID/districts/999.json')
+    
+    def test_upload_logentry_key(self):
+        ''' data.Upload.logentry_key() correctly munges Upload.key
+        '''
+        upload = data.Upload(start_time=1607891802, id='ID', key='uploads/ID/upload/whatever.json')
+        self.assertEqual(upload.logentry_key('uuid4'), 'logs/ds=2020-12-13/uuid4.txt')
     
     def test_upload_clone(self):
         ''' data.Upload.clone() returns a copy with the right properties

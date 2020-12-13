@@ -1,4 +1,4 @@
-import json, csv, io, time, enum
+import json, csv, io, time, enum, datetime
 from . import constants
 
 UPLOAD_PREFIX = 'uploads/{id}/upload/'
@@ -10,6 +10,7 @@ UPLOAD_GEOMETRIES_KEY = 'uploads/{id}/geometries/{index}.wkt'
 UPLOAD_TILE_INDEX_KEY = 'uploads/{id}/tiles.json'
 UPLOAD_TILES_KEY = 'uploads/{id}/tiles/{zxy}.json'
 UPLOAD_TIMING_KEY = 'uploads/{id}/timing.csv'
+UPLOAD_LOGENTRY_KEY = 'logs/ds={ds}/{guid}.txt'
 
 class State (enum.Enum):
     XX = 'XX'
@@ -86,7 +87,7 @@ class Model:
             )
     
     def to_json(self):
-        return json.dumps(self.to_dict(), sort_keys=True, indent=2)
+        return json.dumps(self.to_dict(), sort_keys=True, separators=(',', ':'))
     
     @staticmethod
     def from_dict(data):
@@ -135,6 +136,10 @@ class Upload:
     
     def district_key(self, index):
         return UPLOAD_DISTRICTS_KEY.format(id=self.id, index=index)
+    
+    def logentry_key(self, guid):
+        ds = datetime.date.fromtimestamp(self.start_time).strftime('%Y-%m-%d')
+        return UPLOAD_LOGENTRY_KEY.format(ds=ds, guid=guid)
     
     def to_plaintext(self):
         ''' Export district totals to a tab-delimited plaintext file
@@ -187,6 +192,40 @@ class Upload:
     
     def to_json(self):
         return json.dumps(self.to_dict(), sort_keys=True, indent=2)
+    
+    def to_logentry(self):
+        ''' Export current plan information to a tab-delimited plaintext file
+        '''
+        logentry = [
+            # ID string from generate_signed_id()
+            self.id,
+            
+            # Current unix timestamp float
+            time.time(),
+            
+            # Text message string
+            self.message,
+            
+            # Model state string
+            (self.model.to_dict().get('state') if self.model else None),
+            
+            # Model house string
+            (self.model.to_dict().get('house') if self.model else None),
+            
+            # Model JSON string
+            (self.model.to_json() if self.model else None),
+        ]
+            
+        try:
+            out = io.StringIO()
+            rows = csv.writer(out, dialect='excel-tab', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+            rows.writerow(logentry)
+        
+        except Exception as e:
+            return f'Error: {e}\n'
+
+        else:
+            return out.getvalue()
     
     def clone(self, model=None, districts=None, incumbents=None, summary=None, progress=None,
         start_time=None, message=None, description=None):
