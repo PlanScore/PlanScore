@@ -15,7 +15,7 @@ def get_upload_index(storage, key):
     return data.Upload.from_json(got['Body'].read())
 
 def put_upload_index(storage, upload):
-    ''' Save a JSON index and a plaintext file for this upload.
+    ''' Save a JSON index, a plaintext file, and a log entry for this upload.
     '''
     key1 = upload.index_key()
     body1 = upload.to_json().encode('utf8')
@@ -29,8 +29,8 @@ def put_upload_index(storage, upload):
     storage.s3.put_object(Bucket=storage.bucket, Key=key2, Body=body2,
         ContentType='text/plain', ACL='public-read')
 
-    key3 = upload.progress_key(str(uuid.uuid4()))
-    body3 = upload.to_progress().encode('utf8')
+    key3 = upload.logentry_key(str(uuid.uuid4()))
+    body3 = upload.to_logentry().encode('utf8')
 
     storage.s3.put_object(Bucket=storage.bucket, Key=key3, Body=body3,
         ContentType='text/plain', ACL='public-read')

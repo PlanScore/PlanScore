@@ -10,7 +10,7 @@ UPLOAD_GEOMETRIES_KEY = 'uploads/{id}/geometries/{index}.wkt'
 UPLOAD_TILE_INDEX_KEY = 'uploads/{id}/tiles.json'
 UPLOAD_TILES_KEY = 'uploads/{id}/tiles/{zxy}.json'
 UPLOAD_TIMING_KEY = 'uploads/{id}/timing.csv'
-UPLOAD_PROGRESS_KEY = 'progress/ds={ds}/{guid}.txt'
+UPLOAD_LOGENTRY_KEY = 'logs/ds={ds}/{guid}.txt'
 
 class State (enum.Enum):
     XX = 'XX'
@@ -137,9 +137,9 @@ class Upload:
     def district_key(self, index):
         return UPLOAD_DISTRICTS_KEY.format(id=self.id, index=index)
     
-    def progress_key(self, guid):
+    def logentry_key(self, guid):
         ds = datetime.date.fromtimestamp(self.start_time).strftime('%Y-%m-%d')
-        return UPLOAD_PROGRESS_KEY.format(ds=ds, guid=guid)
+        return UPLOAD_LOGENTRY_KEY.format(ds=ds, guid=guid)
     
     def to_plaintext(self):
         ''' Export district totals to a tab-delimited plaintext file
@@ -193,18 +193,19 @@ class Upload:
     def to_json(self):
         return json.dumps(self.to_dict(), sort_keys=True, indent=2)
     
-    def to_progress(self):
+    def to_logentry(self):
         ''' Export current plan information to a tab-delimited plaintext file
         '''
-        progress = [
+        logentry = [
             self.id,
+            time.time(),
             self.message,
         ]
             
         try:
             out = io.StringIO()
             rows = csv.writer(out, dialect='excel-tab')
-            rows.writerow(progress)
+            rows.writerow(logentry)
         
         except Exception as e:
             return f'Error: {e}\n'

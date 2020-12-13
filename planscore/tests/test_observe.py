@@ -54,8 +54,8 @@ class TestObserveTiles (unittest.TestCase):
             ACL='public-read', ContentType='text/plain'))
         
         self.assertEqual(put_call3[2], dict(Bucket=storage.bucket,
-            Key=upload.progress_key.return_value,
-            Body=upload.to_progress.return_value.encode.return_value,
+            Key=upload.logentry_key.return_value,
+            Body=upload.to_logentry.return_value.encode.return_value,
             ACL='public-read', ContentType='text/plain'))
 
     def test_put_tile_timings(self):
