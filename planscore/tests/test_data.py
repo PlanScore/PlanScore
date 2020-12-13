@@ -231,6 +231,21 @@ class TestData (unittest.TestCase):
         self.assertEqual(row2, '2\tD\t400\t600\t500\t0.3')
         self.assertEqual(row3, '3\tR\t700\t900\t800\t0.4')
         self.assertEqual(tail, '')
+    
+    def test_upload_to_progress(self):
+        ''' data.Upload instances can be converted to progress
+        '''
+        upload1 = data.Upload(id='ID', message='Yo.', key='whatever')
+        progress1 = upload1.to_progress()
+        self.assertEqual(progress1, 'ID\tYo.\r\n')
+
+        upload2 = data.Upload(id='ID', message="Hell's Bells", key='whatever')
+        progress2 = upload2.to_progress()
+        self.assertEqual(progress2, "ID\tHell's Bells\r\n")
+
+        upload3 = data.Upload(id='ID', message="Oh, really?", key='whatever')
+        progress3 = upload3.to_progress()
+        self.assertEqual(progress3, 'ID\tOh, really?\r\n')
 
     def test_upload_index_key(self):
         ''' data.Upload.index_key() correctly munges Upload.key
@@ -260,7 +275,7 @@ class TestData (unittest.TestCase):
         ''' data.Upload.index_key() correctly munges Upload.key
         '''
         upload = data.Upload(start_time=1607891802, id='ID', key='uploads/ID/upload/whatever.json')
-        self.assertEqual(upload.progress_key('uuid4'), 'progress/ds=2020-12-13/uuid4.csv')
+        self.assertEqual(upload.progress_key('uuid4'), 'progress/ds=2020-12-13/uuid4.txt')
     
     def test_upload_clone(self):
         ''' data.Upload.clone() returns a copy with the right properties

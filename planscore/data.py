@@ -10,7 +10,7 @@ UPLOAD_GEOMETRIES_KEY = 'uploads/{id}/geometries/{index}.wkt'
 UPLOAD_TILE_INDEX_KEY = 'uploads/{id}/tiles.json'
 UPLOAD_TILES_KEY = 'uploads/{id}/tiles/{zxy}.json'
 UPLOAD_TIMING_KEY = 'uploads/{id}/timing.csv'
-UPLOAD_PROGRESS_KEY = 'progress/ds={ds}/{guid}.csv'
+UPLOAD_PROGRESS_KEY = 'progress/ds={ds}/{guid}.txt'
 
 class State (enum.Enum):
     XX = 'XX'
@@ -192,6 +192,25 @@ class Upload:
     
     def to_json(self):
         return json.dumps(self.to_dict(), sort_keys=True, indent=2)
+    
+    def to_progress(self):
+        ''' Export current plan information to a tab-delimited plaintext file
+        '''
+        progress = [
+            self.id,
+            self.message,
+        ]
+            
+        try:
+            out = io.StringIO()
+            rows = csv.writer(out, dialect='excel-tab')
+            rows.writerow(progress)
+        
+        except Exception as e:
+            return f'Error: {e}\n'
+
+        else:
+            return out.getvalue()
     
     def clone(self, model=None, districts=None, incumbents=None, summary=None, progress=None,
         start_time=None, message=None, description=None):
