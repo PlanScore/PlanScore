@@ -110,3 +110,53 @@ do not offer GDAL 2, but you're reluctant to update to unstable packages.
 
 Once that is done, within the virtualenv you will need to export some
 environment variables, as described in Ubuntu 16.
+
+Process
+---
+
+### Old Upload
+
+1.  User starts at `/upload.html`
+2.  Page requests an ID and S3 fields from `/upload` ([λ:`PlanScore-UploadFields`](planscore/upload_fields.py))
+3.  User posts file to S3, redirects to `/annotate.html`
+4.  User posts annotation form to `/uploaded` ([λ:`PlanScore-Callback`](planscore/callback.py))
+5.  [λ:`PlanScore-Callback`](planscore/callback.py) prepares upload:
+    1.  Creates first index JSON
+    2.  Invokes [λ:`PlanScore-AfterUpload`](planscore/after_upload.py)
+    3.  Redirects user to `/plan.html?{id}` to wait
+6.  [λ:`PlanScore-AfterUpload`](planscore/after_upload.py) commences scoring:
+    1.  Guesses state model
+    2.  Uploads plan GeoJSON and district geometry WKTs
+    3.  Loads model tiles
+    4.  Invokes [λ:`PlanScore-ObserveTiles`](planscore/observe_tiles.py)
+    5.  Fans out [λ:`PlanScore-RunTile`](planscore/run_tile.py)
+7.  [λ:`PlanScore-RunTile`](planscore/run_tile.py) aggregates district statistics in tile, saves results to S3
+8.  [λ:`PlanScore-ObserveTiles`](planscore/observe_tiles.py) scores plan:
+    1.  Waits for all expected aggregated tile statistics
+    2.  Calculates final scores
+    3.  Saves index JSON with final data
+
+### New Upload
+
+1.  User starts at `/upload-new.html`
+2.  Page requests an ID and S3 fields from `/upload-new` ([λ:`PlanScore-UploadFieldsNew`](planscore/upload_fields_new.py))
+3.  User posts file to S3, redirects to `/preread` ([λ:`PlanScore-Preread`](planscore/preread.py))
+4.  [λ:`PlanScore-Preread`](planscore/preread.py) prepares upload
+    1.  Creates first index JSON
+    2.  Invokes [λ:`PlanScore-PrereadFollowup`](planscore/preread_followup.py)
+    3.  Redirects user to `/annotate-new.html{?id}{&bucket}{&key}` to wait
+5.  [λ:`PlanScore-PrereadFollowup`](planscore/preread_followup.py) parses upload:
+    1.  Guesses state model
+    2.  Uploads plan GeoJSON
+6.  User posts annotation form with incumbency settings to `/uploaded-new` ([λ:`PlanScore-PostreadCallback`](planscore/postread_callback.py))
+7.  [λ:`PlanScore-PostreadCallback`](planscore/postread_callback.py) invokes [λ:`PlanScore-PostreadCalculate`](planscore/postread_calculate.py) and redirects user to `/plan.html?{id}` to wait
+8.  [λ:`PlanScore-PostreadCalculate`](planscore/postread_calculate.py) commences scoring:
+    1.  Uploads district geometry WKTs
+    2.  Loads model tiles
+    3.  Invokes [λ:`PlanScore-ObserveTiles`](planscore/observe_tiles.py)
+    4.  Fans out [λ:`PlanScore-RunTile`](planscore/run_tile.py)
+9.  [λ:`PlanScore-RunTile`](planscore/run_tile.py) aggregates district statistics in tile, saves results to S3
+10. [λ:`PlanScore-ObserveTiles`](planscore/observe_tiles.py) scores plan:
+    1.  Waits for all expected aggregated tile statistics
+    2.  Calculates final scores
+    3.  Saves index JSON with final data
