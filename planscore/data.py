@@ -196,6 +196,8 @@ class Upload:
     def to_logentry(self):
         ''' Export current plan information to a tab-delimited plaintext file
         '''
+        # Important: only append to this list to maintain 
+        # backward-compatibility with older entries for PrestoDB
         logentry = [
             # ID string from generate_signed_id()
             self.id,
@@ -217,6 +219,9 @@ class Upload:
             
             # Model JSON string
             (self.model.to_json() if self.model else None),
+            
+            # Upload key string
+            self.key,
         ]
             
         try:
