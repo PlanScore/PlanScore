@@ -200,8 +200,11 @@ class Upload:
             # ID string from generate_signed_id()
             self.id,
             
-            # Current unix timestamp float
+            # Current unix timestamp double
             time.time(),
+            
+            # Elapsed time in seconds float
+            time.time() - self.start_time,
             
             # Text message string
             self.message,
