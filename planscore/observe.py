@@ -1,4 +1,5 @@
-import boto3, botocore.exceptions, time, json, posixpath, io, gzip, collections, copy, csv
+import time, json, posixpath, io, gzip, collections, copy, csv, uuid
+import boto3, botocore.exceptions
 from . import data, constants, tiles, score, compactness
 import osgeo.ogr
 
@@ -26,6 +27,12 @@ def put_upload_index(storage, upload):
     body2 = upload.to_plaintext().encode('utf8')
 
     storage.s3.put_object(Bucket=storage.bucket, Key=key2, Body=body2,
+        ContentType='text/plain', ACL='public-read')
+
+    key3 = upload.progress_key(str(uuid.uuid4()))
+    body3 = upload.to_progress().encode('utf8')
+
+    storage.s3.put_object(Bucket=storage.bucket, Key=key3, Body=body3,
         ContentType='text/plain', ACL='public-read')
 
 def get_expected_tile(enqueued_key, upload):
