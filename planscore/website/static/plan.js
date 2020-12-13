@@ -136,7 +136,8 @@ function which_score_summary_name(plan)
 
 function which_score_column_names(plan)
 {
-    if(typeof plan.summary['Efficiency Gap SD'] === 'number')
+    if(typeof plan.summary['Efficiency Gap Positives'] === 'number'
+    || typeof plan.summary['Efficiency Gap SD'] === 'number')
     {
         return FIELDS.slice();
     }
@@ -178,7 +179,8 @@ function which_district_color(district, plan)
         }
     }
 
-    if(typeof plan.summary['Efficiency Gap SD'] === 'number')
+    if(typeof plan.summary['Efficiency Gap Positives'] === 'number'
+    || typeof plan.summary['Efficiency Gap SD'] === 'number')
     {
         var dem_votes = totals['Democratic Votes'],
             rep_votes = totals['Republican Votes'],
@@ -224,8 +226,7 @@ function show_efficiency_gap_score(plan, score_EG)
 {
     var summary_name = which_score_summary_name(plan),
         gap = plan.summary[summary_name],
-        gap_amount = nice_percent(Math.abs(gap)),
-        gap_error = plan.summary['Efficiency Gap SD'];
+        gap_amount = nice_percent(Math.abs(gap));
     
     for(node = score_EG.firstChild; node = node.nextSibling; node)
     {
@@ -238,15 +239,34 @@ function show_efficiency_gap_score(plan, score_EG)
 
         } else if(node.nodeName == 'P') {
             var win_party = (gap < 0 ? 'Republican' : 'Democratic'),
+                win_partisans = (gap < 0 ? 'Republicans' : 'Democrats'),
                 lose_party = (gap < 0 ? 'Democratic' : 'Republican');
 
             clear_element(node);
-            node.innerHTML = [
-                'Votes for', win_party, 'candidates are expected to be wasted at a rate',
-                gap_amount+'&nbsp;(±'+nice_percent(gap_error*2)+')',
-                'lower than votes for', lose_party, 'candidates.',
-                ' <a href="' + window.eg_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
-                ].join(' ');
+            
+            if(typeof plan.summary['Efficiency Gap Positives'] === 'number') {
+                var positives = (gap < 0
+                    ? (1 - plan.summary['Efficiency Gap Positives'])
+                    : plan.summary['Efficiency Gap Positives']);
+            
+                node.innerHTML = [
+                    'Votes for', win_party, 'candidates are expected to be wasted at a rate',
+                    gap_amount, 'lower than votes for', lose_party, 'candidates.',
+                    'The expected gap favors', win_partisans,
+                    'in', nice_round_percent(positives), 'of predicted scenarios.',
+                    '<a href="' + window.eg_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
+                    ].join(' ');
+
+            } else {
+                var gap_error = plan.summary['Efficiency Gap SD'];
+                
+                node.innerHTML = [
+                    'Votes for', win_party, 'candidates are expected to be wasted at a rate',
+                    gap_amount+'&nbsp;(±'+nice_percent(gap_error*2)+')',
+                    'lower than votes for', lose_party, 'candidates.',
+                    '<a href="' + window.eg_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
+                    ].join(' ');
+            }
         }
     }
 }
@@ -254,8 +274,7 @@ function show_efficiency_gap_score(plan, score_EG)
 function show_partisan_bias_score(plan, score_PB)
 {
     var bias = plan.summary['Partisan Bias'],
-        bias_amount = nice_percent(Math.abs(bias)),
-        bias_error = plan.summary['Partisan Bias SD'];
+        bias_amount = nice_percent(Math.abs(bias));
     
     for(node = score_PB.firstChild; node = node.nextSibling; node)
     {
@@ -267,15 +286,34 @@ function show_partisan_bias_score(plan, score_PB)
                 (plan.model ? plan.model.house : 'ushouse'), 'plan');
 
         } else if(node.nodeName == 'P') {
-            var win_party = (bias < 0 ? 'Republicans' : 'Democrats');
+            var win_party = (bias < 0 ? 'Republicans' : 'Democrats'),
+                win_partisans = (bias < 0 ? 'Republicans' : 'Democrats');
 
             clear_element(node);
-            node.innerHTML = [
-                win_party, 'would be expected to win',
-                bias_amount+'&nbsp;(±'+nice_percent(bias_error*2)+')',
-                'extra seats in a hypothetical, perfectly tied election.',
-                ' <a href="' + window.pb_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
-                ].join(' ');
+            
+            if(typeof plan.summary['Partisan Bias Positives'] === 'number') {
+                var positives = (bias < 0
+                    ? (1 - plan.summary['Partisan Bias Positives'])
+                    : plan.summary['Partisan Bias Positives']);
+            
+                node.innerHTML = [
+                    win_party, 'would be expected to win', bias_amount,
+                    'extra seats in a hypothetical, perfectly tied election.',
+                    'The expected bias favors', win_partisans,
+                    'in', nice_round_percent(positives), 'of predicted scenarios.',
+                    '<a href="' + window.pb_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
+                    ].join(' ');
+
+            } else {
+                var bias_error = plan.summary['Partisan Bias SD'];
+                
+                node.innerHTML = [
+                    win_party, 'would be expected to win',
+                    bias_amount+'&nbsp;(±'+nice_percent(bias_error*2)+')',
+                    'extra seats in a hypothetical, perfectly tied election.',
+                    '<a href="' + window.pb_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
+                    ].join(' ');
+            }
         }
     }
 }
@@ -298,8 +336,7 @@ function hide_score_with_reason(score_node, reason)
 function show_mean_median_score(plan, score_MM)
 {
     var diff = plan.summary['Mean-Median'],
-        diff_amount = nice_percent(Math.abs(diff)),
-        diff_error = plan.summary['Mean-Median SD'];
+        diff_amount = nice_percent(Math.abs(diff));
     
     for(node = score_MM.firstChild; node = node.nextSibling; node)
     {
@@ -311,15 +348,34 @@ function show_mean_median_score(plan, score_MM)
                 (plan.model ? plan.model.house : 'ushouse'), 'plan');
 
         } else if(node.nodeName == 'P') {
-            var win_party = (diff < 0 ? 'Republican' : 'Democrat');
+            var win_party = (diff < 0 ? 'Republican' : 'Democrat'),
+                win_partisans = (diff < 0 ? 'Republicans' : 'Democrats');
 
             clear_element(node);
-            node.innerHTML = [
-                'The median', win_party, 'vote share is expected to be',
-                diff_amount+'&nbsp;(±'+nice_percent(diff_error*2)+')',
-                'higher than the mean', win_party, 'vote share.',
-                ' <a href="' + window.mm_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
-                ].join(' ');
+            
+            if(typeof plan.summary['Mean-Median Positives'] === 'number') {
+                var positives = (diff < 0
+                    ? (1 - plan.summary['Mean-Median Positives'])
+                    : plan.summary['Mean-Median Positives']);
+            
+                node.innerHTML = [
+                    'The median', win_party, 'vote share is expected to be',
+                    diff_amount, 'higher than the mean', win_party, 'vote share.',
+                    'The expected difference favors', win_partisans,
+                    'in', nice_round_percent(positives), 'of predicted scenarios.',
+                    '<a href="' + window.mm_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
+                    ].join(' ');
+
+            } else {
+                var diff_error = plan.summary['Mean-Median SD'];
+                
+                node.innerHTML = [
+                    'The median', win_party, 'vote share is expected to be',
+                    diff_amount+'&nbsp;(±'+nice_percent(diff_error*2)+')',
+                    'higher than the mean', win_party, 'vote share.',
+                    '<a href="' + window.mm_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
+                    ].join(' ');
+            }
         }
     }
 }
