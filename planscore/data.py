@@ -87,7 +87,7 @@ class Model:
             )
     
     def to_json(self):
-        return json.dumps(self.to_dict(), sort_keys=True, indent=2)
+        return json.dumps(self.to_dict(), sort_keys=True, separators=(',', ':'))
     
     @staticmethod
     def from_dict(data):
@@ -197,14 +197,28 @@ class Upload:
         ''' Export current plan information to a tab-delimited plaintext file
         '''
         logentry = [
+            # ID string from generate_signed_id()
             self.id,
+            
+            # Current unix timestamp float
             time.time(),
+            
+            # Text message string
             self.message,
+            
+            # Model state string
+            (self.model.to_dict().get('state') if self.model else None),
+            
+            # Model house string
+            (self.model.to_dict().get('house') if self.model else None),
+            
+            # Model JSON string
+            (self.model.to_json() if self.model else None),
         ]
             
         try:
             out = io.StringIO()
-            rows = csv.writer(out, dialect='excel-tab')
+            rows = csv.writer(out, dialect='excel-tab', quotechar='|', quoting=csv.QUOTE_MINIMAL)
             rows.writerow(logentry)
         
         except Exception as e:
