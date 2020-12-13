@@ -894,8 +894,9 @@ function load_plan_map(url, div, plan)
         console.log('GeoJSON bounds:', geojson.getBounds());
 
         // 
-        add_map_pattern_support();
-        
+        var show_leans = (typeof plan.districts[0].totals['Democratic Wins'] === 'number');
+        add_map_pattern_support(show_leans);
+
         // Initialize the map on the passed div in the middle of the ocean
         var map = L.map(div, {
             scrollWheelZoom: false,
@@ -944,7 +945,7 @@ function load_plan_map(url, div, plan)
     request.send();
 }
 
-function add_map_pattern_support()
+function add_map_pattern_support(show_leans)
 {
     // Custom map legend control copied from
     // https://github.com/PlanScore/PlanScore/blob/b48188b/_common/jslibs/leaflet-control-partylegend.js
@@ -970,27 +971,31 @@ function add_map_pattern_support()
             var words_r  = L.DomUtil.create('div', 'planscore-partylegend-words', row_r);
             words_r.innerHTML = 'Republican';
 
-            var row_ld    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
-            var swatch_ld = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-lean-democrat', row_ld);
-            var words_ld  = L.DomUtil.create('div', 'planscore-partylegend-words', row_ld);
-            words_ld.innerHTML = 'Leans Dem.';
+            if(show_leans)
+            {
+                var row_ld    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
+                var swatch_ld = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-lean-democrat', row_ld);
+                var words_ld  = L.DomUtil.create('div', 'planscore-partylegend-words', row_ld);
+                words_ld.innerHTML = 'Leans Dem.';
 
-            var row_lr    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
-            var swatch_lr = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-lean-republican', row_lr);
-            var words_lr  = L.DomUtil.create('div', 'planscore-partylegend-words', row_lr);
-            words_lr.innerHTML = 'Leans Rep.';
+                var row_lr    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
+                var swatch_lr = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-lean-republican', row_lr);
+                var words_lr  = L.DomUtil.create('div', 'planscore-partylegend-words', row_lr);
+                words_lr.innerHTML = 'Leans Rep.';
 
-            /*
-            var row_x    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
-            var swatch_x = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-both', row_x);
-            var words_x  = L.DomUtil.create('div', 'planscore-partylegend-words', row_x);
-            words_x.innerHTML = 'Uncertain';
+            } else {
+                var row_x    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
+                var swatch_x = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-both', row_x);
+                var words_x  = L.DomUtil.create('div', 'planscore-partylegend-words', row_x);
+                words_x.innerHTML = 'Uncertain';
 
-            var row_0    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
-            var swatch_0 = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-nodata', row_0);
-            var words_0  = L.DomUtil.create('div', 'planscore-partylegend-words', row_0);
-            words_0.innerHTML = 'No Data';
-            */
+                /*
+                var row_0    = L.DomUtil.create('div', 'planscore-partylegend-legend', container);
+                var swatch_0 = L.DomUtil.create('div', 'planscore-partylegend-swatch planscore-partylegend-swatch-nodata', row_0);
+                var words_0  = L.DomUtil.create('div', 'planscore-partylegend-words', row_0);
+                words_0.innerHTML = 'No Data';
+                */
+            }
 
             return container;
         },
