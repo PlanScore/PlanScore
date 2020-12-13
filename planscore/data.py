@@ -1,4 +1,4 @@
-import json, csv, io, time, enum
+import json, csv, io, time, enum, datetime
 from . import constants
 
 UPLOAD_PREFIX = 'uploads/{id}/upload/'
@@ -10,6 +10,7 @@ UPLOAD_GEOMETRIES_KEY = 'uploads/{id}/geometries/{index}.wkt'
 UPLOAD_TILE_INDEX_KEY = 'uploads/{id}/tiles.json'
 UPLOAD_TILES_KEY = 'uploads/{id}/tiles/{zxy}.json'
 UPLOAD_TIMING_KEY = 'uploads/{id}/timing.csv'
+UPLOAD_PROGRESS_KEY = 'progress/ds={ds}/{guid}.csv'
 
 class State (enum.Enum):
     XX = 'XX'
@@ -135,6 +136,10 @@ class Upload:
     
     def district_key(self, index):
         return UPLOAD_DISTRICTS_KEY.format(id=self.id, index=index)
+    
+    def progress_key(self, guid):
+        ds = datetime.date.fromtimestamp(self.start_time).strftime('%Y-%m-%d')
+        return UPLOAD_PROGRESS_KEY.format(ds=ds, guid=guid)
     
     def to_plaintext(self):
         ''' Export district totals to a tab-delimited plaintext file

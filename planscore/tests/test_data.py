@@ -256,6 +256,12 @@ class TestData (unittest.TestCase):
         upload = data.Upload(id='ID', key='uploads/ID/upload/whatever.json')
         self.assertEqual(upload.district_key(999), 'uploads/ID/districts/999.json')
     
+    def test_upload_progress_key(self):
+        ''' data.Upload.index_key() correctly munges Upload.key
+        '''
+        upload = data.Upload(start_time=1607891802, id='ID', key='uploads/ID/upload/whatever.json')
+        self.assertEqual(upload.progress_key('uuid4'), 'progress/ds=2020-12-13/uuid4.csv')
+    
     def test_upload_clone(self):
         ''' data.Upload.clone() returns a copy with the right properties
         '''
