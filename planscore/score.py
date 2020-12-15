@@ -10,9 +10,6 @@ from . import data, constants, matrix
 
 ogr.UseExceptions()
 
-# The hard-coded year to use for matrix, for now
-YEAR = 2016
-
 FIELD_NAMES = (
     # Toy fields
     'Voters', 'Blue Votes', 'Red Votes',
@@ -347,19 +344,12 @@ def calculate_district_biases(upload):
         # Skip everything if we don't see 2016 presidential votes
         return upload.clone()
     
-    # Simple presidential vote input
-    input_district_data = [
-        (
-            district['totals']['US President 2016 - DEM'],
-            district['totals']['US President 2016 - REP'],
-            incumbency,
-        )
-        for (district, incumbency)
-        in zip(upload.districts, upload.incumbents)
-    ]
-
     # Get large number of simulated outputs
-    output_votes = matrix.model_votes(upload.model.state, YEAR, input_district_data)
+    output_votes = matrix.model_votes(
+        upload.model.state,
+        matrix.YEAR,
+        matrix.prepare_district_data(upload),
+    )
     
     # Record per-district vote totals and confidence intervals
     copied_districts = copy.deepcopy(upload.districts)

@@ -1,6 +1,9 @@
 import os
 import csv
+import itertools
 import collections
+import argparse
+import urllib.request
 
 import numpy
 
@@ -11,6 +14,9 @@ from . import data
 # Values are given as Democratic vote portion from 0. to 1. and become
 # approximately -0.5 to +0.5.
 VOTE_ADJUST = -0.496875
+
+# The hard-coded year to use for matrix, for now
+YEAR = 2016
 
 INCUMBENCY = {
     data.Incumbency.Open.value: 0,
@@ -119,3 +125,42 @@ def model_votes(state, year, districts):
     )
     
     return votes
+
+def prepare_district_data(upload):
+    ''' Simple presidential vote input for model_votes()
+    '''
+    return [
+        (
+            district['totals']['US President 2016 - DEM'],
+            district['totals']['US President 2016 - REP'],
+            incumbency,
+        )
+        for (district, incumbency)
+        in zip(upload.districts, upload.incumbents)
+    ]
+
+parser = argparse.ArgumentParser()
+parser.add_argument('upload_url')
+parser.add_argument('matrix_path')
+
+def main():
+    ''' Write all district vote simulations to single CSV file
+    '''
+    args = parser.parse_args()
+
+    got = urllib.request.urlopen(args.upload_url)
+    upload = data.Upload.from_json(got.read())
+    input_district_data = prepare_district_data(upload)
+    
+    # Get large number of simulated outputs
+    output_votes = model_votes(upload.model.state, YEAR, input_district_data)
+
+    with open(args.matrix_path, 'w') as file:
+        districts, sims, parties = output_votes.shape
+        votes_matrix = output_votes.reshape((districts, sims * parties))
+    
+        out = csv.writer(file, dialect='excel')
+        head = itertools.chain(*[[f'DEM{n:03d}', f'REP{n:03d}'] for n in range(sims)])
+        out.writerow(['District'] + list(head))
+        for (index, row) in enumerate(votes_matrix.tolist()):
+            out.writerow([index + 1] + row)

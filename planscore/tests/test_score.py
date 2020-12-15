@@ -627,7 +627,8 @@ class TestScore (unittest.TestCase):
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
-    def test_calculate_gap_unified(self, model_votes, calculate_EG, calculate_PB, calculate_MMD):
+    @unittest.mock.patch('planscore.matrix.prepare_district_data')
+    def test_calculate_gap_unified(self, prepare_district_data, model_votes, calculate_EG, calculate_PB, calculate_MMD):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
@@ -660,7 +661,7 @@ class TestScore (unittest.TestCase):
              [2.6, 5.4]],
         ])
         output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
-        self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, 2016, [(6, 2, 'O'), (5, 3, 'O'), (3, 5, 'O'), (2, 6, 'O')]))
+        self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, 2016, prepare_district_data.return_value))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median Positives'], 0.0)

@@ -146,3 +146,16 @@ class TestMatrix (unittest.TestCase):
         ])
         
         self.assertTrue(numpy.isnan(R[1]).all())
+    
+    def test_prepare_district_data(self):
+        input = data.Upload(id=None, key=None,
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, '2020', None),
+            districts = [
+                dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
+                dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
+                dict(totals={'US President 2016 - REP': 5, 'US President 2016 - DEM': 3}, tile=None),
+                dict(totals={'US President 2016 - REP': 6, 'US President 2016 - DEM': 2}, tile=None),
+                ])
+        
+        output = matrix.prepare_district_data(input)
+        self.assertEqual(output, [(6, 2, 'O'), (5, 3, 'O'), (3, 5, 'O'), (2, 6, 'O')])
