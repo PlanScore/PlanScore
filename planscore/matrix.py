@@ -3,9 +3,9 @@ import csv
 import itertools
 import collections
 import argparse
+import urllib.request
 
 import numpy
-import requests
 
 from . import data
 
@@ -148,8 +148,8 @@ def main():
     '''
     args = parser.parse_args()
 
-    got = requests.get(args.upload_url)
-    upload = data.Upload.from_json(got.text)
+    got = urllib.request.urlopen(args.upload_url)
+    upload = data.Upload.from_json(got.read())
     input_district_data = prepare_district_data(upload)
     
     # Get large number of simulated outputs
