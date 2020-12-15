@@ -1,8 +1,10 @@
 import os
 import csv
 import collections
+import argparse
 
 import numpy
+import requests
 
 from . import data
 
@@ -119,3 +121,12 @@ def model_votes(state, year, districts):
     )
     
     return votes
+
+def main():
+    from . import score
+    parser = argparse.ArgumentParser()
+    parser.add_argument('upload_url')
+    args = parser.parse_args()
+    got = requests.get(args.upload_url)
+    upload = data.Upload.from_json(got.text)
+    stuff = score.calculate_district_biases(upload)
