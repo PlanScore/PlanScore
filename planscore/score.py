@@ -3,7 +3,7 @@
 When all districts are added up and present on S3, performs complete scoring
 of district plan and uploads summary JSON file.
 '''
-import io, os, gzip, posixpath, json, statistics, copy, time, itertools
+import io, os, gzip, posixpath, json, statistics, copy, time, itertools, pprint
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import data, constants, matrix
@@ -360,6 +360,12 @@ def calculate_district_biases(upload):
 
     # Get large number of simulated outputs
     output_votes = matrix.model_votes(upload.model.state, YEAR, input_district_data)
+    
+    # Diagnostic log output
+    old_shape = output_votes.shape
+    new_shape = old_shape[0], old_shape[1] * old_shape[2]
+    print('output_votes:')
+    pprint.pprint(output_votes.reshape(new_shape).tolist())
     
     # Record per-district vote totals and confidence intervals
     copied_districts = copy.deepcopy(upload.districts)
