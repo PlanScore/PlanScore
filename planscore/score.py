@@ -4,15 +4,11 @@ When all districts are added up and present on S3, performs complete scoring
 of district plan and uploads summary JSON file.
 '''
 import io, os, gzip, posixpath, json, statistics, copy, time, itertools
-import csv
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import data, constants, matrix
 
 ogr.UseExceptions()
-
-# The hard-coded year to use for matrix, for now
-YEAR = 2016
 
 FIELD_NAMES = (
     # Toy fields
@@ -338,7 +334,7 @@ def calculate_biases(upload):
     rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
     return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
 
-def calculate_district_biases(upload, mout=None):
+def calculate_district_biases(upload):
     ''' Calculate partisan metrics using district matrix with presidential vote only.
     
         Look for 2016 presidential vote totals to use national PlanScore model.
@@ -348,30 +344,12 @@ def calculate_district_biases(upload, mout=None):
         # Skip everything if we don't see 2016 presidential votes
         return upload.clone()
     
-    # Simple presidential vote input
-    input_district_data = [
-        (
-            district['totals']['US President 2016 - DEM'],
-            district['totals']['US President 2016 - REP'],
-            incumbency,
-        )
-        for (district, incumbency)
-        in zip(upload.districts, upload.incumbents)
-    ]
-
     # Get large number of simulated outputs
-    output_votes = matrix.model_votes(upload.model.state, YEAR, input_district_data)
-    
-    # Diagnostic log output
-    if mout:
-        old_shape = output_votes.shape
-        new_shape = old_shape[0], old_shape[1] * old_shape[2]
-    
-        out = csv.writer(mout, dialect='excel')
-        head = list(itertools.chain(*[[f'DEM{n:03d}', f'REP{n:03d}'] for n in range(old_shape[1])]))
-        out.writerow(['District'] + head)
-        for (index, row) in enumerate(output_votes.reshape(new_shape).tolist()):
-            out.writerow([index + 1] + row)
+    output_votes = matrix.model_votes(
+        upload.model.state,
+        matrix.YEAR,
+        matrix.prepare_district_data(upload),
+    )
     
     # Record per-district vote totals and confidence intervals
     copied_districts = copy.deepcopy(upload.districts)
