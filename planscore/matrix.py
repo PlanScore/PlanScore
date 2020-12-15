@@ -139,26 +139,28 @@ def prepare_district_data(upload):
         in zip(upload.districts, upload.incumbents)
     ]
 
+parser = argparse.ArgumentParser()
+parser.add_argument('upload_url')
+parser.add_argument('matrix_path')
+
 def main():
-    from . import score
-    parser = argparse.ArgumentParser()
-    parser.add_argument('upload_url')
-    parser.add_argument('matrix_path')
+    ''' Write all district vote simulations to single CSV file
+    '''
     args = parser.parse_args()
+
     got = requests.get(args.upload_url)
     upload = data.Upload.from_json(got.text)
-
     input_district_data = prepare_district_data(upload)
     
     # Get large number of simulated outputs
     output_votes = model_votes(upload.model.state, YEAR, input_district_data)
 
     with open(args.matrix_path, 'w') as file:
-        old_shape = output_votes.shape
-        new_shape = old_shape[0], old_shape[1] * old_shape[2]
+        districts, sims, parties = output_votes.shape
+        votes_matrix = output_votes.reshape((districts, sims * parties))
     
         out = csv.writer(file, dialect='excel')
-        head = list(itertools.chain(*[[f'DEM{n:03d}', f'REP{n:03d}'] for n in range(old_shape[1])]))
-        out.writerow(['District'] + head)
-        for (index, row) in enumerate(output_votes.reshape(new_shape).tolist()):
+        head = itertools.chain(*[[f'DEM{n:03d}', f'REP{n:03d}'] for n in range(sims)])
+        out.writerow(['District'] + list(head))
+        for (index, row) in enumerate(votes_matrix.tolist()):
             out.writerow([index + 1] + row)
