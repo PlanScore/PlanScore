@@ -4,7 +4,7 @@ When all districts are added up and present on S3, performs complete scoring
 of district plan and uploads summary JSON file.
 '''
 import io, os, gzip, posixpath, json, statistics, copy, time, itertools
-import sys, csv, pprint
+import csv
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import data, constants, matrix
@@ -338,7 +338,7 @@ def calculate_biases(upload):
     rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
     return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
 
-def calculate_district_biases(upload):
+def calculate_district_biases(upload, mout=None):
     ''' Calculate partisan metrics using district matrix with presidential vote only.
     
         Look for 2016 presidential vote totals to use national PlanScore model.
@@ -363,14 +363,15 @@ def calculate_district_biases(upload):
     output_votes = matrix.model_votes(upload.model.state, YEAR, input_district_data)
     
     # Diagnostic log output
-    old_shape = output_votes.shape
-    new_shape = old_shape[0], old_shape[1] * old_shape[2]
+    if mout:
+        old_shape = output_votes.shape
+        new_shape = old_shape[0], old_shape[1] * old_shape[2]
     
-    out = csv.writer(sys.stdout, dialect='excel')
-    head = list(itertools.chain(*[[f'DEM{n:03d}', f'REP{n:03d}'] for n in range(old_shape[1])]))
-    out.writerow(['District'] + head)
-    for (index, row) in enumerate(output_votes.reshape(new_shape).tolist()):
-        out.writerow([index + 1] + row)
+        out = csv.writer(mout, dialect='excel')
+        head = list(itertools.chain(*[[f'DEM{n:03d}', f'REP{n:03d}'] for n in range(old_shape[1])]))
+        out.writerow(['District'] + head)
+        for (index, row) in enumerate(output_votes.reshape(new_shape).tolist()):
+            out.writerow([index + 1] + row)
     
     # Record per-district vote totals and confidence intervals
     copied_districts = copy.deepcopy(upload.districts)

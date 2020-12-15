@@ -126,7 +126,9 @@ def main():
     from . import score
     parser = argparse.ArgumentParser()
     parser.add_argument('upload_url')
+    parser.add_argument('matrix_path')
     args = parser.parse_args()
     got = requests.get(args.upload_url)
     upload = data.Upload.from_json(got.text)
-    stuff = score.calculate_district_biases(upload)
+    with open(args.matrix_path, 'w') as file:
+        stuff = score.calculate_district_biases(upload, file)
