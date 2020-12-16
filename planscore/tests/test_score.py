@@ -661,7 +661,7 @@ class TestScore (unittest.TestCase):
              [2.6, 5.4]],
         ])
         output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
-        self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, 2016, prepare_district_data.return_value))
+        self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, None, prepare_district_data.return_value))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median Positives'], 0.0)
@@ -738,7 +738,7 @@ class TestScore (unittest.TestCase):
              [2.6, 5.4]],
         ])
         output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
-        self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, 2016, [(6, 2, 'R'), (5, 3, 'D'), (3, 5, 'R'), (2, 6, 'D')]))
+        self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, None, [(6, 2, 'R'), (5, 3, 'D'), (3, 5, 'R'), (2, 6, 'D')]))
 
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
@@ -782,7 +782,7 @@ class TestScore (unittest.TestCase):
              [numpy.nan, numpy.nan]],
         ])
         output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
-        self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, 2016, [(6, 2, 'O'), (5, 3, 'O'), (3, 5, 'O'), (2, 6, 'O'), (0, 0, 'O')]))
+        self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, None, [(6, 2, 'O'), (5, 3, 'O'), (3, 5, 'O'), (2, 6, 'O'), (0, 0, 'O')]))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(len(calculate_MMD.mock_calls[0][1][0]), 4, 'Should skip empty 5th district')

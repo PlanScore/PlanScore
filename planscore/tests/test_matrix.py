@@ -18,7 +18,7 @@ class TestMatrix (unittest.TestCase):
         self.assertTrue((matrix.dropna(numpy.array([numpy.nan, 1])) == numpy.array([1])).all())
     
     def test_load_model(self):
-        model = matrix.load_model('ca', '2012')
+        model = matrix.load_model('ca', None)
         
         self.assertEqual(model.intercept[0], model.array[0,0])
         self.assertEqual(model.vote[0], model.array[1,0])
@@ -26,9 +26,9 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(model.state_intercept[0], model.array[3,0])
         self.assertEqual(model.state_vote[0], model.array[4,0])
         self.assertEqual(model.state_incumbent[0], model.array[5,0])
-        self.assertEqual(model.year_intercept[0], model.array[6,0])
-        self.assertEqual(model.year_vote[0], model.array[7,0])
-        self.assertEqual(model.year_incumbent[0], model.array[8,0])
+        #self.assertEqual(model.year_intercept[0], model.array[6,0])
+        #self.assertEqual(model.year_vote[0], model.array[7,0])
+        #self.assertEqual(model.year_incumbent[0], model.array[8,0])
 
         self.assertAlmostEqual(model.array[0,0], 0.50477519)
         self.assertAlmostEqual(model.array[1,0], 0.80943166)
@@ -36,12 +36,12 @@ class TestMatrix (unittest.TestCase):
         self.assertAlmostEqual(model.array[3,0], -0.04051737)
         self.assertAlmostEqual(model.array[4,0], 0.133979381)
         self.assertAlmostEqual(model.array[5,0], -0.023266200)
-        self.assertAlmostEqual(model.array[6,0], 0.006908099)
-        self.assertAlmostEqual(model.array[7,0], -0.130211000)
-        self.assertAlmostEqual(model.array[8,0], 0.0129821061)
+        #self.assertAlmostEqual(model.array[6,0], 0.006908099)
+        #self.assertAlmostEqual(model.array[7,0], -0.130211000)
+        #self.assertAlmostEqual(model.array[8,0], 0.0129821061)
     
     def test_apply_model(self):
-        model = matrix.load_model('ca', '2012')
+        model = matrix.load_model('ca', None)
         
         R = matrix.apply_model(
             [
@@ -69,7 +69,7 @@ class TestMatrix (unittest.TestCase):
         self.assertTrue(R[2].sum() < R[5].sum() and R[5].sum() < R[8].sum())
     
     def test_apply_model_with_zeros(self):
-        model = matrix.load_model('ca', '2012')
+        model = matrix.load_model('ca', None)
         
         R = matrix.apply_model(
             [
@@ -93,7 +93,7 @@ class TestMatrix (unittest.TestCase):
 
         R = matrix.model_votes(
             data.State.NC,
-            2016,
+            None,
             [
                 (4, 6, 'R'),
                 (5, 5, 'O'),
@@ -102,7 +102,7 @@ class TestMatrix (unittest.TestCase):
         )
         
         self.assertEqual(apply_model.mock_calls[0][1], ([(.4, -1), (.5, 0), (.6, 1)], load_model.return_value))
-        self.assertEqual(load_model.mock_calls[0][1], ('nc', 2016))
+        self.assertEqual(load_model.mock_calls[0][1], ('nc', None))
 
         self.assertEqual(R.tolist(), [
             [[3.0, 7.0],
@@ -125,7 +125,7 @@ class TestMatrix (unittest.TestCase):
 
         R = matrix.model_votes(
             data.State.NC,
-            2016,
+            None,
             [
                 (4, 6, 'R'),
                 (0, 0, 'O'),
@@ -138,7 +138,7 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(apply_model.mock_calls[0][1][0][1][1], 0)
         self.assertEqual(apply_model.mock_calls[0][1][1], load_model.return_value)
         
-        self.assertEqual(load_model.mock_calls[0][1], ('nc', 2016))
+        self.assertEqual(load_model.mock_calls[0][1], ('nc', None))
 
         self.assertEqual(R[0].tolist(), [
             [3.0, 7.0],

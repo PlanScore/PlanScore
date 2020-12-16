@@ -16,8 +16,8 @@ from . import data
 # approximately -0.5 to +0.5.
 VOTE_ADJUST = -0.496875
 
-# The hard-coded year to use for matrix, for now
-YEAR = 2016
+# A hard-coded year to use for matrix, nothing for now
+YEAR = None
 
 INCUMBENCY = {
     data.Incumbency.Open.value: 0,
@@ -45,7 +45,7 @@ STATE = {
 Model = collections.namedtuple('Model', (
     'intercept', 'vote', 'incumbent',
     'state_intercept', 'state_vote', 'state_incumbent',
-    'year_intercept', 'year_vote', 'year_incumbent',
+    #'year_intercept', 'year_vote', 'year_incumbent',
     'array',
     ))
 
@@ -53,6 +53,8 @@ def dropna(a):
     return a[~numpy.isnan(a)]
 
 def load_model(state, year):
+    assert year is None, f'Year should be None, not {year}'
+
     path = os.path.join(os.path.dirname(__file__), 'model', 'C_matrix_full.csv.gz')
     
     keys = (
@@ -60,9 +62,9 @@ def load_model(state, year):
         f'r_stateabrev[{state},Intercept]',
         f'r_stateabrev[{state},dpres_mn]',
         f'r_stateabrev[{state},incumb]',
-        f'r_cycle[{year},Intercept]',
-        f'r_cycle[{year},dpres_mn]',
-        f'r_cycle[{year},incumb]',
+        #f'r_cycle[{year},Intercept]',
+        #f'r_cycle[{year},dpres_mn]',
+        #f'r_cycle[{year},incumb]',
     )
     
     with gzip.open(path, 'rt') as file:
@@ -87,7 +89,7 @@ def apply_model(districts, model):
         - -1 for Republican, 0 for open seat, and 1 for Democratic incumbents
     '''
     AD = numpy.array([
-        [1, numpy.nan if numpy.isnan(vote) else (vote + VOTE_ADJUST), incumbency] * 3
+        [1, numpy.nan if numpy.isnan(vote) else (vote + VOTE_ADJUST), incumbency] * 2
         for (vote, incumbency)
         in districts
     ])
