@@ -46,7 +46,7 @@ Model = collections.namedtuple('Model', (
     'intercept', 'vote', 'incumbent',
     'state_intercept', 'state_vote', 'state_incumbent',
     #'year_intercept', 'year_vote', 'year_incumbent',
-    'array',
+    'c_matrix', 'e_matrix',
     ))
 
 def dropna(a):
@@ -55,7 +55,8 @@ def dropna(a):
 def load_model(state, year):
     assert year is None, f'Year should be None, not {year}'
 
-    path = os.path.join(os.path.dirname(__file__), 'model', 'C_matrix_full.csv.gz')
+    c_path = os.path.join(os.path.dirname(__file__), 'model', 'C_matrix_full.csv.gz')
+    e_path = os.path.join(os.path.dirname(__file__), 'model', 'E_matrix_full.csv.gz')
     
     keys = (
         'b_Intercept', 'b_dpres_mn', 'b_incumb',
@@ -67,19 +68,29 @@ def load_model(state, year):
         #f'r_cycle[{year},incumb]',
     )
     
-    with gzip.open(path, 'rt') as file:
-        rows = {
+    with gzip.open(c_path, 'rt') as c_file:
+        c_rows = {
             row['']: [
                 float(value)
                 for (key, value) in row.items()
                 if key.startswith('V')
             ]
-            for row in csv.DictReader(file)
+            for row in csv.DictReader(c_file)
             if row[''] in keys
         }
     
-    values = [rows[key] for key in keys]
-    args = values + [numpy.array(values)]
+    with gzip.open(e_path, 'rt') as e_file:
+        e_rows = [
+            [
+                float(value)
+                for (key, value) in row.items()
+                if key.startswith('V')
+            ]
+            for row in csv.DictReader(e_file)
+        ]
+    
+    c_values = [c_rows[key] for key in keys]
+    args = c_values + [numpy.array(c_values), numpy.array(e_rows)]
     
     return Model(*args)
 
@@ -93,8 +104,11 @@ def apply_model(districts, model):
         for (vote, incumbency)
         in districts
     ])
+    
+    ADC = AD.dot(model.c_matrix)
+    E = model.e_matrix[:ADC.shape[0],:]
 
-    return AD.dot(model.array)
+    return ADC + E
 
 def model_votes(state, year, districts):
     ''' Convert presidential votes to range of possible modeled chamber votes.
