@@ -1,5 +1,6 @@
 import os
 import csv
+import gzip
 import itertools
 import collections
 import argparse
@@ -52,15 +53,19 @@ def dropna(a):
     return a[~numpy.isnan(a)]
 
 def load_model(state, year):
-    path = os.path.join(os.path.dirname(__file__), 'model', 'C_matrix.csv')
+    path = os.path.join(os.path.dirname(__file__), 'model', 'C_matrix_full.csv.gz')
     
     keys = (
-        'Intercept', 'dpres_mn', 'incumb',
-        f'{state}-Intercept', f'{state}-dpres', f'{state}-incumb',
-        f'{year}-Intercept', f'{year}-dpres', f'{year}-incumb',
+        'b_Intercept', 'b_dpres_mn', 'b_incumb',
+        f'r_stateabrev[{state},Intercept]',
+        f'r_stateabrev[{state},dpres_mn]',
+        f'r_stateabrev[{state},incumb]',
+        f'r_cycle[{year},Intercept]',
+        f'r_cycle[{year},dpres_mn]',
+        f'r_cycle[{year},incumb]',
     )
     
-    with open(path) as file:
+    with gzip.open(path, 'rt') as file:
         rows = {
             row['']: [
                 float(value)
