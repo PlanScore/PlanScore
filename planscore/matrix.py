@@ -1,5 +1,6 @@
 import os
 import csv
+import gzip
 import itertools
 import collections
 import argparse
@@ -15,8 +16,8 @@ from . import data
 # approximately -0.5 to +0.5.
 VOTE_ADJUST = -0.496875
 
-# The hard-coded year to use for matrix, for now
-YEAR = 2016
+# A hard-coded year to use for matrix, nothing for now
+YEAR = None
 
 INCUMBENCY = {
     data.Incumbency.Open.value: 0,
@@ -44,35 +45,53 @@ STATE = {
 Model = collections.namedtuple('Model', (
     'intercept', 'vote', 'incumbent',
     'state_intercept', 'state_vote', 'state_incumbent',
-    'year_intercept', 'year_vote', 'year_incumbent',
-    'array',
+    #'year_intercept', 'year_vote', 'year_incumbent',
+    'c_matrix', 'e_matrix',
     ))
 
 def dropna(a):
     return a[~numpy.isnan(a)]
 
 def load_model(state, year):
-    path = os.path.join(os.path.dirname(__file__), 'model', 'C_matrix.csv')
+    assert year is None, f'Year should be None, not {year}'
+
+    matrix_dir = os.path.join(os.path.dirname(__file__), 'model')
+    c_path = os.path.join(matrix_dir, 'C_matrix_full.csv.gz')
+    e_path = os.path.join(matrix_dir, 'E_matrix_full.csv.gz')
     
-    keys = (
-        'Intercept', 'dpres_mn', 'incumb',
-        f'{state}-Intercept', f'{state}-dpres', f'{state}-incumb',
-        f'{year}-Intercept', f'{year}-dpres', f'{year}-incumb',
+    c_keys = (
+        'b_Intercept', 'b_dpres_mn', 'b_incumb',
+        f'r_stateabrev[{state},Intercept]',
+        f'r_stateabrev[{state},dpres_mn]',
+        f'r_stateabrev[{state},incumb]',
+        #f'r_cycle[{year},Intercept]',
+        #f'r_cycle[{year},dpres_mn]',
+        #f'r_cycle[{year},incumb]',
     )
     
-    with open(path) as file:
-        rows = {
-            row['']: [
-                float(value)
-                for (key, value) in row.items()
-                if key.startswith('V')
+    with gzip.open(c_path, 'rt') as c_file:
+        c_rows = {
+            c_row['']: [
+                float(c_value)
+                for (c_col, c_value) in c_row.items()
+                if c_col.startswith('V')
             ]
-            for row in csv.DictReader(file)
-            if row[''] in keys
+            for c_row in csv.DictReader(c_file)
+            if c_row[''] in c_keys
         }
     
-    values = [rows[key] for key in keys]
-    args = values + [numpy.array(values)]
+    with gzip.open(e_path, 'rt') as e_file:
+        e_rows = [
+            [
+                float(e_value)
+                for (e_col, e_value) in e_row.items()
+                if e_col.startswith('V')
+            ]
+            for e_row in csv.DictReader(e_file)
+        ]
+    
+    c_values = [c_rows[c_key] for c_key in c_keys]
+    args = c_values + [numpy.array(c_values), numpy.array(e_rows)]
     
     return Model(*args)
 
@@ -82,12 +101,15 @@ def apply_model(districts, model):
         - -1 for Republican, 0 for open seat, and 1 for Democratic incumbents
     '''
     AD = numpy.array([
-        [1, numpy.nan if numpy.isnan(vote) else (vote + VOTE_ADJUST), incumbency] * 3
+        [1, numpy.nan if numpy.isnan(vote) else (vote + VOTE_ADJUST), incumbency] * 2
         for (vote, incumbency)
         in districts
     ])
+    
+    ADC = AD.dot(model.c_matrix)
+    E = model.e_matrix[:len(districts),:]
 
-    return AD.dot(model.array)
+    return ADC + E
 
 def model_votes(state, year, districts):
     ''' Convert presidential votes to range of possible modeled chamber votes.
