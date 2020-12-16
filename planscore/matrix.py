@@ -106,7 +106,7 @@ def apply_model(districts, model):
     ])
     
     ADC = AD.dot(model.c_matrix)
-    E = model.e_matrix[:ADC.shape[0],:]
+    E = model.e_matrix[:len(districts),:]
 
     return ADC + E
 
