@@ -55,10 +55,11 @@ def dropna(a):
 def load_model(state, year):
     assert year is None, f'Year should be None, not {year}'
 
-    c_path = os.path.join(os.path.dirname(__file__), 'model', 'C_matrix_full.csv.gz')
-    e_path = os.path.join(os.path.dirname(__file__), 'model', 'E_matrix_full.csv.gz')
+    matrix_dir = os.path.join(os.path.dirname(__file__), 'model')
+    c_path = os.path.join(matrix_dir, 'C_matrix_full.csv.gz')
+    e_path = os.path.join(matrix_dir, 'E_matrix_full.csv.gz')
     
-    keys = (
+    c_keys = (
         'b_Intercept', 'b_dpres_mn', 'b_incumb',
         f'r_stateabrev[{state},Intercept]',
         f'r_stateabrev[{state},dpres_mn]',
@@ -70,26 +71,26 @@ def load_model(state, year):
     
     with gzip.open(c_path, 'rt') as c_file:
         c_rows = {
-            row['']: [
-                float(value)
-                for (key, value) in row.items()
-                if key.startswith('V')
+            c_row['']: [
+                float(c_value)
+                for (c_col, c_value) in c_row.items()
+                if c_col.startswith('V')
             ]
-            for row in csv.DictReader(c_file)
-            if row[''] in keys
+            for c_row in csv.DictReader(c_file)
+            if c_row[''] in c_keys
         }
     
     with gzip.open(e_path, 'rt') as e_file:
         e_rows = [
             [
-                float(value)
-                for (key, value) in row.items()
-                if key.startswith('V')
+                float(e_value)
+                for (e_col, e_value) in e_row.items()
+                if e_col.startswith('V')
             ]
-            for row in csv.DictReader(e_file)
+            for e_row in csv.DictReader(e_file)
         ]
     
-    c_values = [c_rows[key] for key in keys]
+    c_values = [c_rows[c_key] for c_key in c_keys]
     args = c_values + [numpy.array(c_values), numpy.array(e_rows)]
     
     return Model(*args)
