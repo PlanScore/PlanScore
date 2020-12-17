@@ -155,8 +155,8 @@ parser = argparse.ArgumentParser(description='YESS')
 parser.add_argument('filename', help='Name of geographic file with precinct data')
 parser.add_argument('directory', default='XX/000',
     help='Model directory infix. Default {}.'.format('XX/000'))
-parser.add_argument('--zoom', type=int, default=TILE_ZOOM,
-    help='Zoom level. Default {}.'.format(TILE_ZOOM))
+parser.add_argument('--geojson',
+    help='Path to GeoJSON file for tile summary')
 parser.add_argument('--s3', action='store_true',
     help='Upload to S3 instead of local directory')
 
@@ -170,6 +170,7 @@ def main():
     layer = ds.GetLayer(0)
     
     tile_stack = list(iter_extent_coords(layer.GetExtent(), MIN_TILE_ZOOM))
+    tile_log = []
     
     while tile_stack:
         tile = tile_stack.pop(0)
@@ -194,6 +195,28 @@ def main():
             print(stack_str, 'Defer', tile_zxy)
             continue
 
+        if args.geojson:
+            tile_log.append(''.join([
+                '{"type": "Feature", "properties": ',
+                json.dumps({
+                    'zxy': tile_zxy,
+                    'zoom': tile.zoom,
+                    'x': tile.column,
+                    'y': tile.row,
+                    'features': len(bbox_features),
+                }),
+                ', "geometry": ',
+                bbox_geom.ExportToJson(options=['COORDINATE_PRECISION=7']),
+                '}',
+            ]))
+
+            with open(args.geojson, 'a') as file:
+                file.seek(0, 0)
+                file.truncate()
+                print('{"type": "FeatureCollection", "features": [', file=file)
+                print(',\n'.join(tile_log), file=file)
+                print(']}', file=file)
+        
         features_json = []
     
         for feature in bbox_features:
