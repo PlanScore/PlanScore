@@ -155,6 +155,8 @@ parser = argparse.ArgumentParser(description='YESS')
 parser.add_argument('filename', help='Name of geographic file with precinct data')
 parser.add_argument('directory', default='XX/000',
     help='Model directory infix. Default {}.'.format('XX/000'))
+parser.add_argument('--geojson',
+    help='Path to GeoJSON file for tile summary')
 parser.add_argument('--s3', action='store_true',
     help='Upload to S3 instead of local directory')
 
@@ -193,16 +195,24 @@ def main():
             print(stack_str, 'Defer', tile_zxy)
             continue
 
-        if True:
+        if args.geojson:
             tile_log.append(''.join([
                 '{"type": "Feature", "properties": ',
-                json.dumps({'zxy': tile_zxy, 'features': len(bbox_features)}),
+                json.dumps({
+                    'zxy': tile_zxy,
+                    'zoom': tile.zoom,
+                    'x': tile.column,
+                    'y': tile.row,
+                    'features': len(bbox_features),
+                }),
                 ', "geometry": ',
                 bbox_geom.ExportToJson(options=['COORDINATE_PRECISION=7']),
                 '}',
             ]))
 
-            with open('out.geojson', 'w') as file:
+            with open(args.geojson, 'a') as file:
+                file.seek(0, 0)
+                file.truncate()
                 print('{"type": "FeatureCollection", "features": [', file=file)
                 print(',\n'.join(tile_log), file=file)
                 print(']}', file=file)
