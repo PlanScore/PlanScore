@@ -132,10 +132,10 @@ def model_votes(state, year, districts):
     )
     
     # Make DxS array with total vote counts for each district and simulation
-    total_votes = sum([dem + rep for (dem, rep, _) in districts])
-    one_district_votes = total_votes / len(districts)
-    per_district_votes = [[one_district_votes]] * len(districts)
-    #per_district_votes = [[dem + rep] for (dem, rep, _) in districts]
+    #total_votes = sum([dem + rep for (dem, rep, _) in districts])
+    #one_district_votes = total_votes / len(districts)
+    #per_district_votes = [[one_district_votes]] * len(districts)
+    per_district_votes = [[dem + rep] for (dem, rep, _) in districts]
     
     scale = numpy.repeat(per_district_votes, fractions.shape[1], axis=1)
     
