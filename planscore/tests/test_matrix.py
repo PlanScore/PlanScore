@@ -120,7 +120,7 @@ class TestMatrix (unittest.TestCase):
     
     @unittest.mock.patch('planscore.matrix.load_model')
     @unittest.mock.patch('planscore.matrix.apply_model')
-    def test_model_votes_with_zeros(self, apply_model, load_model):
+    def shmest_model_votes_with_zeros(self, apply_model, load_model):
         apply_model.return_value = numpy.array([
             [0.3, 0.4],
             [numpy.nan, numpy.nan]
