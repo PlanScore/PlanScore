@@ -220,6 +220,12 @@ def lambda_handler(event, context):
     geometries = load_upload_geometries(storage, upload1)
     upload2 = upload1.clone(districts=populate_compactness(geometries))
     tiles = list(iterate_tile_totals(expected_tiles, storage, upload2, context))
+
+    put_upload_index(storage, upload2.clone(
+        message='Scoring this newly-uploaded plan.'
+            ' Adding up votes. Reload this page to see the result.'
+            ))
+
     districts = accumulate_district_totals(tiles, upload2)
     upload3 = upload2.clone(districts=districts)
     upload4 = score.calculate_bias(upload3)
