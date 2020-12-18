@@ -34,8 +34,9 @@ class TestWebsite (unittest.TestCase):
     def test_model_descriptions(self):
         ''' Every current, active model should have a decription page
         '''
-        for model in data.MODELS2017:
-            key_prefix = model.key_prefix
-            path = '/models/{}/'.format(key_prefix)
+        paths = {'/models/data/{}/'.format(m.version) for m in data.MODELS2020}
+        paths |= {'/models/{}/'.format(m.key_prefix) for m in data.MODELS2017}
+        
+        for path in paths:
             html = self.app.get(path).data.decode('utf8')
-            self.assertTrue('Model' in html, 'Should see a page for model {}'.format(key_prefix))
+            self.assertTrue('Model' in html, 'Should see a model page at {}'.format(path))
