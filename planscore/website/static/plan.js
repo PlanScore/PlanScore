@@ -786,10 +786,10 @@ function load_plan_score(url, message_section, score_section,
             document.createTextNode(get_description(plan, modified_at)));
         
         if(plan.model && (plan.model.version == '2017' || !plan.model.version)) {
-            model_link.href = model_url_pattern.replace('data/MODEL_KEY', plan.model.key_prefix);
+            model_link.href = model_url_pattern.replace('data/2020', plan.model.key_prefix);
         
         } else if(plan.model && plan.model.version) {
-            model_link.href = model_url_pattern.replace('MODEL_KEY', plan.model.version);
+            model_link.href = model_url_pattern.replace('2020', plan.model.version);
         }
 
         // Build the results table
