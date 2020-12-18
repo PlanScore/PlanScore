@@ -7,7 +7,7 @@ ogr.UseExceptions()
 
 TILE_ZOOM = 12
 MAX_FEATURE_COUNT = 4000 # max ~10sec processing time per tile
-MIN_TILE_ZOOM, MAX_TILE_ZOOM = 9, 14
+MIN_TILE_ZOOM, MAX_TILE_ZOOM = 7, 14
 INDEX_FIELD = 'PlanScore:Index'
 FRACTION_FIELD = 'PlanScore:Fraction'
 KEY_FORMAT = 'data/{directory}/{zxy}.geojson'
@@ -194,28 +194,6 @@ def main():
             tile_stack.extend((tile_ul, tile_ur, tile_ll, tile_lr))
             print(stack_str, 'Defer', tile_zxy)
             continue
-
-        if args.geojson:
-            tile_log.append(''.join([
-                '{"type": "Feature", "properties": ',
-                json.dumps({
-                    'zxy': tile_zxy,
-                    'zoom': tile.zoom,
-                    'x': tile.column,
-                    'y': tile.row,
-                    'features': len(bbox_features),
-                }),
-                ', "geometry": ',
-                bbox_geom.ExportToJson(options=['COORDINATE_PRECISION=7']),
-                '}',
-            ]))
-
-            with open(args.geojson, 'a') as file:
-                file.seek(0, 0)
-                file.truncate()
-                print('{"type": "FeatureCollection", "features": [', file=file)
-                print(',\n'.join(tile_log), file=file)
-                print(']}', file=file)
         
         features_json = []
     
@@ -246,3 +224,25 @@ def main():
     
             with open(key, 'w') as file:
                 file.write(buffer.getvalue())
+
+        if args.geojson:
+            tile_log.append(''.join([
+                '{"type": "Feature", "properties": ',
+                json.dumps({
+                    'zxy': tile_zxy,
+                    'zoom': tile.zoom,
+                    'x': tile.column,
+                    'y': tile.row,
+                    'features': len(bbox_features),
+                }),
+                ', "geometry": ',
+                bbox_geom.ExportToJson(options=['COORDINATE_PRECISION=7']),
+                '}',
+            ]))
+
+            with open(args.geojson, 'a') as file:
+                file.seek(0, 0)
+                file.truncate()
+                print('{"type": "FeatureCollection", "features": [', file=file)
+                print(',\n'.join(tile_log), file=file)
+                print(']}', file=file)
