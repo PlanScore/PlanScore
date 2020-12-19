@@ -1,4 +1,4 @@
-import unittest, unittest.mock
+import os, uuid, unittest, unittest.mock
 from .. import data
 
 class TestData (unittest.TestCase):
@@ -120,13 +120,21 @@ class TestData (unittest.TestCase):
     def test_upload_json(self):
         ''' data.Upload instances can be converted to and from JSON
         '''
+        os.environ['GIT_COMMIT_SHA'] = str(uuid.uuid4())
         upload1 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json')
+
+        self.assertEqual(upload1.commit_sha, os.environ['GIT_COMMIT_SHA'],
+            'Upload.commit_sha should match latest GIT_COMMIT_SHA from env')
+
+        os.environ['GIT_COMMIT_SHA'] = str(uuid.uuid4())
         upload2 = data.Upload.from_json(upload1.to_json())
 
         self.assertEqual(upload2.id, upload1.id)
         self.assertEqual(upload2.key, upload1.key)
         self.assertEqual(upload2.districts, upload1.districts)
         self.assertEqual(upload2.summary, upload1.summary)
+        self.assertEqual(upload2.commit_sha, os.environ['GIT_COMMIT_SHA'],
+            'Upload.commit_sha should match latest GIT_COMMIT_SHA from env')
     
         upload3 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json', districts=['yo', 'yo', 'yo'])
         upload4 = data.Upload.from_json(upload3.to_json())
@@ -292,6 +300,8 @@ class TestData (unittest.TestCase):
     def test_upload_clone(self):
         ''' data.Upload.clone() returns a copy with the right properties
         '''
+        os.environ['GIT_COMMIT_SHA'] = str(uuid.uuid4())
+
         model1, model2 = unittest.mock.Mock(), unittest.mock.Mock()
         districts1, districts2 = unittest.mock.Mock(), unittest.mock.Mock()
         incumbents1, incumbents2 = unittest.mock.Mock(), unittest.mock.Mock()
@@ -306,12 +316,18 @@ class TestData (unittest.TestCase):
         self.assertIs(input.incumbents, incumbents1)
         self.assertIs(input.summary, summary1)
         self.assertIs(input.progress, progress1)
+        self.assertEqual(input.commit_sha, os.environ['GIT_COMMIT_SHA'],
+            'Upload.commit_sha should match latest GIT_COMMIT_SHA from env')
+
+        os.environ['GIT_COMMIT_SHA'] = str(uuid.uuid4())
 
         output1 = input.clone(districts=districts2, summary=summary2)
         self.assertEqual(output1.id, input.id)
         self.assertEqual(output1.key, input.key)
         self.assertIs(output1.districts, districts2)
         self.assertIs(output1.summary, summary2)
+        self.assertEqual(output1.commit_sha, os.environ['GIT_COMMIT_SHA'],
+            'Upload.commit_sha should match latest GIT_COMMIT_SHA from env')
 
         output2 = input.clone()
         self.assertEqual(output2.id, input.id)

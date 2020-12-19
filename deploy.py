@@ -1,10 +1,17 @@
 #!/usr/bin/env python
-import sys, argparse, boto3, os, copy, time, random
+import sys, argparse, boto3, os, copy, time, random, subprocess
 import botocore.exceptions
 
-common = dict(
-    Runtime='python3.6', Environment=dict(Variables={})
-    )
+git_commit_sha = subprocess.check_output(('git', 'rev-parse', 'HEAD')).strip().decode('ascii')
+
+common = {
+    'Runtime': 'python3.6',
+    'Environment': {
+        'Variables': {
+            'GIT_COMMIT_SHA': git_commit_sha,
+        },
+    },
+}
 
 if 'AWS_LAMBDA_DLQ_ARN' in os.environ:
     common.update(DeadLetterConfig=dict(TargetArn=os.environ['AWS_LAMBDA_DLQ_ARN']))
