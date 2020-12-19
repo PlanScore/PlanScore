@@ -1,4 +1,4 @@
-import json, csv, io, time, enum, datetime
+import os, json, csv, io, time, enum, datetime
 from . import constants
 
 UPLOAD_PREFIX = 'uploads/{id}/upload/'
@@ -118,6 +118,7 @@ class Upload:
         self.start_time = start_time or time.time()
         self.message = message
         self.description = description
+        self.commit_sha = os.environ.get('GIT_COMMIT_SHA')
         
         if not incumbents:
             self.incumbents = [Incumbency.Open.value for i in range(len(self.districts))]
@@ -188,6 +189,7 @@ class Upload:
             start_time = self.start_time,
             message = self.message,
             description = self.description,
+            commit_sha = self.commit_sha,
             )
     
     def to_json(self):
