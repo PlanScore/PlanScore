@@ -4,6 +4,7 @@ When all districts are added up and present on S3, performs complete scoring
 of district plan and uploads summary JSON file.
 '''
 import io, os, gzip, posixpath, json, statistics, copy, time, itertools
+import math
 import argparse
 import urllib.request
 import pprint
@@ -131,7 +132,10 @@ def calculate_MMD(red_districts, blue_districts):
         Vote swing does not seem to affect Mean-Median, so leave it off.
     '''
     shares = sorted([R/(R + B) for (R, B) in zip(red_districts, blue_districts)])
-    median = shares[len(shares)//2]
+    
+    median = shares[math.floor(len(shares) / 2)] / 2 \
+           + shares[math.ceil(len(shares) / 2)] / 2
+
     mean = statistics.mean(shares)
     
     return mean - median
@@ -147,8 +151,11 @@ def calculate_PB(red_districts, blue_districts):
     reds_5050, blues_5050 = swing_vote(red_districts, blue_districts, -blue_margin/2)
     blue_seats = len([True for (R, B) in zip(reds_5050, blues_5050) if R < B])
     blue_seatshare = blue_seats / len(blues_5050)
-    blue_voteshare = blue_total / (blue_total + red_total)
-    
+    blue_voteshare = sum(blues_5050) / (sum(blues_5050) + sum(reds_5050))
+
+    assert round(blue_voteshare, 7) == .5, \
+        'Vote-share Partisan Bias should always be 50%, not {}'.format(blue_voteshare)
+
     return blue_seatshare - blue_voteshare
 
 def calculate_bias(upload):
