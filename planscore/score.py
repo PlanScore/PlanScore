@@ -436,5 +436,23 @@ def main():
     upload5 = calculate_district_biases(upload4)
 
     complete_upload = upload5.clone(message='Finished scoring this plan.')
-
-    pprint.pprint(complete_upload.summary)
+    
+    print('''Scores for {id} ({state}, {house}):
+EG: {EG:.1f}%; {EG_wins:.0f}% favor D
+GK Bias: {PB:.1f}%; {PB_wins:.0f}% favor D
+Mean-Med: {MMD:.1f}%; {MMD_wins:.0f}% favor D
+-
+D votes: {votes_D}
+R votes: {votes_R}'''.format(
+        id=complete_upload.id,
+        state=complete_upload.model.state,
+        house=complete_upload.model.house,
+        EG=complete_upload.summary['Efficiency Gap'] * 100,
+        EG_wins=complete_upload.summary['Efficiency Gap Positives'] * 100,
+        PB=complete_upload.summary['Partisan Bias'] * 100,
+        PB_wins=complete_upload.summary['Partisan Bias Positives'] * 100,
+        MMD=complete_upload.summary['Mean-Median'] * 100,
+        MMD_wins=complete_upload.summary['Mean-Median Positives'] * 100,
+        votes_D=[round(d['totals']['Democratic Votes'], 1) for d in complete_upload.districts],
+        votes_R=[round(d['totals']['Republican Votes'], 1) for d in complete_upload.districts],
+    ))
