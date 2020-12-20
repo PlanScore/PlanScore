@@ -34,6 +34,7 @@ setup(
             'planscore-prepare-state = planscore.prepare_state:main',
             'planscore-empty-queue = planscore.empty_queue:main',
             'planscore-matrix-debug = planscore.matrix:main',
+            'planscore-score-locally = planscore.score:main',
             ]
         ),
 )

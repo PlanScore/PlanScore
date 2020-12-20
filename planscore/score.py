@@ -4,6 +4,9 @@ When all districts are added up and present on S3, performs complete scoring
 of district plan and uploads summary JSON file.
 '''
 import io, os, gzip, posixpath, json, statistics, copy, time, itertools
+import argparse
+import urllib.request
+import pprint
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import data, constants, matrix
@@ -415,3 +418,23 @@ def calculate_district_biases(upload):
 
     rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
     return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
+
+parser = argparse.ArgumentParser()
+parser.add_argument('upload_url')
+
+def main():
+    ''' Write all district vote simulations to single CSV file
+    '''
+    args = parser.parse_args()
+
+    got = urllib.request.urlopen(args.upload_url)
+    upload1 = data.Upload.from_json(got.read())
+
+    upload2 = calculate_bias(upload1)
+    upload3 = calculate_open_biases(upload2)
+    upload4 = calculate_biases(upload3)
+    upload5 = calculate_district_biases(upload4)
+
+    complete_upload = upload5.clone(message='Finished scoring this plan.')
+
+    pprint.pprint(complete_upload.summary)
