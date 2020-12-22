@@ -105,10 +105,20 @@ def apply_model(districts, model):
         for (vote, incumbency)
         in districts
     ])
+    print('AD:', AD.shape)
+    numpy.savetxt('AD.csv', AD, fmt='%.9f', delimiter=',')
     
     ADC = AD.dot(model.c_matrix)
+    print('ADC:', ADC.shape)
+    numpy.savetxt('ADC.csv', ADC, fmt='%.9f', delimiter=',')
+    print('C:', model.c_matrix.shape)
+    numpy.savetxt('C.csv', model.c_matrix, fmt='%.9f', delimiter=',')
     E = model.e_matrix[:len(districts),:]
+    print('E:', E.shape)
+    numpy.savetxt('E.csv', E, fmt='%.9f', delimiter=',')
 
+    print('ADCE:', (ADC + E).shape)
+    numpy.savetxt('ADCE.csv', (ADC + E), fmt='%.9f', delimiter=',')
     return ADC + E
 
 def model_votes(state, year, districts):

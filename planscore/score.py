@@ -138,6 +138,9 @@ def calculate_MMD(red_districts, blue_districts):
 
     mean = statistics.mean(shares)
     
+    with open('MMDs.csv', 'a') as file:
+        print(f'{mean:.9f},{median:.9f}', file=file)
+    
     return mean - median
 
 def calculate_PB(red_districts, blue_districts):
@@ -349,6 +352,9 @@ def calculate_district_biases(upload):
     
         Look for 2016 presidential vote totals to use national PlanScore model.
     '''
+    with open('MMDs.csv', 'w') as file:
+        print('mean,median', file=file)
+
     if 'US President 2016 - DEM' not in upload.districts[0]['totals'] \
     or 'US President 2016 - REP' not in upload.districts[0]['totals']:
         # Skip everything if we don't see 2016 presidential votes
