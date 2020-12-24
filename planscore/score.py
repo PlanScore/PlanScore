@@ -133,9 +133,7 @@ def calculate_MMD(red_districts, blue_districts):
     '''
     shares = sorted([R/(R + B) for (R, B) in zip(red_districts, blue_districts)])
     
-    median = shares[math.floor(len(shares) / 2)] / 2 \
-           + shares[math.ceil(len(shares) / 2)] / 2
-
+    median = statistics.median(shares)
     mean = statistics.mean(shares)
     
     with open('MMDs.csv', 'a') as file:
