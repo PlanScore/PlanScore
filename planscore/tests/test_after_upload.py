@@ -147,6 +147,15 @@ class TestAfterUpload (unittest.TestCase):
         nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
         self.assertEqual(after_upload.guess_state_model(nc_plan_path).house, data.House.ushouse)
     
+    def test_guess_state_model_nonexistent(self):
+        ''' Test that guess_state_model() guesses the correct U.S. state and house.
+        '''
+        with self.assertRaises(ValueError) as wy_error:
+            wy_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'wyoming.geojson')
+            after_upload.guess_state_model(wy_plan_path)
+
+        self.assertEqual(str(wy_error.exception), 'Wyoming is not a currently supported state')
+    
     @unittest.mock.patch('osgeo.ogr')
     def test_guess_state_model_imagined(self, osgeo_ogr):
         ''' Test that guess_state_model() guesses the correct U.S. state and house.
