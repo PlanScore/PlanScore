@@ -147,6 +147,27 @@ class TestAfterUpload (unittest.TestCase):
         nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
         self.assertEqual(after_upload.guess_state_model(nc_plan_path).house, data.House.ushouse)
     
+    def test_guess_state_model_nonexistent(self):
+        ''' Test that guess_state_model() guesses the correct U.S. state and house.
+        '''
+        with self.assertRaises(RuntimeError) as wy_error:
+            wy_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'wyoming.geojson')
+            after_upload.guess_state_model(wy_plan_path)
+
+        self.assertEqual(str(wy_error.exception), 'Wyoming is not a currently supported state')
+
+        with self.assertRaises(RuntimeError) as dc_error:
+            dc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'district-of-columbia.geojson')
+            after_upload.guess_state_model(dc_plan_path)
+
+        self.assertEqual(str(dc_error.exception), 'District of Columbia is not a currently supported state')
+
+        with self.assertRaises(RuntimeError) as ni_error:
+            ni_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'nicaragua.geojson')
+            after_upload.guess_state_model(ni_plan_path)
+
+        self.assertEqual(str(ni_error.exception), 'PlanScore only works for U.S. states')
+    
     @unittest.mock.patch('osgeo.ogr')
     def test_guess_state_model_imagined(self, osgeo_ogr):
         ''' Test that guess_state_model() guesses the correct U.S. state and house.

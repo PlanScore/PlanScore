@@ -200,25 +200,34 @@ def guess_state_model(path):
     states_ds = osgeo.ogr.Open(states_path)
     states_layer = states_ds.GetLayer(0)
     states_layer.SetSpatialFilter(footprint)
-    state_guesses = []
+    state_names, state_guesses = {}, []
     
     for state_feature in states_layer:
         overlap = state_feature.GetGeometryRef().Intersection(footprint)
         state_guesses.append((overlap.Area(), state_feature.GetField('STUSPS')))
+        state_names[state_feature.GetField('STUSPS')] = state_feature.GetField('NAME')
     
     if state_guesses:
         # Sort by area to findest largest overlap
         state_abbr = [abbr for (_, abbr) in sorted(state_guesses)][-1]
     else:
-        # Fall back to Null Island
-        state_abbr = 'XX'
+        # Fall back to Null Island?
+        xmin, xmax, ymin, ymax = footprint.GetEnvelope()
+        if xmin < 0 and 0 < xmax and ymin < 0 and 0 < ymax:
+            state_abbr = 'XX'
+        else:
+            raise RuntimeError('PlanScore only works for U.S. states')
 
     # Sort by log(seats) to findest smallest difference
     model_guesses = [(abs(math.log(len(features) / model.seats)), model)
         for model in data.MODELS2017
         if model.state.value == state_abbr]
     
-    return sorted(model_guesses)[0][1]
+    try:
+        return sorted(model_guesses)[0][1]
+    except IndexError:
+        state_name = state_names[state_abbr]
+        raise RuntimeError('{} is not a currently supported state'.format(state_name))
 
 def put_geojson_file(s3, bucket, upload, path):
     ''' Save a property-less GeoJSON file for this upload.
