@@ -23,8 +23,8 @@ var FIELDS = [
     /*, 'Polsby-Popper', 'Reock'*/
 ];
 
-var BLUE_COLOR_HEX = '#4D90D1',
-    RED_COLOR_HEX = '#D45557',
+var BLUE_COLOR_HEX = '#0049A8',
+    RED_COLOR_HEX = '#C71C36',
     LEAN_BLUE_COLOR_HEX = '#6D8AB1',
     LEAN_RED_COLOR_HEX = '#B56E6B',
     BLUEISH_COLOR_HEX = '#6D8AB0',
@@ -889,7 +889,10 @@ function load_plan_map(url, div, plan)
             style: function(feature)
             {
                 var district = plan.districts[data.features.indexOf(feature)];
-                return { weight: 2, fillOpacity: .5, color: which_district_color(district, plan) };
+                return {
+                    stroke: true, weight: 1, color: '#cccccc',
+                    fill: true, fillOpacity: .6, fillColor: which_district_color(district, plan)
+                };
             }
             }).bindPopup(district_popup_content);
 
