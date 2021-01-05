@@ -1044,8 +1044,8 @@ function add_map_pattern_support(show_leans)
                 {
                     var pattern_colors = [UNKNOWN_COLOR_HEX, REDDISH_COLOR_HEX,
                         BLUEISH_COLOR_HEX, LEAN_BLUE_COLOR_HEX, LEAN_RED_COLOR_HEX];
-                
-                    if (typeof options.color == "string" && pattern_colors.indexOf(options.color) >= 0) {
+
+                    if (typeof options.fillColor == "string" && pattern_colors.indexOf(options.fillColor) >= 0) {
                         // Add support for unknown color, a gray
                         this.__fillPattern(layer);
                     } else {
@@ -1068,24 +1068,24 @@ function add_map_pattern_support(show_leans)
                     this._defs = L.SVG.create('defs');
                     this._container.appendChild(this._defs);
                 }
-                
-                if(options.color == UNKNOWN_COLOR_HEX) {
+
+                if(options.fillColor == UNKNOWN_COLOR_HEX) {
                     var _img_url = UNKNOWN_PATTERN_URL;
                     var _ref_id = 'UNKNOWN_PATTERN_URL' + new Date().getUTCMilliseconds();
-                } else if(options.color == LEAN_RED_COLOR_HEX) {
+                } else if(options.fillColor == LEAN_RED_COLOR_HEX) {
                     var _img_url = LEAN_RED_PATTERN_URL;
                     var _ref_id = 'LEAN_RED_PATTERN_URL' + new Date().getUTCMilliseconds();
-                } else if(options.color == LEAN_BLUE_COLOR_HEX) {
+                } else if(options.fillColor == LEAN_BLUE_COLOR_HEX) {
                     var _img_url = LEAN_BLUE_PATTERN_URL;
                     var _ref_id = 'LEAN_BLUE_PATTERN_URL' + new Date().getUTCMilliseconds();
-                } else if(options.color == REDDISH_COLOR_HEX) {
+                } else if(options.fillColor == REDDISH_COLOR_HEX) {
                     var _img_url = REDDISH_PATTERN_URL;
                     var _ref_id = 'REDDISH_PATTERN_URL' + new Date().getUTCMilliseconds();
-                } else if(options.color == BLUEISH_COLOR_HEX) {
+                } else if(options.fillColor == BLUEISH_COLOR_HEX) {
                     var _img_url = BLUEISH_PATTERN_URL;
                     var _ref_id = 'BLUEISH_PATTERN_URL' + new Date().getUTCMilliseconds();
                 }
-                
+
                 var _p = document.getElementById(_ref_id);
                 if (!_p) {
                     var _im = new Image();
