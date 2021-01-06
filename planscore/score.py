@@ -131,7 +131,7 @@ def calculate_MMD(red_districts, blue_districts):
     
         Vote swing does not seem to affect Mean-Median, so leave it off.
     '''
-    shares = sorted([R/(R + B) for (R, B) in zip(red_districts, blue_districts)])
+    shares = sorted([B/(R + B) for (R, B) in zip(red_districts, blue_districts)])
     
     median = statistics.median(shares)
     mean = statistics.mean(shares)
@@ -139,7 +139,7 @@ def calculate_MMD(red_districts, blue_districts):
     with open('MMDs.csv', 'a') as file:
         print(f'{mean:.9f},{median:.9f}', file=file)
     
-    return mean - median
+    return median - mean
 
 def calculate_PB(red_districts, blue_districts):
     ''' Convert two lists of district vote counts into a Partisan Bias score.
