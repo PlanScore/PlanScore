@@ -1,10 +1,10 @@
 # PlanScore Front-Facing Website
 
-Totally separate from the back-end code, this is the public-facing website. This is run from thre `gh-pages` branch of the `PlanScore/PlanScore` repository.
+Totally separate from the back-end code, this is the public-facing website.
 
 ## Site URL
 
-https://planscore.github.io/PlanScore/home/
+https://planscore.org/
 
 
 
