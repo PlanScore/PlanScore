@@ -5,6 +5,17 @@ _December 2020_
 
 [intro paragraph]
 
+Predictions
+---
+
+The charts below show comparisons between this model’s predictions with observed historical numbers for plans with at least 7 districts.
+
+![model_v_historical_chambers_7plus.png](model_v_historical_chambers_7plus.png)
+
+![model_v_historical_states_7plus.png](model_v_historical_states_7plus.png)
+
+![model_v_historical_cycles_7plus.png](model_v_historical_cycles_7plus.png)
+
 Methodology
 ---
 
