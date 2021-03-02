@@ -7,17 +7,6 @@ In order to score new plans, it is necessary to create a statistical model of th
 
 In some cases, uncontested elections are imputed as described in [*The Impact of Partisan Gerrymandering on Political Parties*](https://onlinelibrary.wiley.com/doi/abs/10.1111/lsq.12276) and [its appendix](https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Flsq.12276&file=lsq12276-sup-0001-Supinfo.pdf), by Nicholas Stephanopoulos and Christopher Warshaw.
 
-Predictions
----
-
-The charts below show comparisons between this model’s predictions with observed historical numbers for plans with at least 7 districts.
-
-![model_v_historical_chambers_7plus.png](model_v_historical_chambers_7plus.png)
-
-![model_v_historical_states_7plus.png](model_v_historical_states_7plus.png)
-
-![model_v_historical_cycles_7plus.png](model_v_historical_cycles_7plus.png)
-
 Methodology
 ---
 
@@ -153,3 +142,14 @@ When generating predictions, PlanScore assumes an average election year for the 
         </tr>
     </tbody>
 </table>
+
+Predictions
+---
+
+The charts below show comparisons between this model’s in-sample predictions and observed historical numbers for plans with at least 7 districts. The results were broadly similar for cross-validated predictions with 10 percent of the sample set aside for testing. The predictions were also quite strong for 2020 in states where we were able to obtain election results for comparison.
+
+![model_v_historical_chambers_7plus.png](model_v_historical_chambers_7plus.png)
+
+![model_v_historical_states_7plus.png](model_v_historical_states_7plus.png)
+
+![model_v_historical_cycles_7plus.png](model_v_historical_cycles_7plus.png)
