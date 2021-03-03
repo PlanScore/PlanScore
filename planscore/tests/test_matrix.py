@@ -144,8 +144,8 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(load_model.mock_calls[0][1], ('nc', None))
 
         self.assertEqual(R[0].tolist(), [
-            [3.0, 7.0],
-            [4.0, 6.0],
+            [1.5, 3.5],
+            [2.0, 3.0],
         ])
         
         self.assertTrue(numpy.isnan(R[1]).all())
