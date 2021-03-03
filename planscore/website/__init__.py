@@ -72,12 +72,12 @@ def get_historicaldata_page():
 def get_friendsresources_page():
     return flask.render_template('about-friends-resources.html')
 
-@app.route('/upload.html')
-def get_upload():
+@app.route('/upload-old.html')
+def get_upload_old():
     upload_fields_url = get_function_url(constants.API_UPLOAD_RELPATH)
     return flask.render_template('upload.html', upload_fields_url=upload_fields_url)
 
-@app.route('/upload-new.html')
+@app.route('/upload.html')
 def get_upload_new():
     upload_fields_url = get_function_url(constants.API_UPLOAD_NEW_RELPATH)
     return flask.render_template('upload-new.html', upload_fields_url=upload_fields_url)
