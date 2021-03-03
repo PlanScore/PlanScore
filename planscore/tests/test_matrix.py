@@ -33,12 +33,12 @@ class TestMatrix (unittest.TestCase):
         #self.assertEqual(model.year_vote[0], model.c_matrix[7,0])
         #self.assertEqual(model.year_incumbent[0], model.c_matrix[8,0])
 
-        self.assertAlmostEqual(model.c_matrix[0,0], 0.50477519)
-        self.assertAlmostEqual(model.c_matrix[1,0], 0.80943166)
-        self.assertAlmostEqual(model.c_matrix[2,0], 0.04549458)
-        self.assertAlmostEqual(model.c_matrix[3,0], -0.04051737)
-        self.assertAlmostEqual(model.c_matrix[4,0], 0.133979381)
-        self.assertAlmostEqual(model.c_matrix[5,0], -0.023266200)
+        self.assertAlmostEqual(model.c_matrix[0,0], 0.54008553)
+        self.assertAlmostEqual(model.c_matrix[1,0], 0.67785703)
+        self.assertAlmostEqual(model.c_matrix[2,0], 0.03932891)
+        self.assertAlmostEqual(model.c_matrix[3,0], -0.03862657)
+        self.assertAlmostEqual(model.c_matrix[4,0], 0.09638452)
+        self.assertAlmostEqual(model.c_matrix[5,0], -0.01951488)
         #self.assertAlmostEqual(model.c_matrix[6,0], 0.006908099)
         #self.assertAlmostEqual(model.c_matrix[7,0], -0.130211000)
         #self.assertAlmostEqual(model.c_matrix[8,0], 0.0129821061)
@@ -144,8 +144,8 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(load_model.mock_calls[0][1], ('nc', None))
 
         self.assertEqual(R[0].tolist(), [
-            [3.0, 7.0],
-            [4.0, 6.0],
+            [1.5, 3.5],
+            [2.0, 3.0],
         ])
         
         self.assertTrue(numpy.isnan(R[1]).all())

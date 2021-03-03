@@ -106,9 +106,22 @@ def apply_model(districts, model):
         in districts
     ])
     
+    # TODO: remove print output unless running planscore-score-locally
+    
+    print('AD:', AD.shape)
+    numpy.savetxt('AD.csv', AD, fmt='%.9f', delimiter=',')
+    
     ADC = AD.dot(model.c_matrix)
+    print('ADC:', ADC.shape)
+    numpy.savetxt('ADC.csv', ADC, fmt='%.9f', delimiter=',')
+    print('C:', model.c_matrix.shape)
+    numpy.savetxt('C.csv', model.c_matrix, fmt='%.9f', delimiter=',')
     E = model.e_matrix[:len(districts),:]
+    print('E:', E.shape)
+    numpy.savetxt('E.csv', E, fmt='%.9f', delimiter=',')
 
+    print('ADCE:', (ADC + E).shape)
+    numpy.savetxt('ADCE.csv', (ADC + E), fmt='%.9f', delimiter=',')
     return ADC + E
 
 def model_votes(state, year, districts):
@@ -132,10 +145,10 @@ def model_votes(state, year, districts):
     )
     
     # Make DxS array with total vote counts for each district and simulation
-    #total_votes = sum([dem + rep for (dem, rep, _) in districts])
-    #one_district_votes = total_votes / len(districts)
-    #per_district_votes = [[one_district_votes]] * len(districts)
-    per_district_votes = [[dem + rep] for (dem, rep, _) in districts]
+    total_votes = sum([dem + rep for (dem, rep, _) in districts])
+    one_district_votes = total_votes / len(districts)
+    per_district_votes = [[one_district_votes]] * len(districts)
+    #per_district_votes = [[dem + rep] for (dem, rep, _) in districts]
     
     scale = numpy.repeat(per_district_votes, fractions.shape[1], axis=1)
     

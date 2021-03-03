@@ -100,15 +100,15 @@ class TestScore (unittest.TestCase):
             msg='Should see zero PB with 50/50 election and 50/50 seats')
 
         pb2 = score.calculate_PB((6, 6, 6, 3, 3), (2, 2, 2, 5, 5))
-        self.assertAlmostEqual(pb2, 0, places=2,
-            msg='Should see zero PB with 60/40 election and 60/40 seats')
+        self.assertAlmostEqual(pb2, -0.1, places=2,
+            msg='Should see -10% PB with 60/40 election and 60/40 seats')
 
         pb3 = score.calculate_PB((6, 6, 6, 3, 3), (4, 4, 4, 12, 12))
-        self.assertAlmostEqual(pb3, -.2, places=2,
+        self.assertAlmostEqual(pb3, -0.1, places=2,
             msg='Should see +red PB with 40% red vote share and 60% red seats')
 
         pb4 = score.calculate_PB((4, 4, 4, 12, 12), (6, 6, 6, 3, 3))
-        self.assertAlmostEqual(pb4, .2, places=2,
+        self.assertAlmostEqual(pb4, 0.1, places=2,
             msg='Should see +blue PB with 40% blue vote share and 60% blue seats')
 
     @unittest.mock.patch('planscore.score.calculate_MMD')

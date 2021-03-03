@@ -4,6 +4,10 @@ When all districts are added up and present on S3, performs complete scoring
 of district plan and uploads summary JSON file.
 '''
 import io, os, gzip, posixpath, json, statistics, copy, time, itertools
+import math
+import argparse
+import urllib.request
+import pprint
 from osgeo import ogr
 import boto3, botocore.exceptions
 from . import data, constants, matrix
@@ -118,6 +122,10 @@ def calculate_EG(red_districts, blue_districts, vote_swing=0):
     if election_votes == 0:
         return
     
+    # TODO: remove print output unless running planscore-score-locally
+    with open('EGs.csv', 'a') as file:
+        print(f'{wasted_red:.2f},{wasted_blue:.2f}', file=file)
+    
     return (wasted_red - wasted_blue) / election_votes
 
 def calculate_MMD(red_districts, blue_districts):
@@ -127,11 +135,16 @@ def calculate_MMD(red_districts, blue_districts):
     
         Vote swing does not seem to affect Mean-Median, so leave it off.
     '''
-    shares = sorted([R/(R + B) for (R, B) in zip(red_districts, blue_districts)])
-    median = shares[len(shares)//2]
+    shares = sorted([B/(R + B) for (R, B) in zip(red_districts, blue_districts)])
+    
+    median = statistics.median(shares)
     mean = statistics.mean(shares)
     
-    return mean - median
+    # TODO: remove print output unless running planscore-score-locally
+    with open('MMDs.csv', 'a') as file:
+        print(f'{mean:.9f},{median:.9f}', file=file)
+    
+    return median - mean
 
 def calculate_PB(red_districts, blue_districts):
     ''' Convert two lists of district vote counts into a Partisan Bias score.
@@ -144,7 +157,14 @@ def calculate_PB(red_districts, blue_districts):
     reds_5050, blues_5050 = swing_vote(red_districts, blue_districts, -blue_margin/2)
     blue_seats = len([True for (R, B) in zip(reds_5050, blues_5050) if R < B])
     blue_seatshare = blue_seats / len(blues_5050)
-    blue_voteshare = blue_total / (blue_total + red_total)
+    blue_voteshare = sum(blues_5050) / (sum(blues_5050) + sum(reds_5050))
+
+    assert round(blue_voteshare, 7) == .5, \
+        'Vote-share Partisan Bias should always be 50%, not {}'.format(blue_voteshare)
+
+    # TODO: remove print output unless running planscore-score-locally
+    with open('PBs.csv', 'a') as file:
+        print(f'{blue_seatshare:.9f},{blue_voteshare:.3f}', file=file)
     
     return blue_seatshare - blue_voteshare
 
@@ -339,6 +359,17 @@ def calculate_district_biases(upload):
     
         Look for 2016 presidential vote totals to use national PlanScore model.
     '''
+    # TODO: remove print output unless running planscore-score-locally
+    
+    with open('EGs.csv', 'w') as file:
+        print('wasted_red,wasted_blue', file=file)
+
+    with open('MMDs.csv', 'w') as file:
+        print('mean,median', file=file)
+
+    with open('PBs.csv', 'w') as file:
+        print('blue_seatshare,blue_voteshare', file=file)
+    
     if 'US President 2016 - DEM' not in upload.districts[0]['totals'] \
     or 'US President 2016 - REP' not in upload.districts[0]['totals']:
         # Skip everything if we don't see 2016 presidential votes
@@ -415,3 +446,41 @@ def calculate_district_biases(upload):
 
     rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
     return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
+
+parser = argparse.ArgumentParser()
+parser.add_argument('upload_url')
+
+def main():
+    ''' Write all district vote simulations to single CSV file
+    '''
+    args = parser.parse_args()
+
+    got = urllib.request.urlopen(args.upload_url)
+    upload1 = data.Upload.from_json(got.read())
+
+    upload2 = calculate_bias(upload1)
+    upload3 = calculate_open_biases(upload2)
+    upload4 = calculate_biases(upload3)
+    upload5 = calculate_district_biases(upload4)
+
+    complete_upload = upload5.clone(message='Finished scoring this plan.')
+    
+    print('''Scores for {id} ({state}, {house}):
+EG: {EG:.1f}%; {EG_wins:.0f}% favor D
+GK Bias: {PB:.1f}%; {PB_wins:.0f}% favor D
+Mean-Med: {MMD:.1f}%; {MMD_wins:.0f}% favor D
+-
+D votes: {votes_D}
+R votes: {votes_R}'''.format(
+        id=complete_upload.id,
+        state=complete_upload.model.state,
+        house=complete_upload.model.house,
+        EG=complete_upload.summary['Efficiency Gap'] * 100,
+        EG_wins=complete_upload.summary['Efficiency Gap Positives'] * 100,
+        PB=complete_upload.summary['Partisan Bias'] * 100,
+        PB_wins=complete_upload.summary['Partisan Bias Positives'] * 100,
+        MMD=complete_upload.summary['Mean-Median'] * 100,
+        MMD_wins=complete_upload.summary['Mean-Median Positives'] * 100,
+        votes_D=[round(d['totals']['Democratic Votes'], 1) for d in complete_upload.districts],
+        votes_R=[round(d['totals']['Republican Votes'], 1) for d in complete_upload.districts],
+    ))
