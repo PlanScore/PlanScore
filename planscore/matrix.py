@@ -105,6 +105,9 @@ def apply_model(districts, model):
         for (vote, incumbency)
         in districts
     ])
+    
+    # TODO: remove print output unless running planscore-score-locally
+    
     print('AD:', AD.shape)
     numpy.savetxt('AD.csv', AD, fmt='%.9f', delimiter=',')
     

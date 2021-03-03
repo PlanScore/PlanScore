@@ -122,6 +122,7 @@ def calculate_EG(red_districts, blue_districts, vote_swing=0):
     if election_votes == 0:
         return
     
+    # TODO: remove print output unless running planscore-score-locally
     with open('EGs.csv', 'a') as file:
         print(f'{wasted_red:.2f},{wasted_blue:.2f}', file=file)
     
@@ -139,6 +140,7 @@ def calculate_MMD(red_districts, blue_districts):
     median = statistics.median(shares)
     mean = statistics.mean(shares)
     
+    # TODO: remove print output unless running planscore-score-locally
     with open('MMDs.csv', 'a') as file:
         print(f'{mean:.9f},{median:.9f}', file=file)
     
@@ -160,6 +162,7 @@ def calculate_PB(red_districts, blue_districts):
     assert round(blue_voteshare, 7) == .5, \
         'Vote-share Partisan Bias should always be 50%, not {}'.format(blue_voteshare)
 
+    # TODO: remove print output unless running planscore-score-locally
     with open('PBs.csv', 'a') as file:
         print(f'{blue_seatshare:.9f},{blue_voteshare:.3f}', file=file)
     
@@ -356,6 +359,8 @@ def calculate_district_biases(upload):
     
         Look for 2016 presidential vote totals to use national PlanScore model.
     '''
+    # TODO: remove print output unless running planscore-score-locally
+    
     with open('EGs.csv', 'w') as file:
         print('wasted_red,wasted_blue', file=file)
 
