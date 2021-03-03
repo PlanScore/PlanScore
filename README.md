@@ -116,7 +116,7 @@ Process
 
 ### Old Upload
 
-1.  User starts at `/upload.html`
+1.  User starts at `/upload-old.html`
 2.  Page requests an ID and S3 fields from `/upload` ([λ:`PlanScore-UploadFields`](planscore/upload_fields.py))
 3.  User posts file to S3, redirects to `/annotate.html`
 4.  User posts annotation form to `/uploaded` ([λ:`PlanScore-Callback`](planscore/callback.py))
@@ -138,7 +138,7 @@ Process
 
 ### New Upload
 
-1.  User starts at `/upload-new.html`
+1.  User starts at `/upload.html`
 2.  Page requests an ID and S3 fields from `/upload-new` ([λ:`PlanScore-UploadFieldsNew`](planscore/upload_fields_new.py))
 3.  User posts file to S3, redirects to `/preread` ([λ:`PlanScore-Preread`](planscore/preread.py))
 4.  [λ:`PlanScore-Preread`](planscore/preread.py) prepares upload
