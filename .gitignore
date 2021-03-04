@@ -4,4 +4,5 @@ __pycache__
 planscore-lambda
 planscore-lambda.zip
 planscore/website/build
+website-dev-build
 gdal-geos-python.tar.gz

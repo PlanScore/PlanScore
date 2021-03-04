@@ -15,6 +15,9 @@ live-website: planscore/website/build
 	aws s3 sync --acl public-read --cache-control 'public, max-age=300' $</ s3://planscore.org-website/
 	aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete $</ s3://planscore.org-website/
 
+dev-website: website-dev-build
+	aws s3 sync --acl public-read --cache-control 'no-store, max-age=0' --delete $</ s3://planscore.org-dev-website/
+
 localstack-env: planscore-lambda.zip
 	./setup-localstack.py planscore-lambda.zip
 
@@ -33,9 +36,14 @@ planscore/website/build:
 	env AWS=amazonaws.com API_BASE=https://api.planscore.org/ \
 		python -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
 
+website-dev-build:
+	env AWS=amazonaws.com API_BASE=https://api.dev.planscore.org/ FREEZER_DESTINATION=`pwd`/$@ \
+		python -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
+
 # It's a pain to have to redownload gdal-geos-numpy-python.tar.gz so this sort-of cleans things
 cleanish:
 	rm -rf planscore/website/build
+	rm -rf website-dev-build
 	rm -rf planscore-lambda planscore-lambda.zip
 
 clean: cleanish
