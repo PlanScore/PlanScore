@@ -16,8 +16,14 @@ live-website: planscore/website/build
 	aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete $</ s3://planscore.org-website/
 
 dev-lambda: planscore-lambda.zip
+	aws --output json s3api put-object \
+		--bucket planscore--dev --key code/lambda.zip \
+		--body planscore-lambda.zip --acl public-read \
+	| tee /tmp/planscore-lambda.json
+
 	env AWS=amazonaws.com WEBSITE_BASE=https://dev.planscore.org/ API_BASE=https://api.dev.planscore.org/ \
-		parallel -j3 ./deploy.py planscore-lambda.zip \
+		parallel -j9 ./deploy.py planscore-lambda.zip \
+		planscore--dev code/lambda.zip /tmp/planscore-lambda.json \
 		::: Dev-PlanScore-UploadFields Dev-PlanScore-Callback Dev-PlanScore-AfterUpload \
 		    Dev-PlanScore-UploadFieldsNew Dev-PlanScore-Preread Dev-PlanScore-PrereadFollowup \
 		    Dev-PlanScore-PostreadCallback Dev-PlanScore-PostreadCalculate \
