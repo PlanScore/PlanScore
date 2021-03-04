@@ -29,6 +29,9 @@ functions = {
     'PlanScore-ObserveTiles': dict(Handler='lambda.observe_tiles', Timeout=300, MemorySize=512, **common),
     }
 
+# "Dev"-prefixed version of each function
+functions.update({f'Dev-{k}': v for (k, v) in functions.items()})
+
 api_paths = {
     'PlanScore-UploadFields': 'upload',
     'PlanScore-Callback': 'uploaded',
@@ -177,7 +180,7 @@ def update_api(api, api_name, function_arn, function_name, role):
 
     print('    * put integration', rest_api_id, api_integrations[function_name]['httpMethod'], path, file=sys.stderr)
     api_integrations[function_name].update(**api_kwargs)
-    api.put_integration(credentials=role, type='AWS_PROXY',
+    api.put_integration(type='AWS_PROXY',
         uri=f'arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/{function_arn}/invocations',
         integrationHttpMethod='POST', passthroughBehavior='WHEN_NO_MATCH',
         **api_integrations[function_name])

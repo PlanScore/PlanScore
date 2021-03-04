@@ -15,6 +15,14 @@ live-website: planscore/website/build
 	aws s3 sync --acl public-read --cache-control 'public, max-age=300' $</ s3://planscore.org-website/
 	aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete $</ s3://planscore.org-website/
 
+dev-lambda: planscore-lambda.zip
+	env AWS=amazonaws.com WEBSITE_BASE=https://dev.planscore.org/ API_BASE=https://api.dev.planscore.org/ \
+		parallel -j3 ./deploy.py planscore-lambda.zip \
+		::: Dev-PlanScore-UploadFields Dev-PlanScore-Callback Dev-PlanScore-AfterUpload \
+		    Dev-PlanScore-UploadFieldsNew Dev-PlanScore-Preread Dev-PlanScore-PrereadFollowup \
+		    Dev-PlanScore-PostreadCallback Dev-PlanScore-PostreadCalculate \
+		    Dev-PlanScore-RunTile Dev-PlanScore-ObserveTiles
+
 dev-website: website-dev-build
 	aws s3 sync --acl public-read --cache-control 'no-store, max-age=0' --delete $</ s3://planscore.org-dev-website/
 
