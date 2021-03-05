@@ -2,20 +2,21 @@ all: planscore/website/build
 
 live-lambda: planscore-lambda.zip
 	aws s3api put-object --bucket planscore \
-		--key code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip \
+		--key "code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip" \
 		--body planscore-lambda.zip --acl public-read
 
-	env WEBSITE_BASE=https://planscore.org/ API_BASE=https://api.planscore.org/ \
+	env WEBSITE_BASE='https://planscore.org/' \
+		API_BASE='https://api.planscore.org/' \
 		parallel -j9 ./deploy.py planscore-lambda.zip \
 		PlanScore planscore \
-		code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip \
+		"code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip" \
 		::: PlanScore-UploadFields PlanScore-Callback PlanScore-AfterUpload \
 		    PlanScore-UploadFieldsNew PlanScore-Preread PlanScore-PrereadFollowup \
 		    PlanScore-PostreadCallback PlanScore-PostreadCalculate \
 		    PlanScore-RunTile PlanScore-ObserveTiles
 
 	aws s3api delete-object --bucket planscore \
-		--key code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip
+		--key "code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip"
 	
 	./deploy-apigateway.py PlanScore
 
@@ -26,20 +27,21 @@ live-website: planscore/website/build
 
 dev-lambda: planscore-lambda.zip
 	aws s3api put-object --bucket planscore--dev \
-		--key code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip \
+		--key "code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip" \
 		--body planscore-lambda.zip --acl public-read
 
-	env WEBSITE_BASE=https://dev.planscore.org/ API_BASE=https://api.dev.planscore.org/ \
+	env WEBSITE_BASE='https://dev.planscore.org/' \
+		API_BASE='https://api.dev.planscore.org/' \
 		parallel -j9 ./deploy.py planscore-lambda.zip \
 		PlanScore-Dev planscore--dev \
-		code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip \
+		"code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip" \
 		::: Dev-PlanScore-UploadFields Dev-PlanScore-Callback Dev-PlanScore-AfterUpload \
 		    Dev-PlanScore-UploadFieldsNew Dev-PlanScore-Preread Dev-PlanScore-PrereadFollowup \
 		    Dev-PlanScore-PostreadCallback Dev-PlanScore-PostreadCalculate \
 		    Dev-PlanScore-RunTile Dev-PlanScore-ObserveTiles
 
 	aws s3api delete-object --bucket planscore--dev \
-		--key code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip
+		--key "code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip"
 	
 	./deploy-apigateway.py PlanScore-Dev
 
@@ -58,12 +60,13 @@ gdal-geos-numpy-python.tar.gz:
 	curl https://planscore.s3.amazonaws.com/code/gdal-2.1.3-geos-3.6.1-numpy-1.19.2-python-3.6.1.tar.gz -o $@ -s
 
 planscore/website/build:
-	env API_BASE=https://api.planscore.org/ \
+	env API_BASE='https://api.planscore.org/' \
 		python -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
 
 website-dev-build:
 	env API_BASE='https://api.dev.planscore.org/' \
-		FREEZER_DESTINATION=`pwd`/$@ S3_BUCKET='planscore--dev' \
+		FREEZER_DESTINATION="`pwd`/$@" \
+		S3_BUCKET='planscore--dev' \
 		python -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
 
 # It's a pain to have to redownload gdal-geos-numpy-python.tar.gz so this sort-of cleans things
