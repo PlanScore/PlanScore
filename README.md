@@ -160,3 +160,13 @@ Process
     1.  Waits for all expected aggregated tile statistics
     2.  Calculates final scores
     3.  Saves index JSON with final data
+
+### Adding a State
+
+-   Add to `State` enum in [`planscore/data.py`](planscore/data.py)
+-   Add to `MODELS2020` list in [`planscore/data.py`](planscore/data.py)
+-   Add to `STATE` enum in [`planscore/matrix.py`](planscore/matrix.py)
+-   Add to listing and alt text in [`planscore/website/templates/upload-new.html`](planscore/website/templates/upload-new.html)
+-   Add to `supported` expression in [`design/Upload-Map.qgz`](design/Upload-Map.qgz)
+-   Export SVG file from [`design/Upload-Map.qgz`](design/Upload-Map.qgz)
+-   Compress SVG file via [`https://vecta.io/nano`](https://vecta.io/nano), save to [`planscore/website/static/supported-states.svg`](planscore/website/static/supported-states.svg)

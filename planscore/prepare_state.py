@@ -214,7 +214,7 @@ def main():
         
         if args.s3:
             body = gzip.compress(buffer.getvalue().encode('utf8'))
-            print(stack_str, 'Write', key, '-', '{:.1f}KB'.format(len(body) / 1024))
+            print(stack_str, 'Write', f's3://{constants.S3_BUCKET}/{key}', '-', '{:.1f}KB'.format(len(body) / 1024))
     
             s3.put_object(Bucket=constants.S3_BUCKET, Key=key, Body=body,
                 ContentEncoding='gzip', ContentType='text/json', ACL='public-read')
