@@ -1,14 +1,23 @@
 all: planscore/website/build
 
 live-lambda: planscore-lambda.zip
+	aws s3api put-object --bucket planscore \
+		--key code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip \
+		--body planscore-lambda.zip --acl public-read
+
 	env AWS=amazonaws.com WEBSITE_BASE=https://planscore.org/ API_BASE=https://api.planscore.org/ \
 		parallel -j9 ./deploy.py planscore-lambda.zip \
+		PlanScore planscore \
+		code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip \
 		::: PlanScore-UploadFields PlanScore-Callback PlanScore-AfterUpload \
 		    PlanScore-UploadFieldsNew PlanScore-Preread PlanScore-PrereadFollowup \
 		    PlanScore-PostreadCallback PlanScore-PostreadCalculate \
 		    PlanScore-RunTile PlanScore-ObserveTiles
+
+	aws s3api delete-object --bucket planscore \
+		--key code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip
 	
-	./deploy-apigateway.py
+	./deploy-apigateway.py PlanScore
 
 live-website: planscore/website/build
 	# Two-part sync with deletion after to maintain consistency for web visitors
