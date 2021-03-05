@@ -16,6 +16,7 @@ class State (enum.Enum):
     XX = 'XX'
     MD = 'MD'; NC = 'NC'; PA = 'PA'; VA = 'VA'; WI = 'WI'
     FL = 'FL'; TX = 'TX'; GA = 'GA'; IL = 'IL'; MA = 'MA'; MI = 'MI'; TN = 'TN'
+    MO = 'MO'
 
 class House (enum.Enum):
     ushouse = 'ushouse'; statesenate = 'statesenate'; statehouse = 'statehouse'
@@ -315,6 +316,7 @@ MODELS2020 = [
     Model(State.MI, House.ushouse,      14,  True, '2020', 'data/MI/002-festblocks'), # 56f7c85
     Model(State.MI, House.statesenate,  38,  True, '2020', 'data/MI/002-festblocks'), # 56f7c85
     Model(State.MI, House.statehouse,  110,  True, '2020', 'data/MI/002-festblocks'), # 56f7c85
+    Model(State.MO, House.ushouse,       8,  True, '2020', 'data/MO/001-festblocks'), # 9f98656
     #Model(State.MT, House.ushouse,        ,  True, '2020', 'data/MT/001-festblocks'), # 56f7c85
     #Model(State.MT, House.statesenate,    ,  True, '2020', 'data/MT/001-festblocks'), # 56f7c85
     #Model(State.MT, House.statehouse,     ,  True, '2020', 'data/MT/001-festblocks'), # 56f7c85

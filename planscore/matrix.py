@@ -39,6 +39,7 @@ STATE = {
     data.State.IL: 'il',
     data.State.MA: 'ma',
     data.State.MI: 'mi',
+    data.State.MO: 'mo',
     data.State.TN: 'tn',
 }
 
