@@ -22,7 +22,8 @@ dev-lambda: planscore-lambda.zip
 
 	env AWS=amazonaws.com WEBSITE_BASE=https://dev.planscore.org/ API_BASE=https://api.dev.planscore.org/ \
 		parallel -j9 ./deploy.py planscore-lambda.zip \
-		planscore--dev code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip \
+		PlanScore-Dev planscore--dev \
+		code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip \
 		::: Dev-PlanScore-UploadFields Dev-PlanScore-Callback Dev-PlanScore-AfterUpload \
 		    Dev-PlanScore-UploadFieldsNew Dev-PlanScore-Preread Dev-PlanScore-PrereadFollowup \
 		    Dev-PlanScore-PostreadCallback Dev-PlanScore-PostreadCalculate \
@@ -30,6 +31,8 @@ dev-lambda: planscore-lambda.zip
 
 	aws s3api delete-object --bucket planscore--dev \
 		--key code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip
+	
+	./deploy-apigateway.py PlanScore-Dev
 
 dev-website: website-dev-build
 	aws s3 sync --acl public-read --cache-control 'no-store, max-age=0' --delete $</ s3://planscore.org-dev-website/

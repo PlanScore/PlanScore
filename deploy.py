@@ -29,9 +29,6 @@ functions = {
     'PlanScore-ObserveTiles': dict(Handler='lambda.observe_tiles', Timeout=300, MemorySize=512, **common),
     }
 
-# "Dev"-prefixed version of each function
-functions.update({f'Dev-{k}': v for (k, v) in functions.items()})
-
 api_paths = {
     'PlanScore-UploadFields': 'upload',
     'PlanScore-Callback': 'uploaded',
@@ -105,6 +102,12 @@ api_integrations = {
         #    },
         ),
     }
+
+# "Dev"-prefixed version of each function
+functions.update({f'Dev-{k}': v for (k, v) in functions.items()})
+api_paths.update({f'Dev-{k}': v for (k, v) in api_paths.items()})
+api_methods.update({f'Dev-{k}': v for (k, v) in api_methods.items()})
+api_integrations.update({f'Dev-{k}': v for (k, v) in api_integrations.items()})
 
 def publish_function(lam, name, code_dict, env, role):
     ''' Create or update the named function to Lambda, return its ARN.
@@ -192,6 +195,7 @@ def deploy_api(api, rest_api_id):
 
 parser = argparse.ArgumentParser(description='Update Lambda function.')
 parser.add_argument('path', help='Function code path')
+parser.add_argument('apiname', help='API name')
 parser.add_argument('s3bucket', help='S3 bucket name')
 parser.add_argument('s3key', help='S3 object key')
 parser.add_argument('name', help='Function name')
@@ -211,5 +215,5 @@ if __name__ == '__main__':
     if args.name not in api_methods:
         print('    - No API Gateway for', args.name, file=sys.stderr)
         exit()
-    rest_api_id = update_api(api, 'PlanScore', arn, args.name, role)
+    rest_api_id = update_api(api, args.apiname, arn, args.name, role)
     time.sleep(random.randint(0, 5))
