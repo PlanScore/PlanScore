@@ -3,7 +3,7 @@ import boto3, botocore.exceptions
 from . import data, constants, tiles, score, compactness
 import osgeo.ogr
 
-FUNCTION_NAME = 'PlanScore-ObserveTiles'
+FUNCTION_NAME = f'{constants.LAMBDA_PREFIX}PlanScore-ObserveTiles'
 
 Tile = collections.namedtuple('Tile', ('totals', 'timing'))
 

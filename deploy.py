@@ -103,7 +103,13 @@ api_integrations = {
         ),
     }
 
-def publish_function(lam, name, path, env, role):
+# "Dev"-prefixed version of each function
+functions.update({f'Dev-{k}': v for (k, v) in functions.items()})
+api_paths.update({f'Dev-{k}': v for (k, v) in api_paths.items()})
+api_methods.update({f'Dev-{k}': v for (k, v) in api_methods.items()})
+api_integrations.update({f'Dev-{k}': v for (k, v) in api_integrations.items()})
+
+def publish_function(lam, name, code_dict, env, role):
     ''' Create or update the named function to Lambda, return its ARN.
     '''
     start_time = time.time()
@@ -113,20 +119,17 @@ def publish_function(lam, name, path, env, role):
     if role is not None:
         function_kwargs.update(Role=role)
 
-    with open(path, 'rb') as code_file:
-        code_bytes = code_file.read()
-
     try:
         print('    * get function', name, file=sys.stderr)
         lam.get_function(FunctionName=name)
     except botocore.exceptions.ClientError:
         # Function does not exist, create it
         print('    * create function', name, file=sys.stderr)
-        lam.create_function(FunctionName=name, Code=dict(ZipFile=code_bytes), **function_kwargs)
+        lam.create_function(FunctionName=name, Code=code_dict, **function_kwargs)
     else:
         # Function exists, update it
         print('    * update function code', name, file=sys.stderr)
-        lam.update_function_code(FunctionName=name, ZipFile=code_bytes)
+        lam.update_function_code(FunctionName=name, **code_dict)
         print('    * update function configuration', name, file=sys.stderr)
         lam.update_function_configuration(FunctionName=name, **function_kwargs)
     
@@ -177,21 +180,20 @@ def update_api(api, api_name, function_arn, function_name, role):
 
     print('    * put integration', rest_api_id, api_integrations[function_name]['httpMethod'], path, file=sys.stderr)
     api_integrations[function_name].update(**api_kwargs)
-    api.put_integration(credentials=role, type='AWS_PROXY',
+    api.put_integration(type='AWS_PROXY',
         uri=f'arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/{function_arn}/invocations',
         integrationHttpMethod='POST', passthroughBehavior='WHEN_NO_MATCH',
         **api_integrations[function_name])
 
-    print('    * done with', f'{api._endpoint.host}/restapis/{rest_api_id}/test/_user_request_/{path}', file=sys.stderr)
+    print('    * done with', f'{api._endpoint.host}/restapis/{rest_api_id}/live/{path}', file=sys.stderr)
 
     return rest_api_id
 
-def deploy_api(api, rest_api_id):
-    print('    * create deployment', rest_api_id, 'test', file=sys.stderr)
-    api.create_deployment(stageName='test', restApiId=rest_api_id)
-
 parser = argparse.ArgumentParser(description='Update Lambda function.')
 parser.add_argument('path', help='Function code path')
+parser.add_argument('apiname', help='API name')
+parser.add_argument('s3bucket', help='S3 bucket name')
+parser.add_argument('s3key', help='S3 object key')
 parser.add_argument('name', help='Function name')
 
 if __name__ == '__main__':
@@ -199,14 +201,17 @@ if __name__ == '__main__':
     role = os.environ.get('AWS_IAM_ROLE')
     lam = boto3.client('lambda', region_name='us-east-1')
     api = boto3.client('apigateway', region_name='us-east-1')
-
+    
     env = {k: os.environ[k]
         for k in ('PLANSCORE_SECRET', 'WEBSITE_BASE', 'API_BASE', 'AWS')
         if k in os.environ}
+    env['S3_BUCKET'] = args.s3bucket
+    env['LAMBDA_PREFIX'] = 'Dev-' if args.name.startswith('Dev-') else ''
     
-    arn = publish_function(lam, args.name, args.path, env, role)
+    code_dict = dict(S3Bucket=args.s3bucket, S3Key=args.s3key)
+    arn = publish_function(lam, args.name, code_dict, env, role)
     if args.name not in api_methods:
         print('    - No API Gateway for', args.name, file=sys.stderr)
         exit()
-    rest_api_id = update_api(api, 'PlanScore', arn, args.name, role)
+    rest_api_id = update_api(api, args.apiname, arn, args.name, role)
     time.sleep(random.randint(0, 5))

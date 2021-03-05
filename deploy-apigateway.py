@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys, boto3
+import sys, boto3, argparse
 import botocore.exceptions
 
 def describe_api(api, api_name):
@@ -18,10 +18,14 @@ def describe_api(api, api_name):
     return rest_api_id
 
 def deploy_api(api, rest_api_id):
-    print('    * create deployment', rest_api_id, 'test', file=sys.stderr)
-    api.create_deployment(stageName='test', restApiId=rest_api_id)
+    print('    * create deployment', rest_api_id, 'live', file=sys.stderr)
+    api.create_deployment(stageName='live', restApiId=rest_api_id)
+
+parser = argparse.ArgumentParser(description='Update Lambda function.')
+parser.add_argument('apiname', help='API name')
 
 if __name__ == '__main__':
+    args = parser.parse_args()
     api = boto3.client('apigateway', region_name='us-east-1')
-    rest_api_id = describe_api(api, 'PlanScore')
+    rest_api_id = describe_api(api, args.apiname)
     deploy_api(api, rest_api_id)
