@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import sys, argparse, boto3, os, copy, time, random, subprocess, json
+import sys, argparse, boto3, os, copy, time, random, subprocess
 import botocore.exceptions
 
 git_commit_sha = subprocess.check_output(('git', 'rev-parse', 'HEAD')).strip().decode('ascii')
@@ -194,7 +194,6 @@ parser = argparse.ArgumentParser(description='Update Lambda function.')
 parser.add_argument('path', help='Function code path')
 parser.add_argument('s3bucket', help='S3 bucket name')
 parser.add_argument('s3key', help='S3 object key')
-parser.add_argument('s3json', help='Additional S3 info')
 parser.add_argument('name', help='Function name')
 
 if __name__ == '__main__':
@@ -203,17 +202,11 @@ if __name__ == '__main__':
     lam = boto3.client('lambda', region_name='us-east-1')
     api = boto3.client('apigateway', region_name='us-east-1')
     
-    with open(args.s3json, 'r') as file:
-        code_dict = dict(
-            S3Bucket=args.s3bucket,
-            S3Key=args.s3key,
-            S3ObjectVersion=json.load(file).get('VersionId'),
-        )
-    
     env = {k: os.environ[k]
         for k in ('PLANSCORE_SECRET', 'WEBSITE_BASE', 'API_BASE', 'AWS')
         if k in os.environ}
     
+    code_dict = dict(S3Bucket=args.s3bucket, S3Key=args.s3key)
     arn = publish_function(lam, args.name, code_dict, env, role)
     if args.name not in api_methods:
         print('    - No API Gateway for', args.name, file=sys.stderr)
