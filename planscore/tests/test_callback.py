@@ -6,13 +6,11 @@ class TestCallback (unittest.TestCase):
     def setUp(self):
         self.prev_secret, constants.SECRET = constants.SECRET, 'fake-secret'
         self.prev_website, constants.WEBSITE_BASE = constants.WEBSITE_BASE, 'https://example.com/'
-        self.prev_s3_url, constants.S3_ENDPOINT_URL = constants.S3_ENDPOINT_URL, None
         self.prev_lam_url, constants.LAMBDA_ENDPOINT_URL = constants.LAMBDA_ENDPOINT_URL, None
     
     def tearDown(self):
         constants.SECRET = self.prev_secret
         constants.WEBSITE_BASE = self.prev_website
-        constants.S3_ENDPOINT_URL = self.prev_s3_url
         constants.LAMBDA_ENDPOINT_URL = self.prev_lam_url
     
     @unittest.mock.patch('planscore.observe.put_upload_index')

@@ -35,7 +35,7 @@ def get_redirect_url(website_base, id):
 def lambda_handler(event, context):
     '''
     '''
-    s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
+    s3 = boto3.client('s3')
     query = util.event_query_args(event)
     website_base = constants.WEBSITE_BASE
 

@@ -188,12 +188,8 @@ def put_geojson_file(s3, bucket, upload, path):
     features = ['{"type": "Feature", "properties": {}, "geometry": '+g+'}' for g in geometries]
     geojson = '{"type": "FeatureCollection", "features": [\n'+',\n'.join(features)+'\n]}'
     
-    if constants.S3_ENDPOINT_URL:
-        # Do not attempt gzip when using localstack S3, since it's not supported.
-        body, args = geojson.encode('utf8'), dict()
-    else:
-        body = gzip.compress(geojson.encode('utf8'))
-        args = dict(ContentEncoding='gzip')
+    body = gzip.compress(geojson.encode('utf8'))
+    args = dict(ContentEncoding='gzip')
     
     s3.put_object(Bucket=bucket, Key=key, Body=body,
         ContentType='text/json', ACL='public-read', **args)
@@ -209,7 +205,7 @@ def get_redirect_url(website_base, id):
 def lambda_handler(event, context):
     '''
     '''
-    s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
+    s3 = boto3.client('s3')
     storage = data.Storage(s3, event['bucket'], None)
     upload = data.Upload.from_dict(event)
     
