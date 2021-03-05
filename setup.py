@@ -18,7 +18,7 @@ setup(
             'data/uploads/sample-plan/geometries/?.wkt'],
         },
     install_requires = [
-        'boto3 == 1.4.4',
+        'boto3 == 1.17.21',
         'itsdangerous == 0.24',
         'ModestMaps == 1.4.7',
         'Flask == 0.12.2',
@@ -27,7 +27,11 @@ setup(
         'Markdown == 2.6.8',
         ],
     extras_require = {
-        'compiled': ['GDAL == 2.1.3', 'numpy == 1.19.2'],
+        'compiled': [
+            'GDAL == 2.1.3',
+            'numpy == 1.19.2',
+            'awscli == 1.19.21',
+            ],
         },
     entry_points = dict(
         console_scripts = [
