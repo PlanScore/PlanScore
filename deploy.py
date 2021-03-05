@@ -205,6 +205,8 @@ if __name__ == '__main__':
     env = {k: os.environ[k]
         for k in ('PLANSCORE_SECRET', 'WEBSITE_BASE', 'API_BASE', 'AWS')
         if k in os.environ}
+    env['S3_BUCKET'] = args.s3bucket
+    env['LAMBDA_PREFIX'] = 'Dev-' if args.name.startswith('Dev-') else ''
     
     code_dict = dict(S3Bucket=args.s3bucket, S3Key=args.s3key)
     arn = publish_function(lam, args.name, code_dict, env, role)

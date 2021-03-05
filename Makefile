@@ -56,7 +56,8 @@ planscore/website/build:
 		python -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
 
 website-dev-build:
-	env AWS=amazonaws.com API_BASE=https://api.dev.planscore.org/ FREEZER_DESTINATION=`pwd`/$@ \
+	env AWS=amazonaws.com API_BASE='https://api.dev.planscore.org/' \
+		FREEZER_DESTINATION=`pwd`/$@ S3_BUCKET='planscore--dev' \
 		python -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
 
 # It's a pain to have to redownload gdal-geos-numpy-python.tar.gz so this sort-of cleans things
