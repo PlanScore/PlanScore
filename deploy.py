@@ -185,13 +185,9 @@ def update_api(api, api_name, function_arn, function_name, role):
         integrationHttpMethod='POST', passthroughBehavior='WHEN_NO_MATCH',
         **api_integrations[function_name])
 
-    print('    * done with', f'{api._endpoint.host}/restapis/{rest_api_id}/test/_user_request_/{path}', file=sys.stderr)
+    print('    * done with', f'{api._endpoint.host}/restapis/{rest_api_id}/live/{path}', file=sys.stderr)
 
     return rest_api_id
-
-def deploy_api(api, rest_api_id):
-    print('    * create deployment', rest_api_id, 'test', file=sys.stderr)
-    api.create_deployment(stageName='test', restApiId=rest_api_id)
 
 parser = argparse.ArgumentParser(description='Update Lambda function.')
 parser.add_argument('path', help='Function code path')
