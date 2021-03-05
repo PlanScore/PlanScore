@@ -5,7 +5,7 @@ live-lambda: planscore-lambda.zip
 		--key code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip \
 		--body planscore-lambda.zip --acl public-read
 
-	env AWS=amazonaws.com WEBSITE_BASE=https://planscore.org/ API_BASE=https://api.planscore.org/ \
+	env WEBSITE_BASE=https://planscore.org/ API_BASE=https://api.planscore.org/ \
 		parallel -j9 ./deploy.py planscore-lambda.zip \
 		PlanScore planscore \
 		code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip \
@@ -29,7 +29,7 @@ dev-lambda: planscore-lambda.zip
 		--key code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip \
 		--body planscore-lambda.zip --acl public-read
 
-	env AWS=amazonaws.com WEBSITE_BASE=https://dev.planscore.org/ API_BASE=https://api.dev.planscore.org/ \
+	env WEBSITE_BASE=https://dev.planscore.org/ API_BASE=https://api.dev.planscore.org/ \
 		parallel -j9 ./deploy.py planscore-lambda.zip \
 		PlanScore-Dev planscore--dev \
 		code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip \
@@ -61,11 +61,11 @@ gdal-geos-numpy-python.tar.gz:
 	curl https://planscore.s3.amazonaws.com/code/gdal-2.1.3-geos-3.6.1-numpy-1.19.2-python-3.6.1.tar.gz -o $@ -s
 
 planscore/website/build:
-	env AWS=amazonaws.com API_BASE=https://api.planscore.org/ \
+	env API_BASE=https://api.planscore.org/ \
 		python -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
 
 website-dev-build:
-	env AWS=amazonaws.com API_BASE='https://api.dev.planscore.org/' \
+	env API_BASE='https://api.dev.planscore.org/' \
 		FREEZER_DESTINATION=`pwd`/$@ S3_BUCKET='planscore--dev' \
 		python -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
 

@@ -79,10 +79,7 @@ class TestUtil (unittest.TestCase):
         for filename in ('null-plan.dbf', 'null-plan.prj', 'null-plan.shp', 'null-plan.shx'):
             self.assertTrue(os.path.exists(os.path.join(self.tempdir, filename)))
     
-    @unittest.mock.patch('planscore.constants.localstack_api_base')
-    def test_event_url(self, localstack_api_base):
-        constants.API_ENDPOINT_URL = None
-    
+    def test_event_url(self):
         url1 = util.event_url({'headers': {'Host': 'example.org'}})
         self.assertEqual(url1, 'http://example.org/')
 
@@ -92,14 +89,8 @@ class TestUtil (unittest.TestCase):
         url3 = util.event_url({'headers': {'Host': 'example.org'}, 'path': '/hello'})
         self.assertEqual(url3, 'http://example.org/hello')
 
-        constants.API_ENDPOINT_URL = 'http://aws.example.com'
-        localstack_api_base.return_value = 'http://aws.example.com/stuff/'
-    
         url4 = util.event_url({'path': '/hello'})
-        self.assertEqual(url4, 'http://aws.example.com/stuff/hello')
-        
-        localstack_api_base.assert_called_once_with(
-            constants.API_ENDPOINT_URL, constants.API_NAME)
+        self.assertEqual(url4, 'http://example.com/hello')
     
     def test_event_query_args(self):
         args1 = util.event_query_args({})

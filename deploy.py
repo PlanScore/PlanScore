@@ -203,7 +203,7 @@ if __name__ == '__main__':
     api = boto3.client('apigateway', region_name='us-east-1')
     
     env = {k: os.environ[k]
-        for k in ('PLANSCORE_SECRET', 'WEBSITE_BASE', 'API_BASE', 'AWS')
+        for k in ('PLANSCORE_SECRET', 'WEBSITE_BASE', 'API_BASE')
         if k in os.environ}
     env['S3_BUCKET'] = args.s3bucket
     env['LAMBDA_PREFIX'] = 'Dev-' if args.name.startswith('Dev-') else ''
