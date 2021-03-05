@@ -127,7 +127,7 @@ def fan_out_tile_lambdas(storage, upload, tile_keys):
     def invoke_lambda(tile_keys, upload, storage):
         '''
         '''
-        lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
+        lam = boto3.client('lambda')
         
         while True:
             try:
@@ -165,7 +165,7 @@ def start_tile_observer_lambda(storage, upload, tile_keys):
         Key=data.UPLOAD_TILE_INDEX_KEY.format(id=upload.id),
         Body=json.dumps(tile_keys).encode('utf8'))
     
-    lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
+    lam = boto3.client('lambda')
 
     payload = dict(upload=upload.to_dict(), storage=storage.to_event())
 

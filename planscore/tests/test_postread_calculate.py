@@ -7,12 +7,10 @@ class TestPostreadCalculate (unittest.TestCase):
     def setUp(self):
         self.prev_secret, constants.SECRET = constants.SECRET, 'fake-secret'
         self.prev_website, constants.WEBSITE_BASE = constants.WEBSITE_BASE, 'https://example.com/'
-        self.prev_lam_url, constants.LAMBDA_ENDPOINT_URL = constants.LAMBDA_ENDPOINT_URL, None
     
     def tearDown(self):
         constants.SECRET = self.prev_secret
         constants.WEBSITE_BASE = self.prev_website
-        constants.LAMBDA_ENDPOINT_URL = self.prev_lam_url
 
     @unittest.mock.patch('planscore.postread_calculate.commence_upload_scoring')
     def test_lambda_handler_success(self, commence_upload_scoring):

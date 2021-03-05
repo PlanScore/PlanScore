@@ -50,11 +50,10 @@ API_PREREAD_RELPATH = 'preread'
 # these might be set to values like 'http://127.0.0.1:4572/' for use with
 # localstack mock services. See also setup-localstack.py.
 
-LAMBDA_ENDPOINT_URL = os.environ.get('LAMBDA_ENDPOINT_URL', _local_url(4574))
 API_ENDPOINT_URL = os.environ.get('API_ENDPOINT_URL', _local_url(4567))
 
 if os.environ.get('AWS') == 'amazonaws.com':
-    LAMBDA_ENDPOINT_URL, API_ENDPOINT_URL = None, None
+    API_ENDPOINT_URL = None
 
 S3_URL_PATTERN = 'https://{b}.s3.amazonaws.com/{k}'
 

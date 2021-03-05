@@ -61,7 +61,7 @@ def lambda_handler(event, context):
     event = dict(bucket=query['bucket'])
     event.update(upload.to_dict())
 
-    lam = boto3.client('lambda', endpoint_url=constants.LAMBDA_ENDPOINT_URL)
+    lam = boto3.client('lambda')
     lam.invoke(FunctionName=after_upload.FUNCTION_NAME, InvocationType='Event',
         Payload=json.dumps(event).encode('utf8'))
     
