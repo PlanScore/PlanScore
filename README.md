@@ -12,12 +12,12 @@ consequences. Previously, this sort of analysis was available only to the
 parties’ line-drawers. Now it will be accessible to everyone, in the process
 transforming the politics, litigation, and coverage of redistricting.
 
-Install for Local Development
+Install for Local Testing
 ---
 
 PlanScore is a Python 3 application deployed to Amazon Web Services with S3,
-and Lambda. To make local development possible, use Docker and the local
-AWS development stack [LocalStack](https://github.com/localstack/localstack).
+and Lambda. Code can be tested locally, but the full application can only be
+run in AWS Lambda with API Gateway.
 
 1.  Clone the PlanScore git repository and prepare a
     [Python virtual environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/#virtualenv) running Python 3.6.
@@ -31,32 +31,10 @@ AWS development stack [LocalStack](https://github.com/localstack/localstack).
     
         pip3 install --editable .
         python3 setup.py test
+
+4.  Deploy to [dev.planscore.org](https://dev.planscore.org).
     
-4.  [Download and install Docker](https://docs.docker.com/engine/installation/).
-    
-5.  Get a current Docker image with Lambda Python 3.6 runtime environment.
-    
-        docker pull lambci/lambda:python3.6
-    
-6.  In its own Python 3 virtual environment, install LocalStack.
-    
-        pip3 install localstack
-    
-7.  In a separate window, run LocalStack.
-    
-        env SERVICES=s3,lambda,apigateway LAMBDA_EXECUTOR=docker localstack start --host
-    
-    Wait for the expected output.
-    
-        Starting local dev environment. CTRL-C to quit.
-        Starting mock S3 (http port 4572)...
-        Starting mock Lambda service (http port 4574)...
-        Ready.
-    
-8.  Build PlanScore dependencies, upload functions to LocalStack Lambda,
-    and run the site in debug mode:
-    
-        make clean localstack-env && ./debug-site.py
+        make dev-website dev-lambda
 
 GDAL
 ---
