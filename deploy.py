@@ -158,8 +158,12 @@ def prepare_api(api, api_name):
         rest_api = api.create_rest_api(name=api_name)
     finally:
         rest_api_id = rest_api['id']
-        api_kwargs = dict(restApiId=rest_api_id,
-            parentId=api.get_resources(restApiId=rest_api_id)['items'][0]['id'])
+        top_level = [
+            item for item
+            in api.get_resources(restApiId=rest_api_id)['items']
+            if item['path'] == '/'
+        ][0]
+        api_kwargs = dict(restApiId=rest_api_id, parentId=top_level['id'])
     
     return rest_api_id, api_kwargs
 
