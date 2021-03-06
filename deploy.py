@@ -17,6 +17,7 @@ if 'AWS_LAMBDA_DLQ_ARN' in os.environ:
     common.update(DeadLetterConfig=dict(TargetArn=os.environ['AWS_LAMBDA_DLQ_ARN']))
 
 functions = {
+    'PlanScore-AllInOne': dict(Handler='lambda.all_in_one', Timeout=3, **common),
     'PlanScore-UploadFields': dict(Handler='lambda.upload_fields', Timeout=3, **common),
     'PlanScore-UploadFieldsNew': dict(Handler='lambda.upload_fields_new', Timeout=3, **common),
     'PlanScore-Preread': dict(Handler='lambda.preread', Timeout=3, **common),
@@ -30,6 +31,7 @@ functions = {
     }
 
 api_paths = {
+    'PlanScore-AllInOne': 'all-in-one',
     'PlanScore-UploadFields': 'upload',
     'PlanScore-Callback': 'uploaded',
     'PlanScore-UploadFieldsNew': 'upload-new',
@@ -38,6 +40,9 @@ api_paths = {
     }
 
 api_methods = {
+    'PlanScore-AllInOne': dict(httpMethod='POST', authorizationType='NONE',
+        #requestParameters={},
+        ),
     'PlanScore-UploadFields': dict(httpMethod='GET', authorizationType='NONE',
         #requestParameters={'method.request.querystring.incumbency': True},
         ),
@@ -71,6 +76,9 @@ api_methods = {
     }
 
 api_integrations = {
+    'PlanScore-AllInOne': dict(httpMethod='POST',
+        #requestParameters={},
+        ),
     'PlanScore-UploadFields': dict(httpMethod='GET',
         #requestParameters={'integration.request.querystring.incumbency': 'method.request.querystring.incumbency'},
         ),
