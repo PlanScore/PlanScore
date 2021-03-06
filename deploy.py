@@ -199,6 +199,15 @@ def update_api(api, api_name, function_arn, function_name, role):
 
     print('    * done with', f'{api._endpoint.host}/restapis/{rest_api_id}/live/{path}', file=sys.stderr)
 
+    for res in api.get_resources(restApiId=rest_api_id)['items']:
+        if res['path'] != '/' and res['pathPart'] not in api_paths.values():
+            print('    - deleting resource', res['id'], res['path'], file=sys.stderr)
+            try:
+                api.delete_resource(restApiId=rest_api_id, resourceId=res['id'])
+            except:
+                # Maybe someone else got to it first
+                pass
+
     return rest_api_id
 
 parser = argparse.ArgumentParser(description='Update Lambda function.')
