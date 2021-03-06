@@ -29,10 +29,14 @@ STATE = {
     data.State.XX: 'ks', # Null Ranch
     
     data.State.CA: 'ca',
+    data.State.CO: 'co',
     data.State.MD: 'md',
+    data.State.MN: 'mn',
     data.State.NC: 'nc',
     data.State.PA: 'pa',
     data.State.VA: 'va',
+    data.State.OR: 'or',
+    data.State.WA: 'wa',
     data.State.WI: 'wi',
     data.State.FL: 'fl',
     data.State.TX: 'tx',
