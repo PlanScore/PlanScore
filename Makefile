@@ -38,7 +38,8 @@ dev-lambda: planscore-lambda.zip
 		::: Dev-PlanScore-UploadFields Dev-PlanScore-Callback Dev-PlanScore-AfterUpload \
 		    Dev-PlanScore-UploadFieldsNew Dev-PlanScore-Preread Dev-PlanScore-PrereadFollowup \
 		    Dev-PlanScore-PostreadCallback Dev-PlanScore-PostreadCalculate \
-		    Dev-PlanScore-RunTile Dev-PlanScore-ObserveTiles Dev-PlanScore-AllInOne
+		    Dev-PlanScore-RunTile Dev-PlanScore-ObserveTiles \
+		    Dev-PlanScore-AllInOne Dev-PlanScore-Authorizer
 
 	aws s3api delete-object --bucket planscore--dev \
 		--key "code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip"

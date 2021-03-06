@@ -17,6 +17,7 @@ if 'AWS_LAMBDA_DLQ_ARN' in os.environ:
     common.update(DeadLetterConfig=dict(TargetArn=os.environ['AWS_LAMBDA_DLQ_ARN']))
 
 functions = {
+    'PlanScore-Authorizer': dict(Handler='lambda.authorizer', Timeout=3, **common),
     'PlanScore-AllInOne': dict(Handler='lambda.all_in_one', Timeout=3, **common),
     'PlanScore-UploadFields': dict(Handler='lambda.upload_fields', Timeout=3, **common),
     'PlanScore-UploadFieldsNew': dict(Handler='lambda.upload_fields_new', Timeout=3, **common),
