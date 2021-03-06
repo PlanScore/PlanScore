@@ -16,7 +16,7 @@ class State (enum.Enum):
     XX = 'XX'
     MD = 'MD'; NC = 'NC'; PA = 'PA'; VA = 'VA'; WI = 'WI'
     FL = 'FL'; TX = 'TX'; GA = 'GA'; IL = 'IL'; MA = 'MA'; MI = 'MI'; TN = 'TN'
-    MO = 'MO'; CA = 'CA'
+    MO = 'MO'; CA = 'CA'; CO = 'CO'; MN = 'MN'; OR = 'OR'; WA = 'WA'
 
 class House (enum.Enum):
     ushouse = 'ushouse'; statesenate = 'statesenate'; statehouse = 'statehouse'
@@ -295,6 +295,9 @@ MODELS2020 = [
     Model(State.CA, House.ushouse,      55,  True, '2020', 'data/CA/001-festblocks'), # b969229
     Model(State.CA, House.statesenate,  40,  True, '2020', 'data/CA/001-festblocks'), # b969229
     Model(State.CA, House.statehouse,   80,  True, '2020', 'data/CA/001-festblocks'), # b969229
+    Model(State.CO, House.ushouse,       7,  True, '2020', 'data/CO/001-festblocks'), # 57155ad
+    Model(State.CO, House.statesenate,  35,  True, '2020', 'data/CO/001-festblocks'), # 57155ad
+    Model(State.CO, House.statehouse,   65,  True, '2020', 'data/CO/001-festblocks'), # 57155ad
     #Model(State.DE, House.ushouse,        ,  True, '2020', 'data/DE/001-festblocks'), # 56f7c85
     #Model(State.DE, House.statesenate,    ,  True, '2020', 'data/DE/001-festblocks'), # 56f7c85
     #Model(State.DE, House.statehouse,     ,  True, '2020', 'data/DE/001-festblocks'), # 56f7c85
@@ -319,6 +322,9 @@ MODELS2020 = [
     Model(State.MI, House.ushouse,      14,  True, '2020', 'data/MI/002-festblocks'), # 56f7c85
     Model(State.MI, House.statesenate,  38,  True, '2020', 'data/MI/002-festblocks'), # 56f7c85
     Model(State.MI, House.statehouse,  110,  True, '2020', 'data/MI/002-festblocks'), # 56f7c85
+    Model(State.MN, House.ushouse,       8,  True, '2020', 'data/MN/001-festblocks'), # 57155ad
+    Model(State.MN, House.statesenate,  67,  True, '2020', 'data/MN/001-festblocks'), # 57155ad
+    Model(State.MN, House.statehouse,  134,  True, '2020', 'data/MN/001-festblocks'), # 57155ad
     Model(State.MO, House.ushouse,       8,  True, '2020', 'data/MO/001-festblocks'), # 9f98656
     Model(State.MO, House.statesenate,  34,  True, '2020', 'data/MO/001-festblocks'), # 9f98656
     Model(State.MO, House.statehouse,  163,  True, '2020', 'data/MO/001-festblocks'), # 9f98656
@@ -334,6 +340,9 @@ MODELS2020 = [
     #Model(State.NH, House.ushouse,        ,  True, '2020', 'data/NH/001-festblocks'), # 56f7c85
     #Model(State.NH, House.statesenate,    ,  True, '2020', 'data/NH/001-festblocks'), # 56f7c85
     #Model(State.NH, House.statehouse,     ,  True, '2020', 'data/NH/001-festblocks'), # 56f7c85
+    Model(State.OR, House.ushouse,       5,  True, '2020', 'data/OR/001-festblocks'), # 57155ad
+    Model(State.OR, House.statesenate,  30,  True, '2020', 'data/OR/001-festblocks'), # 57155ad
+    Model(State.OR, House.statehouse,   60,  True, '2020', 'data/OR/001-festblocks'), # 57155ad
     Model(State.PA, House.ushouse,      18,  True, '2020', 'data/PA/009-unified'), # d9fcd35
     Model(State.PA, House.statesenate,  50,  True, '2020', 'data/PA/009-unified'), # d9fcd35
     Model(State.PA, House.statehouse,  203,  True, '2020', 'data/PA/009-unified'), # d9fcd35
@@ -355,6 +364,9 @@ MODELS2020 = [
     #Model(State.VT, House.ushouse,        ,  True, '2020', 'data/VT/001-festblocks'), # 56f7c85
     #Model(State.VT, House.statesenate,    ,  True, '2020', 'data/VT/001-festblocks'), # 56f7c85
     #Model(State.VT, House.statehouse,     ,  True, '2020', 'data/VT/001-festblocks'), # 56f7c85
+    Model(State.WA, House.ushouse,      10,  True, '2020', 'data/WA/001-festblocks'), # 57155ad
+    Model(State.WA, House.statesenate,  49,  True, '2020', 'data/WA/001-festblocks'), # 57155ad
+    Model(State.WA, House.statehouse,   98,  True, '2020', 'data/WA/001-festblocks'), # 57155ad
     Model(State.WI, House.ushouse,       8,  True, '2020', 'data/WI/006-festblocks'), # 56f7c85
     Model(State.WI, House.statesenate,  33,  True, '2020', 'data/WI/006-festblocks'), # 56f7c85
     Model(State.WI, House.statehouse,   99,  True, '2020', 'data/WI/006-festblocks'), # 56f7c85
