@@ -206,7 +206,7 @@ def clean_up_tiles(storage, tile_keys):
 def lambda_handler(event, context):
     '''
     '''
-    s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
+    s3 = boto3.client('s3')
     storage = data.Storage.from_event(event['storage'], s3)
     upload1 = data.Upload.from_dict(event['upload'])
     

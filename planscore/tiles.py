@@ -156,7 +156,7 @@ def lambda_handler(event, context):
     '''
     '''
     start_time = time.time()
-    s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL)
+    s3 = boto3.client('s3')
     storage = data.Storage.from_event(event['storage'], s3)
     upload = data.Upload.from_dict(event['upload'])
 

@@ -74,7 +74,7 @@ def lambda_handler(event, context):
     '''
     # Get longer-lasting credentials with sts:AssumeRole
     role = get_assumed_role('arn:aws:iam::466184106004:role/ModelEC2Instance')
-    s3 = boto3.client('s3', endpoint_url=constants.S3_ENDPOINT_URL, **role)
+    s3 = boto3.client('s3', **role)
     creds = boto3.session.Session(**role).get_credentials()
 
     url, fields = get_upload_fields(s3, creds, constants.SECRET)

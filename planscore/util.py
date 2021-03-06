@@ -47,10 +47,6 @@ def event_url(event):
     '''
     path = event.get('path', '/')
     
-    if constants.API_ENDPOINT_URL:
-        api_base = constants.localstack_api_base(constants.API_ENDPOINT_URL, constants.API_NAME)
-        return urllib.parse.urljoin(api_base, path.lstrip('/'))
-    
     scheme = event.get('headers', {}).get('X-Forwarded-Proto', 'http')
     hostname = event.get('headers', {}).get('Host', 'example.com')
 
