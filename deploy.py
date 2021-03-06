@@ -230,6 +230,9 @@ if __name__ == '__main__':
     env['S3_BUCKET'] = args.s3bucket
     env['LAMBDA_PREFIX'] = 'Dev-' if args.name.startswith('Dev-') else ''
     
+    if 'PlanScore-Authorizer' in args.name and 'API_TOKENS' in os.environ:
+        env['API_TOKENS'] = os.environ['API_TOKENS']
+    
     code_dict = dict(S3Bucket=args.s3bucket, S3Key=args.s3key)
     arn = publish_function(lam, args.name, code_dict, env, role)
     if args.name not in api_methods:

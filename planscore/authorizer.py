@@ -1,10 +1,20 @@
+import os
+
 def lambda_handler(event, context):
     '''
     '''
     print('event:', event)
     
     method_arn = event['methodArn']
-    auth_token = event['authorizationToken'] # get Allow or Deny straight from input
+    auth_token = event['authorizationToken']
+    api_tokens = os.environ.get('API_TOKENS', '').split(',')
+    
+    if api_tokens == ['']:
+        effect = 'Allow'
+    elif auth_token in api_tokens:
+        effect = 'Allow'
+    else:
+        effect = 'Deny'
     
     return {
         "principalId": "user",
@@ -13,7 +23,7 @@ def lambda_handler(event, context):
             "Statement": [
                 {
                     "Action": "execute-api:Invoke",
-                    "Effect": auth_token,
+                    "Effect": effect,
                     "Resource": method_arn,
                 }
             ]
