@@ -29,6 +29,6 @@ class PlanScoreStack(cdk.Stack):
 
 app = cdk.App()
 
-PlanScoreStack(app, f"{prefix}PlanScore")
+PlanScoreStack(app, f"cf-{prefix}PlanScore")
 
 app.synth()
