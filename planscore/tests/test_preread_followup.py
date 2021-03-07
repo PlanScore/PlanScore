@@ -258,7 +258,7 @@ class TestPrereadFollowup (unittest.TestCase):
         guess_state_model.assert_called_once_with(nullplan_path)
 
         temporary_buffer_file.assert_called_once_with('null-plan.geojson', None)
-        self.assertIsNone(info)
+        self.assertEqual(info.id, upload.id)
     
         self.assertEqual(len(put_upload_index.mock_calls), 1)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
@@ -299,7 +299,7 @@ class TestPrereadFollowup (unittest.TestCase):
         guess_state_model.assert_called_once_with(unzip_shapefile.return_value)
 
         temporary_buffer_file.assert_called_once_with('null-plan.shp.zip', None)
-        self.assertIsNone(info)
+        self.assertEqual(info.id, upload.id)
     
         self.assertEqual(put_geojson_file.mock_calls[0][1][:3], (s3, bucket, upload))
         self.assertIs(put_geojson_file.mock_calls[0][1][3], unzip_shapefile.return_value)

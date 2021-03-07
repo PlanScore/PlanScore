@@ -64,6 +64,8 @@ def commence_upload_parsing(s3, bucket, upload):
             message='Found {} districts in the "{}" {} plan with {} seats.'.format(
                 geometry_count, model.key_prefix, model.house, model.seats))
         observe.put_upload_index(storage, forward_upload)
+    
+    return forward_upload
 
 def count_district_geometries(bucket, upload, path):
     '''

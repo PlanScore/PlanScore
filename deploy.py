@@ -17,6 +17,8 @@ if 'AWS_LAMBDA_DLQ_ARN' in os.environ:
     common.update(DeadLetterConfig=dict(TargetArn=os.environ['AWS_LAMBDA_DLQ_ARN']))
 
 functions = {
+    'PlanScore-Authorizer': dict(Handler='lambda.authorizer', Timeout=3, **common),
+    'PlanScore-APIUpload': dict(Handler='lambda.api_upload', Timeout=300, MemorySize=2048, **common),
     'PlanScore-UploadFields': dict(Handler='lambda.upload_fields', Timeout=3, **common),
     'PlanScore-UploadFieldsNew': dict(Handler='lambda.upload_fields_new', Timeout=3, **common),
     'PlanScore-Preread': dict(Handler='lambda.preread', Timeout=3, **common),
@@ -30,6 +32,7 @@ functions = {
     }
 
 api_paths = {
+    'PlanScore-APIUpload': 'api-upload',
     'PlanScore-UploadFields': 'upload',
     'PlanScore-Callback': 'uploaded',
     'PlanScore-UploadFieldsNew': 'upload-new',
@@ -38,6 +41,9 @@ api_paths = {
     }
 
 api_methods = {
+    'PlanScore-APIUpload': dict(httpMethod='POST', authorizationType='NONE',
+        #requestParameters={},
+        ),
     'PlanScore-UploadFields': dict(httpMethod='GET', authorizationType='NONE',
         #requestParameters={'method.request.querystring.incumbency': True},
         ),
@@ -71,6 +77,9 @@ api_methods = {
     }
 
 api_integrations = {
+    'PlanScore-APIUpload': dict(httpMethod='POST',
+        #requestParameters={},
+        ),
     'PlanScore-UploadFields': dict(httpMethod='GET',
         #requestParameters={'integration.request.querystring.incumbency': 'method.request.querystring.incumbency'},
         ),
@@ -150,8 +159,12 @@ def prepare_api(api, api_name):
         rest_api = api.create_rest_api(name=api_name)
     finally:
         rest_api_id = rest_api['id']
-        api_kwargs = dict(restApiId=rest_api_id,
-            parentId=api.get_resources(restApiId=rest_api_id)['items'][0]['id'])
+        top_level = [
+            item for item
+            in api.get_resources(restApiId=rest_api_id)['items']
+            if item['path'] == '/'
+        ][0]
+        api_kwargs = dict(restApiId=rest_api_id, parentId=top_level['id'])
     
     return rest_api_id, api_kwargs
 
@@ -187,6 +200,15 @@ def update_api(api, api_name, function_arn, function_name, role):
 
     print('    * done with', f'{api._endpoint.host}/restapis/{rest_api_id}/live/{path}', file=sys.stderr)
 
+    for res in api.get_resources(restApiId=rest_api_id)['items']:
+        if res['path'] != '/' and res['pathPart'] not in api_paths.values():
+            print('    - deleting resource', res['id'], res['path'], file=sys.stderr)
+            try:
+                api.delete_resource(restApiId=rest_api_id, resourceId=res['id'])
+            except:
+                # Maybe someone else got to it first
+                pass
+
     return rest_api_id
 
 parser = argparse.ArgumentParser(description='Update Lambda function.')
@@ -207,6 +229,9 @@ if __name__ == '__main__':
         if k in os.environ}
     env['S3_BUCKET'] = args.s3bucket
     env['LAMBDA_PREFIX'] = 'Dev-' if args.name.startswith('Dev-') else ''
+    
+    if 'PlanScore-Authorizer' in args.name and 'API_TOKENS' in os.environ:
+        env['API_TOKENS'] = os.environ['API_TOKENS']
     
     code_dict = dict(S3Bucket=args.s3bucket, S3Key=args.s3key)
     arn = publish_function(lam, args.name, code_dict, env, role)
