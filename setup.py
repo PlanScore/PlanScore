@@ -30,6 +30,10 @@ setup(
         'compiled': [
             'GDAL == 2.1.3',
             'numpy == 1.19.2',
+            ],
+        'deploy': [
+            'aws-cdk.core == 1.92.0',
+            'aws-cdk.aws-s3 == 1.92.0',
             'awscli == 1.19.21',
             ],
         },

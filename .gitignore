@@ -6,3 +6,6 @@ planscore-lambda.zip
 planscore/website/build
 website-dev-build
 gdal-geos-python.tar.gz
+node_modules
+package-lock.json
+cdk.out
