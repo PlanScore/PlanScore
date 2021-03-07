@@ -115,7 +115,8 @@ class PlanScoreStack(cdk.Stack):
             **function_kwargs
         )
 
-        #bucket.grant_read_write(postread_calculate)
+        grant_data_bucket_access(bucket, postread_calculate)
+        postread_calculate.add_permission('Permission', principal=role)
 
         # API-accessible functions
 
