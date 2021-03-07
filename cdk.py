@@ -2,14 +2,9 @@
 
 from aws_cdk import (
     core as cdk,
-    aws_s3 as s3,
+    aws_s3,
+    aws_lambda,
 )
-
-# For consistency with TypeScript code, `cdk` is the preferred import name for
-# the CDK's core module.  The following line also imports it as `core` for use
-# with examples from the CDK Developer's Guide, which are in the process of
-# being updated to use `cdk`.  You may delete this import if you don't need it.
-from aws_cdk import core
 
 prefix = 'experiment-'
 
@@ -18,14 +13,28 @@ class PlanScoreStack(cdk.Stack):
     def __init__(self, scope: cdk.Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        # The code that defines your stack goes here
-        
-        bucket = s3.Bucket(
+        bucket = aws_s3.Bucket(
             self,
             'Data',
             auto_delete_objects=True,
             removal_policy=cdk.RemovalPolicy.DESTROY,
         )
+        
+        code = aws_lambda.Code.from_asset("planscore-lambda.zip")
+
+        upload_fields_new = aws_lambda.Function(
+            self,
+            "UploadFieldsNew",
+            timeout=cdk.Duration.seconds(3),
+            runtime=aws_lambda.Runtime.PYTHON_3_6,
+            code=code,
+            handler="lambda.upload_fields_new",
+            environment=dict(
+                S3_BUCKET=bucket.bucket_name,
+            )
+        )
+        
+        bucket.grant_read_write(upload_fields_new)
 
 app = cdk.App()
 
