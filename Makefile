@@ -7,7 +7,7 @@ live-lambda: planscore-lambda.zip
 
 	env WEBSITE_BASE='https://planscore.org/' \
 		API_BASE='https://api.planscore.org/' \
-		parallel -j9 ./deploy.py planscore-lambda.zip \
+		parallel -j9 --delay 1 ./deploy.py planscore-lambda.zip \
 		PlanScore planscore \
 		"code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip" \
 		::: PlanScore-UploadFields PlanScore-Callback PlanScore-AfterUpload \
@@ -33,7 +33,7 @@ dev-lambda: planscore-lambda.zip
 
 	env WEBSITE_BASE='https://dev.planscore.org/' \
 		API_BASE='https://api.dev.planscore.org/' \
-		parallel -j9 ./deploy.py planscore-lambda.zip \
+		parallel -j9 --delay 1 ./deploy.py planscore-lambda.zip \
 		PlanScore-Dev planscore--dev \
 		"code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip" \
 		::: Dev-PlanScore-UploadFields Dev-PlanScore-Callback Dev-PlanScore-AfterUpload \
