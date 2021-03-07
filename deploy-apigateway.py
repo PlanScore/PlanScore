@@ -48,7 +48,7 @@ parser.add_argument('apiname', help='API name')
 if __name__ == '__main__':
     args = parser.parse_args()
     api = boto3.client('apigateway', region_name='us-east-1')
-    lam = boto3.client('lambda')
+    lam = boto3.client('lambda', region_name='us-east-1')
     rest_api_id = describe_api(api, args.apiname)
     
     if args.apiname == 'PlanScore-Dev':
