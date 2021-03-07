@@ -72,16 +72,14 @@ jobs:
   # CDK will replace Deployment
   Synth:
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202101-01
     working_directory: ~/repo
     steps:
       - run: npm install -g aws-cdk
-      - run: pyenv global 3.6.5
       - checkout
       - run: pip3 install '.[deploy]'
       - attach_workspace:
           at: ~/repo
-      - run: make planscore-lambda.zip
       - run: cdk synth
 
 workflows:
