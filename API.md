@@ -1,7 +1,7 @@
 API
 ===
 
-🚧 PlanScore’s API is in development. 🚧
+🚧 PlanScore’s API is under development. 🚧
 
 ### Authentication
 
@@ -18,22 +18,22 @@ GeoJSON representing a district plan can be posted directly to `/api-upload`:
         --data-binary @null-plan-incumbency.geojson \
         https://api.planscore.org/api-upload
 
+See [null-plan-incumbency.geojson](planscore/tests/data/null-plan-incumbency.geojson)
+for example input.
+
 Data should be provided in [GeoJSON](https://geojson.org), one Polygon or
 MultiPolygon per district. A meaningful plan description can be provided in a
 root-level `description` field. If you know which districts have incumbents
 running for re-election, select their party affiliation for a more accurate
-prediction with an optional district incumbency in the `Incumbent` property.
+prediction with an optional `Incumbent` property:
 
 - `R` – Republican incumbent
 - `D` – Democratic incumbent
 - `O` – Open seat (default if unspecified)
 
-See [null-plan-incumbency.geojson](planscore/tests/data/null-plan-incumbency.geojson)
-for example input.
-
 ### Sample Response
 
-On success, two URLs will be returned on success in a JSON response:
+On success, two URLs will be returned in a JSON response:
 
     {
       "index_url": "https://planscore.s3.amazonaws.com/uploads/20210307T032912.752515089Z/index.json",
