@@ -36,6 +36,7 @@ setup(
             'aws-cdk.aws-s3 == 1.92.0',
             'aws-cdk.aws-lambda == 1.92.0',
             'aws-cdk.aws-apigateway == 1.92.0',
+            'aws-cdk.aws-s3-deployment == 1.92.0',
             ],
         },
     entry_points = dict(
