@@ -5,8 +5,7 @@
         {
             "type": "Feature",
             "properties": {
-                "Incumbent": "R",
-                "NAME": "District A"
+                "Incumbent": "R"
             },
             "geometry": {
                 "type": "Polygon",
@@ -43,8 +42,7 @@
         {
             "type": "Feature",
             "properties": {
-                "Incumbent": "D",
-                "NAME": "District B"
+                "Incumbent": "D"
             },
             "geometry": {
                 "type": "Polygon",
