@@ -80,7 +80,8 @@ jobs:
       - run: pip3 install '.[deploy]'
       - attach_workspace:
           at: ~/repo
-      - run: cdk synth
+      - run: ls -ltr
+      - run: cdk deploy
 
 workflows:
   version: 2

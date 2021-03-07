@@ -34,7 +34,6 @@ setup(
         'deploy': [
             'aws-cdk.core == 1.92.0',
             'aws-cdk.aws-s3 == 1.92.0',
-            'awscli == 1.19.21',
             ],
         },
     entry_points = dict(
