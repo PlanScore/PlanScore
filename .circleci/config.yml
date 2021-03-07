@@ -68,6 +68,20 @@ jobs:
           at: ~/repo
       - run: make live-lambda
       - run: make live-website
+  
+  # CDK will replace Deployment
+  Synth:
+    machine:
+      image: ubuntu-1604:201903-01
+    working_directory: ~/repo
+    steps:
+      - run: npm install -g aws-cdk
+      - checkout
+      - run: pip install '.[deploy]'
+      - attach_workspace:
+          at: ~/repo
+      - run: make planscore-lambda.zip
+      - run: cdk synth
 
 workflows:
   version: 2
@@ -85,3 +99,10 @@ workflows:
           filters:
             branches:
               only: main
+      - Synth:
+          requires:
+            - Test
+            - Build
+          filters:
+            branches:
+              only: migurski/attempt-cdk
