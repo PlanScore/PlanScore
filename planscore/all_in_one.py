@@ -7,6 +7,7 @@ from . import preread
 from . import data
 from . import observe
 from . import preread_followup
+from . import postread_callback
 from . import postread_calculate
 
 def kick_it_off(geojson):
@@ -21,6 +22,7 @@ def kick_it_off(geojson):
     upload_key = data.UPLOAD_PREFIX.format(id=unsigned_id) + 'plan.geojson'
     index_key = data.UPLOAD_INDEX_KEY.format(id=unsigned_id)
     index_url = constants.S3_URL_PATTERN.format(b=constants.S3_BUCKET, k=index_key)
+    plan_url = postread_callback.get_redirect_url(constants.WEBSITE_BASE, unsigned_id)
 
     s3.put_object(
         Bucket=constants.S3_BUCKET,
@@ -61,6 +63,11 @@ def kick_it_off(geojson):
     # hand off to postread_calculate
     # return path of index JSON
     
+    return {
+        'data_url': index_url,
+        'plan_url': plan_url,
+    }
+    
     return index_url
     
     return {
@@ -75,17 +82,10 @@ def lambda_handler(event, context):
     '''
     '''
     geojson = json.loads(event['body'])
-    redirect_url = kick_it_off(geojson)
-    
-    return {
-        'statusCode': '302',
-        'headers': {'Location': redirect_url},
-        'body': ''
-        }
+    result = kick_it_off(geojson)
     
     return {
         'statusCode': '200',
-        'headers': {'Access-Control-Allow-Origin': '*'},
         'body': json.dumps(result, indent=2)
         }
 
