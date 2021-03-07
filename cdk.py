@@ -11,6 +11,13 @@ from aws_cdk import (
 
 stack_name = "cf-experiment-PlanScore"
 
+def grant_data_bucket_access(bucket, principal):
+    bucket.grant_read(principal)
+    bucket.grant_put_acl(principal, 'uploads/*')
+    bucket.grant_write(principal, 'uploads/*')
+    bucket.grant_put_acl(principal, 'logs/*')
+    bucket.grant_write(principal, 'logs/*')
+
 class PlanScoreStack(cdk.Stack):
 
     def __init__(self, scope: cdk.Construct, construct_id: str, **kwargs) -> None:
@@ -36,8 +43,6 @@ class PlanScoreStack(cdk.Stack):
                 restrict_public_buckets=False,
             )
         )
-        
-        bucket.grant_read_write(role)
         
         aws_s3_deployment.BucketDeployment(
             self,
@@ -131,7 +136,7 @@ class PlanScoreStack(cdk.Stack):
         )
         
         api_upload.add_permission('Permission', principal=role)
-        bucket.grant_read_write(api_upload)
+        grant_data_bucket_access(bucket, api_upload)
 
         api_upload_integration = aws_apigateway.LambdaIntegration(
             api_upload,
