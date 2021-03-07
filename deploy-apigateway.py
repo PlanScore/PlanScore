@@ -29,7 +29,7 @@ def update_authorizer(api, lam, function_name, rest_api_id):
         print('    * create authorizer', rest_api_id, auth_uri, file=sys.stderr)
         api.create_authorizer(
             restApiId=rest_api_id,
-            name='Dev-PlanScore-Authorizer',
+            name=function_name,
             type='TOKEN',
             authorizerUri=auth_uri,
             identitySource='method.request.header.Authorization',
