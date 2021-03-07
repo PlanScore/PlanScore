@@ -18,7 +18,7 @@ if 'AWS_LAMBDA_DLQ_ARN' in os.environ:
 
 functions = {
     'PlanScore-Authorizer': dict(Handler='lambda.authorizer', Timeout=3, **common),
-    'PlanScore-AllInOne': dict(Handler='lambda.all_in_one', Timeout=3, **common),
+    'PlanScore-APIUpload': dict(Handler='lambda.api_upload', Timeout=300, MemorySize=2048, **common),
     'PlanScore-UploadFields': dict(Handler='lambda.upload_fields', Timeout=3, **common),
     'PlanScore-UploadFieldsNew': dict(Handler='lambda.upload_fields_new', Timeout=3, **common),
     'PlanScore-Preread': dict(Handler='lambda.preread', Timeout=3, **common),
@@ -32,7 +32,7 @@ functions = {
     }
 
 api_paths = {
-    'PlanScore-AllInOne': 'all-in-one',
+    'PlanScore-APIUpload': 'api-upload',
     'PlanScore-UploadFields': 'upload',
     'PlanScore-Callback': 'uploaded',
     'PlanScore-UploadFieldsNew': 'upload-new',
@@ -41,7 +41,7 @@ api_paths = {
     }
 
 api_methods = {
-    'PlanScore-AllInOne': dict(httpMethod='POST', authorizationType='NONE',
+    'PlanScore-APIUpload': dict(httpMethod='POST', authorizationType='NONE',
         #requestParameters={},
         ),
     'PlanScore-UploadFields': dict(httpMethod='GET', authorizationType='NONE',
@@ -77,7 +77,7 @@ api_methods = {
     }
 
 api_integrations = {
-    'PlanScore-AllInOne': dict(httpMethod='POST',
+    'PlanScore-APIUpload': dict(httpMethod='POST',
         #requestParameters={},
         ),
     'PlanScore-UploadFields': dict(httpMethod='GET',

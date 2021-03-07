@@ -3,18 +3,27 @@ import os
 def lambda_handler(event, context):
     '''
     '''
-    print('event:', event)
-    
+    # Deny by default
+    allowed = None
+
     method_arn = event['methodArn']
-    auth_token = event['authorizationToken']
     api_tokens = os.environ.get('API_TOKENS', '').split(',')
     
     if api_tokens == ['']:
-        effect = 'Allow'
-    elif auth_token in api_tokens:
-        effect = 'Allow'
+        # No token expected, everything allowed
+        allowed = True
     else:
-        effect = 'Deny'
+        try:
+            token_scheme, auth_token = event['authorizationToken'].split(' ', 1)
+            if auth_token in api_tokens and token_scheme == 'Bearer':
+                # Correctly-formatted and matched bearer token
+                allowed = True
+            else:
+                # Incorrectly formatted or unmatched token
+                allowed = False
+        except:
+            # Something went wrong, deny by default
+            allowed = False
     
     return {
         "principalId": "user",
@@ -23,7 +32,7 @@ def lambda_handler(event, context):
             "Statement": [
                 {
                     "Action": "execute-api:Invoke",
-                    "Effect": effect,
+                    "Effect": 'Allow' if allowed else 'Deny',
                     "Resource": method_arn,
                 }
             ]

@@ -9,4 +9,4 @@ from planscore.callback import lambda_handler as callback
 from planscore.tiles import lambda_handler as run_tile
 from planscore.observe import lambda_handler as observe_tiles
 from planscore.authorizer import lambda_handler as authorizer
-from planscore.all_in_one import lambda_handler as all_in_one
+from planscore.api_upload import lambda_handler as api_upload

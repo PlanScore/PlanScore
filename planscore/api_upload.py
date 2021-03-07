@@ -40,6 +40,8 @@ def kick_it_off(geojson):
     
     upload2 = preread_followup.commence_upload_parsing(s3, constants.S3_BUCKET, upload1)
     
+    # assign description and incumbents as in postread_callback.py
+    
     upload3 = upload2.clone(
         description = geojson.get('description', 'plan.geojson'),
         incumbents = [
@@ -50,6 +52,8 @@ def kick_it_off(geojson):
 
     observe.put_upload_index(storage, upload3)
     
+    # hand off to postread_calculate
+
     event = dict(bucket=constants.S3_BUCKET)
     event.update(upload3.to_dict())
 
@@ -59,23 +63,11 @@ def kick_it_off(geojson):
         Payload=json.dumps(event).encode('utf8'),
     )
 
-    # assign description and incumbents as in postread_callback.py
-    # hand off to postread_calculate
-    # return path of index JSON
-    
+    # return links to user-readable page and machine-readable JSON
+
     return {
-        'data_url': index_url,
-        'plan_url': plan_url,
-    }
-    
-    return index_url
-    
-    return {
-        'unsigned_id': unsigned_id,
-        'upload_key': upload_key,
-        'index_key': index_key,
         'index_url': index_url,
-        'upload': upload3.to_dict(),
+        'plan_url': plan_url,
     }
 
 def lambda_handler(event, context):
