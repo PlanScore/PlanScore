@@ -7,7 +7,7 @@ from aws_cdk import (
     aws_apigateway,
 )
 
-prefix = 'experiment-'
+stack_name = "cf-experiment-PlanScore"
 
 class PlanScoreStack(cdk.Stack):
 
@@ -37,27 +37,24 @@ class PlanScoreStack(cdk.Stack):
         
         bucket.grant_read_write(upload_fields_new)
 
-        api = aws_apigateway.RestApi(
-            self,
-            "Service",
-            rest_api_name="PlanScore Service",
-            description="This service serves widgets.",
-        )
+        api = aws_apigateway.RestApi(self, f"{stack_name} Service")
 
-        get_upload_fields_new_integration = aws_apigateway.LambdaIntegration(
+        upload_fields_new_integration = aws_apigateway.LambdaIntegration(
             upload_fields_new,
             request_templates={
                 "application/json": '{ "statusCode": "200" }'
             }
         )
+        
+        upload_fields_new_resource = api.root.add_resource('upload-new')
 
-        api.root.add_method(
+        upload_fields_new_resource.add_method(
             "GET",
-            get_upload_fields_new_integration,
+            upload_fields_new_integration,
         )
 
 app = cdk.App()
 
-PlanScoreStack(app, f"cf-{prefix}PlanScore")
+PlanScoreStack(app, stack_name)
 
 app.synth()
