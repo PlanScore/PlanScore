@@ -54,10 +54,6 @@ class PlanScoreStack(cdk.Stack):
             destination_key_prefix="data/XX/005-unified",
         )
         
-        # API Gateway
-
-        api = aws_apigateway.RestApi(self, f"{stack_name} Service")
-        
         # Lambda
 
         code = aws_lambda.Code.from_asset("planscore-lambda.zip")
@@ -102,11 +98,6 @@ class PlanScoreStack(cdk.Stack):
 
         grant_data_bucket_access(bucket, observe_tiles)
 
-        function_environment.update(dict(
-            FUNC_NAME_OBSERVE_TILES=observe_tiles.function_name,
-            FUNC_NAME_RUN_TILE=run_tile.function_name,
-        ))
-
         postread_calculate = aws_lambda.Function(
             self,
             "PostreadCalculate",
@@ -115,6 +106,8 @@ class PlanScoreStack(cdk.Stack):
             **function_kwargs
         )
 
+        postread_calculate.add_environment('FUNC_NAME_OBSERVE_TILES', observe_tiles.function_name)
+        postread_calculate.add_environment('FUNC_NAME_RUN_TILE', run_tile.function_name)
         grant_data_bucket_access(bucket, postread_calculate)
         run_tile.grant_invoke(postread_calculate)
         observe_tiles.grant_invoke(postread_calculate)
@@ -125,10 +118,6 @@ class PlanScoreStack(cdk.Stack):
             timeout=cdk.Duration.seconds(3),
         ))
 
-        function_environment.update(dict(
-            FUNC_NAME_POSTREAD_CALCULATE=postread_calculate.function_name,
-        ))
-
         api_upload = aws_lambda.Function(
             self,
             "APIUpload",
@@ -137,10 +126,15 @@ class PlanScoreStack(cdk.Stack):
             **function_kwargs
         )
         
+        api_upload.add_environment('FUNC_NAME_POSTREAD_CALCULATE', postread_calculate.function_name)
         api_upload.add_permission('Permission', principal=apigateway_role)
         grant_data_bucket_access(bucket, api_upload)
         postread_calculate.grant_invoke(api_upload)
+        
+        # API Gateway
 
+        api = aws_apigateway.RestApi(self, f"{stack_name} Service")
+        
         api_upload_integration = aws_apigateway.LambdaIntegration(
             api_upload,
             credentials_role=apigateway_role,
