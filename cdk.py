@@ -18,6 +18,10 @@ def grant_data_bucket_access(bucket, principal):
     bucket.grant_put_acl(principal, 'logs/*')
     bucket.grant_write(principal, 'logs/*')
 
+def grant_function_invoke_access(function, env_var, principal):
+    principal.add_environment(env_var, function.function_name)
+    function.grant_invoke(principal)
+
 class PlanScoreStack(cdk.Stack):
 
     def __init__(self, scope: cdk.Construct, construct_id: str, **kwargs) -> None:
@@ -106,11 +110,9 @@ class PlanScoreStack(cdk.Stack):
             **function_kwargs
         )
 
-        postread_calculate.add_environment('FUNC_NAME_OBSERVE_TILES', observe_tiles.function_name)
-        postread_calculate.add_environment('FUNC_NAME_RUN_TILE', run_tile.function_name)
         grant_data_bucket_access(bucket, postread_calculate)
-        run_tile.grant_invoke(postread_calculate)
-        observe_tiles.grant_invoke(postread_calculate)
+        grant_function_invoke_access(observe_tiles, 'FUNC_NAME_OBSERVE_TILES', postread_calculate)
+        grant_function_invoke_access(run_tile, 'FUNC_NAME_RUN_TILE', postread_calculate)
         
         # API-accessible functions
 
@@ -126,10 +128,9 @@ class PlanScoreStack(cdk.Stack):
             **function_kwargs
         )
         
-        api_upload.add_environment('FUNC_NAME_POSTREAD_CALCULATE', postread_calculate.function_name)
         api_upload.add_permission('Permission', principal=apigateway_role)
         grant_data_bucket_access(bucket, api_upload)
-        postread_calculate.grant_invoke(api_upload)
+        grant_function_invoke_access(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', api_upload)
         
         # API Gateway
 
