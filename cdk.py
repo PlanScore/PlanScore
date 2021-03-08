@@ -9,7 +9,8 @@ from aws_cdk import (
     aws_apigateway,
 )
 
-stack_name = "cf-experiment-PlanScore"
+STACK_NAME = "cf-experiment-PlanScore"
+API_TOKENS = 'Good,Better,Best'
 
 def grant_data_bucket_access(bucket, principal):
     bucket.grant_read(principal)
@@ -50,7 +51,7 @@ class PlanScoreStack(cdk.Stack):
         
         aws_s3_deployment.BucketDeployment(
             self,
-            f"{stack_name}-Data",
+            f"{construct_id}-Data",
             destination_bucket=bucket,
             sources=[
                 aws_s3_deployment.Source.asset("planscore/tests/data/XX-unified"),
@@ -81,6 +82,8 @@ class PlanScoreStack(cdk.Stack):
             handler="lambda.authorizer",
             **function_kwargs
         )
+        
+        authorizer.add_environment('API_TOKENS', API_TOKENS)
         
         run_tile = aws_lambda.Function(
             self,
@@ -134,7 +137,13 @@ class PlanScoreStack(cdk.Stack):
         
         # API Gateway
 
-        api = aws_apigateway.RestApi(self, f"{stack_name} Service")
+        api = aws_apigateway.RestApi(self, f"{construct_id} Service")
+        
+        token_authorizer = aws_apigateway.TokenAuthorizer(
+            self,
+            "TokenAuthorizer",
+            handler=authorizer,
+        )
         
         api_upload_integration = aws_apigateway.LambdaIntegration(
             api_upload,
@@ -149,10 +158,11 @@ class PlanScoreStack(cdk.Stack):
         api_upload_resource.add_method(
             "POST",
             api_upload_integration,
+            authorizer=token_authorizer,
         )
 
 app = cdk.App()
 
-PlanScoreStack(app, stack_name)
+PlanScoreStack(app, STACK_NAME)
 
 app.synth()
