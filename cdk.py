@@ -23,16 +23,10 @@ class PlanScoreStack(cdk.Stack):
     def __init__(self, scope: cdk.Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
         
-        api_role = aws_iam.Role(
+        apigateway_role = aws_iam.Role(
             self,
             f'API-Execution',
             assumed_by=aws_iam.ServicePrincipal('apigateway.amazonaws.com'),
-        )
-        
-        lam_role = aws_iam.Role(
-            self,
-            f'Lambda-Execution',
-            assumed_by=aws_iam.ServicePrincipal('lambda.amazonaws.com'),
         )
         
         # S3
@@ -73,7 +67,6 @@ class PlanScoreStack(cdk.Stack):
         )
         
         function_kwargs = dict(
-            #role=lam_role,
             timeout=cdk.Duration.seconds(300),
             runtime=aws_lambda.Runtime.PYTHON_3_6,
             code=code,
@@ -97,7 +90,7 @@ class PlanScoreStack(cdk.Stack):
             **function_kwargs
         )
 
-        #bucket.grant_read_write(run_tile)
+        grant_data_bucket_access(bucket, run_tile)
 
         observe_tiles = aws_lambda.Function(
             self,
@@ -107,7 +100,7 @@ class PlanScoreStack(cdk.Stack):
             **function_kwargs
         )
 
-        #bucket.grant_read_write(observe_tiles)
+        grant_data_bucket_access(bucket, observe_tiles)
 
         function_environment.update(dict(
             FUNC_NAME_OBSERVE_TILES=observe_tiles.function_name,
@@ -123,17 +116,9 @@ class PlanScoreStack(cdk.Stack):
         )
 
         grant_data_bucket_access(bucket, postread_calculate)
-        ##postread_calculate.add_permission('API-Permission', principal=lam_role)
         run_tile.grant_invoke(postread_calculate)
         observe_tiles.grant_invoke(postread_calculate)
         
-        #lam_role.add_to_policy(
-        #    aws_iam.PolicyStatement(
-        #        actions=['lambda:InvokeFunction', 'lambda:InvokeAsync'],
-        #        resources=[postread_calculate.function_arn],
-        #    )
-        #)
-
         # API-accessible functions
 
         function_kwargs.update(dict(
@@ -152,14 +137,13 @@ class PlanScoreStack(cdk.Stack):
             **function_kwargs
         )
         
-        api_upload.add_permission('Permission', principal=api_role)
+        api_upload.add_permission('Permission', principal=apigateway_role)
         grant_data_bucket_access(bucket, api_upload)
-        ##postread_calculate.add_permission('Lambda-Permission', principal=api_upload.role)
         postread_calculate.grant_invoke(api_upload)
 
         api_upload_integration = aws_apigateway.LambdaIntegration(
             api_upload,
-            credentials_role=api_role,
+            credentials_role=apigateway_role,
             request_templates={
                 "application/json": '{ "statusCode": "200" }'
             }
