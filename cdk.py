@@ -73,7 +73,7 @@ class PlanScoreStack(cdk.Stack):
         )
         
         function_kwargs = dict(
-            role=lam_role,
+            #role=lam_role,
             timeout=cdk.Duration.seconds(300),
             runtime=aws_lambda.Runtime.PYTHON_3_6,
             code=code,
@@ -123,7 +123,16 @@ class PlanScoreStack(cdk.Stack):
         )
 
         grant_data_bucket_access(bucket, postread_calculate)
-        postread_calculate.add_permission('API-Permission', principal=lam_role)
+        ##postread_calculate.add_permission('API-Permission', principal=lam_role)
+        run_tile.grant_invoke(postread_calculate)
+        observe_tiles.grant_invoke(postread_calculate)
+        
+        #lam_role.add_to_policy(
+        #    aws_iam.PolicyStatement(
+        #        actions=['lambda:InvokeFunction', 'lambda:InvokeAsync'],
+        #        resources=[postread_calculate.function_arn],
+        #    )
+        #)
 
         # API-accessible functions
 
@@ -146,6 +155,7 @@ class PlanScoreStack(cdk.Stack):
         api_upload.add_permission('Permission', principal=api_role)
         grant_data_bucket_access(bucket, api_upload)
         ##postread_calculate.add_permission('Lambda-Permission', principal=api_upload.role)
+        postread_calculate.grant_invoke(api_upload)
 
         api_upload_integration = aws_apigateway.LambdaIntegration(
             api_upload,

@@ -1,8 +1,8 @@
-import json, io, gzip, posixpath, functools, collections, time
+import os, json, io, gzip, posixpath, functools, collections, time
 import osgeo.ogr, boto3, botocore.exceptions, ModestMaps.OpenStreetMap, ModestMaps.Core
 from . import constants, data, util, prepare_state, score
 
-FUNCTION_NAME = f'{constants.LAMBDA_PREFIX}PlanScore-RunTile'
+FUNCTION_NAME = os.environ.get('FUNC_NAME_RUN_TILE') or f'{constants.LAMBDA_PREFIX}PlanScore-RunTile'
 
 # Borrow some Modest Maps tile math
 _mercator = ModestMaps.OpenStreetMap.Provider().projection
