@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+
+import os
 import collections
 import functools
 
@@ -12,13 +14,32 @@ from aws_cdk import (
     aws_certificatemanager,
 )
 
-StackInfo = collections.namedtuple('StackInfo', ('id', 'domain', 'certificate_arn'))
+StackInfo = collections.namedtuple(
+    'StackInfo',
+    ('id', 'bucket_name', 'website_base', 'domain', 'certificate_arn'),
+)
 
 STACKS = [
     StackInfo(
         'cf-experiment-PlanScore',
+        None,
+        'http://127.0.0.1:5000/',
         'api.cdk-exp.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/d80b3992-c926-4618-bc72-9d82a2951432',
+    ),
+    StackInfo(
+        'cf-development',
+        'planscore--dev',
+        'https://dev.planscore.org/',
+        'api.dev.planscore.org',
+        'arn:aws:acm:us-east-1:466184106004:certificate/eba45e77-e9e6-4773-98bc-b0ab78f5db38',
+    ),
+    StackInfo(
+        'cf-production',
+        'planscore',
+        'https://planscore.org/',
+        'api.planscore.org',
+        'arn:aws:acm:us-east-1:466184106004:certificate/0216c55e-76c2-4344-b883-0603c7ee2251',
     ),
 ]
 
@@ -54,24 +75,31 @@ class PlanScoreStack(cdk.Stack):
         
         # S3
 
-        bucket = aws_s3.Bucket(
-            self,
-            'Data',
-            auto_delete_objects=True,
-            removal_policy=cdk.RemovalPolicy.DESTROY,
-            cors=[
-                aws_s3.CorsRule(
-                    allowed_origins=['*'],
-                    allowed_methods=[aws_s3.HttpMethods.GET],
-                ),
-            ],
-            block_public_access=aws_s3.BlockPublicAccess(
-                block_public_acls=False,
-                block_public_policy=False,
-                ignore_public_acls=False,
-                restrict_public_buckets=False,
+        if stackinfo.bucket_name:
+            bucket = aws_s3.Bucket.from_bucket_arn(
+                self,
+                'Data',
+                f'arn:aws:s3:::{stackinfo.bucket_name}',
             )
-        )
+        else:
+            bucket = aws_s3.Bucket(
+                self,
+                'Data',
+                auto_delete_objects=True,
+                removal_policy=cdk.RemovalPolicy.DESTROY,
+                cors=[
+                    aws_s3.CorsRule(
+                        allowed_origins=['*'],
+                        allowed_methods=[aws_s3.HttpMethods.GET],
+                    ),
+                ],
+                block_public_access=aws_s3.BlockPublicAccess(
+                    block_public_acls=False,
+                    block_public_policy=False,
+                    ignore_public_acls=False,
+                    restrict_public_buckets=False,
+                )
+            )
 
         cdk.CfnOutput(self, 'Bucket', value=bucket.bucket_name)
         
@@ -110,6 +138,8 @@ class PlanScoreStack(cdk.Stack):
         
         # Lambda
         
+        api_base = concat_strings('https://', api.domain_name.domain_name, '/')
+        
         function_kwargs = dict(
             timeout=cdk.Duration.seconds(300),
             runtime=aws_lambda.Runtime.PYTHON_3_6,
@@ -117,10 +147,13 @@ class PlanScoreStack(cdk.Stack):
             environment={
                 'S3_BUCKET': bucket.bucket_name,
                 'PLANSCORE_SECRET': 'fake-fake',
-                'WEBSITE_BASE': 'http://127.0.0.1:5000/',
-                'API_BASE': concat_strings('https://', api.domain_name.domain_name, '/'),
+                'WEBSITE_BASE': stackinfo.website_base,
+                'API_BASE': api_base,
             },
         )
+
+        cdk.CfnOutput(self, 'WebsiteBase', value=stackinfo.website_base)
+        cdk.CfnOutput(self, 'APIBase', value=api_base)
         
         # Behind-the-scenes functions
 
@@ -294,8 +327,16 @@ class PlanScoreStack(cdk.Stack):
         
         cdk.CfnOutput(self, 'RestAPIURL', value=api.url)
 
-app = cdk.App()
+if __name__ == '__main__':
+    stack_id = os.environ['STACK_ID']
+    stackinfo = StackInfo(stack_id, None, None, None, None)
+    
+    for _stackinfo in STACKS:
+        if _stackinfo.id == stack_id:
+            stackinfo = _stackinfo
+    
+    assert stack_id.startswith('cf-')
 
-PlanScoreStack(app, STACKS[0])
-
-app.synth()
+    app = cdk.App()
+    PlanScoreStack(app, stackinfo)
+    app.synth()
