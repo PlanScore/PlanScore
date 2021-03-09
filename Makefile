@@ -27,8 +27,10 @@ live-website: planscore/website/build
 	aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete $</ s3://planscore.org-website/
 
 dev-lambda: planscore-lambda.zip
-	env STACK_ID=cf-development \
-		cdk deploy --require-approval never --outputs-file cdk-outputs.json
+	cdk deploy \
+		--context stack_id=cf-development \
+		--require-approval never \
+		--outputs-file cdk-outputs.json
 
 dev-website: website-dev-build
 	aws s3 sync --acl public-read --cache-control 'no-store, max-age=0' --delete $</ s3://planscore.org-dev-website/

@@ -328,15 +328,19 @@ class PlanScoreStack(cdk.Stack):
         cdk.CfnOutput(self, 'RestAPIURL', value=api.url)
 
 if __name__ == '__main__':
-    stack_id = os.environ['STACK_ID']
+    app = cdk.App()
+    
+    stack_id = app.node.try_get_context('stack_id')
+
+    if stack_id is None or stack_id == "unknown":
+        raise ValueError('USAGE: cdk <command> -c stack_id=cf-development <stack>')
+    
+    assert stack_id.startswith('cf-')
     stackinfo = StackInfo(stack_id, None, None, None, None)
     
     for _stackinfo in STACKS:
         if _stackinfo.id == stack_id:
             stackinfo = _stackinfo
     
-    assert stack_id.startswith('cf-')
-
-    app = cdk.App()
     PlanScoreStack(app, stackinfo)
     app.synth()
