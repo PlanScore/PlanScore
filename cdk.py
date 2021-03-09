@@ -37,7 +37,7 @@ def grant_data_bucket_access(bucket, principal):
     bucket.grant_put_acl(principal, 'logs/*')
     bucket.grant_write(principal, 'logs/*')
 
-def grant_function_invoke_access(function, env_var, principal):
+def grant_function_invoke(function, env_var, principal):
     principal.add_environment(env_var, function.function_name)
     function.grant_invoke(principal)
 
@@ -162,8 +162,8 @@ class PlanScoreStack(cdk.Stack):
         )
 
         grant_data_bucket_access(bucket, postread_calculate)
-        grant_function_invoke_access(observe_tiles, 'FUNC_NAME_OBSERVE_TILES', postread_calculate)
-        grant_function_invoke_access(run_tile, 'FUNC_NAME_RUN_TILE', postread_calculate)
+        grant_function_invoke(observe_tiles, 'FUNC_NAME_OBSERVE_TILES', postread_calculate)
+        grant_function_invoke(run_tile, 'FUNC_NAME_RUN_TILE', postread_calculate)
         
         preread_followup = aws_lambda.Function(
             self,
@@ -190,7 +190,7 @@ class PlanScoreStack(cdk.Stack):
         )
         
         grant_data_bucket_access(bucket, api_upload)
-        grant_function_invoke_access(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', api_upload)
+        grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', api_upload)
         api_upload.add_permission('Permission', principal=apigateway_role)
         
         upload_fields = aws_lambda.Function(
@@ -212,9 +212,26 @@ class PlanScoreStack(cdk.Stack):
         
         grant_data_bucket_access(bucket, preread)
         preread.add_permission('Permission', principal=apigateway_role)
-        grant_function_invoke_access(preread_followup, 'FUNC_NAME_PREREAD_FOLLOWUP', preread)
+        grant_function_invoke(preread_followup, 'FUNC_NAME_PREREAD_FOLLOWUP', preread)
+        
+        postread_callback = aws_lambda.Function(
+            self,
+            "PostreadCallback",
+            handler="lambda.postread_callback",
+            **function_kwargs
+        )
+        
+        grant_data_bucket_access(bucket, postread_callback)
+        grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', postread_callback)
+        postread_callback.add_permission('Permission', principal=apigateway_role)
         
         # API Gateway (2/2)
+        
+        integration_kwargs = dict(
+            request_templates={
+                "application/json": '{ "statusCode": "200" }'
+            },
+        )
 
         token_authorizer = aws_apigateway.TokenAuthorizer(
             self,
@@ -225,9 +242,7 @@ class PlanScoreStack(cdk.Stack):
         api_upload_integration = aws_apigateway.LambdaIntegration(
             api_upload,
             credentials_role=apigateway_role,
-            request_templates={
-                "application/json": '{ "statusCode": "200" }'
-            }
+            **integration_kwargs
         )
         
         api_upload_resource = api.root.add_resource('api-upload')
@@ -241,9 +256,7 @@ class PlanScoreStack(cdk.Stack):
         upload_fields_integration = aws_apigateway.LambdaIntegration(
             upload_fields,
             credentials_role=apigateway_role,
-            request_templates={
-                "application/json": '{ "statusCode": "200" }'
-            }
+            **integration_kwargs
         )
         
         upload_fields_resource = api.root.add_resource(
@@ -258,13 +271,26 @@ class PlanScoreStack(cdk.Stack):
         preread_integration = aws_apigateway.LambdaIntegration(
             preread,
             credentials_role=apigateway_role,
-            request_templates={
-                "application/json": '{ "statusCode": "200" }'
-            }
+            **integration_kwargs
         )
         
         preread_resource = api.root.add_resource('preread')
         preread_resource.add_method("GET", preread_integration)
+        
+        uploaded_integration = aws_apigateway.LambdaIntegration(
+            postread_callback,
+            credentials_role=apigateway_role,
+            **integration_kwargs
+        )
+        
+        uploaded_resource = api.root.add_resource(
+            'uploaded-new',
+            default_cors_preflight_options=aws_apigateway.CorsOptions(
+                allow_origins=aws_apigateway.Cors.ALL_ORIGINS,
+            ),
+        )
+
+        uploaded_resource.add_method("GET", uploaded_integration)
         
         cdk.CfnOutput(self, 'RestAPIURL', value=api.url)
 
