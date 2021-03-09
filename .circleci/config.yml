@@ -76,7 +76,15 @@ jobs:
     working_directory: ~/repo
     steps:
       - run: npm install -g aws-cdk
-      - run: pip3 install aws-cdk.core aws-cdk.aws-iam aws-cdk.aws-s3 aws-cdk.aws-lambda aws-cdk.aws-apigateway aws-cdk.aws-s3-deployment
+      - run: |
+          pip3 install \
+            aws-cdk.aws-apigateway \
+            aws-cdk.aws-certificatemanager \
+            aws-cdk.aws-iam \
+            aws-cdk.aws-lambda \
+            aws-cdk.aws-s3 \
+            aws-cdk.aws-s3-deployment \
+            aws-cdk.core
       - checkout
       - attach_workspace:
           at: ~/repo

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import collections
 
 from aws_cdk import (
     core as cdk,
@@ -7,9 +8,19 @@ from aws_cdk import (
     aws_s3_deployment,
     aws_lambda,
     aws_apigateway,
+    aws_certificatemanager,
 )
 
-STACK_NAME = "cf-experiment-PlanScore"
+StackInfo = collections.namedtuple('StackInfo', ('id', 'domain', 'certificate_arn'))
+
+STACKS = [
+    StackInfo(
+        'cf-experiment-PlanScore',
+        'api.cdk-exp.planscore.org',
+        'arn:aws:acm:us-east-1:466184106004:certificate/d80b3992-c926-4618-bc72-9d82a2951432',
+    ),
+]
+
 API_TOKENS = 'Good,Better,Best'
 
 def grant_data_bucket_access(bucket, principal):
@@ -25,8 +36,8 @@ def grant_function_invoke_access(function, env_var, principal):
 
 class PlanScoreStack(cdk.Stack):
 
-    def __init__(self, scope: cdk.Construct, construct_id: str, **kwargs) -> None:
-        super().__init__(scope, construct_id, **kwargs)
+    def __init__(self, scope, stackinfo, **kwargs):
+        super().__init__(scope, stackinfo.id, **kwargs)
         
         apigateway_role = aws_iam.Role(
             self,
@@ -51,7 +62,7 @@ class PlanScoreStack(cdk.Stack):
         
         aws_s3_deployment.BucketDeployment(
             self,
-            f"{construct_id}-Data",
+            f"{stackinfo.id}-Data",
             destination_bucket=bucket,
             sources=[
                 aws_s3_deployment.Source.asset("planscore/tests/data/XX-unified"),
@@ -61,17 +72,13 @@ class PlanScoreStack(cdk.Stack):
         
         # Lambda
 
-        code = aws_lambda.Code.from_asset("planscore-lambda.zip")
-        
-        function_environment = dict(
-            S3_BUCKET=bucket.bucket_name,
-        )
-        
         function_kwargs = dict(
             timeout=cdk.Duration.seconds(300),
             runtime=aws_lambda.Runtime.PYTHON_3_6,
-            code=code,
-            environment=function_environment,
+            code=aws_lambda.Code.from_asset("planscore-lambda.zip"),
+            environment={
+                'S3_BUCKET': bucket.bucket_name,
+            },
         )
         
         # Behind-the-scenes functions
@@ -131,13 +138,32 @@ class PlanScoreStack(cdk.Stack):
             **function_kwargs
         )
         
-        api_upload.add_permission('Permission', principal=apigateway_role)
         grant_data_bucket_access(bucket, api_upload)
         grant_function_invoke_access(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', api_upload)
+        api_upload.add_permission('Permission', principal=apigateway_role)
         
         # API Gateway
 
-        api = aws_apigateway.RestApi(self, f"{construct_id} Service")
+        if stackinfo.domain and stackinfo.certificate_arn:
+            api = aws_apigateway.RestApi(
+                self,
+                f"{stackinfo.id} Service",
+                domain_name=aws_apigateway.DomainNameOptions(
+                    certificate=aws_certificatemanager.Certificate.from_certificate_arn(
+                        self,
+                        'SSL-Certificate',
+                        stackinfo.certificate_arn,
+                    ),
+                    domain_name=stackinfo.domain,
+                    endpoint_type=aws_apigateway.EndpointType.EDGE,
+                ),
+            )
+            cdk.CfnOutput(self, 'RestAPIDomainName', value=api.domain_name.domain_name)
+        else:
+            api = aws_apigateway.RestApi(
+                self,
+                f"{stackinfo.id} Service",
+            )
         
         token_authorizer = aws_apigateway.TokenAuthorizer(
             self,
@@ -160,9 +186,11 @@ class PlanScoreStack(cdk.Stack):
             api_upload_integration,
             authorizer=token_authorizer,
         )
+        
+        cdk.CfnOutput(self, 'RestAPIURL', value=api.url)
 
 app = cdk.App()
 
-PlanScoreStack(app, STACK_NAME)
+PlanScoreStack(app, STACKS[0])
 
 app.synth()
