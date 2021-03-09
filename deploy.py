@@ -228,7 +228,6 @@ if __name__ == '__main__':
         for k in ('PLANSCORE_SECRET', 'WEBSITE_BASE', 'API_BASE')
         if k in os.environ}
     env['S3_BUCKET'] = args.s3bucket
-    env['LAMBDA_PREFIX'] = 'Dev-' if args.name.startswith('Dev-') else ''
     
     if 'PlanScore-Authorizer' in args.name and 'API_TOKENS' in os.environ:
         env['API_TOKENS'] = os.environ['API_TOKENS']

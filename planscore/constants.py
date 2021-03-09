@@ -6,9 +6,6 @@ SECRET = os.environ.get('PLANSCORE_SECRET', 'fake')
 # S3 bucket name, useful for specifying dev bucket.
 S3_BUCKET = os.environ.get('S3_BUCKET', 'planscore')
 
-# Lambda function name prefix, useful for calling "Dev-" functions
-LAMBDA_PREFIX = os.environ.get('LAMBDA_PREFIX', '')
-
 # API Gateway name, which should generally be left alone.
 API_NAME = 'PlanScore'
 
