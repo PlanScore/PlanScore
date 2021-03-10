@@ -148,7 +148,6 @@ class PlanScoreStack(cdk.Stack):
                 'S3_BUCKET': bucket.bucket_name,
                 'PLANSCORE_SECRET': 'fake-fake',
                 'WEBSITE_BASE': stackinfo.website_base,
-                'API_BASE': api_base,
             },
         )
 

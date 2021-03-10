@@ -8,6 +8,22 @@ import json, pprint, urllib.parse, datetime, random, os
 import boto3, itsdangerous
 from . import util, data, constants, website
 
+def build_api_base(requestContext):
+    '''
+    '''
+    if requestContext['resourcePath'] == requestContext['path']:
+        # e.g. "/path", need ""
+        api_dir = ''
+    else:
+        # e.g. "/stage/path" and "/path", need "/stage"
+        api_dir = requestContext['path'][:-len(requestContext['resourcePath'])]
+    
+    api_base = urllib.parse.urlunparse((
+        'https', requestContext['domainName'], f'{api_dir}/', None, None, None,
+    ))
+    
+    return api_base
+
 def get_assumed_role(arn):
     ''' 
     '''
@@ -28,7 +44,7 @@ def get_assumed_role(arn):
             aws_session_token=resp['Credentials']['SessionToken'],
             )
 
-def get_upload_fields(s3, creds, secret):
+def get_upload_fields(s3, creds, api_base, secret):
     '''
     '''
     rules = {rule.endpoint: str(rule) for rule in website.app.url_map.iter_rules()}
@@ -40,7 +56,7 @@ def get_upload_fields(s3, creds, secret):
     #redirect_path = '{}?{}'.format(rules['get_annotate'], redirect_query)
     #redirect_url = urllib.parse.urljoin(constants.WEBSITE_BASE, redirect_path)
     redirect_path = '{}?{}'.format(constants.API_PREREAD_RELPATH, redirect_query)
-    redirect_url = urllib.parse.urljoin(constants.API_BASE, redirect_path)
+    redirect_url = urllib.parse.urljoin(api_base, redirect_path)
     
     presigned = s3.generate_presigned_post(
         constants.S3_BUCKET,
@@ -79,7 +95,8 @@ def lambda_handler(event, context):
     s3 = boto3.client('s3', **role)
     creds = boto3.session.Session(**role).get_credentials()
 
-    url, fields = get_upload_fields(s3, creds, constants.SECRET)
+    api_base = build_api_base(event['requestContext'])
+    url, fields = get_upload_fields(s3, creds, api_base, constants.SECRET)
     
     return {
         'statusCode': '200',
