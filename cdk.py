@@ -14,27 +14,27 @@ from aws_cdk import (
     aws_certificatemanager,
 )
 
-StackInfo = collections.namedtuple(
-    'StackInfo',
-    ('id', 'bucket_name', 'website_base', 'domain', 'certificate_arn'),
+FormationInfo = collections.namedtuple(
+    'FormationInfo',
+    ('prefix', 'bucket_name', 'website_base', 'domain', 'certificate_arn'),
 )
 
-STACKS = [
-    StackInfo(
+FORMATIONS = [
+    FormationInfo(
         'cf-experiment-PlanScore',
         None,
         'http://127.0.0.1:5000/',
         'api.cdk-exp.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/d80b3992-c926-4618-bc72-9d82a2951432',
     ),
-    StackInfo(
+    FormationInfo(
         'cf-development',
         'planscore--dev',
         'https://dev.planscore.org/',
         'api.dev.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/eba45e77-e9e6-4773-98bc-b0ab78f5db38',
     ),
-    StackInfo(
+    FormationInfo(
         'cf-production',
         'planscore',
         'https://planscore.org/',
@@ -62,10 +62,12 @@ def grant_function_invoke(function, env_var, principal):
     principal.add_environment(env_var, function.function_name)
     function.grant_invoke(principal)
 
-class PlanScoreStack(cdk.Stack):
+class PlanScoreAPI(cdk.Stack):
 
-    def __init__(self, scope, stackinfo, **kwargs):
-        super().__init__(scope, stackinfo.id, **kwargs)
+    def __init__(self, scope, formation_info, **kwargs):
+        stack_id = f'{formation_info.prefix}'
+    
+        super().__init__(scope, stack_id, **kwargs)
         
         apigateway_role = aws_iam.Role(
             self,
@@ -75,11 +77,11 @@ class PlanScoreStack(cdk.Stack):
         
         # S3
 
-        if stackinfo.bucket_name:
+        if formation_info.bucket_name:
             bucket = aws_s3.Bucket.from_bucket_arn(
                 self,
                 'Data',
-                f'arn:aws:s3:::{stackinfo.bucket_name}',
+                f'arn:aws:s3:::{formation_info.bucket_name}',
             )
         else:
             bucket = aws_s3.Bucket(
@@ -105,7 +107,7 @@ class PlanScoreStack(cdk.Stack):
         
         aws_s3_deployment.BucketDeployment(
             self,
-            f"{stackinfo.id}-Data",
+            f"{stack_id}-Data",
             destination_bucket=bucket,
             sources=[
                 aws_s3_deployment.Source.asset("planscore/tests/data/XX-unified"),
@@ -115,17 +117,17 @@ class PlanScoreStack(cdk.Stack):
         
         # API Gateway (1/2)
 
-        if stackinfo.domain and stackinfo.certificate_arn:
+        if formation_info.domain and formation_info.certificate_arn:
             api = aws_apigateway.RestApi(
                 self,
-                f"{stackinfo.id} Service",
+                f"{stack_id} Service",
                 domain_name=aws_apigateway.DomainNameOptions(
                     certificate=aws_certificatemanager.Certificate.from_certificate_arn(
                         self,
                         'SSL-Certificate',
-                        stackinfo.certificate_arn,
+                        formation_info.certificate_arn,
                     ),
-                    domain_name=stackinfo.domain,
+                    domain_name=formation_info.domain,
                     endpoint_type=aws_apigateway.EndpointType.EDGE,
                 ),
             )
@@ -133,12 +135,15 @@ class PlanScoreStack(cdk.Stack):
         else:
             api = aws_apigateway.RestApi(
                 self,
-                f"{stackinfo.id} Service",
+                f"{stack_id} Service",
             )
         
         # Lambda
         
-        api_base = concat_strings('https://', api.domain_name.domain_name, '/')
+        if api.domain_name:
+            api_base = concat_strings('https://', api.domain_name.domain_name, '/')
+        else:
+            api_base = api.url
         
         function_kwargs = dict(
             timeout=cdk.Duration.seconds(300),
@@ -147,11 +152,11 @@ class PlanScoreStack(cdk.Stack):
             environment={
                 'S3_BUCKET': bucket.bucket_name,
                 'PLANSCORE_SECRET': 'fake-fake',
-                'WEBSITE_BASE': stackinfo.website_base,
+                'WEBSITE_BASE': formation_info.website_base,
             },
         )
 
-        cdk.CfnOutput(self, 'WebsiteBase', value=stackinfo.website_base)
+        cdk.CfnOutput(self, 'WebsiteBase', value=formation_info.website_base)
         cdk.CfnOutput(self, 'APIBase', value=api_base)
         
         # Behind-the-scenes functions
@@ -329,17 +334,17 @@ class PlanScoreStack(cdk.Stack):
 if __name__ == '__main__':
     app = cdk.App()
     
-    stack_id = app.node.try_get_context('stack_id')
+    formation_prefix = app.node.try_get_context('formation_prefix')
 
-    if stack_id is None or stack_id == "unknown":
-        raise ValueError('USAGE: cdk <command> -c stack_id=cf-development <stack>')
+    if formation_prefix is None or formation_prefix == "unknown":
+        raise ValueError('USAGE: cdk <command> -c formation_prefix=cf-development <stack>')
     
-    assert stack_id.startswith('cf-')
-    stackinfo = StackInfo(stack_id, None, None, None, None)
+    assert formation_prefix.startswith('cf-')
+    formation_info = FormationInfo(formation_prefix, None, None, None, None)
     
-    for _stackinfo in STACKS:
-        if _stackinfo.id == stack_id:
-            stackinfo = _stackinfo
+    for _formation_info in FORMATIONS:
+        if _formation_info.prefix == formation_prefix:
+            formation_info = _formation_info
     
-    PlanScoreStack(app, stackinfo)
+    PlanScoreAPI(app, formation_info)
     app.synth()

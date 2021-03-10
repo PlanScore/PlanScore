@@ -28,7 +28,7 @@ live-website: planscore/website/build
 
 dev-lambda: planscore-lambda.zip
 	cdk deploy \
-		--context stack_id=cf-development \
+		--context formation_prefix=cf-development \
 		--require-approval never \
 		--outputs-file cdk-outputs.json
 
