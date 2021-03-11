@@ -159,13 +159,13 @@ class PlanScoreStack(cdk.Stack):
         # S3
 
         if formation_info.bucket_name:
-            bucket = aws_s3.Bucket.from_bucket_arn(
+            data_bucket = aws_s3.Bucket.from_bucket_arn(
                 self,
                 'Data',
                 f'arn:aws:s3:::{formation_info.bucket_name}',
             )
         else:
-            bucket = aws_s3.Bucket(
+            data_bucket = aws_s3.Bucket(
                 self,
                 'Data',
                 auto_delete_objects=True,
@@ -184,12 +184,12 @@ class PlanScoreStack(cdk.Stack):
                 )
             )
 
-        #cdk.CfnOutput(self, 'Bucket', value=bucket.bucket_name)
+        cdk.CfnOutput(self, 'DataBucket', value=data_bucket.bucket_name)
         
         aws_s3_deployment.BucketDeployment(
             self,
             f"{stack_id}-Data",
-            destination_bucket=bucket,
+            destination_bucket=data_bucket,
             sources=[
                 aws_s3_deployment.Source.asset("planscore/tests/data/XX-unified"),
             ],
@@ -213,6 +213,7 @@ class PlanScoreStack(cdk.Stack):
                 ),
             )
             api_base = concat_strings('https://', api.domain_name.domain_name, '/')
+            cdk.CfnOutput(self, 'APIDistributionDomain', value=api.domain_name.domain_name_alias_domain_name)
         else:
             api = aws_apigateway.RestApi(
                 self,
@@ -220,7 +221,6 @@ class PlanScoreStack(cdk.Stack):
             )
             api_base = api.url
 
-        cdk.CfnOutput(self, 'APIDistributionDomain', value=api.domain_name.domain_name_alias_domain_name)
         cdk.CfnOutput(self, 'APIBase', value=api_base)
         
         # Lambda
@@ -230,7 +230,7 @@ class PlanScoreStack(cdk.Stack):
             runtime=aws_lambda.Runtime.PYTHON_3_6,
             code=aws_lambda.Code.from_asset("planscore-lambda.zip"),
             environment={
-                'S3_BUCKET': bucket.bucket_name,
+                'S3_BUCKET': data_bucket.bucket_name,
                 'PLANSCORE_SECRET': 'fake-fake',
                 'WEBSITE_BASE': website_base,
             },
@@ -255,7 +255,7 @@ class PlanScoreStack(cdk.Stack):
             **function_kwargs
         )
 
-        grant_data_bucket_access(bucket, run_tile)
+        grant_data_bucket_access(data_bucket, run_tile)
 
         observe_tiles = aws_lambda.Function(
             self,
@@ -265,7 +265,7 @@ class PlanScoreStack(cdk.Stack):
             **function_kwargs
         )
 
-        grant_data_bucket_access(bucket, observe_tiles)
+        grant_data_bucket_access(data_bucket, observe_tiles)
 
         postread_calculate = aws_lambda.Function(
             self,
@@ -275,7 +275,7 @@ class PlanScoreStack(cdk.Stack):
             **function_kwargs
         )
 
-        grant_data_bucket_access(bucket, postread_calculate)
+        grant_data_bucket_access(data_bucket, postread_calculate)
         grant_function_invoke(observe_tiles, 'FUNC_NAME_OBSERVE_TILES', postread_calculate)
         grant_function_invoke(run_tile, 'FUNC_NAME_RUN_TILE', postread_calculate)
         
@@ -287,7 +287,7 @@ class PlanScoreStack(cdk.Stack):
             **function_kwargs
         )
 
-        grant_data_bucket_access(bucket, preread_followup)
+        grant_data_bucket_access(data_bucket, preread_followup)
 
         # API-accessible functions
 
@@ -303,7 +303,7 @@ class PlanScoreStack(cdk.Stack):
             **function_kwargs
         )
         
-        grant_data_bucket_access(bucket, api_upload)
+        grant_data_bucket_access(data_bucket, api_upload)
         grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', api_upload)
         api_upload.add_permission('Permission', principal=apigateway_role)
         
@@ -314,7 +314,7 @@ class PlanScoreStack(cdk.Stack):
             **function_kwargs
         )
         
-        grant_data_bucket_access(bucket, upload_fields)
+        grant_data_bucket_access(data_bucket, upload_fields)
         upload_fields.add_permission('Permission', principal=apigateway_role)
         
         preread = aws_lambda.Function(
@@ -324,7 +324,7 @@ class PlanScoreStack(cdk.Stack):
             **function_kwargs
         )
         
-        grant_data_bucket_access(bucket, preread)
+        grant_data_bucket_access(data_bucket, preread)
         preread.add_permission('Permission', principal=apigateway_role)
         grant_function_invoke(preread_followup, 'FUNC_NAME_PREREAD_FOLLOWUP', preread)
         
@@ -335,7 +335,7 @@ class PlanScoreStack(cdk.Stack):
             **function_kwargs
         )
         
-        grant_data_bucket_access(bucket, postread_callback)
+        grant_data_bucket_access(data_bucket, postread_callback)
         grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', postread_callback)
         postread_callback.add_permission('Permission', principal=apigateway_role)
         

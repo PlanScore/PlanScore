@@ -26,14 +26,13 @@ live-website: planscore/website/build
 	aws s3 sync --acl public-read --cache-control 'public, max-age=300' $</ s3://planscore.org-website/
 	aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete $</ s3://planscore.org-website/
 
-dev-lambda: planscore-lambda.zip
+dev-deploy: planscore-lambda.zip
 	cdk deploy \
 		--context formation_prefix=cf-development \
 		--require-approval never \
-		--outputs-file cdk-outputs.json
-
-dev-website: website-dev-build
-	aws s3 sync --acl public-read --cache-control 'no-store, max-age=0' --delete $</ s3://planscore.org-dev-website/
+		--outputs-file cdk-outputs-dev.json
+	
+	./s3-sync-website.py cdk-outputs-dev.json
 
 # Just one Lambda codebase is created, with different entry points and environments.
 planscore-lambda.zip: gdal-geos-numpy-python.tar.gz
@@ -65,4 +64,4 @@ cleanish:
 clean: cleanish
 	rm -f gdal-geos-numpy-python.tar.gz
 
-.PHONY: clean cleanish all live-lambda live-website
+.PHONY: clean cleanish all live-lambda live-website dev-deploy

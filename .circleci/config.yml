@@ -80,8 +80,7 @@ jobs:
       - run: pip3 install '.[deploy]'
       - attach_workspace:
           at: ~/repo
-      - run: make dev-lambda
-      - run: cat cdk-outputs.json
+      - run: make dev-deploy
 
 workflows:
   version: 2
