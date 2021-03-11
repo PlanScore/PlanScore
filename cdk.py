@@ -12,11 +12,12 @@ from aws_cdk import (
     aws_lambda,
     aws_apigateway,
     aws_certificatemanager,
+    aws_cloudfront,
 )
 
 FormationInfo = collections.namedtuple(
     'FormationInfo',
-    ('prefix', 'bucket_name', 'website_base', 'domain', 'certificate_arn'),
+    ('prefix', 'bucket_name', 'website_domain', 'website_cert', 'api_domain', 'api_cert'),
 )
 
 FORMATIONS = [
@@ -24,20 +25,23 @@ FORMATIONS = [
         'cf-experiment-PlanScore',
         None,
         'http://127.0.0.1:5000/',
+        None,
         'api.cdk-exp.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/d80b3992-c926-4618-bc72-9d82a2951432',
     ),
     FormationInfo(
         'cf-development',
         'planscore--dev',
-        'https://dev.planscore.org/',
+        'dev.planscore.org',
+        'arn:aws:acm:us-east-1:466184106004:certificate/9926850f-249e-4f47-b6b2-309428ecc80c',
         'api.dev.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/eba45e77-e9e6-4773-98bc-b0ab78f5db38',
     ),
     FormationInfo(
         'cf-production',
         'planscore',
-        'https://planscore.org/',
+        'planscore.org',
+        'arn:aws:acm:us-east-1:466184106004:certificate/c1e939b1-2ce8-4fb1-8f1e-688eabb0fd63',
         'api.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/0216c55e-76c2-4344-b883-0603c7ee2251',
     ),
@@ -62,13 +66,90 @@ def grant_function_invoke(function, env_var, principal):
     principal.add_environment(env_var, function.function_name)
     function.grant_invoke(principal)
 
-class PlanScoreAPI(cdk.Stack):
+class PlanScoreStack(cdk.Stack):
 
     def __init__(self, scope, formation_info, **kwargs):
-        stack_id = f'{formation_info.prefix}'
+        stack_id = f'{formation_info.prefix}-Scoring'
     
         super().__init__(scope, stack_id, **kwargs)
         
+        static_site_bucket = aws_s3.Bucket(
+            self,
+            'Static-Site',
+            website_index_document='index.html',
+            auto_delete_objects=True,
+            removal_policy=cdk.RemovalPolicy.DESTROY,
+            public_read_access=True,
+        )
+
+        scoring_site_bucket = aws_s3.Bucket(
+            self,
+            'Scoring-Site',
+            website_index_document='index.html',
+            auto_delete_objects=True,
+            removal_policy=cdk.RemovalPolicy.DESTROY,
+            public_read_access=True,
+        )
+        
+        #cdk.CfnOutput(self, 'StaticSiteBucket', value=static_site_bucket.bucket_name)
+        cdk.CfnOutput(self, 'ScoringSiteBucket', value=scoring_site_bucket.bucket_name)
+
+        # Cloudfront
+
+        origin_configs = [
+            aws_cloudfront.SourceConfiguration(
+                s3_origin_source=aws_cloudfront.S3OriginConfig(
+                    s3_bucket_source=scoring_site_bucket,
+                ),
+                behaviors=[
+                    aws_cloudfront.Behavior(path_pattern='about.html'),
+                    aws_cloudfront.Behavior(path_pattern='annotate*'),
+                    aws_cloudfront.Behavior(path_pattern='our-plan.html'),
+                    aws_cloudfront.Behavior(path_pattern='plan.html'),
+                    aws_cloudfront.Behavior(path_pattern='upload*'),
+                    aws_cloudfront.Behavior(path_pattern='metrics*'),
+                    aws_cloudfront.Behavior(path_pattern='models/*'),
+                    aws_cloudfront.Behavior(path_pattern='resource-*'),
+                    aws_cloudfront.Behavior(path_pattern='static/*'),
+                    aws_cloudfront.Behavior(path_pattern='webinar*'),
+                ],
+            ),
+            aws_cloudfront.SourceConfiguration(
+                s3_origin_source=aws_cloudfront.S3OriginConfig(
+                    s3_bucket_source=static_site_bucket,
+                ),
+                behaviors=[
+                    aws_cloudfront.Behavior(
+                        is_default_behavior=True,
+                    ),
+                ],
+            ),
+        ]
+
+        if formation_info.website_domain and formation_info.website_cert:
+            distribution = aws_cloudfront.CloudFrontWebDistribution(
+                self,
+                'Website',
+                alias_configuration=aws_cloudfront.AliasConfiguration(
+                    acm_cert_ref=formation_info.website_cert,
+                    names=[formation_info.website_domain],
+                ),
+                origin_configs=origin_configs,
+            )
+            website_base = concat_strings('https://', formation_info.website_domain, '/')
+        else:
+            distribution = aws_cloudfront.CloudFrontWebDistribution(
+                self,
+                'Website',
+                origin_configs=origin_configs,
+            )
+            website_base = concat_strings('https://', distribution.distribution_domain_name, '/')
+        
+        cdk.CfnOutput(self, 'WebsiteBase', value=website_base)
+        cdk.CfnOutput(self, 'WebsiteDistributionDomain', value=distribution.distribution_domain_name)
+        
+        #
+
         apigateway_role = aws_iam.Role(
             self,
             f'API-Execution',
@@ -103,7 +184,7 @@ class PlanScoreAPI(cdk.Stack):
                 )
             )
 
-        cdk.CfnOutput(self, 'Bucket', value=bucket.bucket_name)
+        #cdk.CfnOutput(self, 'Bucket', value=bucket.bucket_name)
         
         aws_s3_deployment.BucketDeployment(
             self,
@@ -117,33 +198,32 @@ class PlanScoreAPI(cdk.Stack):
         
         # API Gateway (1/2)
 
-        if formation_info.domain and formation_info.certificate_arn:
+        if formation_info.api_domain and formation_info.api_cert:
             api = aws_apigateway.RestApi(
                 self,
                 f"{stack_id} Service",
                 domain_name=aws_apigateway.DomainNameOptions(
                     certificate=aws_certificatemanager.Certificate.from_certificate_arn(
                         self,
-                        'SSL-Certificate',
-                        formation_info.certificate_arn,
+                        'API-SSL-Certificate',
+                        formation_info.api_cert,
                     ),
-                    domain_name=formation_info.domain,
+                    domain_name=formation_info.api_domain,
                     endpoint_type=aws_apigateway.EndpointType.EDGE,
                 ),
             )
-            cdk.CfnOutput(self, 'RestAPIDomainName', value=api.domain_name.domain_name)
+            api_base = concat_strings('https://', api.domain_name.domain_name, '/')
         else:
             api = aws_apigateway.RestApi(
                 self,
                 f"{stack_id} Service",
             )
+            api_base = api.url
+
+        cdk.CfnOutput(self, 'APIDistributionDomain', value=api.domain_name.domain_name_alias_domain_name)
+        cdk.CfnOutput(self, 'APIBase', value=api_base)
         
         # Lambda
-        
-        if api.domain_name:
-            api_base = concat_strings('https://', api.domain_name.domain_name, '/')
-        else:
-            api_base = api.url
         
         function_kwargs = dict(
             timeout=cdk.Duration.seconds(300),
@@ -152,13 +232,10 @@ class PlanScoreAPI(cdk.Stack):
             environment={
                 'S3_BUCKET': bucket.bucket_name,
                 'PLANSCORE_SECRET': 'fake-fake',
-                'WEBSITE_BASE': formation_info.website_base,
+                'WEBSITE_BASE': website_base,
             },
         )
 
-        cdk.CfnOutput(self, 'WebsiteBase', value=formation_info.website_base)
-        cdk.CfnOutput(self, 'APIBase', value=api_base)
-        
         # Behind-the-scenes functions
 
         authorizer = aws_lambda.Function(
@@ -328,8 +405,6 @@ class PlanScoreAPI(cdk.Stack):
         )
 
         uploaded_resource.add_method("GET", uploaded_integration)
-        
-        cdk.CfnOutput(self, 'RestAPIURL', value=api.url)
 
 if __name__ == '__main__':
     app = cdk.App()
@@ -340,11 +415,12 @@ if __name__ == '__main__':
         raise ValueError('USAGE: cdk <command> -c formation_prefix=cf-development <stack>')
     
     assert formation_prefix.startswith('cf-')
-    formation_info = FormationInfo(formation_prefix, None, None, None, None)
+    formation_info = FormationInfo(formation_prefix, None, None, None, None, None)
     
     for _formation_info in FORMATIONS:
         if _formation_info.prefix == formation_prefix:
             formation_info = _formation_info
     
-    PlanScoreAPI(app, formation_info)
+    stack = PlanScoreStack(app, formation_info)
+
     app.synth()
