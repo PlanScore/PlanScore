@@ -34,6 +34,7 @@ setup(
             'aws-cdk.aws-apigateway == 1.92.0',
             'aws-cdk.aws-certificatemanager == 1.92.0',
             'aws-cdk.aws-cloudfront == 1.92.0',
+            'aws-cdk.aws-cloudfront-origins == 1.92.0',
             'aws-cdk.aws-iam == 1.92.0',
             'aws-cdk.aws-lambda == 1.92.0',
             'aws-cdk.aws-logs == 1.92.0',

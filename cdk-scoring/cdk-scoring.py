@@ -14,18 +14,19 @@ from aws_cdk import (
     aws_apigateway,
     aws_certificatemanager,
     aws_cloudfront,
+    aws_cloudfront_origins,
 )
 
 FormationInfo = collections.namedtuple(
     'FormationInfo',
-    ('prefix', 'bucket_name', 'website_domain', 'website_cert', 'api_domain', 'api_cert'),
+    ('prefix', 'bucket_name', 'website_domains', 'website_cert', 'api_domain', 'api_cert'),
 )
 
 FORMATIONS = [
     FormationInfo(
         'cf-development',
         'planscore--dev',
-        'dev.planscore.org',
+        ['dev.planscore.org'],
         'arn:aws:acm:us-east-1:466184106004:certificate/9926850f-249e-4f47-b6b2-309428ecc80c',
         'api.dev.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/eba45e77-e9e6-4773-98bc-b0ab78f5db38',
@@ -33,7 +34,7 @@ FORMATIONS = [
     FormationInfo(
         'cf-production',
         'planscore',
-        None, # 'planscore.org',
+        None, # ['planscore.org'],
         None, # 'arn:aws:acm:us-east-1:466184106004:certificate/c1e939b1-2ce8-4fb1-8f1e-688eabb0fd63',
         None, # 'api.planscore.org',
         None, # 'arn:aws:acm:us-east-1:466184106004:certificate/0216c55e-76c2-4344-b883-0603c7ee2251',
@@ -110,52 +111,46 @@ class PlanScoreScoring(cdk.Stack):
 
     def make_cloudfront(self, static_site_bucket, scoring_site_bucket):
 
-        origin_configs = [
-            aws_cloudfront.SourceConfiguration(
-                s3_origin_source=aws_cloudfront.S3OriginConfig(
-                    s3_bucket_source=scoring_site_bucket,
-                ),
-                behaviors=[
-                    aws_cloudfront.Behavior(path_pattern='about.html'),
-                    aws_cloudfront.Behavior(path_pattern='annotate*'),
-                    aws_cloudfront.Behavior(path_pattern='our-plan.html'),
-                    aws_cloudfront.Behavior(path_pattern='plan.html'),
-                    aws_cloudfront.Behavior(path_pattern='upload*'),
-                    aws_cloudfront.Behavior(path_pattern='metrics*'),
-                    aws_cloudfront.Behavior(path_pattern='models/*'),
-                    aws_cloudfront.Behavior(path_pattern='resource-*'),
-                    aws_cloudfront.Behavior(path_pattern='static/*'),
-                    aws_cloudfront.Behavior(path_pattern='webinar*'),
-                ],
-            ),
-            aws_cloudfront.SourceConfiguration(
-                s3_origin_source=aws_cloudfront.S3OriginConfig(
-                    s3_bucket_source=static_site_bucket,
-                ),
-                behaviors=[
-                    aws_cloudfront.Behavior(
-                        is_default_behavior=True,
-                    ),
-                ],
-            ),
-        ]
+        static_origin = aws_cloudfront_origins.S3Origin(static_site_bucket)
+        static_behavior = aws_cloudfront.BehaviorOptions(origin=static_origin)
+        scoring_origin = aws_cloudfront_origins.S3Origin(scoring_site_bucket)
+        scoring_behavior = aws_cloudfront.BehaviorOptions(origin=scoring_origin)
+        
+        distribution_kwargs = dict(
+            default_behavior=static_behavior,
+            additional_behaviors={
+                'about.html': scoring_behavior,
+                'annotate*': scoring_behavior,
+                'our-plan.html': scoring_behavior,
+                'plan.html': scoring_behavior,
+                'upload*': scoring_behavior,
+                'about*': scoring_behavior,
+                'metrics*': scoring_behavior,
+                'models/*': scoring_behavior,
+                'resource-*': scoring_behavior,
+                'static/*': scoring_behavior,
+                'webinar*': scoring_behavior,
+            },
+        )
 
-        if formation_info.website_domain and formation_info.website_cert:
-            distribution = aws_cloudfront.CloudFrontWebDistribution(
+        if formation_info.website_domains and formation_info.website_cert:
+            distribution = aws_cloudfront.Distribution(
                 self,
                 'Website',
-                alias_configuration=aws_cloudfront.AliasConfiguration(
-                    acm_cert_ref=formation_info.website_cert,
-                    names=[formation_info.website_domain],
+                certificate=aws_certificatemanager.Certificate.from_certificate_arn(
+                    self,
+                    'Website-SSL-Certificate',
+                    formation_info.website_cert,
                 ),
-                origin_configs=origin_configs,
+                domain_names=formation_info.website_domains,
+                **distribution_kwargs,
             )
-            website_base = concat_strings('https://', formation_info.website_domain, '/')
+            website_base = concat_strings('https://', formation_info.website_domains[0], '/')
         else:
             distribution = aws_cloudfront.CloudFrontWebDistribution(
                 self,
                 'Website',
-                origin_configs=origin_configs,
+                **distribution_kwargs,
             )
             website_base = concat_strings('https://', distribution.distribution_domain_name, '/')
 
