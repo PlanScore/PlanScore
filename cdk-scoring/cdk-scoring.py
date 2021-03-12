@@ -88,10 +88,11 @@ class PlanScoreScoring(cdk.Stack):
     def make_buckets(self, formation_info):
 
         if formation_info.static_site_bucket:
-            static_site_bucket = aws_s3.Bucket.from_bucket_arn(
+            static_site_bucket = aws_s3.Bucket.from_bucket_attributes(
                 self,
                 'Static-Site',
-                f'arn:aws:s3:::{formation_info.static_site_bucket}',
+                bucket_arn=f'arn:aws:s3:::{formation_info.static_site_bucket}',
+                is_website=True,
             )
         else:
             static_site_bucket = aws_s3.Bucket(
