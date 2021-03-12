@@ -1,5 +1,8 @@
 all: planscore/website/build
 
+live-deploy: planscore-lambda.zip
+	./cdk-deploy.sh cf-production
+
 live-lambda: planscore-lambda.zip
 	aws s3api put-object --bucket planscore \
 		--key "code/lambda-`shasum -p planscore-lambda.zip | cut -f1 -d' '`.zip" \
