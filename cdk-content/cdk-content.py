@@ -30,6 +30,10 @@ class PlanScoreContent(cdk.Stack):
     
     def fill_static_bucket(self, stack_id, stack):
 
+        if stack["StaticSiteBucket"] == 'planscore.org-static-site':
+            # We do not fill this bucket, it's controlled by the `static-site` branch
+            return
+
         static_dirname = tempfile.mkdtemp(dir='/tmp', prefix='static-site-content-')
         
         static_bytes = urllib.request.urlopen('https://planscore.org/WEBSITE_OUTPUT.zip')
