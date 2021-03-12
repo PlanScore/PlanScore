@@ -155,7 +155,7 @@ class PlanScoreScoring(cdk.Stack):
             )
             website_base = concat_strings('https://', formation_info.website_domains[0], '/')
         else:
-            distribution = aws_cloudfront.CloudFrontWebDistribution(
+            distribution = aws_cloudfront.Distribution(
                 self,
                 'Website',
                 **distribution_kwargs,
