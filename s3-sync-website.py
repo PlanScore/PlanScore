@@ -72,6 +72,6 @@ with open(cdk_output) as file:
             'aws', 's3', 'sync',
             '--acl', 'public-read',
             '--cache-control', 'no-store, max-age=0',
-            f'{dirname}/', f's3://{stack["DataBucket"]}/',
+            f'{dirname}/', f's3://{stack["ScoringSiteBucket"]}/',
         ),
     )
