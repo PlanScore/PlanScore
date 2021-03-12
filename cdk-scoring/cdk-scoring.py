@@ -22,14 +22,6 @@ FormationInfo = collections.namedtuple(
 
 FORMATIONS = [
     FormationInfo(
-        'cf-experiment-PlanScore',
-        None,
-        'http://127.0.0.1:5000/',
-        None,
-        'api.cdk-exp.planscore.org',
-        'arn:aws:acm:us-east-1:466184106004:certificate/d80b3992-c926-4618-bc72-9d82a2951432',
-    ),
-    FormationInfo(
         'cf-development',
         'planscore--dev',
         'dev.planscore.org',
@@ -66,13 +58,32 @@ def grant_function_invoke(function, env_var, principal):
     principal.add_environment(env_var, function.function_name)
     function.grant_invoke(principal)
 
-class PlanScoreStack(cdk.Stack):
+class PlanScoreScoring(cdk.Stack):
 
     def __init__(self, scope, formation_info, **kwargs):
         stack_id = f'{formation_info.prefix}-Scoring'
-    
+
         super().__init__(scope, stack_id, **kwargs)
-        
+
+        self.go(stack_id)
+
+    def go(self, stack_id):
+        static_site_bucket, scoring_site_bucket = self.make_buckets()
+        distribution, website_base = self.make_cloudfront(
+            static_site_bucket,
+            scoring_site_bucket,
+        )
+        data_bucket = self.make_data_bucket(stack_id, formation_info)
+        apigateway_role, api, api_base = self.make_api(stack_id, formation_info)
+        functions = self.make_lambda_functions(
+            apigateway_role,
+            data_bucket,
+            website_base,
+        )
+        self.populate_api(apigateway_role, api, *functions)
+
+    def make_buckets(self):
+
         static_site_bucket = aws_s3.Bucket(
             self,
             'Static-Site',
@@ -90,11 +101,12 @@ class PlanScoreStack(cdk.Stack):
             removal_policy=cdk.RemovalPolicy.DESTROY,
             public_read_access=True,
         )
-        
-        #cdk.CfnOutput(self, 'StaticSiteBucket', value=static_site_bucket.bucket_name)
+
         cdk.CfnOutput(self, 'ScoringSiteBucket', value=scoring_site_bucket.bucket_name)
 
-        # Cloudfront
+        return static_site_bucket, scoring_site_bucket
+
+    def make_cloudfront(self, static_site_bucket, scoring_site_bucket):
 
         origin_configs = [
             aws_cloudfront.SourceConfiguration(
@@ -144,19 +156,13 @@ class PlanScoreStack(cdk.Stack):
                 origin_configs=origin_configs,
             )
             website_base = concat_strings('https://', distribution.distribution_domain_name, '/')
-        
+
         cdk.CfnOutput(self, 'WebsiteBase', value=website_base)
         cdk.CfnOutput(self, 'WebsiteDistributionDomain', value=distribution.distribution_domain_name)
-        
-        #
 
-        apigateway_role = aws_iam.Role(
-            self,
-            f'API-Execution',
-            assumed_by=aws_iam.ServicePrincipal('apigateway.amazonaws.com'),
-        )
-        
-        # S3
+        return distribution, website_base
+
+    def make_data_bucket(self, stack_id, formation_info):
 
         if formation_info.bucket_name:
             data_bucket = aws_s3.Bucket.from_bucket_arn(
@@ -185,7 +191,7 @@ class PlanScoreStack(cdk.Stack):
             )
 
         cdk.CfnOutput(self, 'DataBucket', value=data_bucket.bucket_name)
-        
+
         aws_s3_deployment.BucketDeployment(
             self,
             f"{stack_id}-Data",
@@ -195,8 +201,16 @@ class PlanScoreStack(cdk.Stack):
             ],
             destination_key_prefix="data/XX/005-unified",
         )
-        
-        # API Gateway (1/2)
+
+        return data_bucket
+
+    def make_api(self, stack_id, formation_info):
+
+        apigateway_role = aws_iam.Role(
+            self,
+            f'API-Execution',
+            assumed_by=aws_iam.ServicePrincipal('apigateway.amazonaws.com'),
+        )
 
         if formation_info.api_domain and formation_info.api_cert:
             api = aws_apigateway.RestApi(
@@ -222,9 +236,11 @@ class PlanScoreStack(cdk.Stack):
             api_base = api.url
 
         cdk.CfnOutput(self, 'APIBase', value=api_base)
-        
-        # Lambda
-        
+
+        return apigateway_role, api, api_base
+
+    def make_lambda_functions(self, apigateway_role, data_bucket, website_base):
+
         function_kwargs = dict(
             timeout=cdk.Duration.seconds(300),
             runtime=aws_lambda.Runtime.PYTHON_3_6,
@@ -244,9 +260,9 @@ class PlanScoreStack(cdk.Stack):
             handler="lambda.authorizer",
             **function_kwargs
         )
-        
+
         authorizer.add_environment('API_TOKENS', API_TOKENS)
-        
+
         run_tile = aws_lambda.Function(
             self,
             "RunTile",
@@ -278,7 +294,7 @@ class PlanScoreStack(cdk.Stack):
         grant_data_bucket_access(data_bucket, postread_calculate)
         grant_function_invoke(observe_tiles, 'FUNC_NAME_OBSERVE_TILES', postread_calculate)
         grant_function_invoke(run_tile, 'FUNC_NAME_RUN_TILE', postread_calculate)
-        
+
         preread_followup = aws_lambda.Function(
             self,
             "PrereadFollowup",
@@ -302,45 +318,69 @@ class PlanScoreStack(cdk.Stack):
             memory_size=2048,
             **function_kwargs
         )
-        
+
         grant_data_bucket_access(data_bucket, api_upload)
         grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', api_upload)
         api_upload.add_permission('Permission', principal=apigateway_role)
-        
+
         upload_fields = aws_lambda.Function(
             self,
             "UploadFieldsNew",
             handler="lambda.upload_fields_new",
             **function_kwargs
         )
-        
+
         grant_data_bucket_access(data_bucket, upload_fields)
         upload_fields.add_permission('Permission', principal=apigateway_role)
-        
+
         preread = aws_lambda.Function(
             self,
             "Preread",
             handler="lambda.preread",
             **function_kwargs
         )
-        
+
         grant_data_bucket_access(data_bucket, preread)
         preread.add_permission('Permission', principal=apigateway_role)
         grant_function_invoke(preread_followup, 'FUNC_NAME_PREREAD_FOLLOWUP', preread)
-        
+
         postread_callback = aws_lambda.Function(
             self,
             "PostreadCallback",
             handler="lambda.postread_callback",
             **function_kwargs
         )
-        
+
         grant_data_bucket_access(data_bucket, postread_callback)
         grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', postread_callback)
         postread_callback.add_permission('Permission', principal=apigateway_role)
-        
-        # API Gateway (2/2)
-        
+
+        return (
+            authorizer,
+            run_tile,
+            observe_tiles,
+            postread_calculate,
+            preread_followup,
+            api_upload,
+            upload_fields,
+            preread,
+            postread_callback,
+        )
+
+    def populate_api(self, apigateway_role, api, *functions):
+
+        (
+            authorizer,
+            run_tile,
+            observe_tiles,
+            postread_calculate,
+            preread_followup,
+            api_upload,
+            upload_fields,
+            preread,
+            postread_callback,
+        ) = functions
+
         integration_kwargs = dict(
             request_templates={
                 "application/json": '{ "statusCode": "200" }'
@@ -352,13 +392,13 @@ class PlanScoreStack(cdk.Stack):
             "TokenAuthorizer",
             handler=authorizer,
         )
-        
+
         api_upload_integration = aws_apigateway.LambdaIntegration(
             api_upload,
             credentials_role=apigateway_role,
             **integration_kwargs
         )
-        
+
         api_upload_resource = api.root.add_resource('api-upload')
 
         api_upload_resource.add_method(
@@ -366,13 +406,13 @@ class PlanScoreStack(cdk.Stack):
             api_upload_integration,
             authorizer=token_authorizer,
         )
-        
+
         upload_fields_integration = aws_apigateway.LambdaIntegration(
             upload_fields,
             credentials_role=apigateway_role,
             **integration_kwargs
         )
-        
+
         upload_fields_resource = api.root.add_resource(
             'upload-new',
             default_cors_preflight_options=aws_apigateway.CorsOptions(
@@ -381,22 +421,22 @@ class PlanScoreStack(cdk.Stack):
         )
 
         upload_fields_resource.add_method("GET", upload_fields_integration)
-        
+
         preread_integration = aws_apigateway.LambdaIntegration(
             preread,
             credentials_role=apigateway_role,
             **integration_kwargs
         )
-        
+
         preread_resource = api.root.add_resource('preread')
         preread_resource.add_method("GET", preread_integration)
-        
+
         uploaded_integration = aws_apigateway.LambdaIntegration(
             postread_callback,
             credentials_role=apigateway_role,
             **integration_kwargs
         )
-        
+
         uploaded_resource = api.root.add_resource(
             'uploaded-new',
             default_cors_preflight_options=aws_apigateway.CorsOptions(
@@ -408,19 +448,18 @@ class PlanScoreStack(cdk.Stack):
 
 if __name__ == '__main__':
     app = cdk.App()
-    
+
     formation_prefix = app.node.try_get_context('formation_prefix')
 
     if formation_prefix is None or formation_prefix == "unknown":
         raise ValueError('USAGE: cdk <command> -c formation_prefix=cf-development <stack>')
-    
+
     assert formation_prefix.startswith('cf-')
     formation_info = FormationInfo(formation_prefix, None, None, None, None, None)
-    
+
     for _formation_info in FORMATIONS:
         if _formation_info.prefix == formation_prefix:
             formation_info = _formation_info
-    
-    stack = PlanScoreStack(app, formation_info)
 
+    stack = PlanScoreScoring(app, formation_info)
     app.synth()
