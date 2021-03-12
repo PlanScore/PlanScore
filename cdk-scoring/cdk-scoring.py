@@ -19,13 +19,14 @@ from aws_cdk import (
 
 FormationInfo = collections.namedtuple(
     'FormationInfo',
-    ('prefix', 'bucket_name', 'website_domains', 'website_cert', 'api_domain', 'api_cert'),
+    ('prefix', 'data_bucket', 'static_site_bucket', 'website_domains', 'website_cert', 'api_domain', 'api_cert'),
 )
 
 FORMATIONS = [
     FormationInfo(
         'cf-development',
         'planscore--dev',
+        None,
         ['dev.planscore.org'],
         'arn:aws:acm:us-east-1:466184106004:certificate/9926850f-249e-4f47-b6b2-309428ecc80c',
         'api.dev.planscore.org',
@@ -34,6 +35,7 @@ FORMATIONS = [
     FormationInfo(
         'cf-production',
         'planscore',
+        'planscore.org-static-site',
         None, # ['planscore.org'],
         None, # 'arn:aws:acm:us-east-1:466184106004:certificate/c1e939b1-2ce8-4fb1-8f1e-688eabb0fd63',
         None, # 'api.planscore.org',
@@ -69,7 +71,7 @@ class PlanScoreScoring(cdk.Stack):
 
         # Do the work
         
-        static_site_bucket, scoring_site_bucket = self.make_buckets()
+        static_site_bucket, scoring_site_bucket = self.make_buckets(formation_info)
         distribution, website_base = self.make_cloudfront(
             static_site_bucket,
             scoring_site_bucket,
@@ -83,16 +85,23 @@ class PlanScoreScoring(cdk.Stack):
         )
         self.populate_api(apigateway_role, api, *functions)
 
-    def make_buckets(self):
+    def make_buckets(self, formation_info):
 
-        static_site_bucket = aws_s3.Bucket(
-            self,
-            'Static-Site',
-            website_index_document='index.html',
-            auto_delete_objects=True,
-            removal_policy=cdk.RemovalPolicy.DESTROY,
-            public_read_access=True,
-        )
+        if formation_info.static_site_bucket:
+            static_site_bucket = aws_s3.Bucket.from_bucket_arn(
+                self,
+                'Static-Site',
+                f'arn:aws:s3:::{formation_info.static_site_bucket}',
+            )
+        else:
+            static_site_bucket = aws_s3.Bucket(
+                self,
+                'Static-Site',
+                website_index_document='index.html',
+                auto_delete_objects=True,
+                removal_policy=cdk.RemovalPolicy.DESTROY,
+                public_read_access=True,
+            )
 
         scoring_site_bucket = aws_s3.Bucket(
             self,
@@ -160,11 +169,11 @@ class PlanScoreScoring(cdk.Stack):
 
     def make_data_bucket(self, stack_id, formation_info):
 
-        if formation_info.bucket_name:
+        if formation_info.data_bucket:
             data_bucket = aws_s3.Bucket.from_bucket_arn(
                 self,
                 'Data',
-                f'arn:aws:s3:::{formation_info.bucket_name}',
+                f'arn:aws:s3:::{formation_info.data_bucket}',
             )
         else:
             data_bucket = aws_s3.Bucket(
@@ -452,7 +461,7 @@ if __name__ == '__main__':
         raise ValueError('USAGE: cdk <command> -c formation_prefix=cf-development <stack>')
 
     assert formation_prefix.startswith('cf-')
-    formation_info = FormationInfo(formation_prefix, None, None, None, None, None)
+    formation_info = FormationInfo(formation_prefix, None, None, None, None, None, None)
 
     for _formation_info in FORMATIONS:
         if _formation_info.prefix == formation_prefix:
