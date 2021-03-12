@@ -24,6 +24,11 @@ class PlanScoreContent(cdk.Stack):
             stack = [s for (k, s) in output.items() if k.startswith(formation_prefix)][0]
 
         super().__init__(scope, stack_id, **kwargs)
+        
+        self.fill_static_bucket(stack_id, stack)
+        self.fill_scoring_bucket(stack_id, stack)
+    
+    def fill_static_bucket(self, stack_id, stack):
 
         static_dirname = tempfile.mkdtemp(dir='/tmp', prefix='static-site-content-')
         
@@ -60,8 +65,8 @@ class PlanScoreContent(cdk.Stack):
                 aws_s3_deployment.CacheControl.from_string("public, max-age=60"),
             ],
         )
-        
-        #
+    
+    def fill_scoring_bucket(self, stack_id, stack):
 
         scoring_dirname = tempfile.mkdtemp(dir='/tmp', prefix='scoring-site-content-')
 

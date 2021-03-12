@@ -67,9 +67,8 @@ class PlanScoreScoring(cdk.Stack):
 
         super().__init__(scope, stack_id, **kwargs)
 
-        self.go(stack_id)
-
-    def go(self, stack_id):
+        # Do the work
+        
         static_site_bucket, scoring_site_bucket = self.make_buckets()
         distribution, website_base = self.make_cloudfront(
             static_site_bucket,
