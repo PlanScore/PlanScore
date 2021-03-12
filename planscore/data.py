@@ -310,9 +310,9 @@ MODELS2020 = [
     Model(State.IL, House.ushouse,      18,  True, '2020', 'data/IL/002-festblocks'), # 56f7c85
     Model(State.IL, House.statesenate,  59,  True, '2020', 'data/IL/002-festblocks'), # 56f7c85
     Model(State.IL, House.statehouse,  118,  True, '2020', 'data/IL/002-festblocks'), # 56f7c85
-    Model(State.IN, House.ushouse,       9,  True, '2020', 'data/IN/001-festblocks'), # 
-    Model(State.IN, House.statesenate,  50,  True, '2020', 'data/IN/001-festblocks'), # 
-    Model(State.IN, House.statehouse,  100,  True, '2020', 'data/IN/001-festblocks'), # 
+    Model(State.IN, House.ushouse,       9,  True, '2020', 'data/IN/001-festblocks'), # 45a92e3
+    Model(State.IN, House.statesenate,  50,  True, '2020', 'data/IN/001-festblocks'), # 45a92e3
+    Model(State.IN, House.statehouse,  100,  True, '2020', 'data/IN/001-festblocks'), # 45a92e3
     Model(State.MA, House.ushouse,       9,  True, '2020', 'data/MA/002-festblocks'), # 56f7c85
     Model(State.MA, House.statesenate,  40,  True, '2020', 'data/MA/002-festblocks'), # 56f7c85
     Model(State.MA, House.statehouse,  160,  True, '2020', 'data/MA/002-festblocks'), # 56f7c85
