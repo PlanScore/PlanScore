@@ -91,7 +91,6 @@ workflows:
             branches:
               only:
                 - main
-                - migurski/attempt-cdk
       - Deploy:
           requires:
             - Test

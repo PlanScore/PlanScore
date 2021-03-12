@@ -10,6 +10,7 @@ from aws_cdk import (
     aws_s3,
     aws_s3_deployment,
     aws_lambda,
+    aws_logs,
     aws_apigateway,
     aws_certificatemanager,
     aws_cloudfront,
@@ -244,6 +245,7 @@ class PlanScoreScoring(cdk.Stack):
         function_kwargs = dict(
             timeout=cdk.Duration.seconds(300),
             runtime=aws_lambda.Runtime.PYTHON_3_6,
+            log_retention=aws_logs.RetentionDays.TWO_WEEKS,
             code=aws_lambda.Code.from_asset("../planscore-lambda.zip"),
             environment={
                 'S3_BUCKET': data_bucket.bucket_name,
