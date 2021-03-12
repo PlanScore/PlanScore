@@ -1,5 +1,5 @@
 {
-  "app": "python3 cdk.py",
+  "app": "python3 cdk-scoring.py",
   "context": {
     "@aws-cdk/core:enableStackNameDuplicates": "true",
     "aws-cdk:enableDiffNoFail": "true",

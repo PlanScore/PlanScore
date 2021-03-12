@@ -191,7 +191,7 @@ class PlanScoreStack(cdk.Stack):
             f"{stack_id}-Data",
             destination_bucket=data_bucket,
             sources=[
-                aws_s3_deployment.Source.asset("planscore/tests/data/XX-unified"),
+                aws_s3_deployment.Source.asset("../planscore/tests/data/XX-unified"),
             ],
             destination_key_prefix="data/XX/005-unified",
         )
@@ -228,7 +228,7 @@ class PlanScoreStack(cdk.Stack):
         function_kwargs = dict(
             timeout=cdk.Duration.seconds(300),
             runtime=aws_lambda.Runtime.PYTHON_3_6,
-            code=aws_lambda.Code.from_asset("planscore-lambda.zip"),
+            code=aws_lambda.Code.from_asset("../planscore-lambda.zip"),
             environment={
                 'S3_BUCKET': data_bucket.bucket_name,
                 'PLANSCORE_SECRET': 'fake-fake',
