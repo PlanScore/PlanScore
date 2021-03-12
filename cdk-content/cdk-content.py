@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 
 import os
+import io
 import json
+import zipfile
 import tempfile
 import subprocess
+import urllib.request
 
 from aws_cdk import (
     core as cdk,
@@ -21,6 +24,44 @@ class PlanScoreContent(cdk.Stack):
             stack = [s for (k, s) in output.items() if k.startswith(formation_prefix)][0]
 
         super().__init__(scope, stack_id, **kwargs)
+
+        static_dirname = tempfile.mkdtemp(dir='/tmp', prefix='static-site-content-')
+        
+        static_bytes = urllib.request.urlopen('https://planscore.org/WEBSITE_OUTPUT.zip')
+        static_archive = zipfile.ZipFile(io.BytesIO(static_bytes.read()))
+        static_archive.extractall(static_dirname)
+        
+        for (dirname, _, filenames) in os.walk(static_dirname):
+            for filename in filenames:
+                _, ext = os.path.splitext(filename)
+                if ext in ('.jpg', '.png'):
+                    continue
+                path = os.path.join(dirname, filename)
+                with open(path, 'r') as file1:
+                    content1 = file1.read()
+                content2 = content1.replace('https://planscore.org/', stack['WebsiteBase'])
+                with open(path, 'w') as file2:
+                    file2.write(content2)
+
+        static_site_bucket = aws_s3.Bucket.from_bucket_arn(
+            self,
+            'Static-Site',
+            f'arn:aws:s3:::{stack["StaticSiteBucket"]}',
+        )
+
+        aws_s3_deployment.BucketDeployment(
+            self,
+            f"{stack_id}-Static-Site-Content",
+            destination_bucket=static_site_bucket,
+            sources=[
+                aws_s3_deployment.Source.asset(static_dirname),
+            ],
+            cache_control=[
+                aws_s3_deployment.CacheControl.from_string("public, max-age=60"),
+            ],
+        )
+        
+        #
 
         scoring_dirname = tempfile.mkdtemp(dir='/tmp', prefix='scoring-site-content-')
 

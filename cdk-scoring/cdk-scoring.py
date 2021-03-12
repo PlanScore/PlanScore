@@ -103,6 +103,7 @@ class PlanScoreScoring(cdk.Stack):
             public_read_access=True,
         )
 
+        cdk.CfnOutput(self, 'StaticSiteBucket', value=static_site_bucket.bucket_name)
         cdk.CfnOutput(self, 'ScoringSiteBucket', value=scoring_site_bucket.bucket_name)
 
         return static_site_bucket, scoring_site_bucket
