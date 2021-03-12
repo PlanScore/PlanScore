@@ -38,6 +38,7 @@ STATE = {
     data.State.OR: 'or',
     data.State.WA: 'wa',
     data.State.WI: 'wi',
+    data.State.IN: 'in',
     data.State.FL: 'fl',
     data.State.TX: 'tx',
     data.State.GA: 'ga',
