@@ -37,7 +37,7 @@ dev-deploy: planscore-lambda.zip
 # Just one Lambda codebase is created, with different entry points and environments.
 planscore-lambda.zip: gdal-geos-numpy-python.tar.gz
 	mkdir -p planscore-lambda
-	pip install -q -t planscore-lambda .
+	pip3 install -q -t planscore-lambda .
 	tar -C planscore-lambda -xzf gdal-geos-numpy-python.tar.gz
 	cp lambda.py planscore-lambda/lambda.py
 	cd planscore-lambda && zip -rq ../planscore-lambda.zip .
@@ -47,13 +47,13 @@ gdal-geos-numpy-python.tar.gz:
 
 planscore/website/build:
 	env API_BASE='https://api.planscore.org/' \
-		python -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
+		python3 -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
 
 website-dev-build:
 	env API_BASE='https://api.dev.planscore.org/' \
 		FREEZER_DESTINATION="`pwd`/$@" \
 		S3_BUCKET='planscore--dev' \
-		python -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
+		python3 -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
 
 # It's a pain to have to redownload gdal-geos-numpy-python.tar.gz so this sort-of cleans things
 cleanish:
