@@ -27,19 +27,7 @@ live-website: planscore/website/build
 	aws s3 sync --acl public-read --cache-control 'public, max-age=300' --delete $</ s3://planscore.org-website/
 
 dev-deploy: planscore-lambda.zip
-	cd cdk-scoring \
-	&& cdk deploy --no-color \
-		--context formation_prefix=cf-development \
-		--require-approval never \
-		--outputs-file ../cdk-outputs-dev.json
-	
-	#./s3-sync-website.py cdk-outputs-dev.json
-
-	cd cdk-content \
-	&& cdk deploy --no-color \
-		--context formation_prefix=cf-development \
-		--context prior_output=../cdk-outputs-dev.json \
-		--require-approval never
+	./cdk-deploy.sh cf-development
 
 # Just one Lambda codebase is created, with different entry points and environments.
 planscore-lambda.zip: gdal-geos-numpy-python.tar.gz
