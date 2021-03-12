@@ -78,8 +78,7 @@ jobs:
       - checkout
       - run: npm install -g aws-cdk
       - run: pip3 install '.[deploy]'
-      - attach_workspace:
-          at: ~/repo
+      - run: find . -name '*.zip'
       - run: make dev-deploy
 
 workflows:
@@ -101,9 +100,6 @@ workflows:
             branches:
               only: main
       - Synth:
-          requires:
-            - Test
-            - Build
           filters:
             branches:
               only: migurski/attempt-cdk
