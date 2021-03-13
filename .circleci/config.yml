@@ -27,6 +27,7 @@ jobs:
       - run: python3 setup.py test
       - run: NODE_PATH=`pwd` node tests.js
   
+  # Deploy to live site!
   Deploy:
     machine:
       image: ubuntu-2004:202101-01
@@ -36,17 +37,6 @@ jobs:
       - run: npm install -g aws-cdk@1.92.0
       - run: pip3 install '.[deploy]'
       - run: make live-deploy
-  
-  # Just here temporarily while we work on CDK deployment
-  Dev-Deploy:
-    machine:
-      image: ubuntu-2004:202101-01
-    working_directory: ~/repo
-    steps:
-      - checkout
-      - run: npm install -g aws-cdk@1.92.0
-      - run: pip3 install '.[deploy]'
-      - run: make dev-deploy
 
 workflows:
   version: 2
@@ -61,7 +51,3 @@ workflows:
               only:
                 - main
                 - migurski/attempt-cdk
-      - Dev-Deploy:
-          filters:
-            branches:
-              only: migurski/attempt-cdk

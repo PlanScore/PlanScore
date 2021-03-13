@@ -43,7 +43,8 @@ FORMATIONS = [
     ),
 ]
 
-API_TOKENS = 'Good,Better,Best'
+API_TOKENS = os.environ.get('API_TOKENS', 'Good,Better,Best')
+PLANSCORE_SECRET = os.environ.get('PLANSCORE_SECRET', 'fake-fake')
 
 def concat_strings(*things):
     return functools.reduce(
@@ -254,7 +255,7 @@ class PlanScoreScoring(cdk.Stack):
             code=aws_lambda.Code.from_asset("../planscore-lambda.zip"),
             environment={
                 'S3_BUCKET': data_bucket.bucket_name,
-                'PLANSCORE_SECRET': 'fake-fake',
+                'PLANSCORE_SECRET': PLANSCORE_SECRET,
                 'WEBSITE_BASE': website_base,
             },
         )
