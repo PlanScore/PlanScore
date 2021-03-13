@@ -117,16 +117,16 @@ Process
 ### New Upload
 
 1.  User starts at `/upload.html`
-2.  Page requests an ID and S3 fields from `/upload-new` ([λ:`PlanScore-UploadFieldsNew`](planscore/upload_fields_new.py))
+2.  Page requests an ID and S3 fields from `/upload` ([λ:`PlanScore-UploadFields`](planscore/upload_fields.py))
 3.  User posts file to S3, redirects to `/preread` ([λ:`PlanScore-Preread`](planscore/preread.py))
 4.  [λ:`PlanScore-Preread`](planscore/preread.py) prepares upload
     1.  Creates first index JSON
     2.  Invokes [λ:`PlanScore-PrereadFollowup`](planscore/preread_followup.py)
-    3.  Redirects user to `/annotate-new.html{?id}{&bucket}{&key}` to wait
+    3.  Redirects user to `/annotate.html{?id}{&bucket}{&key}` to wait
 5.  [λ:`PlanScore-PrereadFollowup`](planscore/preread_followup.py) parses upload:
     1.  Guesses state model
     2.  Uploads plan GeoJSON
-6.  User posts annotation form with incumbency settings to `/uploaded-new` ([λ:`PlanScore-PostreadCallback`](planscore/postread_callback.py))
+6.  User posts annotation form with incumbency settings to `/uploaded` ([λ:`PlanScore-PostreadCallback`](planscore/postread_callback.py))
 7.  [λ:`PlanScore-PostreadCallback`](planscore/postread_callback.py) invokes [λ:`PlanScore-PostreadCalculate`](planscore/postread_calculate.py) and redirects user to `/plan.html?{id}` to wait
 8.  [λ:`PlanScore-PostreadCalculate`](planscore/postread_calculate.py) commences scoring:
     1.  Uploads district geometry WKTs
@@ -144,7 +144,7 @@ Process
 -   Add to `State` enum in [`planscore/data.py`](planscore/data.py)
 -   Add to `MODELS2020` list in [`planscore/data.py`](planscore/data.py)
 -   Add to `STATE` enum in [`planscore/matrix.py`](planscore/matrix.py)
--   Add to listing and alt text in [`planscore/website/templates/upload-new.html`](planscore/website/templates/upload-new.html)
+-   Add to listing and alt text in [`planscore/website/templates/upload.html`](planscore/website/templates/upload.html)
 -   Add to `supported` expression in [`design/Upload-Map.qgz`](design/Upload-Map.qgz)
 -   Export SVG file from [`design/Upload-Map.qgz`](design/Upload-Map.qgz)
 -   Compress SVG file via [`https://vecta.io/nano`](https://vecta.io/nano), save to [`planscore/website/static/supported-states.svg`](planscore/website/static/supported-states.svg)

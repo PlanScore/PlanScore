@@ -1,6 +1,9 @@
 {% extends "patternlibrary.html" %}
 {% block title %}Annotate Plan{% endblock %}
 {% block head %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"></script>
+    <script src="{{ digested_static_url('annotate-new.js') }}"></script>
     <style lang="text/css">
     
         table td input[type='radio']
@@ -8,13 +11,29 @@
             margin-right: .5em;
         }
 
+        #message
+        {
+            text-align: center;
+            margin: 6em 0 12em;
+        }
+    
+        #map
+        {
+            width: 100%;
+            height: 400px;
+            border: 1px solid #93A1A1;
+            clear: both;
+        }
+        
     </style>
 {% endblock %}
 {% block content %}
+    <section id="message">
+        Loading plan…
+    </section>
+    <section id="plan-preread">
 
-    <h2>
-        Almost Done!
-    </h2>
+    <h2>Add Plan Details</h2>
 
     <form id="annotate" action="{{uploaded_url}}" method="get">
         <p>
@@ -27,159 +46,82 @@
             <input type="hidden" name="key">
             <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary">
         </p>
+        <p id="plan-description">(Loading)</p>
+        
+        <section id="incumbency-unavailable" style="display: none">
+            <h3>Unavailable: Incumbent Candidates</h3>
+            <p>
+                This model does not calculate scenarios for incumbent party
+                candidates. All scores will assume open seat races.
+            </p>
+        </section>
+        
+        <p id="map"></p>
+
+        <section id="incumbency-scenarios">
+        <h3>Optional: Incumbent Candidates</h3>
+
+        <p>
+            If you know which districts have incumbents running for re-election,
+            select their party affiliation below for a more accurate prediction.
+        </p>
+
+        <div class="table-responsive ">
+            <table class="table table-hover"> 
+                <thead>
+                    <tr>
+                        <th>District</th>
+                        <th colspan="3">Candidate Scenario</th>
+                    </tr> 
+                </thead> 
+                <tbody> 
+                    <tr id="first-incumbent">
+                        <td>0</td>
+                        <td><label><input type="radio" name="incumbent-0" value="{{ Incumbency.Democrat.value }}"> Democratic Incumbent</label></td>
+                        <td><label><input type="radio" name="incumbent-0" value="{{ Incumbency.Open.value }}" checked> Unknown or Open Seat</label></td>
+                        <td><label><input type="radio" name="incumbent-0" value="{{ Incumbency.Republican.value }}"> Republican Incumbent</label></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    
+        <p>
+            <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary">
+        </p>
+
+        </section>
     </form>
+
+    </section>
+
 	<script language="javascript">
 	
-        // Copied from https://davidwalsh.name/query-string-javascript
-        function getUrlParameter(name)
-        {
-            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-            var results = regex.exec(location.search);
-            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-        }
-
-	    var form = document.getElementById('annotate'),
-	        plan_id = location.search.replace('?', '');
+	    var model_url_pattern = '{{ url_for("get_model_description", prefix="data/XX/003") }}';
 	    
-        form.elements['description'].value = getUrlParameter('key').replace(/^.+\/([^\/]+)$/, '$1');
-        form.elements['id'].value = getUrlParameter('id');
-        form.elements['bucket'].value = getUrlParameter('bucket');
-        form.elements['key'].value = getUrlParameter('key');
+	    var signed_id = getUrlParameter('id', location.search),
+	        s3_key = getUrlParameter('key', location.search),
+	        s3_bucket = getUrlParameter('bucket', location.search),
+	        form = document.getElementById('annotate'),
+	        plan_desc = s3_key.replace(/^.+\/([^\/]+)$/, '$1'),
+	        plan_id = signed_id.replace(/^(.+)\.[\w\-]+$/, '$1'),
+	        plan_url = format_url('{{ data_url_pattern }}', plan_id),
+	        geom_url = format_url('{{ geom_url_pattern }}', plan_id);
+	    
+        form.elements['description'].value = plan_desc;
+        form.elements['id'].value = signed_id;
+        form.elements['bucket'].value = s3_bucket;
+        form.elements['key'].value = s3_key;
+
+	    load_plan_preread(plan_url,
+	        document.getElementById('message'),
+	        document.getElementById('plan-preread'),
+	        document.getElementById('plan-description'),
+	        document.getElementById('incumbency-unavailable'),
+	        document.getElementById('incumbency-scenarios'),
+	        document.getElementById('first-incumbent'),
+	        geom_url, document.getElementById('map'));
 
 	</script>
-    
-    {#
-    <p>
-        If you know which districts have incumbents running for re-election,
-        select their party affiliation below for a more accurate prediction.
-    </p>
-
-    <div class="table-responsive ">
-        <table class="table table-hover"> 
-            <thead>
-                <tr>
-                    <th>District</th>
-                    <th colspan="3">Incumbency</th>
-                </tr> 
-            </thead> 
-            <tbody> 
-                <tr>
-                    <td>1</td>
-                    <td><label><input type="radio" name="incumbent-1" value="D"> Democratic Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-1" value="" checked> Unknown or No Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-1" value="R"> Republican Incumbent</label></td>
-                </tr>
-                <tr>
-                    <td>2</td>
-                    <td><label><input type="radio" name="incumbent-2" value="D"> Democratic Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-2" value="" checked> Unknown or No Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-2" value="R"> Republican Incumbent</label></td>
-                </tr>
-                <tr>
-                    <td>3</td>
-                    <td><label><input type="radio" name="incumbent-3" value="D"> Democratic Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-3" value="" checked> Unknown or No Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-3" value="R"> Republican Incumbent</label></td>
-                </tr>
-                <tr>
-                    <td>4</td>
-                    <td><label><input type="radio" name="incumbent-4" value="D"> Democratic Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-4" value="" checked> Unknown or No Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-4" value="R"> Republican Incumbent</label></td>
-                </tr>
-                <tr>
-                    <td>5</td>
-                    <td><label><input type="radio" name="incumbent-5" value="D"> Democratic Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-5" value="" checked> Unknown or No Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-5" value="R"> Republican Incumbent</label></td>
-                </tr>
-                <tr>
-                    <td>6</td>
-                    <td><label><input type="radio" name="incumbent-6" value="D"> Democratic Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-6" value="" checked> Unknown or No Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-6" value="R"> Republican Incumbent</label></td>
-                </tr>
-                <tr>
-                    <td>7</td>
-                    <td><label><input type="radio" name="incumbent-7" value="D"> Democratic Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-7" value="" checked> Unknown or No Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-7" value="R"> Republican Incumbent</label></td>
-                </tr>
-                <tr>
-                    <td>8</td>
-                    <td><label><input type="radio" name="incumbent-8" value="D"> Democratic Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-8" value="" checked> Unknown or No Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-8" value="R"> Republican Incumbent</label></td>
-                </tr>
-                <tr>
-                    <td>9</td>
-                    <td><label><input type="radio" name="incumbent-9" value="D"> Democratic Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-9" value="" checked> Unknown or No Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-9" value="R"> Republican Incumbent</label></td>
-                </tr>
-                <tr>
-                    <td>10</td>
-                    <td><label><input type="radio" name="incumbent-10" value="D"> Democratic Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-10" value="" checked> Unknown or No Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-10" value="R"> Republican Incumbent</label></td>
-                </tr>
-                <tr>
-                    <td>11</td>
-                    <td><label><input type="radio" name="incumbent-11" value="D"> Democratic Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-11" value="" checked> Unknown or No Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-11" value="R"> Republican Incumbent</label></td>
-                </tr>
-                <tr>
-                    <td>12</td>
-                    <td><label><input type="radio" name="incumbent-12" value="D"> Democratic Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-12" value="" checked> Unknown or No Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-12" value="R"> Republican Incumbent</label></td>
-                </tr>
-                <tr>
-                    <td>13</td>
-                    <td><label><input type="radio" name="incumbent-13" value="D"> Democratic Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-13" value="" checked> Unknown or No Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-13" value="R"> Republican Incumbent</label></td>
-                </tr>
-                <tr>
-                    <td>14</td>
-                    <td><label><input type="radio" name="incumbent-14" value="D"> Democratic Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-14" value="" checked> Unknown or No Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-14" value="R"> Republican Incumbent</label></td>
-                </tr>
-                <tr>
-                    <td>15</td>
-                    <td><label><input type="radio" name="incumbent-15" value="D"> Democratic Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-15" value="" checked> Unknown or No Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-15" value="R"> Republican Incumbent</label></td>
-                </tr>
-                <tr>
-                    <td>16</td>
-                    <td><label><input type="radio" name="incumbent-16" value="D"> Democratic Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-16" value="" checked> Unknown or No Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-16" value="R"> Republican Incumbent</label></td>
-                </tr>
-                <tr>
-                    <td>17</td>
-                    <td><label><input type="radio" name="incumbent-17" value="D"> Democratic Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-17" value="" checked> Unknown or No Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-17" value="R"> Republican Incumbent</label></td>
-                </tr>
-                <tr>
-                    <td>18</td>
-                    <td><label><input type="radio" name="incumbent-18" value="D"> Democratic Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-18" value="" checked> Unknown or No Incumbent</label></td>
-                    <td><label><input type="radio" name="incumbent-18" value="R"> Republican Incumbent</label></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <p>
-        <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary" disabled>
-    </p>
-    #}
 
 	{% include 'olark-embed.html' %}
 

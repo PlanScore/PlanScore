@@ -24,6 +24,7 @@ jobs:
           paths:
             - /opt/circleci/.pyenv
           key: test-dependencies-{{ checksum "setup.py" }}
+      - run: python3 lambda.py
       - run: python3 setup.py test
       - run: NODE_PATH=`pwd` node tests.js
   

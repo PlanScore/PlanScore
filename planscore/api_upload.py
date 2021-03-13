@@ -2,7 +2,7 @@ import json
 import boto3
 
 from . import constants
-from . import upload_fields_new
+from . import upload_fields
 from . import preread
 from . import data
 from . import observe
@@ -18,7 +18,7 @@ def kick_it_off(geojson):
     
     # check auth header or whatever
 
-    unsigned_id, _ = upload_fields_new.generate_signed_id('no sig, no secret')
+    unsigned_id, _ = upload_fields.generate_signed_id('no sig, no secret')
     upload_key = data.UPLOAD_PREFIX.format(id=unsigned_id) + 'plan.geojson'
     index_key = data.UPLOAD_INDEX_KEY.format(id=unsigned_id)
     index_url = constants.S3_URL_PATTERN.format(b=constants.S3_BUCKET, k=index_key)
