@@ -422,7 +422,7 @@ class PlanScoreScoring(cdk.Stack):
         )
 
         upload_fields_resource = api.root.add_resource(
-            'upload-new',
+            'upload',
             default_cors_preflight_options=aws_apigateway.CorsOptions(
                 allow_origins=aws_apigateway.Cors.ALL_ORIGINS,
             ),
@@ -446,7 +446,7 @@ class PlanScoreScoring(cdk.Stack):
         )
 
         uploaded_resource = api.root.add_resource(
-            'uploaded-new',
+            'uploaded',
             default_cors_preflight_options=aws_apigateway.CorsOptions(
                 allow_origins=aws_apigateway.Cors.ALL_ORIGINS,
             ),

@@ -12,10 +12,9 @@ API_NAME = 'PlanScore'
 # Relative URL paths for AWS Lambda functions. These values interact with
 # environment variables like WEBSITE_BASE and API_BASE via URL path joins.
 
-API_UPLOAD_OLD_RELPATH = 'upload'
 API_UPLOADED_OLD_RELPATH = 'uploaded'
-API_UPLOAD_NEW_RELPATH = 'upload-new'
-API_UPLOADED_NEW_RELPATH = 'uploaded-new'
+API_UPLOAD_NEW_RELPATH = 'upload'
+API_UPLOADED_NEW_RELPATH = 'uploaded'
 API_PREREAD_RELPATH = 'preread'
 
 # This form is safe because we don't use periods in the bucket name.
