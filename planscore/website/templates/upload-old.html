@@ -1,7 +1,7 @@
 {% extends "patternlibrary.html" %}
 {% block title %}Upload{% endblock %}
 {% block head %}
-    <meta http-equiv="refresh" content="240; url={{ url_for('get_upload') }}">
+    <meta http-equiv="refresh" content="240; url={{ url_for('get_upload_old') }}">
 	<script src="{{ digested_static_url('upload.js') }}"></script>
     <style lang="text/css">
     
@@ -45,30 +45,28 @@
                 only to the parties’ line-drawers.
             </p>
             <p>
-                Our current supported states are
-                <strong>California</strong>,
-                <strong>Colorado</strong>,
-                <strong>Florida</strong>,
-                <strong>Georgia</strong>,
-                <strong>Indiana</strong>,
-                <strong>Illinois</strong>,
-                <strong>Maryland</strong>,
-                <strong>Massachusetts</strong>,
-                <strong>Michigan</strong>,
-                <strong>Minnesota</strong>,
-                <strong>Missouri</strong>,
-                <strong>North&nbsp;Carolina</strong>,
-                <strong>Oregon</strong>,
-                <strong>Pennsylvania</strong>,
-                <strong>Tennessee</strong>,
-                <strong>Texas</strong>,
-                <strong>Virginia</strong>,
-                <strong>Washington</strong>,
-                and <strong>Wisconsin</strong>.
+                Our first three supported states are <strong>Pennsylvania</strong>,
+                <strong>Virginia</strong> (House of Delegates),
+                and <strong>Maryland</strong>. We are building models for
+                other states like Wisconsin and North&nbsp;Carolina.
+                For an example analysis of results see
+                <a href="https://electionlawblog.org/?p=101546">this recent breakdown
+                of 2018 proposed plans for Virginia by Nicholas Stephanopoulos</a>.
             </p>
             <p>
-                Learn more <a href="{{ url_for('get_model_description', prefix='data/2020') }}">about our methodology and its validation here.</a>
+                Here are three score pages for current plans:
             </p>
+            <ul>
+                <li>
+                    <a href="https://planscore.org/plan.html?20180219T202039.596761160Z">Pennsylvania Supreme Court Remedial Map (Feb 19, 2018)</a>
+                </li>
+                <li>
+                    <a href="https://planscore.org/plan.html?PA-Joint-Submission-2018-02-JP">Proposed Pennsylvania congressional plan, Joint Submission dated February 9, 2018</a>
+                </li>
+                <li>
+                    <a href="https://planscore.org/plan.html?enacted-PA5-ushouse-JP">Enacted Pennsylvania 2012-2016 congressional plan</a>
+                </li>
+            </ul>
         </div>
         <form class="col-md-6" id="upload" action="#" method="post" enctype="multipart/form-data">
             <input type="hidden" name="key">
@@ -86,11 +84,11 @@
             </p>
             <p>
                 <input type="file" name="file" id="file">
-                <label for="file" class="btn btn-default">1) Choose A File</label>
-                <input type="submit" name="submission" value="2) Score This Plan" class="btn btn-primary" disabled>
+                <label for="file" class="btn btn-default">Choose A File</label>
+                <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary" disabled>
             </p>
             <p>
-                These file types and states are currently supported:
+                These file types are currently supported:
             </p>
             <ul>
                 <li>
@@ -100,9 +98,6 @@
                 <li><a href="http://geojson.org">GeoJSON</a></li>
                 <li><a href="http://www.geopackage.org">Geopackage</a></li>
             </ul>
-            <p style="margin-top:1em">
-                <img src="{{ digested_static_url('supported-states.svg') }}" alt="PA, VA, WI, MD, NC, FL, TX, TN, MA, MI, IL, GA, MO, CA, CO, MN, OR, WA, IN">
-            </p>
         </form>
     </section>
 	<script language="javascript">
@@ -116,10 +111,10 @@
 	    file_input.addEventListener('change', function(e)
 	    {
 	        if(this.files.length) {
-	            file_label.innerText = '1) File: ' + this.files[0].name;
+	            file_label.innerText = this.files[0].name;
 	        
 	        } else {
-	            file_label.innerText = '1) Choose A File';
+	            file_label.innerText = 'Choose A File';
 	        }
 	    });
 	    
