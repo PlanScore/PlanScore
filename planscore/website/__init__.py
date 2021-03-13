@@ -83,8 +83,8 @@ def get_annotate_old():
     uploaded_url = get_function_url(constants.API_UPLOADED_OLD_RELPATH)
     return flask.render_template('annotate.html', uploaded_url=uploaded_url)
 
-@app.route('/annotate-new.html')
-def get_annotate_new():
+@app.route('/annotate.html')
+def get_annotate():
     uploaded_url = get_function_url(constants.API_UPLOADED_NEW_RELPATH)
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     geom_url_pattern = get_geom_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])

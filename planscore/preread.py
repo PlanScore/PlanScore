@@ -23,7 +23,7 @@ def get_redirect_url(website_base, bucket, key, signed_id):
     rules = {rule.endpoint: str(rule) for rule in website.app.url_map.iter_rules()}
 
     redirect_query = urllib.parse.urlencode(dict(id=signed_id, bucket=bucket, key=key))
-    redirect_path = '{}?{}'.format(rules['get_annotate_new'], redirect_query)
+    redirect_path = '{}?{}'.format(rules['get_annotate'], redirect_query)
     redirect_url = urllib.parse.urljoin(website_base, redirect_path)
 
     return redirect_url
