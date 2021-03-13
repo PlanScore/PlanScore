@@ -74,8 +74,8 @@ def get_friendsresources_page():
     return flask.render_template('about-friends-resources.html')
 
 @app.route('/upload.html')
-def get_upload_new():
-    upload_fields_url = get_function_url(constants.API_UPLOAD_NEW_RELPATH)
+def get_upload():
+    upload_fields_url = get_function_url(constants.API_UPLOAD_RELPATH)
     return flask.render_template('upload-new.html', upload_fields_url=upload_fields_url)
 
 @app.route('/annotate-old.html')
@@ -85,7 +85,7 @@ def get_annotate_old():
 
 @app.route('/annotate.html')
 def get_annotate():
-    uploaded_url = get_function_url(constants.API_UPLOADED_NEW_RELPATH)
+    uploaded_url = get_function_url(constants.API_UPLOADED_RELPATH)
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     geom_url_pattern = get_geom_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     return flask.render_template('annotate-new.html', Incumbency=data.Incumbency,

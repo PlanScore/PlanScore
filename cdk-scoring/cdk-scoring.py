@@ -333,8 +333,8 @@ class PlanScoreScoring(cdk.Stack):
 
         upload_fields = aws_lambda.Function(
             self,
-            "UploadFieldsNew",
-            handler="lambda.upload_fields_new",
+            "UploadFields",
+            handler="lambda.upload_fields",
             **function_kwargs
         )
 
