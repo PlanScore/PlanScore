@@ -28,6 +28,7 @@ INCUMBENCY = {
 STATE = {
     data.State.XX: 'ks', # Null Ranch
     
+    data.State.AZ: 'az',
     data.State.CA: 'ca',
     data.State.CO: 'co',
     data.State.MD: 'md',
