@@ -78,11 +78,6 @@ def get_upload():
     upload_fields_url = get_function_url(constants.API_UPLOAD_RELPATH)
     return flask.render_template('upload.html', upload_fields_url=upload_fields_url)
 
-@app.route('/annotate-old.html')
-def get_annotate_old():
-    uploaded_url = get_function_url(constants.API_UPLOADED_OLD_RELPATH)
-    return flask.render_template('annotate-old.html', uploaded_url=uploaded_url)
-
 @app.route('/annotate.html')
 def get_annotate():
     uploaded_url = get_function_url(constants.API_UPLOADED_RELPATH)

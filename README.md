@@ -92,30 +92,6 @@ environment variables, as described in Ubuntu 16.
 Process
 ---
 
-### Old Upload
-
-1.  User starts at `/upload-old.html`
-2.  Page requests an ID and S3 fields from `/upload` ([λ:`PlanScore-UploadFields`](planscore/upload_fields.py))
-3.  User posts file to S3, redirects to `/annotate.html`
-4.  User posts annotation form to `/uploaded` ([λ:`PlanScore-Callback`](planscore/callback.py))
-5.  [λ:`PlanScore-Callback`](planscore/callback.py) prepares upload:
-    1.  Creates first index JSON
-    2.  Invokes [λ:`PlanScore-AfterUpload`](planscore/after_upload.py)
-    3.  Redirects user to `/plan.html?{id}` to wait
-6.  [λ:`PlanScore-AfterUpload`](planscore/after_upload.py) commences scoring:
-    1.  Guesses state model
-    2.  Uploads plan GeoJSON and district geometry WKTs
-    3.  Loads model tiles
-    4.  Invokes [λ:`PlanScore-ObserveTiles`](planscore/observe_tiles.py)
-    5.  Fans out [λ:`PlanScore-RunTile`](planscore/run_tile.py)
-7.  [λ:`PlanScore-RunTile`](planscore/run_tile.py) aggregates district statistics in tile, saves results to S3
-8.  [λ:`PlanScore-ObserveTiles`](planscore/observe_tiles.py) scores plan:
-    1.  Waits for all expected aggregated tile statistics
-    2.  Calculates final scores
-    3.  Saves index JSON with final data
-
-### New Upload
-
 1.  User starts at `/upload.html`
 2.  Page requests an ID and S3 fields from `/upload` ([λ:`PlanScore-UploadFields`](planscore/upload_fields.py))
 3.  User posts file to S3, redirects to `/preread` ([λ:`PlanScore-Preread`](planscore/preread.py))
