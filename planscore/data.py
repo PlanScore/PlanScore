@@ -17,6 +17,7 @@ class State (enum.Enum):
     MD = 'MD'; NC = 'NC'; PA = 'PA'; VA = 'VA'; WI = 'WI'
     FL = 'FL'; TX = 'TX'; GA = 'GA'; IL = 'IL'; MA = 'MA'; MI = 'MI'; TN = 'TN'
     MO = 'MO'; CA = 'CA'; CO = 'CO'; MN = 'MN'; OR = 'OR'; WA = 'WA'; IN = 'IN'
+    AZ = 'AZ'
 
 class House (enum.Enum):
     ushouse = 'ushouse'; statesenate = 'statesenate'; statehouse = 'statehouse'
@@ -277,6 +278,9 @@ class Upload:
 
 MODELS2020 = [
     Model(State.XX, House.statehouse,    2,  True, '2020', 'data/XX/005-unified'), # b8e19879
+    Model(State.AZ, House.ushouse,       9,  True, '2020', 'data/AZ/001-festblocks'), # 7a916a4
+    Model(State.AZ, House.statesenate,  30,  True, '2020', 'data/AZ/001-festblocks'), # 7a916a4
+    Model(State.AZ, House.statehouse,   60,  True, '2020', 'data/AZ/001-festblocks'), # 7a916a4
     Model(State.CA, House.ushouse,      55,  True, '2020', 'data/CA/001-festblocks'), # b969229
     Model(State.CA, House.statesenate,  40,  True, '2020', 'data/CA/001-festblocks'), # b969229
     Model(State.CA, House.statehouse,   80,  True, '2020', 'data/CA/001-festblocks'), # b969229
