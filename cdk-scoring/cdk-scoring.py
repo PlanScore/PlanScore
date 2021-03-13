@@ -36,10 +36,10 @@ FORMATIONS = [
         'cf-production',
         'planscore',
         'planscore.org-static-site',
-        None, # ['planscore.org'],
-        None, # 'arn:aws:acm:us-east-1:466184106004:certificate/c1e939b1-2ce8-4fb1-8f1e-688eabb0fd63',
-        None, # 'api.planscore.org',
-        None, # 'arn:aws:acm:us-east-1:466184106004:certificate/0216c55e-76c2-4344-b883-0603c7ee2251',
+        ['planscore.org', 'www.planscore.org'],
+        'arn:aws:acm:us-east-1:466184106004:certificate/c1e939b1-2ce8-4fb1-8f1e-688eabb0fd63',
+        'api.planscore.org',
+        'arn:aws:acm:us-east-1:466184106004:certificate/0216c55e-76c2-4344-b883-0603c7ee2251',
     ),
 ]
 

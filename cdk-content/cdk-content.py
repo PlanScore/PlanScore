@@ -24,6 +24,9 @@ class PlanScoreContent(cdk.Stack):
             stack = [s for (k, s) in output.items() if k.startswith(formation_prefix)][0]
 
         super().__init__(scope, stack_id, **kwargs)
+
+        cdk.CfnOutput(self, 'APIBase', value=stack['APIBase'])
+        cdk.CfnOutput(self, 'WebsiteBase', value=stack['WebsiteBase'])
         
         self.fill_static_bucket(stack_id, stack)
         self.fill_scoring_bucket(stack_id, stack)
