@@ -26,62 +26,28 @@ jobs:
           key: test-dependencies-{{ checksum "setup.py" }}
       - run: python3 setup.py test
       - run: NODE_PATH=`pwd` node tests.js
-      - run: make planscore/website/build
-      - persist_to_workspace:
-          root: ~/repo
-          paths:
-            - planscore/website/build
   
-  # Prepare Lambda package for use in Deploy step.
-  # Optimistically prepares images in parallel with Test step.
-  Build:
-    machine:
-      image: ubuntu-1604:201903-01
-    working_directory: ~/repo
-    steps:
-      - checkout
-      - run: pyenv global 3.6.5
-      - restore_cache:
-          keys:
-            - build-dependencies-{{ checksum "setup.py" }}-{{ checksum "Makefile" }}
-      - run: make planscore-lambda.zip
-      - save_cache:
-          paths:
-            - ~/.cache/pip
-          key: build-dependencies-{{ checksum "setup.py" }}-{{ checksum "Makefile" }}
-      - persist_to_workspace:
-          root: ~/repo
-          paths:
-            - planscore-lambda.zip
-            - gdal-geos-python.tar.gz
-  
-  # Deploy to Lambda using package from Build step.
+  # Deploy to live site!
   Deploy:
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202101-01
     working_directory: ~/repo
     steps:
       - checkout
-      - run: pyenv global 3.6.5
-      - run: pip install boto3
-      - attach_workspace:
-          at: ~/repo
-      - run: make live-lambda
-      - run: make live-website
+      - run: npm install -g aws-cdk@1.92.0
+      - run: pip3 install '.[deploy]'
+      - run: make live-deploy
 
 workflows:
   version: 2
   everything:
     jobs:
       - Test
-      - Build:
-          filters:
-            branches:
-              only: main
       - Deploy:
           requires:
             - Test
-            - Build
           filters:
             branches:
-              only: main
+              only:
+                - main
+                - migurski/attempt-cdk

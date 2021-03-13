@@ -1,5 +1,5 @@
 import flask, os, urllib.parse, markdown, hashlib
-from .. import data, score, constants
+from .. import data, constants
 
 MODELS_BASEDIR = os.path.join(os.path.dirname(__file__), 'models')
 
@@ -102,7 +102,7 @@ def get_plan():
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     geom_url_pattern = get_geom_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     text_url_pattern = get_text_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
-    return flask.render_template('plan.html', fields=score.FIELD_NAMES,
+    return flask.render_template('plan.html',
         data_url_pattern=data_url_pattern, geom_url_pattern=geom_url_pattern,
         text_url_pattern=text_url_pattern)
 

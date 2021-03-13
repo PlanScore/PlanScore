@@ -7,7 +7,7 @@ import os, io, json, urllib.parse, gzip, functools, time, math, threading
 import boto3, osgeo.ogr
 from . import util, data, score, website, prepare_state, constants, tiles, observe
 
-FUNCTION_NAME = f'{constants.LAMBDA_PREFIX}PlanScore-PostreadCalculate'
+FUNCTION_NAME = os.environ.get('FUNC_NAME_POSTREAD_CALCULATE') or 'PlanScore-PostreadCalculate'
 EMPTY_GEOMETRY = osgeo.ogr.Geometry(osgeo.ogr.wkbGeometryCollection)
 
 osgeo.ogr.UseExceptions()

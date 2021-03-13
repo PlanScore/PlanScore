@@ -1,9 +1,9 @@
-import time, json, posixpath, io, gzip, collections, copy, csv, uuid
+import os, time, json, posixpath, io, gzip, collections, copy, csv, uuid
 import boto3, botocore.exceptions
 from . import data, constants, tiles, score, compactness
 import osgeo.ogr
 
-FUNCTION_NAME = f'{constants.LAMBDA_PREFIX}PlanScore-ObserveTiles'
+FUNCTION_NAME = os.environ.get('FUNC_NAME_OBSERVE_TILES') or 'PlanScore-ObserveTiles'
 
 Tile = collections.namedtuple('Tile', ('totals', 'timing'))
 

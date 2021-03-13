@@ -8,11 +8,8 @@ import math
 import argparse
 import urllib.request
 import pprint
-from osgeo import ogr
 import boto3, botocore.exceptions
 from . import data, constants, matrix
-
-ogr.UseExceptions()
 
 FIELD_NAMES = (
     # Toy fields

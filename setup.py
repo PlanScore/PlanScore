@@ -23,14 +23,25 @@ setup(
         'ModestMaps == 1.4.7',
         'Flask == 0.12.2',
         'Jinja2 == 2.9.6',
-        'Frozen-Flask == 0.14',
         'Markdown == 2.6.8',
         ],
     extras_require = {
         'compiled': [
             'GDAL == 2.1.3',
             'numpy == 1.19.2',
-            'awscli == 1.19.21',
+            ],
+        'deploy': [
+            'aws-cdk.aws-apigateway == 1.92.0',
+            'aws-cdk.aws-certificatemanager == 1.92.0',
+            'aws-cdk.aws-cloudfront == 1.92.0',
+            'aws-cdk.aws-cloudfront-origins == 1.92.0',
+            'aws-cdk.aws-iam == 1.92.0',
+            'aws-cdk.aws-lambda == 1.92.0',
+            'aws-cdk.aws-logs == 1.92.0',
+            'aws-cdk.aws-s3 == 1.92.0',
+            'aws-cdk.aws-s3-deployment == 1.92.0',
+            'aws-cdk.core == 1.92.0',
+            'Frozen-Flask == 0.14',
             ],
         },
     entry_points = dict(
