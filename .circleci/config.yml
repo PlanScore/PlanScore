@@ -11,9 +11,7 @@ jobs:
       - run: pyenv global 3.6.5
       - restore_cache:
           keys:
-            - test-dependencies-{{ checksum "setup.py" }}
-            # fallback to using the latest cache if no exact match is found
-            - test-dependencies-
+            - test-dependencies-py-{{ checksum "setup.py" }}
       - run: sudo add-apt-repository -y ppa:migurski/planscore
       - run: sudo apt-get update -y
       - run: sudo apt-get install -y libgeos-c1v5=3.5.1-3~xenial0 libgdal20=2.2.2+dfsg-1~xenial1 libgdal-dev=2.2.2+dfsg-1~xenial1 libspatialindex-dev
@@ -21,9 +19,9 @@ jobs:
       - run: pip3 install 'numpy < 2'
       - run: pip3 install .
       - save_cache:
+          key: test-dependencies-py-{{ checksum "setup.py" }}
           paths:
-            - /opt/circleci/.pyenv
-          key: test-dependencies-{{ checksum "setup.py" }}
+            - /opt/circleci/.pyenv/versions/3.6.5
       - run: python3 lambda.py
       - run: python3 setup.py test
       - run: NODE_PATH=`pwd` node tests.js
@@ -41,9 +39,9 @@ jobs:
           key: build-dependencies-py-{{ checksum "setup.py" }}
       - run: pip3 install '.[deploy]'
       - save_cache:
+          key: build-dependencies-py-{{ checksum "setup.py" }}
           paths:
             - /opt/circleci/.pyenv/versions/3.9.1
-          key: build-dependencies-py-{{ checksum "setup.py" }}
       # Build PlanScore thing
       - run: make planscore-lambda.zip
       - run: python3 -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
@@ -53,8 +51,8 @@ jobs:
             - planscore-lambda.zip
             - gdal-geos-numpy-python.tar.gz
 
-  # I dunno
-  Post-Build:
+  # Deploy to live site!
+  Deploy:
     machine:
       image: ubuntu-2004:202101-01
     working_directory: ~/repo
@@ -65,28 +63,11 @@ jobs:
       - restore_cache:
           key: build-dependencies-py-{{ checksum "setup.py" }}
       - run: pip3 install '.[deploy]'
-      # Install Node things
-      - restore_cache:
-          key: build-dependencies-node14-cdk
+      # Install Node things (not slow enough to cache)
       - run: npm install -g aws-cdk@1.92.0
-      - save_cache:
-          paths:
-            - /opt/circleci/.nvm/versions/node/v14.15.4/lib/node_modules/aws-cdk
-          key: build-dependencies-node14-cdk
       # Build PlanScore thing
       - attach_workspace:
           at: ~/repo
-      - run: make --debug --dry-run live-deploy
-
-  # Deploy to live site!
-  Deploy:
-    machine:
-      image: ubuntu-2004:202101-01
-    working_directory: ~/repo
-    steps:
-      - checkout
-      - run: npm install -g aws-cdk@1.92.0
-      - run: pip3 install '.[deploy]'
       - run: make live-deploy
 
 workflows:
@@ -99,15 +80,6 @@ workflows:
             branches:
               only:
                 - main
-                - migurski/tweak-builds
-      - Post-Build:
-          requires:
-            - Build
-          filters:
-            branches:
-              only:
-                - main
-                - migurski/tweak-builds
       - Deploy:
           requires:
             - Test
