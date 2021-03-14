@@ -25,3 +25,4 @@ clean: cleanish
 	rm -f gdal-geos-numpy-python.tar.gz
 
 .PHONY: clean cleanish all live-deploy dev-deploy
+.SECONDARY: gdal-geos-numpy-python.tar.gz
