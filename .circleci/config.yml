@@ -38,6 +38,23 @@ jobs:
       - run: pip3 install '.[deploy]'
       - run: make planscore-lambda.zip
       - run: python3 -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - planscore-lambda.zip
+            - gdal-geos-python.tar.gz
+
+  # I dunno
+  Post-Build:
+    machine:
+      image: ubuntu-2004:202101-01
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/repo
+      - run: ls -ltr
+      - run: make --debug --dry-run planscore-lambda.zip
 
   # Deploy to live site!
   Deploy:
@@ -60,6 +77,15 @@ workflows:
             branches:
               only:
                 - main
+                - migurski/tweak-builds
+      - Post-Build:
+          requires:
+            - Build
+          filters:
+            branches:
+              only:
+                - main
+                - migurski/tweak-builds
       - Deploy:
           requires:
             - Test
