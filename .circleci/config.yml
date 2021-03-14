@@ -35,17 +35,18 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
+      # Install Python things
       - run: pyenv global 3.9.1
-      - run: ls -l /opt/circleci/.pyenv/versions
       - restore_cache:
-          key: build-dependencies-py391-{{ checksum "setup.py" }}
+          key: build-dependencies-py-{{ checksum "setup.py" }}
       - run: pip3 install '.[deploy]'
-      - run: make planscore-lambda.zip
-      - run: python3 -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
       - save_cache:
           paths:
             - /opt/circleci/.pyenv/versions/3.9.1
-          key: build-dependencies-py391-{{ checksum "setup.py" }}
+          key: build-dependencies-py-{{ checksum "setup.py" }}
+      # Build PlanScore thing
+      - run: make planscore-lambda.zip
+      - run: python3 -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
       - persist_to_workspace:
           root: ~/repo
           paths:
@@ -59,11 +60,20 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
+      # Install Python things
       - run: pyenv global 3.9.1
       - restore_cache:
-          key: build-dependencies-py391-{{ checksum "setup.py" }}
-      - run: npm install -g aws-cdk@1.92.0
+          key: build-dependencies-py-{{ checksum "setup.py" }}
       - run: pip3 install '.[deploy]'
+      # Install Node things
+      - restore_cache:
+          key: build-dependencies-nvm
+      - run: npm install -g aws-cdk@1.92.0
+      - save_cache:
+          paths:
+            - /opt/circleci/.nvm
+          key: build-dependencies-nvm
+      # Build PlanScore thing
       - attach_workspace:
           at: ~/repo
       - run: make --debug --dry-run live-deploy
