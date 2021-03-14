@@ -36,17 +36,16 @@ jobs:
     steps:
       - checkout
       - run: pyenv global 3.9.1
+      - run: ls -l /opt/circleci/.pyenv/versions
       - restore_cache:
-          keys:
-            - test-build-{{ checksum "setup.py" }}
+          key: build-dependencies-py391-{{ checksum "setup.py" }}
       - run: pip3 install '.[deploy]'
       - run: make planscore-lambda.zip
       - run: python3 -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
       - save_cache:
           paths:
-            - /opt/circleci/.pyenv
-          key: test-build-{{ checksum "setup.py" }}
-      - run: ls -ltr
+            - /opt/circleci/.pyenv/versions/3.9.1
+          key: build-dependencies-py391-{{ checksum "setup.py" }}
       - persist_to_workspace:
           root: ~/repo
           paths:
@@ -62,8 +61,7 @@ jobs:
       - checkout
       - run: pyenv global 3.9.1
       - restore_cache:
-          keys:
-            - test-build-{{ checksum "setup.py" }}
+          key: build-dependencies-py391-{{ checksum "setup.py" }}
       - run: npm install -g aws-cdk@1.92.0
       - run: pip3 install '.[deploy]'
       - attach_workspace:
