@@ -67,13 +67,12 @@ jobs:
       - run: pip3 install '.[deploy]'
       # Install Node things
       - restore_cache:
-          key: build-dependencies-nvm
+          key: build-dependencies-node14-cdk
       - run: npm install -g aws-cdk@1.92.0
-      - run: ls -l /opt/circleci/.nvm/versions/node/
       - save_cache:
           paths:
-            - /opt/circleci/.nvm
-          key: build-dependencies-nvm
+            - /opt/circleci/.nvm/versions/node/v14.15.4/lib/node_modules/aws-cdk
+          key: build-dependencies-node14-cdk
       # Build PlanScore thing
       - attach_workspace:
           at: ~/repo
