@@ -38,7 +38,7 @@ jobs:
       - run: ls /opt/circleci/.pyenv
       - run: cat /opt/circleci/.pyenv/version
       - run: find /opt/circleci/.pyenv/shims
-      - run: pyenv global 3.6
+      - run: pyenv global 3.8
       - restore_cache:
           keys:
             - test-build-{{ checksum "setup.py" }}
@@ -65,7 +65,7 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-      - run: pyenv global 3.6
+      - run: pyenv global 3.8
       - restore_cache:
           keys:
             - test-build-{{ checksum "setup.py" }}
