@@ -39,8 +39,6 @@ jobs:
       - restore_cache:
           keys:
             - test-build-{{ checksum "setup.py" }}
-            # fallback to using the latest cache if no exact match is found
-            - test-build-
       - run: pip3 install '.[deploy]'
       - run: make planscore-lambda.zip
       - run: python3 -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
@@ -66,14 +64,11 @@ jobs:
       - restore_cache:
           keys:
             - test-build-{{ checksum "setup.py" }}
-            # fallback to using the latest cache if no exact match is found
-            - test-build-
       - run: npm install -g aws-cdk@1.92.0
       - run: pip3 install '.[deploy]'
       - attach_workspace:
           at: ~/repo
-      - run: ls -ltr
-      - run: make --debug --dry-run planscore-lambda.zip
+      - run: make --debug --dry-run live-deploy
 
   # Deploy to live site!
   Deploy:
