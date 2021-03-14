@@ -10,7 +10,7 @@ MAX_FEATURE_COUNT = 4000 # max ~10sec processing time per tile
 MIN_TILE_ZOOM, MAX_TILE_ZOOM = 7, 14
 INDEX_FIELD = 'PlanScore:Index'
 FRACTION_FIELD = 'PlanScore:Fraction'
-KEY_FORMAT = 'data/{directory}/{zxy}.geojson'
+KEY_FORMAT = 'data/{directory}/tiles/{zxy}.geojson'
 
 EPSG4326 = osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)
 
