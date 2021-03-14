@@ -69,6 +69,7 @@ jobs:
       - restore_cache:
           key: build-dependencies-nvm
       - run: npm install -g aws-cdk@1.92.0
+      - run: ls -l /opt/circleci/.nvm/versions/node/
       - save_cache:
           paths:
             - /opt/circleci/.nvm
