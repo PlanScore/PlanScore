@@ -72,21 +72,18 @@ class PlanScoreScoring(cdk.Stack):
 
         # Do the work
         
-        static_site_bucket, scoring_site_bucket = self.make_buckets(formation_info)
-        distribution, website_base = self.make_cloudfront(
-            static_site_bucket,
-            scoring_site_bucket,
-        )
-        data_bucket = self.make_data_bucket(stack_id, formation_info)
-        apigateway_role, api, api_base = self.make_api(stack_id, formation_info)
+        apigateway_role, api = self.make_api(stack_id, formation_info)
+        site_buckets = self.make_site_buckets(formation_info)
+
         functions = self.make_lambda_functions(
             apigateway_role,
-            data_bucket,
-            website_base,
+            self.make_data_bucket(stack_id, formation_info),
+            self.make_website_base(*site_buckets),
         )
+
         self.populate_api(apigateway_role, api, *functions)
 
-    def make_buckets(self, formation_info):
+    def make_site_buckets(self, formation_info):
 
         if formation_info.static_site_bucket:
             static_site_bucket = aws_s3.Bucket.from_bucket_attributes(
@@ -119,7 +116,7 @@ class PlanScoreScoring(cdk.Stack):
 
         return static_site_bucket, scoring_site_bucket
 
-    def make_cloudfront(self, static_site_bucket, scoring_site_bucket):
+    def make_website_base(self, static_site_bucket, scoring_site_bucket):
 
         static_origin = aws_cloudfront_origins.S3Origin(static_site_bucket)
         static_behavior = aws_cloudfront.BehaviorOptions(origin=static_origin)
@@ -167,7 +164,7 @@ class PlanScoreScoring(cdk.Stack):
         cdk.CfnOutput(self, 'WebsiteBase', value=website_base)
         cdk.CfnOutput(self, 'WebsiteDistributionDomain', value=distribution.distribution_domain_name)
 
-        return distribution, website_base
+        return website_base
 
     def make_data_bucket(self, stack_id, formation_info):
 
@@ -244,7 +241,7 @@ class PlanScoreScoring(cdk.Stack):
 
         cdk.CfnOutput(self, 'APIBase', value=api_base)
 
-        return apigateway_role, api, api_base
+        return apigateway_role, api
 
     def make_lambda_functions(self, apigateway_role, data_bucket, website_base):
 
