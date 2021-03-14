@@ -23,17 +23,23 @@ class PlanScoreContent(cdk.Stack):
             output = json.load(file)
             stack = [s for (k, s) in output.items() if k.startswith(formation_prefix)][0]
 
+            api_base = stack['APIBase']
+            website_base = stack['WebsiteBase']
+            data_bucket = stack['DataBucket']
+            static_site_bucket = stack["StaticSiteBucket"]
+            scoring_site_bucket = stack["ScoringSiteBucket"]
+
         super().__init__(scope, stack_id, **kwargs)
 
-        cdk.CfnOutput(self, 'APIBase', value=stack['APIBase'])
-        cdk.CfnOutput(self, 'WebsiteBase', value=stack['WebsiteBase'])
+        cdk.CfnOutput(self, 'APIBase', value=api_base)
+        cdk.CfnOutput(self, 'WebsiteBase', value=website_base)
         
-        self.fill_static_bucket(stack_id, stack)
-        self.fill_scoring_bucket(stack_id, stack)
+        self.fill_static_bucket(stack_id, website_base, static_site_bucket)
+        self.fill_scoring_bucket(stack_id, data_bucket, api_base, scoring_site_bucket)
     
-    def fill_static_bucket(self, stack_id, stack):
+    def fill_static_bucket(self, stack_id, website_base, static_site_bucket):
 
-        if stack["StaticSiteBucket"] == 'planscore.org-static-site':
+        if static_site_bucket == 'planscore.org-static-site':
             # We do not fill this bucket, it's controlled by the `static-site` branch
             return
 
@@ -51,20 +57,18 @@ class PlanScoreContent(cdk.Stack):
                 path = os.path.join(dirname, filename)
                 with open(path, 'r') as file1:
                     content1 = file1.read()
-                content2 = content1.replace('https://planscore.org/', stack['WebsiteBase'])
+                content2 = content1.replace('https://planscore.org/', website_base)
                 with open(path, 'w') as file2:
                     file2.write(content2)
-
-        static_site_bucket = aws_s3.Bucket.from_bucket_arn(
-            self,
-            'Static-Site',
-            f'arn:aws:s3:::{stack["StaticSiteBucket"]}',
-        )
 
         aws_s3_deployment.BucketDeployment(
             self,
             f"{stack_id}-Static-Site-Content",
-            destination_bucket=static_site_bucket,
+            destination_bucket=aws_s3.Bucket.from_bucket_arn(
+                self,
+                'Static-Site',
+                f'arn:aws:s3:::{static_site_bucket}',
+            ),
             sources=[
                 aws_s3_deployment.Source.asset(static_dirname),
             ],
@@ -73,21 +77,15 @@ class PlanScoreContent(cdk.Stack):
             ],
         )
     
-    def fill_scoring_bucket(self, stack_id, stack):
+    def fill_scoring_bucket(self, stack_id, data_bucket, api_base, scoring_site_bucket):
 
         scoring_dirname = tempfile.mkdtemp(dir='/tmp', prefix='scoring-site-content-')
 
         os.environ.update(dict(
             FREEZER_DESTINATION=scoring_dirname,
-            S3_BUCKET=stack['DataBucket'],
-            API_BASE=stack['APIBase'],
+            S3_BUCKET=data_bucket,
+            API_BASE=api_base,
         ))
-
-        scoring_site_bucket = aws_s3.Bucket.from_bucket_arn(
-            self,
-            'Scoring-Site',
-            f'arn:aws:s3:::{stack["ScoringSiteBucket"]}',
-        )
 
         subprocess.check_call(
             (
@@ -101,7 +99,11 @@ class PlanScoreContent(cdk.Stack):
         aws_s3_deployment.BucketDeployment(
             self,
             f"{stack_id}-Scoring-Site-Content",
-            destination_bucket=scoring_site_bucket,
+            destination_bucket=aws_s3.Bucket.from_bucket_arn(
+                self,
+                'Scoring-Site',
+                f'arn:aws:s3:::{scoring_site_bucket}',
+            ),
             sources=[
                 aws_s3_deployment.Source.asset(scoring_dirname),
             ],
