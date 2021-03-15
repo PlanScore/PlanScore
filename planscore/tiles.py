@@ -49,6 +49,11 @@ def get_tile_zxy(model_key_prefix, tile_key):
     '''
     '''
     tile_zxy, _ = posixpath.splitext(posixpath.relpath(tile_key, model_key_prefix))
+    
+    # Old models had tiles right at the top level, now there's a "tiles" infix
+    if tile_zxy.startswith('tiles/'):
+        tile_zxy = tile_zxy[6:]
+    
     return tile_zxy
 
 @functools.lru_cache(maxsize=16)

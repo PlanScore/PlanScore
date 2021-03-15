@@ -22,8 +22,11 @@ class TestTiles (unittest.TestCase):
     def test_get_tile_zxy(self):
         '''
         '''
-        prefix, key = 'data/XX/002', 'data/XX/002/12/2047/2047.geojson'
-        self.assertEqual(tiles.get_tile_zxy(prefix, key), '12/2047/2047')
+        prefix1, key1 = 'data/XX/002', 'data/XX/002/12/2047/2047.geojson'
+        self.assertEqual(tiles.get_tile_zxy(prefix1, key1), '12/2047/2047')
+
+        prefix2, key2 = 'data/XX/002', 'data/XX/002/tiles/12/2047/2047.geojson'
+        self.assertEqual(tiles.get_tile_zxy(prefix2, key2), '12/2047/2047')
     
     def test_tile_geometry(self):
         ''' Correct tile geometries are returned from tile_geometry().

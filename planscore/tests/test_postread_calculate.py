@@ -175,7 +175,7 @@ class TestPostreadCalculate (unittest.TestCase):
         tile_keys = postread_calculate.load_model_tiles(storage, model)
         
         self.assertEqual(storage.s3.list_objects.mock_calls[0][2]['Bucket'], storage.bucket)
-        self.assertEqual(storage.s3.list_objects.mock_calls[0][2]['Prefix'], 'data/XX/')
+        self.assertEqual(storage.s3.list_objects.mock_calls[0][2]['Prefix'], 'data/XX/tiles/')
         self.assertEqual(storage.s3.list_objects.mock_calls[0][2]['Marker'], '')
         
         self.assertEqual(tile_keys,

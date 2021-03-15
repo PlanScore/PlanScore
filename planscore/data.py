@@ -277,7 +277,7 @@ class Upload:
 # Active version of each state model
 
 MODELS2020 = [
-    Model(State.XX, House.statehouse,    2,  True, '2020', 'data/XX/005-unified'), # b8e19879
+    Model(State.XX, House.statehouse,    2,  True, '2020', 'data/XX/006-blocks'), # ---
     Model(State.AZ, House.ushouse,       9,  True, '2020', 'data/AZ/001-festblocks'), # 7a916a4
     Model(State.AZ, House.statesenate,  30,  True, '2020', 'data/AZ/001-festblocks'), # 7a916a4
     Model(State.AZ, House.statehouse,   60,  True, '2020', 'data/AZ/001-festblocks'), # 7a916a4
