@@ -14,10 +14,29 @@ UPLOAD_LOGENTRY_KEY = 'logs/ds={ds}/{guid}.txt'
 
 class State (enum.Enum):
     XX = 'XX'
-    MD = 'MD'; NC = 'NC'; PA = 'PA'; VA = 'VA'; WI = 'WI'
-    FL = 'FL'; TX = 'TX'; GA = 'GA'; IL = 'IL'; MA = 'MA'; MI = 'MI'; TN = 'TN'
-    MO = 'MO'; CA = 'CA'; CO = 'CO'; MN = 'MN'; OR = 'OR'; WA = 'WA'; IN = 'IN'
+
     AZ = 'AZ'
+    CA = 'CA'
+    CO = 'CO'
+    FL = 'FL'
+    GA = 'GA'
+    IA = 'IA'
+    IL = 'IL'
+    IN = 'IN'
+    MA = 'MA'
+    MD = 'MD'
+    MI = 'MI'
+    MN = 'MN'
+    MO = 'MO'
+    NC = 'NC'
+    NJ = 'NJ'
+    OR = 'OR'
+    PA = 'PA'
+    TN = 'TN'
+    TX = 'TX'
+    VA = 'VA'
+    WA = 'WA'
+    WI = 'WI'
 
 class House (enum.Enum):
     ushouse = 'ushouse'; statesenate = 'statesenate'; statehouse = 'statehouse'
@@ -296,6 +315,9 @@ MODELS2020 = [
     Model(State.GA, House.ushouse,      14,  True, '2020', 'data/GA/003-tilesdir'), # 56f7c85
     Model(State.GA, House.statesenate,  56,  True, '2020', 'data/GA/003-tilesdir'), # 56f7c85
     Model(State.GA, House.statehouse,  180,  True, '2020', 'data/GA/003-tilesdir'), # 56f7c85
+    Model(State.IA, House.ushouse,       4,  True, '2020', 'data/IA/001-tilesdir'), # 
+    Model(State.IA, House.statesenate,  50,  True, '2020', 'data/IA/001-tilesdir'), # 
+    Model(State.IA, House.statehouse,  100,  True, '2020', 'data/IA/001-tilesdir'), # 
     Model(State.IL, House.ushouse,      18,  True, '2020', 'data/IL/003-tilesdir'), # 56f7c85
     Model(State.IL, House.statesenate,  59,  True, '2020', 'data/IL/003-tilesdir'), # 56f7c85
     Model(State.IL, House.statehouse,  118,  True, '2020', 'data/IL/003-tilesdir'), # 56f7c85
@@ -332,6 +354,9 @@ MODELS2020 = [
     #Model(State.NH, House.ushouse,        ,  True, '2020', 'data/NH/002-tilesdir'), # 56f7c85
     #Model(State.NH, House.statesenate,    ,  True, '2020', 'data/NH/002-tilesdir'), # 56f7c85
     #Model(State.NH, House.statehouse,     ,  True, '2020', 'data/NH/002-tilesdir'), # 56f7c85
+    Model(State.NJ, House.ushouse,      12,  True, '2020', 'data/NJ/001-tilesdir'), # 
+    Model(State.NJ, House.statesenate,  40,  True, '2020', 'data/NJ/001-tilesdir'), # 
+    Model(State.NJ, House.statehouse,   80,  True, '2020', 'data/NJ/001-tilesdir'), # 
     Model(State.OR, House.ushouse,       5,  True, '2020', 'data/OR/002-tilesdir'), # 57155ad
     Model(State.OR, House.statesenate,  30,  True, '2020', 'data/OR/002-tilesdir'), # 57155ad
     Model(State.OR, House.statehouse,   60,  True, '2020', 'data/OR/002-tilesdir'), # 57155ad
