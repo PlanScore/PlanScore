@@ -58,7 +58,6 @@ def load_tile_precincts(storage, tile_zxy):
 def get_tile_zxy(model_key_prefix, tile_key):
     '''
     '''
-    print('get_tile_zxy():', model_key_prefix, tile_key)
     tile_zxy, _ = posixpath.splitext(posixpath.relpath(tile_key, model_key_prefix))
     
     # Old-style models had tiles right at the top level, now there's a "tiles" infix
