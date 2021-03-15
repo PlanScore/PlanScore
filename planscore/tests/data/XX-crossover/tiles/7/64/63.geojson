@@ -1,5 +1,0 @@
-{"type": "FeatureCollection", "features": [
-{"type": "Feature", "properties": {"Population 2010": 3, "US President 2016 - DEM": 100, "US President 2016 - REP": 50, "PlanScore:Index": 0, "PlanScore:Fraction": null}, "geometry": { "type": "Point", "coordinates": [ 0.0002143, 0.0002731 ] }},
-{"type": "Feature", "properties": {"Population 2010": 5, "US President 2016 - DEM": 100, "US President 2016 - REP": 25, "PlanScore:Index": 1, "PlanScore:Fraction": null}, "geometry": { "type": "Point", "coordinates": [ 0.0000729, 0.0000983 ] }},
-{"type": "Feature", "properties": {"Population 2010": 9, "US President 2016 - DEM": 100, "US President 2016 - REP": 25, "PlanScore:Index": 2, "PlanScore:Fraction": null}, "geometry": { "type": "Point", "coordinates": [ 0.0002533, 0.0000627 ] }}
-]}

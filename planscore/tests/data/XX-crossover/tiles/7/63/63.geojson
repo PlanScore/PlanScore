@@ -1,3 +1,0 @@
-{"type": "FeatureCollection", "features": [
-{"type": "Feature", "properties": {"Population 2010": 4, "US President 2016 - DEM": 0, "US President 2016 - REP": 100, "PlanScore:Index": 3, "PlanScore:Fraction": null}, "geometry": { "type": "Point", "coordinates": [ -0.00023, 0.0001295 ] }}
-]}

@@ -83,20 +83,6 @@ class TestTiles (unittest.TestCase):
         precincts2 = tiles.load_tile_precincts(storage, '12/-1/-1')
         self.assertEqual(len(precincts2), 0)
     
-    def test_load_tile_precincts_crossover(self):
-        ''' Expected tiles are loaded from S3 with new-style and old-style model together.
-        '''
-        s3 = unittest.mock.Mock()
-        s3.get_object.side_effect = mock_s3_get_object
-        storage = data.Storage(s3, 'bucket-name', 'XX-crossover')
-
-        precincts1 = tiles.load_tile_precincts(storage, '7/64/64')
-        s3.get_object.assert_called_once_with(Bucket='bucket-name', Key='XX-crossover/tiles/7/64/64.geojson')
-        self.assertEqual(len(precincts1), 3)
-
-        precincts2 = tiles.load_tile_precincts(storage, '12/-1/-1')
-        self.assertEqual(len(precincts2), 0)
-    
     def test_load_tile_precincts(self):
         ''' Expected tiles are loaded from S3.
         '''
