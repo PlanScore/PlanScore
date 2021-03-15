@@ -96,7 +96,7 @@ def put_district_geometries(s3, bucket, upload, path):
 def load_model_tiles(storage, model):
     '''
     '''
-    prefix = '{}/'.format(model.key_prefix.rstrip('/'))
+    prefix = '{}/tiles/'.format(model.key_prefix.rstrip('/'))
     marker, contents = '', []
     
     while True:

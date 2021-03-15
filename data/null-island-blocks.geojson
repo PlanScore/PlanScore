@@ -1,0 +1,165 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0002143,
+          0.0002731
+        ]
+      },
+      "properties": {
+        "GEOID": "0000000001",
+        "Population 2010": 3,
+        "US President 2016 - DEM": 100,
+        "US President 2016 - REP": 50
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0000729,
+          0.0000983
+        ]
+      },
+      "properties": {
+        "GEOID": "0000000002",
+        "Population 2010": 5,
+        "US President 2016 - DEM": 100,
+        "US President 2016 - REP": 25
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0002533,
+          0.0000627
+        ]
+      },
+      "properties": {
+        "GEOID": "0000000003",
+        "Population 2010": 9,
+        "US President 2016 - DEM": 100,
+        "US President 2016 - REP": 25
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.00023,
+          0.0001295
+        ]
+      },
+      "properties": {
+        "GEOID": "0000000004",
+        "Population 2010": 4,
+        "US President 2016 - DEM": 0,
+        "US President 2016 - REP": 100
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0000161,
+          -0.0001956
+        ]
+      },
+      "properties": {
+        "GEOID": "0000000005",
+        "Population 2010": 2,
+        "US President 2016 - DEM": 50,
+        "US President 2016 - REP": 50
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0002644,
+          -0.00016
+        ]
+      },
+      "properties": {
+        "GEOID": "0000000006",
+        "Population 2010": 6,
+        "US President 2016 - DEM": 50,
+        "US President 2016 - REP": 100
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          0.0000851,
+          -0.0000242
+        ]
+      },
+      "properties": {
+        "GEOID": "0000000007",
+        "Population 2010": 8,
+        "US President 2016 - DEM": 100,
+        "US President 2016 - REP": 50
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.0004638,
+          -0.0000197
+        ]
+      },
+      "properties": {
+        "GEOID": "0000000008",
+        "Population 2010": 1,
+        "US President 2016 - DEM": 100,
+        "US President 2016 - REP": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.0002077,
+          -0.0000564
+        ]
+      },
+      "properties": {
+        "GEOID": "0000000009",
+        "Population 2010": 7,
+        "US President 2016 - DEM": 0,
+        "US President 2016 - REP": 100
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          -0.0001454,
+          -0.0001155
+        ]
+      },
+      "properties": {
+        "GEOID": "0000000010",
+        "Population 2010": 10,
+        "US President 2016 - DEM": 0,
+        "US President 2016 - REP": 100
+      }
+    }
+  ]
+}

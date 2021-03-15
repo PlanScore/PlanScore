@@ -32,12 +32,22 @@ def load_tile_precincts(storage, tile_zxy):
     ''' Get GeoJSON features for a specific tile.
     '''
     try:
+        # Search for tile GeoJSON inside the storage prefix
+        print('storage.s3.get_object():', dict(Bucket=storage.bucket,
+            Key='{}/tiles/{}.geojson'.format(storage.prefix, tile_zxy)))
         object = storage.s3.get_object(Bucket=storage.bucket,
-            Key='{}/{}.geojson'.format(storage.prefix, tile_zxy))
+            Key='{}/tiles/{}.geojson'.format(storage.prefix, tile_zxy))
     except botocore.exceptions.ClientError as error:
-        if error.response['Error']['Code'] == 'NoSuchKey':
-            return []
-        raise
+        # Back up and search for old-style path without "tiles" infix
+        try:
+            print('storage.s3.get_object():', dict(Bucket=storage.bucket,
+                Key='{}/{}.geojson'.format(storage.prefix, tile_zxy)))
+            object = storage.s3.get_object(Bucket=storage.bucket,
+                Key='{}/{}.geojson'.format(storage.prefix, tile_zxy))
+        except botocore.exceptions.ClientError as error:
+            if error.response['Error']['Code'] == 'NoSuchKey':
+                return []
+            raise
 
     if object.get('ContentEncoding') == 'gzip':
         object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
@@ -49,6 +59,11 @@ def get_tile_zxy(model_key_prefix, tile_key):
     '''
     '''
     tile_zxy, _ = posixpath.splitext(posixpath.relpath(tile_key, model_key_prefix))
+    
+    # Old-style models had tiles right at the top level, now there's a "tiles" infix
+    if tile_zxy.startswith('tiles/'):
+        tile_zxy = tile_zxy[6:]
+    
     return tile_zxy
 
 @functools.lru_cache(maxsize=16)
@@ -159,6 +174,8 @@ def lambda_handler(event, context):
     s3 = boto3.client('s3')
     storage = data.Storage.from_event(event['storage'], s3)
     upload = data.Upload.from_dict(event['upload'])
+    
+    print('tiles.lambda_handler():', json.dumps(event))
 
     try:
         tile_zxy = get_tile_zxy(upload.model.key_prefix, event['tile_key'])
@@ -172,6 +189,7 @@ def lambda_handler(event, context):
         for (geometry_key, district_geom) in geometries.items():
             totals[geometry_key] = score_district(district_geom, precincts, tile_geom)
     except Exception as err:
+        print('Exception:', err)
         totals = str(err)
         feature_count = None
     else:
@@ -182,6 +200,10 @@ def lambda_handler(event, context):
         elapsed_time=round(time.time() - start_time, 3),
         features=feature_count,
     )
+    
+    print('s3.put_object():', dict(Bucket=storage.bucket, Key=output_key,
+        Body=dict(event, totals=totals, timing=timing),
+        ContentType='text/plain', ACL='public-read'))
 
     s3.put_object(Bucket=storage.bucket, Key=output_key,
         Body=json.dumps(dict(event, totals=totals, timing=timing)).encode('utf8'),
