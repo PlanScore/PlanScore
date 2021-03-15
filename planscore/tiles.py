@@ -85,18 +85,14 @@ def tile_geometry(tile_zxy):
 def score_district(district_geom, precincts, tile_geom):
     ''' Return weighted precinct totals for a district over a tile.
     '''
-    print('score_district():', district_geom, precincts, tile_geom)
-    
     totals = collections.defaultdict(int)
     
     if district_geom.Disjoint(tile_geom):
-        print('disjoint.')
         return totals
     
     partial_district_geom = district_geom.Intersection(tile_geom)
 
     for precinct_feat in precincts:
-        print('precinct_feat:', precinct_feat)
         subtotals = score_precinct(partial_district_geom, precinct_feat, tile_geom)
         for (name, value) in subtotals.items():
             totals[name] = round(value + totals[name], constants.ROUND_COUNT)
@@ -108,8 +104,6 @@ def score_precinct(partial_district_geom, precinct_feat, tile_geom):
         
         partial_district_geom is the intersection of district and tile geometries.
     '''
-    print('score_precinct():', partial_district_geom, precinct_feat, tile_geom)
-    
     # Initialize totals to zero
     totals = {name: 0 for name in score.FIELD_NAMES if name in precinct_feat['properties']}
     precinct_geom = osgeo.ogr.CreateGeometryFromJson(json.dumps(precinct_feat['geometry']))

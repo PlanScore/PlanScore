@@ -133,7 +133,6 @@ def fan_out_tile_lambdas(storage, upload, tile_keys):
             payload = dict(upload=upload.to_dict(), storage=storage.to_event(),
                 tile_key=tile_key)
             
-            print('Invoke', tiles.FUNCTION_NAME, json.dumps(payload))
             lam.invoke(FunctionName=tiles.FUNCTION_NAME, InvocationType='Event',
                 Payload=json.dumps(payload).encode('utf8'))
     
