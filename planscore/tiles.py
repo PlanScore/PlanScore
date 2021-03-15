@@ -32,8 +32,10 @@ def load_tile_precincts(storage, tile_zxy):
     ''' Get GeoJSON features for a specific tile.
     '''
     try:
+        print('storage.s3.get_object():', dict(Bucket=storage.bucket,
+            Key='{}/tiles/{}.geojson'.format(storage.prefix, tile_zxy)))
         object = storage.s3.get_object(Bucket=storage.bucket,
-            Key='{}/{}.geojson'.format(storage.prefix, tile_zxy))
+            Key='{}/tiles/{}.geojson'.format(storage.prefix, tile_zxy))
     except botocore.exceptions.ClientError as error:
         if error.response['Error']['Code'] == 'NoSuchKey':
             return []
@@ -48,6 +50,7 @@ def load_tile_precincts(storage, tile_zxy):
 def get_tile_zxy(model_key_prefix, tile_key):
     '''
     '''
+    print('get_tile_zxy():', model_key_prefix, tile_key)
     tile_zxy, _ = posixpath.splitext(posixpath.relpath(tile_key, model_key_prefix))
     
     # Old models had tiles right at the top level, now there's a "tiles" infix
@@ -60,6 +63,8 @@ def get_tile_zxy(model_key_prefix, tile_key):
 def tile_geometry(tile_zxy):
     ''' Get an OGR Geometry for a web mercator tile.
     '''
+    print('tile_geometry():', tile_zxy)
+
     (z, x, y) = map(int, tile_zxy.split('/'))
     coord = ModestMaps.Core.Coordinate(y, x, z)
     NW = _mercator.coordinateLocation(coord)
@@ -72,14 +77,18 @@ def tile_geometry(tile_zxy):
 def score_district(district_geom, precincts, tile_geom):
     ''' Return weighted precinct totals for a district over a tile.
     '''
+    print('score_district():', district_geom, precincts, tile_geom)
+    
     totals = collections.defaultdict(int)
     
     if district_geom.Disjoint(tile_geom):
+        print('disjoint.')
         return totals
     
     partial_district_geom = district_geom.Intersection(tile_geom)
 
     for precinct_feat in precincts:
+        print('precinct_feat:', precinct_feat)
         subtotals = score_precinct(partial_district_geom, precinct_feat, tile_geom)
         for (name, value) in subtotals.items():
             totals[name] = round(value + totals[name], constants.ROUND_COUNT)
@@ -91,6 +100,8 @@ def score_precinct(partial_district_geom, precinct_feat, tile_geom):
         
         partial_district_geom is the intersection of district and tile geometries.
     '''
+    print('score_precinct():', partial_district_geom, precinct_feat, tile_geom)
+    
     # Initialize totals to zero
     totals = {name: 0 for name in score.FIELD_NAMES if name in precinct_feat['properties']}
     precinct_geom = osgeo.ogr.CreateGeometryFromJson(json.dumps(precinct_feat['geometry']))
@@ -164,6 +175,8 @@ def lambda_handler(event, context):
     s3 = boto3.client('s3')
     storage = data.Storage.from_event(event['storage'], s3)
     upload = data.Upload.from_dict(event['upload'])
+    
+    print('tiles.lambda_handler():', json.dumps(event))
 
     try:
         tile_zxy = get_tile_zxy(upload.model.key_prefix, event['tile_key'])
@@ -177,6 +190,7 @@ def lambda_handler(event, context):
         for (geometry_key, district_geom) in geometries.items():
             totals[geometry_key] = score_district(district_geom, precincts, tile_geom)
     except Exception as err:
+        print('Exception:', err)
         totals = str(err)
         feature_count = None
     else:
@@ -187,6 +201,10 @@ def lambda_handler(event, context):
         elapsed_time=round(time.time() - start_time, 3),
         features=feature_count,
     )
+    
+    print('s3.put_object():', dict(Bucket=storage.bucket, Key=output_key,
+        Body=dict(event, totals=totals, timing=timing),
+        ContentType='text/plain', ACL='public-read'))
 
     s3.put_object(Bucket=storage.bucket, Key=output_key,
         Body=json.dumps(dict(event, totals=totals, timing=timing)).encode('utf8'),
