@@ -159,17 +159,34 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(put_kwargs['Body'], 'GEOMETRYCOLLECTION EMPTY')
     
     @unittest.mock.patch('sys.stdout')
+    def test_load_model_tiles_oldstyle(self, stdout):
+        '''
+        '''
+        storage, model = unittest.mock.Mock(), unittest.mock.Mock()
+        model.key_prefix = 'data/XX'
+        storage.s3.list_objects.return_value = {'Contents': [
+            ], 'IsTruncated': False}
+        
+        tile_keys = postread_calculate.load_model_tiles(storage, model)
+        
+        self.assertEqual(storage.s3.list_objects.mock_calls[0][2]['Bucket'], storage.bucket)
+        self.assertEqual(storage.s3.list_objects.mock_calls[0][2]['Prefix'], 'data/XX/tiles/')
+        self.assertEqual(storage.s3.list_objects.mock_calls[0][2]['Marker'], '')
+        
+        self.assertEqual(tile_keys, [][:constants.MAX_TILES_RUN])
+    
+    @unittest.mock.patch('sys.stdout')
     def test_load_model_tiles(self, stdout):
         '''
         '''
         storage, model = unittest.mock.Mock(), unittest.mock.Mock()
         model.key_prefix = 'data/XX'
         storage.s3.list_objects.return_value = {'Contents': [
-            {'Key': 'data/XX/a.geojson', 'Size': 2},
-            {'Key': 'data/XX/b.geojson', 'Size': 4},
-            {'Key': 'data/XX/c.geojson', 'Size': 3},
-            {'Key': 'data/XX/d.geojson', 'Size': 0},
-            {'Key': 'data/XX/e.geojson', 'Size': 1},
+            {'Key': 'data/XX/tiles/a.geojson', 'Size': 2},
+            {'Key': 'data/XX/tiles/b.geojson', 'Size': 4},
+            {'Key': 'data/XX/tiles/c.geojson', 'Size': 3},
+            {'Key': 'data/XX/tiles/d.geojson', 'Size': 0},
+            {'Key': 'data/XX/tiles/e.geojson', 'Size': 1},
             ], 'IsTruncated': False}
         
         tile_keys = postread_calculate.load_model_tiles(storage, model)
@@ -179,8 +196,9 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(storage.s3.list_objects.mock_calls[0][2]['Marker'], '')
         
         self.assertEqual(tile_keys,
-            ['data/XX/b.geojson', 'data/XX/c.geojson', 'data/XX/a.geojson',
-            'data/XX/e.geojson', 'data/XX/d.geojson'][:constants.MAX_TILES_RUN])
+            ['data/XX/tiles/b.geojson', 'data/XX/tiles/c.geojson',
+            'data/XX/tiles/a.geojson', 'data/XX/tiles/e.geojson',
+            'data/XX/tiles/d.geojson'][:constants.MAX_TILES_RUN])
     
     @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')

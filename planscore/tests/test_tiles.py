@@ -22,10 +22,11 @@ class TestTiles (unittest.TestCase):
     def test_get_tile_zxy(self):
         '''
         '''
-        prefix1, key1 = 'data/XX/002', 'data/XX/002/12/2047/2047.geojson'
+        prefix1, key1 = 'data/XX/002', 'data/XX/002/tiles/12/2047/2047.geojson'
         self.assertEqual(tiles.get_tile_zxy(prefix1, key1), '12/2047/2047')
 
-        prefix2, key2 = 'data/XX/002', 'data/XX/002/tiles/12/2047/2047.geojson'
+        # Old-style without the "tiles" path element
+        prefix2, key2 = 'data/XX/002', 'data/XX/002/12/2047/2047.geojson'
         self.assertEqual(tiles.get_tile_zxy(prefix2, key2), '12/2047/2047')
     
     def test_tile_geometry(self):
@@ -65,6 +66,37 @@ class TestTiles (unittest.TestCase):
         s3.list_objects.assert_called_once_with(Bucket='bucket-name',
             Prefix="uploads/sample-plan/geometries/")
 
+    def test_load_tile_precincts_oldstyle(self):
+        ''' Expected tiles are loaded from old-style model in S3 without "tiles" infix
+        '''
+        s3 = unittest.mock.Mock()
+        s3.get_object.side_effect = mock_s3_get_object
+        storage = data.Storage(s3, 'bucket-name', 'XX-oldstyle')
+
+        precincts1 = tiles.load_tile_precincts(storage, '10/511/511')
+        
+        call1, call2 = s3.get_object.mock_calls
+        self.assertEqual(call1[2], dict(Bucket='bucket-name', Key='XX-oldstyle/tiles/10/511/511.geojson'))
+        self.assertEqual(call2[2], dict(Bucket='bucket-name', Key='XX-oldstyle/10/511/511.geojson'))
+        self.assertEqual(len(precincts1), 3)
+
+        precincts2 = tiles.load_tile_precincts(storage, '12/-1/-1')
+        self.assertEqual(len(precincts2), 0)
+    
+    def test_load_tile_precincts_crossover(self):
+        ''' Expected tiles are loaded from S3 with new-style and old-style model together.
+        '''
+        s3 = unittest.mock.Mock()
+        s3.get_object.side_effect = mock_s3_get_object
+        storage = data.Storage(s3, 'bucket-name', 'XX-crossover')
+
+        precincts1 = tiles.load_tile_precincts(storage, '7/64/64')
+        s3.get_object.assert_called_once_with(Bucket='bucket-name', Key='XX-crossover/tiles/7/64/64.geojson')
+        self.assertEqual(len(precincts1), 3)
+
+        precincts2 = tiles.load_tile_precincts(storage, '12/-1/-1')
+        self.assertEqual(len(precincts2), 0)
+    
     def test_load_tile_precincts(self):
         ''' Expected tiles are loaded from S3.
         '''
@@ -72,9 +104,9 @@ class TestTiles (unittest.TestCase):
         s3.get_object.side_effect = mock_s3_get_object
         storage = data.Storage(s3, 'bucket-name', 'XX')
 
-        precincts1 = tiles.load_tile_precincts(storage, '12/2047/2047')
-        s3.get_object.assert_called_once_with(Bucket='bucket-name', Key='XX/12/2047/2047.geojson')
-        self.assertEqual(len(precincts1), 4)
+        precincts1 = tiles.load_tile_precincts(storage, '7/64/64')
+        s3.get_object.assert_called_once_with(Bucket='bucket-name', Key='XX/tiles/7/64/64.geojson')
+        self.assertEqual(len(precincts1), 3)
 
         precincts2 = tiles.load_tile_precincts(storage, '12/-1/-1')
         self.assertEqual(len(precincts2), 0)

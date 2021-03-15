@@ -32,14 +32,22 @@ def load_tile_precincts(storage, tile_zxy):
     ''' Get GeoJSON features for a specific tile.
     '''
     try:
+        # Search for tile GeoJSON inside the storage prefix
         print('storage.s3.get_object():', dict(Bucket=storage.bucket,
             Key='{}/tiles/{}.geojson'.format(storage.prefix, tile_zxy)))
         object = storage.s3.get_object(Bucket=storage.bucket,
             Key='{}/tiles/{}.geojson'.format(storage.prefix, tile_zxy))
     except botocore.exceptions.ClientError as error:
-        if error.response['Error']['Code'] == 'NoSuchKey':
-            return []
-        raise
+        # Back up and search for old-style path without "tiles" infix
+        try:
+            print('storage.s3.get_object():', dict(Bucket=storage.bucket,
+                Key='{}/{}.geojson'.format(storage.prefix, tile_zxy)))
+            object = storage.s3.get_object(Bucket=storage.bucket,
+                Key='{}/{}.geojson'.format(storage.prefix, tile_zxy))
+        except botocore.exceptions.ClientError as error:
+            if error.response['Error']['Code'] == 'NoSuchKey':
+                return []
+            raise
 
     if object.get('ContentEncoding') == 'gzip':
         object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
@@ -53,7 +61,7 @@ def get_tile_zxy(model_key_prefix, tile_key):
     print('get_tile_zxy():', model_key_prefix, tile_key)
     tile_zxy, _ = posixpath.splitext(posixpath.relpath(tile_key, model_key_prefix))
     
-    # Old models had tiles right at the top level, now there's a "tiles" infix
+    # Old-style models had tiles right at the top level, now there's a "tiles" infix
     if tile_zxy.startswith('tiles/'):
         tile_zxy = tile_zxy[6:]
     
