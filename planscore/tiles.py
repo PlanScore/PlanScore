@@ -70,8 +70,6 @@ def get_tile_zxy(model_key_prefix, tile_key):
 def tile_geometry(tile_zxy):
     ''' Get an OGR Geometry for a web mercator tile.
     '''
-    print('tile_geometry():', tile_zxy)
-
     (z, x, y) = map(int, tile_zxy.split('/'))
     coord = ModestMaps.Core.Coordinate(y, x, z)
     NW = _mercator.coordinateLocation(coord)
