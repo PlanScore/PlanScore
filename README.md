@@ -107,10 +107,10 @@ Process
 8.  [λ:`PlanScore-PostreadCalculate`](planscore/postread_calculate.py) commences scoring:
     1.  Uploads district geometry WKTs
     2.  Loads model tiles
-    3.  Invokes [λ:`PlanScore-ObserveTiles`](planscore/observe_tiles.py)
-    4.  Fans out [λ:`PlanScore-RunTile`](planscore/run_tile.py)
-9.  [λ:`PlanScore-RunTile`](planscore/run_tile.py) aggregates district statistics in tile, saves results to S3
-10. [λ:`PlanScore-ObserveTiles`](planscore/observe_tiles.py) scores plan:
+    3.  Invokes [λ:`PlanScore-ObserveTiles`](planscore/observe.py)
+    4.  Fans out [λ:`PlanScore-RunTile`](planscore/tiles.py)
+9.  [λ:`PlanScore-RunTile`](planscore/tiles.py) aggregates district statistics in tile, saves results to S3
+10. [λ:`PlanScore-ObserveTiles`](planscore/observe.py) scores plan:
     1.  Waits for all expected aggregated tile statistics
     2.  Calculates final scores
     3.  Saves index JSON with final data

@@ -203,7 +203,7 @@ class PlanScoreScoring(cdk.Stack):
             sources=[
                 aws_s3_deployment.Source.asset("../planscore/tests/data/XX"),
             ],
-            destination_key_prefix="data/XX/006-tilesdir/tiles",
+            destination_key_prefix="data/XX/006-tilesdir",
         )
 
         return data_bucket
