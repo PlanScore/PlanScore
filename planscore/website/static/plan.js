@@ -853,6 +853,13 @@ function load_plan_score(url, message_section, score_section,
             var data = JSON.parse(request.responseText),
                 modified_at = new Date(request.getResponseHeader('Last-Modified'));
             console.log('Loaded plan:', data);
+
+            // older uploads had geometries but did not include geometry_key
+            if(!('geometry_key' in data)) {
+                console.log('Added geometry_key in post');
+                data.geometry_key = 'uploads/' + data.id + '/geometry.json';
+            }
+        
             on_loaded_score(data, modified_at);
             return;
         }
