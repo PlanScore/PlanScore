@@ -167,7 +167,7 @@
 	    
 	    var plan_id = location.search.replace('?', ''),
 	        plan_url = format_url('{{ data_url_pattern }}', plan_id),
-	        geom_url = format_url('{{ geom_url_pattern }}', plan_id),
+	        geom_prefix = '{{ geom_url_prefix }}';
 	        text_url = format_url('{{ text_url_pattern }}', plan_id),
 	        eg_metric_url = '{{ url_for("get_efficiencygap_page") }}',
 	        pb_metric_url = '{{ url_for("get_partisanbias_page") }}',
@@ -186,7 +186,7 @@
 	        document.getElementById('score-mean-median'),
 	        document.getElementById('score-sensitivity'),
 	        text_url, document.getElementById('text-link'),
-	        geom_url, document.getElementById('map'));
+	        geom_prefix, document.getElementById('map'));
 	</script>
 
 	{% include 'olark-embed.html' %}

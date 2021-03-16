@@ -56,16 +56,17 @@ def commence_upload_parsing(s3, bucket, upload):
         model = guess_state_model(ds_path)
         storage = data.Storage(s3, bucket, model.key_prefix)
         geometry_count = count_district_geometries(bucket, upload, ds_path)
-        put_geojson_file(s3, bucket, upload, ds_path)
+        upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
+        put_geojson_file(s3, bucket, upload2, ds_path)
         
         # Used so that the length of the upload districts array is correct
         district_blanks = [None] * geometry_count
-        forward_upload = upload.clone(model=model, districts=district_blanks,
+        upload3 = upload2.clone(model=model, districts=district_blanks,
             message='Found {} districts in the "{}" {} plan with {} seats.'.format(
                 geometry_count, model.key_prefix, model.house, model.seats))
-        observe.put_upload_index(storage, forward_upload)
+        observe.put_upload_index(storage, upload3)
     
-    return forward_upload
+    return upload3
 
 def count_district_geometries(bucket, upload, path):
     '''
@@ -140,7 +141,6 @@ def guess_state_model(path):
 def put_geojson_file(s3, bucket, upload, path):
     ''' Save a property-less GeoJSON file for this upload.
     '''
-    key = upload.geometry_key()
     ds = osgeo.ogr.Open(path)
     geometries = []
     
@@ -161,7 +161,7 @@ def put_geojson_file(s3, bucket, upload, path):
     body = gzip.compress(geojson.encode('utf8'))
     args = dict(ContentEncoding='gzip')
     
-    s3.put_object(Bucket=bucket, Key=key, Body=body,
+    s3.put_object(Bucket=bucket, Key=upload.geometry_key, Body=body,
         ContentType='text/json', ACL='public-read', **args)
 
 def get_redirect_url(website_base, id):

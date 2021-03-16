@@ -107,6 +107,13 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload8.key, 'KEY')
         self.assertEqual(upload8.description, 'A fine new plan')
         self.assertEqual(upload8.incumbents, ['D', 'R'])
+
+        upload9 = data.Upload.from_json('{"id": "ID", "key": "KEY", '
+            '"geometry_key": "geometry.json", "incumbents": ["D", "R"]}')
+        self.assertEqual(upload9.id, 'ID')
+        self.assertEqual(upload9.key, 'KEY')
+        self.assertEqual(upload9.geometry_key, 'geometry.json')
+        self.assertEqual(upload9.incumbents, ['D', 'R'])
     
     def test_upload_overdue(self):
         ''' data.Upload self-reports correct overdue state
@@ -197,6 +204,14 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload16.key, upload15.key)
         self.assertEqual(upload16.incumbents, upload15.incumbents)
     
+        upload17 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
+            geometry_key='geometry.json')
+        upload18 = data.Upload.from_json(upload17.to_json())
+
+        self.assertEqual(upload18.id, upload17.id)
+        self.assertEqual(upload18.key, upload17.key)
+        self.assertEqual(upload18.geometry_key, upload17.geometry_key)
+    
     def test_upload_plaintext(self):
         ''' data.Upload instances can be converted to plaintext
         '''
@@ -279,12 +294,6 @@ class TestData (unittest.TestCase):
         upload = data.Upload(id='ID', key='uploads/ID/upload/whatever.json')
         self.assertEqual(upload.plaintext_key(), 'uploads/ID/index.txt')
     
-    def test_upload_geometry_key(self):
-        ''' data.Upload.geometry_key() correctly munges Upload.key
-        '''
-        upload = data.Upload(id='ID', key='uploads/ID/upload/whatever.json')
-        self.assertEqual(upload.geometry_key(), 'uploads/ID/geometry.json')
-    
     def test_upload_district_key(self):
         ''' data.Upload.district_key() correctly munges Upload.key
         '''
@@ -308,9 +317,10 @@ class TestData (unittest.TestCase):
         summary1, summary2 = unittest.mock.Mock(), unittest.mock.Mock()
         progress1, progress2 = unittest.mock.Mock(), unittest.mock.Mock()
         start_time1, start_time2 = unittest.mock.Mock(), unittest.mock.Mock()
+        geometry1, geometry2 = unittest.mock.Mock(), unittest.mock.Mock()
         input = data.Upload(id='ID', key='whatever.json', districts=districts1,
             model=model1, summary=summary1, progress=progress1, start_time=start_time1,
-            incumbents=incumbents1)
+            incumbents=incumbents1, geometry_key=geometry1)
 
         self.assertIs(input.districts, districts1)
         self.assertIs(input.incumbents, incumbents1)
@@ -367,3 +377,8 @@ class TestData (unittest.TestCase):
         self.assertEqual(output8.id, input.id)
         self.assertEqual(output8.key, input.key)
         self.assertIs(output8.incumbents, incumbents2)
+
+        output9 = input.clone(incumbents=geometry2)
+        self.assertEqual(output9.id, input.id)
+        self.assertEqual(output9.key, input.key)
+        self.assertIs(output9.incumbents, geometry2)

@@ -1,4 +1,4 @@
-import argparse, math, itertools, io, gzip, os, json, tempfile
+import argparse, math, itertools, io, gzip, os, json, tempfile, operator
 from osgeo import ogr, osr
 import boto3, ModestMaps.Geo, ModestMaps.Core
 from . import constants
@@ -10,7 +10,8 @@ MAX_FEATURE_COUNT = 4000 # max ~10sec processing time per tile
 MIN_TILE_ZOOM, MAX_TILE_ZOOM = 7, 14
 INDEX_FIELD = 'PlanScore:Index'
 FRACTION_FIELD = 'PlanScore:Fraction'
-KEY_FORMAT = 'data/{directory}/tiles/{zxy}.geojson'
+TILE_KEY_FORMAT = 'data/{directory}/tiles/{zxy}.geojson'
+SLICE_KEY_FORMAT = 'data/{directory}/slices/{geoid}.json'
 
 EPSG4326 = osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)
 
@@ -150,6 +151,28 @@ def feature_geojson(ogr_feature, properties):
     return ''.join(('{"type": "Feature", "properties": ', properties_json,
         ', "geometry": ', geometry_json, '}'))
 
+def iter_slices(property_dicts, length):
+    sorted_dicts = sorted(property_dicts, key=operator.itemgetter('GEOID'))
+    args = [iter(sorted_dicts)] * length
+    
+    for slice in itertools.zip_longest(*args):
+        yield [d for d in slice if d]
+
+def write_buffer(s3, key, buffer, prefix):
+    if s3:
+        body = gzip.compress(buffer.getvalue().encode('utf8'))
+        line = f's3://{constants.S3_BUCKET}/{key}', '-', '{:.1f}KB'.format(len(body) / 1024)
+        print(prefix, 'Write', line)
+
+        s3.put_object(Bucket=constants.S3_BUCKET, Key=key, Body=body,
+            ContentEncoding='gzip', ContentType='text/json', ACL='public-read')
+    else:
+        os.makedirs(os.path.dirname(key), exist_ok=True)
+        print(prefix, 'Write', key)
+
+        with open(key, 'w') as file:
+            file.write(buffer.getvalue())
+
 parser = argparse.ArgumentParser(description='YESS')
 
 parser.add_argument('filename', help='Name of geographic file with precinct data')
@@ -168,6 +191,14 @@ def main():
     ds, properties = load_geojson(args.filename)
     print('Loaded', len(properties), 'features and made', ds.name)
     layer = ds.GetLayer(0)
+    
+    for slice in iter_slices(properties, MAX_FEATURE_COUNT):
+        write_buffer(
+            args.s3 and s3,
+            SLICE_KEY_FORMAT.format(directory=args.directory, geoid=slice[0]['GEOID']),
+            io.StringIO(json.dumps(slice)),
+            '      ',
+            )
     
     tile_stack = list(iter_extent_coords(layer.GetExtent(), MIN_TILE_ZOOM))
     tile_log = []
@@ -210,21 +241,13 @@ def main():
         print(',\n'.join(features_json), file=buffer)
         print(']}', file=buffer)
         
-        key = KEY_FORMAT.format(directory=args.directory, zxy=tile_zxy)
+        write_buffer(
+            args.s3 and s3,
+            TILE_KEY_FORMAT.format(directory=args.directory, zxy=tile_zxy),
+            buffer,
+            stack_str,
+            )
         
-        if args.s3:
-            body = gzip.compress(buffer.getvalue().encode('utf8'))
-            print(stack_str, 'Write', f's3://{constants.S3_BUCKET}/{key}', '-', '{:.1f}KB'.format(len(body) / 1024))
-    
-            s3.put_object(Bucket=constants.S3_BUCKET, Key=key, Body=body,
-                ContentEncoding='gzip', ContentType='text/json', ACL='public-read')
-        else:
-            os.makedirs(os.path.dirname(key), exist_ok=True)
-            print(stack_str, 'Write', key)
-    
-            with open(key, 'w') as file:
-                file.write(buffer.getvalue())
-
         if args.geojson:
             tile_log.append(''.join([
                 '{"type": "Feature", "properties": ',

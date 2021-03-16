@@ -98,7 +98,7 @@ function get_description(plan, modified_at)
 }
 
 function load_plan_preread(url, message_section, preread_section, description,
-    incumbency_unavailable, incumbency_scenarios, first_incumbent_row, map_url, map_div)
+    incumbency_unavailable, incumbency_scenarios, first_incumbent_row, geom_prefix, map_div)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -147,7 +147,7 @@ function load_plan_preread(url, message_section, preread_section, description,
         }
 
         // Go on to load the map.
-        load_plan_map(map_url, map_div, plan);
+        load_plan_map(geom_prefix + plan.geometry_key, map_div, plan);
     }
 
     request.onload = function()
