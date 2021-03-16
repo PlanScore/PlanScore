@@ -756,7 +756,7 @@ function get_description(plan, modified_at)
 
 function load_plan_score(url, message_section, score_section,
     description, model_link, model_url_pattern, table, score_EG, score_PB,
-    score_MM, score_sense, text_url, text_link, map_url, map_div)
+    score_MM, score_sense, text_url, text_link, geom_prefix, map_div)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -842,7 +842,7 @@ function load_plan_score(url, message_section, score_section,
         }
 
         // Go on to load the map.
-        load_plan_map(map_url, map_div, plan);
+        load_plan_map(geom_prefix + plan.geometry_key, map_div, plan);
     }
 
     request.onload = function()

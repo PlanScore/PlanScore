@@ -12,9 +12,6 @@ app.config['FREEZER_DESTINATION'] = os.environ.get('FREEZER_DESTINATION', 'build
 def get_data_url_pattern(bucket):
     return constants.S3_URL_PATTERN.format(b=bucket, k=data.UPLOAD_INDEX_KEY)
 
-def get_geom_url_pattern(bucket):
-    return constants.S3_URL_PATTERN.format(b=bucket, k=data.UPLOAD_GEOMETRY_KEY)
-
 def get_text_url_pattern(bucket):
     return constants.S3_URL_PATTERN.format(b=bucket, k=data.UPLOAD_PLAINTEXT_KEY)
 
@@ -82,18 +79,18 @@ def get_upload():
 def get_annotate():
     uploaded_url = get_function_url(constants.API_UPLOADED_RELPATH)
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
-    geom_url_pattern = get_geom_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
+    geom_url_prefix = constants.S3_URL_PATTERN.format(k='', b=flask.current_app.config['PLANSCORE_S3_BUCKET'])
     return flask.render_template('annotate.html', Incumbency=data.Incumbency,
         uploaded_url=uploaded_url, data_url_pattern=data_url_pattern,
-        geom_url_pattern=geom_url_pattern)
+        geom_url_prefix=geom_url_prefix)
 
 @app.route('/plan.html')
 def get_plan():
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
-    geom_url_pattern = get_geom_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
+    geom_url_prefix = constants.S3_URL_PATTERN.format(k='', b=flask.current_app.config['PLANSCORE_S3_BUCKET'])
     text_url_pattern = get_text_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     return flask.render_template('plan.html',
-        data_url_pattern=data_url_pattern, geom_url_pattern=geom_url_pattern,
+        data_url_pattern=data_url_pattern, geom_url_prefix=geom_url_prefix,
         text_url_pattern=text_url_pattern)
 
 @app.route('/webinar/')

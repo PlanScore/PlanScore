@@ -105,7 +105,7 @@
 	        plan_desc = s3_key.replace(/^.+\/([^\/]+)$/, '$1'),
 	        plan_id = signed_id.replace(/^(.+)\.[\w\-]+$/, '$1'),
 	        plan_url = format_url('{{ data_url_pattern }}', plan_id),
-	        geom_url = format_url('{{ geom_url_pattern }}', plan_id);
+	        geom_prefix = '{{ geom_url_prefix }}';
 	    
         form.elements['description'].value = plan_desc;
         form.elements['id'].value = signed_id;
@@ -119,7 +119,7 @@
 	        document.getElementById('incumbency-unavailable'),
 	        document.getElementById('incumbency-scenarios'),
 	        document.getElementById('first-incumbent'),
-	        geom_url, document.getElementById('map'));
+	        geom_prefix, document.getElementById('map'));
 
 	</script>
 
