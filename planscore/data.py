@@ -132,8 +132,9 @@ class Model:
 
 class Upload:
 
-    def __init__(self, id, key, model:Model=None, districts=None, incumbents=None, summary=None,
-            progress=None, start_time=None, message=None, description=None, **ignored):
+    def __init__(self, id, key, model:Model=None, districts=None, incumbents=None,
+            summary=None, progress=None, start_time=None, message=None,
+            description=None, geometry_key=None, **ignored):
         self.id = id
         self.key = key
         self.model = model
@@ -144,6 +145,7 @@ class Upload:
         self.start_time = start_time or time.time()
         self.message = message
         self.description = description
+        self.geometry_key = geometry_key
         self.commit_sha = os.environ.get('GIT_COMMIT_SHA')
         
         if not incumbents:
@@ -157,9 +159,6 @@ class Upload:
     
     def plaintext_key(self):
         return UPLOAD_PLAINTEXT_KEY.format(id=self.id)
-    
-    def geometry_key(self):
-        return UPLOAD_GEOMETRY_KEY.format(id=self.id)
     
     def district_key(self, index):
         return UPLOAD_DISTRICTS_KEY.format(id=self.id, index=index)
@@ -215,6 +214,7 @@ class Upload:
             start_time = self.start_time,
             message = self.message,
             description = self.description,
+            geometry_key = self.geometry_key,
             commit_sha = self.commit_sha,
             )
     
@@ -264,7 +264,7 @@ class Upload:
             return out.getvalue()
     
     def clone(self, model=None, districts=None, incumbents=None, summary=None, progress=None,
-        start_time=None, message=None, description=None):
+        start_time=None, message=None, description=None, geometry_key=None):
         return Upload(self.id, self.key,
             model = model or self.model,
             districts = districts or self.districts,
@@ -274,6 +274,7 @@ class Upload:
             start_time = start_time or self.start_time,
             message = message or self.message,
             description = description or self.description,
+            geometry_key = geometry_key or self.geometry_key,
             )
     
     @staticmethod
@@ -292,6 +293,7 @@ class Upload:
             start_time = data.get('start_time'),
             message = data.get('message'),
             description = data.get('description'),
+            geometry_key = data.get('geometry_key'),
             )
     
     @staticmethod

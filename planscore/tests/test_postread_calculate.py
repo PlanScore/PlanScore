@@ -111,7 +111,7 @@ class TestPostreadCalculate (unittest.TestCase):
         postread_calculate.put_geojson_file(s3, bucket, upload, nullplan_path)
         compress.assert_called_once_with(b'{"type": "FeatureCollection", "features": [\n{"type": "Feature", "properties": {}, "geometry": { "type": "Polygon", "coordinates": [ [ [ -0.000236, 0.0004533 ], [ -0.0006813, 0.0002468 ], [ -0.0006357, -0.0003487 ], [ -0.0000268, -0.0004694 ], [ -0.0000188, -0.0000215 ], [ -0.000236, 0.0004533 ] ] ] }},\n{"type": "Feature", "properties": {}, "geometry": { "type": "Polygon", "coordinates": [ [ [ -0.0002259, 0.0004311 ], [ 0.000338, 0.0006759 ], [ 0.0004452, 0.0006142 ], [ 0.0005525, 0.000059 ], [ 0.0005257, -0.0005069 ], [ 0.0003862, -0.0005659 ], [ -0.0000939, -0.0004935 ], [ -0.0001016, -0.0004546 ], [ -0.0000268, -0.0004694 ], [ -0.0000188, -0.0000215 ], [ -0.0002259, 0.0004311 ] ] ] }}\n]}')
         s3.put_object.assert_called_once_with(Bucket=bucket,
-            Key=upload.geometry_key.return_value,
+            Key=upload.geometry_key,
             Body=compress.return_value, ContentEncoding='gzip',
             ACL='public-read', ContentType='text/json')
     
@@ -124,7 +124,7 @@ class TestPostreadCalculate (unittest.TestCase):
         postread_calculate.put_geojson_file(s3, bucket, upload, nullplan_path)
         compress.assert_called_once_with(b'{"type": "FeatureCollection", "features": [\n{"type": "Feature", "properties": {}, "geometry": { "type": "Polygon", "coordinates": [ [ [ -0.000236, 0.0004533 ], [ -0.0006813, 0.0002468 ], [ -0.0006357, -0.0003487 ], [ -0.0000268, -0.0004694 ], [ -0.0000188, -0.0000215 ], [ -0.000236, 0.0004533 ] ] ] }},\n{"type": "Feature", "properties": {}, "geometry": { "type": "Polygon", "coordinates": [ [ [ -0.0002259, 0.0004311 ], [ 0.000338, 0.0006759 ], [ 0.0004452, 0.0006142 ], [ 0.0005525, 0.000059 ], [ 0.0005257, -0.0005069 ], [ 0.0003862, -0.0005659 ], [ -0.0000939, -0.0004935 ], [ -0.0001016, -0.0004546 ], [ -0.0000268, -0.0004694 ], [ -0.0000188, -0.0000215 ], [ -0.0002259, 0.0004311 ] ] ] }},\n{"type": "Feature", "properties": {}, "geometry": { "type": "GeometryCollection", "geometries": [ ] }}\n]}')
         s3.put_object.assert_called_once_with(Bucket=bucket,
-            Key=upload.geometry_key.return_value,
+            Key=upload.geometry_key,
             Body=compress.return_value, ContentEncoding='gzip',
             ACL='public-read', ContentType='text/json')
     
@@ -267,8 +267,13 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertIsNone(info)
     
         self.assertEqual(len(put_upload_index.mock_calls), 1)
-        self.assertEqual(put_upload_index.mock_calls[0][1][1], upload)
-        put_geojson_file.assert_called_once_with(s3, bucket, upload, nullplan_path)
+        self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
+
+        self.assertEqual(len(put_geojson_file.mock_calls), 1)
+        self.assertIs(put_geojson_file.mock_calls[0][1][0], s3)
+        self.assertIs(put_geojson_file.mock_calls[0][1][1], bucket)
+        self.assertEqual(put_geojson_file.mock_calls[0][1][2].id, upload.id)
+        self.assertIs(put_geojson_file.mock_calls[0][1][3], nullplan_path)
         
         self.assertEqual(len(put_district_geometries.mock_calls), 1)
         self.assertEqual(put_district_geometries.mock_calls[0][1][3], nullplan_path)
@@ -319,7 +324,8 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(len(put_upload_index.mock_calls), 1)
         self.assertEqual(put_upload_index.mock_calls[0][1][1], upload)
         
-        self.assertEqual(put_geojson_file.mock_calls[0][1][:3], (s3, bucket, upload))
+        self.assertEqual(put_geojson_file.mock_calls[0][1][:2], (s3, bucket))
+        self.assertEqual(put_geojson_file.mock_calls[0][1][2].id, upload.id)
         self.assertIs(put_geojson_file.mock_calls[0][1][3], unzip_shapefile.return_value)
         
         self.assertEqual(len(put_district_geometries.mock_calls), 1)

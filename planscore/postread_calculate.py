@@ -58,13 +58,14 @@ def commence_upload_scoring(s3, bucket, upload):
             ds_path = ul_path
         storage = data.Storage(s3, bucket, upload.model.key_prefix)
         observe.put_upload_index(storage, upload)
-        put_geojson_file(s3, bucket, upload, ds_path)
-        geometry_keys = put_district_geometries(s3, bucket, upload, ds_path)
+        upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
+        put_geojson_file(s3, bucket, upload2, ds_path)
+        geometry_keys = put_district_geometries(s3, bucket, upload2, ds_path)
         
         # New tile-based method comes first to preserve user experience
-        tile_keys = load_model_tiles(storage, upload.model)
-        start_tile_observer_lambda(storage, upload, tile_keys)
-        fan_out_tile_lambdas(storage, upload, tile_keys)
+        tile_keys = load_model_tiles(storage, upload2.model)
+        start_tile_observer_lambda(storage, upload2, tile_keys)
+        fan_out_tile_lambdas(storage, upload2, tile_keys)
 
 def put_district_geometries(s3, bucket, upload, path):
     '''
@@ -170,7 +171,6 @@ def start_tile_observer_lambda(storage, upload, tile_keys):
 def put_geojson_file(s3, bucket, upload, path):
     ''' Save a property-less GeoJSON file for this upload.
     '''
-    key = upload.geometry_key()
     ds = osgeo.ogr.Open(path)
     geometries = []
     
@@ -191,7 +191,7 @@ def put_geojson_file(s3, bucket, upload, path):
     body = gzip.compress(geojson.encode('utf8'))
     args = dict(ContentEncoding='gzip')
     
-    s3.put_object(Bucket=bucket, Key=key, Body=body,
+    s3.put_object(Bucket=bucket, Key=upload.geometry_key, Body=body,
         ContentType='text/json', ACL='public-read', **args)
 
 def get_redirect_url(website_base, id):
