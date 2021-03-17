@@ -313,7 +313,7 @@ class PlanScoreScoring(cdk.Stack):
         # API-accessible functions
 
         function_kwargs.update(dict(
-            timeout=cdk.Duration.seconds(3),
+            timeout=cdk.Duration.seconds(30),
         ))
 
         api_upload = aws_lambda.Function(
@@ -327,6 +327,10 @@ class PlanScoreScoring(cdk.Stack):
         grant_data_bucket_access(data_bucket, api_upload)
         grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', api_upload)
         api_upload.add_permission('Permission', principal=apigateway_role)
+
+        function_kwargs.update(dict(
+            timeout=cdk.Duration.seconds(3),
+        ))
 
         upload_fields = aws_lambda.Function(
             self,
