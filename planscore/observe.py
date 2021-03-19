@@ -118,7 +118,7 @@ def iterate_tile_totals(expected_tiles, storage, upload, context):
 
             if remain_msec < 5000:
                 # Out of time, just stop
-                overdue_upload = upload.clone(message="Giving up on this plan after it took too long, sorry.")
+                overdue_upload = upload.clone(status=False, message="Giving up on this plan after it took too long, sorry.")
                 put_upload_index(storage, overdue_upload)
                 return
 
@@ -233,8 +233,11 @@ def lambda_handler(event, context):
     upload6 = score.calculate_biases(upload5)
     upload7 = score.calculate_district_biases(upload6)
 
-    complete_upload = upload7.clone(message='Finished scoring this plan.',
-        progress=data.Progress(len(expected_tiles), len(expected_tiles)))
+    complete_upload = upload7.clone(
+        status=True,
+        message='Finished scoring this plan.',
+        progress=data.Progress(len(expected_tiles), len(expected_tiles)),
+    )
 
     put_upload_index(storage, complete_upload)
     put_tile_timings(storage, upload2, tiles)

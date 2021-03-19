@@ -1,5 +1,11 @@
-import urllib.parse, tempfile, shutil, os, contextlib, logging, zipfile, itertools, shutil
+import urllib.parse, tempfile, shutil, os, contextlib, logging, zipfile, itertools, shutil, enum
 from . import constants
+
+class UploadType (enum.Enum):
+    OGR_DATASOURCE = 1
+    BLOCK_ASSIGNMENT = 2
+    ZIPPED_OGR_DATASOURCE = 3
+    ZIPPED_BLOCK_ASSIGNMENT = 4
 
 @contextlib.contextmanager
 def temporary_buffer_file(filename, buffer):
@@ -11,6 +17,51 @@ def temporary_buffer_file(filename, buffer):
         yield filepath
     finally:
         shutil.rmtree(dirname)
+
+def guess_upload_type(path):
+    '''
+    '''
+    _, ext = os.path.splitext(path.lower())
+    
+    if ext in ('.txt', '.csv'):
+        return UploadType.BLOCK_ASSIGNMENT
+    
+    if ext in ('.geojson', '.json', '.gpkg'):
+        return UploadType.OGR_DATASOURCE
+
+    if ext != '.zip':
+        raise ValueError('Unknown file type "{}"'.format(ext))
+
+    zf = zipfile.ZipFile(path)
+
+    # Sort names so "real"-looking paths come first: not dot-names, not in '__MACOSX'
+    namelist = sorted(zf.namelist(), reverse=False,
+        key=lambda n: (os.path.basename(n).startswith('.'), n.startswith('__MACOSX')))
+    
+    for name in namelist:
+        _, ext = os.path.splitext(name.lower())
+        if ext == '.shp':
+            return UploadType.ZIPPED_OGR_DATASOURCE
+    
+    for name in namelist:
+        _, ext = os.path.splitext(name.lower())
+        if ext == '.txt':
+            return UploadType.ZIPPED_BLOCK_ASSIGNMENT
+
+def vsizip_shapefile(zip_path):
+    '''
+    '''
+    zf = zipfile.ZipFile(zip_path)
+
+    # Sort names so "real"-looking paths come first: not dot-names, not in '__MACOSX'
+    namelist = sorted(zf.namelist(), reverse=False,
+        key=lambda n: (os.path.basename(n).startswith('.'), n.startswith('__MACOSX')))
+    
+    for file in namelist:
+        _, ext = os.path.splitext(file)
+        
+        if ext.lower() == '.shp':
+            return '/vsizip/{}/{}'.format(os.path.abspath(zip_path), file)
 
 def unzip_shapefile(zip_path, zip_dir):
     ''' Unzip shapefile found within zip file into named directory.

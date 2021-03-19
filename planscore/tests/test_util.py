@@ -19,6 +19,86 @@ class TestUtil (unittest.TestCase):
         self.assertEqual(data, buffer.getvalue())
         self.assertFalse(os.path.exists(path))
     
+    def test_guess_upload_type(self):
+        path1 = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
+        type1 = util.guess_upload_type(path1)
+        self.assertEqual(type1, util.UploadType.ZIPPED_OGR_DATASOURCE)
+    
+        path2 = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-nested.shp.zip')
+        type2 = util.guess_upload_type(path2)
+        self.assertEqual(type2, util.UploadType.ZIPPED_OGR_DATASOURCE)
+    
+        path3 = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-dircase.shp.zip')
+        type3 = util.guess_upload_type(path3)
+        self.assertEqual(type3, util.UploadType.ZIPPED_OGR_DATASOURCE)
+    
+        path4 = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.zip')
+        type4 = util.guess_upload_type(path4)
+        self.assertEqual(type4, util.UploadType.ZIPPED_BLOCK_ASSIGNMENT)
+    
+        path5 = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.txt')
+        type5 = util.guess_upload_type(path5)
+        self.assertEqual(type5, util.UploadType.BLOCK_ASSIGNMENT)
+    
+        path6 = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
+        type6 = util.guess_upload_type(path6)
+        self.assertEqual(type6, util.UploadType.OGR_DATASOURCE)
+    
+        path7 = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.gpkg')
+        type7 = util.guess_upload_type(path7)
+        self.assertEqual(type7, util.UploadType.OGR_DATASOURCE)
+    
+        with self.assertRaises(ValueError) as err:
+            util.guess_upload_type('bad.jpg')
+    
+        with self.assertRaises(ValueError) as err:
+            util.guess_upload_type('bad.pdf')
+    
+    @unittest.mock.patch('sys.stdout')
+    def test_vsizip_shapefile(self, stdout):
+        ''' Shapefile is found within a zip file.
+        '''
+        zip_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
+        shp_path = util.vsizip_shapefile(zip_path)
+
+        self.assertEqual(shp_path, '/vsizip/{}/null-plan.shp'.format(os.path.abspath(zip_path)))
+    
+    @unittest.mock.patch('sys.stdout')
+    def test_vsizip_shapefile_nested(self, stdout):
+        ''' Shapefile is found within a zip file with nested subdirectory.
+        '''
+        zip_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-nested.shp.zip')
+        shp_path = util.vsizip_shapefile(zip_path)
+
+        self.assertEqual(shp_path, '/vsizip/{}/null-plan/null-plan.shp'.format(os.path.abspath(zip_path)))
+    
+    @unittest.mock.patch('sys.stdout')
+    def test_vsizip_shapefile_dircase(self, stdout):
+        ''' Shapefile is found within a zip file with mixed-case nested subdirectory.
+        '''
+        zip_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-dircase.shp.zip')
+        shp_path = util.vsizip_shapefile(zip_path)
+
+        self.assertEqual(shp_path, '/vsizip/{}/Null Plan/null-plan.shp'.format(os.path.abspath(zip_path)))
+    
+    @unittest.mock.patch('sys.stdout')
+    def test_vsizip_shapefile_mixedcase(self, stdout):
+        ''' Shapefile is found within a zip file with mixed-case file names.
+        '''
+        zip_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-mixedcase.shp.zip')
+        shp_path = util.vsizip_shapefile(zip_path)
+
+        self.assertEqual(shp_path, '/vsizip/{}/null-plan.shp'.format(os.path.abspath(zip_path)))
+    
+    @unittest.mock.patch('sys.stdout')
+    def test_vsizip_shapefile_macosx(self, stdout):
+        ''' Shapefile is found within a zip file with mixed-case file names.
+        '''
+        zip_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-macosx.shp.zip')
+        shp_path = util.vsizip_shapefile(zip_path)
+
+        self.assertEqual(shp_path, '/vsizip/{}/null-plan.shp'.format(os.path.abspath(zip_path)))
+    
     @unittest.mock.patch('sys.stdout')
     def test_unzip_shapefile(self, stdout):
         ''' Shapefile is found within a zip file.
