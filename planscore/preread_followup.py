@@ -82,7 +82,7 @@ def commence_geometry_upload_parsing(s3, bucket, upload, ds_path):
     return upload3
 
 def commence_blockassign_upload_parsing(s3, bucket, upload, file_path):
-    raise NotImplementedError()
+    raise NotImplementedError('Block assignment files are not supported at this time')
 
 def count_district_geometries(bucket, upload, path):
     '''

@@ -48,6 +48,12 @@ class TestUtil (unittest.TestCase):
         type7 = util.guess_upload_type(path7)
         self.assertEqual(type7, util.UploadType.OGR_DATASOURCE)
     
+        with self.assertRaises(ValueError) as err:
+            util.guess_upload_type('bad.jpg')
+    
+        with self.assertRaises(ValueError) as err:
+            util.guess_upload_type('bad.pdf')
+    
     @unittest.mock.patch('sys.stdout')
     def test_vsizip_shapefile(self, stdout):
         ''' Shapefile is found within a zip file.

@@ -23,15 +23,15 @@ def guess_upload_type(path):
     '''
     _, ext = os.path.splitext(path.lower())
     
-    if ext == '.txt':
+    if ext in ('.txt', '.csv'):
         return UploadType.BLOCK_ASSIGNMENT
     
     if ext in ('.geojson', '.json', '.gpkg'):
         return UploadType.OGR_DATASOURCE
 
     if ext != '.zip':
-        return None
-    
+        raise ValueError('Unknown file type "{}"'.format(ext))
+
     zf = zipfile.ZipFile(path)
 
     # Sort names so "real"-looking paths come first: not dot-names, not in '__MACOSX'
