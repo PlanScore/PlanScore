@@ -53,7 +53,7 @@ def commence_upload_scoring(s3, bucket, upload):
     with util.temporary_buffer_file(os.path.basename(upload.key), object['Body']) as ul_path:
         if os.path.splitext(ul_path)[1] == '.zip':
             # Assume a shapefile
-            ds_path = util.unzip_shapefile(ul_path, os.path.dirname(ul_path))
+            ds_path = util.vsizip_shapefile(ul_path)
         else:
             ds_path = ul_path
         storage = data.Storage(s3, bucket, upload.model.key_prefix)

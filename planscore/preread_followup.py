@@ -50,7 +50,7 @@ def commence_upload_parsing(s3, bucket, upload):
     with util.temporary_buffer_file(os.path.basename(upload.key), object['Body']) as ul_path:
         if os.path.splitext(ul_path)[1] == '.zip':
             # Assume a shapefile
-            ds_path = util.unzip_shapefile(ul_path, os.path.dirname(ul_path))
+            ds_path = util.vsizip_shapefile(ul_path)
         else:
             ds_path = ul_path
         model = guess_state_model(ds_path)

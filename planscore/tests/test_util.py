@@ -20,6 +20,42 @@ class TestUtil (unittest.TestCase):
         self.assertFalse(os.path.exists(path))
     
     @unittest.mock.patch('sys.stdout')
+    def test_vsizip_shapefile(self, stdout):
+        ''' Shapefile is found within a zip file.
+        '''
+        zip_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
+        shp_path = util.vsizip_shapefile(zip_path)
+
+        self.assertEqual(shp_path, '/vsizip/{}/null-plan.shp'.format(os.path.abspath(zip_path)))
+    
+    @unittest.mock.patch('sys.stdout')
+    def test_vsizip_shapefile_nested(self, stdout):
+        ''' Shapefile is found within a zip file with nested subdirectory.
+        '''
+        zip_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-nested.shp.zip')
+        shp_path = util.vsizip_shapefile(zip_path)
+
+        self.assertEqual(shp_path, '/vsizip/{}/null-plan/null-plan.shp'.format(os.path.abspath(zip_path)))
+    
+    @unittest.mock.patch('sys.stdout')
+    def test_vsizip_shapefile_dircase(self, stdout):
+        ''' Shapefile is found within a zip file with mixed-case nested subdirectory.
+        '''
+        zip_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-dircase.shp.zip')
+        shp_path = util.vsizip_shapefile(zip_path)
+
+        self.assertEqual(shp_path, '/vsizip/{}/Null Plan/null-plan.shp'.format(os.path.abspath(zip_path)))
+    
+    @unittest.mock.patch('sys.stdout')
+    def test_vsizip_shapefile_dircase(self, stdout):
+        ''' Shapefile is found within a zip file with mixed-case file names.
+        '''
+        zip_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-mixedcase.shp.zip')
+        shp_path = util.vsizip_shapefile(zip_path)
+
+        self.assertEqual(shp_path, '/vsizip/{}/null-plan.shp'.format(os.path.abspath(zip_path)))
+    
+    @unittest.mock.patch('sys.stdout')
     def test_unzip_shapefile(self, stdout):
         ''' Shapefile is found within a zip file.
         '''

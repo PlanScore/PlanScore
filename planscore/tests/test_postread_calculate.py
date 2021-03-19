@@ -292,12 +292,12 @@ class TestPostreadCalculate (unittest.TestCase):
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.postread_calculate.put_geojson_file')
-    @unittest.mock.patch('planscore.util.unzip_shapefile')
+    @unittest.mock.patch('planscore.util.vsizip_shapefile')
     @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
     @unittest.mock.patch('planscore.postread_calculate.start_tile_observer_lambda')
     @unittest.mock.patch('planscore.postread_calculate.fan_out_tile_lambdas')
     @unittest.mock.patch('planscore.postread_calculate.load_model_tiles')
-    def test_commence_upload_scoring_zipped_file(self, load_model_tiles, fan_out_tile_lambdas, start_tile_observer_lambda, put_district_geometries, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
+    def test_commence_upload_scoring_zipped_file(self, load_model_tiles, fan_out_tile_lambdas, start_tile_observer_lambda, put_district_geometries, vsizip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'
@@ -316,7 +316,7 @@ class TestPostreadCalculate (unittest.TestCase):
 
         upload = data.Upload(id, upload_key, model=data.MODELS2020[0])
         info = postread_calculate.commence_upload_scoring(s3, bucket, upload)
-        unzip_shapefile.assert_called_once_with(nullplan_path, os.path.dirname(nullplan_path))
+        vsizip_shapefile.assert_called_once_with(nullplan_path)
 
         temporary_buffer_file.assert_called_once_with('null-plan.shp.zip', None)
         self.assertIsNone(info)
@@ -326,10 +326,10 @@ class TestPostreadCalculate (unittest.TestCase):
         
         self.assertEqual(put_geojson_file.mock_calls[0][1][:2], (s3, bucket))
         self.assertEqual(put_geojson_file.mock_calls[0][1][2].id, upload.id)
-        self.assertIs(put_geojson_file.mock_calls[0][1][3], unzip_shapefile.return_value)
+        self.assertIs(put_geojson_file.mock_calls[0][1][3], vsizip_shapefile.return_value)
         
         self.assertEqual(len(put_district_geometries.mock_calls), 1)
-        self.assertEqual(put_district_geometries.mock_calls[0][1][3], unzip_shapefile.return_value)
+        self.assertEqual(put_district_geometries.mock_calls[0][1][3], vsizip_shapefile.return_value)
 
         self.assertEqual(len(load_model_tiles.mock_calls), 1)
         

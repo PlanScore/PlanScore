@@ -12,6 +12,21 @@ def temporary_buffer_file(filename, buffer):
     finally:
         shutil.rmtree(dirname)
 
+def vsizip_shapefile(zip_path):
+    '''
+    '''
+    zf = zipfile.ZipFile(zip_path)
+
+    # Sort names so "real"-looking paths come last: not dot-names, not in '__MACOSX'
+    namelist = sorted(zf.namelist(), reverse=True,
+        key=lambda n: (os.path.basename(n).startswith('.'), n.startswith('__MACOSX')))
+    
+    for file in namelist:
+        _, ext = os.path.splitext(file)
+        
+        if ext.lower() == '.shp':
+            return '/vsizip/{}/{}'.format(os.path.abspath(zip_path), file)
+
 def unzip_shapefile(zip_path, zip_dir):
     ''' Unzip shapefile found within zip file into named directory.
     '''

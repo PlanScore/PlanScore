@@ -272,10 +272,10 @@ class TestPrereadFollowup (unittest.TestCase):
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.preread_followup.put_geojson_file')
-    @unittest.mock.patch('planscore.util.unzip_shapefile')
+    @unittest.mock.patch('planscore.util.vsizip_shapefile')
     @unittest.mock.patch('planscore.preread_followup.count_district_geometries')
     @unittest.mock.patch('planscore.preread_followup.guess_state_model')
-    def test_commence_upload_parsing_zipped_file(self, guess_state_model, count_district_geometries, unzip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
+    def test_commence_upload_parsing_zipped_file(self, guess_state_model, count_district_geometries, vsizip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
         ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'
@@ -295,15 +295,15 @@ class TestPrereadFollowup (unittest.TestCase):
 
         upload = data.Upload(id, upload_key)
         info = preread_followup.commence_upload_parsing(s3, bucket, upload)
-        unzip_shapefile.assert_called_once_with(nullplan_path, os.path.dirname(nullplan_path))
-        guess_state_model.assert_called_once_with(unzip_shapefile.return_value)
+        vsizip_shapefile.assert_called_once_with(nullplan_path)
+        guess_state_model.assert_called_once_with(vsizip_shapefile.return_value)
 
         temporary_buffer_file.assert_called_once_with('null-plan.shp.zip', None)
         self.assertEqual(info.id, upload.id)
     
         self.assertEqual(put_geojson_file.mock_calls[0][1][:2], (s3, bucket))
         self.assertEqual(put_geojson_file.mock_calls[0][1][2].id, upload.id)
-        self.assertIs(put_geojson_file.mock_calls[0][1][3], unzip_shapefile.return_value)
+        self.assertIs(put_geojson_file.mock_calls[0][1][3], vsizip_shapefile.return_value)
 
         self.assertEqual(len(put_upload_index.mock_calls), 1)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
@@ -312,7 +312,7 @@ class TestPrereadFollowup (unittest.TestCase):
             'Found 2 districts in the "data/XX/006-tilesdir" None plan with 2 seats.')
         
         self.assertEqual(len(count_district_geometries.mock_calls), 1)
-        self.assertEqual(count_district_geometries.mock_calls[0][1][2], unzip_shapefile.return_value)
+        self.assertEqual(count_district_geometries.mock_calls[0][1][2], vsizip_shapefile.return_value)
     
     def test_commence_upload_parsing_bad_file(self):
         ''' An invalid district file fails in an expected way
