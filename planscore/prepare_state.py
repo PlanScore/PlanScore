@@ -162,7 +162,7 @@ def write_buffer(s3, key, buffer, prefix):
     if s3:
         body = gzip.compress(buffer.getvalue().encode('utf8'))
         line = f's3://{constants.S3_BUCKET}/{key}', '-', '{:.1f}KB'.format(len(body) / 1024)
-        print(prefix, 'Write', line)
+        print(prefix, 'Write', *line)
 
         s3.put_object(Bucket=constants.S3_BUCKET, Key=key, Body=body,
             ContentEncoding='gzip', ContentType='text/json', ACL='public-read')
