@@ -135,10 +135,11 @@ class Upload:
 
     def __init__(self, id, key, model:Model=None, districts=None, incumbents=None,
             summary=None, progress=None, start_time=None, message=None,
-            description=None, geometry_key=None, **ignored):
+            description=None, geometry_key=None, status=None, **ignored):
         self.id = id
         self.key = key
         self.model = model
+        self.status = status
         self.districts = districts or []
         self.incumbents = incumbents or []
         self.summary = summary or {}
@@ -208,6 +209,7 @@ class Upload:
             id = self.id,
             key = self.key,
             model = (self.model.to_dict() if self.model else None),
+            status = self.status,
             districts = self.districts,
             incumbents = self.incumbents,
             summary = self.summary,
@@ -251,6 +253,9 @@ class Upload:
             
             # Upload key string
             self.key,
+            
+            # Upload status
+            {True: 't', False: 'f', None: ''}.get(self.status),
         ]
             
         try:
@@ -265,9 +270,10 @@ class Upload:
             return out.getvalue()
     
     def clone(self, model=None, districts=None, incumbents=None, summary=None, progress=None,
-        start_time=None, message=None, description=None, geometry_key=None):
+        start_time=None, message=None, description=None, geometry_key=None, status=None):
         return Upload(self.id, self.key,
             model = model or self.model,
+            status = status if (self.status is None) else self.status,
             districts = districts or self.districts,
             incumbents = incumbents or self.incumbents,
             summary = summary or self.summary,
@@ -287,6 +293,7 @@ class Upload:
             id = data['id'], 
             key = data['key'],
             model = model,
+            status = data.get('status'),
             districts = data.get('districts'),
             incumbents = data.get('incumbents'),
             summary = data.get('summary'),

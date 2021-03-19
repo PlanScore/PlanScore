@@ -199,10 +199,10 @@ def lambda_handler(event, context):
     try:
         commence_upload_parsing(s3, event['bucket'], upload)
     except RuntimeError as err:
-        error_upload = upload.clone(message="Can't score this plan: {}".format(err))
+        error_upload = upload.clone(status=False, message="Can't score this plan: {}".format(err))
         observe.put_upload_index(storage, error_upload)
     except Exception:
-        error_upload = upload.clone(message="Can't score this plan: something went wrong, giving up.")
+        error_upload = upload.clone(status=False, message="Can't score this plan: something went wrong, giving up.")
         observe.put_upload_index(storage, error_upload)
         raise
 
