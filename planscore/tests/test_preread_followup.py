@@ -232,10 +232,112 @@ class TestPrereadFollowup (unittest.TestCase):
         self.assertEqual(count, 3)
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
+    @unittest.mock.patch('planscore.preread_followup.commence_geometry_upload_parsing')
+    def test_commence_upload_parsing_good_ogr_file(self, commence_geometry_upload_parsing, temporary_buffer_file):
+        ''' A valid district plan file is recognized and passed on correctly
+        '''
+        id = 'ID'
+        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
+        upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
+        
+        @contextlib.contextmanager
+        def nullplan_file(*args):
+            yield nullplan_path
+
+        temporary_buffer_file.side_effect = nullplan_file
+
+        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3.get_object.return_value = {'Body': None}
+
+        upload = data.Upload(id, upload_key)
+        info = preread_followup.commence_upload_parsing(s3, bucket, upload)
+        commence_geometry_upload_parsing.assert_called_once_with(s3, bucket, upload, nullplan_path)
+    
+    @unittest.mock.patch('planscore.util.temporary_buffer_file')
+    @unittest.mock.patch('planscore.preread_followup.commence_blockassign_upload_parsing')
+    def test_commence_upload_parsing_good_block_file(self, commence_blockassign_upload_parsing, temporary_buffer_file):
+        ''' A valid district plan file is recognized and passed on correctly
+        '''
+        id = 'ID'
+        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.txt')
+        upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan-blockassignments.txt'
+        
+        @contextlib.contextmanager
+        def nullplan_file(*args):
+            yield nullplan_path
+
+        temporary_buffer_file.side_effect = nullplan_file
+
+        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3.get_object.return_value = {'Body': None}
+
+        upload = data.Upload(id, upload_key)
+        info = preread_followup.commence_upload_parsing(s3, bucket, upload)
+        commence_blockassign_upload_parsing.assert_called_once_with(s3, bucket, upload, nullplan_path)
+    
+    @unittest.mock.patch('planscore.util.temporary_buffer_file')
+    @unittest.mock.patch('planscore.preread_followup.commence_geometry_upload_parsing')
+    def test_commence_upload_parsing_zipped_ogr_file(self, commence_geometry_upload_parsing, temporary_buffer_file):
+        ''' A valid district plan file is recognized and passed on correctly
+        '''
+        id = 'ID'
+        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
+        upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.shp.zip'
+        
+        @contextlib.contextmanager
+        def nullplan_file(*args):
+            yield nullplan_path
+
+        temporary_buffer_file.side_effect = nullplan_file
+
+        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3.get_object.return_value = {'Body': None}
+
+        upload = data.Upload(id, upload_key)
+        
+        info = preread_followup.commence_upload_parsing(s3, bucket, upload)
+        nullplan_datasource = '/vsizip/{}/null-plan.shp'.format(os.path.abspath(nullplan_path))
+        commence_geometry_upload_parsing.assert_called_once_with(s3, bucket, upload, nullplan_datasource)
+    
+    @unittest.mock.patch('planscore.util.temporary_buffer_file')
+    @unittest.mock.patch('planscore.preread_followup.commence_blockassign_upload_parsing')
+    def test_commence_upload_parsing_zipped_block_file(self, commence_blockassign_upload_parsing, temporary_buffer_file):
+        ''' A valid district plan file is recognized and passed on correctly
+        '''
+        id = 'ID'
+        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.zip')
+        upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan-blockassignments.zip'
+        
+        @contextlib.contextmanager
+        def nullplan_file(*args):
+            yield nullplan_path
+
+        temporary_buffer_file.side_effect = nullplan_file
+
+        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3.get_object.return_value = {'Body': None}
+
+        upload = data.Upload(id, upload_key)
+        preread_followup.commence_upload_parsing(s3, bucket, upload)
+        commence_blockassign_upload_parsing.assert_called_once_with(s3, bucket, upload, nullplan_path)
+    
+    def test_commence_upload_parsing_bad_file(self):
+        ''' An invalid district file fails in an expected way
+        '''
+        s3, bucket = unittest.mock.Mock(), unittest.mock.Mock()
+        s3.get_object.return_value = {'Body': io.BytesIO(b'Bad data')}
+
+        with self.assertRaises(RuntimeError) as error:
+            preread_followup.commence_upload_parsing(s3, bucket,
+                data.Upload('id', 'uploads/id/null-plan.geojson'))
+
+        self.assertEqual(str(error.exception), 'Failed to read GeoJSON data')
+    
+    @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.preread_followup.count_district_geometries')
     @unittest.mock.patch('planscore.preread_followup.guess_state_model')
-    def test_commence_upload_parsing_good_ogr_file(self, guess_state_model, count_district_geometries, put_upload_index, temporary_buffer_file):
+    def test_commence_geometry_upload_parsing_good_ogr_file(self, guess_state_model, count_district_geometries, put_upload_index, temporary_buffer_file):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
@@ -254,10 +356,9 @@ class TestPrereadFollowup (unittest.TestCase):
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key)
-        info = preread_followup.commence_upload_parsing(s3, bucket, upload)
+        info = preread_followup.commence_geometry_upload_parsing(s3, bucket, upload, nullplan_path)
         guess_state_model.assert_called_once_with(nullplan_path)
 
-        temporary_buffer_file.assert_called_once_with('null-plan.geojson', None)
         self.assertEqual(info.id, upload.id)
     
         self.assertEqual(len(put_upload_index.mock_calls), 1)
@@ -269,41 +370,11 @@ class TestPrereadFollowup (unittest.TestCase):
         self.assertEqual(len(count_district_geometries.mock_calls), 1)
         self.assertEqual(count_district_geometries.mock_calls[0][1][2], nullplan_path)
     
-    @unittest.mock.patch('planscore.util.temporary_buffer_file')
-    @unittest.mock.patch('planscore.observe.put_upload_index')
-    @unittest.mock.patch('planscore.preread_followup.count_district_geometries')
-    @unittest.mock.patch('planscore.preread_followup.guess_state_model')
-    def test_commence_upload_parsing_good_block_file(self, guess_state_model, count_district_geometries, put_upload_index, temporary_buffer_file):
-        ''' A valid district plan file is scored and the results posted to S3
-        '''
-        id = 'ID'
-        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.txt')
-        upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan-blockassignments.txt'
-        guess_state_model.return_value = data.Model(data.State.XX, None, 2, True, '2020', 'data/XX/006-tilesdir')
-        
-        @contextlib.contextmanager
-        def nullplan_file(*args):
-            yield nullplan_path
-
-        temporary_buffer_file.side_effect = nullplan_file
-        count_district_geometries.return_value = 2
-
-        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
-        s3.get_object.return_value = {'Body': None}
-
-        upload = data.Upload(id, upload_key)
-        with self.assertRaises(ValueError) as error:
-            preread_followup.commence_upload_parsing(s3, bucket, upload)
-
-        self.assertEqual(str(error.exception), 'UploadType.BLOCK_ASSIGNMENT')
-    
-    @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.preread_followup.put_geojson_file')
-    @unittest.mock.patch('planscore.util.vsizip_shapefile')
     @unittest.mock.patch('planscore.preread_followup.count_district_geometries')
     @unittest.mock.patch('planscore.preread_followup.guess_state_model')
-    def test_commence_upload_parsing_zipped_ogr_file(self, guess_state_model, count_district_geometries, vsizip_shapefile, put_geojson_file, put_upload_index, temporary_buffer_file):
+    def test_commence_geometry_upload_parsing_zipped_ogr_file(self, guess_state_model, count_district_geometries, put_geojson_file, put_upload_index):
         ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'
@@ -315,23 +386,21 @@ class TestPrereadFollowup (unittest.TestCase):
         def nullplan_file(*args):
             yield nullplan_path
 
-        temporary_buffer_file.side_effect = nullplan_file
         count_district_geometries.return_value = 2
 
         s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key)
-        info = preread_followup.commence_upload_parsing(s3, bucket, upload)
-        vsizip_shapefile.assert_called_once_with(nullplan_path)
-        guess_state_model.assert_called_once_with(vsizip_shapefile.return_value)
+        nullplan_datasource = '/vsizip/{}/null-plan.shp'.format(os.path.abspath(nullplan_path))
+        info = preread_followup.commence_geometry_upload_parsing(s3, bucket, upload, nullplan_datasource)
+        guess_state_model.assert_called_once_with(nullplan_datasource)
 
-        temporary_buffer_file.assert_called_once_with('null-plan.shp.zip', None)
         self.assertEqual(info.id, upload.id)
     
         self.assertEqual(put_geojson_file.mock_calls[0][1][:2], (s3, bucket))
         self.assertEqual(put_geojson_file.mock_calls[0][1][2].id, upload.id)
-        self.assertIs(put_geojson_file.mock_calls[0][1][3], vsizip_shapefile.return_value)
+        self.assertIs(put_geojson_file.mock_calls[0][1][3], nullplan_datasource)
 
         self.assertEqual(len(put_upload_index.mock_calls), 1)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
@@ -340,44 +409,4 @@ class TestPrereadFollowup (unittest.TestCase):
             'Found 2 districts in the "data/XX/006-tilesdir" None plan with 2 seats.')
         
         self.assertEqual(len(count_district_geometries.mock_calls), 1)
-        self.assertEqual(count_district_geometries.mock_calls[0][1][2], vsizip_shapefile.return_value)
-    
-    @unittest.mock.patch('planscore.util.temporary_buffer_file')
-    @unittest.mock.patch('planscore.observe.put_upload_index')
-    @unittest.mock.patch('planscore.preread_followup.count_district_geometries')
-    @unittest.mock.patch('planscore.preread_followup.guess_state_model')
-    def test_commence_upload_parsing_zipped_block_file(self, guess_state_model, count_district_geometries, put_upload_index, temporary_buffer_file):
-        ''' A valid district plan file is scored and the results posted to S3
-        '''
-        id = 'ID'
-        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.zip')
-        upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan-blockassignments.zip'
-        guess_state_model.return_value = data.Model(data.State.XX, None, 2, True, '2020', 'data/XX/006-tilesdir')
-        
-        @contextlib.contextmanager
-        def nullplan_file(*args):
-            yield nullplan_path
-
-        temporary_buffer_file.side_effect = nullplan_file
-        count_district_geometries.return_value = 2
-
-        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
-        s3.get_object.return_value = {'Body': None}
-
-        upload = data.Upload(id, upload_key)
-        with self.assertRaises(ValueError) as error:
-            preread_followup.commence_upload_parsing(s3, bucket, upload)
-
-        self.assertEqual(str(error.exception), 'UploadType.ZIPPED_BLOCK_ASSIGNMENT')
-    
-    def test_commence_upload_parsing_bad_file(self):
-        ''' An invalid district file fails in an expected way
-        '''
-        s3, bucket = unittest.mock.Mock(), unittest.mock.Mock()
-        s3.get_object.return_value = {'Body': io.BytesIO(b'Bad data')}
-
-        with self.assertRaises(RuntimeError) as error:
-            preread_followup.commence_upload_parsing(s3, bucket,
-                data.Upload('id', 'uploads/id/null-plan.geojson'))
-
-        self.assertEqual(str(error.exception), 'Failed to read GeoJSON data')
+        self.assertEqual(count_district_geometries.mock_calls[0][1][2], nullplan_datasource)

@@ -49,26 +49,40 @@ def commence_upload_parsing(s3, bucket, upload):
     
     with util.temporary_buffer_file(os.path.basename(upload.key), object['Body']) as ul_path:
         upload_type = util.guess_upload_type(ul_path)
+
         if upload_type == util.UploadType.OGR_DATASOURCE:
-            ds_path = ul_path
-        elif upload_type == util.UploadType.ZIPPED_OGR_DATASOURCE:
-            ds_path = util.vsizip_shapefile(ul_path)
-        else:
-            raise ValueError(upload_type)
-        model = guess_state_model(ds_path)
-        storage = data.Storage(s3, bucket, model.key_prefix)
-        geometry_count = count_district_geometries(bucket, upload, ds_path)
-        upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
-        put_geojson_file(s3, bucket, upload2, ds_path)
+            return commence_geometry_upload_parsing(s3, bucket, upload, ul_path)
         
-        # Used so that the length of the upload districts array is correct
-        district_blanks = [None] * geometry_count
-        upload3 = upload2.clone(model=model, districts=district_blanks,
-            message='Found {} districts in the "{}" {} plan with {} seats.'.format(
-                geometry_count, model.key_prefix, model.house, model.seats))
-        observe.put_upload_index(storage, upload3)
+        if upload_type == util.UploadType.ZIPPED_OGR_DATASOURCE:
+            return commence_geometry_upload_parsing(
+                s3, bucket, upload, util.vsizip_shapefile(ul_path),
+            )
+
+        if upload_type in (util.UploadType.BLOCK_ASSIGNMENT, util.UploadType.ZIPPED_BLOCK_ASSIGNMENT):
+            return commence_blockassign_upload_parsing(s3, bucket, upload, ul_path)
+
+def commence_geometry_upload_parsing(s3, bucket, upload, ds_path):
+    model = guess_state_model(ds_path)
+    storage = data.Storage(s3, bucket, model.key_prefix)
+    geometry_count = count_district_geometries(bucket, upload, ds_path)
+    upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
+    put_geojson_file(s3, bucket, upload2, ds_path)
+    
+    # Used so that the length of the upload districts array is correct
+    district_blanks = [None] * geometry_count
+    upload3 = upload2.clone(
+        model=model,
+        districts=district_blanks,
+        message='Found {} districts in the "{}" {} plan with {} seats.'.format(
+            geometry_count, model.key_prefix, model.house, model.seats,
+        )
+    )
+    observe.put_upload_index(storage, upload3)
     
     return upload3
+
+def commence_blockassign_upload_parsing(s3, bucket, upload, file_path):
+    raise NotImplementedError()
 
 def count_district_geometries(bucket, upload, path):
     '''
