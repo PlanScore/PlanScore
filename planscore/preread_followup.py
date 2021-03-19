@@ -153,7 +153,8 @@ def put_geojson_file(s3, bucket, upload, path):
         geometry = feature.GetGeometryRef() or EMPTY_GEOMETRY
         if geometry.GetSpatialReference():
             geometry.TransformTo(prepare_state.EPSG4326)
-        geometries.append(geometry.ExportToJson(options=['COORDINATE_PRECISION=7']))
+        simple30ft = geometry.SimplifyPreserveTopology(.0001)
+        geometries.append(simple30ft.ExportToJson(options=['COORDINATE_PRECISION=5']))
 
     features = ['{"type": "Feature", "properties": {}, "geometry": '+g+'}' for g in geometries]
     geojson = '{"type": "FeatureCollection", "features": [\n'+',\n'.join(features)+'\n]}'

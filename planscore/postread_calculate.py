@@ -59,7 +59,6 @@ def commence_upload_scoring(s3, bucket, upload):
         storage = data.Storage(s3, bucket, upload.model.key_prefix)
         observe.put_upload_index(storage, upload)
         upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
-        put_geojson_file(s3, bucket, upload2, ds_path)
         geometry_keys = put_district_geometries(s3, bucket, upload2, ds_path)
         
         # New tile-based method comes first to preserve user experience
@@ -167,32 +166,6 @@ def start_tile_observer_lambda(storage, upload, tile_keys):
 
     lam.invoke(FunctionName=observe.FUNCTION_NAME, InvocationType='Event',
         Payload=json.dumps(payload).encode('utf8'))
-
-def put_geojson_file(s3, bucket, upload, path):
-    ''' Save a property-less GeoJSON file for this upload.
-    '''
-    ds = osgeo.ogr.Open(path)
-    geometries = []
-    
-    if not ds:
-        raise RuntimeError('Could not open "{}"'.format(path))
-
-    _, features = ordered_districts(ds.GetLayer(0))
-    
-    for (index, feature) in enumerate(features):
-        geometry = feature.GetGeometryRef() or EMPTY_GEOMETRY
-        if geometry.GetSpatialReference():
-            geometry.TransformTo(prepare_state.EPSG4326)
-        geometries.append(geometry.ExportToJson(options=['COORDINATE_PRECISION=7']))
-
-    features = ['{"type": "Feature", "properties": {}, "geometry": '+g+'}' for g in geometries]
-    geojson = '{"type": "FeatureCollection", "features": [\n'+',\n'.join(features)+'\n]}'
-    
-    body = gzip.compress(geojson.encode('utf8'))
-    args = dict(ContentEncoding='gzip')
-    
-    s3.put_object(Bucket=bucket, Key=upload.geometry_key, Body=body,
-        ContentType='text/json', ACL='public-read', **args)
 
 def get_redirect_url(website_base, id):
     '''
