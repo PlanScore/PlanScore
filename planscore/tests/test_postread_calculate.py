@@ -216,7 +216,7 @@ class TestPostreadCalculate (unittest.TestCase):
     @unittest.mock.patch('planscore.postread_calculate.start_tile_observer_lambda')
     @unittest.mock.patch('planscore.postread_calculate.fan_out_tile_lambdas')
     @unittest.mock.patch('planscore.postread_calculate.load_model_tiles')
-    def test_commence_upload_scoring_good_file(self, load_model_tiles, fan_out_tile_lambdas, start_tile_observer_lambda, put_district_geometries, put_upload_index, temporary_buffer_file):
+    def test_commence_upload_scoring_good_ogr_file(self, load_model_tiles, fan_out_tile_lambdas, start_tile_observer_lambda, put_district_geometries, put_upload_index, temporary_buffer_file):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
@@ -258,12 +258,70 @@ class TestPostreadCalculate (unittest.TestCase):
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.observe.put_upload_index')
+    @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
+    @unittest.mock.patch('planscore.postread_calculate.start_tile_observer_lambda')
+    @unittest.mock.patch('planscore.postread_calculate.fan_out_tile_lambdas')
+    @unittest.mock.patch('planscore.postread_calculate.load_model_tiles')
+    def test_commence_upload_scoring_good_block_file(self, load_model_tiles, fan_out_tile_lambdas, start_tile_observer_lambda, put_district_geometries, put_upload_index, temporary_buffer_file):
+        ''' A valid district plan file is scored and the results posted to S3
+        '''
+        id = 'ID'
+        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.txt')
+        upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan-blockassignments.txt'
+        
+        @contextlib.contextmanager
+        def nullplan_file(*args):
+            yield nullplan_path
+
+        temporary_buffer_file.side_effect = nullplan_file
+        put_district_geometries.return_value = [unittest.mock.Mock()] * 2
+
+        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3.get_object.return_value = {'Body': None}
+
+        upload = data.Upload(id, upload_key, model=data.MODELS2020[0])
+        with self.assertRaises(ValueError) as error:
+            postread_calculate.commence_upload_scoring(s3, bucket, upload)
+
+        self.assertEqual(str(error.exception), 'UploadType.BLOCK_ASSIGNMENT')
+    
+    @unittest.mock.patch('planscore.util.temporary_buffer_file')
+    @unittest.mock.patch('planscore.observe.put_upload_index')
+    @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
+    @unittest.mock.patch('planscore.postread_calculate.start_tile_observer_lambda')
+    @unittest.mock.patch('planscore.postread_calculate.fan_out_tile_lambdas')
+    @unittest.mock.patch('planscore.postread_calculate.load_model_tiles')
+    def test_commence_upload_scoring_zipped_block_file(self, load_model_tiles, fan_out_tile_lambdas, start_tile_observer_lambda, put_district_geometries, put_upload_index, temporary_buffer_file):
+        ''' A valid district plan file is scored and the results posted to S3
+        '''
+        id = 'ID'
+        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.zip')
+        upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan-blockassignments.zip'
+        
+        @contextlib.contextmanager
+        def nullplan_file(*args):
+            yield nullplan_path
+
+        temporary_buffer_file.side_effect = nullplan_file
+        put_district_geometries.return_value = [unittest.mock.Mock()] * 2
+
+        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3.get_object.return_value = {'Body': None}
+
+        upload = data.Upload(id, upload_key, model=data.MODELS2020[0])
+        with self.assertRaises(ValueError) as error:
+            postread_calculate.commence_upload_scoring(s3, bucket, upload)
+
+        self.assertEqual(str(error.exception), 'UploadType.ZIPPED_BLOCK_ASSIGNMENT')
+    
+    @unittest.mock.patch('planscore.util.temporary_buffer_file')
+    @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.util.vsizip_shapefile')
     @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
     @unittest.mock.patch('planscore.postread_calculate.start_tile_observer_lambda')
     @unittest.mock.patch('planscore.postread_calculate.fan_out_tile_lambdas')
     @unittest.mock.patch('planscore.postread_calculate.load_model_tiles')
-    def test_commence_upload_scoring_zipped_file(self, load_model_tiles, fan_out_tile_lambdas, start_tile_observer_lambda, put_district_geometries, vsizip_shapefile, put_upload_index, temporary_buffer_file):
+    def test_commence_upload_scoring_zipped_ogr_file(self, load_model_tiles, fan_out_tile_lambdas, start_tile_observer_lambda, put_district_geometries, vsizip_shapefile, put_upload_index, temporary_buffer_file):
         ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'

@@ -48,11 +48,13 @@ def commence_upload_parsing(s3, bucket, upload):
     object = s3.get_object(Bucket=bucket, Key=upload.key)
     
     with util.temporary_buffer_file(os.path.basename(upload.key), object['Body']) as ul_path:
-        if os.path.splitext(ul_path)[1] == '.zip':
-            # Assume a shapefile
+        upload_type = util.guess_upload_type(ul_path)
+        if upload_type == util.UploadType.OGR_DATASOURCE:
+            ds_path = ul_path
+        elif upload_type == util.UploadType.ZIPPED_OGR_DATASOURCE:
             ds_path = util.vsizip_shapefile(ul_path)
         else:
-            ds_path = ul_path
+            raise ValueError(upload_type)
         model = guess_state_model(ds_path)
         storage = data.Storage(s3, bucket, model.key_prefix)
         geometry_count = count_district_geometries(bucket, upload, ds_path)
