@@ -2,6 +2,7 @@
 
 import os
 import collections
+import subprocess
 import functools
 
 from aws_cdk import (
@@ -245,12 +246,15 @@ class PlanScoreScoring(cdk.Stack):
 
     def make_lambda_functions(self, apigateway_role, data_bucket, website_base):
 
+        git_commit_sha = subprocess.check_output(('git', 'rev-parse', 'HEAD')).strip().decode('ascii')
+        
         function_kwargs = dict(
             timeout=cdk.Duration.seconds(300),
             runtime=aws_lambda.Runtime.PYTHON_3_6,
             log_retention=aws_logs.RetentionDays.TWO_WEEKS,
             code=aws_lambda.Code.from_asset("../planscore-lambda.zip"),
             environment={
+                'GIT_COMMIT_SHA': git_commit_sha,
                 'S3_BUCKET': data_bucket.bucket_name,
                 'PLANSCORE_SECRET': PLANSCORE_SECRET,
                 'WEBSITE_BASE': website_base,
