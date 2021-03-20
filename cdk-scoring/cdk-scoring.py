@@ -207,6 +207,16 @@ class PlanScoreScoring(cdk.Stack):
             destination_key_prefix="data/XX/006-tilesdir",
         )
 
+        aws_s3_deployment.BucketDeployment(
+            self,
+            f"{stack_id}-Data",
+            destination_bucket=data_bucket,
+            sources=[
+                aws_s3_deployment.Source.asset("../planscore/tests/data/XX-graphs"),
+            ],
+            destination_key_prefix="data/XX/graphs",
+        )
+
         return data_bucket
 
     def make_api(self, stack_id, formation_info):
