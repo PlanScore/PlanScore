@@ -1,7 +1,21 @@
 ''' [write me]
 '''
-import os, io, json, urllib.parse, gzip, functools, time, math, threading
-import boto3, osgeo.ogr
+import os
+import io
+import csv
+import json
+import gzip
+import time
+import math
+import zipfile
+import collections
+import functools
+import urllib.parse
+import threading
+
+import boto3
+import osgeo.ogr
+
 from . import util, data, score, website, prepare_state, constants, tiles, observe
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_PREREAD_FOLLOWUP') or 'PlanScore-PrereadFollowup'
@@ -62,7 +76,7 @@ def commence_upload_parsing(s3, bucket, upload):
             return commence_blockassign_upload_parsing(s3, bucket, upload, ul_path)
 
 def commence_geometry_upload_parsing(s3, bucket, upload, ds_path):
-    model = guess_state_model(ds_path)
+    model = guess_geometry_model(ds_path)
     storage = data.Storage(s3, bucket, model.key_prefix)
     geometry_count = count_district_geometries(bucket, upload, ds_path)
     upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
@@ -82,7 +96,14 @@ def commence_geometry_upload_parsing(s3, bucket, upload, ds_path):
     return upload3
 
 def commence_blockassign_upload_parsing(s3, bucket, upload, file_path):
+    model = guess_blockassign_model(file_path)
+
     raise NotImplementedError('Block assignment files are not supported at this time')
+    
+    # 1. guess state model
+    # 2. count districts
+    # 3. make preview-quality geometry file
+    # 4. put upload index and return
 
 def count_district_geometries(bucket, upload, path):
     '''
@@ -97,7 +118,7 @@ def count_district_geometries(bucket, upload, path):
     
     return len(features)
 
-def guess_state_model(path):
+def guess_geometry_model(path):
     ''' Guess state model for the given input path.
     '''
     ds = osgeo.ogr.Open(path)
@@ -145,6 +166,58 @@ def guess_state_model(path):
 
     # Sort by log(seats) to findest smallest difference
     model_guesses = [(abs(math.log(len(features) / model.seats)), model)
+        for model in data.MODELS2020
+        if model.state.value == state_abbr]
+    
+    try:
+        return sorted(model_guesses)[0][1]
+    except IndexError:
+        state_name = state_names[state_abbr]
+        raise RuntimeError('{} is not a currently supported state'.format(state_name))
+
+def guess_blockassign_model(path):
+    ''' Guess state model for the given input path.
+    '''
+    _, ext = os.path.splitext(path.lower())
+    
+    if ext == '.zip':
+        with open(path, 'rb') as file:
+            zf = zipfile.ZipFile(file)
+            for name in zf.namelist():
+                if os.path.splitext(name.lower())[1] in ('.txt', '.csv'):
+                    stream = io.TextIOWrapper(zf.open(name))
+                    rows = list(csv.DictReader(stream, delimiter='|'))
+                    break
+    elif ext in ('.csv', '.txt'):
+        with open(path, 'r') as file:
+            rows = list(csv.DictReader(file, delimiter='|'))
+    
+    state_counts, seat_count = collections.defaultdict(int), set()
+
+    for row in rows:
+        if row['DISTRICT']:
+            state_counts[row['BLOCKID'][:2]] += 1
+            seat_count.add(row['DISTRICT'])
+    
+    state_counts = [(count, fips) for (fips, count) in state_counts.items()]
+    matched_fips = sorted(state_counts, reverse=True)[0][1]
+    
+    if matched_fips == '00':
+        # Null Island
+        state_abbr = 'XX'
+    else:
+        states_ds = osgeo.ogr.Open(states_path)
+        try:
+            state_abbr = [
+                state_feature.GetField('STUSPS')
+                for state_feature in states_ds.GetLayer(0)
+                if state_feature.GetField('GEOID') == matched_fips
+            ][0]
+        except IndexError:
+            raise RuntimeError('PlanScore only works for U.S. states')
+
+    # Sort by log(seats) to findest smallest difference
+    model_guesses = [(abs(math.log(len(seat_count) / model.seats)), model)
         for model in data.MODELS2020
         if model.state.value == state_abbr]
     
