@@ -78,7 +78,7 @@ def commence_upload_parsing(s3, bucket, upload):
 def commence_geometry_upload_parsing(s3, bucket, upload, ds_path):
     model = guess_geometry_model(ds_path)
     storage = data.Storage(s3, bucket, model.key_prefix)
-    geometry_count = count_district_geometries(bucket, upload, ds_path)
+    geometry_count = count_district_geometries(ds_path)
     upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
     put_geojson_file(s3, bucket, upload2, ds_path)
     
@@ -97,6 +97,7 @@ def commence_geometry_upload_parsing(s3, bucket, upload, ds_path):
 
 def commence_blockassign_upload_parsing(s3, bucket, upload, file_path):
     model = guess_blockassign_model(file_path)
+    district_count = count_district_assignments(file_path)
 
     raise NotImplementedError('Block assignment files are not supported at this time')
     
@@ -105,10 +106,10 @@ def commence_blockassign_upload_parsing(s3, bucket, upload, file_path):
     # 3. make preview-quality geometry file
     # 4. put upload index and return
 
-def count_district_geometries(bucket, upload, path):
+def count_district_geometries(path):
     '''
     '''
-    print('count_district_geometries:', (bucket, path))
+    print('count_district_geometries:', path)
     ds = osgeo.ogr.Open(path)
 
     if not ds:
@@ -117,6 +118,25 @@ def count_district_geometries(bucket, upload, path):
     _, features = ordered_districts(ds.GetLayer(0))
     
     return len(features)
+
+def count_district_assignments(path):
+    print('count_district_assignments:', path)
+
+    _, ext = os.path.splitext(path.lower())
+    
+    if ext == '.zip':
+        with open(path, 'rb') as file:
+            zf = zipfile.ZipFile(file)
+            for name in zf.namelist():
+                if os.path.splitext(name.lower())[1] in ('.txt', '.csv'):
+                    stream = io.TextIOWrapper(zf.open(name))
+                    rows = list(csv.DictReader(stream, delimiter='|'))
+                    break
+    elif ext in ('.csv', '.txt'):
+        with open(path, 'r') as file:
+            rows = list(csv.DictReader(file, delimiter='|'))
+    
+    return len({row['DISTRICT'] for row in rows})
 
 def guess_geometry_model(path):
     ''' Guess state model for the given input path.
