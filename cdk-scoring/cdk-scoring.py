@@ -209,7 +209,7 @@ class PlanScoreScoring(cdk.Stack):
 
         aws_s3_deployment.BucketDeployment(
             self,
-            f"{stack_id}-Data",
+            f"{stack_id}-Data-Graphs",
             destination_bucket=data_bucket,
             sources=[
                 aws_s3_deployment.Source.asset("../planscore/tests/data/XX-graphs"),
@@ -324,6 +324,17 @@ class PlanScoreScoring(cdk.Stack):
 
         grant_data_bucket_access(data_bucket, preread_followup)
 
+        polygonize = aws_lambda.Function(
+            self,
+            "Polygonize",
+            handler="lambda.polygonize",
+            memory_size=2048,
+            **function_kwargs
+        )
+
+        grant_data_bucket_access(data_bucket, polygonize)
+        grant_function_invoke(polygonize, 'FUNC_NAME_POLYGONIZE', preread_followup)
+
         # API-accessible functions
 
         function_kwargs.update(dict(
@@ -384,6 +395,7 @@ class PlanScoreScoring(cdk.Stack):
             observe_tiles,
             postread_calculate,
             preread_followup,
+            polygonize,
             api_upload,
             upload_fields,
             preread,
@@ -398,6 +410,7 @@ class PlanScoreScoring(cdk.Stack):
             observe_tiles,
             postread_calculate,
             preread_followup,
+            polygonize,
             api_upload,
             upload_fields,
             preread,

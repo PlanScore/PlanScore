@@ -15,6 +15,8 @@ import shapely.geometry
 
 logging.basicConfig(level=logging.INFO)
 
+FUNCTION_NAME = os.environ.get('FUNC_NAME_POLYGONIZE', 'PlanScore-Polygonize')
+
 @functools.lru_cache()
 def load_graph(s3, bucket, key):
     '''
@@ -109,3 +111,8 @@ def main():
         json.dump(geojson, file, indent=2)
         
     print('yo')
+
+def lambda_handler(event, context):
+    '''
+    '''
+    return {'status': 'Yes', 'event': event}

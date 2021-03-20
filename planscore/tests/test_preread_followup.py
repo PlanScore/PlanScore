@@ -23,9 +23,9 @@ class TestPrereadFollowup (unittest.TestCase):
 
         preread_followup.lambda_handler(event, None)
         
-        self.assertEqual(commence_upload_parsing.mock_calls[0][1][1], event['bucket'])
+        self.assertEqual(commence_upload_parsing.mock_calls[0][1][2], event['bucket'])
         
-        upload = commence_upload_parsing.mock_calls[0][1][2]
+        upload = commence_upload_parsing.mock_calls[0][1][3]
         self.assertEqual(upload.id, event['id'])
         self.assertEqual(upload.key, event['key'])
     
@@ -261,11 +261,11 @@ class TestPrereadFollowup (unittest.TestCase):
 
         temporary_buffer_file.side_effect = nullplan_file
 
-        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3, lam, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key)
-        info = preread_followup.commence_upload_parsing(s3, bucket, upload)
+        info = preread_followup.commence_upload_parsing(s3, lam, bucket, upload)
         commence_geometry_upload_parsing.assert_called_once_with(s3, bucket, upload, nullplan_path)
         self.assertEqual(info, commence_geometry_upload_parsing.return_value)
     
@@ -284,12 +284,12 @@ class TestPrereadFollowup (unittest.TestCase):
 
         temporary_buffer_file.side_effect = nullplan_file
 
-        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3, lam, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key)
-        info = preread_followup.commence_upload_parsing(s3, bucket, upload)
-        commence_blockassign_upload_parsing.assert_called_once_with(s3, bucket, upload, nullplan_path)
+        info = preread_followup.commence_upload_parsing(s3, lam, bucket, upload)
+        commence_blockassign_upload_parsing.assert_called_once_with(s3, lam, bucket, upload, nullplan_path)
         self.assertEqual(info, commence_blockassign_upload_parsing.return_value)
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
@@ -307,12 +307,12 @@ class TestPrereadFollowup (unittest.TestCase):
 
         temporary_buffer_file.side_effect = nullplan_file
 
-        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3, lam, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key)
         
-        info = preread_followup.commence_upload_parsing(s3, bucket, upload)
+        info = preread_followup.commence_upload_parsing(s3, lam, bucket, upload)
         nullplan_datasource = '/vsizip/{}/null-plan.shp'.format(os.path.abspath(nullplan_path))
         commence_geometry_upload_parsing.assert_called_once_with(s3, bucket, upload, nullplan_datasource)
         self.assertEqual(info, commence_geometry_upload_parsing.return_value)
@@ -332,22 +332,22 @@ class TestPrereadFollowup (unittest.TestCase):
 
         temporary_buffer_file.side_effect = nullplan_file
 
-        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3, lam, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key)
-        info = preread_followup.commence_upload_parsing(s3, bucket, upload)
-        commence_blockassign_upload_parsing.assert_called_once_with(s3, bucket, upload, nullplan_path)
+        info = preread_followup.commence_upload_parsing(s3, lam, bucket, upload)
+        commence_blockassign_upload_parsing.assert_called_once_with(s3, lam, bucket, upload, nullplan_path)
         self.assertEqual(info, commence_blockassign_upload_parsing.return_value)
     
     def test_commence_upload_parsing_bad_file(self):
         ''' An invalid district file fails in an expected way
         '''
-        s3, bucket = unittest.mock.Mock(), unittest.mock.Mock()
+        s3, lam, bucket = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
         s3.get_object.return_value = {'Body': io.BytesIO(b'Bad data')}
 
         with self.assertRaises(RuntimeError) as error:
-            preread_followup.commence_upload_parsing(s3, bucket,
+            preread_followup.commence_upload_parsing(s3, lam, bucket,
                 data.Upload('id', 'uploads/id/null-plan.geojson'))
 
         self.assertEqual(str(error.exception), 'Failed to read GeoJSON data')
@@ -365,7 +365,7 @@ class TestPrereadFollowup (unittest.TestCase):
         
         count_district_geometries.return_value = 2
 
-        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3, lam, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key)
@@ -396,7 +396,7 @@ class TestPrereadFollowup (unittest.TestCase):
         
         count_district_geometries.return_value = 2
 
-        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3, lam, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key)
@@ -430,12 +430,12 @@ class TestPrereadFollowup (unittest.TestCase):
         
         count_district_assignments.return_value = 2
 
-        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3, lam, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         with self.assertRaises(NotImplementedError) as err:
             upload = data.Upload(id, upload_key)
-            info = preread_followup.commence_blockassign_upload_parsing(s3, bucket, upload, nullplan_path)
+            info = preread_followup.commence_blockassign_upload_parsing(s3, lam, bucket, upload, nullplan_path)
         guess_blockassign_model.assert_called_once_with(nullplan_path)
 
         #self.assertEqual(info.id, upload.id)
@@ -460,12 +460,12 @@ class TestPrereadFollowup (unittest.TestCase):
         
         count_district_assignments.return_value = 2
 
-        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3, lam, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         with self.assertRaises(NotImplementedError) as err:
             upload = data.Upload(id, upload_key)
-            info = preread_followup.commence_blockassign_upload_parsing(s3, bucket, upload, nullplan_path)
+            info = preread_followup.commence_blockassign_upload_parsing(s3, lam, bucket, upload, nullplan_path)
         guess_blockassign_model.assert_called_once_with(nullplan_path)
 
         #self.assertEqual(info.id, upload.id)
