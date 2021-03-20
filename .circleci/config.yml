@@ -64,7 +64,7 @@ jobs:
           key: build-dependencies-py-{{ checksum "setup.py" }}
       - run: pip3 install '.[deploy]'
       # Install Node things (not slow enough to cache)
-      - run: npm install -g aws-cdk@1.92.0
+      - run: npm install -g aws-cdk
       # Build PlanScore thing
       - attach_workspace:
           at: ~/repo
