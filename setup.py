@@ -23,11 +23,13 @@ setup(
         },
     install_requires = [
         'boto3 == 1.17.33',
-        'itsdangerous == 0.24',
-        'ModestMaps == 1.4.7',
         'Flask == 0.12.2',
+        'itsdangerous == 0.24',
         'Jinja2 == 2.9.6',
         'Markdown == 2.6.8',
+        'ModestMaps == 1.4.7',
+        'networkx == 2.5',
+        'Shapely == 1.7.1',
         ],
     extras_require = {
         'compiled': [
@@ -50,9 +52,9 @@ setup(
         },
     entry_points = dict(
         console_scripts = [
-            'planscore-prepare-state = planscore.prepare_state:main',
-            'planscore-empty-queue = planscore.empty_queue:main',
             'planscore-matrix-debug = planscore.matrix:main',
+            'planscore-polygonize = planscore.polygonize:main',
+            'planscore-prepare-state = planscore.prepare_state:main',
             'planscore-score-locally = planscore.score:main',
             ]
         ),
