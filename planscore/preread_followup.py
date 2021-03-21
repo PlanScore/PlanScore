@@ -300,11 +300,12 @@ def guess_blockassign_model(path):
     else:
         states_ds = osgeo.ogr.Open(states_path)
         try:
-            state_abbr = [
-                state_feature.GetField('STUSPS')
-                for state_feature in states_ds.GetLayer(0)
-                if state_feature.GetField('GEOID') == matched_fips
-            ][0]
+            state_names, state_abbrs = {}, []
+            for state_feature in states_ds.GetLayer(0):
+                if state_feature.GetField('GEOID') == matched_fips:
+                    state_abbrs.append(state_feature.GetField('STUSPS'))
+                    state_names[state_feature.GetField('STUSPS')] = state_feature.GetField('NAME')
+            state_abbr = state_abbrs[0]
         except IndexError:
             raise RuntimeError('PlanScore only works for U.S. states')
 
