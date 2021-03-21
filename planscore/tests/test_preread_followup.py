@@ -222,6 +222,18 @@ class TestPrereadFollowup (unittest.TestCase):
         null_plan2_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.zip')
         self.assertEqual(preread_followup.guess_blockassign_model(null_plan2_path).key_prefix, 'data/XX/006-tilesdir')
     
+    def test_get_block_assignments_knowns(self):
+        ''' Test that get_block_assignments() reads the right Assignment values
+        '''
+        null_plan1_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.txt')
+        self.assertEqual(len(preread_followup.get_block_assignments(null_plan1_path)), 10)
+
+        null_plan2_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.zip')
+        self.assertEqual(len(preread_followup.get_block_assignments(null_plan2_path)), 10)
+
+        null_plan3_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.csv')
+        self.assertEqual(len(preread_followup.get_block_assignments(null_plan3_path)), 10)
+    
     @unittest.mock.patch('sys.stdout')
     def test_count_district_geometries(self, stdout):
         '''
@@ -237,6 +249,43 @@ class TestPrereadFollowup (unittest.TestCase):
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-missing-geometries.geojson')
         count = preread_followup.count_district_geometries(null_plan_path)
         self.assertEqual(count, 3)
+    
+    @unittest.mock.patch('planscore.preread_followup.get_block_assignments')
+    @unittest.mock.patch('sys.stdout')
+    def test_build_blockassign_geometry(self, stdout, get_block_assignments):
+        '''
+        '''
+        lam, model = unittest.mock.Mock(), unittest.mock.Mock()
+        model.state.value = 'XX'
+        
+        lam.invoke.return_value = {'Payload': unittest.mock.Mock()}
+        lam.invoke.return_value['Payload'].read.return_value = '{"type": "Polygon"}'
+        
+        get_block_assignments.return_value = [
+            preread_followup.Assignment('0000000010', '01'),
+            preread_followup.Assignment('0000000009', '01'),
+            preread_followup.Assignment('0000000008', '01'),
+            preread_followup.Assignment('0000000007', '02'),
+            preread_followup.Assignment('0000000006', '02'),
+            preread_followup.Assignment('0000000005', '02'),
+            preread_followup.Assignment('0000000004', '01'),
+            preread_followup.Assignment('0000000003', '02'),
+            preread_followup.Assignment('0000000002', '02'),
+            preread_followup.Assignment('0000000001', '02'),
+        ]
+        
+        path = preread_followup.build_blockassign_geometry(lam, model, 'blocks.txt', 2)
+        self.assertTrue(path.endswith('.geojson'))
+        
+        self.assertEqual(len(lam.invoke.mock_calls), 2)
+        self.assertEqual(
+            lam.invoke.mock_calls[0][2]['Payload'],
+            b'{"block_ids": ["0000000004", "0000000008", "0000000009", "0000000010"], "state_code": "XX"}',
+        )
+        self.assertEqual(
+            lam.invoke.mock_calls[1][2]['Payload'],
+            b'{"block_ids": ["0000000001", "0000000002", "0000000003", "0000000005", "0000000006", "0000000007"], "state_code": "XX"}',
+        )
     
     @unittest.mock.patch('sys.stdout')
     def test_count_district_assignments(self, stdout):
@@ -451,7 +500,8 @@ class TestPrereadFollowup (unittest.TestCase):
         self.assertEqual(len(put_upload_index.mock_calls[0][1][1].districts), 2)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].message,
             'Found 2 districts in the "data/XX/006-tilesdir" None plan with 2 seats.')
-
+        
+        build_blockassign_geometry.assert_called_once_with(lam, guess_blockassign_model.return_value, nullplan_path, count_district_assignments.return_value)
         count_district_assignments.assert_called_once_with(nullplan_path)
     
     @unittest.mock.patch('planscore.observe.put_upload_index')
@@ -488,4 +538,5 @@ class TestPrereadFollowup (unittest.TestCase):
         self.assertEqual(put_upload_index.mock_calls[0][1][1].message,
             'Found 2 districts in the "data/XX/006-tilesdir" None plan with 2 seats.')
 
+        build_blockassign_geometry.assert_called_once_with(lam, guess_blockassign_model.return_value, nullplan_path, count_district_assignments.return_value)
         count_district_assignments.assert_called_once_with(nullplan_path)

@@ -52,11 +52,11 @@ def combine_digraphs(graph1, graph2):
     
     return graph3
 
-def assemble_graph(s3, block_ids):
+def assemble_graph(s3, state_code, block_ids):
     '''
     '''
     county_keys = {
-        'data/XX/graphs/2010/{}-tabblock.pickle'.format(block_id[:5])
+        'data/{}/graphs/2010/{}-tabblock.pickle'.format(state_code, block_id[:5])
         for block_id in block_ids
     }
 
@@ -92,7 +92,7 @@ def polygonize_district(node_ids, graph):
 
 def main():
     s3 = boto3.client('s3')
-    (path, ) = sys.argv[1:]
+    (path, state_code) = sys.argv[1:]
     geojson = {
         'type': 'FeatureCollection',
         'features': [],
@@ -103,14 +103,14 @@ def main():
         
         for (district, blocks) in itertools.groupby(rows, key=operator.itemgetter('DISTRICT')):
             block_ids = [block['BLOCKID'] for block in blocks]
-            block_graph = assemble_graph(s3, block_ids)
+            block_graph = assemble_graph(s3, state_code, block_ids)
             
             print(district, block_graph)
             polygon = polygonize_district(block_ids, block_graph)
             geojson['features'].append({
                 'type': 'Feature',
                 'properties': {'district': district},
-                'geometry': shapely.geometry.mapping(polygon),
+                'geometry': shapely.geometry.mapping(polygon.simplify(0.00001)),
             })
     
     with open('/tmp/out.geojson', 'w') as file:
@@ -122,7 +122,7 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3')
-    block_ids = event['block_ids']
-    block_graph = assemble_graph(s3, block_ids)
+    state_code, block_ids = event['state_code'], event['block_ids']
+    block_graph = assemble_graph(s3, state_code, block_ids)
     polygon = polygonize_district(block_ids, block_graph)
     return shapely.geometry.mapping(polygon)

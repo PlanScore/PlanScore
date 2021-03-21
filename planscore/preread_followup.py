@@ -108,7 +108,7 @@ def commence_blockassign_upload_parsing(s3, lam, bucket, upload, file_path):
     upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
     put_geojson_file(
         s3, bucket, upload2,
-        build_blockassign_geometry(lam, file_path, district_count),
+        build_blockassign_geometry(lam, model, file_path, district_count),
     )
     
     # Used so that the length of the upload districts array is correct
@@ -124,7 +124,7 @@ def commence_blockassign_upload_parsing(s3, lam, bucket, upload, file_path):
     
     return upload3
 
-def build_blockassign_geometry(lam, file_path, district_count):
+def build_blockassign_geometry(lam, model, file_path, district_count):
     print('Starting pool...')
     pool = multiprocessing.dummy.Pool(processes=district_count)
     
@@ -132,7 +132,10 @@ def build_blockassign_geometry(lam, file_path, district_count):
         resp = lam.invoke(
             FunctionName=polygonize.FUNCTION_NAME,
             InvocationType='RequestResponse',
-            Payload=json.dumps({'block_ids': block_ids}).encode('utf8'),
+            Payload=json.dumps({
+                'block_ids': sorted(block_ids),
+                'state_code': model.state.value,
+            }).encode('utf8'),
         )
         return resp['Payload'].read()
     
@@ -176,17 +179,30 @@ def get_block_assignments(path):
     '''
     _, ext = os.path.splitext(path.lower())
     
+    def _stream2rows(stream):
+        head, tail = next(stream), stream
+        delimiter = '|' if '|' in head else ','
+        return list(csv.DictReader(
+            itertools.chain([head], tail),
+            delimiter=delimiter,
+        ))
+    
     if ext == '.zip':
         with open(path, 'rb') as file:
             zf = zipfile.ZipFile(file)
-            for name in zf.namelist():
+
+            # Sort names so "real"-looking paths come first: not dot-names, not in '__MACOSX'
+            namelist = sorted(zf.namelist(), reverse=False,
+                key=lambda n: (os.path.basename(n).startswith('.'), n.startswith('__MACOSX')))
+
+            for name in namelist:
                 if os.path.splitext(name.lower())[1] in ('.txt', '.csv'):
-                    stream = io.TextIOWrapper(zf.open(name))
-                    rows = list(csv.DictReader(stream, delimiter='|'))
+                    rows = _stream2rows(io.TextIOWrapper(zf.open(name)))
+                    break
 
     elif ext in ('.csv', '.txt'):
         with open(path, 'r') as file:
-            rows = list(csv.DictReader(file, delimiter='|'))
+            rows = _stream2rows(file)
     
     return [Assignment(row['BLOCKID'], row['DISTRICT']) for row in rows]
 
