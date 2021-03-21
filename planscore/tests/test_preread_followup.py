@@ -418,9 +418,12 @@ class TestPrereadFollowup (unittest.TestCase):
         
         count_district_geometries.assert_called_once_with(nullplan_datasource)
     
+    @unittest.mock.patch('planscore.observe.put_upload_index')
+    @unittest.mock.patch('planscore.preread_followup.put_geojson_file')
     @unittest.mock.patch('planscore.preread_followup.count_district_assignments')
+    @unittest.mock.patch('planscore.preread_followup.build_blockassign_geometry')
     @unittest.mock.patch('planscore.preread_followup.guess_blockassign_model')
-    def test_commence_blockassign_upload_parsing_good_block_file(self, guess_blockassign_model, count_district_assignments):
+    def test_commence_blockassign_upload_parsing_good_block_file(self, guess_blockassign_model, build_blockassign_geometry, count_district_assignments, put_geojson_file, put_upload_index):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
@@ -433,24 +436,30 @@ class TestPrereadFollowup (unittest.TestCase):
         s3, lam, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
-        with self.assertRaises(NotImplementedError) as err:
-            upload = data.Upload(id, upload_key)
-            info = preread_followup.commence_blockassign_upload_parsing(s3, lam, bucket, upload, nullplan_path)
+        upload = data.Upload(id, upload_key)
+        info = preread_followup.commence_blockassign_upload_parsing(s3, lam, bucket, upload, nullplan_path)
         guess_blockassign_model.assert_called_once_with(nullplan_path)
 
-        #self.assertEqual(info.id, upload.id)
-        #
-        #self.assertEqual(len(put_upload_index.mock_calls), 1)
-        #self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
-        #self.assertEqual(len(put_upload_index.mock_calls[0][1][1].districts), 2)
-        #self.assertEqual(put_upload_index.mock_calls[0][1][1].message,
-        #    'Found 2 districts in the "data/XX/006-tilesdir" None plan with 2 seats.')
+        self.assertEqual(info.id, upload.id)
+        
+        self.assertEqual(put_geojson_file.mock_calls[0][1][:2], (s3, bucket))
+        self.assertEqual(put_geojson_file.mock_calls[0][1][2].id, upload.id)
+        self.assertIs(put_geojson_file.mock_calls[0][1][3], build_blockassign_geometry.return_value)
+
+        self.assertEqual(len(put_upload_index.mock_calls), 1)
+        self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
+        self.assertEqual(len(put_upload_index.mock_calls[0][1][1].districts), 2)
+        self.assertEqual(put_upload_index.mock_calls[0][1][1].message,
+            'Found 2 districts in the "data/XX/006-tilesdir" None plan with 2 seats.')
 
         count_district_assignments.assert_called_once_with(nullplan_path)
     
+    @unittest.mock.patch('planscore.observe.put_upload_index')
+    @unittest.mock.patch('planscore.preread_followup.put_geojson_file')
     @unittest.mock.patch('planscore.preread_followup.count_district_assignments')
+    @unittest.mock.patch('planscore.preread_followup.build_blockassign_geometry')
     @unittest.mock.patch('planscore.preread_followup.guess_blockassign_model')
-    def test_commence_blockassign_upload_parsing_zipped_block_file(self, guess_blockassign_model, count_district_assignments):
+    def test_commence_blockassign_upload_parsing_zipped_block_file(self, guess_blockassign_model, build_blockassign_geometry, count_district_assignments, put_geojson_file, put_upload_index):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
@@ -463,17 +472,20 @@ class TestPrereadFollowup (unittest.TestCase):
         s3, lam, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
-        with self.assertRaises(NotImplementedError) as err:
-            upload = data.Upload(id, upload_key)
-            info = preread_followup.commence_blockassign_upload_parsing(s3, lam, bucket, upload, nullplan_path)
+        upload = data.Upload(id, upload_key)
+        info = preread_followup.commence_blockassign_upload_parsing(s3, lam, bucket, upload, nullplan_path)
         guess_blockassign_model.assert_called_once_with(nullplan_path)
 
-        #self.assertEqual(info.id, upload.id)
-        #
-        #self.assertEqual(len(put_upload_index.mock_calls), 1)
-        #self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
-        #self.assertEqual(len(put_upload_index.mock_calls[0][1][1].districts), 2)
-        #self.assertEqual(put_upload_index.mock_calls[0][1][1].message,
-        #    'Found 2 districts in the "data/XX/006-tilesdir" None plan with 2 seats.')
+        self.assertEqual(info.id, upload.id)
+        
+        self.assertEqual(put_geojson_file.mock_calls[0][1][:2], (s3, bucket))
+        self.assertEqual(put_geojson_file.mock_calls[0][1][2].id, upload.id)
+        self.assertIs(put_geojson_file.mock_calls[0][1][3], build_blockassign_geometry.return_value)
+
+        self.assertEqual(len(put_upload_index.mock_calls), 1)
+        self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
+        self.assertEqual(len(put_upload_index.mock_calls[0][1][1].districts), 2)
+        self.assertEqual(put_upload_index.mock_calls[0][1][1].message,
+            'Found 2 districts in the "data/XX/006-tilesdir" None plan with 2 seats.')
 
         count_district_assignments.assert_called_once_with(nullplan_path)

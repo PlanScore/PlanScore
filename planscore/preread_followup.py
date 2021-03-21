@@ -8,9 +8,13 @@ import gzip
 import time
 import math
 import zipfile
+import tempfile
+import operator
 import collections
 import functools
+import itertools
 import urllib.parse
+import multiprocessing.dummy
 import threading
 
 import boto3
@@ -20,6 +24,8 @@ from . import util, data, score, website, prepare_state, constants, tiles, obser
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_PREREAD_FOLLOWUP') or 'PlanScore-PrereadFollowup'
 EMPTY_GEOMETRY = osgeo.ogr.Geometry(osgeo.ogr.wkbGeometryCollection)
+
+Assignment = collections.namedtuple('Assignment', ('block_id', 'district_id'))
 
 osgeo.ogr.UseExceptions()
 
@@ -97,23 +103,92 @@ def commence_geometry_upload_parsing(s3, bucket, upload, ds_path):
 
 def commence_blockassign_upload_parsing(s3, lam, bucket, upload, file_path):
     model = guess_blockassign_model(file_path)
+    storage = data.Storage(s3, bucket, model.key_prefix)
     district_count = count_district_assignments(file_path)
+    upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
+    put_geojson_file(
+        s3, bucket, upload2,
+        build_blockassign_geometry(lam, file_path, district_count),
+    )
     
-    print(
-        'lam.invoke():',
-        lam.invoke(
+    # Used so that the length of the upload districts array is correct
+    district_blanks = [None] * district_count
+    upload3 = upload2.clone(
+        model=model,
+        districts=district_blanks,
+        message='Found {} districts in the "{}" {} plan with {} seats.'.format(
+            district_count, model.key_prefix, model.house, model.seats,
+        )
+    )
+    observe.put_upload_index(storage, upload3)
+    
+    return upload3
+
+def build_blockassign_geometry(lam, file_path, district_count):
+    print('Starting pool...')
+    pool = multiprocessing.dummy.Pool(processes=district_count)
+    
+    def _invoke(block_ids):
+        resp = lam.invoke(
             FunctionName=polygonize.FUNCTION_NAME,
             InvocationType='RequestResponse',
-            Payload=json.dumps({'district count': district_count}).encode('utf8'),
-        ),
-    )
-
-    raise NotImplementedError('Block assignment files are not supported at this time')
+            Payload=json.dumps({'block_ids': block_ids}).encode('utf8'),
+        )
+        return resp['Payload'].read()
     
-    # 1. guess state model
-    # 2. count districts
-    # 3. make preview-quality geometry file
-    # 4. put upload index and return
+    district_blocks = {
+        district_id: [assign.block_id for assign in assignments]
+        for (district_id, assignments)
+        in itertools.groupby(
+            sorted(
+                get_block_assignments(file_path),
+                key=operator.attrgetter('district_id'),
+            ),
+            key=operator.attrgetter('district_id'),
+        )
+    }
+    print('district_blocks:', district_blocks)
+    
+    handle, temp_path = tempfile.mkstemp(suffix='.geojson')
+    os.close(handle)
+    
+    with open(temp_path, 'w') as file:
+        json.dump(
+            {
+                'type': 'FeatureCollection',
+                'features': [
+                    {
+                        'type': 'Feature',
+                        'properties': {},
+                        'geometry': json.loads(result),
+                    }
+                    for result in pool.map(_invoke, district_blocks.values())
+                ]
+            },
+            file,
+        )
+    
+    return temp_path
+
+@functools.lru_cache()
+def get_block_assignments(path):
+    '''
+    '''
+    _, ext = os.path.splitext(path.lower())
+    
+    if ext == '.zip':
+        with open(path, 'rb') as file:
+            zf = zipfile.ZipFile(file)
+            for name in zf.namelist():
+                if os.path.splitext(name.lower())[1] in ('.txt', '.csv'):
+                    stream = io.TextIOWrapper(zf.open(name))
+                    rows = list(csv.DictReader(stream, delimiter='|'))
+
+    elif ext in ('.csv', '.txt'):
+        with open(path, 'r') as file:
+            rows = list(csv.DictReader(file, delimiter='|'))
+    
+    return [Assignment(row['BLOCKID'], row['DISTRICT']) for row in rows]
 
 def count_district_geometries(path):
     '''
@@ -130,22 +205,8 @@ def count_district_geometries(path):
 
 def count_district_assignments(path):
     print('count_district_assignments:', path)
-
-    _, ext = os.path.splitext(path.lower())
     
-    if ext == '.zip':
-        with open(path, 'rb') as file:
-            zf = zipfile.ZipFile(file)
-            for name in zf.namelist():
-                if os.path.splitext(name.lower())[1] in ('.txt', '.csv'):
-                    stream = io.TextIOWrapper(zf.open(name))
-                    rows = list(csv.DictReader(stream, delimiter='|'))
-                    break
-    elif ext in ('.csv', '.txt'):
-        with open(path, 'r') as file:
-            rows = list(csv.DictReader(file, delimiter='|'))
-    
-    return len({row['DISTRICT'] for row in rows})
+    return len({assign.district_id for assign in get_block_assignments(path)})
 
 def guess_geometry_model(path):
     ''' Guess state model for the given input path.
@@ -207,26 +268,12 @@ def guess_geometry_model(path):
 def guess_blockassign_model(path):
     ''' Guess state model for the given input path.
     '''
-    _, ext = os.path.splitext(path.lower())
-    
-    if ext == '.zip':
-        with open(path, 'rb') as file:
-            zf = zipfile.ZipFile(file)
-            for name in zf.namelist():
-                if os.path.splitext(name.lower())[1] in ('.txt', '.csv'):
-                    stream = io.TextIOWrapper(zf.open(name))
-                    rows = list(csv.DictReader(stream, delimiter='|'))
-                    break
-    elif ext in ('.csv', '.txt'):
-        with open(path, 'r') as file:
-            rows = list(csv.DictReader(file, delimiter='|'))
-    
     state_counts, seat_count = collections.defaultdict(int), set()
 
-    for row in rows:
-        if row['DISTRICT']:
-            state_counts[row['BLOCKID'][:2]] += 1
-            seat_count.add(row['DISTRICT'])
+    for assign in get_block_assignments(path):
+        if assign.district_id:
+            state_counts[assign.block_id[:2]] += 1
+            seat_count.add(assign.district_id)
     
     state_counts = [(count, fips) for (fips, count) in state_counts.items()]
     matched_fips = sorted(state_counts, reverse=True)[0][1]

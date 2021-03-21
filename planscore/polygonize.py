@@ -13,6 +13,8 @@ import networkx
 import shapely.ops
 import shapely.geometry
 
+from . import constants
+
 logging.basicConfig(level=logging.INFO)
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_POLYGONIZE', 'PlanScore-Polygonize')
@@ -50,6 +52,20 @@ def combine_digraphs(graph1, graph2):
     
     return graph3
 
+def assemble_graph(s3, block_ids):
+    '''
+    '''
+    county_keys = {
+        'data/XX/graphs/2010/{}-tabblock.pickle'.format(block_id[:5])
+        for block_id in block_ids
+    }
+
+    county_graphs = [
+        load_graph(s3, constants.S3_BUCKET, key) for key in county_keys
+    ]
+
+    return functools.reduce(combine_digraphs, county_graphs)
+
 def polygonize_district(node_ids, graph):
     '''
     '''
@@ -83,23 +99,13 @@ def main():
     }
 
     with open(path) as file:
-        rows = sorted(csv.DictReader(file, delimiter=','), key=operator.itemgetter('DISTRICT'))
+        rows = sorted(csv.DictReader(file, delimiter='|'), key=operator.itemgetter('DISTRICT'))
         
         for (district, blocks) in itertools.groupby(rows, key=operator.itemgetter('DISTRICT')):
-            blocks = list(blocks)
-            block_ids = [
-                block['BLOCKID'] for block in blocks
-            ]
-            county_keys = {
-                'data/RI/graphs/2010/{}-tabblock.pickle'.format(block_id[:5])
-                for block_id in block_ids
-            }
-            county_graphs = [
-                load_graph(s3, 'planscore', key) for key in county_keys
-            ]
-            block_graph = functools.reduce(combine_digraphs, county_graphs)
+            block_ids = [block['BLOCKID'] for block in blocks]
+            block_graph = assemble_graph(s3, block_ids)
             
-            print(district, county_graphs, '-', block_graph)
+            print(district, block_graph)
             polygon = polygonize_district(block_ids, block_graph)
             geojson['features'].append({
                 'type': 'Feature',
@@ -115,4 +121,8 @@ def main():
 def lambda_handler(event, context):
     '''
     '''
-    return {'status': 'Yes', 'event': event}
+    s3 = boto3.client('s3')
+    block_ids = event['block_ids']
+    block_graph = assemble_graph(s3, block_ids)
+    polygon = polygonize_district(block_ids, block_graph)
+    return shapely.geometry.mapping(polygon)
