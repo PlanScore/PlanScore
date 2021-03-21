@@ -105,11 +105,13 @@ def commence_blockassign_upload_parsing(s3, lam, bucket, upload, file_path):
     model = guess_blockassign_model(file_path)
     storage = data.Storage(s3, bucket, model.key_prefix)
     district_count = count_district_assignments(file_path)
-    upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
-    put_geojson_file(
-        s3, bucket, upload2,
-        build_blockassign_geometry(lam, model, file_path, district_count),
-    )
+
+    upload2 = upload.clone()
+    #upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
+    #put_geojson_file(
+    #    s3, bucket, upload2,
+    #    build_blockassign_geometry(lam, model, file_path, district_count),
+    #)
     
     # Used so that the length of the upload districts array is correct
     district_blanks = [None] * district_count

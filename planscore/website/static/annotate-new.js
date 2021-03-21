@@ -145,9 +145,14 @@ function load_plan_preread(url, message_section, preread_section, description,
             table_body.appendChild(new_row);
             row_inputs[1].checked = true;
         }
+        
+        if(plan.geometry_key) {
+            // Go on to load the map.
+            load_plan_map(geom_prefix + plan.geometry_key, map_div, plan);
 
-        // Go on to load the map.
-        load_plan_map(geom_prefix + plan.geometry_key, map_div, plan);
+        } else {
+            map_div.style.display = 'none';
+        }
     }
 
     request.onload = function()

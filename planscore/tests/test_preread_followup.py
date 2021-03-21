@@ -495,13 +495,13 @@ class TestPrereadFollowup (unittest.TestCase):
 
         upload = data.Upload(id, upload_key)
         info = preread_followup.commence_blockassign_upload_parsing(s3, lam, bucket, upload, nullplan_path)
-        guess_blockassign_model.assert_called_once_with(nullplan_path)
 
         self.assertEqual(info.id, upload.id)
-        
-        self.assertEqual(put_geojson_file.mock_calls[0][1][:2], (s3, bucket))
-        self.assertEqual(put_geojson_file.mock_calls[0][1][2].id, upload.id)
-        self.assertIs(put_geojson_file.mock_calls[0][1][3], build_blockassign_geometry.return_value)
+
+        #self.assertEqual(put_geojson_file.mock_calls[0][1][:2], (s3, bucket))
+        #self.assertEqual(put_geojson_file.mock_calls[0][1][2].id, upload.id)
+        #self.assertIs(put_geojson_file.mock_calls[0][1][3], build_blockassign_geometry.return_value)
+        guess_blockassign_model.assert_called_once_with(nullplan_path)
 
         self.assertEqual(len(put_upload_index.mock_calls), 1)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
@@ -509,8 +509,12 @@ class TestPrereadFollowup (unittest.TestCase):
         self.assertEqual(put_upload_index.mock_calls[0][1][1].message,
             'Found 2 districts in the "data/XX/006-tilesdir" None plan with 2 seats.')
         
-        build_blockassign_geometry.assert_called_once_with(lam, guess_blockassign_model.return_value, nullplan_path, count_district_assignments.return_value)
+        #build_blockassign_geometry.assert_called_once_with(lam, guess_blockassign_model.return_value, nullplan_path, count_district_assignments.return_value)
         count_district_assignments.assert_called_once_with(nullplan_path)
+        
+        self.assertEqual(len(put_geojson_file.mock_calls), 0)
+        self.assertEqual(len(build_blockassign_geometry.mock_calls), 0)
+        self.assertIsNone(info.geometry_key)
     
     @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.preread_followup.put_geojson_file')
@@ -536,9 +540,9 @@ class TestPrereadFollowup (unittest.TestCase):
 
         self.assertEqual(info.id, upload.id)
         
-        self.assertEqual(put_geojson_file.mock_calls[0][1][:2], (s3, bucket))
-        self.assertEqual(put_geojson_file.mock_calls[0][1][2].id, upload.id)
-        self.assertIs(put_geojson_file.mock_calls[0][1][3], build_blockassign_geometry.return_value)
+        #self.assertEqual(put_geojson_file.mock_calls[0][1][:2], (s3, bucket))
+        #self.assertEqual(put_geojson_file.mock_calls[0][1][2].id, upload.id)
+        #self.assertIs(put_geojson_file.mock_calls[0][1][3], build_blockassign_geometry.return_value)
 
         self.assertEqual(len(put_upload_index.mock_calls), 1)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
@@ -546,5 +550,9 @@ class TestPrereadFollowup (unittest.TestCase):
         self.assertEqual(put_upload_index.mock_calls[0][1][1].message,
             'Found 2 districts in the "data/XX/006-tilesdir" None plan with 2 seats.')
 
-        build_blockassign_geometry.assert_called_once_with(lam, guess_blockassign_model.return_value, nullplan_path, count_district_assignments.return_value)
+        #build_blockassign_geometry.assert_called_once_with(lam, guess_blockassign_model.return_value, nullplan_path, count_district_assignments.return_value)
         count_district_assignments.assert_called_once_with(nullplan_path)
+        
+        self.assertEqual(len(put_geojson_file.mock_calls), 0)
+        self.assertEqual(len(build_blockassign_geometry.mock_calls), 0)
+        self.assertIsNone(info.geometry_key)
