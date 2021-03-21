@@ -13,7 +13,8 @@ class TestPrereadFollowup (unittest.TestCase):
         constants.WEBSITE_BASE = self.prev_website
 
     @unittest.mock.patch('planscore.preread_followup.commence_upload_parsing')
-    def test_lambda_handler_success(self, commence_upload_parsing):
+    @unittest.mock.patch('boto3.client')
+    def test_lambda_handler_success(self, boto3_client, commence_upload_parsing):
         ''' Lambda event triggers the right call to commence_upload_parsing()
         '''
         event = {'id': 'id', 'bucket': 'planscore',
@@ -31,7 +32,8 @@ class TestPrereadFollowup (unittest.TestCase):
     
     @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.preread_followup.commence_upload_parsing')
-    def test_lambda_handler_failure(self, commence_upload_parsing, put_upload_index):
+    @unittest.mock.patch('boto3.client')
+    def test_lambda_handler_failure(self, boto3_client, commence_upload_parsing, put_upload_index):
         ''' Lambda event triggers the right message after a failure
         '''
         event = {'id': 'id', 'bucket': 'planscore',
