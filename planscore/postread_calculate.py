@@ -52,21 +52,31 @@ def commence_upload_scoring(s3, bucket, upload):
     
     with util.temporary_buffer_file(os.path.basename(upload.key), object['Body']) as ul_path:
         upload_type = util.guess_upload_type(ul_path)
+
         if upload_type == util.UploadType.OGR_DATASOURCE:
-            ds_path = ul_path
-        elif upload_type == util.UploadType.ZIPPED_OGR_DATASOURCE:
-            ds_path = util.vsizip_shapefile(ul_path)
-        else:
-            raise ValueError(upload_type)
-        storage = data.Storage(s3, bucket, upload.model.key_prefix)
-        observe.put_upload_index(storage, upload)
-        upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
-        geometry_keys = put_district_geometries(s3, bucket, upload2, ds_path)
+            return commence_geometry_upload_scoring(s3, bucket, upload, ul_path)
         
-        # New tile-based method comes first to preserve user experience
-        tile_keys = load_model_tiles(storage, upload2.model)
-        start_tile_observer_lambda(storage, upload2, tile_keys)
-        fan_out_tile_lambdas(storage, upload2, tile_keys)
+        if upload_type == util.UploadType.ZIPPED_OGR_DATASOURCE:
+            return commence_geometry_upload_scoring(
+                s3, bucket, upload, util.vsizip_shapefile(ul_path),
+            )
+
+        if upload_type in (util.UploadType.BLOCK_ASSIGNMENT, util.UploadType.ZIPPED_BLOCK_ASSIGNMENT):
+            return commence_blockassign_upload_scoring(s3, bucket, upload, ul_path)
+
+def commence_geometry_upload_scoring(s3, bucket, upload, ds_path):
+    storage = data.Storage(s3, bucket, upload.model.key_prefix)
+    observe.put_upload_index(storage, upload)
+    upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
+    geometry_keys = put_district_geometries(s3, bucket, upload2, ds_path)
+    
+    # New tile-based method comes first to preserve user experience
+    tile_keys = load_model_tiles(storage, upload2.model)
+    start_tile_observer_lambda(storage, upload2, tile_keys)
+    fan_out_tile_lambdas(storage, upload2, tile_keys)
+
+def commence_blockassign_upload_scoring(s3, bucket, upload, file_path):
+    raise NotImplementedError('Block assignment files are not supported at this time')
 
 def put_district_geometries(s3, bucket, upload, path):
     '''
