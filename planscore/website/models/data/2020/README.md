@@ -153,3 +153,8 @@ The charts below show comparisons between this model’s in-sample predictions a
 ![model_v_historical_states_7plus.png](model_v_historical_states_7plus.png)
 
 ![model_v_historical_cycles_7plus.png](model_v_historical_cycles_7plus.png)
+
+Data Sources
+---
+
+Precinct-level presidential vote data used by this model is mostly sourced from the [Voting and Election Science Team](https://dataverse.harvard.edu/dataverse/electionscience) at University of Florida and Wichita State University.
