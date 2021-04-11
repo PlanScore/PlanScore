@@ -38,7 +38,7 @@ def kick_it_off(geojson):
     
     # First handoff should happen here
     
-    upload2 = preread_followup.commence_upload_parsing(s3, constants.S3_BUCKET, upload1)
+    upload2 = preread_followup.commence_upload_parsing(s3, lam, constants.S3_BUCKET, upload1)
     
     # assign description and incumbents as in postread_callback.py
     
