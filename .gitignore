@@ -10,3 +10,4 @@ cdk*
 ??.geojson
 data/??
 .aws*
+design/Upload-Map.svg
