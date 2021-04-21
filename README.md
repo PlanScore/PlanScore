@@ -123,4 +123,4 @@ Process
 -   Add to listing and alt text in [`planscore/website/templates/upload.html`](planscore/website/templates/upload.html)
 -   Add to `supported` expression in [`design/Upload-Map.qgz`](design/Upload-Map.qgz)
 -   Export SVG file from [`design/Upload-Map.qgz`](design/Upload-Map.qgz)
--   Compress SVG file via [`https://vecta.io/nano`](https://vecta.io/nano), save to [`planscore/website/static/supported-states.svg`](planscore/website/static/supported-states.svg)
+-   Compress SVG file via [`planscore-svg:latest`](SVG), save to [`planscore/website/static/supported-states.svg`](planscore/website/static/supported-states.svg)
