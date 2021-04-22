@@ -48,6 +48,7 @@ STATE = {
     data.State.NC: 'nc',
     data.State.NJ: 'nj',
     data.State.NV: 'nv',
+    data.State.OH: 'oh',
     data.State.OK: 'ok',
     data.State.OR: 'or',
     data.State.PA: 'pa',

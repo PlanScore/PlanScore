@@ -35,6 +35,7 @@ class State (enum.Enum):
     NC = 'NC'
     NJ = 'NJ'
     NV = 'NV'
+    OH = 'OH'
     OK = 'OK'
     OR = 'OR'
     PA = 'PA'
@@ -388,6 +389,9 @@ MODELS2020 = [
     Model(State.NV, House.ushouse,       4,  True, '2020', 'data/NV/001-tilesdir'), # bcf3dd1
     Model(State.NV, House.statesenate,  21,  True, '2020', 'data/NV/001-tilesdir'), # bcf3dd1
     Model(State.NV, House.statehouse,   42,  True, '2020', 'data/NV/001-tilesdir'), # bcf3dd1
+    Model(State.OH, House.ushouse,      16,  True, '2020', 'data/OH/002-tilesdir'), # d9415c0
+    Model(State.OH, House.statesenate,  33,  True, '2020', 'data/OH/002-tilesdir'), # d9415c0
+    Model(State.OH, House.statehouse,   99,  True, '2020', 'data/OH/002-tilesdir'), # d9415c0
     Model(State.OK, House.ushouse,       5,  True, '2020', 'data/OK/001-tilesdir'), # 49ac5ef
     Model(State.OK, House.statesenate,  48,  True, '2020', 'data/OK/001-tilesdir'), # 49ac5ef
     Model(State.OK, House.statehouse,  101,  True, '2020', 'data/OK/001-tilesdir'), # 49ac5ef
