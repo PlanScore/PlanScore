@@ -25,7 +25,9 @@ var FIELDS = [
     'Democratic Votes',
     'Republican Votes',
     'US President 2016 - DEM',
-    'US President 2016 - REP'
+    'US President 2016 - REP',
+    'US President 2020 - DEM',
+    'US President 2020 - REP'
     /*, 'Polsby-Popper', 'Reock'*/
 ];
 
@@ -467,6 +469,12 @@ function update_heading_titles(head)
     {
         head[head.indexOf('US President 2016 - DEM')] = 'US President 2016: Clinton (D)';
         head[head.indexOf('US President 2016 - REP')] = 'US President 2016: Trump (R)';
+    }
+
+    if(head.indexOf('US President 2020 - DEM') >= 0 && head.indexOf('US President 2020 - REP') >= 0)
+    {
+        head[head.indexOf('US President 2020 - DEM')] = 'US President 2020: Biden (D)';
+        head[head.indexOf('US President 2020 - REP')] = 'US President 2020: Trump (R)';
     }
 
     if(head.indexOf('Citizen Voting-Age Population 2015') >= 0
