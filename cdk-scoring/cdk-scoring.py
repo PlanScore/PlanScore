@@ -435,7 +435,12 @@ class PlanScoreScoring(cdk.Stack):
             **integration_kwargs
         )
 
-        api_upload_resource = api.root.add_resource('api-upload')
+        api_upload_resource = api.root.add_resource(
+            'api-upload',
+            default_cors_preflight_options=aws_apigateway.CorsOptions(
+                allow_origins=aws_apigateway.Cors.ALL_ORIGINS,
+            ),
+        )
 
         api_upload_resource.add_method(
             "POST",
