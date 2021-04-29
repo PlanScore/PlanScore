@@ -73,12 +73,19 @@ def kick_it_off(geojson):
 def lambda_handler(event, context):
     '''
     '''
-    geojson = json.loads(event['body'])
-    result = kick_it_off(geojson)
+    try:
+        geojson = json.loads(event['body'])
+    except TypeError:
+        status, body = '400', json.dumps(dict(message='Bad GeoJSON input'))
+    except json.decoder.JSONDecodeError:
+        status, body = '400', json.dumps(dict(message='Bad GeoJSON input'))
+    else:
+        result = kick_it_off(geojson)
+        status, body = '200', json.dumps(result, indent=2)
     
     return {
-        'statusCode': '200',
-        'body': json.dumps(result, indent=2)
+        'statusCode': status,
+        'body': body,
         }
 
 if __name__ == '__main__':
