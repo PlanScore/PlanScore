@@ -49,3 +49,9 @@ include complete scores for the uploaded plan. For an example, see
 scored. Initially it will show ongoing progress updates, and upon completion
 will include complete scores for the uploaded plan. For an example, see
 [plan.html?20210307T032912.752515089Z](https://planscore.org/plan.html?20210307T032912.752515089Z).
+
+### Additional Methods
+
+JSON representation of all currently-supported states is available at `/states`:
+
+    curl https://api.planscore.org/states
