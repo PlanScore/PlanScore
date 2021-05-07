@@ -357,6 +357,15 @@ class PlanScoreScoring(cdk.Stack):
             timeout=cdk.Duration.seconds(3),
         ))
 
+        get_states = aws_lambda.Function(
+            self,
+            "APIStates",
+            handler="lambda.get_states",
+            **function_kwargs
+        )
+
+        get_states.add_permission('Permission', principal=apigateway_role)
+
         upload_fields = aws_lambda.Function(
             self,
             "UploadFields",
@@ -397,6 +406,7 @@ class PlanScoreScoring(cdk.Stack):
             preread_followup,
             polygonize,
             api_upload,
+            get_states,
             upload_fields,
             preread,
             postread_callback,
@@ -412,6 +422,7 @@ class PlanScoreScoring(cdk.Stack):
             preread_followup,
             polygonize,
             api_upload,
+            get_states,
             upload_fields,
             preread,
             postread_callback,
@@ -435,17 +446,35 @@ class PlanScoreScoring(cdk.Stack):
             **integration_kwargs
         )
 
-        api_upload_resource = api.root.add_resource(
+        DEPRECATED_api_upload_resource = api.root.add_resource(
             'api-upload',
             default_cors_preflight_options=aws_apigateway.CorsOptions(
                 allow_origins=aws_apigateway.Cors.ALL_ORIGINS,
             ),
         )
 
-        api_upload_resource.add_method(
+        DEPRECATED_api_upload_resource.add_method(
             "POST",
             api_upload_integration,
             authorizer=token_authorizer,
+        )
+
+        get_states_integration = aws_apigateway.LambdaIntegration(
+            get_states,
+            credentials_role=apigateway_role,
+            **integration_kwargs
+        )
+
+        get_states_resource = api.root.add_resource(
+            'states',
+            default_cors_preflight_options=aws_apigateway.CorsOptions(
+                allow_origins=aws_apigateway.Cors.ALL_ORIGINS,
+            ),
+        )
+
+        get_states_resource.add_method(
+            "GET",
+            get_states_integration,
         )
 
         upload_fields_integration = aws_apigateway.LambdaIntegration(
@@ -454,14 +483,20 @@ class PlanScoreScoring(cdk.Stack):
             **integration_kwargs
         )
 
-        upload_fields_resource = api.root.add_resource(
+        upload_resource = api.root.add_resource(
             'upload',
             default_cors_preflight_options=aws_apigateway.CorsOptions(
                 allow_origins=aws_apigateway.Cors.ALL_ORIGINS,
             ),
         )
 
-        upload_fields_resource.add_method("GET", upload_fields_integration)
+        upload_resource.add_method("GET", upload_fields_integration)
+
+        upload_resource.add_method(
+            "POST",
+            api_upload_integration,
+            authorizer=token_authorizer,
+        )
 
         preread_integration = aws_apigateway.LambdaIntegration(
             preread,
