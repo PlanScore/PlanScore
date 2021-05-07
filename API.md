@@ -11,12 +11,12 @@ to use the API. While it is under development, please contact
 
 ### Sample Request
 
-GeoJSON representing a district plan can be posted directly to `/api-upload`:
+GeoJSON representing a district plan can be posted directly to `/upload`:
 
     curl --request POST \
         --header 'Authorization: Bearer {TOKEN}' \
         --data-binary @null-plan-incumbency.geojson \
-        https://api.planscore.org/api-upload
+        https://api.planscore.org/upload
 
 See [null-plan-incumbency.geojson](planscore/tests/data/null-plan-incumbency.geojson)
 for example input.
