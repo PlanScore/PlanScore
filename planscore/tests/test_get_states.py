@@ -1,14 +1,14 @@
 import unittest, unittest.mock
 import json
-from .. import api_states, data
+from .. import get_states, data
 
-class TestAPIStates (unittest.TestCase):
+class TestGetStates (unittest.TestCase):
 
     def test_lambda_handler(self):
         states = data.State.__members__
         houses = data.House.__members__
     
-        response = api_states.lambda_handler(None, None)
+        response = get_states.lambda_handler(None, None)
         
         self.assertEqual(response['statusCode'], '200')
         

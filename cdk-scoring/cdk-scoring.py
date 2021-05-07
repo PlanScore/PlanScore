@@ -357,14 +357,14 @@ class PlanScoreScoring(cdk.Stack):
             timeout=cdk.Duration.seconds(3),
         ))
 
-        api_states = aws_lambda.Function(
+        get_states = aws_lambda.Function(
             self,
             "APIStates",
-            handler="lambda.api_states",
+            handler="lambda.get_states",
             **function_kwargs
         )
 
-        api_states.add_permission('Permission', principal=apigateway_role)
+        get_states.add_permission('Permission', principal=apigateway_role)
 
         upload_fields = aws_lambda.Function(
             self,
@@ -406,7 +406,7 @@ class PlanScoreScoring(cdk.Stack):
             preread_followup,
             polygonize,
             api_upload,
-            api_states,
+            get_states,
             upload_fields,
             preread,
             postread_callback,
@@ -422,7 +422,7 @@ class PlanScoreScoring(cdk.Stack):
             preread_followup,
             polygonize,
             api_upload,
-            api_states,
+            get_states,
             upload_fields,
             preread,
             postread_callback,
@@ -459,22 +459,22 @@ class PlanScoreScoring(cdk.Stack):
             authorizer=token_authorizer,
         )
 
-        api_states_integration = aws_apigateway.LambdaIntegration(
-            api_states,
+        get_states_integration = aws_apigateway.LambdaIntegration(
+            get_states,
             credentials_role=apigateway_role,
             **integration_kwargs
         )
 
-        api_states_resource = api.root.add_resource(
+        get_states_resource = api.root.add_resource(
             'states',
             default_cors_preflight_options=aws_apigateway.CorsOptions(
                 allow_origins=aws_apigateway.Cors.ALL_ORIGINS,
             ),
         )
 
-        api_states_resource.add_method(
+        get_states_resource.add_method(
             "GET",
-            api_states_integration,
+            get_states_integration,
         )
 
         upload_fields_integration = aws_apigateway.LambdaIntegration(
