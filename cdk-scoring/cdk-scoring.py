@@ -192,7 +192,13 @@ class PlanScoreScoring(cdk.Stack):
                     block_public_policy=False,
                     ignore_public_acls=False,
                     restrict_public_buckets=False,
-                )
+                ),
+                lifecycle_rules=[
+                    aws_s3.LifecycleRule(
+                        prefix='uploads/temporary-',
+                        expiration=cdk.Duration.days(3),
+                    ),
+                ],
             )
 
         cdk.CfnOutput(self, 'DataBucket', value=data_bucket.bucket_name)
