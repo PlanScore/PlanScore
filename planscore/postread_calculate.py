@@ -82,6 +82,7 @@ def commence_blockassign_upload_scoring(s3, bucket, upload, file_path):
     put_district_assignments(s3, bucket, upload2, file_path)
 
     slices_keys = load_model_slices(storage, upload2.model)
+    start_slice_observer_lambda(storage, upload2, slices_keys)
 
 def put_district_geometries(s3, bucket, upload, path):
     '''
@@ -227,6 +228,20 @@ def start_tile_observer_lambda(storage, upload, tile_keys):
     '''
     storage.s3.put_object(Bucket=storage.bucket, ACL='bucket-owner-full-control',
         Key=data.UPLOAD_TILE_INDEX_KEY.format(id=upload.id),
+        Body=json.dumps(tile_keys).encode('utf8'))
+    
+    lam = boto3.client('lambda')
+
+    payload = dict(upload=upload.to_dict(), storage=storage.to_event())
+
+    lam.invoke(FunctionName=observe.FUNCTION_NAME, InvocationType='Event',
+        Payload=json.dumps(payload).encode('utf8'))
+
+def start_slice_observer_lambda(storage, upload, tile_keys):
+    '''
+    '''
+    storage.s3.put_object(Bucket=storage.bucket, ACL='bucket-owner-full-control',
+        Key=data.UPLOAD_ASSIGNMENT_INDEX_KEY.format(id=upload.id),
         Body=json.dumps(tile_keys).encode('utf8'))
     
     lam = boto3.client('lambda')

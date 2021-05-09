@@ -239,9 +239,29 @@ class TestPostreadCalculate (unittest.TestCase):
         upload.to_dict.return_value = dict(start_time=1)
         
         postread_calculate.start_tile_observer_lambda(storage, upload,
-            ['data/XX/a.geojson', 'data/XX/b.geojson'])
+            ['data/XX/tiles/a.geojson', 'data/XX/tiles/b.geojson'])
         
-        self.assertEqual(len(storage.s3.put_object.mock_calls), 1)
+        put_calls = storage.s3.put_object.mock_calls
+        self.assertEqual(len(put_calls), 1)
+        self.assertTrue(put_calls[0][2]['Key'].endswith('/tiles.json'))
+        self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 1)
+        self.assertIn(b'"start_time": 1', boto3_client.return_value.invoke.mock_calls[0][2]['Payload'])
+    
+    @unittest.mock.patch('time.time')
+    @unittest.mock.patch('boto3.client')
+    def test_start_slice_observer_lambda(self, boto3_client, time_time):
+        '''
+        '''
+        storage, upload = unittest.mock.Mock(), unittest.mock.Mock()
+        storage.to_event.return_value = dict()
+        upload.to_dict.return_value = dict(start_time=1)
+        
+        postread_calculate.start_slice_observer_lambda(storage, upload,
+            ['data/XX/slices/a.geojson', 'data/XX/slices/b.geojson'])
+        
+        put_calls = storage.s3.put_object.mock_calls
+        self.assertEqual(len(put_calls), 1)
+        self.assertTrue(put_calls[0][2]['Key'].endswith('/assignments.json'))
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 1)
         self.assertIn(b'"start_time": 1', boto3_client.return_value.invoke.mock_calls[0][2]['Payload'])
     
