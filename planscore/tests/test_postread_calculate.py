@@ -175,6 +175,31 @@ class TestPostreadCalculate (unittest.TestCase):
             'data/XX/tiles/d.geojson'][:constants.MAX_TILES_RUN])
     
     @unittest.mock.patch('sys.stdout')
+    def test_load_model_slices(self, stdout):
+        '''
+        '''
+        storage, model = unittest.mock.Mock(), unittest.mock.Mock()
+        model.key_prefix = 'data/XX'
+        storage.s3.list_objects.return_value = {'Contents': [
+            {'Key': 'data/XX/slices/a.geojson', 'Size': 2},
+            {'Key': 'data/XX/slices/b.geojson', 'Size': 4},
+            {'Key': 'data/XX/slices/c.geojson', 'Size': 3},
+            {'Key': 'data/XX/slices/d.geojson', 'Size': 0},
+            {'Key': 'data/XX/slices/e.geojson', 'Size': 1},
+            ], 'IsTruncated': False}
+        
+        tile_keys = postread_calculate.load_model_slices(storage, model)
+        
+        self.assertEqual(storage.s3.list_objects.mock_calls[0][2]['Bucket'], storage.bucket)
+        self.assertEqual(storage.s3.list_objects.mock_calls[0][2]['Prefix'], 'data/XX/slices/')
+        self.assertEqual(storage.s3.list_objects.mock_calls[0][2]['Marker'], '')
+        
+        self.assertEqual(tile_keys,
+            ['data/XX/slices/b.geojson', 'data/XX/slices/c.geojson',
+            'data/XX/slices/a.geojson', 'data/XX/slices/e.geojson',
+            'data/XX/slices/d.geojson'][:constants.MAX_TILES_RUN])
+    
+    @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
     def test_fan_out_tile_lambdas(self, boto3_client, stdout):
         ''' Test that tile Lambda fan-out is invoked correctly.
