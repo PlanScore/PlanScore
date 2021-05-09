@@ -6,7 +6,7 @@ starts and observer process with planscore.score function.
 import os, io, json, urllib.parse, gzip, functools, time, math, threading
 import csv, operator, itertools
 import boto3, osgeo.ogr
-from . import util, data, score, website, prepare_state, constants, tiles, observe
+from . import util, data, score, website, prepare_state, constants, tiles, slices, observe
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_POSTREAD_CALCULATE') or 'PlanScore-PostreadCalculate'
 EMPTY_GEOMETRY = osgeo.ogr.Geometry(osgeo.ogr.wkbGeometryCollection)
@@ -83,6 +83,7 @@ def commence_blockassign_upload_scoring(s3, bucket, upload, file_path):
 
     slices_keys = load_model_slices(storage, upload2.model)
     start_slice_observer_lambda(storage, upload2, slices_keys)
+    fan_out_slice_lambdas(storage, upload2, slice_keys)
 
 def put_district_geometries(s3, bucket, upload, path):
     '''
@@ -221,6 +222,43 @@ def fan_out_tile_lambdas(storage, upload, tile_keys):
         thread.join()
 
     print('fan_out_tile_lambdas: completed threads after',
+        int(time.time() - start_time), 'seconds.')
+
+def fan_out_slice_lambdas(storage, upload, slice_keys):
+    '''
+    '''
+    def invoke_lambda(slice_keys, upload, storage):
+        '''
+        '''
+        lam = boto3.client('lambda')
+        
+        while True:
+            try:
+                slice_key = slice_keys.pop(0)
+            except IndexError:
+                break
+
+            payload = dict(upload=upload.to_dict(), storage=storage.to_event(),
+                slice_key=slice_key)
+            
+            lam.invoke(FunctionName=slices.FUNCTION_NAME, InvocationType='Event',
+                Payload=json.dumps(payload).encode('utf8'))
+    
+    threads, start_time = [], time.time()
+    
+    print('fan_out_slice_lambdas: starting threads for',
+        len(slice_keys), 'slice_keys from', upload.model.key_prefix)
+
+    for i in range(8):
+        threads.append(threading.Thread(target=invoke_lambda,
+            args=(slice_keys, upload, storage)))
+        
+        threads[-1].start()
+
+    for thread in threads:
+        thread.join()
+
+    print('fan_out_slice_lambdas: completed threads after',
         int(time.time() - start_time), 'seconds.')
 
 def start_tile_observer_lambda(storage, upload, tile_keys):

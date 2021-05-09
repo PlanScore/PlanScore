@@ -298,6 +298,16 @@ class PlanScoreScoring(cdk.Stack):
 
         grant_data_bucket_access(data_bucket, run_tile)
 
+        run_slice = aws_lambda.Function(
+            self,
+            "RunSlice",
+            handler="lambda.run_slice",
+            memory_size=2048,
+            **function_kwargs
+        )
+
+        grant_data_bucket_access(data_bucket, run_slice)
+
         observe_tiles = aws_lambda.Function(
             self,
             "ObserveTiles",
@@ -319,6 +329,7 @@ class PlanScoreScoring(cdk.Stack):
         grant_data_bucket_access(data_bucket, postread_calculate)
         grant_function_invoke(observe_tiles, 'FUNC_NAME_OBSERVE_TILES', postread_calculate)
         grant_function_invoke(run_tile, 'FUNC_NAME_RUN_TILE', postread_calculate)
+        grant_function_invoke(run_slice, 'FUNC_NAME_RUN_SLICE', postread_calculate)
 
         preread_followup = aws_lambda.Function(
             self,
@@ -407,6 +418,7 @@ class PlanScoreScoring(cdk.Stack):
         return (
             authorizer,
             run_tile,
+            run_slice,
             observe_tiles,
             postread_calculate,
             preread_followup,
@@ -423,6 +435,7 @@ class PlanScoreScoring(cdk.Stack):
         (
             authorizer,
             run_tile,
+            run_slice,
             observe_tiles,
             postread_calculate,
             preread_followup,

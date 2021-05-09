@@ -222,12 +222,32 @@ class TestPostreadCalculate (unittest.TestCase):
         upload.model.to_dict.return_value = None
 
         postread_calculate.fan_out_tile_lambdas(storage, upload,
-            ['data/XX/a.geojson', 'data/XX/b.geojson'])
+            ['data/XX/tiles/a.geojson', 'data/XX/tiles/b.geojson'])
         
         invocations = boto3_client.return_value.invoke.mock_calls
         self.assertEqual(len(invocations), 2)
-        self.assertIn(b'data/XX/a.geojson', invocations[0][2]['Payload'])
-        self.assertIn(b'data/XX/b.geojson', invocations[1][2]['Payload'])
+        self.assertIn(b'data/XX/tiles/a.geojson', invocations[0][2]['Payload'])
+        self.assertIn(b'data/XX/tiles/b.geojson', invocations[1][2]['Payload'])
+    
+    @unittest.mock.patch('sys.stdout')
+    @unittest.mock.patch('boto3.client')
+    def test_fan_out_slice_lambdas(self, boto3_client, stdout):
+        ''' Test that slice Lambda fan-out is invoked correctly.
+        '''
+        storage = unittest.mock.Mock()
+        upload = data.Upload('ID', 'uploads/ID/upload/file.txt', model=unittest.mock.Mock())
+        upload.model.key_prefix = 'data/XX'
+
+        storage.to_event.return_value = None
+        upload.model.to_dict.return_value = None
+
+        postread_calculate.fan_out_slice_lambdas(storage, upload,
+            ['data/XX/slices/a.txt', 'data/XX/slices/b.txt'])
+        
+        invocations = boto3_client.return_value.invoke.mock_calls
+        self.assertEqual(len(invocations), 2)
+        self.assertIn(b'data/XX/slices/a.txt', invocations[0][2]['Payload'])
+        self.assertIn(b'data/XX/slices/b.txt', invocations[1][2]['Payload'])
     
     @unittest.mock.patch('time.time')
     @unittest.mock.patch('boto3.client')
