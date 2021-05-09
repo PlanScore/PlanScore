@@ -133,6 +133,16 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(put_kwargs['Body'], 'GEOMETRYCOLLECTION EMPTY')
     
     @unittest.mock.patch('sys.stdout')
+    def test_put_district_assignments(self, stdout):
+        '''
+        '''
+        s3 = unittest.mock.Mock()
+        upload = data.Upload('ID', 'uploads/ID/upload/file.txt')
+        null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.txt')
+        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
+        self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
+    
+    @unittest.mock.patch('sys.stdout')
     def test_load_model_tiles_oldstyle(self, stdout):
         '''
         '''

@@ -4,6 +4,7 @@ Fans out asynchronous parallel calls to planscore.district function, then
 starts and observer process with planscore.score function.
 '''
 import os, io, json, urllib.parse, gzip, functools, time, math, threading
+import csv, operator, itertools
 import boto3, osgeo.ogr
 from . import util, data, score, website, prepare_state, constants, tiles, observe
 
@@ -77,6 +78,8 @@ def commence_geometry_upload_scoring(s3, bucket, upload, ds_path):
 
 def commence_blockassign_upload_scoring(s3, bucket, upload, file_path):
     raise NotImplementedError('Block assignment files are not supported at this time')
+    
+    put_district_assignments(s3, bucket, upload2, file_path)
 
     slices_keys = load_model_slices(storage, upload2.model)
 
@@ -104,6 +107,35 @@ def put_district_geometries(s3, bucket, upload, path):
             Body=geometry.ExportToWkt(), ContentType='text/plain')
         
         keys.append(key)
+    
+    return keys
+
+def put_district_assignments(s3, bucket, upload, path):
+    '''
+    '''
+    print('put_district_assignments:', (bucket, path))
+    
+    keys = []
+
+    with open(path, 'r') as file:
+        district_key = operator.itemgetter('DISTRICT')
+    
+        rows = csv.DictReader(file, delimiter='|')
+        rows2 = itertools.groupby(sorted(rows, key=district_key), district_key)
+        
+        for (index, (key, rows3)) in enumerate(rows2):
+            rows4 = sorted(rows3, key=operator.itemgetter('BLOCKID'))
+            
+            out = io.StringIO()
+            for row in rows4:
+                print(row['BLOCKID'], file=out)
+        
+            key = data.UPLOAD_ASSIGNMENTS_KEY.format(id=upload.id, index=index)
+        
+            s3.put_object(Bucket=bucket, Key=key, ACL='bucket-owner-full-control',
+                Body=out.getvalue(), ContentType='text/plain')
+        
+            keys.append(key)
     
     return keys
 
