@@ -89,8 +89,10 @@ do not offer GDAL 2, but you're reluctant to update to unstable packages.
 Once that is done, within the virtualenv you will need to export some
 environment variables, as described in Ubuntu 16.
 
-Process
+Scoring Process
 ---
+
+Behind-the-scenes code sequence when a user scores a plan.
 
 1.  User starts at `/upload.html`
 2.  Page requests an ID and S3 fields from `/upload` ([λ:`PlanScore-UploadFields`](planscore/upload_fields.py))
@@ -116,6 +118,8 @@ Process
     3.  Saves index JSON with final data
 
 ### Adding a State
+
+How to add a new state model to the scoring process.
 
 -   Add to `State` enum in [`planscore/data.py`](planscore/data.py)
 -   Add to `MODELS2020` list in [`planscore/data.py`](planscore/data.py)
