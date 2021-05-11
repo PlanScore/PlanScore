@@ -47,13 +47,24 @@ def get_expected_slice(enqueued_key, upload):
     return data.UPLOAD_SLICES_KEY.format(id=upload.id,
         geoid=slices.get_slice_geoid(upload.model.key_prefix, enqueued_key))
 
-def get_district_index(geometry_key, upload):
-    ''' Return numeric index for a given geometry key.
+def get_district_index(district_key, upload):
+    ''' Return numeric index for a given district geometry or assignment key.
     '''
     dirname = posixpath.dirname(data.UPLOAD_GEOMETRIES_KEY).format(id=upload.id)
-    base, _ = posixpath.splitext(posixpath.relpath(geometry_key, dirname))
+    base, _ = posixpath.splitext(posixpath.relpath(district_key, dirname))
     
-    return int(base)
+    try:
+        index = int(base)
+    except ValueError:
+        dirname = posixpath.dirname(data.UPLOAD_ASSIGNMENTS_KEY).format(id=upload.id)
+        base, _ = posixpath.splitext(posixpath.relpath(district_key, dirname))
+
+        try:
+            index = int(base)
+        except ValueError:
+            raise ValueError(f'Failed to guess district from {district_key}')
+    
+    return index
 
 def load_upload_geometries(storage, upload):
     ''' Get ordered list of OGR geometries for an upload.
@@ -221,9 +232,9 @@ def accumulate_district_totals(tile_totals, upload):
             print('weird tile:', repr(tile_total.totals))
             continue
             
-        for (geometry_key, input_values) in tile_total.totals.items():
-            geometry_index = get_district_index(geometry_key, upload)
-            district = districts[geometry_index]['totals']
+        for (district_key, input_values) in tile_total.totals.items():
+            district_index = get_district_index(district_key, upload)
+            district = districts[district_index]['totals']
             for (key, value) in input_values.items():
                 district[key] = round(district[key] + value, constants.ROUND_COUNT)
     

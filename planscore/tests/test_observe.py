@@ -116,6 +116,13 @@ class TestObserveTiles (unittest.TestCase):
         
         with self.assertRaises(ValueError):
             observe.get_district_index('uploads/ID/geometries/xx.wkt', upload)
+        
+        self.assertEqual(observe.get_district_index('uploads/ID/assignments/0.txt', upload), 0)
+        self.assertEqual(observe.get_district_index('uploads/ID/assignments/09.txt', upload), 9)
+        self.assertEqual(observe.get_district_index('uploads/ID/assignments/11.txt', upload), 11)
+
+        with self.assertRaises(ValueError):
+            observe.get_district_index('uploads/ID/assignments/xx.txt', upload)
     
     def test_load_upload_geometries(self):
         ''' Expected geometries are retrieved from S3.
