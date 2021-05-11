@@ -5,7 +5,7 @@ import osgeo.ogr
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_OBSERVE_TILES') or 'PlanScore-ObserveTiles'
 
-Tile = collections.namedtuple('Tile', ('totals', 'timing'))
+SubTotal = collections.namedtuple('SubTotal', ('totals', 'timing'))
 
 def get_upload_index(storage, key):
     '''
@@ -96,7 +96,7 @@ def populate_compactness(geometries):
     
     return districts
 
-def iterate_tile_totals(expected_tiles, storage, upload, context):
+def iterate_tile_subtotals(expected_tiles, storage, upload, context):
     '''
     '''
     next_update = time.time()
@@ -110,7 +110,7 @@ def iterate_tile_totals(expected_tiles, storage, upload, context):
 
         # Update S3, if it's time
         if time.time() > next_update:
-            print('iterate_tile_totals: {}/{} tiles complete'.format(*progress.to_list()))
+            print('iterate_tile_subtotals: {}/{} tiles complete'.format(*progress.to_list()))
             put_upload_index(storage, upload)
             next_update = time.time() + 1
 
@@ -126,7 +126,7 @@ def iterate_tile_totals(expected_tiles, storage, upload, context):
                     object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
         
                 content = json.load(object['Body'])
-                yield Tile(content.get('totals'), content.get('timing', {}))
+                yield SubTotal(content.get('totals'), content.get('timing', {}))
             
                 # Found the expected tile, break out of this loop
                 break
@@ -139,9 +139,9 @@ def iterate_tile_totals(expected_tiles, storage, upload, context):
                 put_upload_index(storage, overdue_upload)
                 return
 
-    print('iterate_tile_totals: all tiles complete')
+    print('iterate_tile_subtotals: all tiles complete')
 
-def iterate_slice_totals(expected_slices, storage, upload, context):
+def iterate_slice_subtotals(expected_slices, storage, upload, context):
     '''
     '''
     next_update = time.time()
@@ -155,7 +155,7 @@ def iterate_slice_totals(expected_slices, storage, upload, context):
 
         # Update S3, if it's time
         if time.time() > next_update:
-            print('iterate_slice_totals: {}/{} slices complete'.format(*progress.to_list()))
+            print('iterate_slice_subtotals: {}/{} slices complete'.format(*progress.to_list()))
             put_upload_index(storage, upload)
             next_update = time.time() + 1
 
@@ -171,7 +171,7 @@ def iterate_slice_totals(expected_slices, storage, upload, context):
                     object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
         
                 content = json.load(object['Body'])
-                yield Tile(content.get('totals'), content.get('timing', {}))
+                yield SubTotal(content.get('totals'), content.get('timing', {}))
             
                 # Found the expected slice, break out of this loop
                 break
@@ -184,7 +184,7 @@ def iterate_slice_totals(expected_slices, storage, upload, context):
                 put_upload_index(storage, overdue_upload)
                 return
 
-    print('iterate_slice_totals: all slices complete')
+    print('iterate_slice_subtotals: all slices complete')
 
 def put_tile_timings(storage, upload, tiles):
     ''' Write a CSV report on tile timing
@@ -201,7 +201,7 @@ def put_tile_timings(storage, upload, tiles):
     storage.s3.put_object(Bucket=storage.bucket, Key=key,
         Body=buffer.getvalue(), ContentType='text/csv', ACL='public-read')
 
-def accumulate_district_totals(tile_totals, upload):
+def accumulate_district_subtotals(part_subtotals, upload):
     ''' Return new district array for an upload, preserving existing values.
     '''
     districts = []
@@ -226,13 +226,13 @@ def accumulate_district_totals(tile_totals, upload):
         districts.append(new_district)
     
     # update districts with tile totals
-    for tile_total in tile_totals:
-        if type(tile_total.totals) is str:
+    for part_subtotal in part_subtotals:
+        if type(part_subtotal.totals) is str:
             # Not unheard-of, this is where errors get stashed for now
-            print('weird tile:', repr(tile_total.totals))
+            print('weird tile:', repr(part_subtotal.totals))
             continue
             
-        for (district_key, input_values) in tile_total.totals.items():
+        for (district_key, input_values) in part_subtotal.totals.items():
             district_index = get_district_index(district_key, upload)
             district = districts[district_index]['totals']
             for (key, value) in input_values.items():
@@ -243,10 +243,10 @@ def accumulate_district_totals(tile_totals, upload):
     
     return districts
 
-def adjust_household_income(input_totals):
+def adjust_household_income(input_subtotals):
     '''
     '''
-    totals = copy.deepcopy(input_totals)
+    totals = copy.deepcopy(input_subtotals)
     
     if 'Households 2016' in totals and 'Sum Household Income 2016' in totals:
         totals['Household Income 2016'] = round(totals['Sum Household Income 2016']
@@ -255,10 +255,10 @@ def adjust_household_income(input_totals):
     
     return totals
 
-def clean_up_tiles(storage, tile_keys):
+def clean_up_leftover_parts(storage, part_keys):
     '''
     '''
-    head_keys, tail_keys = tile_keys[:1000], tile_keys[1000:]
+    head_keys, tail_keys = part_keys[:1000], part_keys[1000:]
     
     while len(head_keys):
         to_delete = {'Objects': [{'Key': key} for key in head_keys]}
@@ -280,28 +280,28 @@ def lambda_handler(event, context):
         obj = storage.s3.get_object(Bucket=storage.bucket,
             Key=data.UPLOAD_ASSIGNMENT_INDEX_KEY.format(id=upload1.id))
         
-        enqueued_slices = json.load(obj['Body'])
-        expected_slices = [get_expected_slice(slice_key, upload1)
-            for slice_key in enqueued_slices]
+        enqueued_parts = json.load(obj['Body'])
+        expected_parts = [get_expected_slice(slice_key, upload1)
+            for slice_key in enqueued_parts]
     
         upload2 = upload1.clone()
-        results = list(iterate_slice_totals(expected_slices, storage, upload2, context))
+        subtotals = list(iterate_slice_subtotals(expected_parts, storage, upload2, context))
 
     else:
-        enqueued_tiles = json.load(obj['Body'])
-        expected_tiles = [get_expected_tile(tile_key, upload1)
-            for tile_key in enqueued_tiles]
+        enqueued_parts = json.load(obj['Body'])
+        expected_parts = [get_expected_tile(tile_key, upload1)
+            for tile_key in enqueued_parts]
     
         geometries = load_upload_geometries(storage, upload1)
         upload2 = upload1.clone(districts=populate_compactness(geometries))
-        results = list(iterate_tile_totals(expected_tiles, storage, upload2, context))
+        subtotals = list(iterate_tile_subtotals(expected_parts, storage, upload2, context))
 
     put_upload_index(storage, upload2.clone(
         message='Scoring this newly-uploaded plan.'
             ' Adding up votes. Reload this page to see the result.'
             ))
 
-    districts = accumulate_district_totals(results, upload2)
+    districts = accumulate_district_subtotals(subtotals, upload2)
     upload3 = upload2.clone(districts=districts)
     upload4 = score.calculate_bias(upload3)
     upload5 = score.calculate_open_biases(upload4)
@@ -311,9 +311,9 @@ def lambda_handler(event, context):
     complete_upload = upload7.clone(
         status=True,
         message='Finished scoring this plan.',
-        progress=data.Progress(len(expected_tiles), len(expected_tiles)),
+        progress=data.Progress(len(expected_parts), len(expected_parts)),
     )
 
     put_upload_index(storage, complete_upload)
-    put_tile_timings(storage, upload2, results)
-    clean_up_tiles(storage, expected_tiles)
+    put_tile_timings(storage, upload2, subtotals)
+    clean_up_leftover_parts(storage, expected_parts)
