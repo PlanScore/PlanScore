@@ -1,6 +1,6 @@
 import os, time, json, posixpath, io, gzip, collections, copy, csv, uuid
 import boto3, botocore.exceptions
-from . import data, constants, tiles, score, compactness
+from . import data, constants, tiles, slices, score, compactness
 import osgeo.ogr
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_OBSERVE_TILES') or 'PlanScore-ObserveTiles'
@@ -40,6 +40,12 @@ def get_expected_tile(enqueued_key, upload):
     '''
     return data.UPLOAD_TILES_KEY.format(id=upload.id,
         zxy=tiles.get_tile_zxy(upload.model.key_prefix, enqueued_key))
+
+def get_expected_slice(enqueued_key, upload):
+    ''' Return an expect slice key for an enqueued one.
+    '''
+    return data.UPLOAD_SLICES_KEY.format(id=upload.id,
+        geoid=slices.get_slice_geoid(upload.model.key_prefix, enqueued_key))
 
 def get_district_index(geometry_key, upload):
     ''' Return numeric index for a given geometry key.
@@ -123,6 +129,51 @@ def iterate_tile_totals(expected_tiles, storage, upload, context):
                 return
 
     print('iterate_tile_totals: all tiles complete')
+
+def iterate_slice_totals(expected_slices, storage, upload, context):
+    '''
+    '''
+    next_update = time.time()
+
+    # Look for each expected slice in turn
+    for (index, expected_slice) in enumerate(expected_slices):
+        progress = data.Progress(index, len(expected_slices))
+        upload = upload.clone(progress=progress,
+            message='Scoring this newly-uploaded plan. {} complete.'
+                ' Reload this page to see the result.'.format(progress.to_percentage()))
+
+        # Update S3, if it's time
+        if time.time() > next_update:
+            print('iterate_slice_totals: {}/{} slices complete'.format(*progress.to_list()))
+            put_upload_index(storage, upload)
+            next_update = time.time() + 1
+
+        # Wait for one expected slice
+        while True:
+            try:
+                object = storage.s3.get_object(Bucket=storage.bucket, Key=expected_slice)
+            except botocore.exceptions.ClientError:
+                # Did not find the expected slice, wait a little before checking
+                time.sleep(3)
+            else:
+                if object.get('ContentEncoding') == 'gzip':
+                    object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
+        
+                content = json.load(object['Body'])
+                yield Tile(content.get('totals'), content.get('timing', {}))
+            
+                # Found the expected slice, break out of this loop
+                break
+
+            remain_msec = context.get_remaining_time_in_millis()
+
+            if remain_msec < 5000:
+                # Out of time, just stop
+                overdue_upload = upload.clone(status=False, message="Giving up on this plan after it took too long, sorry.")
+                put_upload_index(storage, overdue_upload)
+                return
+
+    print('iterate_slice_totals: all slices complete')
 
 def put_tile_timings(storage, upload, tiles):
     ''' Write a CSV report on tile timing

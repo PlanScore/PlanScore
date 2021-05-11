@@ -82,10 +82,27 @@ class TestObserveTiles (unittest.TestCase):
         upload.model.key_prefix = 'data/XX'
         upload.id = 'ID'
         
-        enqueued_key = 'data/XX/12/656/1582.geojson'
-        expected_key = 'uploads/ID/tiles/12/656/1582.json'
+        enqueued_key1 = 'data/XX/12/656/1582.geojson'
+        expected_key1 = 'uploads/ID/tiles/12/656/1582.json'
         
-        self.assertEqual(observe.get_expected_tile(enqueued_key, upload), expected_key)
+        self.assertEqual(observe.get_expected_tile(enqueued_key1, upload), expected_key1)
+        
+        enqueued_key2 = 'data/XX/tiles/12/656/1582.geojson'
+        expected_key2 = 'uploads/ID/tiles/12/656/1582.json'
+        
+        self.assertEqual(observe.get_expected_tile(enqueued_key2, upload), expected_key2)
+    
+    def test_expected_slice(self):
+        ''' Expected slice is returned for an enqueued one.
+        '''
+        upload = unittest.mock.Mock()
+        upload.model.key_prefix = 'data/XX'
+        upload.id = 'ID'
+        
+        enqueued_key = 'data/XX/slices/0000001.json'
+        expected_key = 'uploads/ID/slices/0000001.json'
+        
+        self.assertEqual(observe.get_expected_slice(enqueued_key, upload), expected_key)
     
     def test_get_district_index(self):
         '''
@@ -183,6 +200,27 @@ class TestObserveTiles (unittest.TestCase):
         self.assertEqual(tile_totals[1].totals['uploads/sample-plan2/geometries/1.wkt']['Voters'],  15.94)
         self.assertEqual(tile_totals[2].totals['uploads/sample-plan2/geometries/1.wkt']['Voters'], 455.99)
         self.assertEqual(tile_totals[3].totals['uploads/sample-plan2/geometries/1.wkt']['Voters'], 373.76)
+    
+    @unittest.mock.patch('sys.stdout')
+    def test_iterate_slice_totals(self, stdout):
+        ''' Expected counts are returned from slices.
+        '''
+        assert False, 'Not implemented'
+        
+        upload = unittest.mock.Mock()
+        context = unittest.mock.Mock()
+        context.get_remaining_time_in_millis.return_value = 9999
+        
+        storage = unittest.mock.Mock()
+        storage.s3.get_object.side_effect = mock_s3_get_object
+
+        expected_slices = ['uploads/sample-plan/slices/0000000001.json']
+        
+        slice_totals = list(observe.iterate_slice_totals(expected_slices, storage, upload, context))
+        
+        self.assertEqual(len(slice_totals), 1)
+        self.assertEqual(slice_totals[0].totals['uploads/sample-plan2/assignments/0.txt']['Voters'], 252.45)
+        self.assertEqual(slice_totals[0].totals['uploads/sample-plan2/assignments/1.txt']['Voters'], 87.2)
     
     def test_accumulate_district_totals(self):
         '''
