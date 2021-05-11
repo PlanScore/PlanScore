@@ -210,23 +210,36 @@ def lambda_handler(event, context):
     storage = data.Storage.from_event(event['storage'], s3)
     upload1 = data.Upload.from_dict(event['upload'])
     
-    obj = storage.s3.get_object(Bucket=storage.bucket,
-        Key=data.UPLOAD_TILE_INDEX_KEY.format(id=upload1.id))
+    try:
+        obj = storage.s3.get_object(Bucket=storage.bucket,
+            Key=data.UPLOAD_TILE_INDEX_KEY.format(id=upload1.id))
+
+    except s3.exceptions.NoSuchKey:
+        obj = storage.s3.get_object(Bucket=storage.bucket,
+            Key=data.UPLOAD_ASSIGNMENT_INDEX_KEY.format(id=upload1.id))
+        
+        enqueued_slices = json.load(obj['Body'])
+        expected_slices = [get_expected_slice(slice_key, upload1)
+            for slice_key in enqueued_slices]
     
-    enqueued_tiles = json.load(obj['Body'])
-    expected_tiles = [get_expected_tile(tile_key, upload1)
-        for tile_key in enqueued_tiles]
+        upload2 = upload1.clone()
+        results = list(iterate_slice_totals(expected_slices, storage, upload2, context))
+
+    else:
+        enqueued_tiles = json.load(obj['Body'])
+        expected_tiles = [get_expected_tile(tile_key, upload1)
+            for tile_key in enqueued_tiles]
     
-    geometries = load_upload_geometries(storage, upload1)
-    upload2 = upload1.clone(districts=populate_compactness(geometries))
-    tiles = list(iterate_tile_totals(expected_tiles, storage, upload2, context))
+        geometries = load_upload_geometries(storage, upload1)
+        upload2 = upload1.clone(districts=populate_compactness(geometries))
+        results = list(iterate_tile_totals(expected_tiles, storage, upload2, context))
 
     put_upload_index(storage, upload2.clone(
         message='Scoring this newly-uploaded plan.'
             ' Adding up votes. Reload this page to see the result.'
             ))
 
-    districts = accumulate_district_totals(tiles, upload2)
+    districts = accumulate_district_totals(results, upload2)
     upload3 = upload2.clone(districts=districts)
     upload4 = score.calculate_bias(upload3)
     upload5 = score.calculate_open_biases(upload4)
@@ -240,5 +253,5 @@ def lambda_handler(event, context):
     )
 
     put_upload_index(storage, complete_upload)
-    put_tile_timings(storage, upload2, tiles)
+    put_tile_timings(storage, upload2, results)
     clean_up_tiles(storage, expected_tiles)
