@@ -1,6 +1,6 @@
 import os, json, io, gzip, posixpath, functools, collections, time
 import boto3, botocore.exceptions
-from . import data
+from . import constants, data
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_RUN_SLICE') or 'PlanScore-RunSlice'
 
@@ -21,7 +21,7 @@ def load_upload_assignments(storage, upload):
             object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
     
         district_list = object['Body'].read().decode('utf8').split('\n')
-        assignments[assignment_key] = district_list
+        assignments[assignment_key] = set(district_list)
     
     return assignments
 
@@ -53,6 +53,25 @@ def get_slice_geoid(model_key_prefix, slice_key):
     assert slice_geoid.startswith('slices/'), slice_geoid
     return slice_geoid[7:]
 
+def score_district(district_set, precincts, slice_set):
+    ''' Return weighted precinct totals for a district over a tile.
+    '''
+    totals = collections.defaultdict(int)
+    partial_district_set = district_set & slice_set
+    
+    if not partial_district_set:
+        return totals
+
+    for precinct_feat in precincts:
+        subtotals = score_precinct(partial_district_set, precinct_feat, slice_set)
+        for (name, value) in subtotals.items():
+            totals[name] = round(value + totals[name], constants.ROUND_COUNT)
+
+    return totals
+
+def score_precinct():
+    pass
+
 def lambda_handler(event, context):
     '''
     '''
@@ -66,14 +85,14 @@ def lambda_handler(event, context):
     try:
         slice_geoid = get_slice_geoid(upload.model.key_prefix, event['slice_key'])
         output_key = data.UPLOAD_SLICES_KEY.format(id=upload.id, geoid=slice_geoid)
-        slice_geom = slice_assignment(slice_geoid)
+        slice_set = slice_assignment(slice_geoid)
 
         totals = {}
         precincts = load_slice_precincts(storage, slice_geoid)
         assignments = load_upload_assignments(storage, upload)
     
-        for (assignment_key, district_geom) in assignments.items():
-            totals[assignment_key] = score_district(district_geom, precincts, slice_geom)
+        for (assignment_key, district_set) in assignments.items():
+            totals[assignment_key] = score_district(district_set, precincts, slice_set)
     except Exception as err:
         print('Exception:', err)
         totals = str(err)

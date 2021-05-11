@@ -60,3 +60,30 @@ class TestSlices (unittest.TestCase):
 
         precincts2 = slices.load_slice_precincts(storage, '9999999999')
         self.assertEqual(len(precincts2), 0)
+    
+    @unittest.mock.patch('planscore.slices.score_precinct')
+    def test_score_district(self, score_precinct):
+        ''' Correct values appears in totals dict after scoring a district.
+        '''
+        score_precinct.return_value = {'Voters': 1.111111111}
+        
+        district_set, slice_set = {'1', '2', '3'}, {'2', '3', '4'}
+        precincts = [unittest.mock.Mock(), unittest.mock.Mock()]
+        intersection = district_set & slice_set
+
+        totals = slices.score_district(district_set, precincts, slice_set)
+        self.assertEqual(totals['Voters'], round(2.222222222, constants.ROUND_COUNT))
+        
+        self.assertEqual(len(score_precinct.mock_calls), 2)
+        self.assertEqual(score_precinct.mock_calls[0][1], (intersection, precincts[0], slice_set))
+        self.assertEqual(score_precinct.mock_calls[1][1], (intersection, precincts[1], slice_set))
+    
+    @unittest.mock.patch('planscore.slices.score_precinct')
+    def test_score_district_disjoint(self, score_precinct):
+        ''' No precincts are scored for a disjoint slice/district.
+        '''
+        district_set, slice_set = {'1', '2'}, {'3', '4'}
+        precincts = [unittest.mock.Mock(), unittest.mock.Mock()]
+
+        slices.score_district(district_set, precincts, slice_set)
+        self.assertEqual(len(score_precinct.mock_calls), 0)
