@@ -69,20 +69,20 @@ def commence_geometry_upload_scoring(s3, bucket, upload, ds_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
     observe.put_upload_index(storage, upload)
     upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
-    geometry_keys = put_district_geometries(s3, bucket, upload2, ds_path)
+    put_district_geometries(s3, bucket, upload2, ds_path)
     
-    # New tile-based method comes first to preserve user experience
     tile_keys = load_model_tiles(storage, upload2.model)
     start_tile_observer_lambda(storage, upload2, tile_keys)
     fan_out_tile_lambdas(storage, upload2, tile_keys)
 
 def commence_blockassign_upload_scoring(s3, bucket, upload, file_path):
-    raise NotImplementedError('Block assignment files are not supported at this time')
-    
+    storage = data.Storage(s3, bucket, upload.model.key_prefix)
+    observe.put_upload_index(storage, upload)
+    upload2 = upload.clone()
     put_district_assignments(s3, bucket, upload2, file_path)
 
-    slices_keys = load_model_slices(storage, upload2.model)
-    start_slice_observer_lambda(storage, upload2, slices_keys)
+    slice_keys = load_model_slices(storage, upload2.model)
+    start_slice_observer_lambda(storage, upload2, slice_keys)
     fan_out_slice_lambdas(storage, upload2, slice_keys)
 
 def put_district_geometries(s3, bucket, upload, path):
