@@ -205,8 +205,6 @@ class TestObserveTiles (unittest.TestCase):
     def test_iterate_slice_totals(self, stdout):
         ''' Expected counts are returned from slices.
         '''
-        assert False, 'Not implemented'
-        
         upload = unittest.mock.Mock()
         context = unittest.mock.Mock()
         context.get_remaining_time_in_millis.return_value = 9999
@@ -219,8 +217,8 @@ class TestObserveTiles (unittest.TestCase):
         slice_totals = list(observe.iterate_slice_totals(expected_slices, storage, upload, context))
         
         self.assertEqual(len(slice_totals), 1)
-        self.assertEqual(slice_totals[0].totals['uploads/sample-plan3/assignments/0.txt']['Voters'], 252.45)
-        self.assertEqual(slice_totals[0].totals['uploads/sample-plan3/assignments/1.txt']['Voters'], 87.2)
+        self.assertEqual(slice_totals[0].totals['uploads/sample-plan3/assignments/0.txt']['Population 2010'], 22)
+        self.assertEqual(slice_totals[0].totals['uploads/sample-plan3/assignments/1.txt']['Population 2010'], 33)
     
     def test_accumulate_district_totals(self):
         '''

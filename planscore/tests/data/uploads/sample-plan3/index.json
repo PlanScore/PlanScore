@@ -1,0 +1,28 @@
+{
+  "commit_sha": "b709c63bd47b5791cfd389004f2c08e42d758c3b",
+  "description": "null-plan-blockassignments.txt",
+  "districts": [
+    null,
+    null
+  ],
+  "geometry_key": null,
+  "id": "sample-plan3",
+  "incumbents": [
+    "O",
+    "O"
+  ],
+  "key": "uploads/sample-plan3/upload/null-plan-blockassignments.txt",
+  "message": "Scoring this newly-uploaded plan. Adding up votes. Reload this page to see the result.",
+  "model": {
+    "house": "statehouse",
+    "incumbency": true,
+    "key_prefix": "data/XX/006-tilesdir",
+    "seats": 2,
+    "state": "XX",
+    "version": "2020"
+  },
+  "progress": null,
+  "start_time": 1620707931.257184,
+  "status": null,
+  "summary": {}
+}
