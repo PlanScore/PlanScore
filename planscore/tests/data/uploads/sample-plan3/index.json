@@ -1,9 +1,31 @@
 {
-  "commit_sha": "b709c63bd47b5791cfd389004f2c08e42d758c3b",
+  "commit_sha": "05cd7742a281a119be722e769996d6000f4bb8b4",
   "description": "null-plan-blockassignments.txt",
   "districts": [
-    null,
-    null
+    {
+      "totals": {
+        "Democratic Votes": 197.79,
+        "Democratic Votes SD": 34.36,
+        "Democratic Wins": 0.004,
+        "Population 2010": 22.0,
+        "Republican Votes": 402.21,
+        "Republican Votes SD": 34.36,
+        "US President 2016 - DEM": 100.0,
+        "US President 2016 - REP": 300.0
+      }
+    },
+    {
+      "totals": {
+        "Democratic Votes": 371.69,
+        "Democratic Votes SD": 32.32,
+        "Democratic Wins": 0.983,
+        "Population 2010": 33.0,
+        "Republican Votes": 228.31,
+        "Republican Votes SD": 32.32,
+        "US President 2016 - DEM": 500.0,
+        "US President 2016 - REP": 300.0
+      }
+    }
   ],
   "geometry_key": null,
   "id": "sample-plan3",
@@ -12,7 +34,7 @@
     "O"
   ],
   "key": "uploads/sample-plan3/upload/null-plan-blockassignments.txt",
-  "message": "Scoring this newly-uploaded plan. Adding up votes. Reload this page to see the result.",
+  "message": "Finished scoring this plan.",
   "model": {
     "house": "statehouse",
     "incumbency": true,
@@ -21,8 +43,41 @@
     "state": "XX",
     "version": "2020"
   },
-  "progress": null,
-  "start_time": 1620707931.257184,
-  "status": null,
-  "summary": {}
+  "progress": [
+    1,
+    1
+  ],
+  "start_time": 1620710694.3179288,
+  "status": true,
+  "summary": {
+    "Efficiency Gap": 0.0444,
+    "Efficiency Gap +1 Dem": 0.0264,
+    "Efficiency Gap +1 Dem SD": 0.0872,
+    "Efficiency Gap +1 Rep": 0.0624,
+    "Efficiency Gap +1 Rep SD": 0.0928,
+    "Efficiency Gap +2 Dem": 0.0094,
+    "Efficiency Gap +2 Dem SD": 0.0854,
+    "Efficiency Gap +2 Rep": 0.0794,
+    "Efficiency Gap +2 Rep SD": 0.0962,
+    "Efficiency Gap +3 Dem": -0.0096,
+    "Efficiency Gap +3 Dem SD": 0.0843,
+    "Efficiency Gap +3 Rep": 0.0934,
+    "Efficiency Gap +3 Rep SD": 0.1037,
+    "Efficiency Gap +4 Dem": -0.0271,
+    "Efficiency Gap +4 Dem SD": 0.0853,
+    "Efficiency Gap +4 Rep": 0.1031,
+    "Efficiency Gap +4 Rep SD": 0.1139,
+    "Efficiency Gap +5 Dem": -0.0451,
+    "Efficiency Gap +5 Dem SD": 0.0847,
+    "Efficiency Gap +5 Rep": 0.1059,
+    "Efficiency Gap +5 Rep SD": 0.1329,
+    "Efficiency Gap Positives": 0.731,
+    "Efficiency Gap SD": 0.09,
+    "Mean-Median": 0.0,
+    "Mean-Median Positives": 0.0,
+    "Mean-Median SD": 0.0,
+    "Partisan Bias": -0.0,
+    "Partisan Bias Positives": 0.054,
+    "Partisan Bias SD": 0.0
+  }
 }

@@ -1,1 +1,1 @@
-Error: 'NoneType' object is not subscriptable
+Error: 'compactness'
