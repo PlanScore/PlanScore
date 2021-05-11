@@ -9,7 +9,7 @@ dev-deploy: planscore-lambda.zip
 # Just one Lambda codebase is created, with different entry points and environments.
 planscore-lambda.zip: gdal-geos-numpy-python.tar.gz
 	mkdir -p planscore-lambda
-	pip3 install -q -t planscore-lambda .
+	pip3 install --use-feature=in-tree-build -q -t planscore-lambda .
 	tar -C planscore-lambda -xzf gdal-geos-numpy-python.tar.gz
 	cp lambda.py planscore-lambda/lambda.py
 	cd planscore-lambda && zip -rq ../planscore-lambda.zip .

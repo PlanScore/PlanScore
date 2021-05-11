@@ -37,6 +37,7 @@ jobs:
       - run: pyenv global 3.9.1
       - restore_cache:
           key: build-dependencies-py-{{ checksum "setup.py" }}
+      - run: pip3 install -U pip
       - run: pip3 install '.[deploy]'
       - save_cache:
           key: build-dependencies-py-{{ checksum "setup.py" }}
