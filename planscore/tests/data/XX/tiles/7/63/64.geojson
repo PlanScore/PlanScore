@@ -1,5 +1,5 @@
 {"type": "FeatureCollection", "features": [
-{"type": "Feature", "properties": {"Population 2010": 1, "US President 2016 - DEM": 100, "US President 2016 - REP": 0, "PlanScore:Index": 7, "PlanScore:Fraction": null}, "geometry": { "type": "Point", "coordinates": [ -0.0004638, -0.0000197 ] }},
-{"type": "Feature", "properties": {"Population 2010": 7, "US President 2016 - DEM": 0, "US President 2016 - REP": 100, "PlanScore:Index": 8, "PlanScore:Fraction": null}, "geometry": { "type": "Point", "coordinates": [ -0.0002077, -0.0000564 ] }},
-{"type": "Feature", "properties": {"Population 2010": 10, "US President 2016 - DEM": 0, "US President 2016 - REP": 100, "PlanScore:Index": 9, "PlanScore:Fraction": null}, "geometry": { "type": "Point", "coordinates": [ -0.0001454, -0.0001155 ] }}
+{"type": "Feature", "properties": {"GEOID": "0000000008", "Population 2010": 1, "US President 2016 - DEM": 100, "US President 2016 - REP": 0, "PlanScore:Index": 7, "PlanScore:Fraction": null}, "geometry": { "type": "Point", "coordinates": [ -0.0004638, -0.0000197 ] }},
+{"type": "Feature", "properties": {"GEOID": "0000000009", "Population 2010": 7, "US President 2016 - DEM": 0, "US President 2016 - REP": 100, "PlanScore:Index": 8, "PlanScore:Fraction": null}, "geometry": { "type": "Point", "coordinates": [ -0.0002077, -0.0000564 ] }},
+{"type": "Feature", "properties": {"GEOID": "0000000010", "Population 2010": 10, "US President 2016 - DEM": 0, "US President 2016 - REP": 100, "PlanScore:Index": 9, "PlanScore:Fraction": null}, "geometry": { "type": "Point", "coordinates": [ -0.0001454, -0.0001155 ] }}
 ]}
