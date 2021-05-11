@@ -25,6 +25,28 @@ class TestSlices (unittest.TestCase):
         prefix1, key1 = 'data/XX/002', 'data/XX/002/slices/0000000001.json'
         self.assertEqual(slices.get_slice_geoid(prefix1, key1), '0000000001')
     
+    def test_load_upload_assignments(self):
+        ''' Expected assignments are retrieved from S3.
+        '''
+        s3, upload = unittest.mock.Mock(), unittest.mock.Mock()
+        storage = data.Storage(s3, 'bucket-name', 'XX')
+        upload.id = 'sample-plan3'
+
+        s3.get_object.side_effect = mock_s3_get_object
+        s3.list_objects.return_value = {'Contents': [
+            {'Key': "uploads/sample-plan3/assignments/0.txt"},
+            {'Key': "uploads/sample-plan3/assignments/1.txt"}
+            ]}
+
+        assignments = slices.load_upload_assignments(storage, upload)
+
+        self.assertEqual(len(assignments), 2)
+        self.assertIn("uploads/sample-plan3/assignments/0.txt", assignments)
+        self.assertIn("uploads/sample-plan3/assignments/1.txt", assignments)
+        
+        s3.list_objects.assert_called_once_with(Bucket='bucket-name',
+            Prefix="uploads/sample-plan3/assignments/")
+
     def test_load_slice_precincts(self):
         ''' Expected slices are loaded from S3.
         '''
@@ -32,7 +54,6 @@ class TestSlices (unittest.TestCase):
         s3.get_object.side_effect = mock_s3_get_object
         storage = data.Storage(s3, 'bucket-name', 'XX')
 
-        print('*' * 80)
         precincts1 = slices.load_slice_precincts(storage, '0000000001')
         s3.get_object.assert_called_once_with(Bucket='bucket-name', Key='XX/slices/0000000001.json')
         self.assertEqual(len(precincts1), 10)

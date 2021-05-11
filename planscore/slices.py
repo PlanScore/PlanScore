@@ -4,6 +4,27 @@ from . import data
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_RUN_SLICE') or 'PlanScore-RunSlice'
 
+def load_upload_assignments(storage, upload):
+    ''' Get dictionary of assignments for an upload.
+    '''
+    assignments = {}
+    
+    assign_prefix = posixpath.dirname(data.UPLOAD_ASSIGNMENTS_KEY).format(id=upload.id)
+    response = storage.s3.list_objects(Bucket=storage.bucket, Prefix=f'{assign_prefix}/')
+
+    assignment_keys = [object['Key'] for object in response['Contents']]
+    
+    for assignment_key in assignment_keys:
+        object = storage.s3.get_object(Bucket=storage.bucket, Key=assignment_key)
+
+        if object.get('ContentEncoding') == 'gzip':
+            object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
+    
+        district_list = object['Body'].read().decode('utf8').split('\n')
+        assignments[assignment_key] = district_list
+    
+    return assignments
+
 def load_slice_precincts(storage, slice_zxy):
     ''' Get list of properties for a specific slice.
     '''
@@ -45,14 +66,14 @@ def lambda_handler(event, context):
     try:
         slice_geoid = get_slice_geoid(upload.model.key_prefix, event['slice_key'])
         output_key = data.UPLOAD_SLICES_KEY.format(id=upload.id, geoid=slice_geoid)
-        slice_geom = slice_geometry(slice_geoid)
+        slice_geom = slice_assignment(slice_geoid)
 
         totals = {}
         precincts = load_slice_precincts(storage, slice_geoid)
-        geometries = load_upload_geometries(storage, upload)
+        assignments = load_upload_assignments(storage, upload)
     
-        for (geometry_key, district_geom) in geometries.items():
-            totals[geometry_key] = score_district(district_geom, precincts, slice_geom)
+        for (assignment_key, district_geom) in assignments.items():
+            totals[assignment_key] = score_district(district_geom, precincts, slice_geom)
     except Exception as err:
         print('Exception:', err)
         totals = str(err)
