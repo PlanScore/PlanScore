@@ -6,7 +6,7 @@ starts and observer process with planscore.score function.
 import os, io, json, urllib.parse, gzip, functools, time, math, threading
 import csv, operator, itertools
 import boto3, osgeo.ogr
-from . import util, data, score, website, prepare_state, constants, tiles, slices, observe
+from . import util, data, score, website, prepare_state, constants, run_tile, run_slice, observe
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_POSTREAD_CALCULATE') or 'PlanScore-PostreadCalculate'
 EMPTY_GEOMETRY = osgeo.ogr.Geometry(osgeo.ogr.wkbGeometryCollection)
@@ -204,7 +204,7 @@ def fan_out_tile_lambdas(storage, upload, tile_keys):
             payload = dict(upload=upload.to_dict(), storage=storage.to_event(),
                 tile_key=tile_key)
             
-            lam.invoke(FunctionName=tiles.FUNCTION_NAME, InvocationType='Event',
+            lam.invoke(FunctionName=run_tile.FUNCTION_NAME, InvocationType='Event',
                 Payload=json.dumps(payload).encode('utf8'))
     
     threads, start_time = [], time.time()
@@ -241,7 +241,7 @@ def fan_out_slice_lambdas(storage, upload, slice_keys):
             payload = dict(upload=upload.to_dict(), storage=storage.to_event(),
                 slice_key=slice_key)
             
-            lam.invoke(FunctionName=slices.FUNCTION_NAME, InvocationType='Event',
+            lam.invoke(FunctionName=run_slice.FUNCTION_NAME, InvocationType='Event',
                 Payload=json.dumps(payload).encode('utf8'))
     
     threads, start_time = [], time.time()

@@ -1,6 +1,6 @@
 import unittest, unittest.mock, os, json, io, gzip, itertools, collections
 import osgeo.ogr, botocore.exceptions
-from .. import slices, data, constants
+from .. import run_slice, data, constants
 
 should_gzip = itertools.cycle([True, False])
 
@@ -17,13 +17,13 @@ def mock_s3_get_object(Bucket, Key):
         else:
             return {'Body': io.BytesIO(file.read())}
 
-class TestSlices (unittest.TestCase):
+class TestRunSlice (unittest.TestCase):
 
     def test_get_slice_geoid(self):
         '''
         '''
         prefix1, key1 = 'data/XX/002', 'data/XX/002/slices/0000000001.json'
-        self.assertEqual(slices.get_slice_geoid(prefix1, key1), '0000000001')
+        self.assertEqual(run_slice.get_slice_geoid(prefix1, key1), '0000000001')
     
     def test_load_upload_assignments(self):
         ''' Expected assignments are retrieved from S3.
@@ -38,7 +38,7 @@ class TestSlices (unittest.TestCase):
             {'Key': "uploads/sample-plan3/assignments/1.txt"}
             ]}
 
-        assignments = slices.load_upload_assignments(storage, upload)
+        assignments = run_slice.load_upload_assignments(storage, upload)
 
         self.assertEqual(len(assignments), 2)
         self.assertIn("uploads/sample-plan3/assignments/0.txt", assignments)
@@ -54,11 +54,11 @@ class TestSlices (unittest.TestCase):
         s3.get_object.side_effect = mock_s3_get_object
         storage = data.Storage(s3, 'bucket-name', 'XX')
 
-        precincts1 = slices.load_slice_precincts(storage, '0000000001')
+        precincts1 = run_slice.load_slice_precincts(storage, '0000000001')
         s3.get_object.assert_called_once_with(Bucket='bucket-name', Key='XX/slices/0000000001.json')
         self.assertEqual(len(precincts1), 10)
 
-        precincts2 = slices.load_slice_precincts(storage, '9999999999')
+        precincts2 = run_slice.load_slice_precincts(storage, '9999999999')
         self.assertEqual(len(precincts2), 0)
     
     def test_slice_assignment(self):
@@ -68,7 +68,7 @@ class TestSlices (unittest.TestCase):
         s3.get_object.side_effect = mock_s3_get_object
         storage = data.Storage(s3, 'bucket-name', 'XX')
         
-        assignment_set = slices.slice_assignment(storage, 'XX/slices/0000000001.json')
+        assignment_set = run_slice.slice_assignment(storage, 'XX/slices/0000000001.json')
         
         self.assertEqual(
             assignment_set,
@@ -78,7 +78,7 @@ class TestSlices (unittest.TestCase):
             },
         )
     
-    @unittest.mock.patch('planscore.slices.score_precinct')
+    @unittest.mock.patch('planscore.run_slice.score_precinct')
     def test_score_district(self, score_precinct):
         ''' Correct values appears in totals dict after scoring a district.
         '''
@@ -88,21 +88,21 @@ class TestSlices (unittest.TestCase):
         precincts = [unittest.mock.Mock(), unittest.mock.Mock()]
         partial_district_set = district_set & slice_set
 
-        totals = slices.score_district(district_set, precincts, slice_set)
+        totals = run_slice.score_district(district_set, precincts, slice_set)
         self.assertEqual(totals['Voters'], round(2.222222222, constants.ROUND_COUNT))
         
         self.assertEqual(len(score_precinct.mock_calls), 2)
         self.assertEqual(score_precinct.mock_calls[0][1], (partial_district_set, precincts[0]))
         self.assertEqual(score_precinct.mock_calls[1][1], (partial_district_set, precincts[1]))
     
-    @unittest.mock.patch('planscore.slices.score_precinct')
+    @unittest.mock.patch('planscore.run_slice.score_precinct')
     def test_score_district_disjoint(self, score_precinct):
         ''' No precincts are scored for a disjoint slice/district.
         '''
         district_set, slice_set = {'1', '2'}, {'3', '4'}
         precincts = [unittest.mock.Mock(), unittest.mock.Mock()]
 
-        slices.score_district(district_set, precincts, slice_set)
+        run_slice.score_district(district_set, precincts, slice_set)
         self.assertEqual(len(score_precinct.mock_calls), 0)
     
     def test_score_precinct(self):
@@ -119,7 +119,7 @@ class TestSlices (unittest.TestCase):
         ]
         
         for precinct in precincts:
-            slice_totals = slices.score_precinct(partial_district_set, precinct)
+            slice_totals = run_slice.score_precinct(partial_district_set, precinct)
             for (key, value) in slice_totals.items():
                 totals[key] += value
         

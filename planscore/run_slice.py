@@ -126,7 +126,7 @@ def lambda_handler(event, context):
     storage = data.Storage.from_event(event['storage'], s3)
     upload = data.Upload.from_dict(event['upload'])
     
-    print('slices.lambda_handler():', json.dumps(event))
+    print('run_slice.lambda_handler():', json.dumps(event))
 
     try:
         slice_geoid = get_slice_geoid(upload.model.key_prefix, event['slice_key'])

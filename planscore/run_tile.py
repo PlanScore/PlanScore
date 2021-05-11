@@ -175,7 +175,7 @@ def lambda_handler(event, context):
     storage = data.Storage.from_event(event['storage'], s3)
     upload = data.Upload.from_dict(event['upload'])
     
-    print('tiles.lambda_handler():', json.dumps(event))
+    print('run_tile.lambda_handler():', json.dumps(event))
 
     try:
         tile_zxy = get_tile_zxy(upload.model.key_prefix, event['tile_key'])

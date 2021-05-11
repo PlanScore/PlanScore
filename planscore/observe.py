@@ -1,6 +1,6 @@
 import os, time, json, posixpath, io, gzip, collections, copy, csv, uuid
 import boto3, botocore.exceptions
-from . import data, constants, tiles, slices, score, compactness
+from . import data, constants, run_tile, run_slice, score, compactness
 import osgeo.ogr
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_OBSERVE_TILES') or 'PlanScore-ObserveTiles'
@@ -39,13 +39,13 @@ def get_expected_tile(enqueued_key, upload):
     ''' Return an expect tile key for an enqueued one.
     '''
     return data.UPLOAD_TILES_KEY.format(id=upload.id,
-        zxy=tiles.get_tile_zxy(upload.model.key_prefix, enqueued_key))
+        zxy=run_tile.get_tile_zxy(upload.model.key_prefix, enqueued_key))
 
 def get_expected_slice(enqueued_key, upload):
     ''' Return an expect slice key for an enqueued one.
     '''
     return data.UPLOAD_SLICES_KEY.format(id=upload.id,
-        geoid=slices.get_slice_geoid(upload.model.key_prefix, enqueued_key))
+        geoid=run_slice.get_slice_geoid(upload.model.key_prefix, enqueued_key))
 
 def get_district_index(district_key, upload):
     ''' Return numeric index for a given district geometry or assignment key.
