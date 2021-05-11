@@ -1,6 +1,6 @@
 import os, json, io, gzip, posixpath, functools, collections, time
 import boto3, botocore.exceptions
-from . import constants, data
+from . import constants, data, score
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_RUN_SLICE') or 'PlanScore-RunSlice'
 
@@ -62,15 +62,41 @@ def score_district(district_set, precincts, slice_set):
     if not partial_district_set:
         return totals
 
-    for precinct_feat in precincts:
-        subtotals = score_precinct(partial_district_set, precinct_feat, slice_set)
+    for precinct_properties in precincts:
+        subtotals = score_precinct(partial_district_set, precinct_properties)
         for (name, value) in subtotals.items():
             totals[name] = round(value + totals[name], constants.ROUND_COUNT)
 
     return totals
 
-def score_precinct():
-    pass
+def score_precinct(partial_district_set, precinct_properties):
+    ''' Return weighted single-district totals for a precinct feature within a tile.
+        
+        partial_district_geom is the intersection of district and tile geometries.
+    '''
+    # Initialize totals to zero
+    totals = {name: 0 for name in score.FIELD_NAMES if name in precinct_properties}
+    precint_geoid = precinct_properties['GEOID']
+    
+    if precint_geoid not in partial_district_set:
+        return totals
+
+    for name in list(totals.keys()):
+        precinct_value = (precinct_properties[name] or 0)
+        
+        if name == 'Household Income 2016' and 'Households 2016' in precinct_properties:
+            # Household income can't be summed up like populations,
+            # and needs to be weighted by number of households.
+            precinct_value *= (precinct_properties['Households 2016'] or 0)
+            totals['Sum Household Income 2016'] = \
+                round(totals.get('Sum Household Income 2016', 0)
+                    + precinct_value, constants.ROUND_COUNT)
+
+            continue
+
+        totals[name] = round(precinct_value, constants.ROUND_COUNT)
+    
+    return totals
 
 def lambda_handler(event, context):
     '''

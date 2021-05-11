@@ -69,14 +69,14 @@ class TestSlices (unittest.TestCase):
         
         district_set, slice_set = {'1', '2', '3'}, {'2', '3', '4'}
         precincts = [unittest.mock.Mock(), unittest.mock.Mock()]
-        intersection = district_set & slice_set
+        partial_district_set = district_set & slice_set
 
         totals = slices.score_district(district_set, precincts, slice_set)
         self.assertEqual(totals['Voters'], round(2.222222222, constants.ROUND_COUNT))
         
         self.assertEqual(len(score_precinct.mock_calls), 2)
-        self.assertEqual(score_precinct.mock_calls[0][1], (intersection, precincts[0], slice_set))
-        self.assertEqual(score_precinct.mock_calls[1][1], (intersection, precincts[1], slice_set))
+        self.assertEqual(score_precinct.mock_calls[0][1], (partial_district_set, precincts[0]))
+        self.assertEqual(score_precinct.mock_calls[1][1], (partial_district_set, precincts[1]))
     
     @unittest.mock.patch('planscore.slices.score_precinct')
     def test_score_district_disjoint(self, score_precinct):
@@ -87,3 +87,25 @@ class TestSlices (unittest.TestCase):
 
         slices.score_district(district_set, precincts, slice_set)
         self.assertEqual(len(score_precinct.mock_calls), 0)
+    
+    def test_score_precinct(self):
+        ''' Correct values appears in totals dict after scoring a precinct.
+        '''
+        totals = collections.defaultdict(int)
+        partial_district_set = {"0000000001", "0000000003", "0000000005"}
+        precincts = [
+            {"GEOID": "0000000001", "Population 2010": 3, "US President 2016 - DEM": 100, "US President 2016 - REP": 50},
+            {"GEOID": "0000000002", "Population 2010": 5, "US President 2016 - DEM": 100, "US President 2016 - REP": 25},
+            {"GEOID": "0000000003", "Population 2010": 9, "US President 2016 - DEM": 100, "US President 2016 - REP": 25},
+            {"GEOID": "0000000004", "Population 2010": 4, "US President 2016 - DEM": 0, "US President 2016 - REP": 100},
+            {"GEOID": "0000000005", "Population 2010": 2, "US President 2016 - DEM": 50, "US President 2016 - REP": 50},
+        ]
+        
+        for precinct in precincts:
+            slice_totals = slices.score_precinct(partial_district_set, precinct)
+            for (key, value) in slice_totals.items():
+                totals[key] += value
+        
+        self.assertAlmostEqual(totals['Population 2010'], 14)
+        self.assertAlmostEqual(totals['US President 2016 - DEM'], 250)
+        self.assertAlmostEqual(totals['US President 2016 - REP'], 125)
