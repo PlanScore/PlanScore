@@ -53,6 +53,26 @@ def get_slice_geoid(model_key_prefix, slice_key):
     assert slice_geoid.startswith('slices/'), slice_geoid
     return slice_geoid[7:]
 
+def slice_assignment(storage, slice_key):
+    '''
+    '''
+    try:
+        # Search for slice GeoJSON inside the storage prefix
+        print('storage.s3.get_object():', dict(Bucket=storage.bucket,
+            Key=slice_key))
+        object = storage.s3.get_object(Bucket=storage.bucket,
+            Key=slice_key)
+    except botocore.exceptions.ClientError as error:
+        if error.response['Error']['Code'] == 'NoSuchKey':
+            return []
+        raise
+
+    if object.get('ContentEncoding') == 'gzip':
+        object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
+    
+    assignment_list = [block['GEOID'] for block in json.load(object['Body'])]
+    return set(assignment_list)
+
 def score_district(district_set, precincts, slice_set):
     ''' Return weighted precinct totals for a district over a tile.
     '''
@@ -111,7 +131,7 @@ def lambda_handler(event, context):
     try:
         slice_geoid = get_slice_geoid(upload.model.key_prefix, event['slice_key'])
         output_key = data.UPLOAD_SLICES_KEY.format(id=upload.id, geoid=slice_geoid)
-        slice_set = slice_assignment(slice_geoid)
+        slice_set = slice_assignment(storage, event['slice_key'])
 
         totals = {}
         precincts = load_slice_precincts(storage, slice_geoid)

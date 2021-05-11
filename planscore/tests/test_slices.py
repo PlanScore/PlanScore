@@ -61,6 +61,23 @@ class TestSlices (unittest.TestCase):
         precincts2 = slices.load_slice_precincts(storage, '9999999999')
         self.assertEqual(len(precincts2), 0)
     
+    def test_slice_assignment(self):
+        ''' Correct assignment list returned from slice_assignment
+        '''
+        s3 = unittest.mock.Mock()
+        s3.get_object.side_effect = mock_s3_get_object
+        storage = data.Storage(s3, 'bucket-name', 'XX')
+        
+        assignment_set = slices.slice_assignment(storage, 'XX/slices/0000000001.json')
+        
+        self.assertEqual(
+            assignment_set,
+            {
+                '0000000002', '0000000001', '0000000008', '0000000003', '0000000009',
+                '0000000005', '0000000006', '0000000007', '0000000010', '0000000004',
+            },
+        )
+    
     @unittest.mock.patch('planscore.slices.score_precinct')
     def test_score_district(self, score_precinct):
         ''' Correct values appears in totals dict after scoring a district.

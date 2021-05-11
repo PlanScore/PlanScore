@@ -214,13 +214,13 @@ class TestObserveTiles (unittest.TestCase):
         storage = unittest.mock.Mock()
         storage.s3.get_object.side_effect = mock_s3_get_object
 
-        expected_slices = ['uploads/sample-plan/slices/0000000001.json']
+        expected_slices = ['uploads/sample-plan3/slices/0000000001.json']
         
         slice_totals = list(observe.iterate_slice_totals(expected_slices, storage, upload, context))
         
         self.assertEqual(len(slice_totals), 1)
-        self.assertEqual(slice_totals[0].totals['uploads/sample-plan2/assignments/0.txt']['Voters'], 252.45)
-        self.assertEqual(slice_totals[0].totals['uploads/sample-plan2/assignments/1.txt']['Voters'], 87.2)
+        self.assertEqual(slice_totals[0].totals['uploads/sample-plan3/assignments/0.txt']['Voters'], 252.45)
+        self.assertEqual(slice_totals[0].totals['uploads/sample-plan3/assignments/1.txt']['Voters'], 87.2)
     
     def test_accumulate_district_totals(self):
         '''
