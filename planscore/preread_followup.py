@@ -20,7 +20,7 @@ import threading
 import boto3
 import osgeo.ogr
 
-from . import util, data, score, website, prepare_state, constants, tiles, observe, polygonize
+from . import util, data, score, website, prepare_state, constants, observe, polygonize
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_PREREAD_FOLLOWUP') or 'PlanScore-PrereadFollowup'
 EMPTY_GEOMETRY = osgeo.ogr.Geometry(osgeo.ogr.wkbGeometryCollection)

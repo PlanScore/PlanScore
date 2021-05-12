@@ -133,6 +133,16 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(put_kwargs['Body'], 'GEOMETRYCOLLECTION EMPTY')
     
     @unittest.mock.patch('sys.stdout')
+    def test_put_district_assignments(self, stdout):
+        '''
+        '''
+        s3 = unittest.mock.Mock()
+        upload = data.Upload('ID', 'uploads/ID/upload/file.txt')
+        null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.txt')
+        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
+        self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
+    
+    @unittest.mock.patch('sys.stdout')
     def test_load_model_tiles_oldstyle(self, stdout):
         '''
         '''
@@ -175,6 +185,31 @@ class TestPostreadCalculate (unittest.TestCase):
             'data/XX/tiles/d.geojson'][:constants.MAX_TILES_RUN])
     
     @unittest.mock.patch('sys.stdout')
+    def test_load_model_slices(self, stdout):
+        '''
+        '''
+        storage, model = unittest.mock.Mock(), unittest.mock.Mock()
+        model.key_prefix = 'data/XX'
+        storage.s3.list_objects.return_value = {'Contents': [
+            {'Key': 'data/XX/slices/a.geojson', 'Size': 2},
+            {'Key': 'data/XX/slices/b.geojson', 'Size': 4},
+            {'Key': 'data/XX/slices/c.geojson', 'Size': 3},
+            {'Key': 'data/XX/slices/d.geojson', 'Size': 0},
+            {'Key': 'data/XX/slices/e.geojson', 'Size': 1},
+            ], 'IsTruncated': False}
+        
+        tile_keys = postread_calculate.load_model_slices(storage, model)
+        
+        self.assertEqual(storage.s3.list_objects.mock_calls[0][2]['Bucket'], storage.bucket)
+        self.assertEqual(storage.s3.list_objects.mock_calls[0][2]['Prefix'], 'data/XX/slices/')
+        self.assertEqual(storage.s3.list_objects.mock_calls[0][2]['Marker'], '')
+        
+        self.assertEqual(tile_keys,
+            ['data/XX/slices/b.geojson', 'data/XX/slices/c.geojson',
+            'data/XX/slices/a.geojson', 'data/XX/slices/e.geojson',
+            'data/XX/slices/d.geojson'][:constants.MAX_TILES_RUN])
+    
+    @unittest.mock.patch('sys.stdout')
     @unittest.mock.patch('boto3.client')
     def test_fan_out_tile_lambdas(self, boto3_client, stdout):
         ''' Test that tile Lambda fan-out is invoked correctly.
@@ -187,12 +222,32 @@ class TestPostreadCalculate (unittest.TestCase):
         upload.model.to_dict.return_value = None
 
         postread_calculate.fan_out_tile_lambdas(storage, upload,
-            ['data/XX/a.geojson', 'data/XX/b.geojson'])
+            ['data/XX/tiles/a.geojson', 'data/XX/tiles/b.geojson'])
         
         invocations = boto3_client.return_value.invoke.mock_calls
         self.assertEqual(len(invocations), 2)
-        self.assertIn(b'data/XX/a.geojson', invocations[0][2]['Payload'])
-        self.assertIn(b'data/XX/b.geojson', invocations[1][2]['Payload'])
+        self.assertIn(b'data/XX/tiles/a.geojson', invocations[0][2]['Payload'])
+        self.assertIn(b'data/XX/tiles/b.geojson', invocations[1][2]['Payload'])
+    
+    @unittest.mock.patch('sys.stdout')
+    @unittest.mock.patch('boto3.client')
+    def test_fan_out_slice_lambdas(self, boto3_client, stdout):
+        ''' Test that slice Lambda fan-out is invoked correctly.
+        '''
+        storage = unittest.mock.Mock()
+        upload = data.Upload('ID', 'uploads/ID/upload/file.txt', model=unittest.mock.Mock())
+        upload.model.key_prefix = 'data/XX'
+
+        storage.to_event.return_value = None
+        upload.model.to_dict.return_value = None
+
+        postread_calculate.fan_out_slice_lambdas(storage, upload,
+            ['data/XX/slices/a.txt', 'data/XX/slices/b.txt'])
+        
+        invocations = boto3_client.return_value.invoke.mock_calls
+        self.assertEqual(len(invocations), 2)
+        self.assertIn(b'data/XX/slices/a.txt', invocations[0][2]['Payload'])
+        self.assertIn(b'data/XX/slices/b.txt', invocations[1][2]['Payload'])
     
     @unittest.mock.patch('time.time')
     @unittest.mock.patch('boto3.client')
@@ -204,9 +259,29 @@ class TestPostreadCalculate (unittest.TestCase):
         upload.to_dict.return_value = dict(start_time=1)
         
         postread_calculate.start_tile_observer_lambda(storage, upload,
-            ['data/XX/a.geojson', 'data/XX/b.geojson'])
+            ['data/XX/tiles/a.geojson', 'data/XX/tiles/b.geojson'])
         
-        self.assertEqual(len(storage.s3.put_object.mock_calls), 1)
+        put_calls = storage.s3.put_object.mock_calls
+        self.assertEqual(len(put_calls), 1)
+        self.assertTrue(put_calls[0][2]['Key'].endswith('/tiles.json'))
+        self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 1)
+        self.assertIn(b'"start_time": 1', boto3_client.return_value.invoke.mock_calls[0][2]['Payload'])
+    
+    @unittest.mock.patch('time.time')
+    @unittest.mock.patch('boto3.client')
+    def test_start_slice_observer_lambda(self, boto3_client, time_time):
+        '''
+        '''
+        storage, upload = unittest.mock.Mock(), unittest.mock.Mock()
+        storage.to_event.return_value = dict()
+        upload.to_dict.return_value = dict(start_time=1)
+        
+        postread_calculate.start_slice_observer_lambda(storage, upload,
+            ['data/XX/slices/a.geojson', 'data/XX/slices/b.geojson'])
+        
+        put_calls = storage.s3.put_object.mock_calls
+        self.assertEqual(len(put_calls), 1)
+        self.assertTrue(put_calls[0][2]['Key'].endswith('/assignments.json'))
         self.assertEqual(len(boto3_client.return_value.invoke.mock_calls), 1)
         self.assertIn(b'"start_time": 1', boto3_client.return_value.invoke.mock_calls[0][2]['Payload'])
     

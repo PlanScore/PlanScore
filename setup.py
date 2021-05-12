@@ -16,10 +16,13 @@ setup(
             'data/*.*',
             'data/*/*/*/*.geojson',
             'data/*/tiles/*/*/*.geojson',
+            'data/*/slices/*.json',
             'data/*-graphs/*/*.pickle',
             'data/uploads/sample-plan/districts/?.json',
             'data/uploads/sample-plan/tiles/*/*/*.json',
             'data/uploads/sample-plan/geometries/?.wkt'
+            'data/uploads/sample-plan3/slices/*.json',
+            'data/uploads/sample-plan3/assignments/?.txt'
             ],
         },
     install_requires = [

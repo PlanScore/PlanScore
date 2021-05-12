@@ -1,6 +1,6 @@
 import unittest, unittest.mock, os, json, io, gzip, itertools, collections
 import osgeo.ogr, botocore.exceptions
-from .. import tiles, data, constants
+from .. import run_tile, data, constants
 
 should_gzip = itertools.cycle([True, False])
 
@@ -17,28 +17,28 @@ def mock_s3_get_object(Bucket, Key):
         else:
             return {'Body': io.BytesIO(file.read())}
 
-class TestTiles (unittest.TestCase):
+class TestRunTile (unittest.TestCase):
 
     def test_get_tile_zxy(self):
         '''
         '''
         prefix1, key1 = 'data/XX/002', 'data/XX/002/tiles/12/2047/2047.geojson'
-        self.assertEqual(tiles.get_tile_zxy(prefix1, key1), '12/2047/2047')
+        self.assertEqual(run_tile.get_tile_zxy(prefix1, key1), '12/2047/2047')
 
         # Old-style without the "tiles" path element
         prefix2, key2 = 'data/XX/002', 'data/XX/002/12/2047/2047.geojson'
-        self.assertEqual(tiles.get_tile_zxy(prefix2, key2), '12/2047/2047')
+        self.assertEqual(run_tile.get_tile_zxy(prefix2, key2), '12/2047/2047')
     
     def test_tile_geometry(self):
         ''' Correct tile geometries are returned from tile_geometry().
         '''
-        w1, e1, s1, n1 = tiles.tile_geometry('0/0/0').GetEnvelope()
+        w1, e1, s1, n1 = run_tile.tile_geometry('0/0/0').GetEnvelope()
         self.assertAlmostEqual(w1, -180, 9)
         self.assertAlmostEqual(e1,  180, 9)
         self.assertAlmostEqual(s1, -85.051128780, 9)
         self.assertAlmostEqual(n1,  85.051128780, 9)
 
-        w2, e2, s2, n2 = tiles.tile_geometry('12/656/1582').GetEnvelope()
+        w2, e2, s2, n2 = run_tile.tile_geometry('12/656/1582').GetEnvelope()
         self.assertAlmostEqual(w2, -122.34375, 9)
         self.assertAlmostEqual(e2, -122.255859375, 9)
         self.assertAlmostEqual(s2, 37.788081384120, 9)
@@ -57,7 +57,7 @@ class TestTiles (unittest.TestCase):
             {'Key': "uploads/sample-plan/geometries/1.wkt"}
             ]}
 
-        geometries = tiles.load_upload_geometries(storage, upload)
+        geometries = run_tile.load_upload_geometries(storage, upload)
 
         self.assertEqual(len(geometries), 2)
         self.assertIn("uploads/sample-plan/geometries/0.wkt", geometries)
@@ -73,14 +73,14 @@ class TestTiles (unittest.TestCase):
         s3.get_object.side_effect = mock_s3_get_object
         storage = data.Storage(s3, 'bucket-name', 'XX-oldstyle')
 
-        precincts1 = tiles.load_tile_precincts(storage, '10/511/511')
+        precincts1 = run_tile.load_tile_precincts(storage, '10/511/511')
         
         call1, call2 = s3.get_object.mock_calls
         self.assertEqual(call1[2], dict(Bucket='bucket-name', Key='XX-oldstyle/tiles/10/511/511.geojson'))
         self.assertEqual(call2[2], dict(Bucket='bucket-name', Key='XX-oldstyle/10/511/511.geojson'))
         self.assertEqual(len(precincts1), 3)
 
-        precincts2 = tiles.load_tile_precincts(storage, '12/-1/-1')
+        precincts2 = run_tile.load_tile_precincts(storage, '12/-1/-1')
         self.assertEqual(len(precincts2), 0)
     
     def test_load_tile_precincts(self):
@@ -90,14 +90,14 @@ class TestTiles (unittest.TestCase):
         s3.get_object.side_effect = mock_s3_get_object
         storage = data.Storage(s3, 'bucket-name', 'XX')
 
-        precincts1 = tiles.load_tile_precincts(storage, '7/64/64')
+        precincts1 = run_tile.load_tile_precincts(storage, '7/64/64')
         s3.get_object.assert_called_once_with(Bucket='bucket-name', Key='XX/tiles/7/64/64.geojson')
         self.assertEqual(len(precincts1), 3)
 
-        precincts2 = tiles.load_tile_precincts(storage, '12/-1/-1')
+        precincts2 = run_tile.load_tile_precincts(storage, '12/-1/-1')
         self.assertEqual(len(precincts2), 0)
     
-    @unittest.mock.patch('planscore.tiles.score_precinct')
+    @unittest.mock.patch('planscore.run_tile.score_precinct')
     def test_score_district(self, score_precinct):
         ''' Correct values appears in totals dict after scoring a district.
         '''
@@ -108,14 +108,14 @@ class TestTiles (unittest.TestCase):
         intersection = district_geom.Intersection.return_value
         district_geom.Disjoint.return_value = False
 
-        totals = tiles.score_district(district_geom, precincts, tile_geom)
+        totals = run_tile.score_district(district_geom, precincts, tile_geom)
         self.assertEqual(totals['Voters'], round(2.222222222, constants.ROUND_COUNT))
         
         self.assertEqual(len(score_precinct.mock_calls), 2)
         self.assertEqual(score_precinct.mock_calls[0][1], (intersection, precincts[0], tile_geom))
         self.assertEqual(score_precinct.mock_calls[1][1], (intersection, precincts[1], tile_geom))
     
-    @unittest.mock.patch('planscore.tiles.score_precinct')
+    @unittest.mock.patch('planscore.run_tile.score_precinct')
     def test_score_district_disjoint(self, score_precinct):
         ''' No precincts are scored for a disjoint tile/district.
         '''
@@ -123,7 +123,7 @@ class TestTiles (unittest.TestCase):
         precincts = [unittest.mock.Mock(), unittest.mock.Mock()]
         district_geom.Disjoint.return_value = True
 
-        tiles.score_district(district_geom, precincts, tile_geom)
+        run_tile.score_district(district_geom, precincts, tile_geom)
         self.assertEqual(len(score_precinct.mock_calls), 0)
     
     def test_score_precinct(self):
@@ -135,8 +135,8 @@ class TestTiles (unittest.TestCase):
         
         # Check each overlapping tile
         for tile_zxy in ('12/2047/2047', '12/2047/2048', '12/2048/2047', '12/2048/2048'):
-            tile_geom = tiles.tile_geometry(tile_zxy)
-            tile_totals = tiles.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
+            tile_geom = run_tile.tile_geometry(tile_zxy)
+            tile_totals = run_tile.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
             for (key, value) in tile_totals.items():
                 totals[key] += value
         
@@ -157,8 +157,8 @@ class TestTiles (unittest.TestCase):
         
         # Check each overlapping tile
         for tile_zxy in ('12/2047/2047', '12/2047/2048', '12/2048/2047', '12/2048/2048'):
-            tile_geom = tiles.tile_geometry(tile_zxy)
-            tile_totals = tiles.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
+            tile_geom = run_tile.tile_geometry(tile_zxy)
+            tile_totals = run_tile.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
             for (key, value) in tile_totals.items():
                 totals[key] += value
         
@@ -176,8 +176,8 @@ class TestTiles (unittest.TestCase):
         
         # Check each overlapping tile
         for tile_zxy in ('12/2047/2047', '12/2047/2048', '12/2048/2047', '12/2048/2048'):
-            tile_geom = tiles.tile_geometry(tile_zxy)
-            tile_totals = tiles.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
+            tile_geom = run_tile.tile_geometry(tile_zxy)
+            tile_totals = run_tile.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
             for (key, value) in tile_totals.items():
                 totals[key] += value
         
@@ -206,130 +206,130 @@ class TestTiles (unittest.TestCase):
         ''' Correct voter count for a precinct from tile within district.
         '''
         district_geom = osgeo.ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,1 1,1 -1,-1 -1))')
-        tile_geom = tiles.tile_geometry('12/2048/2047')
+        tile_geom = run_tile.tile_geometry('12/2048/2047')
         self.assertTrue(district_geom.Contains(tile_geom))
 
         precinct = {"type": "Feature", "properties": {"Voters": 1, "PlanScore:Fraction": 0.5}, "geometry": {"type": "Polygon", "coordinates": [[[.02, .02], [.02, .06], [.06, .06], [.06, .02], [.02, .02]]]}}
-        totals = tiles.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
+        totals = run_tile.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
         self.assertAlmostEqual(totals['Voters'], .5, 9)
     
     def test_score_precinct_2a_tile_overlaps_precinct_within(self):
         ''' Correct voter count for a precinct within district from tile overlapping district.
         '''
         district_geom = osgeo.ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,0.17 1,0.17 -1,-1 -1))')
-        tile_geom = tiles.tile_geometry('12/2049/2046')
+        tile_geom = run_tile.tile_geometry('12/2049/2046')
         self.assertFalse(district_geom.Contains(tile_geom))
 
         precinct = {"type": "Feature", "properties": {"Voters": 1, "PlanScore:Fraction": 0.5}, "geometry": {"type": "Polygon", "coordinates": [[[.12, .12], [.12, .16], [.16, .16], [.16, .12], [.12, .12]]]}}
-        totals = tiles.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
+        totals = run_tile.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
         self.assertAlmostEqual(totals['Voters'], .5, 9)
     
     def test_score_precinct_2b_tile_overlaps_precinct_overlaps(self):
         ''' Correct voter count for a precinct overlapping district from tile overlapping district.
         '''
         district_geom = osgeo.ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,0.14 1,0.14 -1,-1 -1))')
-        tile_geom = tiles.tile_geometry('12/2049/2046')
+        tile_geom = run_tile.tile_geometry('12/2049/2046')
         self.assertFalse(district_geom.Contains(tile_geom))
 
         precinct = {"type": "Feature", "properties": {"Voters": 1, "PlanScore:Fraction": 0.5}, "geometry": {"type": "Polygon", "coordinates": [[[.12, .12], [.12, .16], [.16, .16], [.16, .12], [.12, .12]]]}}
-        totals = tiles.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
+        totals = run_tile.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
         self.assertAlmostEqual(totals['Voters'], .25, 9)
     
     def test_score_precinct_2c_tile_overlaps_precinct_touches(self):
         ''' Correct voter count for a precinct touching district from tile overlapping district.
         '''
         district_geom = osgeo.ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,0.12 1,0.12 -1,-1 -1))')
-        tile_geom = tiles.tile_geometry('12/2049/2046')
+        tile_geom = run_tile.tile_geometry('12/2049/2046')
         self.assertFalse(district_geom.Contains(tile_geom))
 
         precinct = {"type": "Feature", "properties": {"Voters": 1, "PlanScore:Fraction": 0.5}, "geometry": {"type": "Polygon", "coordinates": [[[.12, .12], [.12, .16], [.16, .16], [.16, .12], [.12, .12]]]}}
-        totals = tiles.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
+        totals = run_tile.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
         self.assertAlmostEqual(totals['Voters'], 0., 9)
     
     def test_score_precinct_2d_tile_overlaps_precinct_outside(self):
         ''' Correct voter count for a precinct outside district from tile overlapping district.
         '''
         district_geom = osgeo.ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,0.11 1,0.11 -1,-1 -1))')
-        tile_geom = tiles.tile_geometry('12/2049/2046')
+        tile_geom = run_tile.tile_geometry('12/2049/2046')
         self.assertFalse(district_geom.Contains(tile_geom))
 
         precinct = {"type": "Feature", "properties": {"Voters": 1, "PlanScore:Fraction": 0.5}, "geometry": {"type": "Polygon", "coordinates": [[[.12, .12], [.12, .16], [.16, .16], [.16, .12], [.12, .12]]]}}
-        totals = tiles.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
+        totals = run_tile.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
         self.assertAlmostEqual(totals['Voters'], 0., 9)
     
     def test_score_precinct_2e_tile_overlaps_blockpoint_within(self):
         ''' Correct voter count for a block-point within district from tile overlapping district.
         '''
         district_geom = osgeo.ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,0.17 1,0.17 -1,-1 -1))')
-        tile_geom = tiles.tile_geometry('12/2049/2046')
+        tile_geom = run_tile.tile_geometry('12/2049/2046')
         self.assertFalse(district_geom.Contains(tile_geom))
 
         blockpoint = {"type": "Feature", "properties": {"Voters": 1}, "geometry": {"type": "Point", "coordinates": [.14, .14]}}
-        totals = tiles.score_precinct(district_geom.Intersection(tile_geom), blockpoint, tile_geom)
+        totals = run_tile.score_precinct(district_geom.Intersection(tile_geom), blockpoint, tile_geom)
         self.assertAlmostEqual(totals['Voters'], 1, 9)
     
     def test_score_precinct_2f_tile_overlaps_blockpoint_outside(self):
         ''' Correct voter count for a block-point outside district from tile overlapping district.
         '''
         district_geom = osgeo.ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,0.11 1,0.11 -1,-1 -1))')
-        tile_geom = tiles.tile_geometry('12/2049/2046')
+        tile_geom = run_tile.tile_geometry('12/2049/2046')
         self.assertFalse(district_geom.Contains(tile_geom))
 
         blockpoint = {"type": "Feature", "properties": {"Voters": 1}, "geometry": {"type": "Point", "coordinates": [.14, .14]}}
-        totals = tiles.score_precinct(district_geom.Intersection(tile_geom), blockpoint, tile_geom)
+        totals = run_tile.score_precinct(district_geom.Intersection(tile_geom), blockpoint, tile_geom)
         self.assertAlmostEqual(totals['Voters'], 0., 9)
     
     def test_score_precinct_3_tile_touches(self):
         ''' Correct voter count for a precinct from tile touching district.
         '''
         district_geom = osgeo.ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,0.087890625 1,0.087890625 -1,-1 -1))')
-        tile_geom = tiles.tile_geometry('12/2049/2046')
+        tile_geom = run_tile.tile_geometry('12/2049/2046')
         self.assertFalse(district_geom.Contains(tile_geom))
 
         precinct = {"type": "Feature", "properties": {"Voters": 1, "PlanScore:Fraction": 0.5}, "geometry": {"type": "Polygon", "coordinates": [[[.12, .12], [.12, .16], [.16, .16], [.16, .12], [.12, .12]]]}}
-        totals = tiles.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
+        totals = run_tile.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
         self.assertAlmostEqual(totals['Voters'], 0., 9)
     
     def test_score_precinct_4_tile_outside(self):
         ''' Correct voter count for a precinct from tile outside district.
         '''
         district_geom = osgeo.ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,1 1,1 -1,-1 -1))')
-        tile_geom = tiles.tile_geometry('12/2059/2047')
+        tile_geom = run_tile.tile_geometry('12/2059/2047')
         self.assertFalse(district_geom.Contains(tile_geom))
 
         precinct = {"type": "Feature", "properties": {"Voters": 1, "PlanScore:Fraction": 0.5}, "geometry": {"type": "Polygon", "coordinates": [[[.02, .02], [.02, .06], [.06, .06], [.06, .02], [.02, .02]]]}}
-        totals = tiles.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
+        totals = run_tile.score_precinct(district_geom.Intersection(tile_geom), precinct, tile_geom)
         self.assertAlmostEqual(totals['Voters'], 0., 9)
     
     def test_score_precinct_5_blockpoint_within(self):
         ''' Correct voter count for a block-point from tile within district.
         '''
         district_geom = osgeo.ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,1 1,1 -1,-1 -1))')
-        tile_geom = tiles.tile_geometry('12/2048/2047')
+        tile_geom = run_tile.tile_geometry('12/2048/2047')
         self.assertTrue(district_geom.Contains(tile_geom))
 
         blockpoint = {"type": "Feature", "properties": {"Voters": 1}, "geometry": {"type": "Point", "coordinates": [.04, .04]}}
-        totals = tiles.score_precinct(district_geom.Intersection(tile_geom), blockpoint, tile_geom)
+        totals = run_tile.score_precinct(district_geom.Intersection(tile_geom), blockpoint, tile_geom)
         self.assertAlmostEqual(totals['Voters'], 1, 9)
     
     def test_score_precinct_6_blockpoint_outside(self):
         ''' Correct voter count for a block-point from tile outside district.
         '''
         district_geom = osgeo.ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,1 1,1 -1,-1 -1))')
-        tile_geom = tiles.tile_geometry('12/2059/2047')
+        tile_geom = run_tile.tile_geometry('12/2059/2047')
         self.assertFalse(district_geom.Contains(tile_geom))
 
         blockpoint = {"type": "Feature", "properties": {"Voters": 1}, "geometry": {"type": "Point", "coordinates": [1.00, 0.05]}}
-        totals = tiles.score_precinct(district_geom.Intersection(tile_geom), blockpoint, tile_geom)
+        totals = run_tile.score_precinct(district_geom.Intersection(tile_geom), blockpoint, tile_geom)
         self.assertAlmostEqual(totals['Voters'], 0., 9)
     
     def test_score_precinct_7_empty(self):
         ''' Correct voter count for an empty geometry from tile within district.
         '''
         district_geom = osgeo.ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,1 1,1 -1,-1 -1))')
-        tile_geom = tiles.tile_geometry('12/2048/2047')
+        tile_geom = run_tile.tile_geometry('12/2048/2047')
         self.assertTrue(district_geom.Contains(tile_geom))
 
         empty = {"type": "Feature", "properties": {"Voters": 1}, "geometry": {"type": "GeometryCollection", "geometries": [ ]}}
-        totals = tiles.score_precinct(district_geom.Intersection(tile_geom), empty, tile_geom)
+        totals = run_tile.score_precinct(district_geom.Intersection(tile_geom), empty, tile_geom)
         self.assertAlmostEqual(totals['Voters'], 0., 9)

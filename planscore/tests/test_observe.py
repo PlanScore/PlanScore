@@ -64,8 +64,8 @@ class TestObserveTiles (unittest.TestCase):
         storage, upload = unittest.mock.Mock(), unittest.mock.Mock()
         upload.id = 'fake-id'
         observe.put_tile_timings(storage, upload, [
-            observe.Tile(None, dict(start_time=1.1, elapsed_time=2.2, features=3)),
-            observe.Tile(None, dict(start_time=4.4, elapsed_time=5.5, features=6)),
+            observe.SubTotal(None, dict(start_time=1.1, elapsed_time=2.2, features=3)),
+            observe.SubTotal(None, dict(start_time=4.4, elapsed_time=5.5, features=6)),
         ])
         
         (put_call, ) = storage.s3.put_object.mock_calls
@@ -82,10 +82,27 @@ class TestObserveTiles (unittest.TestCase):
         upload.model.key_prefix = 'data/XX'
         upload.id = 'ID'
         
-        enqueued_key = 'data/XX/12/656/1582.geojson'
-        expected_key = 'uploads/ID/tiles/12/656/1582.json'
+        enqueued_key1 = 'data/XX/12/656/1582.geojson'
+        expected_key1 = 'uploads/ID/tiles/12/656/1582.json'
         
-        self.assertEqual(observe.get_expected_tile(enqueued_key, upload), expected_key)
+        self.assertEqual(observe.get_expected_tile(enqueued_key1, upload), expected_key1)
+        
+        enqueued_key2 = 'data/XX/tiles/12/656/1582.geojson'
+        expected_key2 = 'uploads/ID/tiles/12/656/1582.json'
+        
+        self.assertEqual(observe.get_expected_tile(enqueued_key2, upload), expected_key2)
+    
+    def test_expected_slice(self):
+        ''' Expected slice is returned for an enqueued one.
+        '''
+        upload = unittest.mock.Mock()
+        upload.model.key_prefix = 'data/XX'
+        upload.id = 'ID'
+        
+        enqueued_key = 'data/XX/slices/0000001.json'
+        expected_key = 'uploads/ID/slices/0000001.json'
+        
+        self.assertEqual(observe.get_expected_slice(enqueued_key, upload), expected_key)
     
     def test_get_district_index(self):
         '''
@@ -99,6 +116,13 @@ class TestObserveTiles (unittest.TestCase):
         
         with self.assertRaises(ValueError):
             observe.get_district_index('uploads/ID/geometries/xx.wkt', upload)
+        
+        self.assertEqual(observe.get_district_index('uploads/ID/assignments/0.txt', upload), 0)
+        self.assertEqual(observe.get_district_index('uploads/ID/assignments/09.txt', upload), 9)
+        self.assertEqual(observe.get_district_index('uploads/ID/assignments/11.txt', upload), 11)
+
+        with self.assertRaises(ValueError):
+            observe.get_district_index('uploads/ID/assignments/xx.txt', upload)
     
     def test_load_upload_geometries(self):
         ''' Expected geometries are retrieved from S3.
@@ -133,7 +157,7 @@ class TestObserveTiles (unittest.TestCase):
         self.assertEqual(districts[0]['compactness'], get_scores.return_value)
     
     @unittest.mock.patch('sys.stdout')
-    def test_iterate_tile_totals(self, stdout):
+    def test_iterate_tile_subtotals(self, stdout):
         ''' Expected counts are returned from tiles.
         '''
         upload = unittest.mock.Mock()
@@ -146,17 +170,17 @@ class TestObserveTiles (unittest.TestCase):
         expected_tiles = [f'uploads/sample-plan/tiles/{zxy}.json' for zxy
             in ('12/2047/2047', '12/2047/2048', '12/2048/2047', '12/2048/2048')]
         
-        tile_totals = list(observe.iterate_tile_totals(expected_tiles, storage, upload, context))
+        subtotals = list(observe.iterate_tile_subtotals(expected_tiles, storage, upload, context))
         
-        self.assertEqual(len(tile_totals), 4)
-        self.assertEqual(tile_totals[0].totals['uploads/sample-plan/geometries/0.wkt']['Voters'], 252.45)
-        self.assertEqual(tile_totals[1].totals['uploads/sample-plan/geometries/0.wkt']['Voters'], 314.64)
-        self.assertNotIn('Voters', tile_totals[2].totals['uploads/sample-plan/geometries/0.wkt'])
-        self.assertNotIn('Voters', tile_totals[3].totals['uploads/sample-plan/geometries/0.wkt'])
-        self.assertEqual(tile_totals[0].totals['uploads/sample-plan/geometries/1.wkt']['Voters'],  87.2)
-        self.assertEqual(tile_totals[1].totals['uploads/sample-plan/geometries/1.wkt']['Voters'],  15.94)
-        self.assertEqual(tile_totals[2].totals['uploads/sample-plan/geometries/1.wkt']['Voters'], 455.99)
-        self.assertEqual(tile_totals[3].totals['uploads/sample-plan/geometries/1.wkt']['Voters'], 373.76)
+        self.assertEqual(len(subtotals), 4)
+        self.assertEqual(subtotals[0].totals['uploads/sample-plan/geometries/0.wkt']['Voters'], 252.45)
+        self.assertEqual(subtotals[1].totals['uploads/sample-plan/geometries/0.wkt']['Voters'], 314.64)
+        self.assertNotIn('Voters', subtotals[2].totals['uploads/sample-plan/geometries/0.wkt'])
+        self.assertNotIn('Voters', subtotals[3].totals['uploads/sample-plan/geometries/0.wkt'])
+        self.assertEqual(subtotals[0].totals['uploads/sample-plan/geometries/1.wkt']['Voters'],  87.2)
+        self.assertEqual(subtotals[1].totals['uploads/sample-plan/geometries/1.wkt']['Voters'],  15.94)
+        self.assertEqual(subtotals[2].totals['uploads/sample-plan/geometries/1.wkt']['Voters'], 455.99)
+        self.assertEqual(subtotals[3].totals['uploads/sample-plan/geometries/1.wkt']['Voters'], 373.76)
     
     @unittest.mock.patch('sys.stdout')
     def test_iterate_tile_totals2(self, stdout):
@@ -172,7 +196,7 @@ class TestObserveTiles (unittest.TestCase):
         expected_tiles = [f'uploads/sample-plan2/tiles/{zxy}.json' for zxy
             in ('9/255/255', '9/255/256', '9/256/255', '9/256/256')]
         
-        tile_totals = list(observe.iterate_tile_totals(expected_tiles, storage, upload, context))
+        tile_totals = list(observe.iterate_tile_subtotals(expected_tiles, storage, upload, context))
         
         self.assertEqual(len(tile_totals), 4)
         self.assertEqual(tile_totals[0].totals['uploads/sample-plan2/geometries/0.wkt']['Voters'], 252.45)
@@ -184,7 +208,26 @@ class TestObserveTiles (unittest.TestCase):
         self.assertEqual(tile_totals[2].totals['uploads/sample-plan2/geometries/1.wkt']['Voters'], 455.99)
         self.assertEqual(tile_totals[3].totals['uploads/sample-plan2/geometries/1.wkt']['Voters'], 373.76)
     
-    def test_accumulate_district_totals(self):
+    @unittest.mock.patch('sys.stdout')
+    def test_iterate_slice_subtotals(self, stdout):
+        ''' Expected counts are returned from slices.
+        '''
+        upload = unittest.mock.Mock()
+        context = unittest.mock.Mock()
+        context.get_remaining_time_in_millis.return_value = 9999
+        
+        storage = unittest.mock.Mock()
+        storage.s3.get_object.side_effect = mock_s3_get_object
+
+        expected_slices = ['uploads/sample-plan3/slices/0000000001.json']
+        
+        subtotals = list(observe.iterate_slice_subtotals(expected_slices, storage, upload, context))
+        
+        self.assertEqual(len(subtotals), 1)
+        self.assertEqual(subtotals[0].totals['uploads/sample-plan3/assignments/0.txt']['Population 2010'], 22)
+        self.assertEqual(subtotals[0].totals['uploads/sample-plan3/assignments/1.txt']['Population 2010'], 33)
+    
+    def test_accumulate_district_subtotals(self):
         '''
         '''
         upload = unittest.mock.Mock()
@@ -196,13 +239,13 @@ class TestObserveTiles (unittest.TestCase):
             filename = os.path.join(os.path.dirname(__file__), 'data', tile_key)
             with open(filename) as file:
                 content = json.load(file)
-                inputs.append(observe.Tile(
+                inputs.append(observe.SubTotal(
                     content.get('totals'),
                     content.get('timing'),
                 ))
         
         upload.districts = [None, None]
-        districts1 = observe.accumulate_district_totals(inputs, upload)
+        districts1 = observe.accumulate_district_subtotals(inputs, upload)
         
         self.assertEqual(len(districts1), 2)
         self.assertNotIn('compactness', districts1[0])
@@ -215,7 +258,7 @@ class TestObserveTiles (unittest.TestCase):
         self.assertAlmostEqual(districts1[1]['totals']['Household Income 2016'], 59000, -1)
 
         upload.districts = [{'compactness': True}, {'compactness': False}]
-        districts2 = observe.accumulate_district_totals(inputs, upload)
+        districts2 = observe.accumulate_district_subtotals(inputs, upload)
         
         self.assertEqual(len(districts2), 2)
         self.assertTrue(districts2[0]['compactness'])
@@ -224,7 +267,7 @@ class TestObserveTiles (unittest.TestCase):
         self.assertEqual(districts2[1]['totals']['Voters'], 932.89)
 
         upload.districts = [{'totals': {'X': 1}}, {'totals': {'X': 2}}]
-        districts3 = observe.accumulate_district_totals(inputs, upload)
+        districts3 = observe.accumulate_district_subtotals(inputs, upload)
         
         self.assertEqual(len(districts3), 2)
         self.assertNotIn('compactness', districts3[0])
@@ -249,13 +292,13 @@ class TestObserveTiles (unittest.TestCase):
         self.assertEqual(totals4['Households 2016'], 1000)
         self.assertEqual(totals4['Voters'], 2000)
     
-    def test_clean_up_tiles(self):
+    def test_clean_up_leftover_parts(self):
         '''
         '''
         storage = unittest.mock.Mock()
         tile_keys = ['foo'] * 1001
 
-        observe.clean_up_tiles(storage, tile_keys)
+        observe.clean_up_leftover_parts(storage, tile_keys)
         
         (delete_call1, delete_call2) = storage.s3.delete_objects.mock_calls
         
