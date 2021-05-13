@@ -29,12 +29,12 @@ jobs:
   # Ensure that packages can be built in deploy step
   Build:
     machine:
-      image: ubuntu-2004:202101-01
+      image: ubuntu-1604:201903-01
     working_directory: ~/repo
     steps:
       - checkout
       # Install Python things
-      - run: pyenv global 3.9.1
+      - run: pyenv global 3.6.5
       - restore_cache:
           key: build-dependencies-py-{{ checksum "setup.py" }}
       - run: pip3 install -U pip
@@ -42,7 +42,7 @@ jobs:
       - save_cache:
           key: build-dependencies-py-{{ checksum "setup.py" }}
           paths:
-            - /opt/circleci/.pyenv/versions/3.9.1
+            - /opt/circleci/.pyenv/versions/3.6.5
       # Build PlanScore thing
       - run: make planscore-lambda.zip
       - run: python3 -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
@@ -62,8 +62,12 @@ jobs:
       # Install Python things
       - run: pyenv global 3.9.1
       - restore_cache:
-          key: build-dependencies-py-{{ checksum "setup.py" }}
+          key: deploy-dependencies-py-{{ checksum "setup.py" }}
       - run: pip3 install '.[deploy]'
+      - save_cache:
+          key: deploy-dependencies-py-{{ checksum "setup.py" }}
+          paths:
+            - /opt/circleci/.pyenv/versions/3.9.1
       # Install Node things (not slow enough to cache)
       - run: npm install -g aws-cdk
       # Build PlanScore thing

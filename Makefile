@@ -1,6 +1,7 @@
 all:
 
 live-deploy: planscore-lambda.zip
+	./cdk-deploy.sh cf-canary
 	./cdk-deploy.sh cf-production
 
 dev-deploy: planscore-lambda.zip
