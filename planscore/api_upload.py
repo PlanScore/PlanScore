@@ -80,6 +80,8 @@ def lambda_handler(event, context):
     except json.decoder.JSONDecodeError:
         status, body = '400', json.dumps(dict(message='Bad GeoJSON input'))
     else:
+        print('event[path]:', event['path'])
+        print('event:', event)
         result = kick_it_off(geojson)
         status, body = '200', json.dumps(result, indent=2)
     
