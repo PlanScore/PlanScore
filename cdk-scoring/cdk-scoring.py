@@ -517,18 +517,18 @@ class PlanScoreScoring(cdk.Stack):
             authorizer=token_authorizer,
         )
 
-        #upload_temporary_resource = upload_resource.add_resource(
-        #    'temporary',
-        #    default_cors_preflight_options=aws_apigateway.CorsOptions(
-        #        allow_origins=aws_apigateway.Cors.ALL_ORIGINS,
-        #    ),
-        #)
-        #
-        #upload_temporary_resource.add_method(
-        #    "POST",
-        #    api_upload_integration,
-        #    authorizer=token_authorizer,
-        #)
+        upload_temporary_resource = upload_resource.add_resource(
+            'temporary',
+            default_cors_preflight_options=aws_apigateway.CorsOptions(
+                allow_origins=aws_apigateway.Cors.ALL_ORIGINS,
+            ),
+        )
+
+        upload_temporary_resource.add_method(
+            "POST",
+            api_upload_integration,
+            authorizer=token_authorizer,
+        )
 
         preread_integration = aws_apigateway.LambdaIntegration(
             preread,
