@@ -4,7 +4,7 @@ More details on browser-based S3 uploads using HTTP POST:
 
     http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-post-example.html
 '''
-import json, pprint, urllib.parse, datetime, random, os
+import json, pprint, urllib.parse, datetime, random, os, uuid
 import boto3, itsdangerous
 from . import util, data, constants, website
 
@@ -75,15 +75,20 @@ def get_upload_fields(s3, creds, api_base, secret):
     
     return presigned['url'], presigned['fields']
 
-def generate_signed_id(secret):
+def generate_signed_id(secret, temporary=False):
     ''' Generate a unique ID with a signature.
     
         We want this to include date for sorting, be a valid ISO-8601 datetime,
         and to use a big random number for fake nanosecond accuracy to increase
         likelihood of uniqueness.
+        
+        When asking for a temporary id, use a UUID4 and prefix with "temporary-".
     '''
-    now, nsec = datetime.datetime.utcnow(), random.randint(0, 999999999)
-    identifier = '{}.{:09d}Z'.format(now.strftime('%Y%m%dT%H%M%S'), nsec)
+    if temporary:
+        identifier = 'temporary-{}'.format(str(uuid.uuid4()))
+    else:
+        now, nsec = datetime.datetime.utcnow(), random.randint(0, 999999999)
+        identifier = '{}.{:09d}Z'.format(now.strftime('%Y%m%dT%H%M%S'), nsec)
     signer = itsdangerous.Signer(secret)
     return identifier, signer.sign(identifier.encode('utf8')).decode('utf8')
 

@@ -10,7 +10,7 @@ from . import preread_followup
 from . import postread_callback
 from . import postread_calculate
 
-def kick_it_off(geojson):
+def kick_it_off(geojson, temporary):
     '''
     '''
     s3 = boto3.client('s3')
@@ -18,7 +18,7 @@ def kick_it_off(geojson):
     
     # check auth header or whatever
 
-    unsigned_id, _ = upload_fields.generate_signed_id('no sig, no secret')
+    unsigned_id, _ = upload_fields.generate_signed_id('no sig, no secret', temporary)
     upload_key = data.UPLOAD_PREFIX.format(id=unsigned_id) + 'plan.geojson'
     index_key = data.UPLOAD_INDEX_KEY.format(id=unsigned_id)
     index_url = constants.S3_URL_PATTERN.format(b=constants.S3_BUCKET, k=index_key)
@@ -80,7 +80,8 @@ def lambda_handler(event, context):
     except json.decoder.JSONDecodeError:
         status, body = '400', json.dumps(dict(message='Bad GeoJSON input'))
     else:
-        result = kick_it_off(geojson)
+        temporary = event['path'].endswith('/temporary')
+        result = kick_it_off(geojson, temporary)
         status, body = '200', json.dumps(result, indent=2)
     
     return {
