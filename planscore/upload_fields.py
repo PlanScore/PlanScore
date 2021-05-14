@@ -75,15 +75,18 @@ def get_upload_fields(s3, creds, api_base, secret):
     
     return presigned['url'], presigned['fields']
 
-def generate_signed_id(secret):
+def generate_signed_id(secret, temporary=False):
     ''' Generate a unique ID with a signature.
     
         We want this to include date for sorting, be a valid ISO-8601 datetime,
         and to use a big random number for fake nanosecond accuracy to increase
         likelihood of uniqueness.
     '''
-    now, nsec = datetime.datetime.utcnow(), random.randint(0, 999999999)
-    identifier = '{}.{:09d}Z'.format(now.strftime('%Y%m%dT%H%M%S'), nsec)
+    if temporary:
+        identifier = 'temporary-{:09d}'.format(random.randint(0, 999999999))
+    else:
+        now, nsec = datetime.datetime.utcnow(), random.randint(0, 999999999)
+        identifier = '{}.{:09d}Z'.format(now.strftime('%Y%m%dT%H%M%S'), nsec)
     signer = itsdangerous.Signer(secret)
     return identifier, signer.sign(identifier.encode('utf8')).decode('utf8')
 
