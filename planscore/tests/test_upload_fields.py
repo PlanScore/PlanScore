@@ -18,6 +18,15 @@ class TestUploadFields (unittest.TestCase):
         signer = itsdangerous.Signer('secret')
         self.assertTrue(signer.validate(signed_id))
         self.assertEqual(signer.sign(unsigned_id.encode('utf8')).decode('utf8'), signed_id)
+        self.assertFalse(unsigned_id.startswith('temporary-'))
+    
+    def test_generate_signed_id_temporary(self):
+        unsigned_id, signed_id = upload_fields.generate_signed_id('secret', True)
+        
+        signer = itsdangerous.Signer('secret')
+        self.assertTrue(signer.validate(signed_id))
+        self.assertEqual(signer.sign(unsigned_id.encode('utf8')).decode('utf8'), signed_id)
+        self.assertTrue(unsigned_id.startswith('temporary-'))
     
     def test_build_api_base(self):
         request1 = {"resourceId": "yd9tzg","authorizer": {"principalId": "user","integrationLatency": 14},"resourcePath": "/api-upload","httpMethod": "POST","extendedRequestId": "b8xMsGjhIAMFiOA=","customDomain": {"basePathMatched": "(none)"},"requestTime": "10/Mar/2021:02:29:49 +0000","path": "/api-upload","accountId": "466184106004","protocol": "HTTP/1.1","stage": "prod","domainPrefix": "api","requestTimeEpoch": 1615343389980,"requestId": "6b925bfd-64ad-4128-b876-41db491cb227","identity": {"cognitoIdentityPoolId": None,"accountId": None,"cognitoIdentityId": None,"caller": None,"sourceIp": "157.131.204.225","principalOrgId": None,"accessKey": None,"cognitoAuthenticationType": None,"cognitoAuthenticationProvider": None,"userArn": None,"userAgent": "curl/7.54.0","user": None},"domainName": "api.dev.planscore.org","apiId": "8vfhwtrj53"}
