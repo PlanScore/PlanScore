@@ -1,4 +1,4 @@
-import os, time, json, posixpath, io, gzip, collections, copy, csv, uuid
+import os, time, json, posixpath, io, gzip, collections, copy, csv, uuid, datetime
 import boto3, botocore.exceptions
 from . import data, constants, run_tile, run_slice, score, compactness
 import osgeo.ogr
@@ -186,20 +186,40 @@ def iterate_slice_subtotals(expected_slices, storage, upload, context):
 
     print('iterate_slice_subtotals: all slices complete')
 
-def put_tile_timings(storage, upload, tiles):
-    ''' Write a CSV report on tile timing
+def put_part_timings(storage, upload, tiles, part_type):
+    ''' Write a CSV report on tile and slice timing
     '''
-    key = data.UPLOAD_TIMING_KEY.format(id=upload.id)
+    ds = datetime.date.fromtimestamp(upload.start_time).strftime('%Y-%m-%d')
+    key = data.UPLOAD_TIMING_KEY.format(id=upload.id, ds=ds)
     
     buffer = io.StringIO()
-    out = csv.DictWriter(buffer, ('features', 'start_time', 'elapsed_time'))
-    out.writeheader()
+    out = csv.writer(buffer, dialect='excel-tab', quotechar='|', quoting=csv.QUOTE_MINIMAL)
     
     for tile in tiles:
-        out.writerow({k: tile.timing.get(k) for k in out.fieldnames})
+        out.writerow((
+            # ID string from generate_signed_id()
+            upload.id,
+
+            # Part type, "tile" or "slice"
+            part_type,
+
+            # Timing details
+            tile.timing['features'],
+            tile.timing['start_time'],
+            tile.timing['elapsed_time'],
+            
+            # Model state string
+            (upload.model.to_dict().get('state') if upload.model else None),
+            
+            # Model house string
+            (upload.model.to_dict().get('house') if upload.model else None),
+            
+            # Model JSON string
+            (upload.model.to_json() if upload.model else None),
+        ))
 
     storage.s3.put_object(Bucket=storage.bucket, Key=key,
-        Body=buffer.getvalue(), ContentType='text/csv', ACL='public-read')
+        Body=buffer.getvalue(), ContentType='text/plain', ACL='public-read')
 
 def accumulate_district_subtotals(part_subtotals, upload):
     ''' Return new district array for an upload, preserving existing values.
@@ -286,6 +306,7 @@ def lambda_handler(event, context):
     
         upload2 = upload1.clone()
         subtotals = list(iterate_slice_subtotals(expected_parts, storage, upload2, context))
+        part_type = 'slice'
 
     else:
         enqueued_parts = json.load(obj['Body'])
@@ -295,6 +316,7 @@ def lambda_handler(event, context):
         geometries = load_upload_geometries(storage, upload1)
         upload2 = upload1.clone(districts=populate_compactness(geometries))
         subtotals = list(iterate_tile_subtotals(expected_parts, storage, upload2, context))
+        part_type = 'tile'
 
     put_upload_index(storage, upload2.clone(
         message='Scoring this newly-uploaded plan.'
@@ -315,5 +337,5 @@ def lambda_handler(event, context):
     )
 
     put_upload_index(storage, complete_upload)
-    put_tile_timings(storage, upload2, subtotals)
+    put_part_timings(storage, upload2, subtotals, part_type)
     clean_up_leftover_parts(storage, expected_parts)
