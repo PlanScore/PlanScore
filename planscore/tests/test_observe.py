@@ -63,6 +63,7 @@ class TestObserveTiles (unittest.TestCase):
         '''
         storage, upload = unittest.mock.Mock(), unittest.mock.Mock()
         upload.id, upload.start_time = 'fake-id', 1621099219
+        upload.model = None
         observe.put_tile_timings(storage, upload, [
             observe.SubTotal(None, dict(start_time=1.1, elapsed_time=2.2, features=3)),
             observe.SubTotal(None, dict(start_time=4.4, elapsed_time=5.5, features=6)),
@@ -72,8 +73,8 @@ class TestObserveTiles (unittest.TestCase):
         
         self.assertEqual(put_call[2], dict(Bucket=storage.bucket,
             Key=data.UPLOAD_TIMING_KEY.format(id=upload.id, ds='2021-05-15'),
-            Body='3\t1.1\t2.2\r\n6\t4.4\t5.5\r\n',
-            ACL='public-read', ContentType='text/csv'))
+            Body='fake-id\t3\t1.1\t2.2\t\t\t\r\nfake-id\t6\t4.4\t5.5\t\t\t\r\n',
+            ACL='public-read', ContentType='text/plain'))
 
     def test_expected_tile(self):
         ''' Expected tile is returned for an enqueued one.

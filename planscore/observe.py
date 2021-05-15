@@ -197,13 +197,26 @@ def put_tile_timings(storage, upload, tiles):
     
     for tile in tiles:
         out.writerow((
+            # ID string from generate_signed_id()
+            upload.id,
+
+            # Timing details
             tile.timing['features'],
             tile.timing['start_time'],
             tile.timing['elapsed_time'],
+            
+            # Model state string
+            (upload.model.to_dict().get('state') if upload.model else None),
+            
+            # Model house string
+            (upload.model.to_dict().get('house') if upload.model else None),
+            
+            # Model JSON string
+            (upload.model.to_json() if upload.model else None),
         ))
 
     storage.s3.put_object(Bucket=storage.bucket, Key=key,
-        Body=buffer.getvalue(), ContentType='text/csv', ACL='public-read')
+        Body=buffer.getvalue(), ContentType='text/plain', ACL='public-read')
 
 def accumulate_district_subtotals(part_subtotals, upload):
     ''' Return new district array for an upload, preserving existing values.
