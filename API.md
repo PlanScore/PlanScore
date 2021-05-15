@@ -31,6 +31,14 @@ prediction with an optional `Incumbent` property:
 - `D` – Democratic incumbent
 - `O` – Open seat (default if unspecified)
 
+District plans shared with PlanScore are kept indefinitely. For score results
+that automatically disappear within a week, use the `/upload/temporary` endpoint:
+
+    curl --request POST \
+        --header 'Authorization: Bearer {TOKEN}' \
+        --data-binary @null-plan-incumbency.geojson \
+        https://api.planscore.org/upload/temporary
+
 ### Sample Response
 
 On success, two URLs will be returned in a JSON response:
