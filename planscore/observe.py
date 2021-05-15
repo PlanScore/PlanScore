@@ -186,8 +186,8 @@ def iterate_slice_subtotals(expected_slices, storage, upload, context):
 
     print('iterate_slice_subtotals: all slices complete')
 
-def put_tile_timings(storage, upload, tiles):
-    ''' Write a CSV report on tile timing
+def put_part_timings(storage, upload, tiles, part_type):
+    ''' Write a CSV report on tile and slice timing
     '''
     ds = datetime.date.fromtimestamp(upload.start_time).strftime('%Y-%m-%d')
     key = data.UPLOAD_TIMING_KEY.format(id=upload.id, ds=ds)
@@ -199,6 +199,9 @@ def put_tile_timings(storage, upload, tiles):
         out.writerow((
             # ID string from generate_signed_id()
             upload.id,
+
+            # Part type, "tile" or "slice"
+            part_type,
 
             # Timing details
             tile.timing['features'],
@@ -303,6 +306,7 @@ def lambda_handler(event, context):
     
         upload2 = upload1.clone()
         subtotals = list(iterate_slice_subtotals(expected_parts, storage, upload2, context))
+        part_type = 'slice'
 
     else:
         enqueued_parts = json.load(obj['Body'])
@@ -312,6 +316,7 @@ def lambda_handler(event, context):
         geometries = load_upload_geometries(storage, upload1)
         upload2 = upload1.clone(districts=populate_compactness(geometries))
         subtotals = list(iterate_tile_subtotals(expected_parts, storage, upload2, context))
+        part_type = 'tile'
 
     put_upload_index(storage, upload2.clone(
         message='Scoring this newly-uploaded plan.'
@@ -332,5 +337,5 @@ def lambda_handler(event, context):
     )
 
     put_upload_index(storage, complete_upload)
-    put_tile_timings(storage, upload2, subtotals)
+    put_part_timings(storage, upload2, subtotals, part_type)
     clean_up_leftover_parts(storage, expected_parts)

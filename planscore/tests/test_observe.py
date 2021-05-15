@@ -58,22 +58,22 @@ class TestObserveTiles (unittest.TestCase):
             Body=upload.to_logentry.return_value.encode.return_value,
             ACL='public-read', ContentType='text/plain'))
 
-    def test_put_tile_timings(self):
+    def test_put_part_timings(self):
         ''' Upload timing file is posted to S3
         '''
         storage, upload = unittest.mock.Mock(), unittest.mock.Mock()
         upload.id, upload.start_time = 'fake-id', 1621099219
         upload.model = None
-        observe.put_tile_timings(storage, upload, [
+        observe.put_part_timings(storage, upload, [
             observe.SubTotal(None, dict(start_time=1.1, elapsed_time=2.2, features=3)),
             observe.SubTotal(None, dict(start_time=4.4, elapsed_time=5.5, features=6)),
-        ])
+        ], 'mock')
         
         (put_call, ) = storage.s3.put_object.mock_calls
         
         self.assertEqual(put_call[2], dict(Bucket=storage.bucket,
             Key=data.UPLOAD_TIMING_KEY.format(id=upload.id, ds='2021-05-15'),
-            Body='fake-id\t3\t1.1\t2.2\t\t\t\r\nfake-id\t6\t4.4\t5.5\t\t\t\r\n',
+            Body='fake-id\tmock\t3\t1.1\t2.2\t\t\t\r\nfake-id\tmock\t6\t4.4\t5.5\t\t\t\r\n',
             ACL='public-read', ContentType='text/plain'))
 
     def test_expected_tile(self):
