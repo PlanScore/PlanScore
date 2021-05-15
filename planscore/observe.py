@@ -1,4 +1,4 @@
-import os, time, json, posixpath, io, gzip, collections, copy, csv, uuid
+import os, time, json, posixpath, io, gzip, collections, copy, csv, uuid, datetime
 import boto3, botocore.exceptions
 from . import data, constants, run_tile, run_slice, score, compactness
 import osgeo.ogr
@@ -189,14 +189,18 @@ def iterate_slice_subtotals(expected_slices, storage, upload, context):
 def put_tile_timings(storage, upload, tiles):
     ''' Write a CSV report on tile timing
     '''
-    key = data.UPLOAD_TIMING_KEY.format(id=upload.id)
+    ds = datetime.date.fromtimestamp(upload.start_time).strftime('%Y-%m-%d')
+    key = data.UPLOAD_TIMING_KEY.format(id=upload.id, ds=ds)
     
     buffer = io.StringIO()
-    out = csv.DictWriter(buffer, ('features', 'start_time', 'elapsed_time'))
-    out.writeheader()
+    out = csv.writer(out, dialect='excel-tab', quotechar='|', quoting=csv.QUOTE_MINIMAL)
     
     for tile in tiles:
-        out.writerow({k: tile.timing.get(k) for k in out.fieldnames})
+        out.writerow((
+            tile.timing['features'],
+            tile.timing['start_time'],
+            tile.timing['elapsed_time'],
+        ))
 
     storage.s3.put_object(Bucket=storage.bucket, Key=key,
         Body=buffer.getvalue(), ContentType='text/csv', ACL='public-read')

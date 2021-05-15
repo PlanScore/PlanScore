@@ -12,7 +12,7 @@ UPLOAD_TILE_INDEX_KEY = 'uploads/{id}/tiles.json'
 UPLOAD_ASSIGNMENT_INDEX_KEY = 'uploads/{id}/assignments.json'
 UPLOAD_TILES_KEY = 'uploads/{id}/tiles/{zxy}.json'
 UPLOAD_SLICES_KEY = 'uploads/{id}/slices/{geoid}.json'
-UPLOAD_TIMING_KEY = 'uploads/{id}/timing.csv'
+UPLOAD_TIMING_KEY = 'logs/timing/ds={ds}/{id}.txt'
 UPLOAD_LOGENTRY_KEY = 'logs/scoring/ds={ds}/{guid}.txt'
 
 class State (enum.Enum):
