@@ -193,7 +193,7 @@ def put_tile_timings(storage, upload, tiles):
     key = data.UPLOAD_TIMING_KEY.format(id=upload.id, ds=ds)
     
     buffer = io.StringIO()
-    out = csv.writer(out, dialect='excel-tab', quotechar='|', quoting=csv.QUOTE_MINIMAL)
+    out = csv.writer(buffer, dialect='excel-tab', quotechar='|', quoting=csv.QUOTE_MINIMAL)
     
     for tile in tiles:
         out.writerow((

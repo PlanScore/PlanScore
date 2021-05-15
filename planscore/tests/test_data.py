@@ -319,7 +319,7 @@ class TestData (unittest.TestCase):
         ''' data.Upload.logentry_key() correctly munges Upload.key
         '''
         upload = data.Upload(start_time=1607891802, id='ID', key='uploads/ID/upload/whatever.json')
-        self.assertEqual(upload.logentry_key('uuid4'), 'logs/ds=2020-12-13/uuid4.txt')
+        self.assertEqual(upload.logentry_key('uuid4'), 'logs/scoring/ds=2020-12-13/uuid4.txt')
     
     def test_upload_clone(self):
         ''' data.Upload.clone() returns a copy with the right properties
