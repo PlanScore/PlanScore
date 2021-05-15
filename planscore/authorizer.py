@@ -6,7 +6,7 @@ def lambda_handler(event, context):
     # Deny by default
     allowed = None
 
-    method_arn = event['methodArn']
+    api_arn, _ = event['methodArn'].split('/', 1)
     api_tokens = os.environ.get('API_TOKENS', '').split(',')
     
     if api_tokens == ['']:
@@ -33,7 +33,7 @@ def lambda_handler(event, context):
                 {
                     "Action": "execute-api:Invoke",
                     "Effect": 'Allow' if allowed else 'Deny',
-                    "Resource": method_arn,
+                    "Resource": f'{api_arn}/*/*',
                 }
             ]
         }
