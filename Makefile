@@ -18,6 +18,12 @@ planscore-lambda.zip: gdal-geos-numpy-python.tar.gz
 gdal-geos-numpy-python.tar.gz:
 	curl https://planscore.s3.amazonaws.com/code/gdal-2.1.3-geos-3.6.1-numpy-1.19.2-python-3.6.1.tar.gz -o $@ -s
 
+planscore/website/static/supported-states.svg: design/Upload-Map.svg planscore-svg
+	docker run --rm -it -v `pwd`:/vol -w /vol planscore-svg:latest
+
+planscore-svg:
+	cd SVG && docker build -t planscore-svg:latest .
+
 # It's a pain to have to redownload gdal-geos-numpy-python.tar.gz so this sort-of cleans things
 cleanish:
 	rm -rf planscore-lambda planscore-lambda.zip
@@ -25,5 +31,5 @@ cleanish:
 clean: cleanish
 	rm -f gdal-geos-numpy-python.tar.gz
 
-.PHONY: clean cleanish all live-deploy dev-deploy
+.PHONY: clean cleanish all live-deploy dev-deploy planscore-svg
 .SECONDARY:
