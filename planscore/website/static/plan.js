@@ -9,12 +9,18 @@ var FIELDS = [
     'Population 2018',
     'Black Population 2018',
     'Hispanic Population 2018',
+    'Population 2019',
+    'Black Population 2019',
+    'Hispanic Population 2019',
     'Citizen Voting-Age Population 2015',
     'Black Citizen Voting-Age Population 2015',
     'Hispanic Citizen Voting-Age Population 2015',
     'Citizen Voting-Age Population 2018',
     'Black Citizen Voting-Age Population 2018',
     'Hispanic Citizen Voting-Age Population 2018',
+    'Citizen Voting-Age Population 2019',
+    'Black Citizen Voting-Age Population 2019',
+    'Hispanic Citizen Voting-Age Population 2019',
     'Democratic Wins',
     'Democratic Votes',
     'Republican Votes',
@@ -545,6 +551,19 @@ function update_acs2018_percentages(head, row)
     }
 }
 
+function update_acs2019_percentages(head, row)
+{
+    var total_index = head.indexOf('Population 2019'),
+        black_index = head.indexOf('Black Population 2019'),
+        latin_index = head.indexOf('Hispanic Population 2019');
+
+    if(total_index >= 0 && black_index >= 0 && latin_index >= 0)
+    {
+        row[black_index] = nice_percent(row[black_index] / row[total_index]);
+        row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
+    }
+}
+
 function update_cvap2015_percentages(head, row)
 {
     var total_index = head.indexOf('Citizen Voting-Age Population 2015'),
@@ -563,6 +582,19 @@ function update_cvap2018_percentages(head, row)
     var total_index = head.indexOf('Citizen Voting-Age Population 2018'),
         black_index = head.indexOf('Black Citizen Voting-Age Population 2018'),
         latin_index = head.indexOf('Hispanic Citizen Voting-Age Population 2018');
+
+    if(total_index >= 0 && black_index >= 0 && latin_index >= 0)
+    {
+        row[black_index] = nice_percent(row[black_index] / row[total_index]);
+        row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
+    }
+}
+
+function update_cvap2019_percentages(head, row)
+{
+    var total_index = head.indexOf('Citizen Voting-Age Population 2019'),
+        black_index = head.indexOf('Black Citizen Voting-Age Population 2019'),
+        latin_index = head.indexOf('Hispanic Citizen Voting-Age Population 2019');
 
     if(total_index >= 0 && black_index >= 0 && latin_index >= 0)
     {
@@ -647,8 +679,10 @@ function plan_array(plan)
         update_acs2015_percentages(head_row, all_rows[j]);
         update_acs2016_percentages(head_row, all_rows[j]);
         update_acs2018_percentages(head_row, all_rows[j]);
+        update_acs2019_percentages(head_row, all_rows[j]);
         update_cvap2015_percentages(head_row, all_rows[j]);
         update_cvap2018_percentages(head_row, all_rows[j]);
+        update_cvap2019_percentages(head_row, all_rows[j]);
     }
     
     update_heading_titles(head_row);

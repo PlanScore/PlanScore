@@ -48,6 +48,17 @@ FIELD_NAMES = (
     'Household Income 2018', 'Household Income 2018, Margin',
     'Citizen Voting-Age Population 2018', 'Citizen Voting-Age Population 2018, Margin',
     
+    # ACS 2019 fields
+    'Black Population 2019', 'Black Population 2019, Margin',
+    'Hispanic Population 2019', 'Hispanic Population 2019, Margin',
+    'Population 2019', 'Population 2019, Margin',
+    'Voting-Age Population 2019', 'Voting-Age Population 2019, Margin',
+    #'Education Population 2019', 'Education Population 2019, Margin',
+    'High School or GED 2019', 'High School or GED 2019, Margin',
+    #'Households 2019', 'Households 2019, Margin',
+    'Household Income 2019', 'Household Income 2019, Margin',
+    'Citizen Voting-Age Population 2019', 'Citizen Voting-Age Population 2019, Margin',
+    
     # CVAP 2015 fields
     'Citizen Voting-Age Population 2015',
     'Citizen Voting-Age Population 2015, Error',

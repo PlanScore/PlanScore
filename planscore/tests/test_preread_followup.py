@@ -149,10 +149,10 @@ class TestPrereadFollowup (unittest.TestCase):
         ''' Test that guess_geometry_model() guesses the correct U.S. state and house.
         '''
         with self.assertRaises(RuntimeError) as wy_error:
-            wy_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'wyoming.geojson')
+            wy_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'alabama.geojson')
             preread_followup.guess_geometry_model(wy_plan_path)
 
-        self.assertEqual(str(wy_error.exception), 'Wyoming is not a currently supported state')
+        self.assertEqual(str(wy_error.exception), 'Alabama is not a currently supported state')
 
         with self.assertRaises(RuntimeError) as dc_error:
             dc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'district-of-columbia.geojson')
