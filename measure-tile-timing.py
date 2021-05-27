@@ -19,13 +19,13 @@ s3 = boto3.client('s3')
 storage = data.Storage(s3, bucket, None)
 
 ids = [
-    '20210526T041118.515394329Z', # Oregon State House plan
-    '20210525T193404.299519014Z', # Wisconsin U.S. House plan
-    '20210525T190341.289812458Z', # Oklahoma U.S. House plan
-    '20210525T011842.278394882Z', # Ohio State Senate plan
-    '20210524T131913.838029023Z', # Pennsylvania U.S. House plan
-    '20210524T130556.976741800Z', # Oregon U.S. House plan
-    '20210524T031102.511166780Z', # Illinois State House plan
+    '20210527T030730.241822291Z', # Oregon State House plan
+    '20210527T030808.456556228Z', # Wisconsin U.S. House plan
+    '20210527T030823.172247430Z', # Oklahoma U.S. House plan
+    '20210527T030837.075551246Z', # Ohio State Senate plan
+    '20210527T030854.061609756Z', # Pennsylvania U.S. House plan
+    '20210527T030909.088518568Z', # Oregon U.S. House plan
+    '20210527T030927.842217593Z', # Illinois State House plan
 ]
 
 for id in ids:
