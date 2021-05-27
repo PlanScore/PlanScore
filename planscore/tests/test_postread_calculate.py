@@ -119,7 +119,7 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(keys, [
             'uploads/ID/geometries/0.wkt',
             'uploads/ID/geometries/1.wkt',
-            'uploads/ID/geometries/bboxes.geojson',
+            'uploads/ID/geometry-bboxes.geojson',
         ])
     
     @unittest.mock.patch('sys.stdout')
@@ -134,7 +134,7 @@ class TestPostreadCalculate (unittest.TestCase):
             'uploads/ID/geometries/0.wkt',
             'uploads/ID/geometries/1.wkt',
             'uploads/ID/geometries/2.wkt',
-            'uploads/ID/geometries/bboxes.geojson',
+            'uploads/ID/geometry-bboxes.geojson',
         ])
         
         put_kwargs = s3.put_object.mock_calls[2][2]
