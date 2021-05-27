@@ -90,7 +90,7 @@ def put_district_geometries(s3, bucket, upload, path):
     '''
     print('put_district_geometries:', (bucket, path))
     ds = osgeo.ogr.Open(path)
-    keys = []
+    keys, bboxes = [], []
 
     if not ds:
         raise RuntimeError('Could not open file to fan out district invocations')
@@ -109,6 +109,29 @@ def put_district_geometries(s3, bucket, upload, path):
             Body=geometry.ExportToWkt(), ContentType='text/plain')
         
         keys.append(key)
+        bboxes.append((key, geometry.GetEnvelope()))
+    
+    bboxes_geojson = {
+        'type': 'FeatureCollection',
+        'features': [
+            {
+                'type': 'Feature',
+                'properties': {'key': key},
+                'geometry': {
+                    'type': 'Polygon',
+                    'coordinates': [[[x1, y1], [x1, y2], [x2, y2], [x2, y1], [x1, y1]]]
+                }
+            }
+            for (key, (x1, x2, y1, y2)) in bboxes
+        ],
+    }
+
+    key = data.UPLOAD_GEOMETRY_BBOXES_KEY.format(id=upload.id)
+
+    s3.put_object(Bucket=bucket, Key=key, ACL='bucket-owner-full-control',
+        Body=json.dumps(bboxes_geojson), ContentType='application/json')
+    
+    keys.append(key)
     
     return keys
 

@@ -116,7 +116,11 @@ class TestPostreadCalculate (unittest.TestCase):
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         keys = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
-        self.assertEqual(keys, ['uploads/ID/geometries/0.wkt', 'uploads/ID/geometries/1.wkt'])
+        self.assertEqual(keys, [
+            'uploads/ID/geometries/0.wkt',
+            'uploads/ID/geometries/1.wkt',
+            'uploads/ID/geometries/bboxes.geojson',
+        ])
     
     @unittest.mock.patch('sys.stdout')
     def test_put_district_geometries_missing_geometries(self, stdout):
@@ -126,7 +130,12 @@ class TestPostreadCalculate (unittest.TestCase):
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-missing-geometries.geojson')
         keys = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
-        self.assertEqual(keys, ['uploads/ID/geometries/0.wkt', 'uploads/ID/geometries/1.wkt', 'uploads/ID/geometries/2.wkt'])
+        self.assertEqual(keys, [
+            'uploads/ID/geometries/0.wkt',
+            'uploads/ID/geometries/1.wkt',
+            'uploads/ID/geometries/2.wkt',
+            'uploads/ID/geometries/bboxes.geojson',
+        ])
         
         put_kwargs = s3.put_object.mock_calls[2][2]
         self.assertEqual(put_kwargs['Key'], 'uploads/ID/geometries/2.wkt')
