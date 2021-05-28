@@ -46,7 +46,7 @@ for id in ids:
 
         #totals = {}
         #precincts = load_tile_precincts(storage, tile_zxy)
-        geometries = run_tile.load_upload_geometries(storage, upload)
+        geometries = run_tile.load_upload_geometries(storage, upload, tile_geom)
         
         loading_time = time.time() - start_time
 

@@ -1,4 +1,4 @@
-import os, json, io, gzip, posixpath, functools, collections, time
+import os, json, io, gzip, posixpath, functools, collections, time, tempfile
 import osgeo.ogr, boto3, botocore.exceptions, ModestMaps.OpenStreetMap, ModestMaps.Core
 from . import constants, data, util, prepare_state, score
 
@@ -7,15 +7,26 @@ FUNCTION_NAME = os.environ.get('FUNC_NAME_RUN_TILE') or 'PlanScore-RunTile'
 # Borrow some Modest Maps tile math
 _mercator = ModestMaps.OpenStreetMap.Provider().projection
 
-def load_upload_geometries(storage, upload):
+def load_upload_geometries(storage, upload, filter_geom):
     ''' Get dictionary of OGR geometries for an upload.
     '''
     geometries = {}
     
-    geoms_prefix = posixpath.dirname(data.UPLOAD_GEOMETRIES_KEY).format(id=upload.id)
-    response = storage.s3.list_objects(Bucket=storage.bucket, Prefix=f'{geoms_prefix}/')
+    bboxes_key = data.UPLOAD_GEOMETRY_BBOXES_KEY.format(id=upload.id)
+    _, bboxes_path = tempfile.mkstemp(suffix=os.path.splitext(bboxes_key)[1])
+    
+    with open(bboxes_path, 'wb') as file:
+        object = storage.s3.get_object(Bucket=storage.bucket, Key=bboxes_key)
 
-    geometry_keys = [object['Key'] for object in response['Contents']]
+        if object.get('ContentEncoding') == 'gzip':
+            object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
+    
+        file.write(object['Body'].read())
+    
+    ds = osgeo.ogr.Open(bboxes_path)
+    layer = ds.GetLayer(0)
+    layer.SetSpatialFilter(filter_geom)
+    geometry_keys = [feature.GetField('key') for feature in layer]
     
     for geometry_key in geometry_keys:
         object = storage.s3.get_object(Bucket=storage.bucket, Key=geometry_key)
@@ -184,7 +195,7 @@ def lambda_handler(event, context):
 
         totals = {}
         precincts = load_tile_precincts(storage, tile_zxy)
-        geometries = load_upload_geometries(storage, upload)
+        geometries = load_upload_geometries(storage, upload, tile_geom)
     
         for (geometry_key, district_geom) in geometries.items():
             totals[geometry_key] = score_district(district_geom, precincts, tile_geom)
