@@ -51,20 +51,32 @@ class TestRunTile (unittest.TestCase):
         storage = data.Storage(s3, 'bucket-name', 'XX')
         upload.id = 'sample-plan'
 
-        s3.get_object.side_effect = mock_s3_get_object
-        s3.list_objects.return_value = {'Contents': [
-            {'Key': "uploads/sample-plan/geometries/0.wkt"},
-            {'Key': "uploads/sample-plan/geometries/1.wkt"}
-            ]}
+        filter_geom = osgeo.ogr.CreateGeometryFromWkt('POLYGON ((-1 -1,-1 1,1 1,1 -1,-1 -1))')
 
-        geometries = run_tile.load_upload_geometries(storage, upload)
+        s3.get_object.side_effect = mock_s3_get_object
+
+        geometries = run_tile.load_upload_geometries(storage, upload, filter_geom)
 
         self.assertEqual(len(geometries), 2)
         self.assertIn("uploads/sample-plan/geometries/0.wkt", geometries)
         self.assertIn("uploads/sample-plan/geometries/1.wkt", geometries)
-        
-        s3.list_objects.assert_called_once_with(Bucket='bucket-name',
-            Prefix="uploads/sample-plan/geometries/")
+
+    def test_load_upload_geometries_northeast(self):
+        ''' Expected geometries are retrieved from S3.
+        '''
+        s3, upload = unittest.mock.Mock(), unittest.mock.Mock()
+        storage = data.Storage(s3, 'bucket-name', 'XX')
+        upload.id = 'sample-plan'
+
+        filter_geom = osgeo.ogr.CreateGeometryFromWkt('POLYGON ((0 0,0 1,1 1,1 0,0 0))')
+
+        s3.get_object.side_effect = mock_s3_get_object
+
+        geometries = run_tile.load_upload_geometries(storage, upload, filter_geom)
+
+        self.assertEqual(len(geometries), 1)
+        self.assertNotIn("uploads/sample-plan/geometries/0.wkt", geometries)
+        self.assertIn("uploads/sample-plan/geometries/1.wkt", geometries)
 
     def test_load_tile_precincts_oldstyle(self):
         ''' Expected tiles are loaded from old-style model in S3 without "tiles" infix
