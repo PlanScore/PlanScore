@@ -27,7 +27,7 @@ FORMATIONS = [
     FormationInfo(
         'cf-development',
         'planscore--dev',
-        None,
+        'planscore.org-dev-website',
         ['dev.planscore.org'],
         'arn:aws:acm:us-east-1:466184106004:certificate/9926850f-249e-4f47-b6b2-309428ecc80c',
         'api.dev.planscore.org',
