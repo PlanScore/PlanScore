@@ -40,7 +40,11 @@ class PlanScoreContent(cdk.Stack):
     def fill_static_bucket(self, stack_id, website_base, static_site_bucket):
 
         if static_site_bucket == 'planscore.org-static-site':
-            # We do not fill this bucket, it's controlled by the `static-site` branch
+            # Bucket filled from https://github.com/PlanScore/FrontPage/tree/main
+            return
+
+        if static_site_bucket == 'planscore.org-dev-website':
+            # Bucket filled from https://github.com/PlanScore/FrontPage/tree/development
             return
 
         static_dirname = tempfile.mkdtemp(dir='/tmp', prefix='static-site-content-')
