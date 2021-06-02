@@ -16,6 +16,11 @@ from . import data
 # approximately -0.5 to +0.5.
 VOTE_ADJUST = -0.496875
 
+# True 2016 and 2020 presidential votes need to be scaled and offset
+# for compatibility with the C and E matrixes.
+PVOTE2016_SCALE, PVOTE2016_OFFSET = 0.91, 0.05
+PVOTE2020_SCALE, PVOTE2020_OFFSET = 0.96, 0.01
+
 # A hard-coded year to use for matrix, nothing for now
 YEAR = None
 
@@ -200,22 +205,25 @@ def prepare_district_data(upload):
     
     for (district, incumbency) in zip(upload.districts, upload.incumbents):
         if 'US President 2016 - DEM' in district['totals']:
-            data.append((
-                district['totals']['US President 2016 - DEM'],
-                district['totals']['US President 2016 - REP'],
-                incumbency,
-            ))
-        else:
+            total = district['totals']['US President 2016 - DEM'] \
+                  + district['totals']['US President 2016 - REP']
+            pvote_2016 = district['totals']['US President 2016 - DEM'] / total
+            pvote = PVOTE2016_SCALE * pvote_2016 + PVOTE2016_OFFSET
+
+        elif 'US President 2020 - DEM' in district['totals']:
             total = district['totals']['US President 2020 - DEM'] \
                   + district['totals']['US President 2020 - REP']
             pvote_2020 = district['totals']['US President 2020 - DEM'] / total
-            pvote_2016 = 1.07 * pvote_2020 - 4.6e-2
+            pvote = PVOTE2020_SCALE * pvote_2020 + PVOTE2020_OFFSET
+        
+        else:
+            raise ValueError('Missing presidential vote columns')
 
-            data.append((
-                total * pvote_2016,
-                total * (1 - pvote_2016),
-                incumbency,
-            ))
+        data.append((
+            total * pvote,
+            total * (1 - pvote),
+            incumbency,
+        ))
     
     return data
 
