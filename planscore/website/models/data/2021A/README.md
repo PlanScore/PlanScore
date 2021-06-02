@@ -1,7 +1,7 @@
 Unified District Model
 ===
 
-_December 2020_
+_June 2021_
 
 In order to score new plans, it is necessary to create a statistical model of the relationship between districts’ latent partisanship and candidates’ incumbency status with election outcomes. This enables us to estimate district-level vote shares for a new map and the corresponding partisan gerrymandering metrics. This page describes the details of our methodology and how we validate the results of this model.
 
@@ -10,7 +10,7 @@ Results for uncontested elections are imputed as described in [*The Impact of Pa
 Methodology
 ---
 
-The vote share inputs for calculating the metrics come from a Bayesian hierarchical model of district-level election returns, run for all state legislatures and congressional delegations on the elections from 2012 through 2018. Formally, the model is:
+The vote share inputs for calculating the metrics come from a Bayesian hierarchical model of district-level election returns, run for all state legislatures and congressional delegations on the elections from 2012 through 2020. Formally, the model is:
 
 <p style="text-align:center"><img src="matrix.png" style="width:460px;height:333px"></p>
 
@@ -25,9 +25,9 @@ where
 - <var style="font-family:serif">β<sub>s(i)</sub></var> and <var style="font-family:serif">β<sub>c(i)</sub></var> are matrices of coefficients for the state and election cycle, respectively, of district election <var style="font-family:serif">i</var>
 - <var style="font-family:serif">σ<sub>y</sub></var> is the residual population-level error term
 
-The model includes two covariates: 1) the two-party district-level Democratic presidential vote share, averaged across 2012 and 2016 and centered around its global mean; 2) the incumbency status in district election *i*, coded -1 for Republican, 0 for open, and 1 for Democratic. The model allows the slope for each–as well as the corresponding intercept– to vary across both states and election cycles. Chambers accounted for minimal variation in an ANOVA test, so state legislative and congressional results were modeled together as emerging from a common distribution.
+The model includes two covariates: 1) the two-party district-level Democratic presidential vote share, averaged across 2012 and 2016 and centered around its global mean; 2) the incumbency status in district election *i*, coded -1 for Republican, 0 for open, and 1 for Democratic. The model allows the slope for each—as well as the corresponding intercept—to vary across both states and election cycles. Chambers accounted for minimal variation in an ANOVA test, so state legislative and congressional results were modeled together as emerging from a common distribution.
 
-When generating predictions, PlanScore assumes an average election year for the 2012- 2018 period (*β<sub>c</sub>* = 0), but otherwise draws from the posterior distribution of model param- eters for means and probabilities.
+When generating predictions, PlanScore assumes an average election year for the 2012-2020 period (*β<sub>c</sub>* = 0), but otherwise draws from the posterior distribution of model parameters for means and probabilities.
 
 <table>
     <caption>Table 1: PlanScore prediction model results</caption>
@@ -45,17 +45,17 @@ When generating predictions, PlanScore assumes an average election year for the 
         <tr>
             <td style="font-weight:normal">Intercept (<var style="font-family:serif">β<sub>0</sub></var>)</td>
             <td align="right">0.50</td>
-            <td align="center">[0.45, 0.55]</td>
+            <td align="center">[0.47, 0.53]</td>
         </tr>
         <tr>
             <td style="font-weight:normal">Presidential vote (<var style="font-family:serif">β<sub>1</sub></var>)</td>
-            <td align="right">0.79</td>
-            <td align="center">[0.58, 1.00]</td>
+            <td align="right">0.83</td>
+            <td align="center">[0.66, 0.98]</td>
         </tr>
         <tr>
             <td style="font-weight:normal">Incumbency (<var style="font-family:serif">β<sub>2</sub></var>)</td>
             <td align="right">0.05</td>
-            <td align="center">[0.02, 0.08]</td>
+            <td align="center">[0.02, 0.07]</td>
         </tr>
         <tr>
             <th colspan="3" style="padding-top:.5em">STATE-LEVEL</th>
@@ -70,31 +70,31 @@ When generating predictions, PlanScore assumes an average election year for the 
         </tr>
         <tr>
             <td style="font-weight:normal">Presidential vote (<var style="font-family:serif">σ<sub>β<sub>1s</sub></sub></var>)</td>
-            <td align="right">0.13</td>
-            <td align="center">[0.10, 0.16]</td>
+            <td align="right">0.10</td>
+            <td align="center">[0.08, 0.13]</td>
         </tr>
         <tr>
             <td style="font-weight:normal">Incumbency (<var style="font-family:serif">σ<sub>β<sub>2s</sub></sub></var>)</td>
             <td align="right">0.02</td>
-            <td align="center">[0.02, 0.03]</td>
+            <td align="center">[0.01, 0.02]</td>
         </tr>
         <tr>
             <th colspan="3" style="padding-top:.5em">Correlations</th>
         </tr>
         <tr>
             <td style="font-weight:normal">Intercept - Pres. vote (<var style="font-family:serif">ρσ<sub>β<sub>0s</sub></sub></var><var style="font-family:serif">σ<sub>β<sub>1s</sub></sub></var>)</td>
-            <td align="right">−0.41</td>
-            <td align="center">[−0.62,−0.15]</td>
+            <td align="right">−0.43</td>
+            <td align="center">[−0.65, −0.16]</td>
         </tr>
         <tr>
             <td style="font-weight:normal">Intercept - Incumbency (<var style="font-family:serif">ρσ<sub>β<sub>0s</sub></sub></var><var style="font-family:serif">σ<sub>β<sub>2s</sub></sub></var>)</td>
-            <td align="right">0.11</td>
-            <td align="center">[−0.17, 0.39]</td>
+            <td align="right">0.04</td>
+            <td align="center">[−0.25, 0.34]</td>
         </tr>
         <tr>
             <td style="font-weight:normal">Pres. vote - Incumbency (<var style="font-family:serif">ρσ<sub>β<sub>1s</sub></sub></var><var style="font-family:serif">σ<sub>β<sub>2s</sub></sub></var>)</td>
-            <td align="right">−0.73</td>
-            <td align="center">[−0.85,−0.56]</td>
+            <td align="right">−0.69</td>
+            <td align="center">[−0.83, −0.49]</td>
         </tr>
         <tr>
             <th colspan="3" style="padding-top:.5em">CYCLE-LEVEL</th>
@@ -104,36 +104,36 @@ When generating predictions, PlanScore assumes an average election year for the 
         </tr>
         <tr>
             <td style="font-weight:normal">Intercept (<var style="font-family:serif">σ<sub>β<sub>0c</sub></sub></var>)</td>
-            <td align="right">0.04</td>
-            <td align="center">[0.01, 0.14]</td>
+            <td align="right">0.03</td>
+            <td align="center">[0.01, 0.08]</td>
         </tr>
         <tr>
             <td style="font-weight:normal">Presidential vote (<var style="font-family:serif">σ<sub>β<sub>1c</sub></sub></var>)</td>
-            <td align="right">0.18</td>
-            <td align="center">[0.07, 0.48]</td>
+            <td align="right">0.16</td>
+            <td align="center">[0.07, 0.38]</td>
         </tr>
         <tr>
             <td style="font-weight:normal">Incumbency (<var style="font-family:serif">σ<sub>β<sub>2c</sub></sub></var>)</td>
             <td align="right">0.02</td>
-            <td align="center">[0.01, 0.07]</td>
+            <td align="center">[0.01, 0.06]</td>
         </tr>
         <tr>
             <th colspan="3" style="padding-top:.5em">Correlations</th>
         </tr>
         <tr>
             <td style="font-weight:normal">Intercept - Pres. vote (<var style="font-family:serif">ρσ<sub>β<sub>0c</sub></sub></var><var style="font-family:serif">σ<sub>β<sub>1c</sub></sub></var>)</td>
-            <td align="right">−0.13</td>
-            <td align="center">[−0.84, 0.70]</td>
+            <td align="right">−0.16</td>
+            <td align="center">[−0.80, 0.64]</td>
         </tr>
         <tr>
             <td style="font-weight:normal">Intercept - Incumbency (<var style="font-family:serif">ρσ<sub>β<sub>0c</sub></sub></var><var style="font-family:serif">σ<sub>β<sub>2s</sub></sub></var>)</td>
-            <td align="right">−0.23</td>
-            <td align="center">[−0.89, 0.68]</td>
+            <td align="right">−0.16</td>
+            <td align="center">[−0.83, 0.64]</td>
         </tr>
         <tr>
             <td style="font-weight:normal">Pres. vote - Incumbency (<var style="font-family:serif">ρσ<sub>β<sub>1c</sub></sub></var><var style="font-family:serif">σ<sub>β<sub>2c</sub></sub></var>)</td>
-            <td align="right">−0.46</td>
-            <td align="center">[−0.95, 0.54]</td>
+            <td align="right">−0.61</td>
+            <td align="center">[−0.97, 0.27]</td>
         </tr>
         <tr>
             <td colspan="3" style="padding-top:1em;font-weight:normal">
