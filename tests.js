@@ -108,7 +108,9 @@ assert.deepEqual(plan.which_score_column_names(NC_multisim_index),
         'Democratic Votes',
         'Republican Votes',
         'US President 2016 - DEM',
-        'US President 2016 - REP'
+        'US President 2016 - REP',
+        'US President 2020 - DEM',
+        'US President 2020 - REP'
         /*, 'Polsby-Popper', 'Reock'*/
     ],
     'Should pick out the right column names');
