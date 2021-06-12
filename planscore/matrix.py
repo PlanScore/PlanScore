@@ -28,6 +28,7 @@ INCUMBENCY = {
 STATE = {
     data.State.XX: 'ks', # Null Ranch
     
+    data.State.AK: 'ak',
     data.State.AL: 'al',
     data.State.AR: 'ar',
     data.State.AZ: 'az',
@@ -36,6 +37,7 @@ STATE = {
     data.State.DE: 'de',
     data.State.FL: 'fl',
     data.State.GA: 'ga',
+    data.State.HI: 'hi',
     data.State.IA: 'ia',
     data.State.ID: 'id',
     data.State.IL: 'il',
