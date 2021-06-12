@@ -19,6 +19,7 @@ UPLOAD_LOGENTRY_KEY = 'logs/scoring/ds={ds}/{guid}.txt'
 class State (enum.Enum):
     XX = 'XX'
 
+    AK = 'AK'
     AL = 'AL'
     AR = 'AR'
     AZ = 'AZ'
@@ -27,6 +28,7 @@ class State (enum.Enum):
     DE = 'DE'
     FL = 'FL'
     GA = 'GA'
+    HI = 'HI'
     IA = 'IA'
     ID = 'ID'
     IL = 'IL'
@@ -332,6 +334,9 @@ class Upload:
 
 MODELS2020 = [
     Model(State.XX, House.statehouse,    2,  True, '2020', 'data/XX/006-tilesdir'), # b8e19879
+    Model(State.AK, House.ushouse,       1,  True, '2020', 'data/AK/001-tilesdir'), # 3a53579
+    Model(State.AK, House.statesenate,  20,  True, '2020', 'data/AK/001-tilesdir'), # 3a53579
+    Model(State.AK, House.statehouse,   40,  True, '2020', 'data/AK/001-tilesdir'), # 3a53579
     Model(State.AL, House.ushouse,       7,  True, '2020', 'data/AL/001-tilesdir'), # bbb64e7
     Model(State.AL, House.statesenate,  35,  True, '2020', 'data/AL/001-tilesdir'), # bbb64e7
     Model(State.AL, House.statehouse,  105,  True, '2020', 'data/AL/001-tilesdir'), # bbb64e7
@@ -356,6 +361,9 @@ MODELS2020 = [
     Model(State.GA, House.ushouse,      14,  True, '2020', 'data/GA/003-tilesdir'), # 56f7c85
     Model(State.GA, House.statesenate,  56,  True, '2020', 'data/GA/003-tilesdir'), # 56f7c85
     Model(State.GA, House.statehouse,  180,  True, '2020', 'data/GA/003-tilesdir'), # 56f7c85
+    Model(State.HI, House.ushouse,       2,  True, '2020', 'data/HI/001-tilesdir'), # 3a53579
+    Model(State.HI, House.statesenate,  25,  True, '2020', 'data/HI/001-tilesdir'), # 3a53579
+    Model(State.HI, House.statehouse,   51,  True, '2020', 'data/HI/001-tilesdir'), # 3a53579
     Model(State.IA, House.ushouse,       4,  True, '2020', 'data/IA/001-tilesdir'), # bcf3dd1
     Model(State.IA, House.statesenate,  50,  True, '2020', 'data/IA/001-tilesdir'), # bcf3dd1
     Model(State.IA, House.statehouse,  100,  True, '2020', 'data/IA/001-tilesdir'), # bcf3dd1

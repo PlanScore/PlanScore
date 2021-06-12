@@ -7,7 +7,7 @@ ogr.UseExceptions()
 
 TILE_ZOOM = 12
 MAX_FEATURE_COUNT = 4000 # max ~10sec processing time per tile
-MIN_TILE_ZOOM, MAX_TILE_ZOOM = 7, 14
+MIN_TILE_ZOOM, MAX_TILE_ZOOM = 5, 14
 INDEX_FIELD = 'PlanScore:Index'
 FRACTION_FIELD = 'PlanScore:Fraction'
 TILE_KEY_FORMAT = 'data/{directory}/tiles/{zxy}.geojson'
