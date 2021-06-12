@@ -19,6 +19,7 @@ UPLOAD_LOGENTRY_KEY = 'logs/scoring/ds={ds}/{guid}.txt'
 class State (enum.Enum):
     XX = 'XX'
 
+    AL = 'AL'
     AR = 'AR'
     AZ = 'AZ'
     CA = 'CA'
@@ -331,6 +332,9 @@ class Upload:
 
 MODELS2020 = [
     Model(State.XX, House.statehouse,    2,  True, '2020', 'data/XX/006-tilesdir'), # b8e19879
+    Model(State.AL, House.ushouse,       7,  True, '2020', 'data/AL/001-tilesdir'), # bbb64e7
+    Model(State.AL, House.statesenate,  35,  True, '2020', 'data/AL/001-tilesdir'), # bbb64e7
+    Model(State.AL, House.statehouse,  105,  True, '2020', 'data/AL/001-tilesdir'), # bbb64e7
     Model(State.AR, House.ushouse,       4,  True, '2020', 'data/AR/001-tilesdir'), # 6673c68
     Model(State.AR, House.statesenate,  35,  True, '2020', 'data/AR/001-tilesdir'), # 6673c68
     Model(State.AR, House.statehouse,  100,  True, '2020', 'data/AR/001-tilesdir'), # 6673c68
