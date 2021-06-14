@@ -933,8 +933,6 @@ function load_plan_map(url, div, plan, table)
                 return { weight: 2, fillOpacity: .5, color: which_district_color(district, plan) };
             }
             }).bindPopup(district_popup_content);
-        window.the_geojson = geojson;
-        window.the_data = data;
 
 
         // On map layer hover: highlight associated table rows 
