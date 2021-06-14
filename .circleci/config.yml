@@ -24,7 +24,7 @@ jobs:
             - /opt/circleci/.pyenv/versions/3.6.5
       - run: python3 lambda.py
       - run: python3 setup.py test
-      - run: NODE_PATH=`pwd` node tests.js
+      - run: node tests.js
   
   # Ensure that packages can be built in deploy step
   Build:
