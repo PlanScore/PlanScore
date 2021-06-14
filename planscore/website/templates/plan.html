@@ -80,6 +80,9 @@
             background-image: url({{ url_for('static', filename='unknown-pattern.png') }});
         }
 
+        .table td, table th { text-align: right; }
+        .table td.ltxt, table th.ltxt { text-align: left; }
+       
     </style>
 {% endblock %}
 {% block content %}
