@@ -80,6 +80,10 @@
             background-image: url({{ url_for('static', filename='unknown-pattern.png') }});
         }
 
+        table tr.highlighted {
+            background-color: #f5f5f5; /* same as bootstrap's hover row style */
+        }
+
     </style>
 {% endblock %}
 {% block content %}

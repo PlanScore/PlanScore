@@ -934,6 +934,16 @@ function load_plan_map(url, div, plan)
             }
             }).bindPopup(district_popup_content);
 
+
+        function on_mouse_event(evtdata) {
+            const apply_highlight = evtdata.type === 'mouseover';
+            const index = data.features.indexOf(evtdata.layer.feature);
+            const tableRowEl = $('table tbody tr').get(index);
+            tableRowEl.classList.toggle('highlighted', apply_highlight);
+        }
+        geojson.on('mouseover', on_mouse_event);
+        geojson.on('mouseout', on_mouse_event);
+
         console.log('GeoJSON bounds:', geojson.getBounds());
 
         // 
