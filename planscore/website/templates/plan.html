@@ -84,6 +84,22 @@
             background-color: #f5f5f5; /* same as bootstrap's hover row style */
         }
 
+        @keyframes highlight-district {
+            from {
+                fill-opacity: 0.5;
+                stroke-width: 2;
+            }
+            to {
+                stroke-width: 7;
+                fill-opacity: 1;
+            }
+        }
+        .highlight {
+            animation: highlight-district 1.3s linear infinite;
+            animation-direction: alternate;
+        }
+        
+
     </style>
 {% endblock %}
 {% block content %}
