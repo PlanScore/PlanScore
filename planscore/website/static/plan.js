@@ -606,7 +606,7 @@ function update_cvap2019_percentages(head, row)
 /*
  * Return a rows * columns matrix representing a scored plan table
  */
-function plan_array(plan, has_incumbency)
+function plan_array(plan)
 {
     var incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'},
         fields = FIELDS.slice();
@@ -616,6 +616,8 @@ function plan_array(plan, has_incumbency)
         all_rows = [head_row],
         field, current_row, field_missing;
     
+    const has_incumbency = plan_has_incumbency(plan);
+
     if(has_incumbency) {
         head_row.push('Candidate Scenario');
     }
@@ -786,6 +788,12 @@ function get_description(plan, modified_at)
             : [description, 'at', modified_at.toLocaleString()].join(' ');
 }
 
+function plan_has_incumbency(plan)
+{
+    return plan.model && plan.model.incumbency 
+        && plan.incumbents && plan.incumbents.length == plan.districts.length;
+}
+
 function load_plan_score(url, message_section, score_section,
     description, model_link, model_url_pattern, table, score_EG, score_PB,
     score_MM, score_sense, text_url, text_link, geom_prefix, map_div)
@@ -825,10 +833,10 @@ function load_plan_score(url, message_section, score_section,
         }
 
         // Build the results table
-        const has_incumbency = (plan.model && plan.model.incumbency 
-            && plan.incumbents && plan.incumbents.length == plan.districts.length);
-        var table_array = plan_array(plan, has_incumbency),
+        
+        var table_array = plan_array(plan),
             tags, value;
+        const has_incumbency = plan_has_incumbency(plan);
         
         function maybeAlignLeft(j) {
             return j == 1 && has_incumbency ? 'class="ltxt"' : '';
@@ -920,8 +928,7 @@ function load_plan_map(url, div, plan)
         {
             var index = data.features.indexOf(layer.feature),
                 incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'},
-                has_incumbency = (plan.model && plan.model.incumbency 
-                    && plan.incumbents && plan.incumbents.length == plan.districts.length);
+                has_incumbency = plan_has_incumbency(plan);
 
             if(has_incumbency) {
                 return 'District ' + (index + 1) + '<br>' + incumbency[plan.incumbents[index]];
@@ -1183,6 +1190,7 @@ if(typeof module !== 'undefined' && module.exports)
         which_score_column_names: which_score_column_names,
         which_district_color: which_district_color,
         plan_array: plan_array, get_description: get_description,
+        plan_has_incumbency: plan_has_incumbency,
         update_vote_percentages: update_vote_percentages,
         update_acs2015_percentages: update_acs2015_percentages,
         update_acs2016_percentages: update_acs2016_percentages,
