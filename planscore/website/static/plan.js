@@ -606,11 +606,9 @@ function update_cvap2019_percentages(head, row)
 /*
  * Return a rows * columns matrix representing a scored plan table
  */
-function plan_array(plan)
+function plan_array(plan, has_incumbency)
 {
     var incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'},
-        has_incumbency = (plan.model && plan.model.incumbency 
-            && plan.incumbents && plan.incumbents.length == plan.districts.length),
         fields = FIELDS.slice();
 
     // Build list of columns
@@ -827,13 +825,19 @@ function load_plan_score(url, message_section, score_section,
         }
 
         // Build the results table
-        var table_array = plan_array(plan),
+        const has_incumbency = (plan.model && plan.model.incumbency 
+            && plan.incumbents && plan.incumbents.length == plan.districts.length);
+        var table_array = plan_array(plan, has_incumbency),
             tags, value;
         
+        function maybeAlignLeft(j) {
+            return j == 1 && has_incumbency ? 'class="ltxt"' : '';
+        }
+
         tags = ['<thead>', '<tr>'];
         for(var j = 0; j < table_array[0].length; j++)
         {
-            tags = tags.concat(['<th>', table_array[0][j], '</th>']);
+            tags = tags.concat([`<th ${maybeAlignLeft(j)}>`, table_array[0][j], '</th>']);
         }
         tags = tags.concat(['</tr>', '</thead>', '<tbody>']);
         for(var i = 1; i < table_array.length; i++)
@@ -848,7 +852,7 @@ function load_plan_score(url, message_section, score_section,
                 } else {
                     value = '???';
                 }
-                tags = tags.concat(['<td>', value, '</td>']);
+                tags = tags.concat([`<td ${maybeAlignLeft(j)}>`, value, '</td>']);
             }
             tags = tags.concat(['</tr>']);
         }
