@@ -888,7 +888,7 @@ function load_plan_score(url, message_section, score_section,
         }
 
         // Go on to load the map.
-        load_plan_map(geom_prefix + plan.geometry_key, map_div, plan);
+        load_plan_map(geom_prefix + plan.geometry_key, map_div, plan, table);
     }
 
     request.onload = function()
@@ -917,7 +917,7 @@ function load_plan_score(url, message_section, score_section,
     request.send();
 }
 
-function load_plan_map(url, div, plan)
+function load_plan_map(url, div, plan, table)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -944,6 +944,31 @@ function load_plan_map(url, div, plan)
                 return { weight: 2, fillOpacity: .5, color: which_district_color(district, plan) };
             }
             }).bindPopup(district_popup_content);
+
+
+        // On map layer hover: highlight associated table rows 
+        function on_geojson_mouse_event(evtdata) {
+            const should_apply_highlight = evtdata.type === 'mouseover';
+            const index = data.features.indexOf(evtdata.layer.feature);
+            const tableRowEl = $('table tbody tr').get(index);
+            tableRowEl.classList.toggle('highlighted', should_apply_highlight);
+        }
+        geojson.on('mouseover', on_geojson_mouse_event);
+        geojson.on('mouseout', on_geojson_mouse_event);
+
+
+        // On table row hover: highlight map district
+        table.querySelectorAll('tbody tr').forEach((elem, j) => {
+            const on_tr_mouse_event = e => {
+                const should_apply_highlight = e.type === 'mouseover';
+                const matched_feature = data.features[j];
+                const layer = Object.values(geojson._layers).find(l => l.feature === matched_feature);
+                const path_elem = layer['_path'];
+                path_elem.classList.toggle('highlight', should_apply_highlight);
+            };
+            elem.addEventListener('mouseover', on_tr_mouse_event);
+            elem.addEventListener('mouseout', on_tr_mouse_event);
+        });
 
         console.log('GeoJSON bounds:', geojson.getBounds());
 
