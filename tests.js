@@ -1,18 +1,18 @@
 assert = require('assert');
-plan = require('planscore/website/static/plan.js');
-annotate_new = require('planscore/website/static/annotate-new.js');
+plan = require('./planscore/website/static/plan.js');
+annotate_new = require('./planscore/website/static/annotate-new.js');
 
-var NC_index = require('data/sample-NC-1-992/index.json'),
-    NC_incomplete_index = require('data/sample-NC-1-992-incomplete/index.json'),
-    NC_simple_index = require('data/sample-NC-1-992-simple/index.json'),
-    NC_multisim_index = require('data/sample-NC-simulations/index.json'),
-    NC_public_index = require('data/sample-NC5.1/index.json'),
-    NC_2019_preread_start = require('data/sample-NC2019/index-preread-start.json'),
-    NC_2019_preread_end = require('data/sample-NC2019/index-preread-end.json'),
-    NC_2019_no_incumbency = require('data/sample-NC2019/index-no-incumbency.json'),
-    NC_2019_incumbency = require('data/sample-NC2019/index-incumbency.json'),
-    NC_2020 = require('data/sample-NC2020/index.json'),
-    NC_2020_unified = require('data/sample-NC-unified/index.json');
+var NC_index = require('./data/sample-NC-1-992/index.json'),
+    NC_incomplete_index = require('./data/sample-NC-1-992-incomplete/index.json'),
+    NC_simple_index = require('./data/sample-NC-1-992-simple/index.json'),
+    NC_multisim_index = require('./data/sample-NC-simulations/index.json'),
+    NC_public_index = require('./data/sample-NC5.1/index.json'),
+    NC_2019_preread_start = require('./data/sample-NC2019/index-preread-start.json'),
+    NC_2019_preread_end = require('./data/sample-NC2019/index-preread-end.json'),
+    NC_2019_no_incumbency = require('./data/sample-NC2019/index-no-incumbency.json'),
+    NC_2019_incumbency = require('./data/sample-NC2019/index-incumbency.json'),
+    NC_2020 = require('./data/sample-NC2020/index.json'),
+    NC_2020_unified = require('./data/sample-NC-unified/index.json');
 
 // Old-style red vs. blue plan
 
