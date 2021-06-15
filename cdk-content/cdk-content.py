@@ -60,7 +60,10 @@ class PlanScoreContent(cdk.Stack):
                     continue
                 path = os.path.join(dirname, filename)
                 with open(path, 'r') as file1:
-                    content1 = file1.read()
+                    try:
+                        content1 = file1.read()
+                    except UnicodeDecodeError as err:
+                        raise Exception(f'{err} -- {path}')
                 content2 = content1.replace('https://planscore.org/', website_base)
                 with open(path, 'w') as file2:
                     file2.write(content2)
