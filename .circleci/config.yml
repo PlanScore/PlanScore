@@ -72,7 +72,6 @@ workflows:
             branches:
               only:
                 - main
-                - migurski/fix-deploy
       - Deploy:
           requires:
             - Test
@@ -81,4 +80,3 @@ workflows:
             branches:
               only:
                 - main
-                - migurski/fix-deploy
