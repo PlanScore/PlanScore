@@ -312,7 +312,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
-        upload = data.Upload(id, upload_key, model=data.MODELS2020[0])
+        upload = data.Upload(id, upload_key, model=data.MODELS[0])
         info = postread_calculate.commence_upload_scoring(s3, bucket, upload)
         commence_geometry_upload_scoring.assert_called_once_with(s3, bucket, upload, nullplan_path)
     
@@ -334,7 +334,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
-        upload = data.Upload(id, upload_key, model=data.MODELS2020[0])
+        upload = data.Upload(id, upload_key, model=data.MODELS[0])
         postread_calculate.commence_upload_scoring(s3, bucket, upload)
         commence_blockassign_upload_scoring.assert_called_once_with(s3, bucket, upload, nullplan_path)
     
@@ -356,7 +356,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
-        upload = data.Upload(id, upload_key, model=data.MODELS2020[0])
+        upload = data.Upload(id, upload_key, model=data.MODELS[0])
         postread_calculate.commence_upload_scoring(s3, bucket, upload)
         commence_blockassign_upload_scoring.assert_called_once_with(s3, bucket, upload, nullplan_path)
     
@@ -378,7 +378,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
-        upload = data.Upload(id, upload_key, model=data.MODELS2020[0])
+        upload = data.Upload(id, upload_key, model=data.MODELS[0])
         info = postread_calculate.commence_upload_scoring(s3, bucket, upload)
         nullplan_datasource = '/vsizip/{}/null-plan.shp'.format(os.path.abspath(nullplan_path))
         commence_geometry_upload_scoring.assert_called_once_with(s3, bucket, upload, nullplan_datasource)
@@ -391,7 +391,7 @@ class TestPostreadCalculate (unittest.TestCase):
 
         with self.assertRaises(RuntimeError) as error:
             postread_calculate.commence_upload_scoring(s3, bucket,
-                data.Upload('id', 'uploads/id/null-plan.geojson', model=data.MODELS2020[0]))
+                data.Upload('id', 'uploads/id/null-plan.geojson', model=data.MODELS[0]))
 
         self.assertEqual(str(error.exception), 'Failed to read GeoJSON data')
     
@@ -412,7 +412,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
-        upload = data.Upload(id, upload_key, model=data.MODELS2020[0])
+        upload = data.Upload(id, upload_key, model=data.MODELS[0])
         info = postread_calculate.commence_geometry_upload_scoring(s3, bucket, upload, nullplan_path)
 
         self.assertIsNone(info)
@@ -451,7 +451,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
-        upload = data.Upload(id, upload_key, model=data.MODELS2020[0])
+        upload = data.Upload(id, upload_key, model=data.MODELS[0])
         nullplan_datasource = '/vsizip/{}/null-plan.shp'.format(os.path.abspath(nullplan_path))
         info = postread_calculate.commence_geometry_upload_scoring(s3, bucket, upload, nullplan_datasource)
 

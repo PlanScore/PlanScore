@@ -72,6 +72,7 @@ FIELD_NAMES = (
     
     # Fields for new unified, district-level plans
     'US President 2016 - DEM', 'US President 2016 - REP',
+    'US President 2020 - DEM', 'US President 2020 - REP',
     
     # Extra fields
     'US Senate 2016 - DEM', 'US Senate 2016 - REP',
@@ -378,8 +379,17 @@ def calculate_district_biases(upload):
     #with open('PBs.csv', 'w') as file:
     #    print('blue_seatshare,blue_voteshare', file=file)
     
-    if 'US President 2016 - DEM' not in upload.districts[0]['totals'] \
-    or 'US President 2016 - REP' not in upload.districts[0]['totals']:
+    has_president_votes = (
+        (
+            'US President 2016 - DEM' in upload.districts[0]['totals']
+            and 'US President 2016 - REP' in upload.districts[0]['totals']
+        ) or (
+            'US President 2020 - DEM' in upload.districts[0]['totals']
+            and 'US President 2020 - REP' in upload.districts[0]['totals']
+        )
+    )
+    
+    if not has_president_votes:
         # Skip everything if we don't see 2016 presidential votes
         return upload.clone()
     

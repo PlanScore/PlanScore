@@ -16,6 +16,11 @@ from . import data
 # approximately -0.5 to +0.5.
 VOTE_ADJUST = -0.496875
 
+# True 2016 and 2020 presidential votes need to be scaled and offset
+# for compatibility with the C and E matrixes.
+PVOTE2016_SCALE, PVOTE2016_OFFSET = 0.91, 0.05
+PVOTE2020_SCALE, PVOTE2020_OFFSET = 0.96, 0.01
+
 # A hard-coded year to use for matrix, nothing for now
 YEAR = None
 
@@ -25,56 +30,8 @@ INCUMBENCY = {
     data.Incumbency.Republican.value: -1,
 }
 
-STATE = {
-    data.State.XX: 'ks', # Null Ranch
-    
-    data.State.AK: 'ak',
-    data.State.AL: 'al',
-    data.State.AR: 'ar',
-    data.State.AZ: 'az',
-    data.State.CA: 'ca',
-    data.State.CO: 'co',
-    data.State.DE: 'de',
-    data.State.FL: 'fl',
-    data.State.GA: 'ga',
-    data.State.HI: 'hi',
-    data.State.IA: 'ia',
-    data.State.ID: 'id',
-    data.State.IL: 'il',
-    data.State.IN: 'in',
-    data.State.KS: 'ks',
-    data.State.KY: 'ky',
-    data.State.LA: 'la',
-    data.State.MA: 'ma',
-    data.State.MD: 'md',
-    data.State.ME: 'me',
-    data.State.MI: 'mi',
-    data.State.MN: 'mn',
-    data.State.MO: 'mo',
-    data.State.MT: 'mt',
-    data.State.NC: 'nc',
-    data.State.ND: 'nd',
-    data.State.NE: 'ne',
-    data.State.NH: 'nh',
-    data.State.NJ: 'nj',
-    data.State.NM: 'nm',
-    data.State.NV: 'nv',
-    data.State.OH: 'oh',
-    data.State.OK: 'ok',
-    data.State.OR: 'or',
-    data.State.PA: 'pa',
-    data.State.RI: 'ri',
-    data.State.SC: 'sc',
-    data.State.SD: 'sd',
-    data.State.TN: 'tn',
-    data.State.TX: 'tx',
-    data.State.UT: 'ut',
-    data.State.VA: 'va',
-    data.State.VT: 'vt',
-    data.State.WA: 'wa',
-    data.State.WI: 'wi',
-    data.State.WY: 'wy',
-}
+# Dictionary of states plus Null Ranch, KS for Null Island
+STATE = dict([(s, s.value.lower()) for s in data.State] + [(data.State.XX, 'ks')])
 
 Model = collections.namedtuple('Model', (
     'intercept', 'vote', 'incumbent',
@@ -199,15 +156,39 @@ def model_votes(state, year, districts):
 def prepare_district_data(upload):
     ''' Simple presidential vote input for model_votes()
     '''
-    return [
-        (
-            district['totals']['US President 2016 - DEM'],
-            district['totals']['US President 2016 - REP'],
+    data = []
+    
+    for (district, incumbency) in zip(upload.districts, upload.incumbents):
+        if 'US President 2016 - DEM' in district['totals']:
+            total = district['totals']['US President 2016 - DEM'] \
+                  + district['totals']['US President 2016 - REP']
+            try:
+                pvote_2016 = district['totals']['US President 2016 - DEM'] / total
+            except ZeroDivisionError:
+                pvote = -1
+            else:
+                pvote = PVOTE2016_SCALE * pvote_2016 + PVOTE2016_OFFSET
+
+        elif 'US President 2020 - DEM' in district['totals']:
+            total = district['totals']['US President 2020 - DEM'] \
+                  + district['totals']['US President 2020 - REP']
+            try:
+                pvote_2020 = district['totals']['US President 2020 - DEM'] / total
+            except ZeroDivisionError:
+                pvote = -1
+            else:
+                pvote = PVOTE2020_SCALE * pvote_2020 + PVOTE2020_OFFSET
+        
+        else:
+            raise ValueError('Missing presidential vote columns')
+
+        data.append((
+            round(total * pvote, 7),
+            round(total * (1 - pvote), 7),
             incumbency,
-        )
-        for (district, incumbency)
-        in zip(upload.districts, upload.incumbents)
-    ]
+        ))
+    
+    return data
 
 parser = argparse.ArgumentParser()
 parser.add_argument('upload_url')
