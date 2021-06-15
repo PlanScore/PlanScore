@@ -30,56 +30,8 @@ INCUMBENCY = {
     data.Incumbency.Republican.value: -1,
 }
 
-STATE = {
-    data.State.XX: 'ks', # Null Ranch
-    
-    data.State.AK: 'ak',
-    data.State.AL: 'al',
-    data.State.AR: 'ar',
-    data.State.AZ: 'az',
-    data.State.CA: 'ca',
-    data.State.CO: 'co',
-    data.State.DE: 'de',
-    data.State.FL: 'fl',
-    data.State.GA: 'ga',
-    data.State.HI: 'hi',
-    data.State.IA: 'ia',
-    data.State.ID: 'id',
-    data.State.IL: 'il',
-    data.State.IN: 'in',
-    data.State.KS: 'ks',
-    data.State.KY: 'ky',
-    data.State.LA: 'la',
-    data.State.MA: 'ma',
-    data.State.MD: 'md',
-    data.State.ME: 'me',
-    data.State.MI: 'mi',
-    data.State.MN: 'mn',
-    data.State.MO: 'mo',
-    data.State.MT: 'mt',
-    data.State.NC: 'nc',
-    data.State.ND: 'nd',
-    data.State.NE: 'ne',
-    data.State.NH: 'nh',
-    data.State.NJ: 'nj',
-    data.State.NM: 'nm',
-    data.State.NV: 'nv',
-    data.State.OH: 'oh',
-    data.State.OK: 'ok',
-    data.State.OR: 'or',
-    data.State.PA: 'pa',
-    data.State.RI: 'ri',
-    data.State.SC: 'sc',
-    data.State.SD: 'sd',
-    data.State.TN: 'tn',
-    data.State.TX: 'tx',
-    data.State.UT: 'ut',
-    data.State.VA: 'va',
-    data.State.VT: 'vt',
-    data.State.WA: 'wa',
-    data.State.WI: 'wi',
-    data.State.WY: 'wy',
-}
+# Dictionary of states plus Null Ranch, KS for Null Island
+STATE = dict([(s, s.value.lower()) for s in data.State] + [(data.State.XX, 'ks')])
 
 Model = collections.namedtuple('Model', (
     'intercept', 'vote', 'incumbent',

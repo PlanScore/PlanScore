@@ -123,7 +123,6 @@ How to add a new state model to the scoring process.
 
 -   Add to `State` enum in [`planscore/data.py`](planscore/data.py)
 -   Add to `MODELS2020` list in [`planscore/data.py`](planscore/data.py)
--   Add to `STATE` enum in [`planscore/matrix.py`](planscore/matrix.py)
 -   Add to listing and alt text in [`planscore/website/templates/upload.html`](planscore/website/templates/upload.html)
 -   Add to `supported` expression in [`design/Upload-Map.qgz`](design/Upload-Map.qgz)
 -   Export SVG file from [`design/Upload-Map.qgz`](design/Upload-Map.qgz) to `design/Upload-Map.svg`
