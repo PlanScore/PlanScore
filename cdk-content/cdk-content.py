@@ -56,7 +56,7 @@ class PlanScoreContent(cdk.Stack):
         for (dirname, _, filenames) in os.walk(static_dirname):
             for filename in filenames:
                 _, ext = os.path.splitext(filename)
-                if ext in ('.jpg', '.png'):
+                if ext in ('.jpg', '.png', '.gz'):
                     continue
                 path = os.path.join(dirname, filename)
                 with open(path, 'r') as file1:
