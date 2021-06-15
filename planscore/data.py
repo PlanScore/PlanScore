@@ -437,9 +437,9 @@ MODELS = [
     Model(State.OR, House.ushouse,       5,  True, VERSION, 'data/OR/002-tilesdir'), # 57155ad
     Model(State.OR, House.statesenate,  30,  True, VERSION, 'data/OR/002-tilesdir'), # 57155ad
     Model(State.OR, House.statehouse,   60,  True, VERSION, 'data/OR/002-tilesdir'), # 57155ad
-    Model(State.PA, House.ushouse,      18,  True, VERSION, 'data/PA/010-tilesdir'), # d9fcd35
-    Model(State.PA, House.statesenate,  50,  True, VERSION, 'data/PA/010-tilesdir'), # d9fcd35
-    Model(State.PA, House.statehouse,  203,  True, VERSION, 'data/PA/010-tilesdir'), # d9fcd35
+    Model(State.PA, House.ushouse,      18,  True, VERSION, 'data/PA/011-2021A'), # 2b48a6a
+    Model(State.PA, House.statesenate,  50,  True, VERSION, 'data/PA/011-2021A'), # 2b48a6a
+    Model(State.PA, House.statehouse,  203,  True, VERSION, 'data/PA/011-2021A'), # 2b48a6a
     Model(State.RI, House.ushouse,       2,  True, VERSION, 'data/RI/004-2021A'), # 3017cc8
     Model(State.RI, House.statesenate,  38,  True, VERSION, 'data/RI/004-2021A'), # 3017cc8
     Model(State.RI, House.statehouse,   75,  True, VERSION, 'data/RI/004-2021A'), # 3017cc8
@@ -458,9 +458,9 @@ MODELS = [
     Model(State.UT, House.ushouse,       4,  True, VERSION, 'data/UT/001-ACS2019'), # ac34e68
     Model(State.UT, House.statesenate,  29,  True, VERSION, 'data/UT/001-ACS2019'), # ac34e68
     Model(State.UT, House.statehouse,   75,  True, VERSION, 'data/UT/001-ACS2019'), # ac34e68
-    Model(State.VA, House.ushouse,      11,  True, VERSION, 'data/VA/003-tilesdir'), # 08df871
-    Model(State.VA, House.statesenate,  40,  True, VERSION, 'data/VA/003-tilesdir'), # 08df871
-    Model(State.VA, House.statehouse,  100,  True, VERSION, 'data/VA/003-tilesdir'), # 08df871
+    Model(State.VA, House.ushouse,      11,  True, VERSION, 'data/VA/004-2021A'), # 2b48a6a
+    Model(State.VA, House.statesenate,  40,  True, VERSION, 'data/VA/004-2021A'), # 2b48a6a
+    Model(State.VA, House.statehouse,  100,  True, VERSION, 'data/VA/004-2021A'), # 2b48a6a
     Model(State.VT, House.ushouse,       1,  True, VERSION, 'data/VT/003-ACS2019'), # 0d7207e
     Model(State.VT, House.statesenate,  30,  True, VERSION, 'data/VT/003-ACS2019'), # 0d7207e
     Model(State.VT, House.statehouse,  150,  True, VERSION, 'data/VT/003-ACS2019'), # 0d7207e
