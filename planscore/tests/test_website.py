@@ -33,7 +33,7 @@ class TestWebsite (unittest.TestCase):
     def test_model_descriptions(self):
         ''' Every current, active model should have a decription page
         '''
-        paths = {'/models/data/{}/'.format(m.version) for m in data.MODELS2020}
+        paths = {'/models/data/{}/'.format(m.version) for m in data.MODELS}
         
         for path in paths:
             html = self.app.get(path).data.decode('utf8')

@@ -274,7 +274,7 @@ def guess_geometry_model(path):
 
     # Sort by log(seats) to findest smallest difference
     model_guesses = [(abs(math.log(len(features) / model.seats)), model)
-        for model in data.MODELS2020
+        for model in data.MODELS
         if model.state.value == state_abbr]
     
     try:
@@ -313,7 +313,7 @@ def guess_blockassign_model(path):
 
     # Sort by log(seats) to findest smallest difference
     model_guesses = [(abs(math.log(len(seat_count) / model.seats)), model)
-        for model in data.MODELS2020
+        for model in data.MODELS
         if model.state.value == state_abbr]
     
     try:

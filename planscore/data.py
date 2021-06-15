@@ -332,7 +332,7 @@ class Upload:
 
 # Active version of each state model
 
-MODELS2020 = [
+MODELS = [
     Model(State.XX, House.statehouse,    2,  True, '2020', 'data/XX/006-tilesdir'), # b8e19879
     Model(State.AK, House.ushouse,       1,  True, '2020', 'data/AK/001-tilesdir'), # 3a53579
     Model(State.AK, House.statesenate,  20,  True, '2020', 'data/AK/001-tilesdir'), # 3a53579

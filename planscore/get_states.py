@@ -8,7 +8,7 @@ def lambda_handler(event, context):
         'statusCode': '200',
         'headers': {'Access-Control-Allow-Origin': '*'},
         'body': json.dumps(
-            [(m.state.value, m.house.value) for m in data.MODELS2020],
+            [(m.state.value, m.house.value) for m in data.MODELS],
             indent=2,
         ),
     }
