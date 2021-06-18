@@ -181,9 +181,9 @@
 	        plan_url = format_url('{{ data_url_pattern }}', plan_id),
 	        geom_prefix = '{{ geom_url_prefix }}';
 	        text_url = format_url('{{ text_url_pattern }}', plan_id),
-	        eg_metric_url = '{{ url_for("get_efficiencygap_page") }}',
-	        pb_metric_url = '{{ url_for("get_partisanbias_page") }}',
-	        mm_metric_url = '{{ url_for("get_meanmedian_page") }}',
+	        eg_metric_url = 'https://planscore.org/metrics/efficiencygap/',
+	        pb_metric_url = 'https://planscore.org/metrics/partisanbias/',
+	        mm_metric_url = 'https://planscore.org/metrics/meanmedian/',
 	        model_url_pattern = '{{ url_for("get_model_description", prefix="data/2020") }}';
 
 	    load_plan_score(plan_url,
