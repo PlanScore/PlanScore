@@ -18,6 +18,20 @@ planscore-lambda.zip: gdal-geos-numpy-python.tar.gz
 gdal-geos-numpy-python.tar.gz:
 	curl https://planscore.s3.amazonaws.com/code/gdal-2.1.3-geos-3.6.1-numpy-1.19.2-python-3.6.1.tar.gz -o $@ -s
 
+live-metrics: metrics-lambda.zip
+	aws lambda update-function-code --region us-east-1 \
+		--function-name PlanScore-Update-Metrics \
+		--zip-file fileb://metrics-lambda.zip
+	aws lambda update-function-configuration --region us-east-1 \
+		--function-name PlanScore-Update-Metrics \
+		--handler planscore.update_metrics.lambda_handler \
+		--timeout 30
+
+metrics-lambda.zip:
+	mkdir -p metrics-lambda
+	pip3 install --use-feature=in-tree-build -q -t metrics-lambda '.[metrics]'
+	cd metrics-lambda && zip -rq ../metrics-lambda.zip .
+
 planscore/website/static/supported-states.svg: design/Upload-Map.svg planscore-svg
 	docker run --rm -it -v `pwd`:/vol -w /vol planscore-svg:latest
 
@@ -27,6 +41,7 @@ planscore-svg:
 # It's a pain to have to redownload gdal-geos-numpy-python.tar.gz so this sort-of cleans things
 cleanish:
 	rm -rf planscore-lambda planscore-lambda.zip
+	rm -rf metrics-lambda metrics-lambda.zip
 
 clean: cleanish
 	rm -f gdal-geos-numpy-python.tar.gz

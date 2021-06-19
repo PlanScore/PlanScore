@@ -53,6 +53,10 @@ setup(
             'aws-cdk.core == 1.108.1',
             'Frozen-Flask == 0.14',
             ],
+        'metrics': [
+            'google-api-python-client == 2.9.0',
+            'oauth2client == 4.1.3',
+            ],
         },
     entry_points = dict(
         console_scripts = [
@@ -60,6 +64,7 @@ setup(
             'planscore-polygonize = planscore.polygonize:main',
             'planscore-prepare-state = planscore.prepare_state:main',
             'planscore-score-locally = planscore.score:main',
+            'planscore-update-metrics = planscore.update_metrics:main',
             ]
         ),
 )
