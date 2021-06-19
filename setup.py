@@ -60,6 +60,7 @@ setup(
             'planscore-polygonize = planscore.polygonize:main',
             'planscore-prepare-state = planscore.prepare_state:main',
             'planscore-score-locally = planscore.score:main',
+            'planscore-update-metrics = planscore.update_metrics:main',
             ]
         ),
 )
