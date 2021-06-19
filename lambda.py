@@ -10,3 +10,4 @@ from planscore.authorizer import lambda_handler as authorizer
 from planscore.api_upload import lambda_handler as api_upload
 from planscore.get_states import lambda_handler as get_states
 from planscore.polygonize import lambda_handler as polygonize
+from planscore.update_metrics import lambda_handler as update_metrics

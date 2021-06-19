@@ -86,5 +86,8 @@ def main():
     for row in result['ResultSet']['Rows']:
         out.writerow([d.get('VarCharValue') for d in row['Data']])
 
+def lambda_handler(event, context):
+    return main()
+
 if __name__ == '__main__':
     exit(main(1))

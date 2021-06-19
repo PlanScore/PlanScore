@@ -3,6 +3,8 @@ PlanScore.egg-info
 __pycache__
 planscore-lambda
 planscore-lambda.zip
+metrics-lambda
+metrics-lambda.zip
 gdal-geos-python.tar.gz
 node_modules
 package-lock.json
