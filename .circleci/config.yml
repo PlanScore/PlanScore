@@ -62,6 +62,19 @@ jobs:
           at: ~/repo
       - run: make live-deploy
 
+  # Update metrics-gathering code
+  Metrics:
+    machine:
+      image: ubuntu-1604:201903-01
+    working_directory: ~/repo
+    steps:
+      - checkout
+      # Install Python things
+      - run: pyenv global 3.6.5
+      - run: pip3 install -U pip awscli
+      # Push metrics thing
+      - run: make live-metrics
+
 workflows:
   version: 2
   everything:
@@ -80,3 +93,10 @@ workflows:
             branches:
               only:
                 - main
+      - Metrics:
+          requires:
+            - Test
+          filters:
+            branches:
+              only:
+                - migurski/add-metrics-dashboard

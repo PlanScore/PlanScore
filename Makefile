@@ -19,10 +19,10 @@ gdal-geos-numpy-python.tar.gz:
 	curl https://planscore.s3.amazonaws.com/code/gdal-2.1.3-geos-3.6.1-numpy-1.19.2-python-3.6.1.tar.gz -o $@ -s
 
 live-metrics: metrics-lambda.zip
-	aws lambda update-function-code --dry-run \
+	aws lambda update-function-code --region us-east-1 \
 		--function-name PlanScore-Update-Metrics --zip-file fileb://metrics-lambda.zip
-	aws lambda update-function-configuration \
-		--function-name PlanScore-Update-Metrics --handler update_metrics
+	aws lambda update-function-configuration --region us-east-1 \
+		--function-name PlanScore-Update-Metrics --handler lambda.update_metrics
 
 metrics-lambda.zip:
 	mkdir -p metrics-lambda
