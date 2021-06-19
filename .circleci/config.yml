@@ -95,8 +95,8 @@ workflows:
                 - main
       - Metrics:
           requires:
-            - Test
+            - Deploy
           filters:
             branches:
               only:
-                - migurski/add-metrics-dashboard
+                - main
