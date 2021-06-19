@@ -2,12 +2,21 @@ import time
 import csv
 import sys
 import json
+import datetime
 
 import boto3
 import oauth2client.service_account
 import apiclient.discovery
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+
+FIELDS = ','.join([
+    "userEnteredValue",
+    "userEnteredFormat.numberFormat.type",
+    "userEnteredFormat.numberFormat.pattern",
+    "userEnteredFormat.horizontalAlignment",
+    "userEnteredFormat.textFormat.bold",
+    ])
 
 def make_service(cred_data):
     ''' Create a Google service account instance from credentials object.
@@ -30,16 +39,16 @@ def exec_and_wait(ath, query_string):
     
     return state, ath.get_query_results(QueryExecutionId=query_id)
 
-def update_metrics(cred_data, sheet_id):
+def update_metrics(cred_data, spreadsheet_id):
     ath = boto3.client('athena')
     
     service = make_service(cred_data)
     print(service)
     
-    resp1 = service.spreadsheets().get(spreadsheetId=sheet_id).execute()
-    sheet = resp1['sheets'][0]['properties']['sheetId']
+    resp1 = service.spreadsheets().get(spreadsheetId=spreadsheet_id).execute()
+    sheet_id = resp1['sheets'][0]['properties']['sheetId']
     print(resp1)
-    print(sheet)
+    print(sheet_id)
 
     exec_and_wait(ath, '''
         CREATE EXTERNAL TABLE IF NOT EXISTS `prod_scoring_logs`
@@ -128,6 +137,141 @@ def update_metrics(cred_data, sheet_id):
     
     print(state)
     print(result)
+    
+    column_count = len(result['ResultSet']['ResultSetMetadata']['ColumnInfo'])
+    row_count = len(result['ResultSet']['Rows'])
+    
+    body = {
+        'requests': [
+            # Date stamp
+            {
+                'updateCells': {
+                    'rows':
+                    [
+                        {
+                            'values': [
+                                {
+                                    "userEnteredValue": {
+                                        # The whole number portion of the value (left of the decimal) counts the days since December 30th 1899
+                                        # https://developers.google.com/sheets/api/reference/rest/v4/DateTimeRenderOption
+                                        'numberValue': (datetime.date.today() - datetime.date(1899, 12, 30)).days
+                                    },
+                                    "userEnteredFormat": {
+                                        'numberFormat': {
+                                            'type': 'DATE',
+                                            'pattern': 'ddd, mmm d yyyy',
+                                        },
+                                        'horizontalAlignment': 'LEFT',
+                                        'textFormat': {'bold': True},
+                                    },
+                                }
+                            ]
+                        }
+                    ],
+                    "fields": FIELDS,
+                    "range": {
+                        "sheetId": sheet_id,
+                        "startRowIndex": 0,
+                        "endRowIndex": 1,
+                        "startColumnIndex": 0,
+                        "endColumnIndex": 1
+                    }
+                }
+            },
+            # Header
+            {
+                'updateCells': {
+                    'rows':
+                    [
+                        {
+                            'values': [
+                                {
+                                    "userEnteredValue": {
+                                        'stringValue': datum.get('VarCharValue')
+                                    },
+                                    "userEnteredFormat": {
+                                        'textFormat': {'bold': True},
+                                    },
+                                }
+                                for datum in result['ResultSet']['Rows'][0]['Data']
+                            ]
+                        }
+                    ],
+                    "fields": FIELDS,
+                    "range": {
+                        "sheetId": sheet_id,
+                        "startRowIndex": 0,
+                        "endRowIndex": 1,
+                        "startColumnIndex": 1,
+                        "endColumnIndex": 1 + column_count
+                    }
+                }
+            },
+            # States
+            {
+                'updateCells': {
+                    'rows':
+                    [
+                        {
+                            'values': [
+                                {
+                                    "userEnteredValue": {
+                                        'stringValue': row['Data'][0].get('VarCharValue')
+                                    },
+                                }
+                            ]
+                        }
+                        for row
+                        in result['ResultSet']['Rows'][1:]
+                    ],
+                    "fields": FIELDS,
+                    "range": {
+                        "sheetId": sheet_id,
+                        "startRowIndex": 1,
+                        "endRowIndex": row_count,
+                        "startColumnIndex": 1,
+                        "endColumnIndex": 2
+                    }
+                }
+            },
+            # Numbers
+            {
+                'updateCells': {
+                    'rows':
+                    [
+                        {
+                            'values': [
+                                {
+                                    "userEnteredValue": {
+                                        'numberValue': int(datum.get('VarCharValue', 0))
+                                    },
+                                    "userEnteredFormat": {
+                                        'numberFormat': {
+                                            'type': 'NUMBER',
+                                            'pattern': '###0',
+                                        }
+                                    },
+                                }
+                                for datum in row['Data'][1:]
+                            ]
+                        }
+                        for row
+                        in result['ResultSet']['Rows'][1:]
+                    ],
+                    "fields": FIELDS,
+                    "range": {
+                        "sheetId": sheet_id,
+                        "startRowIndex": 1,
+                        "endRowIndex": row_count,
+                        "startColumnIndex": 2,
+                        "endColumnIndex": 1 + column_count
+                    }
+                }
+            },
+        ]
+    }
+    
+    service.spreadsheets().batchUpdate(spreadsheetId=spreadsheet_id, body=body).execute()
     
     out = csv.writer(sys.stdout, dialect='excel-tab')
     
