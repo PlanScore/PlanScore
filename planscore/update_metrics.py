@@ -1,8 +1,19 @@
 import time
 import csv
 import sys
+import json
 
 import boto3
+import oauth2client.service_account
+import apiclient.discovery
+
+SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+
+def make_service(cred_data):
+    ''' Create a Google service account instance from credentials object.
+    '''
+    creds = oauth2client.service_account.ServiceAccountCredentials.from_json_keyfile_dict(cred_data, SCOPES)
+    return apiclient.discovery.build('sheets', 'v4', credentials=creds)
 
 def exec_and_wait(ath, query_string):
     query_id = ath.start_query_execution(QueryString=query_string)['QueryExecutionId']
@@ -19,8 +30,16 @@ def exec_and_wait(ath, query_string):
     
     return state, ath.get_query_results(QueryExecutionId=query_id)
 
-def main():
+def update_metrics(cred_data, sheet_id):
     ath = boto3.client('athena')
+    
+    service = make_service(cred_data)
+    print(service)
+    
+    resp1 = service.spreadsheets().get(spreadsheetId=sheet_id).execute()
+    sheet = resp1['sheets'][0]['properties']['sheetId']
+    print(resp1)
+    print(sheet)
 
     exec_and_wait(ath, '''
         CREATE EXTERNAL TABLE IF NOT EXISTS `prod_scoring_logs`
@@ -116,7 +135,8 @@ def main():
         out.writerow([d.get('VarCharValue') for d in row['Data']])
 
 def lambda_handler(event, context):
-    return main()
+    return update_metrics(event['Google-Key'], event['Spreadsheet-ID'])
 
-if __name__ == '__main__':
-    exit(main(1))
+def main():
+    event = json.load(sys.stdin)
+    return update_metrics(event['Google-Key'], event['Spreadsheet-ID'])
