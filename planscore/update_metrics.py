@@ -21,20 +21,49 @@ def exec_and_wait(ath, query_string):
 
 def main():
     ath = boto3.client('athena')
+
+    exec_and_wait(ath, '''
+        CREATE EXTERNAL TABLE IF NOT EXISTS `prod_scoring_logs`
+        (
+          `id` string, 
+          `time` double, 
+          `elapsed` float, 
+          `message` string, 
+          `model_state` string, 
+          `model_house` string, 
+          `model_json` string, 
+          `key` string
+        )
+        PARTITIONED BY ( 
+          `ds` date)
+        ROW FORMAT DELIMITED 
+          FIELDS TERMINATED BY '\t' 
+        STORED AS INPUTFORMAT 
+          'org.apache.hadoop.mapred.TextInputFormat' 
+        OUTPUTFORMAT 
+          'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+        LOCATION
+          's3://planscore/logs/scoring'
+        TBLPROPERTIES (
+          'has_encrypted_data'='false')
+        '''
+    )
     
-    #exec_and_wait(ath, 'MSCK REPAIR TABLE prod_timing_logs')
+    exec_and_wait(ath, 'MSCK REPAIR TABLE prod_scoring_logs')
     
     state, result = exec_and_wait(ath, '''
         WITH all_states AS (
             SELECT count(distinct id) AS plans,
                  model_state
-            FROM prod_timing_logs
+            FROM prod_scoring_logs
+            WHERE model_state IS NOT NULL
+              AND model_state != ''
             GROUP BY  model_state
             ORDER BY  model_state
         ), last_7days AS (
             SELECT count(distinct id) AS plans,
                  model_state
-            FROM prod_timing_logs
+            FROM prod_scoring_logs
             WHERE ds
                 BETWEEN date_add('day', -7, now())
                     AND date_add('day', 0, now())
@@ -43,7 +72,7 @@ def main():
         ), last_30days AS (
             SELECT count(distinct id) AS plans,
                  model_state
-            FROM prod_timing_logs
+            FROM prod_scoring_logs
             WHERE ds
                 BETWEEN date_add('day', -30, now())
                     AND date_add('day', 0, now())
@@ -52,7 +81,7 @@ def main():
         ), prior_30days AS (
             SELECT count(distinct id) AS plans,
                  model_state
-            FROM prod_timing_logs
+            FROM prod_scoring_logs
             WHERE ds
                 BETWEEN date_add('day', -60, now())
                     AND date_add('day', -31, now())
