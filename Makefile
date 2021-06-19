@@ -20,14 +20,16 @@ gdal-geos-numpy-python.tar.gz:
 
 live-metrics: metrics-lambda.zip
 	aws lambda update-function-code --region us-east-1 \
-		--function-name PlanScore-Update-Metrics --zip-file fileb://metrics-lambda.zip
+		--function-name PlanScore-Update-Metrics \
+		--zip-file fileb://metrics-lambda.zip
 	aws lambda update-function-configuration --region us-east-1 \
-		--function-name PlanScore-Update-Metrics --handler lambda.update_metrics
+		--function-name PlanScore-Update-Metrics \
+		--handler planscore.update_metrics.lambda_handler \
+		--timeout 30
 
 metrics-lambda.zip:
 	mkdir -p metrics-lambda
 	pip3 install --use-feature=in-tree-build -q -t metrics-lambda '.[metrics]'
-	cp lambda.py metrics-lambda/lambda.py
 	cd metrics-lambda && zip -rq ../metrics-lambda.zip .
 
 planscore/website/static/supported-states.svg: design/Upload-Map.svg planscore-svg
