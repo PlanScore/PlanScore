@@ -132,8 +132,6 @@ class PlanScoreScoring(cdk.Stack):
                 'our-plan.html': scoring_behavior,
                 'plan.html': scoring_behavior,
                 'upload*': scoring_behavior,
-                'about*': scoring_behavior,
-                'metrics*': scoring_behavior,
                 'models/*': scoring_behavior,
                 'resource-*': scoring_behavior,
                 'static/*': scoring_behavior,

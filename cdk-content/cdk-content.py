@@ -35,7 +35,7 @@ class PlanScoreContent(cdk.Stack):
         cdk.CfnOutput(self, 'WebsiteBase', value=website_base)
         
         self.fill_static_bucket(stack_id, website_base, static_site_bucket)
-        self.fill_scoring_bucket(stack_id, data_bucket, api_base, scoring_site_bucket)
+        self.fill_scoring_bucket(stack_id, data_bucket, website_base, api_base, scoring_site_bucket)
     
     def fill_static_bucket(self, stack_id, website_base, static_site_bucket):
 
@@ -84,7 +84,7 @@ class PlanScoreContent(cdk.Stack):
             ],
         )
     
-    def fill_scoring_bucket(self, stack_id, data_bucket, api_base, scoring_site_bucket):
+    def fill_scoring_bucket(self, stack_id, data_bucket, website_base, api_base, scoring_site_bucket):
 
         scoring_dirname = tempfile.mkdtemp(dir='/tmp', prefix='scoring-site-content-')
 
@@ -102,6 +102,21 @@ class PlanScoreContent(cdk.Stack):
             ),
             cwd='..',
         )
+
+        for (dirname, _, filenames) in os.walk(scoring_dirname):
+            for filename in filenames:
+                _, ext = os.path.splitext(filename)
+                if ext in ('.jpg', '.png', '.gz', '.pdf'):
+                    continue
+                path = os.path.join(dirname, filename)
+                with open(path, 'r') as file1:
+                    try:
+                        content1 = file1.read()
+                    except UnicodeDecodeError as err:
+                        raise ValueError(f'{err} reading file {path}')
+                content2 = content1.replace('https://planscore.org/', website_base)
+                with open(path, 'w') as file2:
+                    file2.write(content2)
 
         aws_s3_deployment.BucketDeployment(
             self,
