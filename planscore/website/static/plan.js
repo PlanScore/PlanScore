@@ -868,7 +868,9 @@ function load_plan_score(url, message_section, score_section,
                 } else {
                     value = '???';
                 }
-                tags = tags.concat([`<td ${maybeAlignLeft(j)}>`, value, '</td>']);
+                tags = j == 0 
+                  ? tags.concat([`<th ${maybeAlignLeft(j)}>`, value, '</th>'])
+                  : tags.concat([`<td ${maybeAlignLeft(j)}>`, value, '</td>']);
             }
             tags = tags.concat(['</tr>']);
         }
