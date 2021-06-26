@@ -81,11 +81,17 @@ def update_metrics(cred_data, spreadsheet_id):
     
     state, result = exec_and_wait(ath, '''
         WITH all_states AS (
+            SELECT model_state FROM UNNEST(array[
+                'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+                'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+                'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+                'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+                'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+            ]) as all_states(model_state)
+        ), all_time AS (
             SELECT count(distinct id) AS plans,
                  model_state
             FROM prod_scoring_logs
-            WHERE model_state IS NOT NULL
-              AND model_state != ''
             GROUP BY  model_state
             ORDER BY  model_state
         ), last_7days AS (
@@ -117,7 +123,7 @@ def update_metrics(cred_data, spreadsheet_id):
             ORDER BY  model_state
         )
         SELECT all_states.model_state,
-                 all_states.plans AS total,
+                 all_time.plans AS total,
                  prior_30days.plans AS prior_30days,
                  last_30days.plans AS last_30days,
                  coalesce(last_30days.plans,
@@ -125,6 +131,8 @@ def update_metrics(cred_data, spreadsheet_id):
                  0) AS change,
                  last_7days.plans AS last_7days
         FROM all_states
+        LEFT JOIN all_time
+            ON all_time.model_state = all_states.model_state
         LEFT JOIN last_7days
             ON last_7days.model_state = all_states.model_state
         LEFT JOIN last_30days
