@@ -87,11 +87,6 @@
         path.highlight {
             stroke-width: 5;
         }
-        
-
-        .table td, table th { text-align: right; }
-        .table td.ltxt, table th.ltxt { text-align: left; }
-       
     </style>
 {% endblock %}
 {% block content %}
@@ -162,7 +157,7 @@
         </li>
     </ul>
     <p id="map"></p>
-    <div class="col-xs-12 col-sm-12  table-jehl">
+    <div class="col-xs-12 col-sm-12  table-jehl table-districts">
         <table class="table table-hover" id="districts">
             {# this table will be populated by load_plan_score() #}
         </table>
