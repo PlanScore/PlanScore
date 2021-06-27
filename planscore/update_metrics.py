@@ -129,7 +129,7 @@ def update_metrics(cred_data, spreadsheet_id):
                  coalesce(all_time.plans, 0)
                     - coalesce(last_30days.plans, 0)
                     - coalesce(prior_30days.plans, 0)
-                    AS remainder,
+                    AS over_60days,
                  last_7days.plans AS last_7days
         FROM all_states
         LEFT JOIN all_time
