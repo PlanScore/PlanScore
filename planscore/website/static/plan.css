@@ -42,3 +42,63 @@ div.planscore-partylegend div.planscore-partylegend-words {
     display: inline-block;
     vertical-align: text-bottom;
 }
+
+.table-districts {
+    height: calc(100vh - 400px - 20px); /* fit on screen along with the 400px tall map, and some margin */
+    min-height: 300px;
+    padding: 0;
+    width: 100%;
+    margin-bottom: 15px;
+}
+@media only print {
+    .table-districts { height: auto; }
+}
+.table-districts td, .table-districts th { text-align: right; }
+.table-districts td.ltxt, .table-districts th.ltxt { text-align: left; }
+.table-districts tbody td {
+    white-space: nowrap; /* nowrap => body rows stay single-line => more dense display */
+}
+.table-districts table {
+    margin: 0;
+}
+
+/* 
+    CSS responsive table with fixed column and row headers and scroll snap
+    by Scott Jehl
+    https://codepen.io/scottjehl/pen/abJrPOP?editors=1100
+*/
+.table-jehl {
+    scroll-snap-type: x mandatory;
+    overflow: auto;
+    border: 1px solid #ddd;
+}
+.table-jehl th, .table-jehl td {
+    scroll-snap-align: start;
+}
+.table-jehl thead {
+    z-index: 1000;
+    position: relative;
+}
+.table-jehl thead th {
+    position: sticky;
+    top: 0;
+}
+.table-jehl thead th:first-child {
+    left: 0;
+    z-index: 1001;
+    border-left: 0;
+}
+.table-jehl tbody {
+    z-index: 10;
+    position: relative;
+}
+.table-jehl tbody th {
+    background-clip: padding-box;
+    border-left: 0;
+    position: sticky;
+    left: 0;
+}
+.table-jehl thead th,
+.table-jehl tbody th {
+    background-color: #f8f8f8;
+}
