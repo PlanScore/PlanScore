@@ -183,7 +183,7 @@ class TestPrereadFollowup (unittest.TestCase):
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 11, 'NC'
         self.assertEqual(preread_followup.guess_geometry_model('districts.shp').house, data.House.ushouse)
-        self.assertEqual(preread_followup.guess_geometry_model('districts.shp').key_prefix, 'data/NC/015-tilesdir')
+        self.assertEqual(preread_followup.guess_geometry_model('districts.shp').key_prefix, 'data/NC/016-vest2020')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 13, 'NC'
         self.assertEqual(preread_followup.guess_geometry_model('districts.shp').house, data.House.ushouse)
