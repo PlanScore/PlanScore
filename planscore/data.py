@@ -345,24 +345,24 @@ MODELS = [
     Model(State.AR, House.ushouse,       4,  True, VERSION, 'data/AR/001-tilesdir'), # 6673c68
     Model(State.AR, House.statesenate,  35,  True, VERSION, 'data/AR/001-tilesdir'), # 6673c68
     Model(State.AR, House.statehouse,  100,  True, VERSION, 'data/AR/001-tilesdir'), # 6673c68
-    Model(State.AZ, House.ushouse,       9,  True, VERSION, 'data/AZ/003-2021A'), # 3017cc8
-    Model(State.AZ, House.statesenate,  30,  True, VERSION, 'data/AZ/003-2021A'), # 3017cc8
-    Model(State.AZ, House.statehouse,   60,  True, VERSION, 'data/AZ/003-2021A'), # 3017cc8
+    Model(State.AZ, House.ushouse,       9,  True, VERSION, 'data/AZ/004-vest2020'), # 924e34c
+    Model(State.AZ, House.statesenate,  30,  True, VERSION, 'data/AZ/004-vest2020'), # 924e34c
+    Model(State.AZ, House.statehouse,   60,  True, VERSION, 'data/AZ/004-vest2020'), # 924e34c
     Model(State.CA, House.ushouse,      55,  True, VERSION, 'data/CA/002-tilesdir'), # b969229
     Model(State.CA, House.statesenate,  40,  True, VERSION, 'data/CA/002-tilesdir'), # b969229
     Model(State.CA, House.statehouse,   80,  True, VERSION, 'data/CA/002-tilesdir'), # b969229
-    Model(State.CO, House.ushouse,       7,  True, VERSION, 'data/CO/002-tilesdir'), # 57155ad
-    Model(State.CO, House.statesenate,  35,  True, VERSION, 'data/CO/002-tilesdir'), # 57155ad
-    Model(State.CO, House.statehouse,   65,  True, VERSION, 'data/CO/002-tilesdir'), # 57155ad
+    Model(State.CO, House.ushouse,       7,  True, VERSION, 'data/CO/003-vest2020'), # 924e34c
+    Model(State.CO, House.statesenate,  35,  True, VERSION, 'data/CO/003-vest2020'), # 924e34c
+    Model(State.CO, House.statehouse,   65,  True, VERSION, 'data/CO/003-vest2020'), # 924e34c
     Model(State.DE, House.ushouse,       1,  True, VERSION, 'data/DE/004-2021A'), # 3017cc8
     Model(State.DE, House.statesenate,  21,  True, VERSION, 'data/DE/004-2021A'), # 3017cc8
     Model(State.DE, House.statehouse,   41,  True, VERSION, 'data/DE/004-2021A'), # 3017cc8
     Model(State.FL, House.ushouse,      27,  True, VERSION, 'data/FL/003-tilesdir'), # 56f7c85
     Model(State.FL, House.statesenate,  40,  True, VERSION, 'data/FL/003-tilesdir'), # 56f7c85
     Model(State.FL, House.statehouse,  120,  True, VERSION, 'data/FL/003-tilesdir'), # 56f7c85
-    Model(State.GA, House.ushouse,      14,  True, VERSION, 'data/GA/005-2021A'), # 3017cc8
-    Model(State.GA, House.statesenate,  56,  True, VERSION, 'data/GA/005-2021A'), # 3017cc8
-    Model(State.GA, House.statehouse,  180,  True, VERSION, 'data/GA/005-2021A'), # 3017cc8
+    Model(State.GA, House.ushouse,      14,  True, VERSION, 'data/GA/006-vest2020'), # 924e34c
+    Model(State.GA, House.statesenate,  56,  True, VERSION, 'data/GA/006-vest2020'), # 924e34c
+    Model(State.GA, House.statehouse,  180,  True, VERSION, 'data/GA/006-vest2020'), # 924e34c
     Model(State.HI, House.ushouse,       2,  True, VERSION, 'data/HI/002-2021A'), # 3017cc8
     Model(State.HI, House.statesenate,  25,  True, VERSION, 'data/HI/002-2021A'), # 3017cc8
     Model(State.HI, House.statehouse,   51,  True, VERSION, 'data/HI/002-2021A'), # 3017cc8
@@ -393,9 +393,9 @@ MODELS = [
     Model(State.MD, House.ushouse,       8,  True, VERSION, 'data/MD/005-tilesdir'), # 56f7c85
     Model(State.MD, House.statesenate,  47,  True, VERSION, 'data/MD/005-tilesdir'), # 56f7c85
     Model(State.MD, House.statehouse,   68,  True, VERSION, 'data/MD/005-tilesdir'), # 56f7c85
-    Model(State.ME, House.ushouse,       2,  True, VERSION, 'data/ME/003-ACS2019'), # 0d7207e
-    Model(State.ME, House.statesenate,  35,  True, VERSION, 'data/ME/003-ACS2019'), # 0d7207e
-    Model(State.ME, House.statehouse,  151,  True, VERSION, 'data/ME/003-ACS2019'), # 0d7207e
+    Model(State.ME, House.ushouse,       2,  True, VERSION, 'data/ME/004-vest2020'), # 924e34c
+    Model(State.ME, House.statesenate,  35,  True, VERSION, 'data/ME/004-vest2020'), # 924e34c
+    Model(State.ME, House.statehouse,  151,  True, VERSION, 'data/ME/004-vest2020'), # 924e34c
     Model(State.MI, House.ushouse,      14,  True, VERSION, 'data/MI/003-tilesdir'), # 56f7c85
     Model(State.MI, House.statesenate,  38,  True, VERSION, 'data/MI/003-tilesdir'), # 56f7c85
     Model(State.MI, House.statehouse,  110,  True, VERSION, 'data/MI/003-tilesdir'), # 56f7c85
@@ -408,9 +408,9 @@ MODELS = [
     Model(State.MT, House.ushouse,       1,  True, VERSION, 'data/MT/004-2021A'), # 3017cc8
     Model(State.MT, House.statesenate,  50,  True, VERSION, 'data/MT/004-2021A'), # 3017cc8
     Model(State.MT, House.statehouse,  100,  True, VERSION, 'data/MT/004-2021A'), # 3017cc8
-    Model(State.NC, House.ushouse,      13,  True, VERSION, 'data/NC/015-tilesdir'), # 56f7c85
-    Model(State.NC, House.statesenate,  50,  True, VERSION, 'data/NC/015-tilesdir'), # 56f7c85
-    Model(State.NC, House.statehouse,  120,  True, VERSION, 'data/NC/015-tilesdir'), # 56f7c85
+    Model(State.NC, House.ushouse,      13,  True, VERSION, 'data/NC/016-vest2020'), # 924e34c
+    Model(State.NC, House.statesenate,  50,  True, VERSION, 'data/NC/016-vest2020'), # 924e34c
+    Model(State.NC, House.statehouse,  120,  True, VERSION, 'data/NC/016-vest2020'), # 924e34c
     Model(State.ND, House.ushouse,       1,  True, VERSION, 'data/ND/003-ACS2019'), # 0d7207e
     Model(State.ND, House.statesenate,  47,  True, VERSION, 'data/ND/003-ACS2019'), # 0d7207e
     Model(State.ND, House.statehouse,   94,  True, VERSION, 'data/ND/003-ACS2019'), # 0d7207e
@@ -425,9 +425,9 @@ MODELS = [
     Model(State.NM, House.ushouse,       3,  True, VERSION, 'data/NM/001-ACS2019'), # ac34e68
     Model(State.NM, House.statesenate,  42,  True, VERSION, 'data/NM/001-ACS2019'), # ac34e68
     Model(State.NM, House.statehouse,   70,  True, VERSION, 'data/NM/001-ACS2019'), # ac34e68
-    Model(State.NV, House.ushouse,       4,  True, VERSION, 'data/NV/001-tilesdir'), # bcf3dd1
-    Model(State.NV, House.statesenate,  21,  True, VERSION, 'data/NV/001-tilesdir'), # bcf3dd1
-    Model(State.NV, House.statehouse,   42,  True, VERSION, 'data/NV/001-tilesdir'), # bcf3dd1
+    Model(State.NV, House.ushouse,       4,  True, VERSION, 'data/NV/002-vest2020'), # 924e34c
+    Model(State.NV, House.statesenate,  21,  True, VERSION, 'data/NV/002-vest2020'), # 924e34c
+    Model(State.NV, House.statehouse,   42,  True, VERSION, 'data/NV/002-vest2020'), # 924e34c
     Model(State.OH, House.ushouse,      16,  True, VERSION, 'data/OH/003-2021A'), # 3017cc8
     Model(State.OH, House.statesenate,  33,  True, VERSION, 'data/OH/003-2021A'), # 3017cc8
     Model(State.OH, House.statehouse,   99,  True, VERSION, 'data/OH/003-2021A'), # 3017cc8
@@ -455,15 +455,15 @@ MODELS = [
     Model(State.TX, House.ushouse,      36,  True, VERSION, 'data/TX/003-tilesdir'), # 56f7c85
     Model(State.TX, House.statesenate,  31,  True, VERSION, 'data/TX/003-tilesdir'), # 56f7c85
     Model(State.TX, House.statehouse,  150,  True, VERSION, 'data/TX/003-tilesdir'), # 56f7c85
-    Model(State.UT, House.ushouse,       4,  True, VERSION, 'data/UT/001-ACS2019'), # ac34e68
-    Model(State.UT, House.statesenate,  29,  True, VERSION, 'data/UT/001-ACS2019'), # ac34e68
-    Model(State.UT, House.statehouse,   75,  True, VERSION, 'data/UT/001-ACS2019'), # ac34e68
+    Model(State.UT, House.ushouse,       4,  True, VERSION, 'data/UT/002-vest2020'), # 924e34c
+    Model(State.UT, House.statesenate,  29,  True, VERSION, 'data/UT/002-vest2020'), # 924e34c
+    Model(State.UT, House.statehouse,   75,  True, VERSION, 'data/UT/002-vest2020'), # 924e34c
     Model(State.VA, House.ushouse,      11,  True, VERSION, 'data/VA/004-2021A'), # 2b48a6a
     Model(State.VA, House.statesenate,  40,  True, VERSION, 'data/VA/004-2021A'), # 2b48a6a
     Model(State.VA, House.statehouse,  100,  True, VERSION, 'data/VA/004-2021A'), # 2b48a6a
-    Model(State.VT, House.ushouse,       1,  True, VERSION, 'data/VT/003-ACS2019'), # 0d7207e
-    Model(State.VT, House.statesenate,  30,  True, VERSION, 'data/VT/003-ACS2019'), # 0d7207e
-    Model(State.VT, House.statehouse,  150,  True, VERSION, 'data/VT/003-ACS2019'), # 0d7207e
+    Model(State.VT, House.ushouse,       1,  True, VERSION, 'data/VT/004-vest2020'), # 924e34c
+    Model(State.VT, House.statesenate,  30,  True, VERSION, 'data/VT/004-vest2020'), # 924e34c
+    Model(State.VT, House.statehouse,  150,  True, VERSION, 'data/VT/004-vest2020'), # 924e34c
     Model(State.WA, House.ushouse,      10,  True, VERSION, 'data/WA/002-tilesdir'), # 57155ad
     Model(State.WA, House.statesenate,  49,  True, VERSION, 'data/WA/002-tilesdir'), # 57155ad
     Model(State.WA, House.statehouse,   98,  True, VERSION, 'data/WA/002-tilesdir'), # 57155ad
