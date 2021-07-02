@@ -31,6 +31,19 @@ var FIELDS = [
     /*, 'Polsby-Popper', 'Reock'*/
 ];
 
+const fieldToDisplayName = {
+    'US President 2016 - DEM': 'Clinton (D) 2016',
+    'US President 2016 - REP': 'Trump (R) 2016',
+    'US President 2020 - DEM': 'Biden (D) 2020',
+    'US President 2020 - REP': 'Trump (R) 2020',
+    'Citizen Voting-Age Population 2018': 'CVAP 2018',
+    'Black Citizen Voting-Age Population 2015': 'Black Non-Hispanic CVAP 2015',
+    'Hispanic Citizen Voting-Age Population 2015': 'Hispanic CVAP 2015',
+    'Black Population 2018': 'Black Pop. 2018',
+    'Hispanic Population 2018': 'Hispanic Pop. 2018',
+};
+
+
 var BLUE_COLOR_HEX = '#4D90D1',
     RED_COLOR_HEX = '#D45557',
     LEAN_BLUE_COLOR_HEX = '#6D8AB1',
@@ -465,37 +478,10 @@ function update_heading_titles(head)
         head[rep_index] = 'Predicted Republican Vote Share';
     }
 
-    if(head.indexOf('US President 2016 - DEM') >= 0 && head.indexOf('US President 2016 - REP') >= 0)
-    {
-        head[head.indexOf('US President 2016 - DEM')] = 'US President 2016: Clinton (D)';
-        head[head.indexOf('US President 2016 - REP')] = 'US President 2016: Trump (R)';
-    }
-
-    if(head.indexOf('US President 2020 - DEM') >= 0 && head.indexOf('US President 2020 - REP') >= 0)
-    {
-        head[head.indexOf('US President 2020 - DEM')] = 'US President 2020: Biden (D)';
-        head[head.indexOf('US President 2020 - REP')] = 'US President 2020: Trump (R)';
-    }
-
-    if(head.indexOf('Citizen Voting-Age Population 2015') >= 0
-        && head.indexOf('Black Citizen Voting-Age Population 2015') >= 0
-        && head.indexOf('Hispanic Citizen Voting-Age Population 2015') >= 0)
-    {
-        head[head.indexOf('Black Citizen Voting-Age Population 2015')] = 'Black Non-Hispanic CVAP 2015';
-        head[head.indexOf('Hispanic Citizen Voting-Age Population 2015')] = 'Hispanic CVAP 2015';
-    }
-
-    const renames = {
-        'Black Population 2018': 'Black Pop. 2018',
-        'Hispanic Population 2018': 'Hispanic 2018',
-        'Citizen Voting-Age Population 2018': 'CVAP 2018',
-        'US President 2016: Clinton (D)': 'Clinton (D) 2016',
-        'US President 2016: Trump (R)': 'Trump (R) 2016',
-    };
-
+    // Rename titles for optimal text-wrapping
     head.forEach((dataTitle, i) => {
-        if (renames[dataTitle]) {
-            head[i] = renames[dataTitle];
+        if (fieldToDisplayName[dataTitle]) {
+            head[i] = fieldToDisplayName[dataTitle];
         }
     });
 }
