@@ -2,6 +2,18 @@ assert = require('assert');
 plan = require('./planscore/website/static/plan.js');
 annotate_new = require('./planscore/website/static/annotate-new.js');
 
+// Object.entries() polyfill for circle-ci machines with Node 6
+if (!Object.entries) {
+    Object.entries = function (obj) {
+        var ownProps = Object.keys(obj),
+        i = ownProps.length,
+        resArray = new Array(i); // preallocate the Array
+        while (i--) resArray[i] = [ownProps[i], obj[ownProps[i]]];
+
+        return resArray;
+    };
+}
+
 var NC_index = require('./data/sample-NC-1-992/index.json'),
     NC_incomplete_index = require('./data/sample-NC-1-992-incomplete/index.json'),
     NC_simple_index = require('./data/sample-NC-1-992-simple/index.json'),
