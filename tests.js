@@ -149,10 +149,10 @@ assert.equal(plan.what_score_description_text(NC_public_index),
     "Here is a great plan.", 'Should find the right description');
 
 assert.deepEqual(plan_array5[0],
-    ['District', 'Population 2010', 'Population 2015',
-    'Black Population 2015', 'Hispanic Population 2015',
+    ['District', 'Pop. 2010', 'Pop. 2015',
+    'Black Pop. 2015', 'Hispanic Pop. 2015',
     'Predicted Democratic Vote Share', 'Predicted Republican Vote Share',
-    'US President 2016: Clinton (D)', 'US President 2016: Trump (R)'
+    'Clinton (D) 2016', 'Trump (R) 2016'
     /*, 'Polsby-Popper', 'Reock'*/],
     'Should pick out the right column names');
 
@@ -182,8 +182,8 @@ var plan_array6 = plan.plan_array(NC_2019_no_incumbency);
 assert.equal(plan_array6.length, 14, 'Should have a header with 13 districts');
 
 assert.deepEqual(plan_array6[0],
-    ['District', 'Population 2010', 'Population 2016',
-    'Black Population 2016', 'Hispanic Population 2016',
+    ['District', 'Pop. 2010', 'Pop. 2016',
+    'Black Pop. 2016', 'Hispanic Pop. 2016',
     'Predicted Democratic Vote Share', 'Predicted Republican Vote Share'],
     'Should pick out the right column names');
 
@@ -205,8 +205,8 @@ var plan_array7 = plan.plan_array(NC_2019_incumbency);
 assert.equal(plan_array7.length, 14, 'Should have a header with 13 districts');
 
 assert.deepEqual(plan_array7[0],
-    ['District', 'Candidate Scenario', 'Population 2010', 'Population 2016',
-    'Black Population 2016', 'Hispanic Population 2016',
+    ['District', 'Candidate Scenario', 'Pop. 2010', 'Pop. 2016',
+    'Black Pop. 2016', 'Hispanic Pop. 2016',
     'Predicted Democratic Vote Share', 'Predicted Republican Vote Share'],
     'Should pick out the right column names');
 
@@ -317,12 +317,12 @@ assert.deepEqual(head1, ['Predicted Democratic Vote Share', 'Predicted Republica
 var head2 = ['Citizen Voting-Age Population 2015',
     'Black Citizen Voting-Age Population 2015', 'Hispanic Citizen Voting-Age Population 2015'];
 plan.update_heading_titles(head2)
-assert.deepEqual(head2, ['Citizen Voting-Age Population 2015',
+assert.deepEqual(head2, ['CVAP 2015',
     'Black Non-Hispanic CVAP 2015', 'Hispanic CVAP 2015']);
 
 var head3 = ['US President 2016 - DEM', 'US President 2016 - REP'];
 plan.update_heading_titles(head3)
-assert.deepEqual(head3, ['US President 2016: Clinton (D)', 'US President 2016: Trump (R)']);
+assert.deepEqual(head3, ['Clinton (D) 2016', 'Trump (R) 2016']);
 
 var head4 = ['Democratic Wins'];
 plan.update_heading_titles(head4)
@@ -331,6 +331,10 @@ assert.deepEqual(head4, ['Chance of Democratic Win']);
 var head5 = ['Democratic Wins', 'Democratic Votes', 'Republican Votes'];
 plan.update_heading_titles(head5)
 assert.deepEqual(head5, ['Chance of Democratic Win', 'Predicted Vote Shares']);
+
+var head6 = ['Population 2016', 'Black Population 2016', 'Hispanic Population 2016']
+plan.update_heading_titles(head6)
+assert.deepEqual(head6, ['Pop. 2016', 'Black Pop. 2016', 'Hispanic Pop. 2016']);
 
 var row1 = [4, 6];
 plan.update_vote_percentages(['Democratic Votes', 'Republican Votes'], row1, {});
@@ -482,3 +486,5 @@ assert.equal(annotate_new.which_plan_districts_count(NC_2019_preread_end),
 
 assert.equal(annotate_new.get_description(NC_2019_preread_end, undefined),
     'North Carolina U.S. House plan uploaded on 12/28/2019');
+
+console.log('Tests pass.', new Date().toLocaleString());

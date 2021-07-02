@@ -39,6 +39,7 @@ const fieldToDisplayStr = {
 };
 
 const fieldSubstringToDisplayStr = {
+    'Black Citizen Voting-Age Population': 'Black Non-Hispanic CVAP',
     'Citizen Voting-Age Population': 'CVAP',
     'Population': 'Pop.',
 };
@@ -482,10 +483,11 @@ function update_heading_titles(head)
 
     // Rename titles for optimal text-wrapping
     head.forEach((dataTitle, i) => {
+        // Rename entire titles
         if (fieldToDisplayStr[dataTitle]) {
             head[i] = fieldToDisplayStr[dataTitle];
         }
-        // Rename 'Citizen Voting-Age Population' => 'CVAP', etc.
+        // Rename title substrings, eg 'Citizen Voting-Age Population' => 'CVAP'
         for (const [substrMatch, substrReplacement] of Object.entries(fieldSubstringToDisplayStr)) {
             if (head[i].includes(substrMatch)) {
                 const newTitle = head[i].replace(substrMatch, substrReplacement);
