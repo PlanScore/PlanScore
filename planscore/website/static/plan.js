@@ -484,6 +484,20 @@ function update_heading_titles(head)
         head[head.indexOf('Black Citizen Voting-Age Population 2015')] = 'Black Non-Hispanic CVAP 2015';
         head[head.indexOf('Hispanic Citizen Voting-Age Population 2015')] = 'Hispanic CVAP 2015';
     }
+
+    const renames = {
+        'Black Population 2018': 'Black Pop. 2018',
+        'Hispanic Population 2018': 'Hispanic 2018',
+        'Citizen Voting-Age Population 2018': 'CVAP 2018',
+        'US President 2016: Clinton (D)': 'Clinton (D) 2016',
+        'US President 2016: Trump (R)': 'Trump (R) 2016',
+    };
+
+    head.forEach((dataTitle, i) => {
+        if (renames[dataTitle]) {
+            head[i] = renames[dataTitle];
+        }
+    });
 }
 
 function update_vote_percentages(head, row, source_row)
