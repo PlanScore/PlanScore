@@ -31,17 +31,19 @@ var FIELDS = [
     /*, 'Polsby-Popper', 'Reock'*/
 ];
 
-const fieldToDisplayName = {
+const fieldToDisplayStr = {
     'US President 2016 - DEM': 'Clinton (D) 2016',
     'US President 2016 - REP': 'Trump (R) 2016',
     'US President 2020 - DEM': 'Biden (D) 2020',
     'US President 2020 - REP': 'Trump (R) 2020',
-    'Citizen Voting-Age Population 2018': 'CVAP 2018',
-    'Black Citizen Voting-Age Population 2015': 'Black Non-Hispanic CVAP 2015',
-    'Hispanic Citizen Voting-Age Population 2015': 'Hispanic CVAP 2015',
-    'Black Population 2018': 'Black Pop. 2018',
-    'Hispanic Population 2018': 'Hispanic Pop. 2018',
 };
+
+const fieldSubstringToDisplayStr = {
+    'Citizen Voting-Age Population': 'CVAP',
+    'Population': 'Pop.',
+};
+// Keep track of substring renames for adding tooltips
+const renamedHeadingToOrigField = new Map();
 
 
 var BLUE_COLOR_HEX = '#4D90D1',
@@ -480,8 +482,16 @@ function update_heading_titles(head)
 
     // Rename titles for optimal text-wrapping
     head.forEach((dataTitle, i) => {
-        if (fieldToDisplayName[dataTitle]) {
-            head[i] = fieldToDisplayName[dataTitle];
+        if (fieldToDisplayStr[dataTitle]) {
+            head[i] = fieldToDisplayStr[dataTitle];
+        }
+        // Rename 'Citizen Voting-Age Population' => 'CVAP', etc.
+        for (const [substrMatch, substrReplacement] of Object.entries(fieldSubstringToDisplayStr)) {
+            if (head[i].includes(substrMatch)) {
+                const newTitle = head[i].replace(substrMatch, substrReplacement);
+                renamedHeadingToOrigField.set(newTitle, head[i]);
+                head[i] = newTitle;
+            }
         }
     });
 }
@@ -850,10 +860,17 @@ function load_plan_score(url, message_section, score_section,
             return j == 1 && has_incumbency ? 'class="ltxt"' : '';
         }
 
+        // If we shorted the display of this heading, add a tooltip with the expanded version.
+        function tooltip(title) {
+            if (!renamedHeadingToOrigField.has(title)) return '';
+            return `title="${renamedHeadingToOrigField.get(title)}"`;
+        }
+
         tags = ['<thead>', '<tr>'];
         for(var j = 0; j < table_array[0].length; j++)
         {
-            tags = tags.concat([`<th ${maybeAlignLeft(j)}>`, table_array[0][j], '</th>']);
+            const headingTitle = table_array[0][j];
+            tags = tags.concat([`<th ${maybeAlignLeft(j)} ${tooltip(headingTitle)}>`, headingTitle, '</th>']);
         }
         tags = tags.concat(['</tr>', '</thead>', '<tbody>']);
         for(var i = 1; i < table_array.length; i++)
