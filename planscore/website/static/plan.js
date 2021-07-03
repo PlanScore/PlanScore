@@ -128,15 +128,6 @@ function date_age(date)
     return (new Date()).getTime() / 1000 - date.getTime() / 1000;
 }
 
-function what_score_description_text(plan)
-{
-    if(typeof plan['description'] === 'string')
-    {
-        return plan['description'];
-    }
-
-    return false; // No description provided
-}
 
 function which_score_summary_name(plan)
 {
@@ -766,7 +757,7 @@ function nice_plan_voteshare(plan)
         + 'and ' + nice_percent(red_votes / (blue_votes + red_votes)) + ' (Republican)');
 }
 
-function get_description(plan, modified_at)
+function get_plan_type_text(plan)
 {
     var states = {
         'XX': 'Null Island',
@@ -789,24 +780,41 @@ function get_description(plan, modified_at)
         'MT': 'Montana'
         };
     
-    var description = ['Plan uploaded'], houses = {'ushouse': 'U.S. House',
+    var plan_type_text = ['Plan uploaded'], houses = {'ushouse': 'U.S. House',
         'statesenate': 'State Senate', 'statehouse': 'State House'};
+
     
+    if(plan['model'])
+    {
+        plan_type_text = `${states[plan.model.state]} ${houses[plan.model.house]} plan`;
+    }
+
+    return plan_type_text; 
+}
+
+function get_plan_headings(plan, modified_at)
+{
+    const description = plan.description || false;
+
+    // Prefer model's time over the XHR's Last-Modified
     if(plan['start_time'])
     {
         modified_at = new Date(plan.start_time * 1000);
     }
     
-    if(plan['model'])
-    {
-        description = [states[plan.model.state],
-            houses[plan.model.house], 'plan uploaded'].join(' ');
-    }
+    // Display timestamp if plan is from the last 24 hours.
+    const date_str = date_age(modified_at) > 60 * 60 * 24
+        ? modified_at.toLocaleDateString()
+        : modified_at.toLocaleString();
+    const uploaded = `Uploaded: ${date_str}`;
 
-    return (date_age(modified_at) > 86400)
-            ? [description, 'on', modified_at.toLocaleDateString()].join(' ')
-            : [description, 'at', modified_at.toLocaleString()].join(' ');
+    return {
+        description,
+        uploaded,
+        plan_type: get_plan_type_text(plan),
+    };
 }
+
 
 function plan_has_incumbency(plan)
 {
@@ -815,7 +823,7 @@ function plan_has_incumbency(plan)
 }
 
 function load_plan_score(url, message_section, score_section,
-    description, model_link, model_url_pattern, table, score_EG, score_PB,
+    description_el, model_link, model_url_pattern, table, score_EG, score_PB,
     score_MM, score_sense, text_url, text_link, geom_prefix, map_div)
 {
     var request = new XMLHttpRequest();
@@ -834,16 +842,21 @@ function load_plan_score(url, message_section, score_section,
             hide_message(score_section, message_section);
         }
 
-        // Clear out and repopulate description.
-        clear_element(description);
-        if(what_score_description_text(plan)) {
-            description.appendChild(document.createElement('p'));
-            description.lastChild.appendChild(
-                document.createTextNode(what_score_description_text(plan)));
+        // Clear out and repopulate plan description, upload date, plan type
+        clear_element(description_el);
+        const headings = get_plan_headings(plan, modified_at);
+        if (headings.description) {
+            const desc_el = document.createElement('h3');
+            desc_el.textContent = headings.description;
+            description_el.append(desc_el);
         }
-        description.appendChild(document.createElement('i'));
-        description.lastChild.appendChild(
-            document.createTextNode(get_description(plan, modified_at)));
+        const uploaded_el = document.createElement('i');
+        uploaded_el.textContent = headings.uploaded;
+        description_el.append(uploaded_el); 
+        const plan_type_el = document.createElement('h4');
+        plan_type_el.textContent = headings.plan_type;
+        description_el.append(plan_type_el); 
+
         
         if(plan.model && (plan.model.version == '2017' || !plan.model.version)) {
             model_link.href = model_url_pattern.replace('data/2020', plan.model.key_prefix);
@@ -1236,19 +1249,23 @@ function add_map_pattern_support(show_leans)
 if(typeof module !== 'undefined' && module.exports)
 {
     module.exports = {
-        format_url: format_url, nice_count: nice_count, nice_string: nice_string,
-        nice_percent: nice_percent, nice_round_percent: nice_round_percent,
-        nice_gap: nice_gap, date_age: date_age,
-        what_score_description_text: what_score_description_text,
-        which_score_summary_name: which_score_summary_name,
-        which_score_column_names: which_score_column_names,
-        which_district_color: which_district_color,
-        plan_array: plan_array, get_description: get_description,
-        plan_has_incumbency: plan_has_incumbency,
-        update_vote_percentages: update_vote_percentages,
-        update_acs2015_percentages: update_acs2015_percentages,
-        update_acs2016_percentages: update_acs2016_percentages,
-        update_cvap2015_percentages: update_cvap2015_percentages,
-        update_heading_titles: update_heading_titles
-        };
+        format_url,
+        nice_count,
+        nice_string,
+        nice_percent,
+        nice_round_percent,
+        get_plan_headings,
+        nice_gap,
+        date_age,
+        which_score_summary_name,
+        which_score_column_names,
+        which_district_color,
+        plan_array,
+        plan_has_incumbency,
+        update_vote_percentages,
+        update_acs2015_percentages,
+        update_acs2016_percentages,
+        update_cvap2015_percentages,
+        update_heading_titles
+    };
 }
