@@ -3,7 +3,7 @@
   "districts": [],
   "id": "20191229T184708.315233888Z",
   "key": "uploads/20191229T184708.315233888Z/upload/geometry.json",
-  "message": "Reading this newly-uploaded plan. Reload this page to see the result.",
+  "message": "Parsing this newly-uploaded plan.",
   "model": null,
   "progress": null,
   "start_time": 1577558850,

@@ -12,7 +12,7 @@ def create_upload(s3, bucket, key, id):
     '''
     '''
     upload = data.Upload(id, key, [],
-        message='Reading this newly-uploaded plan. Reload this page to see the result.',
+        message='Parsing this newly-uploaded plan.',
         )
     observe.put_upload_index(data.Storage(s3, bucket, None), upload)
     return upload
