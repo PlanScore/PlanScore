@@ -1,7 +1,7 @@
 {% extends "patternlibrary.html" %}
 {% block title %}Upload{% endblock %}
 {% block head %}
-    <!-- <meta http-equiv="refresh" content="240; url={{ url_for('get_upload') }}"> -->
+    <meta http-equiv="refresh" content="240; url={{ url_for('get_upload') }}">
 	<script src="{{ digested_static_url('upload.js') }}"></script>
     <style lang="text/css">
     
@@ -12,6 +12,8 @@
             padding: 1.5rem 3rem;
             margin-right: 1rem;
             margin-bottom: 1rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     
         /**
@@ -48,7 +50,7 @@
                 Learn more <a href="{{ url_for('get_model_description', prefix='data/2020') }}">about our methodology and its validation here.</a>
             </p>
             <div>
-                <p style="margin-top: 2em 0 0">
+                <p style="margin: 2em 0 0">
                     <img src="{{ digested_static_url('supported-states.svg') }}" alt="AK, AL, AR, AZ, CA, CO, DE, FL, GA, HI, IA, ID, IL, IN, KS, KY, LA, MA, MD, ME, MI, MN, MO, MT, NC, ND, NE, NH, NJ, NM, NV, OH, OK, OR, PA, RI, SC, SD, TN, TX, UT, VA, VT, WA, WI, WY">
                 </p>
             
@@ -105,7 +107,8 @@
         
         </div>
         <div class="col-md-6">
-            <form id="upload" action="#" method="post" enctype="multipart/form-data">
+            <!-- action is set in upload.js -->
+            <form id="upload" action="#" method="post" enctype="multipart/form-data" data-configured="false">
                 <input type="hidden" name="key">
                 <input type="hidden" name="AWSAccessKeyId">
                 <input type="hidden" name="policy">
@@ -127,8 +130,7 @@
                 </ul>
                 <p>
                     <input type="file" name="file" id="file">
-                    <label for="file" class="btn btn-default">1) Choose A File</label>
-                    <input type="submit" name="submission" value="2) Score This Plan" class="btn btn-primary" disabled>
+                    <label for="file" class="btn btn-primary">Select a file to upload</label>
                 </p>
             </form>
             <p>Processing time depends on the
@@ -139,21 +141,29 @@
             
         </div>
     </section>
-	<script language="javascript">
+	<script>
 	
 	    var upload_form = document.getElementById('upload'),
 	        file_input = document.getElementById('file'),
-	        file_label = file_input.nextElementSibling;
+	        file_label = file_input.nextElementSibling,
+            file_label_text = file_label.textContent;
 	    
 	    enable_form('{{upload_fields_url}}', upload_form);
 	    
+
 	    file_input.addEventListener('change', function(e)
 	    {
-	        if(this.files.length) {
-	            file_label.innerText = '1) File: ' + this.files[0].name;
-	        
+            // Checking if enable_form()'s XHR is not done yet. (Very unlikely)
+            if (upload_form.dataset.configured != 'true') {
+                alert(`Didn't connect to PlanScore API server. Try again?`);
+                this.value = ''; // Clear file input to allow user to re-select
+            }
+
+            if(this.files.length) {
+	            file_label.textContent = `Uploading ${this.files[0].name} …`;
+                upload_form.submit();
 	        } else {
-	            file_label.innerText = '1) Choose A File';
+	            file_label.textContent = file_label_text;
 	        }
 	    });
 	    

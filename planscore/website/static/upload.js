@@ -9,14 +9,19 @@ function enable_form(url, form)
         {
             // Returns a two-element array with URL and form fields.
             var data = JSON.parse(request.responseText);
-            for(var key in data[1]) {
-                form.elements[key].value = data[1][key];
+            const form_action_url = data[0];
+            const upload_fields = data[1];
+
+            for(var key in upload_fields) {
+                form.elements[key].value = upload_fields[key];
             }
-            form.action = data[0];
-            form.elements['submission'].disabled = false;
+            form.action = form_action_url;
+            form.dataset.configured = "true"
         }
     };
 
-    request.onerror = function() { /* There was a connection error of some sort */ };
+    request.onerror = function(e) { 
+        console.error('There was a connection error', e);
+    };
     request.send();
 }
