@@ -1,6 +1,5 @@
 import flask, os, urllib.parse, markdown, hashlib
 from .. import data, constants
-from flask import request
 
 MODELS_BASEDIR = os.path.join(os.path.dirname(__file__), 'models')
 
@@ -26,11 +25,6 @@ def digested_static_url(filename):
         sha1 = hashlib.sha1()
         sha1.update(file.read())
     return flask.url_for('get_digested_file', digest=sha1.hexdigest()[:7], filename=filename)
-
-@app.template_global()
-def cool_plan_id():
-    plan_id = list(request.args.keys())[0]
-    return plan_id
 
 @app.route('/resource-<digest>/<path:filename>')
 def get_digested_file(digest, filename):
