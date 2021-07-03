@@ -14,15 +14,17 @@ function getUrlParameter(name, search)
 
 function show_message(text, preread_section, message_section)
 {
-    // TODO: keep old msgs…
-    while(message_section.firstChild)
-    {
-        message_section.removeChild(message_section.firstChild);
+    // If showing the same message, just append an ellipsis.
+    const match_el = Array.from(message_section.querySelectorAll('p'))
+        .find(el => el.textContent.startsWith(text));
+    
+    if (match_el) {
+        match_el.textContent += '…';
+    } else {
+        const el = document.createElement('p');
+        el.textContent = text;
+        message_section.append(el);
     }
-
-    const el = document.createElement('p');
-    el.textContent = text;
-    message_section.append(el);
 
     preread_section.style.display = 'none';
     message_section.style.display = 'block';
@@ -115,7 +117,7 @@ function start_plan_preread_polling(url, message_section, preread_section, descr
         }, 3000);
     };
 
-    show_message('Loading district plan…', preread_section, message_section);
+    show_message('Loading district plan', preread_section, message_section);
     make_xhr();
 }
 
