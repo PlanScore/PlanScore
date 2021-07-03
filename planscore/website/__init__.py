@@ -20,17 +20,18 @@ def get_function_url(relpath):
     planscore_api_base = flask.current_app.config['PLANSCORE_API_BASE']
     return urllib.parse.urljoin(planscore_api_base, relpath)
 
+def get_plan_id():
+    args = list(request.args.keys())
+    if len(args):
+        plan_id = args[0]
+        return plan_id
+
 @app.template_global()
 def digested_static_url(filename):
     with open(os.path.join(flask.current_app.static_folder, filename), 'rb') as file:
         sha1 = hashlib.sha1()
         sha1.update(file.read())
     return flask.url_for('get_digested_file', digest=sha1.hexdigest()[:7], filename=filename)
-
-@app.template_global()
-def cool_plan_id():
-    plan_id = list(request.args.keys())[0]
-    return plan_id
 
 @app.route('/resource-<digest>/<path:filename>')
 def get_digested_file(digest, filename):
@@ -63,9 +64,12 @@ def get_plan():
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     geom_url_prefix = constants.S3_URL_PATTERN.format(k='', b=flask.current_app.config['PLANSCORE_S3_BUCKET'])
     text_url_pattern = get_text_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
+    geom_url_suffix=data.UPLOAD_GEOMETRY_KEY.format(id=get_plan_id())
+    index_url=data_url_pattern.format(id=get_plan_id())
     return flask.render_template('plan.html',
         data_url_pattern=data_url_pattern, geom_url_prefix=geom_url_prefix,
-        text_url_pattern=text_url_pattern)
+        text_url_pattern=text_url_pattern, geom_url_suffix=geom_url_suffix,
+        index_url=index_url)
 
 @app.route('/webinar/')
 def get_webinar_mar23():
