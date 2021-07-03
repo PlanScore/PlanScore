@@ -31,6 +31,22 @@ var FIELDS = [
     /*, 'Polsby-Popper', 'Reock'*/
 ];
 
+const fieldToDisplayStr = {
+    'US President 2016 - DEM': 'Clinton (D) 2016',
+    'US President 2016 - REP': 'Trump (R) 2016',
+    'US President 2020 - DEM': 'Biden (D) 2020',
+    'US President 2020 - REP': 'Trump (R) 2020',
+};
+
+const fieldSubstringToDisplayStr = {
+    'Black Citizen Voting-Age Population': 'Black Non-Hispanic CVAP',
+    'Citizen Voting-Age Population': 'CVAP',
+    'Population': 'Pop.',
+};
+// Keep track of substring renames for adding tooltips
+const renamedHeadingToOrigField = new Map();
+
+
 var BLUE_COLOR_HEX = '#4D90D1',
     RED_COLOR_HEX = '#D45557',
     LEAN_BLUE_COLOR_HEX = '#6D8AB1',
@@ -465,25 +481,21 @@ function update_heading_titles(head)
         head[rep_index] = 'Predicted Republican Vote Share';
     }
 
-    if(head.indexOf('US President 2016 - DEM') >= 0 && head.indexOf('US President 2016 - REP') >= 0)
-    {
-        head[head.indexOf('US President 2016 - DEM')] = 'US President 2016: Clinton (D)';
-        head[head.indexOf('US President 2016 - REP')] = 'US President 2016: Trump (R)';
-    }
-
-    if(head.indexOf('US President 2020 - DEM') >= 0 && head.indexOf('US President 2020 - REP') >= 0)
-    {
-        head[head.indexOf('US President 2020 - DEM')] = 'US President 2020: Biden (D)';
-        head[head.indexOf('US President 2020 - REP')] = 'US President 2020: Trump (R)';
-    }
-
-    if(head.indexOf('Citizen Voting-Age Population 2015') >= 0
-        && head.indexOf('Black Citizen Voting-Age Population 2015') >= 0
-        && head.indexOf('Hispanic Citizen Voting-Age Population 2015') >= 0)
-    {
-        head[head.indexOf('Black Citizen Voting-Age Population 2015')] = 'Black Non-Hispanic CVAP 2015';
-        head[head.indexOf('Hispanic Citizen Voting-Age Population 2015')] = 'Hispanic CVAP 2015';
-    }
+    // Rename titles for optimal text-wrapping
+    head.forEach((dataTitle, i) => {
+        // Rename entire titles
+        if (fieldToDisplayStr[dataTitle]) {
+            head[i] = fieldToDisplayStr[dataTitle];
+        }
+        // Rename title substrings, eg 'Citizen Voting-Age Population' => 'CVAP'
+        for (const [substrMatch, substrReplacement] of Object.entries(fieldSubstringToDisplayStr)) {
+            if (head[i].includes(substrMatch)) {
+                const newTitle = head[i].replace(substrMatch, substrReplacement);
+                renamedHeadingToOrigField.set(newTitle, head[i]);
+                head[i] = newTitle;
+            }
+        }
+    });
 }
 
 function update_vote_percentages(head, row, source_row)
@@ -850,10 +862,17 @@ function load_plan_score(url, message_section, score_section,
             return j == 1 && has_incumbency ? 'class="ltxt"' : '';
         }
 
+        // If we shorted the display of this heading, add a tooltip with the expanded version.
+        function tooltip(title) {
+            if (!renamedHeadingToOrigField.has(title)) return '';
+            return `title="${renamedHeadingToOrigField.get(title)}"`;
+        }
+
         tags = ['<thead>', '<tr>'];
         for(var j = 0; j < table_array[0].length; j++)
         {
-            tags = tags.concat([`<th ${maybeAlignLeft(j)}>`, table_array[0][j], '</th>']);
+            const headingTitle = table_array[0][j];
+            tags = tags.concat([`<th ${maybeAlignLeft(j)} ${tooltip(headingTitle)}>`, headingTitle, '</th>']);
         }
         tags = tags.concat(['</tr>', '</thead>', '<tbody>']);
         for(var i = 1; i < table_array.length; i++)
