@@ -185,6 +185,15 @@
 	        mm_metric_url = 'https://planscore.org/metrics/meanmedian/',
 	        model_url_pattern = '{{ url_for("get_model_description", prefix="data/2020") }}';
 
+        // preload the geometry as it can take a while to load
+        const probably_geometry_url = plan_url.replace('index.json', 'geometry.json');
+        const link_el = document.createElement('link');
+        link_el.rel = 'preload';
+        link_el.as = 'fetch';
+        link_el.href = probably_geometry_url;
+        link_el.crossOrigin = 'anonymous';
+        document.head.append(link_el);
+
 	    load_plan_score(plan_url,
 	        document.getElementById('message'),
 	        document.getElementById('plan-score'),
