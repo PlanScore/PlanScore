@@ -236,9 +236,10 @@ assert.deepEqual(plan_array7[3],
 var plan_array8 = plan.plan_array(NC_2020);
 assert.equal(plan_array8.length, 14, 'Should have a header with 13 districts');
 
-assert.deepEqual(plan.get_plan_headings(NC_2020, undefined), {
+const headings8 = plan.get_plan_headings(NC_2020, undefined);
+delete headings8.uploaded; // CI env won't have a matching TZ
+assert.deepEqual(headings8, {
     description: 'geometry.json (v8, with corrected incumbents)',
-    uploaded: 'Uploaded: 1/25/2020',
     plan_type: 'North Carolina U.S. House plan'
 }, 'Should determine the right heading text');
 
@@ -284,9 +285,12 @@ assert.equal(plan.which_district_color(NC_2020.districts[12], NC_2020),
 var plan_array9 = plan.plan_array(NC_2020_unified);
 assert.equal(plan_array9.length, 14, 'Should have a header with 13 districts');
 
-assert.deepEqual(plan.get_plan_headings(NC_2020_unified, undefined), {
+
+
+const headings9 = plan.get_plan_headings(NC_2020_unified, undefined);
+delete headings9.uploaded; // CI env won't have a matching TZ
+assert.deepEqual(headings9, {
     description: 'NC-plan-1-992.geojson (Oct 27: new form, new model, all open, with wins)',
-    uploaded: 'Uploaded: 10/27/2020',
     plan_type: 'North Carolina U.S. House plan'
 }, 'Should determine the right heading text');
 
