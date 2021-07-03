@@ -112,6 +112,7 @@ function date_age(date)
     return (new Date()).getTime() / 1000 - date.getTime() / 1000;
 }
 
+
 function which_score_summary_name(plan)
 {
     var summaries = [
@@ -779,33 +780,27 @@ function get_plan_type_text(plan)
     return plan_type_text; 
 }
 
-function make_plan_headings(plan, modified_at)
+function get_plan_headings(plan, modified_at)
 {
-    const frag = document.createDocumentFragment();
-    if (plan.description) {
-        const desc_el = document.createElement('h3');
-        desc_el.textContent = plan.description;
-        frag.append(desc_el);
-    }
+    const description = plan.description || false;
 
     // Prefer model's time over the XHR's Last-Modified
     if(plan['start_time'])
     {
         modified_at = new Date(plan.start_time * 1000);
     }
-    const uploaded_el = document.createElement('i');
+    
     // Display timestamp if plan is from the last 24 hours.
     const date_str = date_age(modified_at) > 60 * 60 * 24
         ? modified_at.toLocaleDateString()
         : modified_at.toLocaleString();
-    uploaded_el.textContent = `Uploaded: ${date_str}`;
-    frag.append(uploaded_el); 
+    const uploaded = `Uploaded: ${date_str}`;
 
-    const plan_type_el = document.createElement('h4');
-    plan_type_el.textContent = get_plan_type_text(plan);
-    frag.append(plan_type_el); 
-
-    return frag;
+    return {
+        description,
+        uploaded,
+        plan_type: get_plan_type_text(plan),
+    };
 }
 
 
@@ -835,10 +830,21 @@ function load_plan_score(url, message_section, score_section,
             hide_message(score_section, message_section);
         }
 
-        // Clear out and repopulate description.
+        // Clear out and repopulate plan description, upload date, plan type
         clear_element(description_el);
-        const frag = make_plan_headings(plan, modified_at);
-        description_el.append(frag);
+        const headings = get_plan_headings(plan, modified_at);
+        if (headings.description) {
+            const desc_el = document.createElement('h3');
+            desc_el.textContent = headings.description;
+            description_el.append(desc_el);
+        }
+        const uploaded_el = document.createElement('i');
+        uploaded_el.textContent = headings.uploaded;
+        description_el.append(uploaded_el); 
+        const plan_type_el = document.createElement('h4');
+        plan_type_el.textContent = headings.plan_type;
+        description_el.append(plan_type_el); 
+
         
         if(plan.model && (plan.model.version == '2017' || !plan.model.version)) {
             model_link.href = model_url_pattern.replace('data/2020', plan.model.key_prefix);
@@ -1224,19 +1230,23 @@ function add_map_pattern_support(show_leans)
 if(typeof module !== 'undefined' && module.exports)
 {
     module.exports = {
-        format_url: format_url, nice_count: nice_count, nice_string: nice_string,
-        nice_percent: nice_percent, nice_round_percent: nice_round_percent,
-        nice_gap: nice_gap, date_age: date_age,
-        what_score_description_text: what_score_description_text,
-        which_score_summary_name: which_score_summary_name,
-        which_score_column_names: which_score_column_names,
-        which_district_color: which_district_color,
-        plan_array: plan_array, get_description: get_description,
-        plan_has_incumbency: plan_has_incumbency,
-        update_vote_percentages: update_vote_percentages,
-        update_acs2015_percentages: update_acs2015_percentages,
-        update_acs2016_percentages: update_acs2016_percentages,
-        update_cvap2015_percentages: update_cvap2015_percentages,
-        update_heading_titles: update_heading_titles
-        };
+        format_url,
+        nice_count,
+        nice_string,
+        nice_percent,
+        nice_round_percent,
+        get_plan_headings,
+        nice_gap,
+        date_age,
+        which_score_summary_name,
+        which_score_column_names,
+        which_district_color,
+        plan_array,
+        plan_has_incumbency,
+        update_vote_percentages,
+        update_acs2015_percentages,
+        update_acs2016_percentages,
+        update_cvap2015_percentages,
+        update_heading_titles
+    };
 }
