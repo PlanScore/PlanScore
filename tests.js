@@ -141,19 +141,18 @@ assert.deepEqual(plan.get_plan_headings(NC_multisim_index, new Date(2018, 0, 14)
     description: false,
     uploaded: 'Uploaded: 1/14/2018',
     plan_type: [ 'Plan uploaded' ]
-  });
+});
 
 // North Carolina plan in proposed final form
 
 var plan_array5 = plan.plan_array(NC_public_index);
 assert.equal(plan_array5.length, 14, 'Should have a header with 13 districts');
 
-assert.deepEqual(plan.get_plan_headings(NC_public_index),
-  {
+assert.deepEqual(plan.get_plan_headings(NC_public_index), {
     description: 'Here is a great plan.',
     uploaded: 'Uploaded: 1/14/2018',
     plan_type: 'North Carolina U.S. House plan'
-  }, 'Should find the right description');
+}, 'Should determine the right heading text');
 
 assert.deepEqual(plan_array5[0],
     ['District', 'Population 2010', 'Population 2015',
@@ -171,12 +170,11 @@ assert.deepEqual(plan_array5[13],
     ['13', 733505.0, 747501.53, '22.8%', '7.5%', '43.9% (±0.6%)', '56.1% (±0.6%)', 158659.94, 192109.37/*, 0.2274, 0.3557*/],
     'Should pick out the right column values');
 
-assert.deepEqual(plan.get_plan_headings(NC_public_index, undefined),
-  {
+assert.deepEqual(plan.get_plan_headings(NC_public_index, undefined), {
     description: 'Here is a great plan.',
     uploaded: 'Uploaded: 1/14/2018',
     plan_type: 'North Carolina U.S. House plan'
-  });
+}, 'Should determine the right heading text');
 
 assert.equal(plan.which_district_color(NC_public_index.districts[0], NC_public_index),
     '#4D90D1', 'Should return the blue district color');
@@ -238,6 +236,12 @@ assert.deepEqual(plan_array7[3],
 var plan_array8 = plan.plan_array(NC_2020);
 assert.equal(plan_array8.length, 14, 'Should have a header with 13 districts');
 
+assert.deepEqual(plan.get_plan_headings(NC_2020, undefined), {
+    description: 'geometry.json (v8, with corrected incumbents)',
+    uploaded: 'Uploaded: 1/25/2020',
+    plan_type: 'North Carolina U.S. House plan'
+}, 'Should determine the right heading text');
+
 assert.equal(plan.which_district_color(NC_2020.districts[0], NC_2020),
     '#4D90D1', 'Should return the blue district color for District 1');
 
@@ -279,6 +283,12 @@ assert.equal(plan.which_district_color(NC_2020.districts[12], NC_2020),
 
 var plan_array9 = plan.plan_array(NC_2020_unified);
 assert.equal(plan_array9.length, 14, 'Should have a header with 13 districts');
+
+assert.deepEqual(plan.get_plan_headings(NC_2020_unified, undefined), {
+    description: 'NC-plan-1-992.geojson (Oct 27: new form, new model, all open, with wins)',
+    uploaded: 'Uploaded: 10/27/2020',
+    plan_type: 'North Carolina U.S. House plan'
+}, 'Should determine the right heading text');
 
 assert.equal(plan.which_district_color(NC_2020_unified.districts[0], NC_2020_unified),
     '#D45557', 'Should return the red district color for District 1');
