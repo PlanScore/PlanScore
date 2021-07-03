@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="{{ digested_static_url('plan.css') }}" />
     <script src="{{ digested_static_url('plan.js') }}"></script>
 
+    <link rel=preloadz as=fetch href="{{ data_url_pattern }} ${{cool_plan_id()}}">
+
     <!-- Highcharts does charts and also maps -->
     <script src="https://code.highcharts.com/highcharts.js"></script>
 
@@ -90,6 +92,9 @@
     </style>
 {% endblock %}
 {% block content %}
+    <h1>
+        hello {{ cool_plan_id() }}
+    </h1>
     <section id="message">
         Loading plan…
     </section>
