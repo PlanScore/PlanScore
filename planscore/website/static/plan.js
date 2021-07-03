@@ -112,16 +112,6 @@ function date_age(date)
     return (new Date()).getTime() / 1000 - date.getTime() / 1000;
 }
 
-function what_score_description_text(plan)
-{
-    if(typeof plan['description'] === 'string')
-    {
-        return plan['description'];
-    }
-
-    return false; // No description provided
-}
-
 function which_score_summary_name(plan)
 {
     var summaries = [
@@ -754,7 +744,7 @@ function nice_plan_voteshare(plan)
         + 'and ' + nice_percent(red_votes / (blue_votes + red_votes)) + ' (Republican)');
 }
 
-function get_description(plan, modified_at)
+function get_plan_type_text(plan)
 {
     var states = {
         'XX': 'Null Island',
@@ -777,24 +767,47 @@ function get_description(plan, modified_at)
         'MT': 'Montana'
         };
     
-    var description = ['Plan uploaded'], houses = {'ushouse': 'U.S. House',
+    var plan_type_text = ['Plan uploaded'], houses = {'ushouse': 'U.S. House',
         'statesenate': 'State Senate', 'statehouse': 'State House'};
+
     
+    if(plan['model'])
+    {
+        plan_type_text = `${states[plan.model.state]} ${houses[plan.model.house]} plan`;
+    }
+
+    return plan_type_text; 
+}
+
+function make_plan_headings(plan, modified_at)
+{
+    const frag = document.createDocumentFragment();
+    if (plan.description) {
+        const desc_el = document.createElement('h3');
+        desc_el.textContent = plan.description;
+        frag.append(desc_el);
+    }
+
+    // Prefer model's time over the XHR's Last-Modified
     if(plan['start_time'])
     {
         modified_at = new Date(plan.start_time * 1000);
     }
-    
-    if(plan['model'])
-    {
-        description = [states[plan.model.state],
-            houses[plan.model.house], 'plan uploaded'].join(' ');
-    }
+    const uploaded_el = document.createElement('i');
+    // Display timestamp if plan is from the last 24 hours.
+    const date_str = date_age(modified_at) > 60 * 60 * 24
+        ? modified_at.toLocaleDateString()
+        : modified_at.toLocaleString();
+    uploaded_el.textContent = `Uploaded: ${date_str}`;
+    frag.append(uploaded_el); 
 
-    return (date_age(modified_at) > 86400)
-            ? [description, 'on', modified_at.toLocaleDateString()].join(' ')
-            : [description, 'at', modified_at.toLocaleString()].join(' ');
+    const plan_type_el = document.createElement('h4');
+    plan_type_el.textContent = get_plan_type_text(plan);
+    frag.append(plan_type_el); 
+
+    return frag;
 }
+
 
 function plan_has_incumbency(plan)
 {
@@ -803,7 +816,7 @@ function plan_has_incumbency(plan)
 }
 
 function load_plan_score(url, message_section, score_section,
-    description, model_link, model_url_pattern, table, score_EG, score_PB,
+    description_el, model_link, model_url_pattern, table, score_EG, score_PB,
     score_MM, score_sense, text_url, text_link, geom_prefix, map_div)
 {
     var request = new XMLHttpRequest();
@@ -823,15 +836,9 @@ function load_plan_score(url, message_section, score_section,
         }
 
         // Clear out and repopulate description.
-        clear_element(description);
-        if(what_score_description_text(plan)) {
-            description.appendChild(document.createElement('p'));
-            description.lastChild.appendChild(
-                document.createTextNode(what_score_description_text(plan)));
-        }
-        description.appendChild(document.createElement('i'));
-        description.lastChild.appendChild(
-            document.createTextNode(get_description(plan, modified_at)));
+        clear_element(description_el);
+        const frag = make_plan_headings(plan, modified_at);
+        description_el.append(frag);
         
         if(plan.model && (plan.model.version == '2017' || !plan.model.version)) {
             model_link.href = model_url_pattern.replace('data/2020', plan.model.key_prefix);
