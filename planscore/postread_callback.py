@@ -52,7 +52,7 @@ def lambda_handler(event, context):
     temp_upload = dummy_upload(query['key'], id)
     prior_upload = observe.get_upload_index(storage, temp_upload.index_key())
     upload = prior_upload.clone(
-        message = 'Scoring this newly-uploaded plan. Reload this page to see the result.',
+        message = 'Scoring: Starting analysis.',
         description = query['description'],
         incumbents = ordered_incumbents(query),
     )

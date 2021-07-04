@@ -105,8 +105,7 @@ def iterate_tile_subtotals(expected_tiles, storage, upload, context):
     for (index, expected_tile) in enumerate(expected_tiles):
         progress = data.Progress(index, len(expected_tiles))
         upload = upload.clone(progress=progress,
-            message='Scoring this newly-uploaded plan. {} complete.'
-                ' Reload this page to see the result.'.format(progress.to_percentage()))
+            message='Scoring: {} complete.'.format(progress.to_percentage()))
 
         # Update S3, if it's time
         if time.time() > next_update:
@@ -150,8 +149,7 @@ def iterate_slice_subtotals(expected_slices, storage, upload, context):
     for (index, expected_slice) in enumerate(expected_slices):
         progress = data.Progress(index, len(expected_slices))
         upload = upload.clone(progress=progress,
-            message='Scoring this newly-uploaded plan. {} complete.'
-                ' Reload this page to see the result.'.format(progress.to_percentage()))
+            message='Scoring: {} complete.'.format(progress.to_percentage()))
 
         # Update S3, if it's time
         if time.time() > next_update:
@@ -319,9 +317,7 @@ def lambda_handler(event, context):
         part_type = 'tile'
 
     put_upload_index(storage, upload2.clone(
-        message='Scoring this newly-uploaded plan.'
-            ' Adding up votes. Reload this page to see the result.'
-            ))
+        message='Scoring: Adding up votes. Almost done.'))
 
     districts = accumulate_district_subtotals(subtotals, upload2)
     upload3 = upload2.clone(districts=districts)
