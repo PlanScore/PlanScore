@@ -12,6 +12,8 @@
             padding: 1.5rem 3rem;
             margin-right: 1rem;
             margin-bottom: 1rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     
         /**
@@ -45,108 +47,123 @@
                 only to the parties’ line-drawers.
             </p>
             <p>
-                Our current supported states are
-                <strong>Alabama</strong>,
-                <strong>Alaska</strong>,
-                <strong>Arizona</strong>,
-                <strong>Arkansas</strong>,
-                <strong>California</strong>,
-                <strong>Colorado</strong>,
-                <strong>Delaware</strong>,
-                <strong>Florida</strong>,
-                <strong>Georgia</strong>,
-                <strong>Hawaii</strong>,
-                <strong>Illinois</strong>,
-                <strong>Indiana</strong>,
-                <strong>Idaho</strong>,
-                <strong>Iowa</strong>,
-                <strong>Kansas</strong>,
-                <strong>Kentucky</strong>,
-                <strong>Louisiana</strong>,
-                <strong>Maine</strong>,
-                <strong>Maryland</strong>,
-                <strong>Massachusetts</strong>,
-                <strong>Michigan</strong>,
-                <strong>Minnesota</strong>,
-                <strong>Missouri</strong>,
-                <strong>Montana</strong>,
-                <strong>Nebraska</strong>,
-                <strong>Nevada</strong>,
-                <strong>New&nbsp;Hampshire</strong>,
-                <strong>New&nbsp;Jersey</strong>,
-                <strong>New&nbsp;Mexico</strong>,
-                <strong>North&nbsp;Carolina</strong>,
-                <strong>North&nbsp;Dakota</strong>,
-                <strong>Ohio</strong>,
-                <strong>Oklahoma</strong>,
-                <strong>Oregon</strong>,
-                <strong>Pennsylvania</strong>,
-                <strong>Rhode&nbsp;Island</strong>,
-                <strong>South&nbsp;Carolina</strong>,
-                <strong>South&nbsp;Dakota</strong>,
-                <strong>Tennessee</strong>,
-                <strong>Texas</strong>,
-                <strong>Utah</strong>,
-                <strong>Vermont</strong>,
-                <strong>Virginia</strong>,
-                <strong>Washington</strong>,
-                <strong>Wisconsin</strong>,
-                and <strong>Wyoming</strong>.
-            </p>
-            <p>
                 Learn more <a href="{{ url_for('get_model_description', prefix='data/2020') }}">about our methodology and its validation here.</a>
             </p>
+            <div>
+                <p style="margin: 2em 0 0">
+                    <img src="{{ digested_static_url('supported-states.svg') }}" alt="AK, AL, AR, AZ, CA, CO, DE, FL, GA, HI, IA, ID, IL, IN, KS, KY, LA, MA, MD, ME, MI, MN, MO, MT, NC, ND, NE, NH, NJ, NM, NV, OH, OK, OR, PA, RI, SC, SD, TN, TX, UT, VA, VT, WA, WI, WY">
+                </p>
+            
+                <p style="font-size: 14px; color: #777; line-height: 1.5;">
+                    Our current supported states are
+                    <strong>Alabama</strong>,
+                    <strong>Alaska</strong>,
+                    <strong>Arizona</strong>,
+                    <strong>Arkansas</strong>,
+                    <strong>California</strong>,
+                    <strong>Colorado</strong>,
+                    <strong>Delaware</strong>,
+                    <strong>Florida</strong>,
+                    <strong>Georgia</strong>,
+                    <strong>Hawaii</strong>,
+                    <strong>Illinois</strong>,
+                    <strong>Indiana</strong>,
+                    <strong>Idaho</strong>,
+                    <strong>Iowa</strong>,
+                    <strong>Kansas</strong>,
+                    <strong>Kentucky</strong>,
+                    <strong>Louisiana</strong>,
+                    <strong>Maine</strong>,
+                    <strong>Maryland</strong>,
+                    <strong>Massachusetts</strong>,
+                    <strong>Michigan</strong>,
+                    <strong>Minnesota</strong>,
+                    <strong>Missouri</strong>,
+                    <strong>Montana</strong>,
+                    <strong>Nebraska</strong>,
+                    <strong>Nevada</strong>,
+                    <strong>New&nbsp;Hampshire</strong>,
+                    <strong>New&nbsp;Jersey</strong>,
+                    <strong>New&nbsp;Mexico</strong>,
+                    <strong>North&nbsp;Carolina</strong>,
+                    <strong>North&nbsp;Dakota</strong>,
+                    <strong>Ohio</strong>,
+                    <strong>Oklahoma</strong>,
+                    <strong>Oregon</strong>,
+                    <strong>Pennsylvania</strong>,
+                    <strong>Rhode&nbsp;Island</strong>,
+                    <strong>South&nbsp;Carolina</strong>,
+                    <strong>South&nbsp;Dakota</strong>,
+                    <strong>Tennessee</strong>,
+                    <strong>Texas</strong>,
+                    <strong>Utah</strong>,
+                    <strong>Vermont</strong>,
+                    <strong>Virginia</strong>,
+                    <strong>Washington</strong>,
+                    <strong>Wisconsin</strong>,
+                    and <strong>Wyoming</strong>.
+                </p>
+            </div>
+        
         </div>
-        <form class="col-md-6" id="upload" action="#" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="key">
-            <input type="hidden" name="AWSAccessKeyId">
-            <input type="hidden" name="policy">
-            <input type="hidden" name="signature">
-            <input type="hidden" name="success_action_redirect">
-            <input type="hidden" name="acl">
-            <input type="hidden" name="x-amz-security-token">
-            <p>
-                Upload a district plan as a geospatial file containing Polygon
-                or MultiPolygon shapes. Processing time depends on the
+        <div class="col-md-6">
+            <!-- action is set in upload.js -->
+            <form id="upload" action="#" method="post" enctype="multipart/form-data" data-configured="false">
+                <input type="hidden" name="key">
+                <input type="hidden" name="AWSAccessKeyId">
+                <input type="hidden" name="policy">
+                <input type="hidden" name="signature">
+                <input type="hidden" name="success_action_redirect">
+                <input type="hidden" name="acl">
+                <input type="hidden" name="x-amz-security-token">
+                <p style="margin-bottom: 9px;">
+                    Upload a district plan as a geospatial file containing Polygon
+                    or MultiPolygon shapes. These file types are currently supported:
+                </p>
+                <ul>
+                    <li>
+                        <a href="https://doc.arcgis.com/en/arcgis-online/reference/shapefiles.htm">Shapefile</a>
+                        (upload as a <a href="https://en.wikipedia.org/wiki/Zip_(file_format)">single .zip file</a>)
+                    </li>
+                    <li><a href="http://geojson.org">GeoJSON</a></li>
+                    <li><a href="http://www.geopackage.org">Geopackage</a></li>
+                </ul>
+                <p>
+                    <input type="file" name="file" id="file">
+                    <label for="file" class="btn btn-primary">Select a file to upload</label>
+                </p>
+            </form>
+            <p>Processing time depends on the
                 complexity of the district plan, and may take a few seconds or
                 many minutes.
             </p>
-            <p>
-                <input type="file" name="file" id="file">
-                <label for="file" class="btn btn-default">1) Choose A File</label>
-                <input type="submit" name="submission" value="2) Score This Plan" class="btn btn-primary" disabled>
-            </p>
-            <p>
-                These file types and states are currently supported:
-            </p>
-            <ul>
-                <li>
-                    <a href="https://doc.arcgis.com/en/arcgis-online/reference/shapefiles.htm">Shapefile</a>
-                    (upload as a <a href="https://en.wikipedia.org/wiki/Zip_(file_format)">single .zip file</a>)
-                </li>
-                <li><a href="http://geojson.org">GeoJSON</a></li>
-                <li><a href="http://www.geopackage.org">Geopackage</a></li>
-            </ul>
-            <p style="margin-top:1em">
-                <img src="{{ digested_static_url('supported-states.svg') }}" alt="AK, AL, AR, AZ, CA, CO, DE, FL, GA, HI, IA, ID, IL, IN, KS, KY, LA, MA, MD, ME, MI, MN, MO, MT, NC, ND, NE, NH, NJ, NM, NV, OH, OK, OR, PA, RI, SC, SD, TN, TX, UT, VA, VT, WA, WI, WY">
-            </p>
-        </form>
+            
+            
+        </div>
     </section>
-	<script language="javascript">
+	<script>
 	
 	    var upload_form = document.getElementById('upload'),
 	        file_input = document.getElementById('file'),
-	        file_label = file_input.nextElementSibling;
+	        file_label = file_input.nextElementSibling,
+            file_label_text = file_label.textContent;
 	    
 	    enable_form('{{upload_fields_url}}', upload_form);
 	    
+
 	    file_input.addEventListener('change', function(e)
 	    {
-	        if(this.files.length) {
-	            file_label.innerText = '1) File: ' + this.files[0].name;
-	        
+            // Checking if enable_form()'s XHR is not done yet. (Very unlikely)
+            if (upload_form.dataset.configured != 'true') {
+                alert(`Didn't connect to PlanScore API server. Try again?`);
+                this.value = ''; // Clear file input to allow user to re-select
+            }
+
+            if(this.files.length) {
+	            file_label.textContent = `Uploading ${this.files[0].name} …`;
+                upload_form.submit();
 	        } else {
-	            file_label.innerText = '1) Choose A File';
+	            file_label.textContent = file_label_text;
 	        }
 	    });
 	    
