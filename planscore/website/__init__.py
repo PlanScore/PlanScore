@@ -1,6 +1,5 @@
 import flask, os, urllib.parse, markdown, hashlib
 from .. import data, constants
-from flask import request
 
 MODELS_BASEDIR = os.path.join(os.path.dirname(__file__), 'models')
 
@@ -19,12 +18,6 @@ def get_text_url_pattern(bucket):
 def get_function_url(relpath):
     planscore_api_base = flask.current_app.config['PLANSCORE_API_BASE']
     return urllib.parse.urljoin(planscore_api_base, relpath)
-
-def get_plan_id():
-    args = list(request.args.keys())
-    if len(args):
-        plan_id = args[0]
-        return plan_id
 
 @app.template_global()
 def digested_static_url(filename):
@@ -64,12 +57,10 @@ def get_plan():
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     geom_url_prefix = constants.S3_URL_PATTERN.format(k='', b=flask.current_app.config['PLANSCORE_S3_BUCKET'])
     text_url_pattern = get_text_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
-    geom_url_suffix=data.UPLOAD_GEOMETRY_KEY.format(id=get_plan_id())
-    index_url=data_url_pattern.format(id=get_plan_id())
+    geom_url_suffix_key=data.UPLOAD_GEOMETRY_KEY
     return flask.render_template('plan.html',
         data_url_pattern=data_url_pattern, geom_url_prefix=geom_url_prefix,
-        text_url_pattern=text_url_pattern, geom_url_suffix=geom_url_suffix,
-        index_url=index_url)
+        text_url_pattern=text_url_pattern, geom_url_suffix_key=geom_url_suffix_key)
 
 @app.route('/webinar/')
 def get_webinar_mar23():
