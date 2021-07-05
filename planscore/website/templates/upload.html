@@ -108,7 +108,7 @@
         </div>
         <div class="col-md-6">
             <!-- action is set in upload.js -->
-            <form id="upload" action="#" method="post" enctype="multipart/form-data" data-configured="false">
+            <form id="upload" action="#" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="key">
                 <input type="hidden" name="AWSAccessKeyId">
                 <input type="hidden" name="policy">
@@ -147,28 +147,60 @@
 	        file_input = document.getElementById('file'),
 	        file_label = file_input.nextElementSibling,
             file_label_text = file_label.textContent;
-	    
-	    enable_form('{{upload_fields_url}}', upload_form);
-	    
+
+        // Basic pattern from https://medium.com/@bramus/cancel-a-javascript-promise-with-abortcontroller-3540cbbda0a9
+        function abortable_timeout(duration, signal) {
+            if (signal.aborted) {
+                return Promise.reject(new Error('Aborted'));
+            }
+            return new Promise((resolve, reject) => {
+                const handle = setTimeout(resolve, duration);
+                signal.addEventListener('abort', e => {
+                    clearTimeout(handle);
+                    reject(new Error('aborted'));
+                });
+            });
+        }
+
+        
+        const fetch_tokens_promise = new Promise((res, rej) => {
+            fetch_upload_tokens('https://api.planscore.org/{{upload_fields_url}}', upload_form, res, rej);
+        });
+        // Once we have upload tokens, we can cancel the extra_wait
+        const controller = new AbortController();
+        fetch_tokens_promise.then(() => {
+            controller.abort();
+            console.log('Upload tokens fetched.');
+        });
 
 	    file_input.addEventListener('change', function(e)
 	    {
-            // Checking if enable_form()'s XHR is not done yet. (Very unlikely)
-            if (upload_form.dataset.configured != 'true') {
-                alert(`Didn't connect to PlanScore API server. Try again?`);
-                this.value = ''; // Clear file input to allow user to re-select
+            if(!this.files.length) {
+                file_label.textContent = file_label_text;
+                return;
             }
+            
+            console.log('File selected');
+            file_label.textContent = `Awaiting server connection…`;
+            
+            // After file selection, give 5 more seconds grace time for fetch_tokens before showing user an error.
+            const extra_wait_for_enable_form = abortable_timeout(10 * 1000, controller.signal);
+            extra_wait_for_enable_form.then(() => {
+                console.warn('It\;s now 5s after file selection and the upload tokens arent available yet');
+                alert(`Didn't connect to PlanScore API server. Reload and try again?`);
+            }).catch(e => console.log('extra wait time cancelled'));
 
-            if(this.files.length) {
-	            file_label.textContent = `Uploading ${this.files[0].name} …`;
-                upload_form.submit();
-	        } else {
-	            file_label.textContent = file_label_text;
-	        }
+
+            fetch_tokens_promise.then(() => {
+                console.log('File selected AND upload tokens fetched. Starting submit');
+                file_label.textContent = `Uploading ${this.files[0].name} …`;
+                // upload_form.submit();
+            });
 	    });
-	    
+
 	</script>
 
 	{% include 'olark-embed.html' %}
 
 {% endblock %}
+

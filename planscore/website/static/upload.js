@@ -1,4 +1,4 @@
-function enable_form(url, form)
+function fetch_upload_tokens(url, form, res, rej)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -16,12 +16,14 @@ function enable_form(url, form)
                 form.elements[key].value = upload_fields[key];
             }
             form.action = form_action_url;
-            form.dataset.configured = "true"
+            // res()
+            setTimeout(_ => res(), 10000);
         }
     };
 
     request.onerror = function(e) { 
         console.error('There was a connection error', e);
+        rej();
     };
     request.send();
 }
