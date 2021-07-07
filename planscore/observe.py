@@ -17,23 +17,26 @@ def get_upload_index(storage, key):
 def put_upload_index(storage, upload):
     ''' Save a JSON index, a plaintext file, and a log entry for this upload.
     '''
+    print('put_upload_index: {}'.format(upload.message))
+    cache_control = 'public, no-cache, no-store'
+
     key1 = upload.index_key()
     body1 = upload.to_json().encode('utf8')
 
     storage.s3.put_object(Bucket=storage.bucket, Key=key1, Body=body1,
-        ContentType='text/json', ACL='public-read')
+        ContentType='text/json', ACL='public-read', CacheControl=cache_control)
 
     key2 = upload.plaintext_key()
     body2 = upload.to_plaintext().encode('utf8')
 
     storage.s3.put_object(Bucket=storage.bucket, Key=key2, Body=body2,
-        ContentType='text/plain', ACL='public-read')
+        ContentType='text/plain', ACL='public-read', CacheControl=cache_control)
 
     key3 = upload.logentry_key(str(uuid.uuid4()))
     body3 = upload.to_logentry().encode('utf8')
 
     storage.s3.put_object(Bucket=storage.bucket, Key=key3, Body=body3,
-        ContentType='text/plain', ACL='public-read')
+        ContentType='text/plain', ACL='public-read', CacheControl=cache_control)
 
 def get_expected_tile(enqueued_key, upload):
     ''' Return an expect tile key for an enqueued one.
