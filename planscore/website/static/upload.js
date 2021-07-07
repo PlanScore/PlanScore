@@ -1,27 +1,14 @@
-function enable_form(url, form)
+function fetch_upload_tokens(url, form, signal) 
 {
-    var request = new XMLHttpRequest();
-    request.open('GET', url, true);
+    return fetch(url, {signal}).then(r => r.json()).then(data => {
+        // Returns a two-element array with URL and form fields.
+        const form_action_url = data[0];
+        const upload_fields = data[1];
 
-    request.onload = function()
-    {
-        if(request.status >= 200 && request.status < 400)
-        {
-            // Returns a two-element array with URL and form fields.
-            var data = JSON.parse(request.responseText);
-            const form_action_url = data[0];
-            const upload_fields = data[1];
-
-            for(var key in upload_fields) {
-                form.elements[key].value = upload_fields[key];
-            }
-            form.action = form_action_url;
-            form.dataset.configured = "true"
+        for(var key in upload_fields) {
+            form.elements[key].value = upload_fields[key];
         }
-    };
-
-    request.onerror = function(e) { 
-        console.error('There was a connection error', e);
-    };
-    request.send();
+        form.action = form_action_url;
+        console.log('Upload tokens populated.');
+    });
 }

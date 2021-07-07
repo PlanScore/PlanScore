@@ -108,7 +108,7 @@
         </div>
         <div class="col-md-6">
             <!-- action is set in upload.js -->
-            <form id="upload" action="#" method="post" enctype="multipart/form-data" data-configured="false">
+            <form id="upload" action="#" method="post" enctype="multipart/form-data">
                 <input type="hidden" name="key">
                 <input type="hidden" name="AWSAccessKeyId">
                 <input type="hidden" name="policy">
@@ -146,27 +146,46 @@
 	    var upload_form = document.getElementById('upload'),
 	        file_input = document.getElementById('file'),
 	        file_label = file_input.nextElementSibling,
-            file_label_text = file_label.textContent;
-	    
-	    enable_form('{{upload_fields_url}}', upload_form);
-	    
+            select_a_file_text = file_label.textContent;
+
+
+        // Use an AbortController to make an abortable fetch that can give up if its not done in time. https://github.com/PlanScore/PlanScore/pull/379
+        const controller = new AbortController();
+
+        // For local dev, prefix the upload_fields_url with https://api.planscore.org/
+        const fetch_tokens_promise = fetch_upload_tokens('{{upload_fields_url}}', upload_form, controller.signal);
+
+        fetch_tokens_promise.catch(err => 
+        {
+            file_label.textContent = 'API Server connection failure!';
+            if (err.name === 'AbortError') {
+                alert(`Didn't connect to PlanScore API server in time. Reload and try again?`);
+            } else {
+                console.error('Fetch failure', err);
+            }
+        });
 
 	    file_input.addEventListener('change', function(e)
 	    {
-            // Checking if enable_form()'s XHR is not done yet. (Very unlikely)
-            if (upload_form.dataset.configured != 'true') {
-                alert(`Didn't connect to PlanScore API server. Try again?`);
-                this.value = ''; // Clear file input to allow user to re-select
+            if(!this.files.length) {
+                file_label.textContent = select_a_file_text;
+                return;
             }
 
-            if(this.files.length) {
-	            file_label.textContent = `Uploading ${this.files[0].name} …`;
+            console.log('File selected');
+            file_label.textContent = `Awaiting server connection…`;
+
+            // After file selection, give 7 more seconds grace time for fetch_tokens before giving up
+            setTimeout(() => {
+                controller.abort();
+            }, 7 * 1000);
+
+            fetch_tokens_promise.then(() => {
+                console.log('File selected AND upload tokens fetched. Starting submit');
+                file_label.textContent = `Uploading ${this.files[0].name} …`;
                 upload_form.submit();
-	        } else {
-	            file_label.textContent = file_label_text;
-	        }
+            });
 	    });
-	    
 	</script>
 
 	{% include 'olark-embed.html' %}
