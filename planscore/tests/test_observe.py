@@ -46,16 +46,19 @@ class TestObserveTiles (unittest.TestCase):
         self.assertEqual(put_call1[2], dict(Bucket=storage.bucket,
             Key=upload.index_key.return_value,
             Body=upload.to_json.return_value.encode.return_value,
+            CacheControl='public, no-cache, no-store',
             ACL='public-read', ContentType='text/json'))
         
         self.assertEqual(put_call2[2], dict(Bucket=storage.bucket,
             Key=upload.plaintext_key.return_value,
             Body=upload.to_plaintext.return_value.encode.return_value,
+            CacheControl='public, no-cache, no-store',
             ACL='public-read', ContentType='text/plain'))
         
         self.assertEqual(put_call3[2], dict(Bucket=storage.bucket,
             Key=upload.logentry_key.return_value,
             Body=upload.to_logentry.return_value.encode.return_value,
+            CacheControl='public, no-cache, no-store',
             ACL='public-read', ContentType='text/plain'))
 
     def test_put_part_timings(self):
