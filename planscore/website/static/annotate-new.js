@@ -14,13 +14,17 @@ function getUrlParameter(name, search)
 
 function show_message(text, preread_section, message_section)
 {
-    while(message_section.firstChild)
-    {
-        message_section.removeChild(message_section.firstChild);
+    // If showing the same message, just append an ellipsis.
+    const match_el = Array.from(message_section.querySelectorAll('p'))
+        .find(el => el.textContent.startsWith(text));
+    
+    if (match_el) {
+        match_el.textContent += '…';
+    } else {
+        const el = document.createElement('p');
+        el.textContent = text;
+        message_section.append(el);
     }
-
-    message_section.appendChild(document.createElement('p'));
-    message_section.firstChild.appendChild(document.createTextNode(text));
 
     preread_section.style.display = 'none';
     message_section.style.display = 'block';
@@ -97,21 +101,46 @@ function get_description(plan, modified_at)
             : [description, 'at', modified_at.toLocaleString()].join(' ');
 }
 
-function load_plan_preread(url, message_section, preread_section, description,
+function start_plan_preread_polling(url, message_section, preread_section, description,
     incumbency_unavailable, incumbency_scenarios, first_incumbent_row, geom_prefix, map_div)
+{
+
+    const make_xhr = () => {
+        load_plan_preread(url, message_section, preread_section, description,
+            incumbency_unavailable, incumbency_scenarios, first_incumbent_row, geom_prefix, 
+            map_div, xhr_retry_callback)
+    };
+
+    const xhr_retry_callback = () => {
+        setTimeout(() => {
+            make_xhr();
+        }, 3000);
+    };
+
+    show_message('Loading district plan', preread_section, message_section);
+    make_xhr();
+}
+
+function load_plan_preread(url, message_section, preread_section, description,
+    incumbency_unavailable, incumbency_scenarios, first_incumbent_row, geom_prefix, map_div,
+    xhr_retry_callback)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
 
-    show_message('Loading district plan…', preread_section, message_section);
-
     function on_loaded_preread(plan, modified_at)
     {
-        if(!which_plan_districts_count(plan)) {
-            show_message(plan['message'] ? plan.message : 'District plan failed to load.',
+        const is_plan_still_parsing = !which_plan_districts_count(plan);
+        if(is_plan_still_parsing) {
+            if (plan.message) {
+                // Still processing (Reading/Parsing this newly-uploaded plan)
+                show_message(plan.message, preread_section, message_section);
+                xhr_retry_callback();
+            } else {
+                show_message('District plan failed to load.',
                 preread_section, message_section);
+            }
             return;
-
         } else {
             hide_message(preread_section, message_section);
         }
@@ -253,6 +282,6 @@ if(typeof module !== 'undefined' && module.exports)
     module.exports = {
         format_url: format_url, getUrlParameter: getUrlParameter,
         which_plan_districts_count: which_plan_districts_count,
-        get_description: get_description, date_age: date_age
+        get_description: get_description, date_age: date_age,
         };
 }

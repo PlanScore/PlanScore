@@ -29,7 +29,7 @@
 {% endblock %}
 {% block content %}
     <section id="message">
-        Loading plan…
+        <p>Loading district plan</p>
     </section>
     <section id="plan-preread">
 
@@ -112,7 +112,7 @@
         form.elements['bucket'].value = s3_bucket;
         form.elements['key'].value = s3_key;
 
-	    load_plan_preread(plan_url,
+	    start_plan_preread_polling(plan_url,
 	        document.getElementById('message'),
 	        document.getElementById('plan-preread'),
 	        document.getElementById('plan-description'),
