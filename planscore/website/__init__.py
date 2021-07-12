@@ -57,9 +57,10 @@ def get_plan():
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     geom_url_prefix = constants.S3_URL_PATTERN.format(k='', b=flask.current_app.config['PLANSCORE_S3_BUCKET'])
     text_url_pattern = get_text_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
+    geom_url_suffix_key=data.UPLOAD_GEOMETRY_KEY
     return flask.render_template('plan.html',
         data_url_pattern=data_url_pattern, geom_url_prefix=geom_url_prefix,
-        text_url_pattern=text_url_pattern)
+        text_url_pattern=text_url_pattern, geom_url_suffix_key=geom_url_suffix_key)
 
 @app.route('/webinar/')
 def get_webinar_mar23():

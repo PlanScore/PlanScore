@@ -180,7 +180,19 @@
 	        mm_metric_url = 'https://planscore.org/metrics/meanmedian/',
 	        model_url_pattern = '{{ url_for("get_model_description", prefix="data/2020") }}';
 
-        start_load_plan_polling(plan_url,
+        // Preload the data we'll use
+        const index_url = format_url('{{ data_url_pattern }}', plan_id);
+        const geometry_url = format_url('{{ geom_url_prefix }}{{ geom_url_suffix_key }}', plan_id);
+        for (const preload_url of [geometry_url]) {
+            const link_el = document.createElement('link');
+            link_el.rel = 'preload';
+            link_el.as = 'fetch';
+            link_el.crossOrigin = 'anonymous';
+            link_el.href = preload_url;
+            document.head.append(link_el);
+        }
+
+	    start_load_plan_polling(plan_url,
 	        document.getElementById('message'),
 	        document.getElementById('plan-score'),
 	        document.getElementById('plan-description'),
