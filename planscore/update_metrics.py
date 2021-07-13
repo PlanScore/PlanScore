@@ -60,7 +60,8 @@ def update_metrics(cred_data, spreadsheet_id):
           `model_state` string, 
           `model_house` string, 
           `model_json` string, 
-          `key` string
+          `key` string,
+          `token` string
         )
         PARTITIONED BY ( 
           `ds` date)

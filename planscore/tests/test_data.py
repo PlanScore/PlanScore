@@ -1,4 +1,4 @@
-import os, uuid, unittest, unittest.mock
+import os, uuid, unittest, unittest.mock, json
 from .. import data
 
 class TestData (unittest.TestCase):
@@ -121,6 +121,12 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload10.key, 'KEY')
         self.assertEqual(upload10.status, True)
         self.assertEqual(upload10.incumbents, ['D', 'R'])
+
+        upload11 = data.Upload.from_json('{"id": "ID", "key": "KEY", '
+            '"auth_token": "Heyo"}')
+        self.assertEqual(upload11.id, 'ID')
+        self.assertEqual(upload11.key, 'KEY')
+        self.assertEqual(upload11.auth_token, 'Heyo')
     
     def test_upload_overdue(self):
         ''' data.Upload self-reports correct overdue state
@@ -227,6 +233,11 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload20.key, upload19.key)
         self.assertIs(upload20.status, upload19.status)
     
+        upload21 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
+            auth_token='Heyo')
+
+        self.assertIsNone(json.loads(upload21.to_json()).get('auth_token'))
+    
     def test_upload_plaintext(self):
         ''' data.Upload instances can be converted to plaintext
         '''
@@ -278,15 +289,15 @@ class TestData (unittest.TestCase):
         
         upload1 = data.Upload(id='ID', message='Yo.', key='whatever')
         logentry1 = upload1.to_logentry()
-        self.assertEqual(logentry1, 'ID\t-999\t0\tYo.\t\t\t\twhatever\t\r\n')
+        self.assertEqual(logentry1, 'ID\t-999\t0\tYo.\t\t\t\twhatever\t\t\r\n')
 
         upload2 = data.Upload(id='ID', message="Hell's Bells", key='whatever', status=True)
         logentry2 = upload2.to_logentry()
-        self.assertEqual(logentry2, "ID\t-999\t0\tHell's Bells\t\t\t\twhatever\tt\r\n")
+        self.assertEqual(logentry2, "ID\t-999\t0\tHell's Bells\t\t\t\twhatever\tt\t\r\n")
 
         upload3 = data.Upload(id='ID', message="Oh, really?", key='whatever', status=False)
         logentry3 = upload3.to_logentry()
-        self.assertEqual(logentry3, 'ID\t-999\t0\tOh, really?\t\t\t\twhatever\tf\r\n')
+        self.assertEqual(logentry3, 'ID\t-999\t0\tOh, really?\t\t\t\twhatever\tf\t\r\n')
         
         upload4 = data.Upload(
             id='ID', message='Yo.', key='whatever',
@@ -295,7 +306,11 @@ class TestData (unittest.TestCase):
         logentry4 = upload4.to_logentry()
         self.assertEqual(logentry4, 'ID\t-999\t0\tYo.\tNC\tushouse\t'
             '{"house":"ushouse","incumbency":false,"key_prefix":"data/NC/001","seats":13,"state":"NC","version":"2020"}'
-            '\twhatever\t\r\n')
+            '\twhatever\t\t\r\n')
+
+        upload5 = data.Upload(id='ID', message="Hell's Bells", key='whatever', auth_token='Heyo')
+        logentry5 = upload5.to_logentry()
+        self.assertEqual(logentry5, "ID\t-999\t0\tHell's Bells\t\t\t\twhatever\t\tHe********\r\n")
 
     def test_upload_index_key(self):
         ''' data.Upload.index_key() correctly munges Upload.key
@@ -335,7 +350,7 @@ class TestData (unittest.TestCase):
         geometry1, geometry2 = unittest.mock.Mock(), unittest.mock.Mock()
         input = data.Upload(id='ID', key='whatever.json', districts=districts1,
             model=model1, summary=summary1, progress=progress1, start_time=start_time1,
-            incumbents=incumbents1, geometry_key=geometry1)
+            incumbents=incumbents1, geometry_key=geometry1, auth_token='fake')
 
         self.assertIs(input.districts, districts1)
         self.assertIs(input.incumbents, incumbents1)
@@ -397,3 +412,8 @@ class TestData (unittest.TestCase):
         self.assertEqual(output9.id, input.id)
         self.assertEqual(output9.key, input.key)
         self.assertIs(output9.incumbents, geometry2)
+
+        output10 = input.clone()
+        self.assertEqual(output10.id, input.id)
+        self.assertEqual(output10.key, input.key)
+        self.assertIsNone(output10.auth_token)

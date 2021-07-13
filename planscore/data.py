@@ -157,7 +157,8 @@ class Upload:
 
     def __init__(self, id, key, model:Model=None, districts=None, incumbents=None,
             summary=None, progress=None, start_time=None, message=None,
-            description=None, geometry_key=None, status=None, **ignored):
+            description=None, geometry_key=None, status=None, auth_token=None,
+            **ignored):
         self.id = id
         self.key = key
         self.model = model
@@ -171,6 +172,7 @@ class Upload:
         self.description = description
         self.geometry_key = geometry_key
         self.commit_sha = os.environ.get('GIT_COMMIT_SHA')
+        self.auth_token = auth_token
         
         if not incumbents:
             self.incumbents = [Incumbency.Open.value for i in range(len(self.districts))]
@@ -249,6 +251,11 @@ class Upload:
     def to_logentry(self):
         ''' Export current plan information to a tab-delimited plaintext file
         '''
+        if self.auth_token:
+            obscured_token = self.auth_token[:len(self.auth_token)//2] + '********'
+        else:
+            obscured_token = None
+        
         # Important: only append to this list to maintain 
         # backward-compatibility with older entries for PrestoDB
         logentry = [
@@ -278,6 +285,9 @@ class Upload:
             
             # Upload status
             {True: 't', False: 'f', None: ''}.get(self.status),
+            
+            # Auth token
+            obscured_token,
         ]
             
         try:
@@ -324,6 +334,7 @@ class Upload:
             message = data.get('message'),
             description = data.get('description'),
             geometry_key = data.get('geometry_key'),
+            auth_token = data.get('auth_token'),
             )
     
     @staticmethod
