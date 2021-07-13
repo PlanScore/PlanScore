@@ -8,6 +8,7 @@ def lambda_handler(event, context):
 
     api_arn, _ = event['methodArn'].split('/', 1)
     api_tokens = os.environ.get('API_TOKENS', '').split(',')
+    context = {"authToken": None}
     
     if api_tokens == ['']:
         # No token expected, everything allowed
@@ -18,6 +19,7 @@ def lambda_handler(event, context):
             if auth_token in api_tokens and token_scheme == 'Bearer':
                 # Correctly-formatted and matched bearer token
                 allowed = True
+                context = {"authToken": auth_token}
             else:
                 # Incorrectly formatted or unmatched token
                 allowed = False
@@ -27,6 +29,7 @@ def lambda_handler(event, context):
     
     return {
         "principalId": "user",
+        "context": context,
         "policyDocument": {
             "Version": "2012-10-17",
             "Statement": [
