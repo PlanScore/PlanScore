@@ -417,3 +417,8 @@ class TestData (unittest.TestCase):
         self.assertEqual(output10.id, input.id)
         self.assertEqual(output10.key, input.key)
         self.assertIsNone(output10.auth_token)
+
+        output11 = input.clone(auth_token='Heyo')
+        self.assertEqual(output11.id, input.id)
+        self.assertEqual(output11.key, input.key)
+        self.assertEqual(output11.auth_token, 'Heyo')

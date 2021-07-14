@@ -48,6 +48,7 @@ def kick_it_off(geojson, temporary, auth_token):
             feature['properties'].get('Incumbent', 'O')
             for feature in geojson['features']
         ],
+        auth_token = auth_token,
     )
 
     observe.put_upload_index(storage, upload3)

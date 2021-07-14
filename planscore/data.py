@@ -289,6 +289,8 @@ class Upload:
             # Auth token
             obscured_token,
         ]
+        
+        print(json.dumps(logentry))
             
         try:
             out = io.StringIO()
@@ -302,7 +304,8 @@ class Upload:
             return out.getvalue()
     
     def clone(self, model=None, districts=None, incumbents=None, summary=None, progress=None,
-        start_time=None, message=None, description=None, geometry_key=None, status=None):
+        start_time=None, message=None, description=None, geometry_key=None, status=None,
+        auth_token=None):
         return Upload(self.id, self.key,
             model = model or self.model,
             status = status if (self.status is None) else self.status,
@@ -314,6 +317,7 @@ class Upload:
             message = message or self.message,
             description = description or self.description,
             geometry_key = geometry_key or self.geometry_key,
+            auth_token = auth_token,
             )
     
     @staticmethod
