@@ -91,7 +91,7 @@
 {% endblock %}
 {% block content %}
     <section id="message">
-        Loading plan…
+        <p>Loading district plan</p>
     </section>
     <section id="plan-score">
     <div id="plan-description"><h3>(Loading)</h3></div>
@@ -180,7 +180,6 @@
 	        mm_metric_url = 'https://planscore.org/metrics/meanmedian/',
 	        model_url_pattern = '{{ url_for("get_model_description", prefix="data/2020") }}';
 
-
         // Preload the data we'll use
         const index_url = format_url('{{ data_url_pattern }}', plan_id);
         const geometry_url = format_url('{{ geom_url_prefix }}{{ geom_url_suffix_key }}', plan_id);
@@ -193,7 +192,7 @@
             document.head.append(link_el);
         }
 
-	    load_plan_score(plan_url,
+	    start_load_plan_polling(plan_url,
 	        document.getElementById('message'),
 	        document.getElementById('plan-score'),
 	        document.getElementById('plan-description'),

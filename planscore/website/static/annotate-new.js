@@ -130,20 +130,19 @@ function load_plan_preread(url, message_section, preread_section, description,
 
     function on_loaded_preread(plan, modified_at)
     {
-        const is_plan_still_parsing = !which_plan_districts_count(plan);
-        if(is_plan_still_parsing) {
+        const is_preread_still_parsing = !which_plan_districts_count(plan);
+        if(is_preread_still_parsing) {
             if (plan.message) {
                 // Still processing (Reading/Parsing this newly-uploaded plan)
                 show_message(plan.message, preread_section, message_section);
-                xhr_retry_callback();
+                if (typeof xhr_retry_callback === 'function') xhr_retry_callback();
             } else {
-                show_message('District plan failed to load.',
-                preread_section, message_section);
+                show_message('District plan failed to load.', preread_section, message_section);
             }
             return;
-        } else {
-            hide_message(preread_section, message_section);
-        }
+        } 
+
+        hide_message(preread_section, message_section);
 
         // Clear out and repopulate description.
         clear_element(description);

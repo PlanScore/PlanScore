@@ -434,13 +434,17 @@ function show_sensitivity_test(plan, score_sense)
 
 function show_message(text, score_section, message_section)
 {
-    while(message_section.firstChild)
-    {
-        message_section.removeChild(message_section.firstChild);
-    }
+    // If showing the same message, just append an ellipsis.
+    const match_el = Array.from(message_section.querySelectorAll('p'))
+        .find(el => el.textContent.startsWith(text));
 
-    message_section.appendChild(document.createElement('p'));
-    message_section.firstChild.appendChild(document.createTextNode(text));
+    if (match_el) {
+        match_el.textContent += '…';
+    } else {
+        const el = document.createElement('p');
+        el.textContent = text;
+        message_section.append(el);
+    }
 
     score_section.style.display = 'none';
     message_section.style.display = 'block';
@@ -822,25 +826,49 @@ function plan_has_incumbency(plan)
         && plan.incumbents && plan.incumbents.length == plan.districts.length;
 }
 
-function load_plan_score(url, message_section, score_section,
+function start_load_plan_polling(url, message_section, score_section,
     description_el, model_link, model_url_pattern, table, score_EG, score_PB,
     score_MM, score_sense, text_url, text_link, geom_prefix, map_div)
+{
+    const make_xhr = () => {
+        load_plan_score(url, message_section, score_section,
+            description_el, model_link, model_url_pattern, table, score_EG, score_PB,
+            score_MM, score_sense, text_url, text_link, geom_prefix, map_div, xhr_retry_callback);
+    };
+
+    const xhr_retry_callback = () => {
+        setTimeout(() => {
+            make_xhr();
+        }, 5000);
+    };
+
+    show_message('Loading district plan', score_section, message_section);
+    make_xhr();
+}
+
+function load_plan_score(url, message_section, score_section,
+    description_el, model_link, model_url_pattern, table, score_EG, score_PB,
+    score_MM, score_sense, text_url, text_link, geom_prefix, map_div, xhr_retry_callback)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
 
-    show_message('Loading district plan…', score_section, message_section);
-
     function on_loaded_score(plan, modified_at)
     {
-        if(which_score_summary_name(plan) === null) {
-            show_message(plan['message'] ? plan.message : 'District plan failed to load.',
-                score_section, message_section);
+        const is_plan_still_parsing = which_score_summary_name(plan) === null;
+        if(is_plan_still_parsing) {
+            if (plan.message) {
+                // Still processing
+                show_message(plan.message, score_section, message_section);
+                if (typeof xhr_retry_callback === 'function') xhr_retry_callback();
+            } else {
+                show_message('District plan failed to load.', score_section, message_section);
+            }
             return;
+        } 
 
-        } else {
-            hide_message(score_section, message_section);
-        }
+        // Plan is done parsing and we can render the page
+        hide_message(score_section, message_section);
 
         // Clear out and repopulate plan description, upload date, plan type
         clear_element(description_el);
