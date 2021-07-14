@@ -74,7 +74,6 @@ def kick_it_off(geojson, temporary, auth_token):
 def lambda_handler(event, context):
     '''
     '''
-    import json; print(json.dumps(event['requestContext']))
     try:
         geojson = json.loads(event['body'])
     except TypeError:
@@ -83,9 +82,8 @@ def lambda_handler(event, context):
         status, body = '400', json.dumps(dict(message='Bad GeoJSON input'))
     else:
         temporary = event['path'].endswith('/temporary')
-        auth_token = event['requestContext'].get('authToken')
+        auth_token = event['requestContext'].get('authorizer', {}).get('authToken')
         result = kick_it_off(geojson, temporary, auth_token)
-        import json; print(json.dumps(result))
         status, body = '200', json.dumps(result, indent=2)
     
     return {

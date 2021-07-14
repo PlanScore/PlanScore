@@ -290,8 +290,6 @@ class Upload:
             obscured_token,
         ]
         
-        print(json.dumps(logentry))
-            
         try:
             out = io.StringIO()
             rows = csv.writer(out, dialect='excel-tab', quotechar='|', quoting=csv.QUOTE_MINIMAL)

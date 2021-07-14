@@ -11,7 +11,6 @@ cdk deploy \
     --outputs-file $FILE \
     --require-approval never
 
-exit 1
 cd $DIR/cdk-content
 
 cdk deploy \
