@@ -10,7 +10,7 @@ from . import preread_followup
 from . import postread_callback
 from . import postread_calculate
 
-def kick_it_off(geojson, temporary):
+def kick_it_off(geojson, temporary, auth_token):
     '''
     '''
     s3 = boto3.client('s3')
@@ -48,6 +48,7 @@ def kick_it_off(geojson, temporary):
             feature['properties'].get('Incumbent', 'O')
             for feature in geojson['features']
         ],
+        auth_token = auth_token,
     )
 
     observe.put_upload_index(storage, upload3)
@@ -81,7 +82,8 @@ def lambda_handler(event, context):
         status, body = '400', json.dumps(dict(message='Bad GeoJSON input'))
     else:
         temporary = event['path'].endswith('/temporary')
-        result = kick_it_off(geojson, temporary)
+        auth_token = event['requestContext'].get('authorizer', {}).get('authToken')
+        result = kick_it_off(geojson, temporary, auth_token)
         status, body = '200', json.dumps(result, indent=2)
     
     return {
