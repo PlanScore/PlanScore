@@ -358,9 +358,9 @@ MODELS = [
     Model(State.AR, House.ushouse,       4,  True, VERSION, 'data/AR/001-tilesdir'), # 6673c68
     Model(State.AR, House.statesenate,  35,  True, VERSION, 'data/AR/001-tilesdir'), # 6673c68
     Model(State.AR, House.statehouse,  100,  True, VERSION, 'data/AR/001-tilesdir'), # 6673c68
-    Model(State.AZ, House.ushouse,       9,  True, VERSION, 'data/AZ/004-vest2020'), # 924e34c
-    Model(State.AZ, House.statesenate,  30,  True, VERSION, 'data/AZ/004-vest2020'), # 924e34c
-    Model(State.AZ, House.statehouse,   60,  True, VERSION, 'data/AZ/004-vest2020'), # 924e34c
+    Model(State.AZ, House.ushouse,       9,  True, VERSION, 'data/AZ/005-newvotes'), # 7dd1d71
+    Model(State.AZ, House.statesenate,  30,  True, VERSION, 'data/AZ/005-newvotes'), # 7dd1d71
+    Model(State.AZ, House.statehouse,   60,  True, VERSION, 'data/AZ/005-newvotes'), # 7dd1d71
     Model(State.CA, House.ushouse,      55,  True, VERSION, 'data/CA/002-tilesdir'), # b969229
     Model(State.CA, House.statesenate,  40,  True, VERSION, 'data/CA/002-tilesdir'), # b969229
     Model(State.CA, House.statehouse,   80,  True, VERSION, 'data/CA/002-tilesdir'), # b969229
@@ -409,9 +409,9 @@ MODELS = [
     Model(State.ME, House.ushouse,       2,  True, VERSION, 'data/ME/004-vest2020'), # 924e34c
     Model(State.ME, House.statesenate,  35,  True, VERSION, 'data/ME/004-vest2020'), # 924e34c
     Model(State.ME, House.statehouse,  151,  True, VERSION, 'data/ME/004-vest2020'), # 924e34c
-    Model(State.MI, House.ushouse,      14,  True, VERSION, 'data/MI/003-tilesdir'), # 56f7c85
-    Model(State.MI, House.statesenate,  38,  True, VERSION, 'data/MI/003-tilesdir'), # 56f7c85
-    Model(State.MI, House.statehouse,  110,  True, VERSION, 'data/MI/003-tilesdir'), # 56f7c85
+    Model(State.MI, House.ushouse,      14,  True, VERSION, 'data/MI/004-newvotes'), # 7dd1d71
+    Model(State.MI, House.statesenate,  38,  True, VERSION, 'data/MI/004-newvotes'), # 7dd1d71
+    Model(State.MI, House.statehouse,  110,  True, VERSION, 'data/MI/004-newvotes'), # 7dd1d71
     Model(State.MN, House.ushouse,       8,  True, VERSION, 'data/MN/004-2021A'), # 3017cc8
     Model(State.MN, House.statesenate,  67,  True, VERSION, 'data/MN/004-2021A'), # 3017cc8
     Model(State.MN, House.statehouse,  134,  True, VERSION, 'data/MN/004-2021A'), # 3017cc8
