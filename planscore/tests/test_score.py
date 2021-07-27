@@ -92,6 +92,10 @@ class TestScore (unittest.TestCase):
         self.assertAlmostEqual(mmd5, .15, places=2,
             msg='Should see +blue MMD with 28% mean and 13% median red vote share')
 
+        mmd6 = score.calculate_MMD((6, 6, 4, 4, 4, 0), (5, 5, 5, 8, 8, 0))
+        self.assertAlmostEqual(mmd6, 0, places=2,
+            msg='Should see defined MMD even when one district is missing votes')
+
     def test_calculate_PB(self):
         ''' Partisan Bias can be correctly calculated for various elections
         '''
@@ -110,6 +114,10 @@ class TestScore (unittest.TestCase):
         pb4 = score.calculate_PB((4, 4, 4, 12, 12), (6, 6, 6, 3, 3))
         self.assertAlmostEqual(pb4, 0.1, places=2,
             msg='Should see +blue PB with 40% blue vote share and 60% blue seats')
+
+        pb5 = score.calculate_PB((6, 6, 4, 4, 0), (4, 4, 6, 6, 0))
+        self.assertAlmostEqual(pb5, -.1, places=2,
+            msg='Should see defined PB even when one district is missing votes')
 
     def test_calculate_DEC(self):
         ''' Declination can be correctly calculated for various elections
@@ -139,6 +147,10 @@ class TestScore (unittest.TestCase):
         )
         self.assertAlmostEqual(dec3, 0.0099509252041511, places=3,
             msg='Should see ~zero DEC in North Carolina, 1998')
+
+        dec4 = score.calculate_DEC((1, 2, 3, 4, 0), (4, 3, 2, 1, 0))
+        self.assertAlmostEqual(dec4, 0, places=3,
+            msg='Should see zero DEC even when one district is missing votes')
 
     @unittest.mock.patch('planscore.score.calculate_DEC')
     @unittest.mock.patch('planscore.score.calculate_MMD')

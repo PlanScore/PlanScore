@@ -145,7 +145,10 @@ def calculate_MMD(red_districts, blue_districts):
     
         Vote swing does not seem to affect Mean-Median, so leave it off.
     '''
-    shares = sorted([B/(R + B) for (R, B) in zip(red_districts, blue_districts)])
+    shares = sorted([
+        B / (R + B) for (R, B) in zip(red_districts, blue_districts)
+        if (R + B) > 0
+    ])
     
     median = statistics.median(shares)
     mean = statistics.mean(shares)
@@ -184,7 +187,10 @@ def calculate_DEC(red_districts, blue_districts):
         By convention, result is positive for blue and negative for red.
         Adapt Python sample code from Warrington, 2018.
     '''
-    blue_shares = [b / (r + b) for (r, b) in zip(red_districts, blue_districts)]
+    blue_shares = [
+        B / (R + B) for (R, B) in zip(red_districts, blue_districts)
+        if (R + B) > 0
+    ]
 
     red_wins = sorted([share for share in blue_shares if share <= 0.5])
     blue_wins = sorted([share for share in blue_shares if share > 0.5])
