@@ -111,6 +111,35 @@ class TestScore (unittest.TestCase):
         self.assertAlmostEqual(pb4, 0.1, places=2,
             msg='Should see +blue PB with 40% blue vote share and 60% blue seats')
 
+    def test_calculate_DEC(self):
+        ''' Declination can be correctly calculated for various elections
+
+            "","STATEAB","election","dems","seats_dem","reps","seats","declination","declination2"
+            "226","GA",1972,0.584617612075026,0.9,0.240871024240908,10,0.760325196623815,0.875356731786882
+            "450","LA",2020,0.809097511747074,0.166666666666667,0.27072066577579,6,-0.5120998852676,-0.458779909309412
+            "664","NC",1998,0.598085862963535,0.416666666666667,0.357068466446836,12,0.0099509252041511,0.012363560105669
+        '''
+        dec1 = score.calculate_DEC(
+            [0.584617612075026] * 9 + [0.240871024240908] * 1,
+            [1 - 0.584617612075026] * 9 + [1 - 0.240871024240908] * 1,
+        )
+        self.assertAlmostEqual(dec1, 0.760325196623815, places=3,
+            msg='Should see high DEC in Georgia, 1972')
+
+        dec2 = score.calculate_DEC(
+            [0.809097511747074] * 1 + [0.27072066577579] * 5,
+            [1 - 0.809097511747074] * 1 + [1 - 0.27072066577579] * 5,
+        )
+        self.assertAlmostEqual(dec2, -0.5120998852676, places=3,
+            msg='Should see low DEC in Louisiana, 2020')
+
+        dec3 = score.calculate_DEC(
+            [0.598085862963535] * 5 + [0.357068466446836] * 7,
+            [1 - 0.598085862963535] * 5 + [1 - 0.357068466446836] * 7,
+        )
+        self.assertAlmostEqual(dec3, 0.0099509252041511, places=3,
+            msg='Should see ~zero DEC in North Carolina, 1998')
+
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
