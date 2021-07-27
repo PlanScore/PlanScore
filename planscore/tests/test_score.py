@@ -119,7 +119,7 @@ class TestScore (unittest.TestCase):
         self.assertAlmostEqual(pb5, -.1, places=2,
             msg='Should see defined PB even when one district is missing votes')
 
-    def test_calculate_DEC(self):
+    def test_calculate_D2(self):
         ''' Declination can be correctly calculated for various elections
 
             "","STATEAB","election","dems","seats_dem","reps","seats","declination","declination2"
@@ -127,36 +127,36 @@ class TestScore (unittest.TestCase):
             "450","LA",2020,0.809097511747074,0.166666666666667,0.27072066577579,6,-0.5120998852676,-0.458779909309412
             "664","NC",1998,0.598085862963535,0.416666666666667,0.357068466446836,12,0.0099509252041511,0.012363560105669
         '''
-        dec1 = score.calculate_DEC(
+        d2a = score.calculate_D2(
             [0.584617612075026] * 9 + [0.240871024240908] * 1,
             [1 - 0.584617612075026] * 9 + [1 - 0.240871024240908] * 1,
         )
-        self.assertAlmostEqual(dec1, 0.760325196623815, places=3,
-            msg='Should see high DEC in Georgia, 1972')
+        self.assertAlmostEqual(d2a, 0.875356731786882, places=3,
+            msg='Should see high Dec2 in Georgia, 1972')
 
-        dec2 = score.calculate_DEC(
+        d2b = score.calculate_D2(
             [0.809097511747074] * 1 + [0.27072066577579] * 5,
             [1 - 0.809097511747074] * 1 + [1 - 0.27072066577579] * 5,
         )
-        self.assertAlmostEqual(dec2, -0.5120998852676, places=3,
-            msg='Should see low DEC in Louisiana, 2020')
+        self.assertAlmostEqual(d2b, -0.458779909309412, places=3,
+            msg='Should see low Dec2 in Louisiana, 2020')
 
-        dec3 = score.calculate_DEC(
+        d2c = score.calculate_D2(
             [0.598085862963535] * 5 + [0.357068466446836] * 7,
             [1 - 0.598085862963535] * 5 + [1 - 0.357068466446836] * 7,
         )
-        self.assertAlmostEqual(dec3, 0.0099509252041511, places=3,
-            msg='Should see ~zero DEC in North Carolina, 1998')
+        self.assertAlmostEqual(d2c, 0.012363560105669, places=3,
+            msg='Should see ~zero Dec2 in North Carolina, 1998')
 
-        dec4 = score.calculate_DEC((1, 2, 3, 4, 0), (4, 3, 2, 1, 0))
-        self.assertAlmostEqual(dec4, 0, places=3,
-            msg='Should see zero DEC even when one district is missing votes')
+        d2d = score.calculate_D2((1, 2, 3, 4, 0), (4, 3, 2, 1, 0))
+        self.assertAlmostEqual(d2d, 0, places=3,
+            msg='Should see zero Dec2 even when one district is missing votes')
 
-    @unittest.mock.patch('planscore.score.calculate_DEC')
+    @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_bias(self, calculate_EG, calculate_PB, calculate_MMD, calculate_DEC):
+    def test_calculate_bias(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2):
         ''' Efficiency gap can be correctly calculated for an election
         
             Use obsolete vote properties from early 2018 PlanScore models.
@@ -177,8 +177,8 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
         self.assertEqual(calculate_PB.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
-        self.assertEqual(output.summary['Declination'], calculate_DEC.return_value)
-        self.assertEqual(calculate_DEC.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
+        self.assertEqual(output.summary['Declination'], calculate_D2.return_value)
+        self.assertEqual(calculate_D2.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
         self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
         self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
@@ -288,11 +288,11 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['SLDL Efficiency Gap +1 Rep'], calculate_EG.return_value)
         self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
 
-    @unittest.mock.patch('planscore.score.calculate_DEC')
+    @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_fewsims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_DEC):
+    def test_calculate_gap_fewsims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2):
         ''' Efficiency gap can be correctly calculated using a few input sims.
         
             Use "DEM000"-style vote properties from 2018 and 2019 PlanScore models.
@@ -305,7 +305,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={"REP000": 6, "DEM000": 2, "REP001": 5, "DEM001": 3}, tile=None),
                 ])
         
-        calculate_DEC.return_value = 0
+        calculate_D2.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
@@ -314,7 +314,7 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['Mean-Median SD'], 0)
         self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
         self.assertEqual(output.summary['Partisan Bias SD'], 0)
-        self.assertEqual(output.summary['Declination'], calculate_DEC.return_value)
+        self.assertEqual(output.summary['Declination'], calculate_D2.return_value)
         self.assertEqual(output.summary['Declination SD'], 0)
         self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
         self.assertEqual(output.summary['Efficiency Gap SD'], 0)
@@ -342,11 +342,11 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.districts[3]['totals']['Republican Votes'], 11/2)
         self.assertEqual(output.districts[3]['totals']['Democratic Votes'], 5/2)
 
-    @unittest.mock.patch('planscore.score.calculate_DEC')
+    @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_manysims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_DEC):
+    def test_calculate_gap_manysims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2):
         ''' Efficiency gap can be correctly calculated using many input sims.
         
             Use "DEM000"-style vote properties from 2018 and 2019 PlanScore models.
@@ -376,7 +376,7 @@ class TestScore (unittest.TestCase):
                 dict(totals=dict(vote_sims[1], **vote_sims[3]), tile=None),
                 ])
         
-        calculate_DEC.return_value = 0
+        calculate_D2.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
@@ -386,7 +386,7 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['Mean-Median SD'], 0)
         self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
         self.assertEqual(output.summary['Partisan Bias SD'], 0)
-        self.assertEqual(output.summary['Declination'], calculate_DEC.return_value)
+        self.assertEqual(output.summary['Declination'], calculate_D2.return_value)
         self.assertEqual(output.summary['Declination SD'], 0)
         self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
         self.assertEqual(output.summary['Efficiency Gap SD'], 0)
@@ -421,11 +421,11 @@ class TestScore (unittest.TestCase):
                 for district in output.districts:
                     self.assertNotIn(field, district['totals'])
 
-    @unittest.mock.patch('planscore.score.calculate_DEC')
+    @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_opensims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_DEC):
+    def test_calculate_gap_opensims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2):
         ''' Efficiency gap can be correctly calculated using many open-seat sims.
         
             Use "O:DEM000"-style vote properties from PlanScore models starting 2020.
@@ -465,7 +465,7 @@ class TestScore (unittest.TestCase):
                 dict(totals=dict(vote_sims[2] + vote_sims[5]), tile=None),
                 ])
         
-        calculate_DEC.return_value = 0
+        calculate_D2.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
@@ -475,7 +475,7 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['Mean-Median SD'], 0)
         self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
         self.assertEqual(output.summary['Partisan Bias SD'], 0)
-        self.assertEqual(output.summary['Declination'], calculate_DEC.return_value)
+        self.assertEqual(output.summary['Declination'], calculate_D2.return_value)
         self.assertEqual(output.summary['Declination SD'], 0)
         self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
         self.assertEqual(output.summary['Efficiency Gap SD'], 0)
@@ -512,11 +512,11 @@ class TestScore (unittest.TestCase):
                 for district in output.districts:
                     self.assertNotIn(field, district['totals'])
 
-    @unittest.mock.patch('planscore.score.calculate_DEC')
+    @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_incumbentsims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_DEC):
+    def test_calculate_gap_incumbentsims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2):
         ''' Efficiency gap can be correctly calculated using mixed incumbency sims.
         
             Use "O:DEM000"-style vote properties from PlanScore models starting 2020.
@@ -586,7 +586,7 @@ class TestScore (unittest.TestCase):
                                + vote_sims[11] + vote_sims[14] + vote_sims[17]), tile=None),
                 ])
         
-        calculate_DEC.return_value = 0
+        calculate_D2.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
@@ -596,7 +596,7 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['Mean-Median SD'], 0)
         self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
         self.assertEqual(output.summary['Partisan Bias SD'], 0)
-        self.assertEqual(output.summary['Declination'], calculate_DEC.return_value)
+        self.assertEqual(output.summary['Declination'], calculate_D2.return_value)
         self.assertEqual(output.summary['Declination SD'], 0)
         self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
         self.assertEqual(output.summary['Efficiency Gap SD'], 0)
@@ -633,11 +633,11 @@ class TestScore (unittest.TestCase):
                 for district in output.districts:
                     self.assertNotIn(field, district['totals'])
 
-    @unittest.mock.patch('planscore.score.calculate_DEC')
+    @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_blanks(self, calculate_EG, calculate_PB, calculate_MMD, calculate_DEC):
+    def test_calculate_gap_blanks(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2):
         ''' Efficiency gap can be correctly calculated using input sims with blank districts.
         
             Use "DEM000"-style vote properties from 2018 and 2019 PlanScore models.
@@ -651,7 +651,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={}, tile=None),
                 ])
         
-        calculate_DEC.return_value = 0
+        calculate_D2.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
@@ -660,7 +660,7 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['Mean-Median SD'], 0)
         self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
         self.assertEqual(output.summary['Partisan Bias SD'], 0)
-        self.assertEqual(output.summary['Declination'], calculate_DEC.return_value)
+        self.assertEqual(output.summary['Declination'], calculate_D2.return_value)
         self.assertEqual(output.summary['Declination SD'], 0)
         self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
         self.assertEqual(output.summary['Efficiency Gap SD'], 0)
@@ -688,13 +688,13 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.districts[3]['totals']['Republican Votes'], 11/2)
         self.assertEqual(output.districts[3]['totals']['Democratic Votes'], 5/2)
 
-    @unittest.mock.patch('planscore.score.calculate_DEC')
+    @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
     @unittest.mock.patch('planscore.matrix.prepare_district_data')
-    def test_calculate_gap_unified(self, prepare_district_data, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_DEC):
+    def test_calculate_gap_unified(self, prepare_district_data, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
@@ -706,7 +706,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={'US President 2016 - REP': 6, 'US President 2016 - DEM': 2}, tile=None),
                 ])
         
-        calculate_DEC.return_value = 0
+        calculate_D2.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
@@ -738,9 +738,9 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['Partisan Bias Positives'], 0.0)
         self.assertEqual(calculate_PB.mock_calls[0][1], ([2.7, 4.1, 5.2, 6.1], [5.3, 3.9, 2.8, 1.9]))
         
-        self.assertEqual(output.summary['Declination'], calculate_DEC.return_value)
+        self.assertEqual(output.summary['Declination'], calculate_D2.return_value)
         self.assertEqual(output.summary['Declination Positives'], 0.0)
-        self.assertEqual(calculate_DEC.mock_calls[0][1], ([2.7, 4.1, 5.2, 6.1], [5.3, 3.9, 2.8, 1.9]))
+        self.assertEqual(calculate_D2.mock_calls[0][1], ([2.7, 4.1, 5.2, 6.1], [5.3, 3.9, 2.8, 1.9]))
         
         SIMS = model_votes.return_value.shape[1]
 
@@ -771,12 +771,12 @@ class TestScore (unittest.TestCase):
         self.assertAlmostEqual(output.districts[2]['totals']['Democratic Wins'], 0.3333333)
         self.assertAlmostEqual(output.districts[3]['totals']['Democratic Wins'], 0.)
 
-    @unittest.mock.patch('planscore.score.calculate_DEC')
+    @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
-    def test_calculate_gap_unified_incumbents(self, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_DEC):
+    def test_calculate_gap_unified_incumbents(self, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2):
         ''' Incumbency values are correctly passedon for presidential vote only
         '''
         input = data.Upload(id=None, key=None,
@@ -789,7 +789,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={'US President 2016 - REP': 6, 'US President 2016 - DEM': 2}, tile=None),
                 ])
         
-        calculate_DEC.return_value = 0
+        calculate_D2.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
@@ -817,12 +817,12 @@ class TestScore (unittest.TestCase):
         self.assertEqual(model_votes.mock_calls[0][1][2][2], (3.13, 4.87, 'R'))
         self.assertEqual(model_votes.mock_calls[0][1][2][3], (2.22, 5.78, 'D'))
 
-    @unittest.mock.patch('planscore.score.calculate_DEC')
+    @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
-    def test_calculate_gap_with_zeros(self, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_DEC):
+    def test_calculate_gap_with_zeros(self, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
@@ -835,7 +835,7 @@ class TestScore (unittest.TestCase):
                 dict(totals={'US President 2016 - REP': 0, 'US President 2016 - DEM': 0}, tile=None),
                 ])
         
-        calculate_DEC.return_value = 0
+        calculate_D2.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
@@ -875,9 +875,9 @@ class TestScore (unittest.TestCase):
         self.assertEqual(len(calculate_PB.mock_calls[0][1][0]), 4, 'Should skip empty 5th district')
         self.assertEqual(len(calculate_PB.mock_calls[0][1][1]), 4, 'Should skip empty 5th district')
 
-        self.assertEqual(output.summary['Declination'], calculate_DEC.return_value)
-        self.assertEqual(len(calculate_DEC.mock_calls[0][1][0]), 4, 'Should skip empty 5th district')
-        self.assertEqual(len(calculate_DEC.mock_calls[0][1][1]), 4, 'Should skip empty 5th district')
+        self.assertEqual(output.summary['Declination'], calculate_D2.return_value)
+        self.assertEqual(len(calculate_D2.mock_calls[0][1][0]), 4, 'Should skip empty 5th district')
+        self.assertEqual(len(calculate_D2.mock_calls[0][1][1]), 4, 'Should skip empty 5th district')
         
         SIMS = model_votes.return_value.shape[1]
 
