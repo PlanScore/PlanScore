@@ -8,6 +8,7 @@ import math
 import argparse
 import urllib.request
 import pprint
+import numpy
 import boto3, botocore.exceptions
 from . import data, constants, matrix
 
@@ -183,22 +184,26 @@ def calculate_DEC(red_districts, blue_districts):
         By convention, result is positive for blue and negative for red.
         Adapt Python sample code from Warrington, 2018.
     '''
-    vals = [bd / (bd + rd) for (rd, bd) in zip(red_districts, blue_districts)]
-    import numpy as np
-    
-    Rwin = sorted(filter(lambda x: x <= 0.5, vals))
-    Dwin = sorted(filter(lambda x: x > 0.5, vals))
+    blue_shares = [b / (r + b) for (r, b) in zip(red_districts, blue_districts)]
+
+    red_wins = sorted([share for share in blue_shares if share <= 0.5])
+    blue_wins = sorted([share for share in blue_shares if share > 0.5])
     
     # Undefined if each party does not win at least one seat
-    if len(Rwin) < 1 or len(Dwin) < 1:
-        return False
+    if len(red_wins) < 1 or len(blue_wins) < 1:
+        return None
     
-    theta = np.arctan((1-2*np.mean(Rwin))*len(vals)/len(Rwin))
-    gamma = np.arctan((2*np.mean(Dwin)-1)*len(vals)/len(Dwin))
+    theta = numpy.arctan(
+        (1 - 2 * numpy.mean(red_wins)) * len(blue_shares) / len(red_wins)
+    )
+
+    gamma = numpy.arctan(
+        (2 * numpy.mean(blue_wins) - 1) * len(blue_shares) / len(blue_wins)
+    )
     
     # Convert to range [-1,1]
     # A little extra precision just in case.
-    return 2.0*(gamma-theta)/3.1415926535
+    return 2.0 * (gamma - theta) / math.pi
 
 def calculate_bias(upload):
     ''' Calculate partisan metrics for districts with plain vote counts.
