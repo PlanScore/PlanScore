@@ -229,6 +229,7 @@ def calculate_bias(upload):
         if prefix == 'Red/Blue':
             summary_dict['Mean-Median'] = calculate_MMD(red_districts, blue_districts)
             summary_dict['Partisan Bias'] = calculate_PB(red_districts, blue_districts)
+            summary_dict['Declination'] = calculate_DEC(red_districts, blue_districts)
             summary_dict['Efficiency Gap'] = calculate_EG(red_districts, blue_districts)
 
             # Calculate -5 to +5 point swings
@@ -239,6 +240,7 @@ def calculate_bias(upload):
         else:
             summary_dict[f'{prefix} Mean-Median'] = calculate_MMD(red_districts, blue_districts)
             summary_dict[f'{prefix} Partisan Bias'] = calculate_PB(red_districts, blue_districts)
+            summary_dict[f'{prefix} Declination'] = calculate_DEC(red_districts, blue_districts)
             summary_dict[f'{prefix} Efficiency Gap'] = calculate_EG(red_districts, blue_districts)
 
             # Calculate -5 to +5 point swings
@@ -258,7 +260,7 @@ def calculate_open_biases(upload):
         # Skip everything if we don't see a "DEM000"-style vote property
         return upload.clone()
     
-    MMDs, PBs = list(), list()
+    MMDs, PBs, DECs = list(), list(), list()
     EGs = {swing: list() for swing in (0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5)}
     summary_dict, copied_districts = dict(), copy.deepcopy(upload.districts)
     first_totals = copied_districts[0]['totals']
@@ -284,6 +286,7 @@ def calculate_open_biases(upload):
     
         MMDs.append(calculate_MMD(sim_red_districts, sim_blue_districts))
         PBs.append(calculate_PB(sim_red_districts, sim_blue_districts))
+        DECs.append(calculate_DEC(sim_red_districts, sim_blue_districts))
         
         for swing in EGs:
             EGs[swing].append(calculate_EG(sim_red_districts, sim_blue_districts, swing/100))
@@ -302,6 +305,8 @@ def calculate_open_biases(upload):
     summary_dict['Mean-Median SD'] = statistics.stdev(MMDs)
     summary_dict['Partisan Bias'] = statistics.mean(PBs)
     summary_dict['Partisan Bias SD'] = statistics.stdev(PBs)
+    summary_dict['Declination'] = statistics.mean(DECs)
+    summary_dict['Declination SD'] = statistics.stdev(DECs)
     summary_dict['Efficiency Gap'] = statistics.mean(EGs[0])
     summary_dict['Efficiency Gap SD'] = statistics.stdev(EGs[0])
     
@@ -324,7 +329,7 @@ def calculate_biases(upload):
         # Skip everything if we don't see an "O:DEM000"-style vote property
         return upload.clone()
     
-    MMDs, PBs = list(), list()
+    MMDs, PBs, DECs = list(), list(), list()
     EGs = {swing: list() for swing in (0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5)}
     summary_dict, copied_districts = dict(), copy.deepcopy(upload.districts)
     first_totals = copied_districts[0]['totals']
@@ -361,6 +366,7 @@ def calculate_biases(upload):
     
         MMDs.append(calculate_MMD(sim_red_districts, sim_blue_districts))
         PBs.append(calculate_PB(sim_red_districts, sim_blue_districts))
+        DECs.append(calculate_DEC(sim_red_districts, sim_blue_districts))
         
         for swing in EGs:
             EGs[swing].append(calculate_EG(sim_red_districts, sim_blue_districts, swing/100))
@@ -379,6 +385,8 @@ def calculate_biases(upload):
     summary_dict['Mean-Median SD'] = statistics.stdev(MMDs)
     summary_dict['Partisan Bias'] = statistics.mean(PBs)
     summary_dict['Partisan Bias SD'] = statistics.stdev(PBs)
+    summary_dict['Declination'] = statistics.mean(DECs)
+    summary_dict['Declination SD'] = statistics.stdev(DECs)
     summary_dict['Efficiency Gap'] = statistics.mean(EGs[0])
     summary_dict['Efficiency Gap SD'] = statistics.stdev(EGs[0])
     
@@ -463,6 +471,7 @@ def calculate_district_biases(upload):
     # Calculate partisanship metrics for all simulations
     MMDs = [calculate_MMD(r, b) for (r, b) in red_votes_blue_votes]
     PBs = [calculate_PB(r, b) for (r, b) in red_votes_blue_votes]
+    DECs = [calculate_DEC(r, b) for (r, b) in red_votes_blue_votes]
     
     # EG alone also gets a sensitivity test for vote swing scenarios
     EGs = {
@@ -477,6 +486,9 @@ def calculate_district_biases(upload):
         'Partisan Bias': statistics.mean(PBs),
         'Partisan Bias SD': statistics.stdev(PBs),
         'Partisan Bias Positives': len([n for n in PBs if n > 0]) / len(PBs),
+        'Declination': statistics.mean(DECs),
+        'Declination SD': statistics.stdev(DECs),
+        'Declination Positives': len([n for n in DECs if n > 0]) / len(PBs),
         'Efficiency Gap': statistics.mean(EGs[0]),
         'Efficiency Gap SD': statistics.stdev(EGs[0]),
         'Efficiency Gap Positives': len([n for n in EGs[0] if n > 0]) / len(EGs[0]),
@@ -515,6 +527,7 @@ def main():
 EG: {EG:.1f}%; {EG_wins:.0f}% favor D
 GK Bias: {PB:.1f}%; {PB_wins:.0f}% favor D
 Mean-Med: {MMD:.1f}%; {MMD_wins:.0f}% favor D
+Declination: {DEC:.1f}%; {DEC_wins:.0f}% favor D
 -
 D votes: {votes_D}
 R votes: {votes_R}'''.format(
@@ -527,6 +540,8 @@ R votes: {votes_R}'''.format(
         PB_wins=complete_upload.summary['Partisan Bias Positives'] * 100,
         MMD=complete_upload.summary['Mean-Median'] * 100,
         MMD_wins=complete_upload.summary['Mean-Median Positives'] * 100,
+        DEC=complete_upload.summary['Declination'] * 100,
+        DEC_wins=complete_upload.summary['Declination Positives'] * 100,
         votes_D=[round(d['totals']['Democratic Votes'], 1) for d in complete_upload.districts],
         votes_R=[round(d['totals']['Republican Votes'], 1) for d in complete_upload.districts],
     ))
