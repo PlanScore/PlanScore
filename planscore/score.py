@@ -8,7 +8,6 @@ import math
 import argparse
 import urllib.request
 import pprint
-import numpy
 import boto3, botocore.exceptions
 from . import data, constants, matrix
 
@@ -199,12 +198,12 @@ def calculate_DEC(red_districts, blue_districts):
     if len(red_wins) < 1 or len(blue_wins) < 1:
         return None
     
-    theta = numpy.arctan(
-        (1 - 2 * numpy.mean(red_wins)) * len(blue_shares) / len(red_wins)
+    theta = math.atan(
+        (1 - 2 * statistics.mean(red_wins)) * len(blue_shares) / len(red_wins)
     )
 
-    gamma = numpy.arctan(
-        (2 * numpy.mean(blue_wins) - 1) * len(blue_shares) / len(blue_wins)
+    gamma = math.atan(
+        (2 * statistics.mean(blue_wins) - 1) * len(blue_shares) / len(blue_wins)
     )
     
     # Convert to range [-1,1]
