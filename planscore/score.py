@@ -212,7 +212,7 @@ def calculate_D2(red_districts, blue_districts):
     declination = 2.0 * (gamma - theta) / math.pi
 
     declination2 = declination * math.log(seats) / 2
-    return declination2
+    return -declination2
 
 def calculate_bias(upload):
     ''' Calculate partisan metrics for districts with plain vote counts.
@@ -536,7 +536,7 @@ def main():
 EG: {EG:.1f}%; {EG_wins:.0f}% favor D
 GK Bias: {PB:.1f}%; {PB_wins:.0f}% favor D
 Mean-Med: {MMD:.1f}%; {MMD_wins:.0f}% favor D
-Declination: {DEC:.1f}%; {DEC_wins:.0f}% favor D
+Declination: {DEC:.3f}; {DEC_wins:.0f}% favor D
 -
 D votes: {votes_D}
 R votes: {votes_R}'''.format(
@@ -549,7 +549,7 @@ R votes: {votes_R}'''.format(
         PB_wins=complete_upload.summary['Partisan Bias Positives'] * 100,
         MMD=complete_upload.summary['Mean-Median'] * 100,
         MMD_wins=complete_upload.summary['Mean-Median Positives'] * 100,
-        DEC=complete_upload.summary['Declination'] * 100,
+        DEC=complete_upload.summary['Declination'],
         DEC_wins=complete_upload.summary['Declination Positives'] * 100,
         votes_D=[round(d['totals']['Democratic Votes'], 1) for d in complete_upload.districts],
         votes_R=[round(d['totals']['Republican Votes'], 1) for d in complete_upload.districts],
