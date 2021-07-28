@@ -38,6 +38,51 @@ class TestScore (unittest.TestCase):
         reds3, blues3 = score.swing_vote((1, 2, 3), (3, 2, 1), -.1)
         self.assertEqual(reds3, [1.4, 2.4, 3.4])
         self.assertEqual(blues3, [2.6, 1.6, .6])
+    
+    def test_safe_mean(self):
+        ''' Means are correctly calculated
+        '''
+        l1 = [1, 2, 3, 4]
+        self.assertEqual(score.safe_mean(l1), statistics.mean(l1))
+
+        l2 = [1]
+        self.assertEqual(score.safe_mean(l2), statistics.mean(l2))
+
+        l3 = [1, 2, 3, 4, None]
+        self.assertEqual(score.safe_mean(l3), statistics.mean(l1))
+
+        l4 = [None]
+        self.assertIsNone(score.safe_mean(l4))
+
+    def test_safe_stdev(self):
+        ''' Standard deviations are correctly calculated
+        '''
+        l1 = [1, 2, 3, 4]
+        self.assertEqual(score.safe_stdev(l1), statistics.stdev(l1))
+
+        l2 = [1]
+        self.assertIsNone(score.safe_stdev(l2))
+
+        l3 = [1, 2, 3, 4, None]
+        self.assertEqual(score.safe_stdev(l3), statistics.stdev(l1))
+
+        l4 = [None]
+        self.assertIsNone(score.safe_stdev(l4))
+    
+    def test_safe_positives(self):
+        ''' Positive values are correctly counted
+        '''
+        l1 = [-1, 1]
+        self.assertEqual(score.safe_positives(l1), .5)
+
+        l2 = [-1]
+        self.assertEqual(score.safe_positives(l2), 0.)
+
+        l3 = [1]
+        self.assertEqual(score.safe_positives(l3), 1.)
+
+        l4 = [-1, 1, 1, None]
+        self.assertEqual(score.safe_positives(l4), .5)
 
     def test_calculate_EG_fair(self):
         ''' Efficiency gap can be correctly calculated for a fair election
@@ -151,6 +196,10 @@ class TestScore (unittest.TestCase):
         d2d = score.calculate_D2((1, 2, 3, 4, 0), (4, 3, 2, 1, 0))
         self.assertAlmostEqual(d2d, 0, places=3,
             msg='Should see zero Dec2 even when one district is missing votes')
+
+        d2e = score.calculate_D2((3, 4, 5), (2, 1, 0))
+        self.assertIsNone(d2e,
+            msg='Should see Dec2 = None when one party wins all districts')
 
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')

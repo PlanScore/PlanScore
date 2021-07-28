@@ -102,6 +102,36 @@ def swing_vote(red_districts, blue_districts, amount):
     
     return swung_reds, swung_blues
 
+def safe_mean(values):
+    '''
+    '''
+    safe_values = [val for val in values if val is not None]
+    
+    if len(safe_values) < 1:
+        return None
+    
+    return statistics.mean(safe_values)
+
+def safe_stdev(values):
+    '''
+    '''
+    safe_values = [val for val in values if val is not None]
+    
+    if len(safe_values) < 2:
+        return None
+    
+    return statistics.stdev(safe_values)
+
+def safe_positives(values):
+    '''
+    '''
+    safe_values = [val for val in values if val is not None]
+
+    if len(safe_values) < 1:
+        return None
+    
+    return len([n for n in safe_values if n > 0]) / len(values)
+
 def calculate_EG(red_districts, blue_districts, vote_swing=0):
     ''' Convert two lists of district vote counts into an EG score.
     
@@ -390,20 +420,20 @@ def calculate_biases(upload):
             'Republican Votes SD': round(statistics.stdev(red_votes), constants.ROUND_COUNT)
             })
 
-    summary_dict['Mean-Median'] = statistics.mean(MMDs)
-    summary_dict['Mean-Median SD'] = statistics.stdev(MMDs)
-    summary_dict['Partisan Bias'] = statistics.mean(PBs)
-    summary_dict['Partisan Bias SD'] = statistics.stdev(PBs)
-    summary_dict['Declination'] = statistics.mean(D2s)
-    summary_dict['Declination SD'] = statistics.stdev(D2s)
-    summary_dict['Efficiency Gap'] = statistics.mean(EGs[0])
-    summary_dict['Efficiency Gap SD'] = statistics.stdev(EGs[0])
+    summary_dict['Mean-Median'] = safe_mean(MMDs)
+    summary_dict['Mean-Median SD'] = safe_stdev(MMDs)
+    summary_dict['Partisan Bias'] = safe_mean(PBs)
+    summary_dict['Partisan Bias SD'] = safe_stdev(PBs)
+    summary_dict['Declination'] = safe_mean(D2s)
+    summary_dict['Declination SD'] = safe_stdev(D2s)
+    summary_dict['Efficiency Gap'] = safe_mean(EGs[0])
+    summary_dict['Efficiency Gap SD'] = safe_stdev(EGs[0])
     
     for swing in (1, 2, 3, 4, 5):
-        summary_dict[f'Efficiency Gap +{swing} Dem'] = statistics.mean(EGs[swing])
-        summary_dict[f'Efficiency Gap +{swing} Rep'] = statistics.mean(EGs[-swing])
-        summary_dict[f'Efficiency Gap +{swing} Dem SD'] = statistics.stdev(EGs[swing])
-        summary_dict[f'Efficiency Gap +{swing} Rep SD'] = statistics.stdev(EGs[-swing])
+        summary_dict[f'Efficiency Gap +{swing} Dem'] = safe_mean(EGs[swing])
+        summary_dict[f'Efficiency Gap +{swing} Rep'] = safe_mean(EGs[-swing])
+        summary_dict[f'Efficiency Gap +{swing} Dem SD'] = safe_stdev(EGs[swing])
+        summary_dict[f'Efficiency Gap +{swing} Rep SD'] = safe_stdev(EGs[-swing])
     
     rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
     return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
@@ -489,26 +519,26 @@ def calculate_district_biases(upload):
     }
 
     summary_dict = {
-        'Mean-Median': statistics.mean(MMDs),
-        'Mean-Median SD': statistics.stdev(MMDs),
-        'Mean-Median Positives': len([n for n in MMDs if n > 0]) / len(MMDs),
-        'Partisan Bias': statistics.mean(PBs),
-        'Partisan Bias SD': statistics.stdev(PBs),
-        'Partisan Bias Positives': len([n for n in PBs if n > 0]) / len(PBs),
-        'Declination': statistics.mean(D2s),
-        'Declination SD': statistics.stdev(D2s),
-        'Declination Positives': len([n for n in D2s if n > 0]) / len(PBs),
-        'Efficiency Gap': statistics.mean(EGs[0]),
-        'Efficiency Gap SD': statistics.stdev(EGs[0]),
-        'Efficiency Gap Positives': len([n for n in EGs[0] if n > 0]) / len(EGs[0]),
+        'Mean-Median': safe_mean(MMDs),
+        'Mean-Median SD': safe_stdev(MMDs),
+        'Mean-Median Positives': safe_positives(MMDs),
+        'Partisan Bias': safe_mean(PBs),
+        'Partisan Bias SD': safe_stdev(PBs),
+        'Partisan Bias Positives': safe_positives(PBs),
+        'Declination': safe_mean(D2s),
+        'Declination SD': safe_stdev(D2s),
+        'Declination Positives': safe_positives(D2s),
+        'Efficiency Gap': safe_mean(EGs[0]),
+        'Efficiency Gap SD': safe_stdev(EGs[0]),
+        'Efficiency Gap Positives': safe_positives(EGs[0]),
     }
     
     for swing in (1, 2, 3, 4, 5):
         summary_dict.update({
-            f'Efficiency Gap +{swing} Dem': statistics.mean(EGs[swing]),
-            f'Efficiency Gap +{swing} Rep': statistics.mean(EGs[-swing]),
-            f'Efficiency Gap +{swing} Dem SD': statistics.stdev(EGs[swing]),
-            f'Efficiency Gap +{swing} Rep SD': statistics.stdev(EGs[-swing]),
+            f'Efficiency Gap +{swing} Dem': safe_mean(EGs[swing]),
+            f'Efficiency Gap +{swing} Rep': safe_mean(EGs[-swing]),
+            f'Efficiency Gap +{swing} Dem SD': safe_stdev(EGs[swing]),
+            f'Efficiency Gap +{swing} Rep SD': safe_stdev(EGs[-swing]),
         })
 
     rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
