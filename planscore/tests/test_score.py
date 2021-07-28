@@ -48,11 +48,26 @@ class TestScore (unittest.TestCase):
         l2 = [1]
         self.assertEqual(score.safe_mean(l2), statistics.mean(l2))
 
-        l3 = [1, 2, 3, None]
-        self.assertEqual(score.safe_mean(l3), 2)
+        l3 = [1, 2, 3, 4, None]
+        self.assertEqual(score.safe_mean(l3), statistics.mean(l1))
 
         l4 = [None]
         self.assertIsNone(score.safe_mean(l4))
+
+    def test_safe_stdev(self):
+        ''' Standard deviations are correctly calculated
+        '''
+        l1 = [1, 2, 3, 4]
+        self.assertEqual(score.safe_stdev(l1), statistics.stdev(l1))
+
+        l2 = [1]
+        self.assertIsNone(score.safe_stdev(l2))
+
+        l3 = [1, 2, 3, 4, None]
+        self.assertEqual(score.safe_stdev(l3), statistics.stdev(l1))
+
+        l4 = [None]
+        self.assertIsNone(score.safe_stdev(l4))
 
     def test_calculate_EG_fair(self):
         ''' Efficiency gap can be correctly calculated for a fair election
