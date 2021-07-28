@@ -68,6 +68,21 @@ class TestScore (unittest.TestCase):
 
         l4 = [None]
         self.assertIsNone(score.safe_stdev(l4))
+    
+    def test_safe_positives(self):
+        ''' Positive values are correctly counted
+        '''
+        l1 = [-1, 1]
+        self.assertEqual(score.safe_positives(l1), .5)
+
+        l2 = [-1]
+        self.assertEqual(score.safe_positives(l2), 0.)
+
+        l3 = [1]
+        self.assertEqual(score.safe_positives(l3), 1.)
+
+        l4 = [-1, 1, 1, None]
+        self.assertEqual(score.safe_positives(l4), .5)
 
     def test_calculate_EG_fair(self):
         ''' Efficiency gap can be correctly calculated for a fair election

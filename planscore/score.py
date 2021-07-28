@@ -122,6 +122,16 @@ def safe_stdev(values):
     
     return statistics.stdev(safe_values)
 
+def safe_positives(values):
+    '''
+    '''
+    safe_values = [val for val in values if val is not None]
+
+    if len(safe_values) < 1:
+        return None
+    
+    return len([n for n in safe_values if n > 0]) / len(values)
+
 def calculate_EG(red_districts, blue_districts, vote_swing=0):
     ''' Convert two lists of district vote counts into an EG score.
     
