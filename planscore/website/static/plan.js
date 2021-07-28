@@ -265,7 +265,7 @@ function show_efficiency_gap_score(plan, score_EG)
                     : plan.summary['Efficiency Gap Positives']);
             
                 node.innerHTML = [
-                    'Votes for', win_party, 'candidates are expected to be wasted at a rate',
+                    'Votes for', win_party, 'candidates are expected to be inefficient at a rate',
                     gap_amount, 'lower than votes for', lose_party, 'candidates.',
                     'The expected gap favors', win_partisans,
                     'in', nice_round_percent(positives), 'of predicted scenarios.',
@@ -276,7 +276,7 @@ function show_efficiency_gap_score(plan, score_EG)
                 var gap_error = plan.summary['Efficiency Gap SD'];
                 
                 node.innerHTML = [
-                    'Votes for', win_party, 'candidates are expected to be wasted at a rate',
+                    'Votes for', win_party, 'candidates are expected to be inefficient at a rate',
                     gap_amount+'&nbsp;(±'+nice_percent(gap_error*2)+')',
                     'lower than votes for', lose_party, 'candidates.',
                     '<a href="' + window.eg_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
