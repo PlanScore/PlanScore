@@ -521,16 +521,16 @@ def calculate_district_biases(upload):
     summary_dict = {
         'Mean-Median': safe_mean(MMDs),
         'Mean-Median SD': safe_stdev(MMDs),
-        'Mean-Median Positives': len([n for n in MMDs if n > 0]) / len(MMDs),
+        'Mean-Median Positives': safe_positives(MMDs),
         'Partisan Bias': safe_mean(PBs),
         'Partisan Bias SD': safe_stdev(PBs),
-        'Partisan Bias Positives': len([n for n in PBs if n > 0]) / len(PBs),
+        'Partisan Bias Positives': safe_positives(PBs),
         'Declination': safe_mean(D2s),
         'Declination SD': safe_stdev(D2s),
-        'Declination Positives': len([n for n in D2s if n > 0]) / len(PBs),
+        'Declination Positives': safe_positives(D2s),
         'Efficiency Gap': safe_mean(EGs[0]),
         'Efficiency Gap SD': safe_stdev(EGs[0]),
-        'Efficiency Gap Positives': len([n for n in EGs[0] if n > 0]) / len(EGs[0]),
+        'Efficiency Gap Positives': safe_positives(EGs[0]),
     }
     
     for swing in (1, 2, 3, 4, 5):
