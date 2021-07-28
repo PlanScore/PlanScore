@@ -152,6 +152,10 @@ class TestScore (unittest.TestCase):
         self.assertAlmostEqual(d2d, 0, places=3,
             msg='Should see zero Dec2 even when one district is missing votes')
 
+        d2e = score.calculate_D2((3, 4, 5), (2, 1, 0))
+        self.assertIsNone(d2e,
+            msg='Should see Dec2 = None when one party wins all districts')
+
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
