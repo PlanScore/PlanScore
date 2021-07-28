@@ -144,7 +144,10 @@ def calculate_MMD(red_districts, blue_districts):
     
         Vote swing does not seem to affect Mean-Median, so leave it off.
     '''
-    shares = sorted([B/(R + B) for (R, B) in zip(red_districts, blue_districts)])
+    shares = sorted([
+        B / (R + B) for (R, B) in zip(red_districts, blue_districts)
+        if (R + B) > 0
+    ])
     
     median = statistics.median(shares)
     mean = statistics.mean(shares)
@@ -177,6 +180,40 @@ def calculate_PB(red_districts, blue_districts):
     
     return blue_seatshare - blue_voteshare
 
+def calculate_D2(red_districts, blue_districts):
+    ''' Convert two lists of district vote counts into a Declination score.
+    
+        By convention, result is positive for blue and negative for red.
+        Adapt Python sample code from Warrington, 2018.
+    '''
+    blue_shares = [
+        B / (R + B) for (R, B) in zip(red_districts, blue_districts)
+        if (R + B) > 0
+    ]
+
+    seats = len(blue_shares)
+    red_wins = sorted([share for share in blue_shares if share <= 0.5])
+    blue_wins = sorted([share for share in blue_shares if share > 0.5])
+    
+    # Undefined if each party does not win at least one seat
+    if len(red_wins) < 1 or len(blue_wins) < 1:
+        return None
+    
+    theta = math.atan(
+        (1 - 2 * statistics.mean(red_wins)) * seats / len(red_wins)
+    )
+
+    gamma = math.atan(
+        (2 * statistics.mean(blue_wins) - 1) * seats / len(blue_wins)
+    )
+    
+    # Convert to range [-1,1]
+    # A little extra precision just in case.
+    declination = 2.0 * (gamma - theta) / math.pi
+
+    declination2 = declination * math.log(seats) / 2
+    return -declination2
+
 def calculate_bias(upload):
     ''' Calculate partisan metrics for districts with plain vote counts.
         
@@ -201,6 +238,7 @@ def calculate_bias(upload):
         if prefix == 'Red/Blue':
             summary_dict['Mean-Median'] = calculate_MMD(red_districts, blue_districts)
             summary_dict['Partisan Bias'] = calculate_PB(red_districts, blue_districts)
+            summary_dict['Declination'] = calculate_D2(red_districts, blue_districts)
             summary_dict['Efficiency Gap'] = calculate_EG(red_districts, blue_districts)
 
             # Calculate -5 to +5 point swings
@@ -211,6 +249,7 @@ def calculate_bias(upload):
         else:
             summary_dict[f'{prefix} Mean-Median'] = calculate_MMD(red_districts, blue_districts)
             summary_dict[f'{prefix} Partisan Bias'] = calculate_PB(red_districts, blue_districts)
+            summary_dict[f'{prefix} Declination'] = calculate_D2(red_districts, blue_districts)
             summary_dict[f'{prefix} Efficiency Gap'] = calculate_EG(red_districts, blue_districts)
 
             # Calculate -5 to +5 point swings
@@ -230,7 +269,7 @@ def calculate_open_biases(upload):
         # Skip everything if we don't see a "DEM000"-style vote property
         return upload.clone()
     
-    MMDs, PBs = list(), list()
+    MMDs, PBs, D2s = list(), list(), list()
     EGs = {swing: list() for swing in (0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5)}
     summary_dict, copied_districts = dict(), copy.deepcopy(upload.districts)
     first_totals = copied_districts[0]['totals']
@@ -256,6 +295,7 @@ def calculate_open_biases(upload):
     
         MMDs.append(calculate_MMD(sim_red_districts, sim_blue_districts))
         PBs.append(calculate_PB(sim_red_districts, sim_blue_districts))
+        D2s.append(calculate_D2(sim_red_districts, sim_blue_districts))
         
         for swing in EGs:
             EGs[swing].append(calculate_EG(sim_red_districts, sim_blue_districts, swing/100))
@@ -274,6 +314,8 @@ def calculate_open_biases(upload):
     summary_dict['Mean-Median SD'] = statistics.stdev(MMDs)
     summary_dict['Partisan Bias'] = statistics.mean(PBs)
     summary_dict['Partisan Bias SD'] = statistics.stdev(PBs)
+    summary_dict['Declination'] = statistics.mean(D2s)
+    summary_dict['Declination SD'] = statistics.stdev(D2s)
     summary_dict['Efficiency Gap'] = statistics.mean(EGs[0])
     summary_dict['Efficiency Gap SD'] = statistics.stdev(EGs[0])
     
@@ -296,7 +338,7 @@ def calculate_biases(upload):
         # Skip everything if we don't see an "O:DEM000"-style vote property
         return upload.clone()
     
-    MMDs, PBs = list(), list()
+    MMDs, PBs, D2s = list(), list(), list()
     EGs = {swing: list() for swing in (0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5)}
     summary_dict, copied_districts = dict(), copy.deepcopy(upload.districts)
     first_totals = copied_districts[0]['totals']
@@ -333,6 +375,7 @@ def calculate_biases(upload):
     
         MMDs.append(calculate_MMD(sim_red_districts, sim_blue_districts))
         PBs.append(calculate_PB(sim_red_districts, sim_blue_districts))
+        D2s.append(calculate_D2(sim_red_districts, sim_blue_districts))
         
         for swing in EGs:
             EGs[swing].append(calculate_EG(sim_red_districts, sim_blue_districts, swing/100))
@@ -351,6 +394,8 @@ def calculate_biases(upload):
     summary_dict['Mean-Median SD'] = statistics.stdev(MMDs)
     summary_dict['Partisan Bias'] = statistics.mean(PBs)
     summary_dict['Partisan Bias SD'] = statistics.stdev(PBs)
+    summary_dict['Declination'] = statistics.mean(D2s)
+    summary_dict['Declination SD'] = statistics.stdev(D2s)
     summary_dict['Efficiency Gap'] = statistics.mean(EGs[0])
     summary_dict['Efficiency Gap SD'] = statistics.stdev(EGs[0])
     
@@ -435,6 +480,7 @@ def calculate_district_biases(upload):
     # Calculate partisanship metrics for all simulations
     MMDs = [calculate_MMD(r, b) for (r, b) in red_votes_blue_votes]
     PBs = [calculate_PB(r, b) for (r, b) in red_votes_blue_votes]
+    D2s = [calculate_D2(r, b) for (r, b) in red_votes_blue_votes]
     
     # EG alone also gets a sensitivity test for vote swing scenarios
     EGs = {
@@ -449,6 +495,9 @@ def calculate_district_biases(upload):
         'Partisan Bias': statistics.mean(PBs),
         'Partisan Bias SD': statistics.stdev(PBs),
         'Partisan Bias Positives': len([n for n in PBs if n > 0]) / len(PBs),
+        'Declination': statistics.mean(D2s),
+        'Declination SD': statistics.stdev(D2s),
+        'Declination Positives': len([n for n in D2s if n > 0]) / len(PBs),
         'Efficiency Gap': statistics.mean(EGs[0]),
         'Efficiency Gap SD': statistics.stdev(EGs[0]),
         'Efficiency Gap Positives': len([n for n in EGs[0] if n > 0]) / len(EGs[0]),
@@ -487,6 +536,7 @@ def main():
 EG: {EG:.1f}%; {EG_wins:.0f}% favor D
 GK Bias: {PB:.1f}%; {PB_wins:.0f}% favor D
 Mean-Med: {MMD:.1f}%; {MMD_wins:.0f}% favor D
+Declination: {DEC:.3f}; {DEC_wins:.0f}% favor D
 -
 D votes: {votes_D}
 R votes: {votes_R}'''.format(
@@ -499,6 +549,8 @@ R votes: {votes_R}'''.format(
         PB_wins=complete_upload.summary['Partisan Bias Positives'] * 100,
         MMD=complete_upload.summary['Mean-Median'] * 100,
         MMD_wins=complete_upload.summary['Mean-Median Positives'] * 100,
+        DEC=complete_upload.summary['Declination'],
+        DEC_wins=complete_upload.summary['Declination Positives'] * 100,
         votes_D=[round(d['totals']['Democratic Votes'], 1) for d in complete_upload.districts],
         votes_R=[round(d['totals']['Republican Votes'], 1) for d in complete_upload.districts],
     ))
