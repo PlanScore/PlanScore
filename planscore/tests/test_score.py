@@ -38,6 +38,21 @@ class TestScore (unittest.TestCase):
         reds3, blues3 = score.swing_vote((1, 2, 3), (3, 2, 1), -.1)
         self.assertEqual(reds3, [1.4, 2.4, 3.4])
         self.assertEqual(blues3, [2.6, 1.6, .6])
+    
+    def test_safe_mean(self):
+        ''' Means are correctly calculated
+        '''
+        l1 = [1, 2, 3, 4]
+        self.assertEqual(score.safe_mean(l1), statistics.mean(l1))
+
+        l2 = [1]
+        self.assertEqual(score.safe_mean(l2), statistics.mean(l2))
+
+        l3 = [1, 2, 3, None]
+        self.assertEqual(score.safe_mean(l3), 2)
+
+        l4 = [None]
+        self.assertIsNone(score.safe_mean(l4))
 
     def test_calculate_EG_fair(self):
         ''' Efficiency gap can be correctly calculated for a fair election

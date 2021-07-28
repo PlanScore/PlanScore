@@ -102,6 +102,16 @@ def swing_vote(red_districts, blue_districts, amount):
     
     return swung_reds, swung_blues
 
+def safe_mean(values):
+    '''
+    '''
+    safe_values = [val for val in values if val is not None]
+    
+    if not safe_values:
+        return None
+    
+    return statistics.mean(safe_values)
+
 def calculate_EG(red_districts, blue_districts, vote_swing=0):
     ''' Convert two lists of district vote counts into an EG score.
     
