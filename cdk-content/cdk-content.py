@@ -47,6 +47,10 @@ class PlanScoreContent(cdk.Stack):
             # Bucket filled from https://github.com/PlanScore/FrontPage/tree/development
             return
 
+        if static_site_bucket == 'planscore.org-declination-static-site':
+            # Bucket filled from https://github.com/PlanScore/FrontPage/tree/migurski/add-declination
+            return
+
         static_dirname = tempfile.mkdtemp(dir='/tmp', prefix='static-site-content-')
         
         static_bytes = urllib.request.urlopen('https://planscore.org/WEBSITE_OUTPUT.zip')

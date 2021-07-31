@@ -42,6 +42,15 @@ FORMATIONS = [
         'api.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/0216c55e-76c2-4344-b883-0603c7ee2251',
     ),
+    FormationInfo(
+        'cf-declination',
+        None,
+        'planscore.org-declination-static-site',
+        None,
+        None,
+        None,
+        None,
+    ),
 ]
 
 API_TOKENS = os.environ.get('API_TOKENS', 'Good,Better,Best')
