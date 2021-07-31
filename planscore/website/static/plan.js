@@ -828,12 +828,13 @@ function plan_has_incumbency(plan)
 
 function start_load_plan_polling(url, message_section, score_section,
     description_el, model_link, model_url_pattern, table, score_EG, score_PB,
-    score_MM, score_sense, text_url, text_link, geom_prefix, map_div)
+    score_MM, score_sense, text_url, text_link, geom_prefix, map_div, seat_count)
 {
     const make_xhr = () => {
         load_plan_score(url, message_section, score_section,
             description_el, model_link, model_url_pattern, table, score_EG, score_PB,
-            score_MM, score_sense, text_url, text_link, geom_prefix, map_div, xhr_retry_callback);
+            score_MM, score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
+            xhr_retry_callback);
     };
 
     const xhr_retry_callback = () => {
@@ -848,7 +849,8 @@ function start_load_plan_polling(url, message_section, score_section,
 
 function load_plan_score(url, message_section, score_section,
     description_el, model_link, model_url_pattern, table, score_EG, score_PB,
-    score_MM, score_sense, text_url, text_link, geom_prefix, map_div, xhr_retry_callback)
+    score_MM, score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
+    xhr_retry_callback)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -938,6 +940,20 @@ function load_plan_score(url, message_section, score_section,
         tags = tags.concat(['</tbody>']);
         table.innerHTML = tags.join('');
         text_link.href = text_url;
+        
+        if(plan.districts)
+        {
+            if(plan.districts.length == 1) {
+                seat_count.innerHTML = '1 seat';
+            } else {
+                seat_count.innerHTML = plan.districts.length.toString() + ' seats';
+            }
+
+            if(plan.districts.length < 7)
+            {
+                console.log(seat_count.parentNode.style.display = 'block');
+            }
+        }
         
         // Populate scores.
         show_efficiency_gap_score(plan, score_EG);

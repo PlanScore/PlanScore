@@ -95,6 +95,10 @@
     </section>
     <section id="plan-score">
     <div id="plan-description"><h3>(Loading)</h3></div>
+    <p style="display:none">
+        This plan has <span id="plan-seat-count">N seats</span>.
+        Fairness metrics for plans with fewer than seven seats should be interpreted with great caution.
+    </p>
     <p>
         PlanScore bases its scores on predicted precinct-level votes for each
         office (State House, State Senate, and U.S. House) built from past
@@ -204,7 +208,10 @@
 	        document.getElementById('score-mean-median'),
 	        document.getElementById('score-sensitivity'),
 	        text_url, document.getElementById('text-link'),
-	        geom_prefix, document.getElementById('map'));
+	        geom_prefix,
+	        document.getElementById('map'),
+	        document.getElementById('plan-seat-count')
+	        );
 	</script>
 
 	{% include 'olark-embed.html' %}
