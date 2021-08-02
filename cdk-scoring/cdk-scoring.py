@@ -37,7 +37,7 @@ FORMATIONS = [
         'cf-production',
         'planscore',
         'planscore.org-static-site',
-        ['planscore.org', 'www.planscore.org', 'planscore.campaignlegal.org'],
+        ['planscore.campaignlegal.org', 'planscore.org', 'www.planscore.org'],
         'arn:aws:acm:us-east-1:466184106004:certificate/a97a66eb-9e47-4b89-8193-fdc91560d117',
         'api.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/0216c55e-76c2-4344-b883-0603c7ee2251',
