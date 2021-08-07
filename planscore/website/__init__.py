@@ -34,10 +34,6 @@ def get_digested_file(digest, filename):
 def get_home_page():
     return flask.render_template('home.html')
 
-@app.route('/our-plan.html')
-def get_ourplan_page():
-    return flask.render_template('our-plan.html')
-
 @app.route('/upload.html')
 def get_upload():
     upload_fields_url = get_function_url(constants.API_UPLOAD_RELPATH)
