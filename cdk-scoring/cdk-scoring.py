@@ -143,7 +143,6 @@ class PlanScoreScoring(cdk.Stack):
                 'models/*': scoring_behavior,
                 'resource-*': scoring_behavior,
                 'static/*': scoring_behavior,
-                'webinar*': scoring_behavior,
             },
         )
 

@@ -58,10 +58,6 @@ def get_plan():
         data_url_pattern=data_url_pattern, geom_url_prefix=geom_url_prefix,
         text_url_pattern=text_url_pattern, geom_url_suffix_key=geom_url_suffix_key)
 
-@app.route('/webinar/')
-def get_webinar_mar23():
-    return flask.render_template('webinar-mar23.html')
-
 @app.route('/models/')
 def get_models():
     model_names, assorted_files = list(), list()
