@@ -27,12 +27,12 @@ setup(
         },
     install_requires = [
         'boto3 == 1.18.1',
-        'Flask == 0.12.2',
-        'itsdangerous == 0.24',
-        'Jinja2 == 2.9.6',
-        'Markdown == 2.6.8',
+        'Flask == 2.0.1',
+        'itsdangerous == 2.0.1',
+        'Jinja2 == 3.0.1',
+        'Markdown == 3.3.4',
         'ModestMaps == 1.4.7',
-        'networkx == 2.5',
+        'networkx == 2.5.1',
         'Shapely == 1.7.1',
         ],
     extras_require = {
