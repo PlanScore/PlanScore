@@ -138,13 +138,11 @@ class PlanScoreScoring(cdk.Stack):
             additional_behaviors={
                 'about.html': scoring_behavior,
                 'annotate*': scoring_behavior,
-                'our-plan.html': scoring_behavior,
                 'plan.html': scoring_behavior,
                 'upload*': scoring_behavior,
                 'models/*': scoring_behavior,
                 'resource-*': scoring_behavior,
                 'static/*': scoring_behavior,
-                'webinar*': scoring_behavior,
             },
         )
 
