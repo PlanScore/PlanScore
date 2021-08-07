@@ -96,6 +96,7 @@ class PlanScoreContent(cdk.Stack):
             FREEZER_DESTINATION=scoring_dirname,
             S3_BUCKET=data_bucket,
             API_BASE=api_base,
+            WEBSITE_BASE=website_base,
         ))
 
         subprocess.check_call(
@@ -106,21 +107,6 @@ class PlanScoreContent(cdk.Stack):
             ),
             cwd='..',
         )
-
-        for (dirname, _, filenames) in os.walk(scoring_dirname):
-            for filename in filenames:
-                _, ext = os.path.splitext(filename)
-                if ext in ('.jpg', '.png', '.gz', '.pdf'):
-                    continue
-                path = os.path.join(dirname, filename)
-                with open(path, 'r') as file1:
-                    try:
-                        content1 = file1.read()
-                    except UnicodeDecodeError as err:
-                        raise ValueError(f'{err} reading file {path}')
-                content2 = content1.replace('https://planscore.org/', website_base)
-                with open(path, 'w') as file2:
-                    file2.write(content2)
 
         aws_s3_deployment.BucketDeployment(
             self,
