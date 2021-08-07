@@ -189,9 +189,9 @@
 	        plan_url = format_url('{{ data_url_pattern }}', plan_id),
 	        geom_prefix = '{{ geom_url_prefix }}';
 	        text_url = format_url('{{ text_url_pattern }}', plan_id),
-	        eg_metric_url = 'https://planscore.org/metrics/efficiencygap/',
-	        pb_metric_url = 'https://planscore.org/metrics/partisanbias/',
-	        mm_metric_url = 'https://planscore.org/metrics/meanmedian/',
+	        eg_metric_url = '{{planscore_website_base}}/metrics/efficiencygap/',
+	        pb_metric_url = '{{planscore_website_base}}/metrics/partisanbias/',
+	        mm_metric_url = '{{planscore_website_base}}/metrics/meanmedian/',
 	        model_url_pattern = '{{ url_for("get_model_description", prefix="data/2020") }}';
 
         // Preload the data we'll use
