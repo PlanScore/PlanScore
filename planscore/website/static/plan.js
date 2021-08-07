@@ -286,6 +286,44 @@ function show_efficiency_gap_score(plan, score_EG)
     }
 }
 
+function show_declination2_score(plan, score_DEC2)
+{
+    var declination = plan.summary['Declination'],
+        dec2_amount = Math.round(Math.abs(declination) * 100) / 100;
+    
+    for(node = score_DEC2.firstChild; node = node.nextSibling; node)
+    {
+        if(node.nodeName == 'H3') {
+            node.innerHTML += ': ' + dec2_amount;
+
+        } else if(node.nodeName == 'DIV') {
+            drawBiasBellChart('d2', declination, node.id,
+                (plan.model ? plan.model.house : 'ushouse'), 'plan');
+
+        } else if(node.nodeName == 'P') {
+            var win_party = (declination < 0 ? 'Republican' : 'Democratic'),
+                win_partisans = (declination < 0 ? 'Republicans' : 'Democrats'),
+                lose_party = (declination < 0 ? 'Democratic' : 'Republican');
+
+            clear_element(node);
+            
+            if(typeof plan.summary['Declination Positives'] === 'number') {
+                var positives = (declination < 0
+                    ? (1 - plan.summary['Declination Positives'])
+                    : plan.summary['Declination Positives']);
+            
+                node.innerHTML = [
+                    'Votes for tktktk', win_party, 'candidates are expected to be inefficient at a rate',
+                    dec2_amount, 'lower than votes for', lose_party, 'candidates.',
+                    'The expected gap favors', win_partisans,
+                    'in', nice_round_percent(positives), 'of predicted scenarios.',
+                    '<a href="' + window.eg_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
+                    ].join(' ');
+            }
+        }
+    }
+}
+
 function show_partisan_bias_score(plan, score_PB)
 {
     var bias = plan.summary['Partisan Bias'],
@@ -828,12 +866,12 @@ function plan_has_incumbency(plan)
 
 function start_load_plan_polling(url, message_section, score_section,
     description_el, model_link, model_url_pattern, table, score_EG, score_PB,
-    score_MM, score_sense, text_url, text_link, geom_prefix, map_div, seat_count)
+    score_MM, score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div, seat_count)
 {
     const make_xhr = () => {
         load_plan_score(url, message_section, score_section,
             description_el, model_link, model_url_pattern, table, score_EG, score_PB,
-            score_MM, score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
+            score_MM, score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
             xhr_retry_callback);
     };
 
@@ -849,7 +887,7 @@ function start_load_plan_polling(url, message_section, score_section,
 
 function load_plan_score(url, message_section, score_section,
     description_el, model_link, model_url_pattern, table, score_EG, score_PB,
-    score_MM, score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
+    score_MM, score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
     xhr_retry_callback)
 {
     var request = new XMLHttpRequest();
@@ -958,6 +996,15 @@ function load_plan_score(url, message_section, score_section,
         // Populate scores.
         show_efficiency_gap_score(plan, score_EG);
         show_sensitivity_test(plan, score_sense);
+        
+        if('Declination' in plan.summary) {
+            show_declination2_score(plan, score_DEC2);
+        } else {
+            hide_score_with_reason(score_DEC2,
+                'The tktktk parties’ statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
+                + ' Partisan bias is shown only where the parties’ statewide vote shares fall between 45% and 55%.'
+                + ' Outside this range the metric’s assumptions are not plausible.');
+        }
         
         if(plan_voteshare(plan) < .1 || location.hash.match(/\bshowall\b/)) {
             show_partisan_bias_score(plan, score_PB);
