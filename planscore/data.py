@@ -370,9 +370,9 @@ MODELS = [
     Model(State.DE, House.ushouse,       1,  True, VERSION, 'data/DE/004-2021A'), # 3017cc8
     Model(State.DE, House.statesenate,  21,  True, VERSION, 'data/DE/004-2021A'), # 3017cc8
     Model(State.DE, House.statehouse,   41,  True, VERSION, 'data/DE/004-2021A'), # 3017cc8
-    Model(State.FL, House.ushouse,      27,  True, VERSION, 'data/FL/003-tilesdir'), # 56f7c85
-    Model(State.FL, House.statesenate,  40,  True, VERSION, 'data/FL/003-tilesdir'), # 56f7c85
-    Model(State.FL, House.statehouse,  120,  True, VERSION, 'data/FL/003-tilesdir'), # 56f7c85
+    Model(State.FL, House.ushouse,      27,  True, VERSION, 'data/FL/004-vest2020'), # ebf9df8
+    Model(State.FL, House.statesenate,  40,  True, VERSION, 'data/FL/004-vest2020'), # ebf9df8
+    Model(State.FL, House.statehouse,  120,  True, VERSION, 'data/FL/004-vest2020'), # ebf9df8
     Model(State.GA, House.ushouse,      14,  True, VERSION, 'data/GA/006-vest2020'), # 924e34c
     Model(State.GA, House.statesenate,  56,  True, VERSION, 'data/GA/006-vest2020'), # 924e34c
     Model(State.GA, House.statehouse,  180,  True, VERSION, 'data/GA/006-vest2020'), # 924e34c
