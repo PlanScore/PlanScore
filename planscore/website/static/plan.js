@@ -1026,9 +1026,7 @@ function load_plan_score(url, message_section, score_section,
             show_declination2_score(plan, score_DEC2);
         } else {
             hide_score_with_reason(score_DEC2,
-                'The tktktk parties’ statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
-                + ' Partisan bias is shown only where the parties’ statewide vote shares fall between 45% and 55%.'
-                + ' Outside this range the metric’s assumptions are not plausible.');
+                'We were not yet calculating declination at the time that we scored this plan.');
         }
         
         if(plan_voteshare(plan) < .1 || location.hash.match(/\bshowall\b/)) {
