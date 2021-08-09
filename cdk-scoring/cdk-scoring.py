@@ -129,9 +129,21 @@ class PlanScoreScoring(cdk.Stack):
     def make_website_base(self, static_site_bucket, scoring_site_bucket):
 
         static_origin = aws_cloudfront_origins.S3Origin(static_site_bucket)
-        static_behavior = aws_cloudfront.BehaviorOptions(origin=static_origin)
         scoring_origin = aws_cloudfront_origins.S3Origin(scoring_site_bucket)
-        scoring_behavior = aws_cloudfront.BehaviorOptions(origin=scoring_origin)
+
+        behavior_options = dict(
+            viewer_protocol_policy=aws_cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+        )
+        
+        static_behavior = aws_cloudfront.BehaviorOptions(
+            origin=static_origin,
+            **behavior_options,
+        )
+
+        scoring_behavior = aws_cloudfront.BehaviorOptions(
+            origin=scoring_origin,
+            **behavior_options,
+        )
         
         distribution_kwargs = dict(
             default_behavior=static_behavior,
