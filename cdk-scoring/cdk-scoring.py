@@ -110,6 +110,12 @@ class PlanScoreScoring(cdk.Stack):
                 auto_delete_objects=True,
                 removal_policy=cdk.RemovalPolicy.DESTROY,
                 public_read_access=True,
+                cors=[
+                    aws_s3.CorsRule(
+                        allowed_methods=[aws_s3.HttpMethods.GET],
+                        allowed_origins=['*'],
+                    ),
+                ]
             )
 
         scoring_site_bucket = aws_s3.Bucket(
