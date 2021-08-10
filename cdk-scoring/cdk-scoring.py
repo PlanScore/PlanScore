@@ -139,6 +139,8 @@ class PlanScoreScoring(cdk.Stack):
 
         behavior_options = dict(
             viewer_protocol_policy=aws_cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+            cache_policy=aws_cloudfront.CachePolicy.CACHING_OPTIMIZED,
+            origin_request_policy=aws_cloudfront.OriginRequestPolicy.CORS_S3_ORIGIN,
         )
         
         static_behavior = aws_cloudfront.BehaviorOptions(
