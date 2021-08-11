@@ -20,7 +20,17 @@ from aws_cdk import (
 
 FormationInfo = collections.namedtuple(
     'FormationInfo',
-    ('prefix', 'data_bucket', 'static_site_bucket', 'website_domains', 'website_cert', 'api_domain', 'api_cert'),
+    (
+        'prefix',
+        'data_bucket',
+        'static_site_bucket',
+        'website_domains',
+        'website_cert',
+        'api_domain',
+        'api_cert',
+        'forward_domains',
+        'forward_cert',
+    ),
 )
 
 FORMATIONS = [
@@ -32,6 +42,8 @@ FORMATIONS = [
         'arn:aws:acm:us-east-1:466184106004:certificate/9926850f-249e-4f47-b6b2-309428ecc80c',
         'api.dev.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/eba45e77-e9e6-4773-98bc-b0ab78f5db38',
+        ['old.planscore.org'],
+        'arn:aws:acm:us-east-1:466184106004:certificate/cfcb3f12-252e-4f28-be0c-ba789fb96b5f',
     ),
     FormationInfo(
         'cf-production',
@@ -41,11 +53,15 @@ FORMATIONS = [
         'arn:aws:acm:us-east-1:466184106004:certificate/a97a66eb-9e47-4b89-8193-fdc91560d117',
         'api.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/0216c55e-76c2-4344-b883-0603c7ee2251',
+        None,
+        None,
     ),
     FormationInfo(
         'cf-declination',
         None,
         'planscore.org-declination-static-site',
+        None,
+        None,
         None,
         None,
         None,
@@ -590,7 +606,7 @@ if __name__ == '__main__':
         raise ValueError('USAGE: cdk <command> -c formation_prefix=cf-development <stack>')
 
     assert formation_prefix.startswith('cf-')
-    formation_info = FormationInfo(formation_prefix, None, None, None, None, None, None)
+    formation_info = FormationInfo(formation_prefix, None, None, None, None, None, None, None, None)
 
     for _formation_info in FORMATIONS:
         if _formation_info.prefix == formation_prefix:
