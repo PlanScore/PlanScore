@@ -98,7 +98,14 @@ class PlanScoreScoring(cdk.Stack):
 
         # Do the work
         
-        apigateway_role, api = self.make_api(stack_id, formation_info)
+        apigateway_role = aws_iam.Role(
+            self,
+            f'API-Gateway-Execution',
+            assumed_by=aws_iam.ServicePrincipal('apigateway.amazonaws.com'),
+        )
+
+        self.make_forward(stack_id, apigateway_role, formation_info)
+        api = self.make_api(stack_id, apigateway_role, formation_info)
         site_buckets = self.make_site_buckets(formation_info)
 
         functions = self.make_lambda_functions(
@@ -108,6 +115,57 @@ class PlanScoreScoring(cdk.Stack):
         )
 
         self.populate_api(apigateway_role, api, *functions)
+    
+    def make_forward(self, stack_id, apigateway_role, formation_info):
+        
+        forward = aws_lambda.Function(
+            self,
+            "Forward",
+            handler="lambda.lambda_handler",
+            timeout=cdk.Duration.seconds(30),
+            runtime=aws_lambda.Runtime.PYTHON_3_6,
+            log_retention=aws_logs.RetentionDays.TWO_WEEKS,
+            code=aws_lambda.Code.from_asset("/Users/migurski/Sites/PlanScore-Forward/forward-lambda.zip"),
+            environment={
+            },
+        )
+
+        forward.add_permission('Permission', principal=apigateway_role)
+        
+        api = aws_apigateway.RestApi(
+            self,
+            f"{stack_id} Forward",
+            domain_name=aws_apigateway.DomainNameOptions(
+                certificate=aws_certificatemanager.Certificate.from_certificate_arn(
+                    self,
+                    'Forward-SSL-Certificate',
+                    formation_info.forward_cert,
+                ),
+                domain_name=formation_info.forward_domains[0],
+                endpoint_type=aws_apigateway.EndpointType.EDGE,
+            ),
+        )
+        api_base = concat_strings('https://', api.domain_name.domain_name, '/')
+        #cdk.CfnOutput(self, 'ForwardDistributionDomain', value=api.domain_name.domain_name_alias_domain_name)
+        cdk.CfnOutput(self, 'ForwardBase', value=concat_strings('https://', api.domain_name.domain_name, '/'))
+
+        forward_integration = aws_apigateway.LambdaIntegration(
+            forward,
+            credentials_role=apigateway_role,
+            request_templates={
+                "application/json": '{ "statusCode": "200" }'
+            },
+        )
+
+        everything_resource = api.root.add_resource(
+            '{path+}',
+            default_cors_preflight_options=aws_apigateway.CorsOptions(
+                allow_origins=aws_apigateway.Cors.ALL_ORIGINS,
+            ),
+        )
+
+        api.root.add_method("GET", forward_integration)
+        everything_resource.add_method("GET", forward_integration)
 
     def make_site_buckets(self, formation_info):
 
@@ -268,13 +326,7 @@ class PlanScoreScoring(cdk.Stack):
 
         return data_bucket
 
-    def make_api(self, stack_id, formation_info):
-
-        apigateway_role = aws_iam.Role(
-            self,
-            f'API-Execution',
-            assumed_by=aws_iam.ServicePrincipal('apigateway.amazonaws.com'),
-        )
+    def make_api(self, stack_id, apigateway_role, formation_info):
 
         if formation_info.api_domain and formation_info.api_cert:
             api = aws_apigateway.RestApi(
@@ -301,7 +353,7 @@ class PlanScoreScoring(cdk.Stack):
 
         cdk.CfnOutput(self, 'APIBase', value=api_base)
 
-        return apigateway_role, api
+        return api
 
     def make_lambda_functions(self, apigateway_role, data_bucket, website_base):
 
