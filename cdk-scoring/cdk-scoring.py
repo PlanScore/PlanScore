@@ -121,11 +121,11 @@ class PlanScoreScoring(cdk.Stack):
         forward = aws_lambda.Function(
             self,
             "Forward",
-            handler="lambda.lambda_handler",
+            handler="lambda.handler",
             timeout=cdk.Duration.seconds(30),
             runtime=aws_lambda.Runtime.PYTHON_3_6,
             log_retention=aws_logs.RetentionDays.TWO_WEEKS,
-            code=aws_lambda.Code.from_asset("/Users/migurski/Sites/PlanScore-Forward/forward-lambda.zip"),
+            code=aws_lambda.Code.from_asset("../forward"),
             environment={
             },
         )
