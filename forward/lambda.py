@@ -1,3 +1,4 @@
+import os
 import json
 
 HTML_template = '''<!DOCTYPE html>
@@ -8,7 +9,7 @@ HTML_template = '''<!DOCTYPE html>
     <script>
         console.log(document.location);
         console.log([
-            'https://planscore.campaignlegal.org',
+            {base},
             {path},
             document.location.search,
             document.location.hash,
@@ -22,8 +23,12 @@ HTML_template = '''<!DOCTYPE html>
 '''
 
 def handler(event, context):
+    print(json.dumps(event))
     return {
         'statusCode': '200',
         'headers': {'Content-Type': 'text/html'},
-        'body': HTML_template.format(path=json.dumps(event['path']))
-        }
+        'body': HTML_template.format(
+            base=json.dumps(os.environ.get('WEBSITE_BASE')),
+            path=json.dumps(event['path'].lstrip('/')),
+        ),
+    }

@@ -104,19 +104,20 @@ class PlanScoreScoring(cdk.Stack):
             assumed_by=aws_iam.ServicePrincipal('apigateway.amazonaws.com'),
         )
 
-        self.make_forward(stack_id, apigateway_role, formation_info)
         api = self.make_api(stack_id, apigateway_role, formation_info)
         site_buckets = self.make_site_buckets(formation_info)
+        website_base = self.make_website_base(*site_buckets)
 
         functions = self.make_lambda_functions(
             apigateway_role,
             self.make_data_bucket(stack_id, formation_info),
-            self.make_website_base(*site_buckets),
+            website_base,
         )
 
         self.populate_api(apigateway_role, api, *functions)
+        self.make_forward(stack_id, website_base, apigateway_role, formation_info)
     
-    def make_forward(self, stack_id, apigateway_role, formation_info):
+    def make_forward(self, stack_id, website_base, apigateway_role, formation_info):
         
         forward = aws_lambda.Function(
             self,
@@ -127,6 +128,7 @@ class PlanScoreScoring(cdk.Stack):
             log_retention=aws_logs.RetentionDays.TWO_WEEKS,
             code=aws_lambda.Code.from_asset("../forward"),
             environment={
+                'WEBSITE_BASE': website_base,
             },
         )
 
