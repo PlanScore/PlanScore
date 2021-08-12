@@ -24,7 +24,7 @@ FormationInfo = collections.namedtuple(
         'prefix',
         'data_bucket',
         'static_site_bucket',
-        'website_domains',
+        'website_domain',
         'website_cert',
         'api_domain',
         'api_cert',
@@ -38,7 +38,7 @@ FORMATIONS = [
         'cf-development',
         'planscore--dev',
         'planscore.org-dev-website',
-        ['dev.planscore.org'],
+        'dev.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/9926850f-249e-4f47-b6b2-309428ecc80c',
         'api.dev.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/eba45e77-e9e6-4773-98bc-b0ab78f5db38',
@@ -49,12 +49,12 @@ FORMATIONS = [
         'cf-production',
         'planscore',
         'planscore.org-static-site',
-        ['planscore.campaignlegal.org', 'planscore.org', 'www.planscore.org'],
+        'planscore.campaignlegal.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/a97a66eb-9e47-4b89-8193-fdc91560d117',
         'api.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/0216c55e-76c2-4344-b883-0603c7ee2251',
-        None,
-        None,
+        ['www.planscore.org', 'planscore.org'],
+        'arn:aws:acm:us-east-1:466184106004:certificate/6e7db330-3488-454f-baf1-cc72f5c165ae',
     ),
     FormationInfo(
         'cf-declination',
@@ -251,7 +251,7 @@ class PlanScoreScoring(cdk.Stack):
             },
         )
 
-        if formation_info.website_domains and formation_info.website_cert:
+        if formation_info.website_domain and formation_info.website_cert:
             distribution = aws_cloudfront.Distribution(
                 self,
                 'Website',
@@ -260,10 +260,10 @@ class PlanScoreScoring(cdk.Stack):
                     'Website-SSL-Certificate',
                     formation_info.website_cert,
                 ),
-                domain_names=formation_info.website_domains,
+                domain_names=[formation_info.website_domain],
                 **distribution_kwargs,
             )
-            website_base = concat_strings('https://', formation_info.website_domains[0], '/')
+            website_base = concat_strings('https://', formation_info.website_domain, '/')
         else:
             distribution = aws_cloudfront.Distribution(
                 self,
