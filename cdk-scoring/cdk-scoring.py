@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import tempfile
 import collections
 import subprocess
 import functools
@@ -98,13 +99,7 @@ class PlanScoreScoring(cdk.Stack):
 
         # Do the work
         
-        apigateway_role = aws_iam.Role(
-            self,
-            f'API-Gateway-Execution',
-            assumed_by=aws_iam.ServicePrincipal('apigateway.amazonaws.com'),
-        )
-
-        api = self.make_api(stack_id, apigateway_role, formation_info)
+        apigateway_role, api = self.make_api(stack_id, formation_info)
         site_buckets = self.make_site_buckets(formation_info)
         website_base = self.make_website_base(*site_buckets)
 
@@ -115,10 +110,18 @@ class PlanScoreScoring(cdk.Stack):
         )
 
         self.populate_api(apigateway_role, api, *functions)
-        self.make_forward(stack_id, website_base, apigateway_role, formation_info)
+        self.make_forward(stack_id, website_base, formation_info)
     
-    def make_forward(self, stack_id, website_base, apigateway_role, formation_info):
+    def make_forward(self, stack_id, website_base, formation_info):
+    
+        dirpath = tempfile.mkdtemp(dir='/tmp', prefix='forward-lambda-')
         
+        with open(os.path.join(os.path.dirname(__file__), 'forward-lambda.py')) as file1:
+            code = file1.read().replace('https://planscore.org/', website_base)
+        
+        with open(os.path.join(dirpath, 'lambda.py'), 'w') as file2:
+            file2.write(code)
+
         forward = aws_lambda.Function(
             self,
             "Forward",
@@ -126,10 +129,7 @@ class PlanScoreScoring(cdk.Stack):
             timeout=cdk.Duration.seconds(5),
             runtime=aws_lambda.Runtime.PYTHON_3_8,
             log_retention=aws_logs.RetentionDays.TWO_WEEKS,
-            code=aws_lambda.Code.from_asset("../forward"),
-            #environment={
-            #    'WEBSITE_BASE': website_base,
-            #},
+            code=aws_lambda.Code.from_asset(dirpath),
         )
 
         static_origin = aws_cloudfront_origins.HttpOrigin('example.com')
@@ -335,7 +335,13 @@ class PlanScoreScoring(cdk.Stack):
 
         return data_bucket
 
-    def make_api(self, stack_id, apigateway_role, formation_info):
+    def make_api(self, stack_id, formation_info):
+
+        apigateway_role = aws_iam.Role(
+            self,
+            f'API-Gateway-Execution',
+            assumed_by=aws_iam.ServicePrincipal('apigateway.amazonaws.com'),
+        )
 
         if formation_info.api_domain and formation_info.api_cert:
             api = aws_apigateway.RestApi(
@@ -362,7 +368,7 @@ class PlanScoreScoring(cdk.Stack):
 
         cdk.CfnOutput(self, 'APIBase', value=api_base)
 
-        return api
+        return apigateway_role, api
 
     def make_lambda_functions(self, apigateway_role, data_bucket, website_base):
 

@@ -9,7 +9,7 @@ HTML_template = '''<!DOCTYPE html>
     <script>
         console.log(document.location);
         console.log([
-            {base},
+            "https://planscore.org/",
             {path},
             document.location.search,
             document.location.hash,
@@ -23,7 +23,6 @@ HTML_template = '''<!DOCTYPE html>
 '''
 
 def handler(event, context):
-    base = os.environ.get('WEBSITE_BASE')
     uri = event['Records'][0]['cf']['request']['uri']
 
     return {
@@ -33,7 +32,6 @@ def handler(event, context):
             'content-type': [{'value': 'text/html'}],
         },
         'body': HTML_template.format(
-            base=json.dumps(base),
             path=json.dumps(uri.lstrip('/')),
         ),
     }
