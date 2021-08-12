@@ -25,8 +25,11 @@ HTML_template = '''<!DOCTYPE html>
 def handler(event, context):
     print(json.dumps(event))
     return {
-        'statusCode': '200',
-        'headers': {'Content-Type': 'text/html'},
+        'status': '200',
+        'statusDescription': 'OK',
+        'headers': {
+            'content-type': [{'value': 'text/html'}],
+        },
         'body': HTML_template.format(
             base=json.dumps(os.environ.get('WEBSITE_BASE')),
             path=json.dumps(event['path'].lstrip('/')),
