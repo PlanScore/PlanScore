@@ -123,51 +123,57 @@ class PlanScoreScoring(cdk.Stack):
             self,
             "Forward",
             handler="lambda.handler",
-            timeout=cdk.Duration.seconds(30),
-            runtime=aws_lambda.Runtime.PYTHON_3_6,
+            timeout=cdk.Duration.seconds(5),
+            runtime=aws_lambda.Runtime.PYTHON_3_8,
             log_retention=aws_logs.RetentionDays.TWO_WEEKS,
             code=aws_lambda.Code.from_asset("../forward"),
-            environment={
-                'WEBSITE_BASE': website_base,
-            },
+            #environment={
+            #    'WEBSITE_BASE': website_base,
+            #},
         )
 
-        forward.add_permission('Permission', principal=apigateway_role)
-        
-        api = aws_apigateway.RestApi(
-            self,
-            f"{stack_id} Forward",
-            domain_name=aws_apigateway.DomainNameOptions(
+        static_origin = aws_cloudfront_origins.HttpOrigin('example.com')
+
+        static_behavior = aws_cloudfront.BehaviorOptions(
+            origin=static_origin,
+            edge_lambdas=[
+                aws_cloudfront.EdgeLambda(
+                    event_type=aws_cloudfront.LambdaEdgeEventType.VIEWER_REQUEST,
+                    function_version=forward.current_version,
+                ),
+            ],
+            #viewer_protocol_policy=aws_cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+            #cache_policy=aws_cloudfront.CachePolicy.CACHING_OPTIMIZED,
+            #origin_request_policy=aws_cloudfront.OriginRequestPolicy.CORS_S3_ORIGIN,
+            #allowed_methods=aws_cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+            #cached_methods=aws_cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+        )
+
+        if formation_info.forward_domains and formation_info.forward_cert:
+            distribution = aws_cloudfront.Distribution(
+                self,
+                'Forwarding Service',
                 certificate=aws_certificatemanager.Certificate.from_certificate_arn(
                     self,
                     'Forward-SSL-Certificate',
                     formation_info.forward_cert,
                 ),
-                domain_name=formation_info.forward_domains[0],
-                endpoint_type=aws_apigateway.EndpointType.EDGE,
-            ),
-        )
-        api_base = concat_strings('https://', api.domain_name.domain_name, '/')
-        #cdk.CfnOutput(self, 'ForwardDistributionDomain', value=api.domain_name.domain_name_alias_domain_name)
-        cdk.CfnOutput(self, 'ForwardBase', value=concat_strings('https://', api.domain_name.domain_name, '/'))
+                domain_names=formation_info.forward_domains,
+                default_behavior=static_behavior,
+                price_class=aws_cloudfront.PriceClass.PRICE_CLASS_100,
+            )
+            forward_base = concat_strings('https://', formation_info.forward_domains[0], '/')
+        else:
+            distribution = aws_cloudfront.Distribution(
+                self,
+                'Forward',
+                default_behavior=static_behavior,
+                price_class=aws_cloudfront.PriceClass.PRICE_CLASS_100,
+            )
+            forward_base = concat_strings('https://', distribution.distribution_domain_name, '/')
 
-        forward_integration = aws_apigateway.LambdaIntegration(
-            forward,
-            credentials_role=apigateway_role,
-            request_templates={
-                "application/json": '{ "statusCode": "200" }'
-            },
-        )
-
-        everything_resource = api.root.add_resource(
-            '{path+}',
-            default_cors_preflight_options=aws_apigateway.CorsOptions(
-                allow_origins=aws_apigateway.Cors.ALL_ORIGINS,
-            ),
-        )
-
-        api.root.add_method("GET", forward_integration)
-        everything_resource.add_method("GET", forward_integration)
+        cdk.CfnOutput(self, 'ForwardBase', value=forward_base)
+        cdk.CfnOutput(self, 'ForwardDistributionDomain', value=distribution.distribution_domain_name)
 
     def make_site_buckets(self, formation_info):
 
@@ -233,6 +239,7 @@ class PlanScoreScoring(cdk.Stack):
         
         distribution_kwargs = dict(
             default_behavior=static_behavior,
+            price_class=aws_cloudfront.PriceClass.PRICE_CLASS_100,
             additional_behaviors={
                 'about.html': scoring_behavior,
                 'annotate*': scoring_behavior,

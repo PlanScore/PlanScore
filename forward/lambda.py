@@ -23,7 +23,9 @@ HTML_template = '''<!DOCTYPE html>
 '''
 
 def handler(event, context):
-    print(json.dumps(event))
+    base = os.environ.get('WEBSITE_BASE')
+    uri = event['Records'][0]['cf']['request']['uri']
+
     return {
         'status': '200',
         'statusDescription': 'OK',
@@ -31,7 +33,7 @@ def handler(event, context):
             'content-type': [{'value': 'text/html'}],
         },
         'body': HTML_template.format(
-            base=json.dumps(os.environ.get('WEBSITE_BASE')),
-            path=json.dumps(event['path'].lstrip('/')),
+            base=json.dumps(base),
+            path=json.dumps(uri.lstrip('/')),
         ),
     }
