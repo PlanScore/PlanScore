@@ -343,7 +343,7 @@ function show_declination2_score(plan, score_DEC2)
                     'This, along with the relative fraction of seats won by each party,',
                     'leads to a declination that favors Republicans in',
                     nice_round_percent(positives), 'of predicted scenarios.',
-                    '<a href="' + window.eg_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
+                    '<a href="' + window.d2_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                     ].join(' ');
             }
         }
