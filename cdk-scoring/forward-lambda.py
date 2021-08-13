@@ -1,6 +1,9 @@
 import os
 import json
 
+# This is re-written in cdk-deploy
+WEBSITE_BASE = 'https://planscore.org/'
+
 HTML_template = '''<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,9 +12,7 @@ HTML_template = '''<!DOCTYPE html>
     <script>
         console.log(document.location);
         console.log([
-            "https://planscore.org/",
-            {path},
-            document.location.search,
+            {location},
             document.location.hash,
         ].join(''));
     </script>
@@ -23,15 +24,18 @@ HTML_template = '''<!DOCTYPE html>
 '''
 
 def handler(event, context):
-    uri = event['Records'][0]['cf']['request']['uri']
+    uri = event['Records'][0]['cf']['request']['uri'].lstrip('/')
+    query = event['Records'][0]['cf']['request']['querystring']
+    location = f'{WEBSITE_BASE}{uri}?{query}'.rstrip('?')
 
     return {
-        'status': '200',
-        'statusDescription': 'OK',
+        'status': '308',
+        'statusDescription': 'Permanent Redirect',
         'headers': {
             'content-type': [{'value': 'text/html'}],
+            'location': [{'value': location}],
         },
         'body': HTML_template.format(
-            path=json.dumps(uri.lstrip('/')),
+            location=json.dumps(location),
         ),
     }

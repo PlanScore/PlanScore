@@ -122,6 +122,10 @@ class PlanScoreScoring(cdk.Stack):
         with open(os.path.join(dirpath, 'lambda.py'), 'w') as file2:
             file2.write(code)
 
+        # Will this make Cloudfront updates less greedy?
+        os.utime(dirpath, (0, 0))
+        os.utime(os.path.join(dirpath, 'lambda.py'), (0, 0))
+        
         forward = aws_lambda.Function(
             self,
             "Forward",
