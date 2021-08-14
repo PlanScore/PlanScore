@@ -53,7 +53,7 @@ class PlanScoreContent(cdk.Stack):
 
         static_dirname = tempfile.mkdtemp(dir='/tmp', prefix='static-site-content-')
         
-        static_bytes = urllib.request.urlopen('https://planscore.org/WEBSITE_OUTPUT.zip')
+        static_bytes = urllib.request.urlopen('https://planscore.campaignlegal.org/WEBSITE_OUTPUT.zip')
         static_archive = zipfile.ZipFile(io.BytesIO(static_bytes.read()))
         static_archive.extractall(static_dirname)
         
