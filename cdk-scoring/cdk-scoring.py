@@ -114,6 +114,9 @@ class PlanScoreScoring(cdk.Stack):
     
     def make_forward(self, stack_id, website_base, formation_info):
     
+        if not formation_info.forward_domains or not formation_info.forward_cert:
+            return
+    
         dirpath = tempfile.mkdtemp(dir='/tmp', prefix='forward-lambda-')
         
         with open(os.path.join(os.path.dirname(__file__), 'forward-lambda.py')) as file1:
@@ -153,28 +156,19 @@ class PlanScoreScoring(cdk.Stack):
             #cached_methods=aws_cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
         )
 
-        if formation_info.forward_domains and formation_info.forward_cert:
-            distribution = aws_cloudfront.Distribution(
+        distribution = aws_cloudfront.Distribution(
+            self,
+            'Forwarding Service',
+            certificate=aws_certificatemanager.Certificate.from_certificate_arn(
                 self,
-                'Forwarding Service',
-                certificate=aws_certificatemanager.Certificate.from_certificate_arn(
-                    self,
-                    'Forward-SSL-Certificate',
-                    formation_info.forward_cert,
-                ),
-                domain_names=formation_info.forward_domains,
-                default_behavior=static_behavior,
-                price_class=aws_cloudfront.PriceClass.PRICE_CLASS_100,
-            )
-            forward_base = concat_strings('https://', formation_info.forward_domains[0], '/')
-        else:
-            distribution = aws_cloudfront.Distribution(
-                self,
-                'Forward',
-                default_behavior=static_behavior,
-                price_class=aws_cloudfront.PriceClass.PRICE_CLASS_100,
-            )
-            forward_base = concat_strings('https://', distribution.distribution_domain_name, '/')
+                'Forward-SSL-Certificate',
+                formation_info.forward_cert,
+            ),
+            domain_names=formation_info.forward_domains,
+            default_behavior=static_behavior,
+            price_class=aws_cloudfront.PriceClass.PRICE_CLASS_100,
+        )
+        forward_base = concat_strings('https://', formation_info.forward_domains[0], '/')
 
         cdk.CfnOutput(self, 'ForwardBase', value=forward_base)
         cdk.CfnOutput(self, 'ForwardDistributionDomain', value=distribution.distribution_domain_name)
