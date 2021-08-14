@@ -23,4 +23,4 @@ cat $FILE
 # Test that /states works
 
 export BASE=`python -m json.tool $FILE | grep APIBase | (IFS='"' read -r _ _ _ U _; echo $U)`
-curl --fail "${BASE}states"
+curl --fail "${BASE}states"  -s | head -n 25
