@@ -19,15 +19,15 @@
 
 
     <!-- PlanScore Website Framework -->    
-    <link href="https://planscore.org/sitewide.css" rel="stylesheet" />
-    <script src="https://planscore.org/sitewide.js"></script>
-    <link href="https://planscore.org/images/favicon.svg" rel="icon" type="image/svg+xml">
+    <link href="{{planscore_website_base}}/sitewide.css" rel="stylesheet" />
+    <script src="{{planscore_website_base}}/sitewide.js"></script>
+    <link href="{{planscore_website_base}}/images/favicon.svg" rel="icon" type="image/svg+xml">
 
     <!-- OG tags -->
     <meta property="og:title" content="PlanScore" />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://planscore.org" />
-    <meta property="og:image" content="https://planscore.org/images/OG-default-01.jpg" />
+    <meta property="og:url" content="{{planscore_website_base}}" />
+    <meta property="og:image" content="{{planscore_website_base}}/images/OG-default-01.jpg" />
     <meta property="og:description" content="PlanScore is a first-of-its-kind gerrymandering scoring service for new district plans, allowing users to upload maps and instantly receive projected data about their partisan consequences. You can also use historical data to discover how partisan advantage has influenced redistricting in your state." />
 
     <!-- Twitter tags note that per https://developer.twitter.com/en/docs/tweets/optimize-with-cards/guides/getting-started, we need only use the card metas that differ from OG -->
@@ -49,12 +49,12 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="/"><img id="brand-logo" src="https://planscore.org/images/logo.svg"></a>
+                <a class="navbar-brand" href="{{planscore_website_base}}/"><img id="brand-logo" src="{{planscore_website_base}}/images/logo.svg"></a>
             </div>
             <div class="collapse navbar-collapse" id="navbar">
                 <ul class="nav navbar-nav navbar-right">
                     <li><a href="{{ url_for('get_upload') }}">Score a Plan</a></li>
-                    <li><a href="https://planscore.org/about/">What is PlanScore?</a></li>
+                    <li><a href="{{planscore_website_base}}/about/">What is PlanScore?</a></li>
                 </ul>
             </div>
         </div>
@@ -69,7 +69,7 @@
     <div class="footer">
     <div class="callout">
       <a href="https://campaignlegal.org" title="Visit Campaign Legal Center">
-        <img src="/images/CLC-logo.svg" alt="Campaign Legal Center Logo" />
+        <img src="{{planscore_website_base}}/images/CLC-logo.svg" alt="Campaign Legal Center Logo" />
       </a>
       <p>
         PlanScore is a project of Campaign Legal Center.
@@ -136,7 +136,7 @@
           <path class="st0" d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
         </svg>
       </a>
-      <a href="https://github.com/PlanScore/PlanScore" title="PlanScore on GitHub">
+      <a href="https://github.com/PlanScore" title="PlanScore on GitHub">
         <svg
           class="social-icon"
           viewBox="0 0 24 24"

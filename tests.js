@@ -24,7 +24,8 @@ var NC_index = require('./data/sample-NC-1-992/index.json'),
     NC_2019_no_incumbency = require('./data/sample-NC2019/index-no-incumbency.json'),
     NC_2019_incumbency = require('./data/sample-NC2019/index-incumbency.json'),
     NC_2020 = require('./data/sample-NC2020/index.json'),
-    NC_2020_unified = require('./data/sample-NC-unified/index.json');
+    NC_2020_unified = require('./data/sample-NC-unified/index.json'),
+    FL_2020_declination = require('./data/sample-FL-declination/index.json');
 
 // Old-style red vs. blue plan
 
@@ -493,6 +494,11 @@ assert.equal(plan.nice_gap(.1), '+10.0% for Democrats', 'Positive gaps should be
 assert.equal(plan.nice_gap(-.1), '+10.0% for Republicans', 'Negative gaps should be red');
 
 assert.equal(plan.nice_string('yo'), '&#121;&#111;');
+
+assert.equal(
+    Math.round(1000000 * plan.calculate_declination2_difference(FL_2020_declination)),
+    Math.round(1000000 * -0.0025963086751557007),
+    'Should find correct margin difference');
 
 // Annotate page
 

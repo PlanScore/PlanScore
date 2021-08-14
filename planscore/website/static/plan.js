@@ -286,6 +286,70 @@ function show_efficiency_gap_score(plan, score_EG)
     }
 }
 
+function calculate_declination2_difference(plan)
+{
+    var dem_districts = [],
+        rep_districts = [];
+    
+    for(var i = 0; i < plan.districts.length; i++)
+    {
+        var dem_votes = plan.districts[i].totals['Democratic Votes'],
+            rep_votes = plan.districts[i].totals['Republican Votes'];
+        
+        if(dem_votes > rep_votes) {
+            dem_districts.push(dem_votes / (dem_votes + rep_votes));
+        } else {
+            rep_districts.push(rep_votes / (dem_votes + rep_votes));
+        }
+    }
+    
+    var dem_margin_avg = dem_districts.reduce((a, b) => (a + b), 0) / dem_districts.length,
+        rep_margin_avg = rep_districts.reduce((a, b) => (a + b), 0) / rep_districts.length;
+    
+    return rep_margin_avg - dem_margin_avg;
+}
+
+function show_declination2_score(plan, score_DEC2)
+{
+    var declination = plan.summary['Declination'],
+        dec2_amount = Math.round(Math.abs(declination) * 100) / 100,
+        dec2_difference = calculate_declination2_difference(plan);
+    
+    for(node = score_DEC2.firstChild; node = node.nextSibling; node)
+    {
+        if(node.nodeName == 'H3') {
+            node.innerHTML += ': ' + dec2_amount;
+
+        } else if(node.nodeName == 'DIV') {
+            drawBiasBellChart('d2', declination, node.id,
+                (plan.model ? plan.model.house : 'ushouse'), 'plan');
+
+        } else if(node.nodeName == 'P') {
+            var win_partisans = (declination < 0 ? 'Republicans' : 'Democrats'),
+                lose_partisans = (declination < 0 ? 'Democrats' : 'Republicans');
+
+            clear_element(node);
+            
+            if(typeof plan.summary['Declination Positives'] === 'number')
+            {
+                var positives = (declination < 0
+                    ? (1 - plan.summary['Declination Positives'])
+                    : plan.summary['Declination Positives']);
+            
+                node.innerHTML = [
+                    'The', lose_partisans+"’", 'mean vote share in districts they won was',
+                    nice_percent(Math.abs(dec2_difference)), 'higher than the', win_partisans+"’",
+                    'mean vote share in districts they won.',
+                    'This, along with the relative fraction of seats won by each party,',
+                    'leads to a declination that favors Republicans in',
+                    nice_round_percent(positives), 'of predicted scenarios.',
+                    '<a href="' + window.d2_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
+                    ].join(' ');
+            }
+        }
+    }
+}
+
 function show_partisan_bias_score(plan, score_PB)
 {
     var bias = plan.summary['Partisan Bias'],
@@ -828,12 +892,12 @@ function plan_has_incumbency(plan)
 
 function start_load_plan_polling(url, message_section, score_section,
     description_el, model_link, model_url_pattern, table, score_EG, score_PB,
-    score_MM, score_sense, text_url, text_link, geom_prefix, map_div, seat_count)
+    score_MM, score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div, seat_count)
 {
     const make_xhr = () => {
         load_plan_score(url, message_section, score_section,
             description_el, model_link, model_url_pattern, table, score_EG, score_PB,
-            score_MM, score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
+            score_MM, score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
             xhr_retry_callback);
     };
 
@@ -849,7 +913,7 @@ function start_load_plan_polling(url, message_section, score_section,
 
 function load_plan_score(url, message_section, score_section,
     description_el, model_link, model_url_pattern, table, score_EG, score_PB,
-    score_MM, score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
+    score_MM, score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
     xhr_retry_callback)
 {
     var request = new XMLHttpRequest();
@@ -958,6 +1022,13 @@ function load_plan_score(url, message_section, score_section,
         // Populate scores.
         show_efficiency_gap_score(plan, score_EG);
         show_sensitivity_test(plan, score_sense);
+        
+        if('Declination' in plan.summary) {
+            show_declination2_score(plan, score_DEC2);
+        } else {
+            hide_score_with_reason(score_DEC2,
+                'We were not yet calculating declination at the time that we scored this plan.');
+        }
         
         if(plan_voteshare(plan) < .1 || location.hash.match(/\bshowall\b/)) {
             show_partisan_bias_score(plan, score_PB);
@@ -1310,6 +1381,7 @@ if(typeof module !== 'undefined' && module.exports)
         update_acs2015_percentages,
         update_acs2016_percentages,
         update_cvap2015_percentages,
-        update_heading_titles
+        update_heading_titles,
+        calculate_declination2_difference,
     };
 }

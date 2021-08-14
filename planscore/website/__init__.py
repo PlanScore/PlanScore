@@ -7,6 +7,7 @@ app = flask.Flask(__name__)
 
 app.config['PLANSCORE_S3_BUCKET'] = constants.S3_BUCKET
 app.config['PLANSCORE_API_BASE'] = constants.API_BASE
+app.config['PLANSCORE_WEBSITE_BASE'] = constants.WEBSITE_BASE or 'https://planscore.org'
 app.config['FREEZER_DESTINATION'] = os.environ.get('FREEZER_DESTINATION', 'build')
 
 def get_data_url_pattern(bucket):
@@ -56,7 +57,8 @@ def get_plan():
     geom_url_suffix_key=data.UPLOAD_GEOMETRY_KEY
     return flask.render_template('plan.html',
         data_url_pattern=data_url_pattern, geom_url_prefix=geom_url_prefix,
-        text_url_pattern=text_url_pattern, geom_url_suffix_key=geom_url_suffix_key)
+        text_url_pattern=text_url_pattern, geom_url_suffix_key=geom_url_suffix_key,
+        planscore_website_base=flask.current_app.config['PLANSCORE_WEBSITE_BASE'].rstrip('/'))
 
 @app.route('/models/')
 def get_models():

@@ -150,14 +150,24 @@
     <ul class="row" id="scores-box">
         <li class="col-md-2 col-md-push-2">
         </li>
-        <li class="col-md-4 col-md-push-4">
-            <h4>Sensitivity Testing</h4>
+        <li class="col-md-4 col-md-push-4" id="score-declination">
+            <h3>Declination</h3>
+            <div class="metric-bellchart" id="metric-bellchart-d2">
+                <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
+                <div class="row metric-bellchart-legend">
+                    <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span> D</div>
+                    <div class="col-xs-4 center">Balanced</div>
+                    <div class="col-xs-4 right">+<span data-field="metric-bellchart-spread"></span> R</div>
+                </div>
+            </div>
+            <p>Not enough information to calculate this score.</p>
+        </li>
+        <li class="col-md-4 col-md-pull-4">
+            <h3>Sensitivity Testing</h3>
+            <p id="score-sensitivity"></p>
             <p>
                 Sensitivity testing shows us a plan’s expected efficiency gap given a range of possible vote swings. It lets us evaluate the durability of a plan’s skew.
             </p>
-        </li>
-        <li class="col-md-4 col-md-pull-4">
-            <p id="score-sensitivity"></p>
         </li>
     </ul>
     <p id="map"></p>
@@ -179,9 +189,10 @@
 	        plan_url = format_url('{{ data_url_pattern }}', plan_id),
 	        geom_prefix = '{{ geom_url_prefix }}';
 	        text_url = format_url('{{ text_url_pattern }}', plan_id),
-	        eg_metric_url = 'https://planscore.org/metrics/efficiencygap/',
-	        pb_metric_url = 'https://planscore.org/metrics/partisanbias/',
-	        mm_metric_url = 'https://planscore.org/metrics/meanmedian/',
+	        eg_metric_url = '{{planscore_website_base}}/metrics/efficiencygap/',
+	        pb_metric_url = '{{planscore_website_base}}/metrics/partisanbias/',
+	        mm_metric_url = '{{planscore_website_base}}/metrics/meanmedian/',
+	        d2_metric_url = '{{planscore_website_base}}/metrics/declination/',
 	        model_url_pattern = '{{ url_for("get_model_description", prefix="data/2020") }}';
 
         // Preload the data we'll use
@@ -206,6 +217,7 @@
 	        document.getElementById('score-efficiency-gap'),
 	        document.getElementById('score-partisan-bias'),
 	        document.getElementById('score-mean-median'),
+	        document.getElementById('score-declination'),
 	        document.getElementById('score-sensitivity'),
 	        text_url, document.getElementById('text-link'),
 	        geom_prefix,
