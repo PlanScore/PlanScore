@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import tempfile
 import collections
 import subprocess
 import functools
@@ -20,7 +21,17 @@ from aws_cdk import (
 
 FormationInfo = collections.namedtuple(
     'FormationInfo',
-    ('prefix', 'data_bucket', 'static_site_bucket', 'website_domains', 'website_cert', 'api_domain', 'api_cert'),
+    (
+        'prefix',
+        'data_bucket',
+        'static_site_bucket',
+        'website_domain',
+        'website_cert',
+        'api_domain',
+        'api_cert',
+        'forward_domains',
+        'forward_cert',
+    ),
 )
 
 FORMATIONS = [
@@ -28,28 +39,23 @@ FORMATIONS = [
         'cf-development',
         'planscore--dev',
         'planscore.org-dev-website',
-        ['dev.planscore.org'],
+        'dev.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/9926850f-249e-4f47-b6b2-309428ecc80c',
         'api.dev.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/eba45e77-e9e6-4773-98bc-b0ab78f5db38',
+        None,
+        None,
     ),
     FormationInfo(
         'cf-production',
         'planscore',
         'planscore.org-static-site',
-        ['planscore.campaignlegal.org', 'planscore.org', 'www.planscore.org'],
-        'arn:aws:acm:us-east-1:466184106004:certificate/a97a66eb-9e47-4b89-8193-fdc91560d117',
+        'planscore.campaignlegal.org',
+        'arn:aws:acm:us-east-1:466184106004:certificate/8d86667e-eb4a-4e0d-9453-fe9c3c9855c0',
         'api.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/0216c55e-76c2-4344-b883-0603c7ee2251',
-    ),
-    FormationInfo(
-        'cf-declination',
-        None,
-        'planscore.org-declination-static-site',
-        None,
-        None,
-        None,
-        None,
+        ['www.planscore.org', 'planscore.org'],
+        'arn:aws:acm:us-east-1:466184106004:certificate/6e7db330-3488-454f-baf1-cc72f5c165ae',
     ),
 ]
 
@@ -84,14 +90,77 @@ class PlanScoreScoring(cdk.Stack):
         
         apigateway_role, api = self.make_api(stack_id, formation_info)
         site_buckets = self.make_site_buckets(formation_info)
+        website_base = self.make_website_base(*site_buckets)
 
         functions = self.make_lambda_functions(
             apigateway_role,
             self.make_data_bucket(stack_id, formation_info),
-            self.make_website_base(*site_buckets),
+            website_base,
         )
 
         self.populate_api(apigateway_role, api, *functions)
+        self.make_forward(stack_id, website_base, formation_info)
+    
+    def make_forward(self, stack_id, website_base, formation_info):
+    
+        if not formation_info.forward_domains or not formation_info.forward_cert:
+            return
+    
+        dirpath = tempfile.mkdtemp(dir='/tmp', prefix='forward-lambda-')
+        
+        with open(os.path.join(os.path.dirname(__file__), 'forward-lambda.py')) as file1:
+            code = file1.read().replace('https://planscore.org/', website_base)
+        
+        with open(os.path.join(dirpath, 'lambda.py'), 'w') as file2:
+            file2.write(code)
+
+        # Will this make Cloudfront updates less greedy?
+        os.utime(dirpath, (0, 0))
+        os.utime(os.path.join(dirpath, 'lambda.py'), (0, 0))
+        
+        forward = aws_lambda.Function(
+            self,
+            "Forward",
+            handler="lambda.handler",
+            timeout=cdk.Duration.seconds(5),
+            runtime=aws_lambda.Runtime.PYTHON_3_8,
+            log_retention=aws_logs.RetentionDays.TWO_WEEKS,
+            code=aws_lambda.Code.from_asset(dirpath),
+        )
+
+        static_origin = aws_cloudfront_origins.HttpOrigin('example.com')
+
+        static_behavior = aws_cloudfront.BehaviorOptions(
+            origin=static_origin,
+            edge_lambdas=[
+                aws_cloudfront.EdgeLambda(
+                    event_type=aws_cloudfront.LambdaEdgeEventType.VIEWER_REQUEST,
+                    function_version=forward.current_version,
+                ),
+            ],
+            #viewer_protocol_policy=aws_cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+            #cache_policy=aws_cloudfront.CachePolicy.CACHING_OPTIMIZED,
+            #origin_request_policy=aws_cloudfront.OriginRequestPolicy.CORS_S3_ORIGIN,
+            #allowed_methods=aws_cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+            #cached_methods=aws_cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+        )
+
+        distribution = aws_cloudfront.Distribution(
+            self,
+            'Forwarding Service',
+            certificate=aws_certificatemanager.Certificate.from_certificate_arn(
+                self,
+                'Forward-SSL-Certificate',
+                formation_info.forward_cert,
+            ),
+            domain_names=formation_info.forward_domains,
+            default_behavior=static_behavior,
+            price_class=aws_cloudfront.PriceClass.PRICE_CLASS_100,
+        )
+        forward_base = concat_strings('https://', formation_info.forward_domains[0], '/')
+
+        cdk.CfnOutput(self, 'ForwardBase', value=forward_base)
+        cdk.CfnOutput(self, 'ForwardDistributionDomain', value=distribution.distribution_domain_name)
 
     def make_site_buckets(self, formation_info):
 
@@ -157,6 +226,7 @@ class PlanScoreScoring(cdk.Stack):
         
         distribution_kwargs = dict(
             default_behavior=static_behavior,
+            price_class=aws_cloudfront.PriceClass.PRICE_CLASS_100,
             additional_behaviors={
                 'about.html': scoring_behavior,
                 'annotate*': scoring_behavior,
@@ -168,7 +238,7 @@ class PlanScoreScoring(cdk.Stack):
             },
         )
 
-        if formation_info.website_domains and formation_info.website_cert:
+        if formation_info.website_domain and formation_info.website_cert:
             distribution = aws_cloudfront.Distribution(
                 self,
                 'Website',
@@ -177,10 +247,10 @@ class PlanScoreScoring(cdk.Stack):
                     'Website-SSL-Certificate',
                     formation_info.website_cert,
                 ),
-                domain_names=formation_info.website_domains,
+                domain_names=[formation_info.website_domain],
                 **distribution_kwargs,
             )
-            website_base = concat_strings('https://', formation_info.website_domains[0], '/')
+            website_base = concat_strings('https://', formation_info.website_domain, '/')
         else:
             distribution = aws_cloudfront.Distribution(
                 self,
@@ -256,7 +326,7 @@ class PlanScoreScoring(cdk.Stack):
 
         apigateway_role = aws_iam.Role(
             self,
-            f'API-Execution',
+            f'API-Gateway-Execution',
             assumed_by=aws_iam.ServicePrincipal('apigateway.amazonaws.com'),
         )
 
@@ -590,7 +660,7 @@ if __name__ == '__main__':
         raise ValueError('USAGE: cdk <command> -c formation_prefix=cf-development <stack>')
 
     assert formation_prefix.startswith('cf-')
-    formation_info = FormationInfo(formation_prefix, None, None, None, None, None, None)
+    formation_info = FormationInfo(formation_prefix, None, None, None, None, None, None, None, None)
 
     for _formation_info in FORMATIONS:
         if _formation_info.prefix == formation_prefix:
