@@ -152,7 +152,7 @@ def feature_geojson(ogr_feature, properties):
         ', "geometry": ', geometry_json, '}'))
 
 def iter_slices(property_dicts, length):
-    sorted_dicts = sorted(property_dicts, key=operator.itemgetter('GEOID'))
+    sorted_dicts = sorted(property_dicts, key=operator.itemgetter('GEOID20'))
     args = [iter(sorted_dicts)] * length
     
     for slice in itertools.zip_longest(*args):
@@ -195,7 +195,7 @@ def main():
     for slice in iter_slices(properties, MAX_FEATURE_COUNT):
         write_buffer(
             args.s3 and s3,
-            SLICE_KEY_FORMAT.format(directory=args.directory, geoid=slice[0]['GEOID']),
+            SLICE_KEY_FORMAT.format(directory=args.directory, geoid=slice[0]['GEOID20']),
             io.StringIO(json.dumps(slice)),
             '      ',
             )
