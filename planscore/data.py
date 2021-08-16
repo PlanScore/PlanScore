@@ -364,9 +364,9 @@ MODELS = [
     Model(State.CA, House.ushouse,      55,  True, VERSION, 'data/CA/002-tilesdir'), # b969229
     Model(State.CA, House.statesenate,  40,  True, VERSION, 'data/CA/002-tilesdir'), # b969229
     Model(State.CA, House.statehouse,   80,  True, VERSION, 'data/CA/002-tilesdir'), # b969229
-    Model(State.CO, House.ushouse,       7,  True, VERSION, 'data/CO/003-vest2020'), # 924e34c
-    Model(State.CO, House.statesenate,  35,  True, VERSION, 'data/CO/003-vest2020'), # 924e34c
-    Model(State.CO, House.statehouse,   65,  True, VERSION, 'data/CO/003-vest2020'), # 924e34c
+    Model(State.CO, House.ushouse,       7,  True, VERSION, 'data/CO/004-decennial'), # fe752f2
+    Model(State.CO, House.statesenate,  35,  True, VERSION, 'data/CO/004-decennial'), # fe752f2
+    Model(State.CO, House.statehouse,   65,  True, VERSION, 'data/CO/004-decennial'), # fe752f2
     Model(State.DE, House.ushouse,       1,  True, VERSION, 'data/DE/004-2021A'), # 3017cc8
     Model(State.DE, House.statesenate,  21,  True, VERSION, 'data/DE/004-2021A'), # 3017cc8
     Model(State.DE, House.statehouse,   41,  True, VERSION, 'data/DE/004-2021A'), # 3017cc8
@@ -453,9 +453,9 @@ MODELS = [
     Model(State.PA, House.ushouse,      18,  True, VERSION, 'data/PA/011-2021A'), # 2b48a6a
     Model(State.PA, House.statesenate,  50,  True, VERSION, 'data/PA/011-2021A'), # 2b48a6a
     Model(State.PA, House.statehouse,  203,  True, VERSION, 'data/PA/011-2021A'), # 2b48a6a
-    Model(State.RI, House.ushouse,       2,  True, VERSION, 'data/RI/007-decennial'), # fe752f2
-    Model(State.RI, House.statesenate,  38,  True, VERSION, 'data/RI/007-decennial'), # fe752f2
-    Model(State.RI, House.statehouse,   75,  True, VERSION, 'data/RI/007-decennial'), # fe752f2
+    Model(State.RI, House.ushouse,       2,  True, VERSION, 'data/RI/004-2021A'), # 3017cc8
+    Model(State.RI, House.statesenate,  38,  True, VERSION, 'data/RI/004-2021A'), # 3017cc8
+    Model(State.RI, House.statehouse,   75,  True, VERSION, 'data/RI/004-2021A'), # 3017cc8
     Model(State.SC, House.ushouse,       7,  True, VERSION, 'data/SC/002-2021A'), # 3017cc8
     Model(State.SC, House.statesenate,  46,  True, VERSION, 'data/SC/002-2021A'), # 3017cc8
     Model(State.SC, House.statehouse,  124,  True, VERSION, 'data/SC/002-2021A'), # 3017cc8
