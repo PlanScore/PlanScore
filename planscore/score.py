@@ -70,6 +70,12 @@ FIELD_NAMES = (
     # Census 2010 fields
     'Population 2010',
     
+    # Census 2020 fields
+    'Population 2020',
+    'Black Population 2020',
+    'Hispanic Population 2020',
+    'Asian Population 2020',
+    
     # Fields for new unified, district-level plans
     'US President 2016 - DEM', 'US President 2016 - REP',
     'US President 2020 - DEM', 'US President 2020 - REP',
