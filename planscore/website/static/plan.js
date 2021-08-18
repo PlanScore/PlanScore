@@ -45,7 +45,8 @@ const fieldToDisplayStr = {
 };
 
 const fieldSubstringToDisplayStr = {
-    'Black Citizen Voting-Age Population': 'Black Non-Hispanic CVAP',
+    'Black Citizen Voting-Age Population': 'Non-Hisp. Black CVAP',
+    'Asian Citizen Voting-Age Population': 'Non-Hisp. Asian CVAP',
     'Citizen Voting-Age Population': 'CVAP',
     'Population': 'Pop.',
 };
