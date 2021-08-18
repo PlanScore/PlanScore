@@ -683,15 +683,19 @@ function update_cvap2019_percentages(head, row)
         latin_index = head.indexOf('Hispanic Citizen Voting-Age Population 2019'),
         asian_index = head.indexOf('Asian Citizen Voting-Age Population 2019');
 
-    if(total_index >= 0 && black_index >= 0 && latin_index >= 0)
+    if(total_index >= 0 && black_index >= 0)
     {
         row[black_index] = nice_percent(row[black_index] / row[total_index]);
+    }
+
+    if(total_index >= 0 && latin_index >= 0)
+    {
         row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
     }
 
     if(total_index >= 0 && asian_index >= 0)
     {
-        row[asian_index] = nice_percent(row[asian_index] / row[asian_index]);
+        row[asian_index] = nice_percent(row[asian_index] / row[total_index]);
     }
 }
 
@@ -772,9 +776,9 @@ function plan_array(plan)
         update_acs2016_percentages(head_row, all_rows[j]);
         update_acs2018_percentages(head_row, all_rows[j]);
         update_acs2019_percentages(head_row, all_rows[j]);
-        //update_cvap2015_percentages(head_row, all_rows[j]);
-        //update_cvap2018_percentages(head_row, all_rows[j]);
-        //update_cvap2019_percentages(head_row, all_rows[j]);
+        update_cvap2015_percentages(head_row, all_rows[j]);
+        update_cvap2018_percentages(head_row, all_rows[j]);
+        update_cvap2019_percentages(head_row, all_rows[j]);
     }
     
     update_heading_titles(head_row);
