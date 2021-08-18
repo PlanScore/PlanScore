@@ -364,9 +364,9 @@ MODELS = [
     Model(State.CA, House.ushouse,      55,  True, VERSION, 'data/CA/002-tilesdir'), # b969229
     Model(State.CA, House.statesenate,  40,  True, VERSION, 'data/CA/002-tilesdir'), # b969229
     Model(State.CA, House.statehouse,   80,  True, VERSION, 'data/CA/002-tilesdir'), # b969229
-    Model(State.CO, House.ushouse,       7,  True, VERSION, 'data/CO/004-decennial'), # fe752f2
-    Model(State.CO, House.statesenate,  35,  True, VERSION, 'data/CO/004-decennial'), # fe752f2
-    Model(State.CO, House.statehouse,   65,  True, VERSION, 'data/CO/004-decennial'), # fe752f2
+    Model(State.CO, House.ushouse,       7,  True, VERSION, 'data/CO/005-decennial'), # 80b3847
+    Model(State.CO, House.statesenate,  35,  True, VERSION, 'data/CO/005-decennial'), # 80b3847
+    Model(State.CO, House.statehouse,   65,  True, VERSION, 'data/CO/005-decennial'), # 80b3847
     Model(State.DE, House.ushouse,       1,  True, VERSION, 'data/DE/004-2021A'), # 3017cc8
     Model(State.DE, House.statesenate,  21,  True, VERSION, 'data/DE/004-2021A'), # 3017cc8
     Model(State.DE, House.statehouse,   41,  True, VERSION, 'data/DE/004-2021A'), # 3017cc8
