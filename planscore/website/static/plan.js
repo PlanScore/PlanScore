@@ -13,18 +13,20 @@ var FIELDS = [
     'Hispanic Population 2018',
     'Black Population 2019',
     'Hispanic Population 2019',
+    'Asian Population 2019',
     'Black Population 2020',
     'Hispanic Population 2020',
     'Asian Population 2020',
-    'Citizen Voting-Age Population 2015',
+    //'Citizen Voting-Age Population 2015',
     'Black Citizen Voting-Age Population 2015',
     'Hispanic Citizen Voting-Age Population 2015',
-    'Citizen Voting-Age Population 2018',
+    //'Citizen Voting-Age Population 2018',
     'Black Citizen Voting-Age Population 2018',
     'Hispanic Citizen Voting-Age Population 2018',
-    'Citizen Voting-Age Population 2019',
+    //'Citizen Voting-Age Population 2019',
     'Black Citizen Voting-Age Population 2019',
     'Hispanic Citizen Voting-Age Population 2019',
+    'Asian Citizen Voting-Age Population 2019',
     'Democratic Wins',
     'Democratic Votes',
     'Republican Votes',
@@ -43,7 +45,8 @@ const fieldToDisplayStr = {
 };
 
 const fieldSubstringToDisplayStr = {
-    'Black Citizen Voting-Age Population': 'Black Non-Hispanic CVAP',
+    'Black Citizen Voting-Age Population': 'Non-Hisp. Black CVAP',
+    'Asian Citizen Voting-Age Population': 'Non-Hisp. Asian CVAP',
     'Citizen Voting-Age Population': 'CVAP',
     'Population': 'Pop.',
 };
@@ -677,12 +680,22 @@ function update_cvap2019_percentages(head, row)
 {
     var total_index = head.indexOf('Citizen Voting-Age Population 2019'),
         black_index = head.indexOf('Black Citizen Voting-Age Population 2019'),
-        latin_index = head.indexOf('Hispanic Citizen Voting-Age Population 2019');
+        latin_index = head.indexOf('Hispanic Citizen Voting-Age Population 2019'),
+        asian_index = head.indexOf('Asian Citizen Voting-Age Population 2019');
 
-    if(total_index >= 0 && black_index >= 0 && latin_index >= 0)
+    if(total_index >= 0 && black_index >= 0)
     {
         row[black_index] = nice_percent(row[black_index] / row[total_index]);
+    }
+
+    if(total_index >= 0 && latin_index >= 0)
+    {
         row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
+    }
+
+    if(total_index >= 0 && asian_index >= 0)
+    {
+        row[asian_index] = nice_percent(row[asian_index] / row[total_index]);
     }
 }
 

@@ -49,8 +49,9 @@ FIELD_NAMES = (
     'Citizen Voting-Age Population 2018', 'Citizen Voting-Age Population 2018, Margin',
     
     # ACS 2019 fields
-    'Black Population 2019', 'Black Population 2019, Margin',
-    'Hispanic Population 2019', 'Hispanic Population 2019, Margin',
+    #'Black Population 2019', 'Black Population 2019, Margin',
+    #'Hispanic Population 2019', 'Hispanic Population 2019, Margin',
+    #'Asian Population 2019', 'Asian Population 2019, Margin',
     'Population 2019', 'Population 2019, Margin',
     'Voting-Age Population 2019', 'Voting-Age Population 2019, Margin',
     #'Education Population 2019', 'Education Population 2019, Margin',
@@ -67,14 +68,24 @@ FIELD_NAMES = (
     'Hispanic Citizen Voting-Age Population 2015',
     'Hispanic Citizen Voting-Age Population 2015, Error',
     
+    # CVAP 2019 fields
+    'Citizen Voting-Age Population 2019',
+    'Citizen Voting-Age Population 2019, Margin',
+    'Black Citizen Voting-Age Population 2019',
+    'Black Citizen Voting-Age Population 2019, Margin',
+    'Hispanic Citizen Voting-Age Population 2019',
+    'Hispanic Citizen Voting-Age Population 2019, Margin',
+    'Asian Citizen Voting-Age Population 2019',
+    'Asian Citizen Voting-Age Population 2019, Margin',
+    
     # Census 2010 fields
     'Population 2010',
     
     # Census 2020 fields
     'Population 2020',
-    'Black Population 2020',
-    'Hispanic Population 2020',
-    'Asian Population 2020',
+    #'Black Population 2020',
+    #'Hispanic Population 2020',
+    #'Asian Population 2020',
     
     # Fields for new unified, district-level plans
     'US President 2016 - DEM', 'US President 2016 - REP',

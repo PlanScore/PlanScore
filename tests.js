@@ -109,18 +109,20 @@ assert.deepEqual(plan.which_score_column_names(NC_multisim_index),
         'Hispanic Population 2018',
         'Black Population 2019',
         'Hispanic Population 2019',
+        'Asian Population 2019',
         'Black Population 2020',
         'Hispanic Population 2020',
         'Asian Population 2020',
-        'Citizen Voting-Age Population 2015',
+        //'Citizen Voting-Age Population 2015',
         'Black Citizen Voting-Age Population 2015',
         'Hispanic Citizen Voting-Age Population 2015',
-        'Citizen Voting-Age Population 2018',
+        //'Citizen Voting-Age Population 2018',
         'Black Citizen Voting-Age Population 2018',
         'Hispanic Citizen Voting-Age Population 2018',
-        'Citizen Voting-Age Population 2019',
+        //'Citizen Voting-Age Population 2019',
         'Black Citizen Voting-Age Population 2019',
         'Hispanic Citizen Voting-Age Population 2019',
+        'Asian Citizen Voting-Age Population 2019',
         'Democratic Wins',
         'Democratic Votes',
         'Republican Votes',
@@ -356,11 +358,11 @@ var head1 = ['Democratic Votes', 'Republican Votes'];
 plan.update_heading_titles(head1)
 assert.deepEqual(head1, ['Predicted Democratic Vote Share', 'Predicted Republican Vote Share']);
 
-var head2 = ['Citizen Voting-Age Population 2015',
+var head2 = ['Citizen Voting-Age Population 2015', 'Asian Citizen Voting-Age Population 2015',
     'Black Citizen Voting-Age Population 2015', 'Hispanic Citizen Voting-Age Population 2015'];
 plan.update_heading_titles(head2)
-assert.deepEqual(head2, ['CVAP 2015',
-    'Black Non-Hispanic CVAP 2015', 'Hispanic CVAP 2015']);
+assert.deepEqual(head2, ['CVAP 2015', 'Non-Hisp. Asian CVAP 2015',
+    'Non-Hisp. Black CVAP 2015', 'Hispanic CVAP 2015']);
 
 var head3 = ['US President 2016 - DEM', 'US President 2016 - REP'];
 plan.update_heading_titles(head3)
