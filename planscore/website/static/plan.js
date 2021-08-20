@@ -1,3 +1,5 @@
+const SHY_COLUMN = 'Hide this column';
+
 var FIELDS = [
     'Population 2010',
     'Population 2015',
@@ -23,7 +25,7 @@ var FIELDS = [
     //'Citizen Voting-Age Population 2018',
     'Black Citizen Voting-Age Population 2018',
     'Hispanic Citizen Voting-Age Population 2018',
-    //'Citizen Voting-Age Population 2019',
+    'Citizen Voting-Age Population 2019',
     'Black Citizen Voting-Age Population 2019',
     'Hispanic Citizen Voting-Age Population 2019',
     'Asian Citizen Voting-Age Population 2019',
@@ -561,6 +563,12 @@ function update_heading_titles(head)
                 head[i] = newTitle;
             }
         }
+        
+        // TODO: find a less hacky way to hide CVAP 2019 column while keeping percentage values
+        if(head[i] == 'CVAP 2019')
+        {
+            head[i] = SHY_COLUMN;
+        }
     });
 }
 
@@ -996,6 +1004,10 @@ function load_plan_score(url, message_section, score_section,
         for(var j = 0; j < table_array[0].length; j++)
         {
             const headingTitle = table_array[0][j];
+            if(headingTitle == SHY_COLUMN)
+            {
+                continue;
+            }
             tags = tags.concat([`<th ${maybeAlignLeft(j)} ${tooltip(headingTitle)}>`, headingTitle, '</th>']);
         }
         tags = tags.concat(['</tr>', '</thead>', '<tbody>']);
@@ -1004,6 +1016,11 @@ function load_plan_score(url, message_section, score_section,
             tags = tags.concat(['<tr>']);
             for(var j = 0; j < table_array[i].length; j++)
             {
+                const headingTitle = table_array[0][j];
+                if(headingTitle == SHY_COLUMN)
+                {
+                    continue;
+                }
                 if(typeof table_array[i][j] == 'number') {
                     value = nice_count(table_array[i][j]);
                 } else if(typeof table_array[i][j] == 'string') {
