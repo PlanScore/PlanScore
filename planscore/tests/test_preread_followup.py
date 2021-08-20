@@ -183,7 +183,7 @@ class TestPrereadFollowup (unittest.TestCase):
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 11, 'NC'
         self.assertEqual(preread_followup.guess_geometry_model('districts.shp').house, data.House.ushouse)
-        self.assertEqual(preread_followup.guess_geometry_model('districts.shp').key_prefix, 'data/NC/016-vest2020')
+        self.assertEqual(preread_followup.guess_geometry_model('districts.shp').key_prefix, 'data/NC/017-decennial')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 13, 'NC'
         self.assertEqual(preread_followup.guess_geometry_model('districts.shp').house, data.House.ushouse)
@@ -225,7 +225,7 @@ class TestPrereadFollowup (unittest.TestCase):
         self.assertEqual(preread_followup.guess_blockassign_model(null_plan2_path).key_prefix, 'data/XX/006-tilesdir')
 
         null_plan3_path = os.path.join(os.path.dirname(__file__), 'data', 'maryland-blocks2010.csv')
-        self.assertEqual(preread_followup.guess_blockassign_model(null_plan3_path).key_prefix, 'data/MD/005-tilesdir')
+        self.assertEqual(preread_followup.guess_blockassign_model(null_plan3_path).key_prefix, 'data/MD/006-decennial')
 
         null_plan4_path = os.path.join(os.path.dirname(__file__), 'data', 'connecticut-blocks2010.csv')
         with self.assertRaises(RuntimeError) as err:
