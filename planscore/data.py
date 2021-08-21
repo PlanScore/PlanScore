@@ -25,6 +25,7 @@ class State (enum.Enum):
     AZ = 'AZ'
     CA = 'CA'
     CO = 'CO'
+    CT = 'CT'
     DE = 'DE'
     FL = 'FL'
     GA = 'GA'
@@ -367,6 +368,9 @@ MODELS = [
     Model(State.CO, House.ushouse,       8,  True, VERSION, 'data/CO/008-decennial'), # 4ee6b60
     Model(State.CO, House.statesenate,  35,  True, VERSION, 'data/CO/008-decennial'), # 4ee6b60
     Model(State.CO, House.statehouse,   65,  True, VERSION, 'data/CO/008-decennial'), # 4ee6b60
+    Model(State.CT, House.ushouse,       5,  True, VERSION, 'data/CT/001-decennial'), # 6e1f2f9
+    Model(State.CT, House.statesenate,  36,  True, VERSION, 'data/CT/001-decennial'), # 6e1f2f9
+    Model(State.CT, House.statehouse,  151,  True, VERSION, 'data/CT/001-decennial'), # 6e1f2f9
     Model(State.DE, House.ushouse,       1,  True, VERSION, 'data/DE/005-decennial'), # 4ee6b60
     Model(State.DE, House.statesenate,  21,  True, VERSION, 'data/DE/005-decennial'), # 4ee6b60
     Model(State.DE, House.statehouse,   41,  True, VERSION, 'data/DE/005-decennial'), # 4ee6b60

@@ -227,10 +227,10 @@ class TestPrereadFollowup (unittest.TestCase):
         null_plan3_path = os.path.join(os.path.dirname(__file__), 'data', 'maryland-blocks2010.csv')
         self.assertEqual(preread_followup.guess_blockassign_model(null_plan3_path).key_prefix, 'data/MD/006-decennial')
 
-        null_plan4_path = os.path.join(os.path.dirname(__file__), 'data', 'connecticut-blocks2010.csv')
+        null_plan4_path = os.path.join(os.path.dirname(__file__), 'data', 'mississippi-blocks2010.csv')
         with self.assertRaises(RuntimeError) as err:
             preread_followup.guess_blockassign_model(null_plan4_path)
-            self.assertEqual(str(err), 'Connecticut is not a currently supported state')
+            self.assertEqual(str(err), 'Mississippi is not a currently supported state')
     
     def test_get_block_assignments_knowns(self):
         ''' Test that get_block_assignments() reads the right Assignment values
