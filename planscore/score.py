@@ -154,35 +154,19 @@ def calculate_EG(red_districts, blue_districts, vote_swing=0):
     
         By convention, result is positive for blue and negative for red.
     '''
-    election_votes, wasted_red, wasted_blue, red_wins, blue_wins = 0, 0, 0, 0, 0
-    red_districts, blue_districts = swing_vote(red_districts, blue_districts, vote_swing)
-    
-    # Calculate Efficiency Gap using swung vote
-    for (red_votes, blue_votes) in zip(red_districts, blue_districts):
-        district_votes = red_votes + blue_votes
-        election_votes += district_votes
-        win_threshold = district_votes / 2
-        
-        if red_votes > blue_votes:
-            red_wins += 1
-            wasted_red += red_votes - win_threshold # surplus
-            wasted_blue += blue_votes # loser
-        elif blue_votes > red_votes:
-            blue_wins += 1
-            wasted_blue += blue_votes - win_threshold # surplus
-            wasted_red += red_votes # loser
-        else:
-            pass # raise ValueError('Unlikely 50/50 split')
+    swung_red, swung_blue = swing_vote(red_districts, blue_districts, vote_swing)
 
-    # Return an efficiency gap
-    if election_votes == 0:
-        return
+    district_blue_wins = len([
+        1 for (red_votes, blue_votes) in zip(swung_red, swung_blue)
+        if blue_votes > red_votes
+    ])
+    statewide_seat_share = district_blue_wins / len(swung_blue)
     
-    ## TODO: remove print output unless running planscore-score-locally
-    #with open('EGs.csv', 'a') as file:
-    #    print(f'{wasted_red:.2f},{wasted_blue:.2f}', file=file)
+    district_raw_blue_votes = sum(swung_blue)
+    district_raw_total_votes = sum(swung_red) + district_raw_blue_votes
+    statewide_vote_share = district_raw_blue_votes / district_raw_total_votes
     
-    return (wasted_red - wasted_blue) / election_votes
+    return statewide_seat_share - 0.5 - 2 * (statewide_vote_share - 0.5)
 
 def calculate_MMD(red_districts, blue_districts):
     ''' Convert two lists of district vote counts into a Mean-Median score.
