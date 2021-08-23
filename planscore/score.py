@@ -3,13 +3,16 @@
 When all districts are added up and present on S3, performs complete scoring
 of district plan and uploads summary JSON file.
 '''
-import io, os, gzip, posixpath, json, statistics, copy, time, itertools
+import io, os, gzip, csv, posixpath, json, statistics, copy, time, itertools
 import math
 import argparse
 import urllib.request
 import pprint
 import boto3, botocore.exceptions
 from . import data, constants, matrix
+
+COLUMN_EG = 'eg_adj_avg'
+COLUMN_D2 = 'dec2_avg'
 
 FIELD_NAMES = (
     # Toy fields
@@ -148,6 +151,24 @@ def safe_positives(values):
         return None
     
     return len([n for n in safe_values if n > 0]) / len(values)
+
+def percentrank(column, house, value):
+    '''
+    '''
+    path = os.path.join(os.path.dirname(__file__), 'model', {
+        data.House.ushouse: 'bias_ushouse.csv.gz',
+        data.House.statehouse: 'bias_statehouse.csv.gz',
+        data.House.statesenate: 'bias_statesenate.csv.gz',
+    }[house])
+    
+    with gzip.open(path, 'rt') as file:
+        values = [
+            1 if abs(value) > abs(float(row[column])) else 0
+            for row in csv.DictReader(file)
+            if row['dec2_avg'] != ''
+        ]
+    
+    return sum(values) / len(values)
 
 def calculate_EG(red_districts, blue_districts, vote_swing=0):
     ''' Convert two lists of district vote counts into an EG score.
@@ -523,15 +544,19 @@ def calculate_district_biases(upload):
         'Mean-Median': safe_mean(MMDs),
         'Mean-Median SD': safe_stdev(MMDs),
         'Mean-Median Positives': safe_positives(MMDs),
+        #'Mean-Median Percentrank': percentrank(COLUMN_MMD, upload.model.house, safe_mean(MMDs)),
         'Partisan Bias': safe_mean(PBs),
         'Partisan Bias SD': safe_stdev(PBs),
         'Partisan Bias Positives': safe_positives(PBs),
+        #'Partisan Bias Percentrank': percentrank(COLUMN_PB, upload.model.house, safe_mean(PBs)),
         'Declination': safe_mean(D2s),
         'Declination SD': safe_stdev(D2s),
         'Declination Positives': safe_positives(D2s),
+        'Declination Percentrank': percentrank(COLUMN_D2, upload.model.house, safe_mean(D2s)),
         'Efficiency Gap': safe_mean(EGs[0]),
         'Efficiency Gap SD': safe_stdev(EGs[0]),
         'Efficiency Gap Positives': safe_positives(EGs[0]),
+        'Efficiency Gap Percentrank': percentrank(COLUMN_EG, upload.model.house, safe_mean(EGs[0])),
     }
     
     for swing in (1, 2, 3, 4, 5):

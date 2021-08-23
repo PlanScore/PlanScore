@@ -83,6 +83,45 @@ class TestScore (unittest.TestCase):
 
         l4 = [-1, 1, 1, None]
         self.assertEqual(score.safe_positives(l4), .5)
+    
+    def test_percentrank(self):
+        ''' Percent rank is correctly calculated by chamber
+        '''
+        # https://planscore.campaignlegal.org/texas/#!1994-plan-ushouse-eg
+        self.assertAlmostEqual(score.percentrank(score.COLUMN_EG, data.House.ushouse, .19), 0.9872727)
+        
+        # https://planscore.campaignlegal.org/texas/#!1994-plan-statehouse-eg
+        self.assertAlmostEqual(score.percentrank(score.COLUMN_EG, data.House.statehouse, .07), 0.7261146)
+        
+        # https://planscore.campaignlegal.org/texas/#!1994-plan-statesenate-eg
+        self.assertAlmostEqual(score.percentrank(score.COLUMN_EG, data.House.statesenate, -.03), 0.3237569)
+        
+        # https://planscore.campaignlegal.org/north_carolina/#!2012-plan-ushouse-eg
+        self.assertAlmostEqual(score.percentrank(score.COLUMN_EG, data.House.ushouse, -.20), 0.9927273)
+        
+        # https://planscore.campaignlegal.org/north_carolina/#!2012-plan-statehouse-eg
+        self.assertAlmostEqual(score.percentrank(score.COLUMN_EG, data.House.statehouse, -.10), 0.8811040)
+        
+        # https://planscore.campaignlegal.org/north_carolina/#!2012-plan-statesenate-eg
+        self.assertAlmostEqual(score.percentrank(score.COLUMN_EG, data.House.statesenate, -.16), 0.9823204)
+
+        # https://planscore.campaignlegal.org/georgia/#!1972-plan-ushouse-d2
+        self.assertAlmostEqual(score.percentrank(score.COLUMN_D2, data.House.ushouse, .51), 0.9090909)
+        
+        # https://planscore.campaignlegal.org/georgia/#!1972-plan-statehouse-d2
+        self.assertAlmostEqual(score.percentrank(score.COLUMN_D2, data.House.statehouse, 1.07), 0.9915074)
+        
+        # https://planscore.campaignlegal.org/georgia/#!1972-plan-statesenate-d2
+        self.assertAlmostEqual(score.percentrank(score.COLUMN_D2, data.House.statesenate, 1.04), 1.)
+        
+        # https://planscore.campaignlegal.org/north_carolina/#!2016-plan-ushouse-d2
+        self.assertAlmostEqual(score.percentrank(score.COLUMN_D2, data.House.ushouse, -.69), 0.9818182)
+        
+        # https://planscore.campaignlegal.org/north_carolina/#!2016-plan-statehouse-d2
+        self.assertAlmostEqual(score.percentrank(score.COLUMN_D2, data.House.statehouse, -.59), 0.8832272)
+        
+        # https://planscore.campaignlegal.org/north_carolina/#!2016-plan-statesenate-d2
+        self.assertAlmostEqual(score.percentrank(score.COLUMN_D2, data.House.statesenate, -.77), 0.9657459)
 
     def test_calculate_EG_fair(self):
         ''' Efficiency gap can be correctly calculated for a fair election
