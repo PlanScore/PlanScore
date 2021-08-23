@@ -52,6 +52,13 @@ const fieldSubstringToDisplayStr = {
     'Citizen Voting-Age Population': 'CVAP',
     'Population': 'Pop.',
 };
+
+const houseNames = {
+    'ushouse': 'U.S. House',
+    'statesenate': 'State Senate',
+    'statehouse': 'State House'
+};
+
 // Keep track of substring renames for adding tooltips
 const renamedHeadingToOrigField = new Map();
 
@@ -268,7 +275,24 @@ function show_efficiency_gap_score(plan, score_EG)
 
             clear_element(node);
             
-            if(typeof plan.summary['Efficiency Gap Positives'] === 'number') {
+            if(typeof plan.summary['Efficiency Gap Percentrank'] === 'number') {
+                var percentrank = plan.summary['Efficiency Gap Percentrank'],
+                    house = houseNames[plan.model.house],
+                    positives = (gap < 0
+                    ? (1 - plan.summary['Efficiency Gap Positives'])
+                    : plan.summary['Efficiency Gap Positives']);
+            
+                node.innerHTML = [
+                    'Votes for', win_party, 'candidates are expected to be inefficient at a rate',
+                    gap_amount, 'lower than votes for', lose_party, 'candidates.',
+                    'This plan is more skewed than', nice_round_percent(percentrank),
+                    'of the enacted', house, 'plans we have analyzed nationwide.',
+                    'The expected gap favors', win_partisans,
+                    'in', nice_round_percent(positives), 'of predicted scenarios.',
+                    '<a href="' + window.eg_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
+                    ].join(' ');
+
+            } else if(typeof plan.summary['Efficiency Gap Positives'] === 'number') {
                 var positives = (gap < 0
                     ? (1 - plan.summary['Efficiency Gap Positives'])
                     : plan.summary['Efficiency Gap Positives']);
@@ -339,7 +363,26 @@ function show_declination2_score(plan, score_DEC2)
 
             clear_element(node);
             
-            if(typeof plan.summary['Declination Positives'] === 'number')
+            if(typeof plan.summary['Declination Percentrank'] === 'number') {
+                var percentrank = plan.summary['Declination Percentrank'],
+                    house = houseNames[plan.model.house],
+                    positives = (declination < 0
+                    ? (1 - plan.summary['Declination Positives'])
+                    : plan.summary['Declination Positives']);
+            
+                node.innerHTML = [
+                    'The', lose_partisans+"’", 'mean vote share in districts they won was',
+                    nice_percent(Math.abs(dec2_difference)), 'higher than the', win_partisans+"’",
+                    'mean vote share in districts they won.',
+                    'This plan is more skewed than', nice_round_percent(percentrank),
+                    'of the enacted', house, 'plans we have analyzed nationwide.',
+                    'This, along with the relative fraction of seats won by each party,',
+                    'leads to a declination that favors Republicans in',
+                    nice_round_percent(positives), 'of predicted scenarios.',
+                    '<a href="' + window.d2_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
+                    ].join(' ');
+
+            } else if(typeof plan.summary['Declination Positives'] === 'number')
             {
                 var positives = (declination < 0
                     ? (1 - plan.summary['Declination Positives'])
@@ -379,7 +422,24 @@ function show_partisan_bias_score(plan, score_PB)
 
             clear_element(node);
             
-            if(typeof plan.summary['Partisan Bias Positives'] === 'number') {
+            if(typeof plan.summary['Partisan Bias Percentrank'] === 'number') {
+                var percentrank = plan.summary['Partisan Bias Percentrank'],
+                    house = houseNames[plan.model.house],
+                    positives = (bias < 0
+                    ? (1 - plan.summary['Partisan Bias Positives'])
+                    : plan.summary['Partisan Bias Positives']);
+            
+                node.innerHTML = [
+                    win_party, 'would be expected to win', bias_amount,
+                    'extra seats in a hypothetical, perfectly tied election.',
+                    'This plan is more skewed than', nice_round_percent(percentrank),
+                    'of the enacted', house, 'plans we have analyzed nationwide.',
+                    'The expected bias favors', win_partisans,
+                    'in', nice_round_percent(positives), 'of predicted scenarios.',
+                    '<a href="' + window.pb_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
+                    ].join(' ');
+
+            } else if(typeof plan.summary['Partisan Bias Positives'] === 'number') {
                 var positives = (bias < 0
                     ? (1 - plan.summary['Partisan Bias Positives'])
                     : plan.summary['Partisan Bias Positives']);
@@ -441,7 +501,24 @@ function show_mean_median_score(plan, score_MM)
 
             clear_element(node);
             
-            if(typeof plan.summary['Mean-Median Positives'] === 'number') {
+            if(typeof plan.summary['Mean-Median Percentrank'] === 'number') {
+                var percentrank = plan.summary['Mean-Median Percentrank'],
+                    house = houseNames[plan.model.house],
+                    positives = (diff < 0
+                    ? (1 - plan.summary['Mean-Median Positives'])
+                    : plan.summary['Mean-Median Positives']);
+            
+                node.innerHTML = [
+                    'The median', win_party, 'vote share is expected to be',
+                    diff_amount, 'higher than the mean', win_party, 'vote share.',
+                    'This plan is more skewed than', nice_round_percent(percentrank),
+                    'of the enacted', house, 'plans we have analyzed nationwide.',
+                    'The expected difference favors', win_partisans,
+                    'in', nice_round_percent(positives), 'of predicted scenarios.',
+                    '<a href="' + window.mm_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
+                    ].join(' ');
+
+            } else if(typeof plan.summary['Mean-Median Positives'] === 'number') {
                 var positives = (diff < 0
                     ? (1 - plan.summary['Mean-Median Positives'])
                     : plan.summary['Mean-Median Positives']);
@@ -873,13 +950,11 @@ function get_plan_type_text(plan)
         'MT': 'Montana'
         };
     
-    var plan_type_text = ['Plan uploaded'], houses = {'ushouse': 'U.S. House',
-        'statesenate': 'State Senate', 'statehouse': 'State House'};
-
+    var plan_type_text = ['Plan uploaded'];
     
     if(plan['model'])
     {
-        plan_type_text = `${states[plan.model.state]} ${houses[plan.model.house]} plan`;
+        plan_type_text = `${states[plan.model.state]} ${houseNames[plan.model.house]} plan`;
     }
 
     return plan_type_text; 
