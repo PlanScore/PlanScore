@@ -13,6 +13,8 @@ from . import data, constants, matrix
 
 COLUMN_EG = 'eg_adj_avg'
 COLUMN_D2 = 'dec2_avg'
+COLUMN_PB = 'bias_avg'
+COLUMN_MMD = 'mmd_avg'
 
 FIELD_NAMES = (
     # Toy fields
@@ -165,7 +167,7 @@ def percentrank(column, house, value):
         values = [
             1 if abs(value) > abs(float(row[column])) else 0
             for row in csv.DictReader(file)
-            if row['dec2_avg'] != ''
+            if row[column] != ''
         ]
     
     return sum(values) / len(values)
@@ -544,11 +546,11 @@ def calculate_district_biases(upload):
         'Mean-Median': safe_mean(MMDs),
         'Mean-Median SD': safe_stdev(MMDs),
         'Mean-Median Positives': safe_positives(MMDs),
-        #'Mean-Median Percentrank': percentrank(COLUMN_MMD, upload.model.house, safe_mean(MMDs)),
+        'Mean-Median Percentrank': percentrank(COLUMN_MMD, upload.model.house, safe_mean(MMDs)),
         'Partisan Bias': safe_mean(PBs),
         'Partisan Bias SD': safe_stdev(PBs),
         'Partisan Bias Positives': safe_positives(PBs),
-        #'Partisan Bias Percentrank': percentrank(COLUMN_PB, upload.model.house, safe_mean(PBs)),
+        'Partisan Bias Percentrank': percentrank(COLUMN_PB, upload.model.house, safe_mean(PBs)),
         'Declination': safe_mean(D2s),
         'Declination SD': safe_stdev(D2s),
         'Declination Positives': safe_positives(D2s),
