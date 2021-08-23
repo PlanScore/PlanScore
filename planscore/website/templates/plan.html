@@ -178,6 +178,18 @@
     </div>
     <a href="#" id="text-link">Download raw data as tab-delimited text</a>.
     </section>
+    <p><small>
+        <sup>*</sup>
+            Scenarios are part of
+            <a id="plan-model-footnote" href="{{ url_for('get_models') }}">the predictive model used to score this plan</a>.
+        <br>
+        <sup>†</sup>
+            Enacted <a href="{{planscore_website_base}}/#!2020-ushouse">U.S. House</a>,
+            <a href="{{planscore_website_base}}/#!2020-statehouse">State House</a>,
+            and <a href="{{planscore_website_base}}/#!2020-statesenate">State Senate</a>
+            plan metrics are featured in our
+            <a href="{{planscore_website_base}}/about/historical-data/">historical dataset</a>.
+    </small></p>
 	<script language="javascript">
 	    var LEAN_BLUE_PATTERN_URL = "{{ url_for('static', filename='lean-blue-pattern.png') }}",
 	        LEAN_RED_PATTERN_URL = "{{ url_for('static', filename='lean-red-pattern.png') }}",
@@ -212,6 +224,7 @@
 	        document.getElementById('plan-score'),
 	        document.getElementById('plan-description'),
 	        document.getElementById('plan-model-link'),
+	        document.getElementById('plan-model-footnote'),
 	        model_url_pattern,
 	        document.getElementById('districts'),
 	        document.getElementById('score-efficiency-gap'),

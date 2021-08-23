@@ -285,10 +285,10 @@ function show_efficiency_gap_score(plan, score_EG)
                 node.innerHTML = [
                     'Votes for', win_party, 'candidates are expected to be inefficient at a rate',
                     gap_amount, 'lower than votes for', lose_party, 'candidates.',
-                    'This plan is more skewed than', nice_round_percent(percentrank),
-                    'of the enacted', house, 'plans we have analyzed nationwide.',
                     'The expected gap favors', win_partisans,
-                    'in', nice_round_percent(positives), 'of predicted scenarios.',
+                    'in', nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
+                    'This plan is more skewed than', nice_round_percent(percentrank),
+                    'of the enacted', house, 'plans we have analyzed nationwide.<sup>†</sup>',
                     '<a href="' + window.eg_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                     ].join(' ');
 
@@ -301,7 +301,7 @@ function show_efficiency_gap_score(plan, score_EG)
                     'Votes for', win_party, 'candidates are expected to be inefficient at a rate',
                     gap_amount, 'lower than votes for', lose_party, 'candidates.',
                     'The expected gap favors', win_partisans,
-                    'in', nice_round_percent(positives), 'of predicted scenarios.',
+                    'in', nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
                     '<a href="' + window.eg_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                     ].join(' ');
 
@@ -374,11 +374,11 @@ function show_declination2_score(plan, score_DEC2)
                     'The', lose_partisans+"’", 'mean vote share in districts they won was',
                     nice_percent(Math.abs(dec2_difference)), 'higher than the', win_partisans+"’",
                     'mean vote share in districts they won.',
-                    'This plan is more skewed than', nice_round_percent(percentrank),
-                    'of the enacted', house, 'plans we have analyzed nationwide.',
-                    'This, along with the relative fraction of seats won by each party,',
+                    'Along with the relative fraction of seats won by each party this',
                     'leads to a declination that favors Republicans in',
-                    nice_round_percent(positives), 'of predicted scenarios.',
+                    nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
+                    'This plan is more skewed than', nice_round_percent(percentrank),
+                    'of the enacted', house, 'plans we have analyzed nationwide.<sup>†</sup>',
                     '<a href="' + window.d2_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                     ].join(' ');
 
@@ -392,9 +392,9 @@ function show_declination2_score(plan, score_DEC2)
                     'The', lose_partisans+"’", 'mean vote share in districts they won was',
                     nice_percent(Math.abs(dec2_difference)), 'higher than the', win_partisans+"’",
                     'mean vote share in districts they won.',
-                    'This, along with the relative fraction of seats won by each party,',
+                    'Along with the relative fraction of seats won by each party this',
                     'leads to a declination that favors Republicans in',
-                    nice_round_percent(positives), 'of predicted scenarios.',
+                    nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
                     '<a href="' + window.d2_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                     ].join(' ');
             }
@@ -432,10 +432,10 @@ function show_partisan_bias_score(plan, score_PB)
                 node.innerHTML = [
                     win_party, 'would be expected to win', bias_amount,
                     'extra seats in a hypothetical, perfectly tied election.',
-                    'This plan is more skewed than', nice_round_percent(percentrank),
-                    'of the enacted', house, 'plans we have analyzed nationwide.',
                     'The expected bias favors', win_partisans,
-                    'in', nice_round_percent(positives), 'of predicted scenarios.',
+                    'in', nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
+                    'This plan is more skewed than', nice_round_percent(percentrank),
+                    'of the enacted', house, 'plans we have analyzed nationwide.<sup>†</sup>',
                     '<a href="' + window.pb_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                     ].join(' ');
 
@@ -448,7 +448,7 @@ function show_partisan_bias_score(plan, score_PB)
                     win_party, 'would be expected to win', bias_amount,
                     'extra seats in a hypothetical, perfectly tied election.',
                     'The expected bias favors', win_partisans,
-                    'in', nice_round_percent(positives), 'of predicted scenarios.',
+                    'in', nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
                     '<a href="' + window.pb_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                     ].join(' ');
 
@@ -511,10 +511,10 @@ function show_mean_median_score(plan, score_MM)
                 node.innerHTML = [
                     'The median', win_party, 'vote share is expected to be',
                     diff_amount, 'higher than the mean', win_party, 'vote share.',
-                    'This plan is more skewed than', nice_round_percent(percentrank),
-                    'of the enacted', house, 'plans we have analyzed nationwide.',
                     'The expected difference favors', win_partisans,
-                    'in', nice_round_percent(positives), 'of predicted scenarios.',
+                    'in', nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
+                    'This plan is more skewed than', nice_round_percent(percentrank),
+                    'of the enacted', house, 'plans we have analyzed nationwide.<sup>†</sup>',
                     '<a href="' + window.mm_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                     ].join(' ');
 
@@ -527,7 +527,7 @@ function show_mean_median_score(plan, score_MM)
                     'The median', win_party, 'vote share is expected to be',
                     diff_amount, 'higher than the mean', win_party, 'vote share.',
                     'The expected difference favors', win_partisans,
-                    'in', nice_round_percent(positives), 'of predicted scenarios.',
+                    'in', nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
                     '<a href="' + window.mm_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                     ].join(' ');
 
@@ -991,12 +991,12 @@ function plan_has_incumbency(plan)
 }
 
 function start_load_plan_polling(url, message_section, score_section,
-    description_el, model_link, model_url_pattern, table, score_EG, score_PB,
+    description_el, model_link, model_footnote, model_url_pattern, table, score_EG, score_PB,
     score_MM, score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div, seat_count)
 {
     const make_xhr = () => {
         load_plan_score(url, message_section, score_section,
-            description_el, model_link, model_url_pattern, table, score_EG, score_PB,
+            description_el, model_link, model_footnote, model_url_pattern, table, score_EG, score_PB,
             score_MM, score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
             xhr_retry_callback);
     };
@@ -1012,7 +1012,7 @@ function start_load_plan_polling(url, message_section, score_section,
 }
 
 function load_plan_score(url, message_section, score_section,
-    description_el, model_link, model_url_pattern, table, score_EG, score_PB,
+    description_el, model_link, model_footnote, model_url_pattern, table, score_EG, score_PB,
     score_MM, score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
     xhr_retry_callback)
 {
@@ -1054,9 +1054,11 @@ function load_plan_score(url, message_section, score_section,
         
         if(plan.model && (plan.model.version == '2017' || !plan.model.version)) {
             model_link.href = model_url_pattern.replace('data/2020', plan.model.key_prefix);
+            model_footnote.href = model_url_pattern.replace('data/2020', plan.model.key_prefix);
         
         } else if(plan.model && plan.model.version) {
             model_link.href = model_url_pattern.replace('2020', plan.model.version);
+            model_footnote.href = model_url_pattern.replace('2020', plan.model.version);
         }
 
         // Build the results table
