@@ -234,6 +234,13 @@ def guess_geometry_model(path):
     if not ds:
         raise RuntimeError('Could not open file to guess U.S. state')
     
+    def _simplify_coarsely(g):
+        if g is None:
+            return None
+        xmin, xmax, ymin, ymax = g.GetEnvelope()
+        simple_g = g.SimplifyPreserveTopology(math.hypot(xmax-xmin, ymax-ymin) / 10)
+        return simple_g
+    
     def _union_safely(a, b):
         if a is None and b is None:
             return None
@@ -245,7 +252,7 @@ def guess_geometry_model(path):
             return a.Union(b)
     
     features = list(ds.GetLayer(0))
-    geometries = [feature.GetGeometryRef() for feature in features]
+    geometries = [_simplify_coarsely(feature.GetGeometryRef()) for feature in features]
     footprint = functools.reduce(_union_safely, geometries)
     
     if footprint.GetSpatialReference():

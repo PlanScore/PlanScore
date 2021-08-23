@@ -174,6 +174,7 @@ class TestPrereadFollowup (unittest.TestCase):
         ogr_feature = unittest.mock.Mock()
         ogr_geometry = ogr_feature.GetGeometryRef.return_value
         ogr_geometry.Intersection.return_value.Area.return_value = 0
+        ogr_geometry.GetEnvelope.return_value = (0, 1, 0, 1)
         feature_iter = osgeo_ogr.Open.return_value.GetLayer.return_value.__iter__
         state_field = ogr_feature.GetField
 
