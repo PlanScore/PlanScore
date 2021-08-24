@@ -216,6 +216,12 @@ class TestPrereadFollowup (unittest.TestCase):
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-missing-geometries.geojson')
         self.assertEqual(preread_followup.guess_geometry_model(null_plan_path).key_prefix, 'data/XX/006-tilesdir')
     
+    def test_guess_geometry_model_complex_geometries(self):
+        ''' Test that guess_geometry_model() guesses the correct U.S. state and house.
+        '''
+        null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'mi_cong_2012_to_2021.shp')
+        self.assertEqual(preread_followup.guess_geometry_model(null_plan_path).key_prefix[:8], 'data/MI/')
+    
     def test_guess_blockassign_model_knowns(self):
         ''' Test that guess_blockassign_model() guesses the correct U.S. state and house.
         '''
