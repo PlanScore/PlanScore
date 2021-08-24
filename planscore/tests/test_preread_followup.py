@@ -140,7 +140,7 @@ class TestPrereadFollowup (unittest.TestCase):
         ''' Test that guess_geometry_model() guesses the correct U.S. state and house.
         '''
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
-        self.assertEqual(preread_followup.guess_geometry_model(null_plan_path).key_prefix, 'data/XX/006-tilesdir')
+        self.assertEqual(preread_followup.guess_geometry_model(null_plan_path).key_prefix[:8], 'data/XX/')
 
         nc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'NC-plan-1-992.geojson')
         self.assertEqual(preread_followup.guess_geometry_model(nc_plan_path).house, data.House.ushouse)
@@ -174,16 +174,17 @@ class TestPrereadFollowup (unittest.TestCase):
         ogr_feature = unittest.mock.Mock()
         ogr_geometry = ogr_feature.GetGeometryRef.return_value
         ogr_geometry.Intersection.return_value.Area.return_value = 0
+        ogr_geometry.GetEnvelope.return_value = (0, 1, 0, 1)
         feature_iter = osgeo_ogr.Open.return_value.GetLayer.return_value.__iter__
         state_field = ogr_feature.GetField
 
         # Real tests
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 2, 'XX'
-        self.assertEqual(preread_followup.guess_geometry_model('districts.shp').key_prefix, 'data/XX/006-tilesdir')
+        self.assertEqual(preread_followup.guess_geometry_model('districts.shp').key_prefix[:8], 'data/XX/')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 11, 'NC'
         self.assertEqual(preread_followup.guess_geometry_model('districts.shp').house, data.House.ushouse)
-        self.assertEqual(preread_followup.guess_geometry_model('districts.shp').key_prefix, 'data/NC/017-decennial')
+        self.assertEqual(preread_followup.guess_geometry_model('districts.shp').key_prefix[:8], 'data/NC/')
 
         feature_iter.return_value, state_field.return_value = [ogr_feature] * 13, 'NC'
         self.assertEqual(preread_followup.guess_geometry_model('districts.shp').house, data.House.ushouse)
@@ -213,19 +214,28 @@ class TestPrereadFollowup (unittest.TestCase):
         ''' Test that guess_geometry_model() guesses the correct U.S. state and house.
         '''
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-missing-geometries.geojson')
-        self.assertEqual(preread_followup.guess_geometry_model(null_plan_path).key_prefix, 'data/XX/006-tilesdir')
+        self.assertEqual(preread_followup.guess_geometry_model(null_plan_path).key_prefix[:8], 'data/XX/')
+    
+    def test_guess_geometry_model_complex_geometries(self):
+        ''' Test that guess_geometry_model() guesses the correct U.S. state and house.
+        '''
+        plan_path = os.path.join(os.path.dirname(__file__), 'data', 'Wisconsin_State_Assembly_Districts__2012_.shp')
+        self.assertEqual(preread_followup.guess_geometry_model(plan_path).key_prefix[:8], 'data/WI/')
+
+        plan_path = os.path.join(os.path.dirname(__file__), 'data', 'mi_cong_2012_to_2021.shp')
+        self.assertEqual(preread_followup.guess_geometry_model(plan_path).key_prefix[:8], 'data/MI/')
     
     def test_guess_blockassign_model_knowns(self):
         ''' Test that guess_blockassign_model() guesses the correct U.S. state and house.
         '''
         null_plan1_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.txt')
-        self.assertEqual(preread_followup.guess_blockassign_model(null_plan1_path).key_prefix, 'data/XX/006-tilesdir')
+        self.assertEqual(preread_followup.guess_blockassign_model(null_plan1_path).key_prefix[:8], 'data/XX/')
 
         null_plan2_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.zip')
-        self.assertEqual(preread_followup.guess_blockassign_model(null_plan2_path).key_prefix, 'data/XX/006-tilesdir')
+        self.assertEqual(preread_followup.guess_blockassign_model(null_plan2_path).key_prefix[:8], 'data/XX/')
 
         null_plan3_path = os.path.join(os.path.dirname(__file__), 'data', 'maryland-blocks2010.csv')
-        self.assertEqual(preread_followup.guess_blockassign_model(null_plan3_path).key_prefix, 'data/MD/006-decennial')
+        self.assertEqual(preread_followup.guess_blockassign_model(null_plan3_path).key_prefix[:8], 'data/MD/')
 
         null_plan4_path = os.path.join(os.path.dirname(__file__), 'data', 'mississippi-blocks2010.csv')
         with self.assertRaises(RuntimeError) as err:

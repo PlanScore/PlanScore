@@ -234,6 +234,17 @@ def guess_geometry_model(path):
     if not ds:
         raise RuntimeError('Could not open file to guess U.S. state')
     
+    def _simplify_coarsely(g):
+        if g is None:
+            return None
+        xmin, xmax, ymin, ymax = g.GetEnvelope()
+        size = math.hypot(xmax-xmin, ymax-ymin)
+        simple_g = g.SimplifyPreserveTopology(size / 10)
+        if not simple_g.IsValid():
+            # Buffer by .001% to inflate away any validity problems
+            simple_g = g.Buffer(size * .00001)
+        return simple_g
+    
     def _union_safely(a, b):
         if a is None and b is None:
             return None
@@ -245,12 +256,16 @@ def guess_geometry_model(path):
             return a.Union(b)
     
     features = list(ds.GetLayer(0))
-    geometries = [feature.GetGeometryRef() for feature in features]
+    geometries = [_simplify_coarsely(feature.GetGeometryRef()) for feature in features]
     footprint = functools.reduce(_union_safely, geometries)
     
     if footprint.GetSpatialReference():
         footprint.TransformTo(prepare_state.EPSG4326)
     
+    if not footprint.IsValid():
+        # Buffer by ~3in to inflate away any validity problems
+        footprint = footprint.Buffer(.00001)
+
     states_ds = osgeo.ogr.Open(states_path)
     states_layer = states_ds.GetLayer(0)
     states_layer.SetSpatialFilter(footprint)
