@@ -238,7 +238,11 @@ def guess_geometry_model(path):
         if g is None:
             return None
         xmin, xmax, ymin, ymax = g.GetEnvelope()
-        simple_g = g.SimplifyPreserveTopology(math.hypot(xmax-xmin, ymax-ymin) / 10)
+        size = math.hypot(xmax-xmin, ymax-ymin)
+        simple_g = g.SimplifyPreserveTopology(size / 10)
+        if not simple_g.IsValid():
+            # Buffer by .001% to inflate away any validity problems
+            simple_g = g.Buffer(size * .00001)
         return simple_g
     
     def _union_safely(a, b):
@@ -258,6 +262,10 @@ def guess_geometry_model(path):
     if footprint.GetSpatialReference():
         footprint.TransformTo(prepare_state.EPSG4326)
     
+    if not footprint.IsValid():
+        # Buffer by ~3in to inflate away any validity problems
+        footprint = footprint.Buffer(.00001)
+
     states_ds = osgeo.ogr.Open(states_path)
     states_layer = states_ds.GetLayer(0)
     states_layer.SetSpatialFilter(footprint)
