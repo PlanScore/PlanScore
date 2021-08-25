@@ -98,6 +98,10 @@ def score_district(district_geom, precincts, tile_geom):
     if district_geom.Disjoint(tile_geom):
         return totals
     
+    if not district_geom.IsValid():
+        # Buffer by ~3in to inflate away any validity problems
+        district_geom = district_geom.Buffer(.00001)
+
     partial_district_geom = district_geom.Intersection(tile_geom)
 
     for precinct_feat in precincts:
