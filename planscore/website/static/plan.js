@@ -624,21 +624,25 @@ function show_metrics_table(plan, metrics_table)
     
     var eg_summary_name = which_score_summary_name(plan),
         eg_value = plan.summary[eg_summary_name],
+        eg_win_party = (eg_value < 0 ? 'Republican' : 'Democratic'),
         eg_positives = (eg_value < 0
             ? (1 - plan.summary['Efficiency Gap Positives'])
             : plan.summary['Efficiency Gap Positives']),
         eg_percentrank = plan.summary['Efficiency Gap Percentrank'],
         dec2_value = plan.summary['Declination'],
+        dec2_win_party = (dec2_value < 0 ? 'Republican' : 'Democratic'),
         dec2_positives = (dec2_value < 0
             ? (1 - plan.summary['Declination Positives'])
             : plan.summary['Declination Positives']),
         dec2_percentrank = plan.summary['Declination Percentrank'],
         pb_value = plan.summary['Partisan Bias'],
+        pb_win_party = (pb_value < 0 ? 'Republican' : 'Democratic'),
         pb_positives = (pb_value < 0
             ? (1 - plan.summary['Partisan Bias Positives'])
             : plan.summary['Partisan Bias Positives']),
         pb_percentrank = plan.summary['Partisan Bias Percentrank'],
         mmd_value = plan.summary['Mean-Median'],
+        mmd_win_party = (mmd_value < 0 ? 'Republican' : 'Democratic'),
         mmd_positives = (mmd_value < 0
             ? (1 - plan.summary['Mean-Median Positives'])
             : plan.summary['Mean-Median Positives']),
@@ -649,36 +653,41 @@ function show_metrics_table(plan, metrics_table)
             <tr>
                 <th>Metric</th>
                 <th>Value</th>
-                <th>Favors Winning Party in<br>this % of Scenarios<sup>*</sup></th>
-                <th>More Biased than<br>this % Historical Plans<sup>†</sup></th>
-                <th>More Pro-Winner than<br>this % Historical Plans<sup>†</sup></th>
+                <th>Winning Party</th>
+                <th>Favors Winning Party in this % of Scenarios<sup>*</sup></th>
+                <th>More Biased than this % Historical Plans<sup>†</sup></th>
+                <th>More Pro-Winning Party than this % Historical Plans<sup>†</sup></th>
             </tr>
             </thead>
             <tbody>
             <tr>
                 <th>Efficiency Gap</th>
-                <td>${nice_percent(eg_value)}</td>
+                <td>${nice_percent(Math.abs(eg_value))}</td>
+                <td>${eg_win_party}</td>
                 <td>${nice_round_percent(eg_positives)}</td>
                 <td>${nice_round_percent(eg_percentrank)}</td>
                 <td>Unknown</td>
             </tr>
             <tr>
                 <th>Declination</th>
-                <td>${Math.round(dec2_value * 100)/100}</td>
+                <td>${Math.round(Math.abs(dec2_value) * 100)/100}</td>
+                <td>${dec2_win_party}</td>
                 <td>${nice_round_percent(dec2_positives)}</td>
                 <td>${nice_round_percent(dec2_percentrank)}</td>
                 <td>Unknown</td>
             </tr>
             <tr>
                 <th>Partian Bias</th>
-                <td>${nice_percent(pb_value)}</td>
+                <td>${nice_percent(Math.abs(pb_value))}</td>
+                <td>${pb_win_party}</td>
                 <td>${nice_round_percent(pb_positives)}</td>
                 <td>${nice_round_percent(pb_percentrank)}</td>
                 <td>Unknown</td>
             </tr>
             <tr>
                 <th>Mean-Median Difference</th>
-                <td>${nice_percent(mmd_value)}</td>
+                <td>${nice_percent(Math.abs(mmd_value))}</td>
+                <td>${mmd_win_party}</td>
                 <td>${nice_round_percent(mmd_positives)}</td>
                 <td>${nice_round_percent(mmd_percentrank)}</td>
                 <td>Unknown</td>

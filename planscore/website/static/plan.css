@@ -70,7 +70,7 @@ div.planscore-partylegend div.planscore-partylegend-words {
 }
 .table-districts td, .table-metrics td, .table-districts th, .table-metrics th { text-align: right; }
 .table-districts td.ltxt, .table-metrics td.ltxt, .table-districts th.ltxt, .table-metrics th.ltxt { text-align: left; }
-.table-districts tbody td {
+.table-districts tbody td, .table-metrics tbody th, .table-metrics tbody td {
     white-space: nowrap; /* nowrap => body rows stay single-line => more dense display */
 }
 .table-districts table, .table-metrics table {
