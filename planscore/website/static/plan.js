@@ -285,10 +285,12 @@ function show_efficiency_gap_score(plan, score_EG)
                 node.innerHTML = [
                     'Votes for', win_party, 'candidates are expected to be inefficient at a rate',
                     gap_amount, 'lower than votes for', lose_party, 'candidates.',
+                    /*
                     'The expected gap favors', win_partisans,
                     'in', nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
                     'This plan is more skewed than', nice_round_percent(percentrank),
                     'of the enacted', house, 'plans we have analyzed nationwide.<sup>†</sup>',
+                    */
                     '<a href="' + window.eg_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                     ].join(' ');
 
@@ -374,11 +376,13 @@ function show_declination2_score(plan, score_DEC2)
                     'The', lose_partisans+"’", 'mean vote share in districts they won was',
                     nice_percent(Math.abs(dec2_difference)), 'higher than the', win_partisans+"’",
                     'mean vote share in districts they won.',
+                    /*
                     'Along with the relative fraction of seats won by each party this',
                     'leads to a declination that favors Republicans in',
                     nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
                     'This plan is more skewed than', nice_round_percent(percentrank),
                     'of the enacted', house, 'plans we have analyzed nationwide.<sup>†</sup>',
+                    */
                     '<a href="' + window.d2_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                     ].join(' ');
 
@@ -432,10 +436,12 @@ function show_partisan_bias_score(plan, score_PB)
                 node.innerHTML = [
                     win_party, 'would be expected to win', bias_amount,
                     'extra seats in a hypothetical, perfectly tied election.',
+                    /*
                     'The expected bias favors', win_partisans,
                     'in', nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
                     'This plan is more skewed than', nice_round_percent(percentrank),
                     'of the enacted', house, 'plans we have analyzed nationwide.<sup>†</sup>',
+                    */
                     '<a href="' + window.pb_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                     ].join(' ');
 
@@ -511,10 +517,12 @@ function show_mean_median_score(plan, score_MM)
                 node.innerHTML = [
                     'The median', win_party, 'vote share is expected to be',
                     diff_amount, 'higher than the mean', win_party, 'vote share.',
+                    /*
                     'The expected difference favors', win_partisans,
                     'in', nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
                     'This plan is more skewed than', nice_round_percent(percentrank),
                     'of the enacted', house, 'plans we have analyzed nationwide.<sup>†</sup>',
+                    */
                     '<a href="' + window.mm_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                     ].join(' ');
 
@@ -604,6 +612,78 @@ function hide_message(score_section, message_section)
 {
     score_section.style.display = 'block';
     message_section.style.display = 'none';
+}
+
+function show_metrics_table(plan, metrics_table)
+{
+    if(typeof plan.summary['Efficiency Gap Percentrank'] != 'number')
+    {
+        metrics_table.parentNode.style.display = 'none';
+        return;
+    }
+    
+    var eg_summary_name = which_score_summary_name(plan),
+        eg_value = plan.summary[eg_summary_name],
+        eg_positives = (eg_value < 0
+            ? (1 - plan.summary['Efficiency Gap Positives'])
+            : plan.summary['Efficiency Gap Positives']),
+        eg_percentrank = plan.summary['Efficiency Gap Percentrank'],
+        dec2_value = plan.summary['Declination'],
+        dec2_positives = (dec2_value < 0
+            ? (1 - plan.summary['Declination Positives'])
+            : plan.summary['Declination Positives']),
+        dec2_percentrank = plan.summary['Declination Percentrank'],
+        pb_value = plan.summary['Partisan Bias'],
+        pb_positives = (pb_value < 0
+            ? (1 - plan.summary['Partisan Bias Positives'])
+            : plan.summary['Partisan Bias Positives']),
+        pb_percentrank = plan.summary['Partisan Bias Percentrank'],
+        mmd_value = plan.summary['Mean-Median'],
+        mmd_positives = (mmd_value < 0
+            ? (1 - plan.summary['Mean-Median Positives'])
+            : plan.summary['Mean-Median Positives']),
+        mmd_percentrank = plan.summary['Mean-Median Percentrank'];
+    
+    metrics_table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Metric</th>
+                <th>Value</th>
+                <th>Favors Winning Party in<br>this % of Scenarios<sup>*</sup></th>
+                <th>More Biased than<br>this % Historical Plans<sup>†</sup></th>
+                <th>More Pro-Winner than<br>this % Historical Plans<sup>†</sup></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th>Efficiency Gap</th>
+                <td>${nice_percent(eg_value)}</td>
+                <td>${nice_round_percent(eg_positives)}</td>
+                <td>${nice_round_percent(eg_percentrank)}</td>
+                <td>Unknown</td>
+            </tr>
+            <tr>
+                <th>Declination</th>
+                <td>${Math.round(dec2_value * 100)/100}</td>
+                <td>${nice_round_percent(dec2_positives)}</td>
+                <td>${nice_round_percent(dec2_percentrank)}</td>
+                <td>Unknown</td>
+            </tr>
+            <tr>
+                <th>Partian Bias</th>
+                <td>${nice_percent(pb_value)}</td>
+                <td>${nice_round_percent(pb_positives)}</td>
+                <td>${nice_round_percent(pb_percentrank)}</td>
+                <td>Unknown</td>
+            </tr>
+            <tr>
+                <th>Mean-Median Difference</th>
+                <td>${nice_percent(mmd_value)}</td>
+                <td>${nice_round_percent(mmd_positives)}</td>
+                <td>${nice_round_percent(mmd_percentrank)}</td>
+                <td>Unknown</td>
+            </tr>
+        </tbody>`;
 }
 
 function update_heading_titles(head)
@@ -1158,47 +1238,8 @@ function load_plan_score(url, message_section, score_section,
                 + ' Outside this range the metric’s assumptions are not plausible.');
         }
         
-        metrics_table.innerHTML = `
-            <thead>
-                <tr>
-                    <th>Metric</th>
-                    <th>Value</th>
-                    <th>Favors Rep’s in<br>this % of Scenarios</th>
-                    <th>More Biased than<br>this % Historical Plans</th>
-                    <th>More Pro-Republican than<br>this % Historical Plans</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <th>Efficiency Gap</th>
-                    <td>…</td>
-                    <td>…</td>
-                    <td>…</td>
-                    <td>…</td>
-                </tr>
-                <tr>
-                    <th>Declination</th>
-                    <td>…</td>
-                    <td>…</td>
-                    <td>…</td>
-                    <td>…</td>
-                </tr>
-                <tr>
-                    <th>Partian Bias</th>
-                    <td>…</td>
-                    <td>…</td>
-                    <td>…</td>
-                    <td>…</td>
-                </tr>
-                <tr>
-                    <th>Mean-Median Difference</th>
-                    <td>…</td>
-                    <td>…</td>
-                    <td>…</td>
-                    <td>…</td>
-                </tr>
-            </tbody>`;
-
+        show_metrics_table(plan, metrics_table);
+        
         // Go on to load the map.
         load_plan_map(geom_prefix + plan.geometry_key, map_div, plan, districts_table);
     }
