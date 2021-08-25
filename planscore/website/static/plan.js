@@ -558,21 +558,36 @@ function show_metrics_table(plan, metrics_table)
         dec2_percentrank_abs = plan.summary['Declination Absolute Percent Rank'],
         dec2_percentrank_rel = (dec2_value < 0
             ? (1 - plan.summary['Declination Relative Percent Rank'])
-            : plan.summary['Declination Relative Percent Rank']),
-        pb_value = plan.summary['Partisan Bias'],
-        pb_win_party = (pb_value < 0 ? 'Republican' : 'Democratic'),
-        pb_positives = plan.summary['Partisan Bias Positives'],
-        pb_percentrank_abs = plan.summary['Partisan Bias Absolute Percent Rank'],
-        pb_percentrank_rel = (pb_value < 0
-            ? (1 - plan.summary['Partisan Bias Relative Percent Rank'])
-            : plan.summary['Partisan Bias Relative Percent Rank']),
-        mmd_value = plan.summary['Mean-Median'],
-        mmd_win_party = (mmd_value < 0 ? 'Republican' : 'Democratic'),
-        mmd_positives = plan.summary['Mean-Median Positives'],
-        mmd_percentrank_abs = plan.summary['Mean-Median Absolute Percent Rank'],
-        mmd_percentrank_rel = (mmd_value < 0
-            ? (1 - plan.summary['Mean-Median Relative Percent Rank'])
-            : plan.summary['Mean-Median Relative Percent Rank']);
+            : plan.summary['Declination Relative Percent Rank']);
+    
+    if(plan_voteshare(plan) < .1 || location.hash.match(/\bshowall\b/)) {
+        var pb_value = plan.summary['Partisan Bias'],
+            pb_win_party = (pb_value < 0 ? 'Republican' : 'Democratic'),
+            pb_display = `${nice_percent(Math.abs(pb_value))} Pro-${pb_win_party}`,
+            pb_positives = nice_round_percent(plan.summary['Partisan Bias Positives']),
+            pb_percentrank_abs = nice_round_percent(plan.summary['Partisan Bias Absolute Percent Rank']),
+            pb_percentrank_rel = nice_round_percent(pb_value < 0
+                ? (1 - plan.summary['Partisan Bias Relative Percent Rank'])
+                : plan.summary['Partisan Bias Relative Percent Rank']),
+            mmd_value = plan.summary['Mean-Median'],
+            mmd_win_party = (mmd_value < 0 ? 'Republican' : 'Democratic'),
+            mmd_display = `${nice_percent(Math.abs(mmd_value))} Pro-${mmd_win_party}`,
+            mmd_positives = nice_round_percent(plan.summary['Mean-Median Positives']),
+            mmd_percentrank_abs = nice_round_percent(plan.summary['Mean-Median Absolute Percent Rank']),
+            mmd_percentrank_rel = nice_round_percent(mmd_value < 0
+                ? (1 - plan.summary['Mean-Median Relative Percent Rank'])
+                : plan.summary['Mean-Median Relative Percent Rank']);
+
+    } else {
+        var pb_display = 'N/A',
+            pb_positives = 'N/A',
+            pb_percentrank_abs = 'N/A',
+            pb_percentrank_rel = 'N/A',
+            mmd_display = 'N/A',
+            mmd_positives = 'N/A',
+            mmd_percentrank_abs = 'N/A',
+            mmd_percentrank_rel = 'N/A';
+    }
     
     metrics_table.innerHTML = `
         <thead>
@@ -601,17 +616,17 @@ function show_metrics_table(plan, metrics_table)
             </tr>
             <tr>
                 <th><a href="${window.pb_metric_url}">Partisan Bias</a></th>
-                <td>${nice_percent(Math.abs(pb_value))} Pro-${pb_win_party}</td>
-                <td>${nice_round_percent(pb_positives)}</td>
-                <td>${nice_round_percent(pb_percentrank_abs)}</td>
-                <td>${nice_round_percent(pb_percentrank_rel)}</td>
+                <td>${pb_display}</td>
+                <td>${pb_positives}</td>
+                <td>${pb_percentrank_abs}</td>
+                <td>${pb_percentrank_rel}</td>
             </tr>
             <tr>
                 <th><a href="${window.mm_metric_url}">Mean-Median Difference</a></th>
-                <td>${nice_percent(Math.abs(mmd_value))} Pro-${mmd_win_party}</td>
-                <td>${nice_round_percent(mmd_positives)}</td>
-                <td>${nice_round_percent(mmd_percentrank_abs)}</td>
-                <td>${nice_round_percent(mmd_percentrank_rel)}</td>
+                <td>${mmd_display}</td>
+                <td>${mmd_positives}</td>
+                <td>${mmd_percentrank_abs}</td>
+                <td>${mmd_percentrank_rel}</td>
             </tr>
         </tbody>`;
 }
