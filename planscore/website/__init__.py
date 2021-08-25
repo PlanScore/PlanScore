@@ -71,7 +71,8 @@ def get_models():
             elif 'data' in base:
                 assorted_files.append((os.path.relpath(base, MODELS_BASEDIR), file))
 
-    return flask.render_template('models.html', models=model_names, files=assorted_files)
+    return flask.render_template('models.html', models=model_names, files=assorted_files,
+        planscore_website_base=flask.current_app.config['PLANSCORE_WEBSITE_BASE'].rstrip('/'))
 
 @app.route('/models/<path:prefix>/')
 @app.route('/models/<path:prefix>/<file>')
@@ -94,4 +95,5 @@ def get_model_description(prefix, file=None):
             for file in files if file != 'README.md'])
 
     return flask.render_template('model.html', name=prefix,
-        readme=model_readme, files=model_files)
+        readme=model_readme, files=model_files,
+        planscore_website_base=flask.current_app.config['PLANSCORE_WEBSITE_BASE'].rstrip('/'))

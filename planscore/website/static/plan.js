@@ -52,6 +52,13 @@ const fieldSubstringToDisplayStr = {
     'Citizen Voting-Age Population': 'CVAP',
     'Population': 'Pop.',
 };
+
+const houseNames = {
+    'ushouse': 'U.S. House',
+    'statesenate': 'State Senate',
+    'statehouse': 'State House'
+};
+
 // Keep track of substring renames for adding tooltips
 const renamedHeadingToOrigField = new Map();
 
@@ -275,9 +282,9 @@ function show_efficiency_gap_score(plan, score_EG)
             
                 node.innerHTML = [
                     'Votes for', win_party, 'candidates are expected to be inefficient at a rate',
-                    gap_amount, 'lower than votes for', lose_party, 'candidates.',
-                    'The expected gap favors', win_partisans,
-                    'in', nice_round_percent(positives), 'of predicted scenarios.',
+                    gap_amount, 'lower than votes for', lose_party, 'candidates,',
+                    'favoring', win_partisans,
+                    'in', nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
                     '<a href="' + window.eg_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                     ].join(' ');
 
@@ -349,9 +356,9 @@ function show_declination2_score(plan, score_DEC2)
                     'The', lose_partisans+"’", 'mean vote share in districts they won was',
                     nice_percent(Math.abs(dec2_difference)), 'higher than the', win_partisans+"’",
                     'mean vote share in districts they won.',
-                    'This, along with the relative fraction of seats won by each party,',
-                    'leads to a declination that favors Republicans in',
-                    nice_round_percent(positives), 'of predicted scenarios.',
+                    'Along with the relative fraction of seats won by each party,',
+                    'this leads to a declination that favors Republicans in',
+                    nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
                     '<a href="' + window.d2_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                     ].join(' ');
             }
@@ -386,9 +393,9 @@ function show_partisan_bias_score(plan, score_PB)
             
                 node.innerHTML = [
                     win_party, 'would be expected to win', bias_amount,
-                    'extra seats in a hypothetical, perfectly tied election.',
-                    'The expected bias favors', win_partisans,
-                    'in', nice_round_percent(positives), 'of predicted scenarios.',
+                    'extra seats in a hypothetical, perfectly tied election,',
+                    'favoring', win_partisans,
+                    'in', nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
                     '<a href="' + window.pb_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                     ].join(' ');
 
@@ -448,9 +455,9 @@ function show_mean_median_score(plan, score_MM)
             
                 node.innerHTML = [
                     'The median', win_party, 'vote share is expected to be',
-                    diff_amount, 'higher than the mean', win_party, 'vote share.',
-                    'The expected difference favors', win_partisans,
-                    'in', nice_round_percent(positives), 'of predicted scenarios.',
+                    diff_amount, 'higher than the mean', win_party, 'vote share,',
+                    'favoring', win_partisans,
+                    'in', nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
                     '<a href="' + window.mm_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                     ].join(' ');
 
@@ -527,6 +534,101 @@ function hide_message(score_section, message_section)
 {
     score_section.style.display = 'block';
     message_section.style.display = 'none';
+}
+
+function show_metrics_table(plan, metrics_table)
+{
+    if(typeof plan.summary['Efficiency Gap Absolute Percent Rank'] != 'number')
+    {
+        metrics_table.parentNode.style.display = 'none';
+        return;
+    }
+    
+    var eg_summary_name = which_score_summary_name(plan),
+        eg_value = plan.summary[eg_summary_name],
+        eg_win_party = (eg_value < 0 ? 'Republican' : 'Democratic'),
+        eg_positives = plan.summary['Efficiency Gap Positives'],
+        eg_percentrank_abs = plan.summary['Efficiency Gap Absolute Percent Rank'],
+        eg_percentrank_rel = (eg_value < 0
+            ? (1 - plan.summary['Efficiency Gap Relative Percent Rank'])
+            : plan.summary['Efficiency Gap Relative Percent Rank']),
+        dec2_value = plan.summary['Declination'],
+        dec2_win_party = (dec2_value < 0 ? 'Republican' : 'Democratic'),
+        dec2_positives = plan.summary['Declination Positives'],
+        dec2_percentrank_abs = plan.summary['Declination Absolute Percent Rank'],
+        dec2_percentrank_rel = (dec2_value < 0
+            ? (1 - plan.summary['Declination Relative Percent Rank'])
+            : plan.summary['Declination Relative Percent Rank']);
+    
+    if(plan_voteshare(plan) < .1 || location.hash.match(/\bshowall\b/)) {
+        var pb_value = plan.summary['Partisan Bias'],
+            pb_win_party = (pb_value < 0 ? 'Republican' : 'Democratic'),
+            pb_display = `${nice_percent(Math.abs(pb_value))} Pro-${pb_win_party}`,
+            pb_positives = nice_round_percent(plan.summary['Partisan Bias Positives']),
+            pb_percentrank_abs = nice_round_percent(plan.summary['Partisan Bias Absolute Percent Rank']),
+            pb_percentrank_rel = nice_round_percent(pb_value < 0
+                ? (1 - plan.summary['Partisan Bias Relative Percent Rank'])
+                : plan.summary['Partisan Bias Relative Percent Rank']),
+            mmd_value = plan.summary['Mean-Median'],
+            mmd_win_party = (mmd_value < 0 ? 'Republican' : 'Democratic'),
+            mmd_display = `${nice_percent(Math.abs(mmd_value))} Pro-${mmd_win_party}`,
+            mmd_positives = nice_round_percent(plan.summary['Mean-Median Positives']),
+            mmd_percentrank_abs = nice_round_percent(plan.summary['Mean-Median Absolute Percent Rank']),
+            mmd_percentrank_rel = nice_round_percent(mmd_value < 0
+                ? (1 - plan.summary['Mean-Median Relative Percent Rank'])
+                : plan.summary['Mean-Median Relative Percent Rank']);
+
+    } else {
+        var pb_display = 'N/A',
+            pb_positives = 'N/A',
+            pb_percentrank_abs = 'N/A',
+            pb_percentrank_rel = 'N/A',
+            mmd_display = 'N/A',
+            mmd_positives = 'N/A',
+            mmd_percentrank_abs = 'N/A',
+            mmd_percentrank_rel = 'N/A';
+    }
+    
+    metrics_table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Metric</th>
+                <th>Value</th>
+                <th>Favors Democrats in this % of Scenarios<sup>*</sup></th>
+                <th>More Skewed than this % of Historical Plans<sup>†</sup></th>
+                <th>More Pro-Democratic than this % of Historical Plans<sup>†</sup></th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th><a href="${window.eg_metric_url}">Efficiency Gap</a></th>
+                <td>${nice_percent(Math.abs(eg_value))} Pro-${eg_win_party}</td>
+                <td>${nice_round_percent(eg_positives)}</td>
+                <td>${nice_round_percent(eg_percentrank_abs)}</td>
+                <td>${nice_round_percent(eg_percentrank_rel)}</td>
+            </tr>
+            <tr>
+                <th><a href="${window.d2_metric_url}">Declination</a></th>
+                <td>${Math.round(Math.abs(dec2_value) * 100)/100} Pro-${dec2_win_party}</td>
+                <td>${nice_round_percent(dec2_positives)}</td>
+                <td>${nice_round_percent(dec2_percentrank_abs)}</td>
+                <td>${nice_round_percent(dec2_percentrank_rel)}</td>
+            </tr>
+            <tr>
+                <th><a href="${window.pb_metric_url}">Partisan Bias</a></th>
+                <td>${pb_display}</td>
+                <td>${pb_positives}</td>
+                <td>${pb_percentrank_abs}</td>
+                <td>${pb_percentrank_rel}</td>
+            </tr>
+            <tr>
+                <th><a href="${window.mm_metric_url}">Mean-Median Difference</a></th>
+                <td>${mmd_display}</td>
+                <td>${mmd_positives}</td>
+                <td>${mmd_percentrank_abs}</td>
+                <td>${mmd_percentrank_rel}</td>
+            </tr>
+        </tbody>`;
 }
 
 function update_heading_titles(head)
@@ -873,13 +975,11 @@ function get_plan_type_text(plan)
         'MT': 'Montana'
         };
     
-    var plan_type_text = ['Plan uploaded'], houses = {'ushouse': 'U.S. House',
-        'statesenate': 'State Senate', 'statehouse': 'State House'};
-
+    var plan_type_text = ['Plan uploaded'];
     
     if(plan['model'])
     {
-        plan_type_text = `${states[plan.model.state]} ${houses[plan.model.house]} plan`;
+        plan_type_text = `${states[plan.model.state]} ${houseNames[plan.model.house]} plan`;
     }
 
     return plan_type_text; 
@@ -916,14 +1016,16 @@ function plan_has_incumbency(plan)
 }
 
 function start_load_plan_polling(url, message_section, score_section,
-    description_el, model_link, model_url_pattern, table, score_EG, score_PB,
-    score_MM, score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div, seat_count)
+    description_el, model_link, model_footnote, model_url_pattern,
+    districts_table, metrics_table, score_EG, score_PB, score_MM, score_DEC2,
+    score_sense, text_url, text_link, geom_prefix, map_div, seat_count)
 {
     const make_xhr = () => {
         load_plan_score(url, message_section, score_section,
-            description_el, model_link, model_url_pattern, table, score_EG, score_PB,
-            score_MM, score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
-            xhr_retry_callback);
+            description_el, model_link, model_footnote, model_url_pattern,
+            districts_table, metrics_table, score_EG, score_PB, score_MM,
+            score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div,
+            seat_count, xhr_retry_callback);
     };
 
     const xhr_retry_callback = () => {
@@ -937,8 +1039,9 @@ function start_load_plan_polling(url, message_section, score_section,
 }
 
 function load_plan_score(url, message_section, score_section,
-    description_el, model_link, model_url_pattern, table, score_EG, score_PB,
-    score_MM, score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
+    description_el, model_link, model_footnote, model_url_pattern,
+    districts_table, metrics_table, score_EG, score_PB, score_MM, score_DEC2,
+    score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
     xhr_retry_callback)
 {
     var request = new XMLHttpRequest();
@@ -979,9 +1082,11 @@ function load_plan_score(url, message_section, score_section,
         
         if(plan.model && (plan.model.version == '2017' || !plan.model.version)) {
             model_link.href = model_url_pattern.replace('data/2020', plan.model.key_prefix);
+            model_footnote.href = model_url_pattern.replace('data/2020', plan.model.key_prefix);
         
         } else if(plan.model && plan.model.version) {
             model_link.href = model_url_pattern.replace('2020', plan.model.version);
+            model_footnote.href = model_url_pattern.replace('2020', plan.model.version);
         }
 
         // Build the results table
@@ -1036,7 +1141,7 @@ function load_plan_score(url, message_section, score_section,
         }
 
         tags = tags.concat(['</tbody>']);
-        table.innerHTML = tags.join('');
+        districts_table.innerHTML = tags.join('');
         text_link.href = text_url;
         
         if(plan.districts)
@@ -1077,9 +1182,11 @@ function load_plan_score(url, message_section, score_section,
                 + ' The mean-median difference is shown only where the parties’ statewide vote shares fall between 45% and 55%.'
                 + ' Outside this range the metric’s assumptions are not plausible.');
         }
-
+        
+        show_metrics_table(plan, metrics_table);
+        
         // Go on to load the map.
-        load_plan_map(geom_prefix + plan.geometry_key, map_div, plan, table);
+        load_plan_map(geom_prefix + plan.geometry_key, map_div, plan, districts_table);
     }
 
     request.onload = function()

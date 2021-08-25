@@ -52,22 +52,28 @@ div.planscore-partylegend div.planscore-partylegend-words {
     vertical-align: text-bottom;
 }
 
-.table-districts {
-    height: calc(100vh - 400px - 20px); /* fit on screen along with the 400px tall map, and some margin */
-    min-height: 300px;
+.table-districts, .table-metrics {
+    height: auto;
     padding: 0;
     width: 100%;
     margin-bottom: 15px;
 }
+.table-districts {
+    height: calc(100vh - 400px - 20px); /* fit on screen along with the 400px tall map, and some margin */
+    min-height: 300px;
+}
+.table-metrics {
+    margin-top: 15px;
+}
 @media only print {
     .table-districts { height: auto; }
 }
-.table-districts td, .table-districts th { text-align: right; }
-.table-districts td.ltxt, .table-districts th.ltxt { text-align: left; }
-.table-districts tbody td {
+.table-districts td, .table-metrics td, .table-districts th, .table-metrics th { text-align: right; }
+.table-districts td.ltxt, .table-metrics td.ltxt, .table-districts th.ltxt, .table-metrics th.ltxt { text-align: left; }
+.table-districts tbody td, .table-metrics tbody td {
     white-space: nowrap; /* nowrap => body rows stay single-line => more dense display */
 }
-.table-districts table {
+.table-districts table, .table-metrics table {
     margin: 0;
 }
 
@@ -110,4 +116,73 @@ div.planscore-partylegend div.planscore-partylegend-words {
 .table-jehl thead th,
 .table-jehl tbody th {
     background-color: #f8f8f8;
+}
+
+#message
+{
+    text-align: center;
+    margin: 6em 0 12em;
+}
+
+ul#scores-box
+{
+    padding: 0;
+}
+
+    ul#scores-box li
+    {
+        list-style-type: none;
+    }
+
+    ul#scores-box li h3
+    {
+        white-space: nowrap;
+        font-size: 20px;
+        color: #858073;
+    }
+
+    ul#scores-box li p
+    {
+        font-size: 14px;
+        color: #606980;
+        margin-bottom: 0;
+    }
+
+    ul#scores-box li p a
+    {
+        white-space: nowrap;
+    }
+
+    ul#scores-box li p.score
+    {
+        font-size: 64px;
+    }
+
+    ul#scores-box li p.score-na
+    {
+        font-size: 36px;
+        color: #BBBBBB;
+        letter-spacing: -5px;
+    }
+
+#map
+{
+    width: 100%;
+    height: 400px;
+    border: 1px solid #93A1A1;
+    clear: both;
+    margin-top: 40px;
+}
+
+#score-sensitivity
+{
+    height: 200px;
+}
+
+table tr.highlighted {
+    background-color: #f5f5f5; /* same as bootstrap's hover row style */
+}
+
+path.highlight {
+    stroke-width: 5;
 }

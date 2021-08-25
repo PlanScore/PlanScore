@@ -83,7 +83,68 @@ class TestScore (unittest.TestCase):
 
         l4 = [-1, 1, 1, None]
         self.assertEqual(score.safe_positives(l4), .5)
+    
+    def test_percentrank_abs(self):
+        ''' Absolute percent rank is correctly calculated by chamber
+        '''
+        # https://planscore.campaignlegal.org/texas/#!1994-plan-ushouse-eg
+        self.assertAlmostEqual(score.percentrank_abs(score.COLUMN_EG, data.House.ushouse, .19), 0.9875)
+        
+        # https://planscore.campaignlegal.org/texas/#!1994-plan-statehouse-eg
+        self.assertAlmostEqual(score.percentrank_abs(score.COLUMN_EG, data.House.statehouse, .07), 0.7261146)
+        
+        # https://planscore.campaignlegal.org/texas/#!1994-plan-statesenate-eg
+        self.assertAlmostEqual(score.percentrank_abs(score.COLUMN_EG, data.House.statesenate, -.03), 0.3230430)
+        
+        # https://planscore.campaignlegal.org/north_carolina/#!2012-plan-ushouse-eg
+        self.assertAlmostEqual(score.percentrank_abs(score.COLUMN_EG, data.House.ushouse, -.20), 0.9928571)
+        
+        # https://planscore.campaignlegal.org/north_carolina/#!2012-plan-statehouse-eg
+        self.assertAlmostEqual(score.percentrank_abs(score.COLUMN_EG, data.House.statehouse, -.10), 0.8811040)
+        
+        # https://planscore.campaignlegal.org/north_carolina/#!2012-plan-statesenate-eg
+        self.assertAlmostEqual(score.percentrank_abs(score.COLUMN_EG, data.House.statesenate, -.16), 0.9823594)
 
+        # https://planscore.campaignlegal.org/georgia/#!1972-plan-ushouse-d2
+        self.assertAlmostEqual(score.percentrank_abs(score.COLUMN_D2, data.House.ushouse, .51), 0.9090909)
+        
+        # https://planscore.campaignlegal.org/georgia/#!1972-plan-statehouse-d2
+        self.assertAlmostEqual(score.percentrank_abs(score.COLUMN_D2, data.House.statehouse, 1.07), 0.9915074)
+        
+        # https://planscore.campaignlegal.org/georgia/#!1972-plan-statesenate-d2
+        self.assertAlmostEqual(score.percentrank_abs(score.COLUMN_D2, data.House.statesenate, 1.04), 1.)
+        
+        # https://planscore.campaignlegal.org/north_carolina/#!2016-plan-ushouse-d2
+        self.assertAlmostEqual(score.percentrank_abs(score.COLUMN_D2, data.House.ushouse, -.69), 0.9818182)
+        
+        # https://planscore.campaignlegal.org/north_carolina/#!2016-plan-statehouse-d2
+        self.assertAlmostEqual(score.percentrank_abs(score.COLUMN_D2, data.House.statehouse, -.59), 0.8832272)
+        
+        # https://planscore.campaignlegal.org/north_carolina/#!2016-plan-statesenate-d2
+        self.assertAlmostEqual(score.percentrank_abs(score.COLUMN_D2, data.House.statesenate, -.77), 0.9657459)
+        
+        # https://planscore.campaignlegal.org/maryland/#!2012-plan-ushouse-pb
+        self.assertAlmostEqual(score.percentrank_abs(score.COLUMN_PB, data.House.ushouse, .14), 0.8785714)
+        
+        # https://planscore.campaignlegal.org/alabama/#!2016-plan-ushouse-pb
+        self.assertAlmostEqual(score.percentrank_abs(score.COLUMN_PB, data.House.ushouse, -.2), 0.9660714)
+        
+        # https://planscore.campaignlegal.org/kentucky/#!1980-plan-ushouse-mm
+        self.assertAlmostEqual(score.percentrank_abs(score.COLUMN_MMD, data.House.ushouse, .08), 0.9375)
+        
+        # https://planscore.campaignlegal.org/georgia/#!2006-plan-ushouse-mm
+        self.assertAlmostEqual(score.percentrank_abs(score.COLUMN_MMD, data.House.ushouse, -.12), 1.)
+    
+    def test_percentrank_rel(self):
+        ''' Relative percent rank is correctly calculated by chamber
+        '''
+        self.assertAlmostEqual(score.percentrank_rel(score.COLUMN_EG, data.House.ushouse, 1), 1)
+        self.assertAlmostEqual(score.percentrank_rel(score.COLUMN_EG, data.House.ushouse, -1), 1)
+        self.assertAlmostEqual(score.percentrank_rel(score.COLUMN_EG, data.House.ushouse, .1), 0.8803571)
+        self.assertAlmostEqual(score.percentrank_rel(score.COLUMN_EG, data.House.ushouse, -.1), 0.9303571)
+        self.assertAlmostEqual(score.percentrank_rel(score.COLUMN_EG, data.House.ushouse, .01), 0.4892857)
+        self.assertAlmostEqual(score.percentrank_rel(score.COLUMN_EG, data.House.ushouse, -.01), 0.6357143)
+        
     def test_calculate_EG_fair(self):
         ''' Efficiency gap can be correctly calculated for a fair election
         '''
@@ -201,11 +262,13 @@ class TestScore (unittest.TestCase):
         self.assertIsNone(d2e,
             msg='Should see Dec2 = None when one party wins all districts')
 
+    @unittest.mock.patch('planscore.score.percentrank_rel')
+    @unittest.mock.patch('planscore.score.percentrank_abs')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_bias(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2):
+    def test_calculate_bias(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated for an election
         
             Use obsolete vote properties from early 2018 PlanScore models.
@@ -337,11 +400,13 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['SLDL Efficiency Gap +1 Rep'], calculate_EG.return_value)
         self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
 
+    @unittest.mock.patch('planscore.score.percentrank_rel')
+    @unittest.mock.patch('planscore.score.percentrank_abs')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_fewsims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2):
+    def test_calculate_gap_fewsims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated using a few input sims.
         
             Use "DEM000"-style vote properties from 2018 and 2019 PlanScore models.
@@ -354,6 +419,8 @@ class TestScore (unittest.TestCase):
                 dict(totals={"REP000": 6, "DEM000": 2, "REP001": 5, "DEM001": 3}, tile=None),
                 ])
         
+        percentrank_rel.return_value = 0
+        percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
@@ -391,11 +458,13 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.districts[3]['totals']['Republican Votes'], 11/2)
         self.assertEqual(output.districts[3]['totals']['Democratic Votes'], 5/2)
 
+    @unittest.mock.patch('planscore.score.percentrank_rel')
+    @unittest.mock.patch('planscore.score.percentrank_abs')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_manysims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2):
+    def test_calculate_gap_manysims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated using many input sims.
         
             Use "DEM000"-style vote properties from 2018 and 2019 PlanScore models.
@@ -425,6 +494,8 @@ class TestScore (unittest.TestCase):
                 dict(totals=dict(vote_sims[1], **vote_sims[3]), tile=None),
                 ])
         
+        percentrank_rel.return_value = 0
+        percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
@@ -470,11 +541,13 @@ class TestScore (unittest.TestCase):
                 for district in output.districts:
                     self.assertNotIn(field, district['totals'])
 
+    @unittest.mock.patch('planscore.score.percentrank_rel')
+    @unittest.mock.patch('planscore.score.percentrank_abs')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_opensims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2):
+    def test_calculate_gap_opensims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated using many open-seat sims.
         
             Use "O:DEM000"-style vote properties from PlanScore models starting 2020.
@@ -514,6 +587,8 @@ class TestScore (unittest.TestCase):
                 dict(totals=dict(vote_sims[2] + vote_sims[5]), tile=None),
                 ])
         
+        percentrank_rel.return_value = 0
+        percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
@@ -561,11 +636,13 @@ class TestScore (unittest.TestCase):
                 for district in output.districts:
                     self.assertNotIn(field, district['totals'])
 
+    @unittest.mock.patch('planscore.score.percentrank_rel')
+    @unittest.mock.patch('planscore.score.percentrank_abs')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_incumbentsims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2):
+    def test_calculate_gap_incumbentsims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated using mixed incumbency sims.
         
             Use "O:DEM000"-style vote properties from PlanScore models starting 2020.
@@ -635,6 +712,8 @@ class TestScore (unittest.TestCase):
                                + vote_sims[11] + vote_sims[14] + vote_sims[17]), tile=None),
                 ])
         
+        percentrank_rel.return_value = 0
+        percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
@@ -682,11 +761,13 @@ class TestScore (unittest.TestCase):
                 for district in output.districts:
                     self.assertNotIn(field, district['totals'])
 
+    @unittest.mock.patch('planscore.score.percentrank_rel')
+    @unittest.mock.patch('planscore.score.percentrank_abs')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_blanks(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2):
+    def test_calculate_gap_blanks(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated using input sims with blank districts.
         
             Use "DEM000"-style vote properties from 2018 and 2019 PlanScore models.
@@ -700,6 +781,8 @@ class TestScore (unittest.TestCase):
                 dict(totals={}, tile=None),
                 ])
         
+        percentrank_rel.return_value = 0
+        percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
@@ -737,13 +820,15 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.districts[3]['totals']['Republican Votes'], 11/2)
         self.assertEqual(output.districts[3]['totals']['Democratic Votes'], 5/2)
 
+    @unittest.mock.patch('planscore.score.percentrank_rel')
+    @unittest.mock.patch('planscore.score.percentrank_abs')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
     @unittest.mock.patch('planscore.matrix.prepare_district_data')
-    def test_calculate_gap_unified(self, prepare_district_data, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2):
+    def test_calculate_gap_unified(self, prepare_district_data, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
@@ -755,6 +840,8 @@ class TestScore (unittest.TestCase):
                 dict(totals={'US President 2016 - REP': 6, 'US President 2016 - DEM': 2}, tile=None),
                 ])
         
+        percentrank_rel.return_value = 0
+        percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
@@ -820,12 +907,14 @@ class TestScore (unittest.TestCase):
         self.assertAlmostEqual(output.districts[2]['totals']['Democratic Wins'], 0.3333333)
         self.assertAlmostEqual(output.districts[3]['totals']['Democratic Wins'], 0.)
 
+    @unittest.mock.patch('planscore.score.percentrank_rel')
+    @unittest.mock.patch('planscore.score.percentrank_abs')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
-    def test_calculate_gap_unified_incumbents(self, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2):
+    def test_calculate_gap_unified_incumbents(self, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
         ''' Incumbency values are correctly passedon for presidential vote only
         '''
         input = data.Upload(id=None, key=None,
@@ -838,6 +927,8 @@ class TestScore (unittest.TestCase):
                 dict(totals={'US President 2016 - REP': 6, 'US President 2016 - DEM': 2}, tile=None),
                 ])
         
+        percentrank_rel.return_value = 0
+        percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
@@ -866,12 +957,14 @@ class TestScore (unittest.TestCase):
         self.assertEqual(model_votes.mock_calls[0][1][2][2], (3.13, 4.87, 'R'))
         self.assertEqual(model_votes.mock_calls[0][1][2][3], (2.22, 5.78, 'D'))
 
+    @unittest.mock.patch('planscore.score.percentrank_rel')
+    @unittest.mock.patch('planscore.score.percentrank_abs')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
-    def test_calculate_gap_with_zeros(self, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2):
+    def test_calculate_gap_with_zeros(self, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
@@ -884,6 +977,8 @@ class TestScore (unittest.TestCase):
                 dict(totals={'US President 2016 - REP': 0, 'US President 2016 - DEM': 0}, tile=None),
                 ])
         
+        percentrank_rel.return_value = 0
+        percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0

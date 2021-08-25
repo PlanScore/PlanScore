@@ -3,13 +3,18 @@
 When all districts are added up and present on S3, performs complete scoring
 of district plan and uploads summary JSON file.
 '''
-import io, os, gzip, posixpath, json, statistics, copy, time, itertools
+import io, os, gzip, csv, posixpath, json, statistics, copy, time, itertools
 import math
 import argparse
 import urllib.request
 import pprint
 import boto3, botocore.exceptions
 from . import data, constants, matrix
+
+COLUMN_EG = 'eg_adj_avg'
+COLUMN_D2 = 'dec2_avg'
+COLUMN_PB = 'bias_avg'
+COLUMN_MMD = 'mmd_avg'
 
 FIELD_NAMES = (
     # Toy fields
@@ -149,40 +154,64 @@ def safe_positives(values):
     
     return len([n for n in safe_values if n > 0]) / len(values)
 
+def percentrank_abs(column, house, value):
+    '''
+    '''
+    path = os.path.join(os.path.dirname(__file__), 'model', {
+        data.House.ushouse: 'bias_ushouse.csv.gz',
+        data.House.statehouse: 'bias_statehouse.csv.gz',
+        data.House.statesenate: 'bias_statesenate.csv.gz',
+    }[house])
+    
+    with gzip.open(path, 'rt') as file:
+        values = [
+            1 if abs(value) > abs(float(row[column])) else 0
+            for row in csv.DictReader(file)
+            if row[column] != ''
+        ]
+    
+    return sum(values) / len(values)
+
+def percentrank_rel(column, house, value):
+    '''
+    '''
+    path = os.path.join(os.path.dirname(__file__), 'model', {
+        data.House.ushouse: 'bias_ushouse.csv.gz',
+        data.House.statehouse: 'bias_statehouse.csv.gz',
+        data.House.statesenate: 'bias_statesenate.csv.gz',
+    }[house])
+    
+    with gzip.open(path, 'rt') as file:
+        values = [
+            (
+                (1 if value < float(row[column]) else 0)
+                if (value < 0)
+                else (1 if value > float(row[column]) else 0)
+            )
+            for row in csv.DictReader(file)
+            if row[column] != ''
+        ]
+    
+    return sum(values) / len(values)
+
 def calculate_EG(red_districts, blue_districts, vote_swing=0):
     ''' Convert two lists of district vote counts into an EG score.
     
         By convention, result is positive for blue and negative for red.
     '''
-    election_votes, wasted_red, wasted_blue, red_wins, blue_wins = 0, 0, 0, 0, 0
-    red_districts, blue_districts = swing_vote(red_districts, blue_districts, vote_swing)
-    
-    # Calculate Efficiency Gap using swung vote
-    for (red_votes, blue_votes) in zip(red_districts, blue_districts):
-        district_votes = red_votes + blue_votes
-        election_votes += district_votes
-        win_threshold = district_votes / 2
-        
-        if red_votes > blue_votes:
-            red_wins += 1
-            wasted_red += red_votes - win_threshold # surplus
-            wasted_blue += blue_votes # loser
-        elif blue_votes > red_votes:
-            blue_wins += 1
-            wasted_blue += blue_votes - win_threshold # surplus
-            wasted_red += red_votes # loser
-        else:
-            pass # raise ValueError('Unlikely 50/50 split')
+    swung_red, swung_blue = swing_vote(red_districts, blue_districts, vote_swing)
 
-    # Return an efficiency gap
-    if election_votes == 0:
-        return
+    district_blue_wins = len([
+        1 for (red_votes, blue_votes) in zip(swung_red, swung_blue)
+        if blue_votes > red_votes
+    ])
+    statewide_seat_share = district_blue_wins / len(swung_blue)
     
-    ## TODO: remove print output unless running planscore-score-locally
-    #with open('EGs.csv', 'a') as file:
-    #    print(f'{wasted_red:.2f},{wasted_blue:.2f}', file=file)
+    district_raw_blue_votes = sum(swung_blue)
+    district_raw_total_votes = sum(swung_red) + district_raw_blue_votes
+    statewide_vote_share = district_raw_blue_votes / district_raw_total_votes
     
-    return (wasted_red - wasted_blue) / election_votes
+    return statewide_seat_share - 0.5 - 2 * (statewide_vote_share - 0.5)
 
 def calculate_MMD(red_districts, blue_districts):
     ''' Convert two lists of district vote counts into a Mean-Median score.
@@ -539,15 +568,23 @@ def calculate_district_biases(upload):
         'Mean-Median': safe_mean(MMDs),
         'Mean-Median SD': safe_stdev(MMDs),
         'Mean-Median Positives': safe_positives(MMDs),
+        'Mean-Median Absolute Percent Rank': percentrank_abs(COLUMN_MMD, upload.model.house, safe_mean(MMDs)),
+        'Mean-Median Relative Percent Rank': percentrank_rel(COLUMN_MMD, upload.model.house, safe_mean(MMDs)),
         'Partisan Bias': safe_mean(PBs),
         'Partisan Bias SD': safe_stdev(PBs),
         'Partisan Bias Positives': safe_positives(PBs),
+        'Partisan Bias Absolute Percent Rank': percentrank_abs(COLUMN_PB, upload.model.house, safe_mean(PBs)),
+        'Partisan Bias Relative Percent Rank': percentrank_rel(COLUMN_PB, upload.model.house, safe_mean(PBs)),
         'Declination': safe_mean(D2s),
         'Declination SD': safe_stdev(D2s),
         'Declination Positives': safe_positives(D2s),
+        'Declination Absolute Percent Rank': percentrank_abs(COLUMN_D2, upload.model.house, safe_mean(D2s)),
+        'Declination Relative Percent Rank': percentrank_rel(COLUMN_D2, upload.model.house, safe_mean(D2s)),
         'Efficiency Gap': safe_mean(EGs[0]),
         'Efficiency Gap SD': safe_stdev(EGs[0]),
         'Efficiency Gap Positives': safe_positives(EGs[0]),
+        'Efficiency Gap Absolute Percent Rank': percentrank_abs(COLUMN_EG, upload.model.house, safe_mean(EGs[0])),
+        'Efficiency Gap Relative Percent Rank': percentrank_rel(COLUMN_EG, upload.model.house, safe_mean(EGs[0])),
     }
     
     for swing in (1, 2, 3, 4, 5):

@@ -10,60 +10,6 @@
     <script src="https://code.highcharts.com/highcharts.js"></script>
 
     <style lang="text/css">
-    
-        #message
-        {
-            text-align: center;
-            margin: 6em 0 12em;
-        }
-    
-        ul#scores-box
-        {
-            padding: 0;
-        }
-
-            ul#scores-box li
-            {
-                list-style-type: none;
-            }
-
-            ul#scores-box li h3
-            {
-                white-space: nowrap;
-                font-size: 20px;
-                color: #858073;
-            }
-
-            ul#scores-box li p
-            {
-                font-size: 14px;
-                color: #606980;
-            }
-
-            ul#scores-box li p.score
-            {
-                font-size: 64px;
-            }
-
-            ul#scores-box li p.score-na
-            {
-                font-size: 36px;
-                color: #BBBBBB;
-                letter-spacing: -5px;
-            }
-
-        #map
-        {
-            width: 100%;
-            height: 400px;
-            border: 1px solid #93A1A1;
-            clear: both;
-        }
-        
-        #score-sensitivity
-        {
-            height: 200px;
-        }
 
         div.planscore-partylegend div.planscore-partylegend-swatch-lean-democrat
         {
@@ -80,13 +26,6 @@
             background-image: url({{ url_for('static', filename='unknown-pattern.png') }});
         }
 
-        table tr.highlighted {
-            background-color: #f5f5f5; /* same as bootstrap's hover row style */
-        }
-
-        path.highlight {
-            stroke-width: 5;
-        }
     </style>
 {% endblock %}
 {% block content %}
@@ -124,7 +63,7 @@
         </li>
         <li class="col-md-4">
             <h3>Sensitivity Testing</h3>
-            <p id="score-sensitivity"></p>
+            <div id="score-sensitivity"></div>
             <p>
                 Sensitivity testing shows us a plan’s expected efficiency gap given a range of possible vote swings. It lets us evaluate the durability of a plan’s skew.
             </p>
@@ -177,6 +116,23 @@
         </table>
     </div>
     <a href="#" id="text-link">Download raw data as tab-delimited text</a>.
+    <div class="col-xs-12 col-sm-12 table-jehl table-metrics">
+        <table class="table table-hover" id="metrics">
+            {# this table will be populated by load_plan_score() #}
+        </table>
+    </div>
+    <p><small>
+        <sup>*</sup>
+            Scenarios are part of
+            <a id="plan-model-footnote" href="{{ url_for('get_models') }}">the predictive model used to score this plan</a>.
+        <br>
+        <sup>†</sup>
+            Enacted <a href="{{planscore_website_base}}/#!2020-ushouse">U.S. House</a>,
+            <a href="{{planscore_website_base}}/#!2020-statehouse">State House</a>,
+            and <a href="{{planscore_website_base}}/#!2020-statesenate">State Senate</a>
+            plan metrics are featured in our
+            <a href="{{planscore_website_base}}/about/historical-data/">historical dataset</a>.
+    </small></p>
     </section>
 	<script language="javascript">
 	    var LEAN_BLUE_PATTERN_URL = "{{ url_for('static', filename='lean-blue-pattern.png') }}",
@@ -212,8 +168,10 @@
 	        document.getElementById('plan-score'),
 	        document.getElementById('plan-description'),
 	        document.getElementById('plan-model-link'),
+	        document.getElementById('plan-model-footnote'),
 	        model_url_pattern,
 	        document.getElementById('districts'),
+	        document.getElementById('metrics'),
 	        document.getElementById('score-efficiency-gap'),
 	        document.getElementById('score-partisan-bias'),
 	        document.getElementById('score-mean-median'),
