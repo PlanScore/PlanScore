@@ -9,7 +9,7 @@ gdal-geos-python.tar.gz
 node_modules
 package-lock.json
 cdk*
-??.geojson
+*.geojson
 data/??
 .aws*
 design/Upload-Map.svg
