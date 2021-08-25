@@ -1,4 +1,4 @@
-import os, json, io, gzip, posixpath, functools, collections, time, tempfile
+import sys, os, json, io, gzip, posixpath, functools, collections, time, tempfile
 import osgeo.ogr, boto3, botocore.exceptions, ModestMaps.OpenStreetMap, ModestMaps.Core
 from . import constants, data, util, prepare_state, score
 
@@ -201,7 +201,10 @@ def lambda_handler(event, context):
             totals[geometry_key] = score_district(district_geom, precincts, tile_geom)
     except Exception as err:
         print('Exception:', err)
-        totals = str(err)
+        err_text = str(err)
+        err_lineno = sys.exc_info()[2].tb_lineno
+        err_filename = sys.exc_info()[2].tb_frame.f_code.co_filename
+        totals = f'{err_text} ({err_filename} line {err_lineno})'
         feature_count = None
     else:
         feature_count = len(precincts)
