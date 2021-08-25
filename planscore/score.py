@@ -154,7 +154,7 @@ def safe_positives(values):
     
     return len([n for n in safe_values if n > 0]) / len(values)
 
-def percentrank(column, house, value):
+def percentrank_abs(column, house, value):
     '''
     '''
     path = os.path.join(os.path.dirname(__file__), 'model', {
@@ -166,6 +166,28 @@ def percentrank(column, house, value):
     with gzip.open(path, 'rt') as file:
         values = [
             1 if abs(value) > abs(float(row[column])) else 0
+            for row in csv.DictReader(file)
+            if row[column] != ''
+        ]
+    
+    return sum(values) / len(values)
+
+def percentrank_rel(column, house, value):
+    '''
+    '''
+    path = os.path.join(os.path.dirname(__file__), 'model', {
+        data.House.ushouse: 'bias_ushouse.csv.gz',
+        data.House.statehouse: 'bias_statehouse.csv.gz',
+        data.House.statesenate: 'bias_statesenate.csv.gz',
+    }[house])
+    
+    with gzip.open(path, 'rt') as file:
+        values = [
+            (
+                (1 if value < float(row[column]) else 0)
+                if (value < 0)
+                else (1 if value > float(row[column]) else 0)
+            )
             for row in csv.DictReader(file)
             if row[column] != ''
         ]
@@ -546,19 +568,23 @@ def calculate_district_biases(upload):
         'Mean-Median': safe_mean(MMDs),
         'Mean-Median SD': safe_stdev(MMDs),
         'Mean-Median Positives': safe_positives(MMDs),
-        'Mean-Median Percentrank': percentrank(COLUMN_MMD, upload.model.house, safe_mean(MMDs)),
+        'Mean-Median Absolute Percent Rank': percentrank_abs(COLUMN_MMD, upload.model.house, safe_mean(MMDs)),
+        'Mean-Median Relative Percent Rank': percentrank_rel(COLUMN_MMD, upload.model.house, safe_mean(MMDs)),
         'Partisan Bias': safe_mean(PBs),
         'Partisan Bias SD': safe_stdev(PBs),
         'Partisan Bias Positives': safe_positives(PBs),
-        'Partisan Bias Percentrank': percentrank(COLUMN_PB, upload.model.house, safe_mean(PBs)),
+        'Partisan Bias Absolute Percent Rank': percentrank_abs(COLUMN_PB, upload.model.house, safe_mean(PBs)),
+        'Partisan Bias Relative Percent Rank': percentrank_rel(COLUMN_PB, upload.model.house, safe_mean(PBs)),
         'Declination': safe_mean(D2s),
         'Declination SD': safe_stdev(D2s),
         'Declination Positives': safe_positives(D2s),
-        'Declination Percentrank': percentrank(COLUMN_D2, upload.model.house, safe_mean(D2s)),
+        'Declination Absolute Percent Rank': percentrank_abs(COLUMN_D2, upload.model.house, safe_mean(D2s)),
+        'Declination Relative Percent Rank': percentrank_rel(COLUMN_D2, upload.model.house, safe_mean(D2s)),
         'Efficiency Gap': safe_mean(EGs[0]),
         'Efficiency Gap SD': safe_stdev(EGs[0]),
         'Efficiency Gap Positives': safe_positives(EGs[0]),
-        'Efficiency Gap Percentrank': percentrank(COLUMN_EG, upload.model.house, safe_mean(EGs[0])),
+        'Efficiency Gap Absolute Percent Rank': percentrank_abs(COLUMN_EG, upload.model.house, safe_mean(EGs[0])),
+        'Efficiency Gap Relative Percent Rank': percentrank_rel(COLUMN_EG, upload.model.house, safe_mean(EGs[0])),
     }
     
     for swing in (1, 2, 3, 4, 5):
