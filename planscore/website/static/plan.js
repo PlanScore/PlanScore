@@ -665,7 +665,7 @@ function show_metrics_table(plan, metrics_table)
             </thead>
             <tbody>
             <tr>
-                <th>Efficiency Gap</th>
+                <th><a href="${window.eg_metric_url}">Efficiency Gap</a></th>
                 <td>${nice_percent(Math.abs(eg_value))}</td>
                 <td>${eg_win_party}</td>
                 <td>${nice_round_percent(eg_positives)}</td>
@@ -673,7 +673,7 @@ function show_metrics_table(plan, metrics_table)
                 <td>${nice_round_percent(eg_percentrank_rel)}</td>
             </tr>
             <tr>
-                <th>Declination</th>
+                <th><a href="${window.d2_metric_url}">Declination</a></th>
                 <td>${Math.round(Math.abs(dec2_value) * 100)/100}</td>
                 <td>${dec2_win_party}</td>
                 <td>${nice_round_percent(dec2_positives)}</td>
@@ -681,7 +681,7 @@ function show_metrics_table(plan, metrics_table)
                 <td>${nice_round_percent(dec2_percentrank_rel)}</td>
             </tr>
             <tr>
-                <th>Partian Bias</th>
+                <th><a href="${window.pb_metric_url}">Partian Bias</a></th>
                 <td>${nice_percent(Math.abs(pb_value))}</td>
                 <td>${pb_win_party}</td>
                 <td>${nice_round_percent(pb_positives)}</td>
@@ -689,7 +689,7 @@ function show_metrics_table(plan, metrics_table)
                 <td>${nice_round_percent(pb_percentrank_rel)}</td>
             </tr>
             <tr>
-                <th>Mean-Median Difference</th>
+                <th><a href="${window.mm_metric_url}">Mean-Median Difference</a></th>
                 <td>${nice_percent(Math.abs(mmd_value))}</td>
                 <td>${mmd_win_party}</td>
                 <td>${nice_round_percent(mmd_positives)}</td>
