@@ -580,8 +580,8 @@ function show_metrics_table(plan, metrics_table)
                 <th>Metric</th>
                 <th>Value</th>
                 <th>Favors Democrats in this % of Scenarios<sup>*</sup></th>
-                <th>More Skewed than this % Historical Plans<sup>†</sup></th>
-                <th>More Pro-Democratic than this % Historical Plans<sup>†</sup></th>
+                <th>More Skewed than this % of Historical Plans<sup>†</sup></th>
+                <th>More Pro-Democratic than this % of Historical Plans<sup>†</sup></th>
             </tr>
             </thead>
             <tbody>
@@ -600,7 +600,7 @@ function show_metrics_table(plan, metrics_table)
                 <td>${nice_round_percent(dec2_percentrank_rel)}</td>
             </tr>
             <tr>
-                <th><a href="${window.pb_metric_url}">Partian Bias</a></th>
+                <th><a href="${window.pb_metric_url}">Partisan Bias</a></th>
                 <td>${nice_percent(Math.abs(pb_value))} Pro-${pb_win_party}</td>
                 <td>${nice_round_percent(pb_positives)}</td>
                 <td>${nice_round_percent(pb_percentrank_abs)}</td>
