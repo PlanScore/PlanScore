@@ -138,6 +138,26 @@ class TestRunTile (unittest.TestCase):
         run_tile.score_district(district_geom, precincts, tile_geom)
         self.assertEqual(len(score_precinct.mock_calls), 0)
     
+    def test_score_district_invalid(self):
+        ''' Correct district totals appear despite invalid input geometry
+        '''
+        data_dir = os.path.join(os.path.dirname(__file__), 'data')
+        district_ds = osgeo.ogr.Open(os.path.join(data_dir, 'Illinois-State-Senate-Proposed-5-23-21.shp'))
+        district_features = list(district_ds.GetLayer(0))
+        with open(os.path.join(data_dir, 'illinois-005-decennial-12-1051-1524.geojson')) as file:
+            precincts = json.load(file).get('features')
+        tile_geom = run_tile.tile_geometry('12/1051/1524')
+        
+        all_totals = [
+            run_tile.score_district(feature.GetGeometryRef(), precincts, tile_geom)
+            for feature in district_features
+        ]
+        
+        expected_2020 = sum([precinct['properties']['Population 2020'] for precinct in precincts])
+        actual_2020 = sum([total['Population 2020'] for total in all_totals])
+        
+        self.assertEqual(expected_2020, actual_2020, 'Should see all presidental votes exactly once')
+    
     def test_score_precinct(self):
         ''' Correct values appears in totals dict after scoring a precinct.
         '''
