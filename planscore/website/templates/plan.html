@@ -177,7 +177,11 @@
         </table>
     </div>
     <a href="#" id="text-link">Download raw data as tab-delimited text</a>.
-    </section>
+    <div class="col-xs-12 col-sm-12 table-jehl table-metrics">
+        <table class="table table-hover" id="metrics">
+            {# this table will be populated by load_plan_score() #}
+        </table>
+    </div>
     <p><small>
         <sup>*</sup>
             Scenarios are part of
@@ -190,6 +194,7 @@
             plan metrics are featured in our
             <a href="{{planscore_website_base}}/about/historical-data/">historical dataset</a>.
     </small></p>
+    </section>
 	<script language="javascript">
 	    var LEAN_BLUE_PATTERN_URL = "{{ url_for('static', filename='lean-blue-pattern.png') }}",
 	        LEAN_RED_PATTERN_URL = "{{ url_for('static', filename='lean-red-pattern.png') }}",
@@ -227,6 +232,7 @@
 	        document.getElementById('plan-model-footnote'),
 	        model_url_pattern,
 	        document.getElementById('districts'),
+	        document.getElementById('metrics'),
 	        document.getElementById('score-efficiency-gap'),
 	        document.getElementById('score-partisan-bias'),
 	        document.getElementById('score-mean-median'),

@@ -991,14 +991,16 @@ function plan_has_incumbency(plan)
 }
 
 function start_load_plan_polling(url, message_section, score_section,
-    description_el, model_link, model_footnote, model_url_pattern, table, score_EG, score_PB,
-    score_MM, score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div, seat_count)
+    description_el, model_link, model_footnote, model_url_pattern,
+    districts_table, metrics_table, score_EG, score_PB, score_MM, score_DEC2,
+    score_sense, text_url, text_link, geom_prefix, map_div, seat_count)
 {
     const make_xhr = () => {
         load_plan_score(url, message_section, score_section,
-            description_el, model_link, model_footnote, model_url_pattern, table, score_EG, score_PB,
-            score_MM, score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
-            xhr_retry_callback);
+            description_el, model_link, model_footnote, model_url_pattern,
+            districts_table, metrics_table, score_EG, score_PB, score_MM,
+            score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div,
+            seat_count, xhr_retry_callback);
     };
 
     const xhr_retry_callback = () => {
@@ -1012,8 +1014,9 @@ function start_load_plan_polling(url, message_section, score_section,
 }
 
 function load_plan_score(url, message_section, score_section,
-    description_el, model_link, model_footnote, model_url_pattern, table, score_EG, score_PB,
-    score_MM, score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
+    description_el, model_link, model_footnote, model_url_pattern,
+    districts_table, metrics_table, score_EG, score_PB, score_MM, score_DEC2,
+    score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
     xhr_retry_callback)
 {
     var request = new XMLHttpRequest();
@@ -1113,7 +1116,7 @@ function load_plan_score(url, message_section, score_section,
         }
 
         tags = tags.concat(['</tbody>']);
-        table.innerHTML = tags.join('');
+        districts_table.innerHTML = tags.join('');
         text_link.href = text_url;
         
         if(plan.districts)
@@ -1154,9 +1157,50 @@ function load_plan_score(url, message_section, score_section,
                 + ' The mean-median difference is shown only where the parties’ statewide vote shares fall between 45% and 55%.'
                 + ' Outside this range the metric’s assumptions are not plausible.');
         }
+        
+        metrics_table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                    <th>Favors Rep’s in<br>this % of Scenarios</th>
+                    <th>More Biased than<br>this % Historical Plans</th>
+                    <th>More Pro-Republican than<br>this % Historical Plans</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <th>Efficiency Gap</th>
+                    <td>…</td>
+                    <td>…</td>
+                    <td>…</td>
+                    <td>…</td>
+                </tr>
+                <tr>
+                    <th>Declination</th>
+                    <td>…</td>
+                    <td>…</td>
+                    <td>…</td>
+                    <td>…</td>
+                </tr>
+                <tr>
+                    <th>Partian Bias</th>
+                    <td>…</td>
+                    <td>…</td>
+                    <td>…</td>
+                    <td>…</td>
+                </tr>
+                <tr>
+                    <th>Mean-Median Difference</th>
+                    <td>…</td>
+                    <td>…</td>
+                    <td>…</td>
+                    <td>…</td>
+                </tr>
+            </tbody>`;
 
         // Go on to load the map.
-        load_plan_map(geom_prefix + plan.geometry_key, map_div, plan, table);
+        load_plan_map(geom_prefix + plan.geometry_key, map_div, plan, districts_table);
     }
 
     request.onload = function()

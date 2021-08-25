@@ -52,22 +52,28 @@ div.planscore-partylegend div.planscore-partylegend-words {
     vertical-align: text-bottom;
 }
 
-.table-districts {
-    height: calc(100vh - 400px - 20px); /* fit on screen along with the 400px tall map, and some margin */
-    min-height: 300px;
+.table-districts, .table-metrics {
+    height: auto;
     padding: 0;
     width: 100%;
     margin-bottom: 15px;
 }
+.table-districts {
+    height: calc(100vh - 400px - 20px); /* fit on screen along with the 400px tall map, and some margin */
+    min-height: 300px;
+}
+.table-metrics {
+    margin-top: 15px;
+}
 @media only print {
     .table-districts { height: auto; }
 }
-.table-districts td, .table-districts th { text-align: right; }
-.table-districts td.ltxt, .table-districts th.ltxt { text-align: left; }
+.table-districts td, .table-metrics td, .table-districts th, .table-metrics th { text-align: right; }
+.table-districts td.ltxt, .table-metrics td.ltxt, .table-districts th.ltxt, .table-metrics th.ltxt { text-align: left; }
 .table-districts tbody td {
     white-space: nowrap; /* nowrap => body rows stay single-line => more dense display */
 }
-.table-districts table {
+.table-districts table, .table-metrics table {
     margin: 0;
 }
 
