@@ -275,8 +275,8 @@ function show_efficiency_gap_score(plan, score_EG)
 
             clear_element(node);
             
-            if(typeof plan.summary['Efficiency Gap Percentrank'] === 'number') {
-                var percentrank = plan.summary['Efficiency Gap Percentrank'],
+            if(typeof plan.summary['Efficiency Gap Absolute Percent Rank'] === 'number') {
+                var percentrank = plan.summary['Efficiency Gap Absolute Percent Rank'],
                     house = houseNames[plan.model.house],
                     positives = (gap < 0
                     ? (1 - plan.summary['Efficiency Gap Positives'])
@@ -365,8 +365,8 @@ function show_declination2_score(plan, score_DEC2)
 
             clear_element(node);
             
-            if(typeof plan.summary['Declination Percentrank'] === 'number') {
-                var percentrank = plan.summary['Declination Percentrank'],
+            if(typeof plan.summary['Declination Absolute Percent Rank'] === 'number') {
+                var percentrank = plan.summary['Declination Absolute Percent Rank'],
                     house = houseNames[plan.model.house],
                     positives = (declination < 0
                     ? (1 - plan.summary['Declination Positives'])
@@ -377,8 +377,8 @@ function show_declination2_score(plan, score_DEC2)
                     nice_percent(Math.abs(dec2_difference)), 'higher than the', win_partisans+"’",
                     'mean vote share in districts they won.',
                     /*
-                    'Along with the relative fraction of seats won by each party this',
-                    'leads to a declination that favors Republicans in',
+                    'Along with the relative fraction of seats won by each party,',
+                    'this leads to a declination that favors Republicans in',
                     nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
                     'This plan is more skewed than', nice_round_percent(percentrank),
                     'of the enacted', house, 'plans we have analyzed nationwide.<sup>†</sup>',
@@ -393,11 +393,11 @@ function show_declination2_score(plan, score_DEC2)
                     : plan.summary['Declination Positives']);
             
                 node.innerHTML = [
-                    'The', lose_partisans+"’", 'mean vote share in districts they won was',
+                    'The', lose_partisans+"’", 'mean vote share in districts they win is expected to be',
                     nice_percent(Math.abs(dec2_difference)), 'higher than the', win_partisans+"’",
-                    'mean vote share in districts they won.',
-                    'Along with the relative fraction of seats won by each party this',
-                    'leads to a declination that favors Republicans in',
+                    'mean vote share in districts they win.',
+                    'Along with the relative fraction of seats won by each party,',
+                    'this leads to a declination that favors Republicans in',
                     nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
                     '<a href="' + window.d2_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
                     ].join(' ');
@@ -426,8 +426,8 @@ function show_partisan_bias_score(plan, score_PB)
 
             clear_element(node);
             
-            if(typeof plan.summary['Partisan Bias Percentrank'] === 'number') {
-                var percentrank = plan.summary['Partisan Bias Percentrank'],
+            if(typeof plan.summary['Partisan Bias Absolute Percent Rank'] === 'number') {
+                var percentrank = plan.summary['Partisan Bias Absolute Percent Rank'],
                     house = houseNames[plan.model.house],
                     positives = (bias < 0
                     ? (1 - plan.summary['Partisan Bias Positives'])
@@ -507,8 +507,8 @@ function show_mean_median_score(plan, score_MM)
 
             clear_element(node);
             
-            if(typeof plan.summary['Mean-Median Percentrank'] === 'number') {
-                var percentrank = plan.summary['Mean-Median Percentrank'],
+            if(typeof plan.summary['Mean-Median Absolute Percent Rank'] === 'number') {
+                var percentrank = plan.summary['Mean-Median Absolute Percent Rank'],
                     house = houseNames[plan.model.house],
                     positives = (diff < 0
                     ? (1 - plan.summary['Mean-Median Positives'])
@@ -616,7 +616,7 @@ function hide_message(score_section, message_section)
 
 function show_metrics_table(plan, metrics_table)
 {
-    if(typeof plan.summary['Efficiency Gap Percentrank'] != 'number')
+    if(typeof plan.summary['Efficiency Gap Absolute Percent Rank'] != 'number')
     {
         metrics_table.parentNode.style.display = 'none';
         return;
@@ -628,25 +628,29 @@ function show_metrics_table(plan, metrics_table)
         eg_positives = (eg_value < 0
             ? (1 - plan.summary['Efficiency Gap Positives'])
             : plan.summary['Efficiency Gap Positives']),
-        eg_percentrank = plan.summary['Efficiency Gap Percentrank'],
+        eg_percentrank_abs = plan.summary['Efficiency Gap Absolute Percent Rank'],
+        eg_percentrank_rel = plan.summary['Efficiency Gap Relative Percent Rank'],
         dec2_value = plan.summary['Declination'],
         dec2_win_party = (dec2_value < 0 ? 'Republican' : 'Democratic'),
         dec2_positives = (dec2_value < 0
             ? (1 - plan.summary['Declination Positives'])
             : plan.summary['Declination Positives']),
-        dec2_percentrank = plan.summary['Declination Percentrank'],
+        dec2_percentrank_abs = plan.summary['Declination Absolute Percent Rank'],
+        dec2_percentrank_rel = plan.summary['Declination Relative Percent Rank'],
         pb_value = plan.summary['Partisan Bias'],
         pb_win_party = (pb_value < 0 ? 'Republican' : 'Democratic'),
         pb_positives = (pb_value < 0
             ? (1 - plan.summary['Partisan Bias Positives'])
             : plan.summary['Partisan Bias Positives']),
-        pb_percentrank = plan.summary['Partisan Bias Percentrank'],
+        pb_percentrank_abs = plan.summary['Partisan Bias Absolute Percent Rank'],
+        pb_percentrank_rel = plan.summary['Partisan Bias Relative Percent Rank'],
         mmd_value = plan.summary['Mean-Median'],
         mmd_win_party = (mmd_value < 0 ? 'Republican' : 'Democratic'),
         mmd_positives = (mmd_value < 0
             ? (1 - plan.summary['Mean-Median Positives'])
             : plan.summary['Mean-Median Positives']),
-        mmd_percentrank = plan.summary['Mean-Median Percentrank'];
+        mmd_percentrank_abs = plan.summary['Mean-Median Absolute Percent Rank'],
+        mmd_percentrank_rel = plan.summary['Mean-Median Relative Percent Rank'];
     
     metrics_table.innerHTML = `
         <thead>
@@ -665,32 +669,32 @@ function show_metrics_table(plan, metrics_table)
                 <td>${nice_percent(Math.abs(eg_value))}</td>
                 <td>${eg_win_party}</td>
                 <td>${nice_round_percent(eg_positives)}</td>
-                <td>${nice_round_percent(eg_percentrank)}</td>
-                <td>Unknown</td>
+                <td>${nice_round_percent(eg_percentrank_abs)}</td>
+                <td>${nice_round_percent(eg_percentrank_rel)}</td>
             </tr>
             <tr>
                 <th>Declination</th>
                 <td>${Math.round(Math.abs(dec2_value) * 100)/100}</td>
                 <td>${dec2_win_party}</td>
                 <td>${nice_round_percent(dec2_positives)}</td>
-                <td>${nice_round_percent(dec2_percentrank)}</td>
-                <td>Unknown</td>
+                <td>${nice_round_percent(dec2_percentrank_abs)}</td>
+                <td>${nice_round_percent(dec2_percentrank_rel)}</td>
             </tr>
             <tr>
                 <th>Partian Bias</th>
                 <td>${nice_percent(Math.abs(pb_value))}</td>
                 <td>${pb_win_party}</td>
                 <td>${nice_round_percent(pb_positives)}</td>
-                <td>${nice_round_percent(pb_percentrank)}</td>
-                <td>Unknown</td>
+                <td>${nice_round_percent(pb_percentrank_abs)}</td>
+                <td>${nice_round_percent(pb_percentrank_rel)}</td>
             </tr>
             <tr>
                 <th>Mean-Median Difference</th>
                 <td>${nice_percent(Math.abs(mmd_value))}</td>
                 <td>${mmd_win_party}</td>
                 <td>${nice_round_percent(mmd_positives)}</td>
-                <td>${nice_round_percent(mmd_percentrank)}</td>
-                <td>Unknown</td>
+                <td>${nice_round_percent(mmd_percentrank_abs)}</td>
+                <td>${nice_round_percent(mmd_percentrank_rel)}</td>
             </tr>
         </tbody>`;
 }
