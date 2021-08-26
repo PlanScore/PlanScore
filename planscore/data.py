@@ -404,9 +404,9 @@ MODELS = [
     Model(State.LA, House.ushouse,       6,  True, VERSION, 'data/LA/003-decennial'), # 4ee6b60
     Model(State.LA, House.statesenate,  39,  True, VERSION, 'data/LA/003-decennial'), # 4ee6b60
     Model(State.LA, House.statehouse,  105,  True, VERSION, 'data/LA/003-decennial'), # 4ee6b60
-    Model(State.MA, House.ushouse,       9,  True, VERSION, 'data/MA/004-decennial'), # 4ee6b60
-    Model(State.MA, House.statesenate,  40,  True, VERSION, 'data/MA/004-decennial'), # 4ee6b60
-    Model(State.MA, House.statehouse,  160,  True, VERSION, 'data/MA/004-decennial'), # 4ee6b60
+    Model(State.MA, House.ushouse,       9,  True, VERSION, 'data/MA/005-2020vote'), # 2fa2d05
+    Model(State.MA, House.statesenate,  40,  True, VERSION, 'data/MA/005-2020vote'), # 2fa2d05
+    Model(State.MA, House.statehouse,  160,  True, VERSION, 'data/MA/005-2020vote'), # 2fa2d05
     Model(State.MD, House.ushouse,       8,  True, VERSION, 'data/MD/006-decennial'), # 4ee6b60
     Model(State.MD, House.statesenate,  47,  True, VERSION, 'data/MD/006-decennial'), # 4ee6b60
     Model(State.MD, House.statehouse,   68,  True, VERSION, 'data/MD/006-decennial'), # 4ee6b60
@@ -419,9 +419,9 @@ MODELS = [
     Model(State.MN, House.ushouse,       8,  True, VERSION, 'data/MN/005-decennial'), # 4ee6b60
     Model(State.MN, House.statesenate,  67,  True, VERSION, 'data/MN/005-decennial'), # 4ee6b60
     Model(State.MN, House.statehouse,  134,  True, VERSION, 'data/MN/005-decennial'), # 4ee6b60
-    Model(State.MO, House.ushouse,       8,  True, VERSION, 'data/MO/003-decennial'), # 4ee6b60
-    Model(State.MO, House.statesenate,  34,  True, VERSION, 'data/MO/003-decennial'), # 4ee6b60
-    Model(State.MO, House.statehouse,  163,  True, VERSION, 'data/MO/003-decennial'), # 4ee6b60
+    Model(State.MO, House.ushouse,       8,  True, VERSION, 'data/MO/004-2020vote'), # 2fa2d05
+    Model(State.MO, House.statesenate,  34,  True, VERSION, 'data/MO/004-2020vote'), # 2fa2d05
+    Model(State.MO, House.statehouse,  163,  True, VERSION, 'data/MO/004-2020vote'), # 2fa2d05
     Model(State.MT, House.ushouse,       2,  True, VERSION, 'data/MT/005-decennial'), # 4ee6b60
     Model(State.MT, House.statesenate,  50,  True, VERSION, 'data/MT/005-decennial'), # 4ee6b60
     Model(State.MT, House.statehouse,  100,  True, VERSION, 'data/MT/005-decennial'), # 4ee6b60
@@ -466,9 +466,9 @@ MODELS = [
     Model(State.SD, House.ushouse,       1,  True, VERSION, 'data/SD/004-decennial'), # 4ee6b60
     Model(State.SD, House.statesenate,  35,  True, VERSION, 'data/SD/004-decennial'), # 4ee6b60
     Model(State.SD, House.statehouse,   70,  True, VERSION, 'data/SD/004-decennial'), # 4ee6b60
-    Model(State.TN, House.ushouse,       9,  True, VERSION, 'data/TN/004-decennial'), # 4ee6b60
-    Model(State.TN, House.statesenate,  33,  True, VERSION, 'data/TN/004-decennial'), # 4ee6b60
-    Model(State.TN, House.statehouse,   99,  True, VERSION, 'data/TN/004-decennial'), # 4ee6b60
+    Model(State.TN, House.ushouse,       9,  True, VERSION, 'data/TN/005-2020vote'), # 2fa2d05
+    Model(State.TN, House.statesenate,  33,  True, VERSION, 'data/TN/005-2020vote'), # 2fa2d05
+    Model(State.TN, House.statehouse,   99,  True, VERSION, 'data/TN/005-2020vote'), # 2fa2d05
     Model(State.TX, House.ushouse,      38,  True, VERSION, 'data/TX/005-decennial'), # 4ee6b60
     Model(State.TX, House.statesenate,  31,  True, VERSION, 'data/TX/005-decennial'), # 4ee6b60
     Model(State.TX, House.statehouse,  150,  True, VERSION, 'data/TX/005-decennial'), # 4ee6b60
@@ -481,9 +481,9 @@ MODELS = [
     Model(State.VT, House.ushouse,       1,  True, VERSION, 'data/VT/005-decennial'), # 4ee6b60
     Model(State.VT, House.statesenate,  30,  True, VERSION, 'data/VT/005-decennial'), # 4ee6b60
     Model(State.VT, House.statehouse,  150,  True, VERSION, 'data/VT/005-decennial'), # 4ee6b60
-    Model(State.WA, House.ushouse,      10,  True, VERSION, 'data/WA/003-decennial'), # 4ee6b60
-    Model(State.WA, House.statesenate,  49,  True, VERSION, 'data/WA/003-decennial'), # 4ee6b60
-    Model(State.WA, House.statehouse,   98,  True, VERSION, 'data/WA/003-decennial'), # 4ee6b60
+    Model(State.WA, House.ushouse,      10,  True, VERSION, 'data/WA/004-2020vote'), # 2fa2d05
+    Model(State.WA, House.statesenate,  49,  True, VERSION, 'data/WA/004-2020vote'), # 2fa2d05
+    Model(State.WA, House.statehouse,   98,  True, VERSION, 'data/WA/004-2020vote'), # 2fa2d05
     Model(State.WI, House.ushouse,       8,  True, VERSION, 'data/WI/009-decennial'), # 4ee6b60
     Model(State.WI, House.statesenate,  33,  True, VERSION, 'data/WI/009-decennial'), # 4ee6b60
     Model(State.WI, House.statehouse,   99,  True, VERSION, 'data/WI/009-decennial'), # 4ee6b60
