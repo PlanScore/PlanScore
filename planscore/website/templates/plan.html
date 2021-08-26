@@ -33,7 +33,7 @@
         <p>Loading district plan</p>
     </section>
     <section id="plan-score">
-    <div id="plan-description"><h3>(Loading)</h3></div>
+    <div id="plan-description"><h1>(Loading)</h1></div>
     <p style="display:none">
         This plan has <span id="plan-seat-count">N seats</span>.
         Fairness metrics for plans with fewer than seven seats should be interpreted with great caution.
@@ -150,7 +150,7 @@
 	        BLUEISH_PATTERN_URL = "{{ url_for('static', filename='blueish-pattern.png') }}",
 	        REDDISH_PATTERN_URL = "{{ url_for('static', filename='reddish-pattern.png') }}",
 	        UNKNOWN_PATTERN_URL = "{{ url_for('static', filename='unknown-pattern.png') }}";
-	    
+
 	    var plan_id = location.search.replace('?', ''),
 	        plan_url = format_url('{{ data_url_pattern }}', plan_id),
 	        geom_prefix = '{{ geom_url_prefix }}';
