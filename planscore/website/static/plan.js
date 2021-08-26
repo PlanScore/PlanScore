@@ -354,7 +354,9 @@ function show_declination2_score(plan, score_DEC2)
             
                 if(isNaN(dec2_difference)) {
                     node.innerHTML = `
-                        The ${win_partisans} are expected to win all districts.
+                        The ${lose_partisans}’ mean vote share in districts they won was
+                        ${nice_percent(Math.abs(dec2_difference))} higher than the ${win_partisans}’
+                        mean vote share in districts they won.
                         Along with the relative fraction of seats won by each party,
                         this leads to a declination that favors Republicans in
                         ${nice_round_percent(positives)} of predicted scenarios.<sup>*</sup>
