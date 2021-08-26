@@ -341,8 +341,8 @@ function show_declination2_score(plan, score_DEC2)
                 (plan.model ? plan.model.house : 'ushouse'), 'plan');
 
         } else if(node.nodeName == 'P') {
-            var win_partisans = (declination < 0 ? 'Republicans' : 'Democrats'),
-                lose_partisans = (declination < 0 ? 'Democrats' : 'Republicans');
+            var win_party = (declination < 0 ? 'Republican' : 'Democratic'),
+                lose_party = (declination < 0 ? 'Democratic' : 'Republican');
 
             clear_element(node);
             
@@ -354,9 +354,9 @@ function show_declination2_score(plan, score_DEC2)
             
                 if(isNaN(dec2_difference)) {
                     node.innerHTML = `
-                        The ${lose_partisans}’ mean vote share in districts they won was
-                        higher than the ${win_partisans}’
-                        mean vote share in districts they won.
+                        The mean ${lose_party} vote share in ${lose_party}
+                        districts is expected to be higher than the mean
+                        ${win_party} vote share in ${win_party} districts.
                         Along with the relative fraction of seats won by each party,
                         this leads to a declination that favors Republicans in
                         ${nice_round_percent(positives)} of predicted scenarios.<sup>*</sup>
@@ -364,9 +364,9 @@ function show_declination2_score(plan, score_DEC2)
                         `;
                 } else {
                     node.innerHTML = `
-                        The ${lose_partisans}’ mean vote share in districts they won was
-                        ${nice_percent(Math.abs(dec2_difference))} higher than the ${win_partisans}’
-                        mean vote share in districts they won.
+                        The mean ${lose_party} vote share in ${lose_party}
+                        districts is expected to be ${nice_percent(Math.abs(dec2_difference))}
+                        higher than the mean ${win_party} vote share in ${win_party} districts.
                         Along with the relative fraction of seats won by each party,
                         this leads to a declination that favors Republicans in
                         ${nice_round_percent(positives)} of predicted scenarios.<sup>*</sup>
