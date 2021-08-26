@@ -352,15 +352,25 @@ function show_declination2_score(plan, score_DEC2)
                     ? (1 - plan.summary['Declination Positives'])
                     : plan.summary['Declination Positives']);
             
-                node.innerHTML = [
-                    'The', lose_partisans+"’", 'mean vote share in districts they won was',
-                    nice_percent(Math.abs(dec2_difference)), 'higher than the', win_partisans+"’",
-                    'mean vote share in districts they won.',
-                    'Along with the relative fraction of seats won by each party,',
-                    'this leads to a declination that favors Republicans in',
-                    nice_round_percent(positives), 'of predicted scenarios.<sup>*</sup>',
-                    '<a href="' + window.d2_metric_url + '">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>'
-                    ].join(' ');
+                if(isNaN(dec2_difference)) {
+                    node.innerHTML = `
+                        The ${win_partisans} are expected to win all districts.
+                        Along with the relative fraction of seats won by each party,
+                        this leads to a declination that favors Republicans in
+                        ${nice_round_percent(positives)} of predicted scenarios.<sup>*</sup>
+                        <a href="${window.d2_metric_url}">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>
+                        `;
+                } else {
+                    node.innerHTML = `
+                        The ${lose_partisans}’ mean vote share in districts they won was
+                        ${nice_percent(Math.abs(dec2_difference))} higher than the ${win_partisans}’
+                        mean vote share in districts they won.
+                        Along with the relative fraction of seats won by each party,
+                        this leads to a declination that favors Republicans in
+                        ${nice_round_percent(positives)} of predicted scenarios.<sup>*</sup>
+                        <a href="${window.d2_metric_url}">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>
+                        `;
+                }
             }
         }
     }
