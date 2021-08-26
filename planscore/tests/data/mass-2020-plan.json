@@ -1,0 +1,311 @@
+{
+  "commit_sha": "082f6bfcac91a05e68fc0e284ae51b77135a45a3",
+  "description": "ma_2010_congress_2011-11-21_2021-12-31.zip",
+  "districts": [
+    {
+      "compactness": {
+        "Polsby-Popper": 0.311,
+        "Reock": 0.3889
+      },
+      "totals": {
+        "Asian Citizen Voting-Age Population 2019": 9962.96,
+        "Asian Citizen Voting-Age Population 2019, Margin": 35757.67,
+        "Black Citizen Voting-Age Population 2019": 31239.64,
+        "Black Citizen Voting-Age Population 2019, Margin": 22991.41,
+        "Citizen Voting-Age Population 2019": 560882.47,
+        "Citizen Voting-Age Population 2019, Margin": 126382.37,
+        "Democratic Votes": 228758.18,
+        "Democratic Votes SD": 21378.44,
+        "Democratic Wins": 0.94,
+        "High School or GED 2019": 152319.26,
+        "High School or GED 2019, Margin": 81512.04,
+        "Hispanic Citizen Voting-Age Population 2019": 84003.79,
+        "Hispanic Citizen Voting-Age Population 2019, Margin": 51264.63,
+        "Population 2020": 730412.0,
+        "Republican Votes": 165619.86,
+        "Republican Votes SD": 21378.44,
+        "US President 2020 - DEM": 224937.46,
+        "US President 2020 - REP": 135654.07
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.2726,
+        "Reock": 0.3981
+      },
+      "totals": {
+        "Asian Citizen Voting-Age Population 2019": 22620.83,
+        "Asian Citizen Voting-Age Population 2019, Margin": 31258.73,
+        "Black Citizen Voting-Age Population 2019": 23267.44,
+        "Black Citizen Voting-Age Population 2019, Margin": 28975.25,
+        "Citizen Voting-Age Population 2019": 561770.35,
+        "Citizen Voting-Age Population 2019, Margin": 118152.86,
+        "Democratic Votes": 231247.47,
+        "Democratic Votes SD": 22011.76,
+        "Democratic Wins": 0.944,
+        "High School or GED 2019": 134575.2,
+        "High School or GED 2019, Margin": 71805.72,
+        "Hispanic Citizen Voting-Age Population 2019": 44235.83,
+        "Hispanic Citizen Voting-Age Population 2019, Margin": 34042.17,
+        "Population 2020": 780084.0,
+        "Republican Votes": 163130.57,
+        "Republican Votes SD": 22011.76,
+        "US President 2020 - DEM": 240551.03,
+        "US President 2020 - REP": 140379.54
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.2274,
+        "Reock": 0.3156
+      },
+      "totals": {
+        "Asian Citizen Voting-Age Population 2019": 35079.17,
+        "Asian Citizen Voting-Age Population 2019, Margin": 26582.36,
+        "Black Citizen Voting-Age Population 2019": 16327.96,
+        "Black Citizen Voting-Age Population 2019, Margin": 35601.01,
+        "Citizen Voting-Age Population 2019": 537947.62,
+        "Citizen Voting-Age Population 2019, Margin": 119166.85,
+        "Democratic Votes": 235603.95,
+        "Democratic Votes SD": 21893.11,
+        "Democratic Wins": 0.955,
+        "High School or GED 2019": 137541.14,
+        "High School or GED 2019, Margin": 74752.43,
+        "Hispanic Citizen Voting-Age Population 2019": 79184.66,
+        "Hispanic Citizen Voting-Age Population 2019, Margin": 47949.7,
+        "Population 2020": 796657.0,
+        "Republican Votes": 158774.09,
+        "Republican Votes SD": 21893.11,
+        "US President 2020 - DEM": 243302.68,
+        "US President 2020 - REP": 132756.29
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.1663,
+        "Reock": 0.3726
+      },
+      "totals": {
+        "Asian Citizen Voting-Age Population 2019": 27497.72,
+        "Asian Citizen Voting-Age Population 2019, Margin": 25513.31,
+        "Black Citizen Voting-Age Population 2019": 16420.71,
+        "Black Citizen Voting-Age Population 2019, Margin": 29453.86,
+        "Citizen Voting-Age Population 2019": 554850.16,
+        "Citizen Voting-Age Population 2019, Margin": 105772.49,
+        "Democratic Votes": 239225.64,
+        "Democratic Votes SD": 22895.19,
+        "Democratic Wins": 0.968,
+        "High School or GED 2019": 103328.59,
+        "High School or GED 2019, Margin": 57521.22,
+        "Hispanic Citizen Voting-Age Population 2019": 21206.76,
+        "Hispanic Citizen Voting-Age Population 2019, Margin": 22509.06,
+        "Population 2020": 777104.0,
+        "Republican Votes": 155152.4,
+        "Republican Votes SD": 22895.19,
+        "US President 2020 - DEM": 276776.65,
+        "US President 2020 - REP": 144647.57
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.166,
+        "Reock": 0.3072
+      },
+      "totals": {
+        "Asian Citizen Voting-Age Population 2019": 45849.32,
+        "Asian Citizen Voting-Age Population 2019, Margin": 37190.23,
+        "Black Citizen Voting-Age Population 2019": 25816.14,
+        "Black Citizen Voting-Age Population 2019, Margin": 45862.13,
+        "Citizen Voting-Age Population 2019": 528756.3,
+        "Citizen Voting-Age Population 2019, Margin": 124040.65,
+        "Democratic Votes": 267965.74,
+        "Democratic Votes SD": 26405.27,
+        "Democratic Wins": 0.996,
+        "High School or GED 2019": 100822.89,
+        "High School or GED 2019, Margin": 68740.74,
+        "Hispanic Citizen Voting-Age Population 2019": 34150.51,
+        "Hispanic Citizen Voting-Age Population 2019, Margin": 32667.58,
+        "Population 2020": 794972.0,
+        "Republican Votes": 126412.3,
+        "Republican Votes SD": 26405.27,
+        "US President 2020 - DEM": 304072.28,
+        "US President 2020 - REP": 97561.85
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.3841,
+        "Reock": 0.5819
+      },
+      "totals": {
+        "Asian Citizen Voting-Age Population 2019": 19837.16,
+        "Asian Citizen Voting-Age Population 2019, Margin": 27081.52,
+        "Black Citizen Voting-Age Population 2019": 16509.88,
+        "Black Citizen Voting-Age Population 2019, Margin": 28441.34,
+        "Citizen Voting-Age Population 2019": 570226.3,
+        "Citizen Voting-Age Population 2019, Margin": 119440.55,
+        "Democratic Votes": 233642.15,
+        "Democratic Votes SD": 22854.17,
+        "Democratic Wins": 0.948,
+        "High School or GED 2019": 129944.0,
+        "High School or GED 2019, Margin": 72054.38,
+        "Hispanic Citizen Voting-Age Population 2019": 34068.83,
+        "Hispanic Citizen Voting-Age Population 2019, Margin": 29702.01,
+        "Population 2020": 777793.0,
+        "Republican Votes": 160735.89,
+        "Republican Votes SD": 22854.17,
+        "US President 2020 - DEM": 279781.79,
+        "US President 2020 - REP": 159251.8
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.076,
+        "Reock": 0.2102
+      },
+      "totals": {
+        "Asian Citizen Voting-Age Population 2019": 46788.67,
+        "Asian Citizen Voting-Age Population 2019, Margin": 78329.1,
+        "Black Citizen Voting-Age Population 2019": 128000.51,
+        "Black Citizen Voting-Age Population 2019, Margin": 44573.31,
+        "Citizen Voting-Age Population 2019": 538335.39,
+        "Citizen Voting-Age Population 2019, Margin": 142965.18,
+        "Democratic Votes": 298095.62,
+        "Democratic Votes SD": 30665.76,
+        "Democratic Wins": 0.998,
+        "High School or GED 2019": 117303.94,
+        "High School or GED 2019, Margin": 78491.07,
+        "Hispanic Citizen Voting-Age Population 2019": 83585.74,
+        "Hispanic Citizen Voting-Age Population 2019, Margin": 58133.16,
+        "Population 2020": 799687.0,
+        "Republican Votes": 96282.42,
+        "Republican Votes SD": 30665.76,
+        "US President 2020 - DEM": 275407.17,
+        "US President 2020 - REP": 42974.27
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.1344,
+        "Reock": 0.3882
+      },
+      "totals": {
+        "Asian Citizen Voting-Age Population 2019": 35186.87,
+        "Asian Citizen Voting-Age Population 2019, Margin": 49261.58,
+        "Black Citizen Voting-Age Population 2019": 51140.54,
+        "Black Citizen Voting-Age Population 2019, Margin": 39286.66,
+        "Citizen Voting-Age Population 2019": 565581.86,
+        "Citizen Voting-Age Population 2019, Margin": 134816.67,
+        "Democratic Votes": 243338.31,
+        "Democratic Votes SD": 22154.09,
+        "Democratic Wins": 0.982,
+        "High School or GED 2019": 122274.83,
+        "High School or GED 2019, Margin": 73729.14,
+        "Hispanic Citizen Voting-Age Population 2019": 26572.42,
+        "Hispanic Citizen Voting-Age Population 2019, Margin": 28208.97,
+        "Population 2020": 798428.0,
+        "Republican Votes": 151039.73,
+        "Republican Votes SD": 22154.09,
+        "US President 2020 - DEM": 284004.71,
+        "US President 2020 - REP": 137712.61
+      }
+    },
+    {
+      "compactness": {
+        "Polsby-Popper": 0.291,
+        "Reock": 0.5858
+      },
+      "totals": {
+        "Asian Citizen Voting-Age Population 2019": 7317.47,
+        "Asian Citizen Voting-Age Population 2019, Margin": 28574.08,
+        "Black Citizen Voting-Age Population 2019": 17206.71,
+        "Black Citizen Voting-Age Population 2019, Margin": 21450.91,
+        "Citizen Voting-Age Population 2019": 573432.66,
+        "Citizen Voting-Age Population 2019, Margin": 135405.07,
+        "Democratic Votes": 220592.04,
+        "Democratic Votes SD": 20517.83,
+        "Democratic Wins": 0.882,
+        "High School or GED 2019": 150216.36,
+        "High School or GED 2019, Margin": 83419.13,
+        "Hispanic Citizen Voting-Age Population 2019": 20510.53,
+        "Hispanic Citizen Voting-Age Population 2019, Margin": 22963.54,
+        "Population 2020": 774307.0,
+        "Republican Votes": 173786.0,
+        "Republican Votes SD": 20517.83,
+        "US President 2020 - DEM": 253367.57,
+        "US President 2020 - REP": 176263.0
+      }
+    }
+  ],
+  "geometry_key": "uploads/20210826T012505.526729913Z/geometry.json",
+  "id": "20210826T012505.526729913Z",
+  "incumbents": [
+    "O",
+    "O",
+    "O",
+    "O",
+    "O",
+    "O",
+    "O",
+    "O",
+    "O"
+  ],
+  "key": "uploads/20210826T012505.526729913Z/upload/ma_2010_congress_2011-11-21_2021-12-31.zip",
+  "message": "Finished scoring this plan.",
+  "model": {
+    "house": "ushouse",
+    "incumbency": true,
+    "key_prefix": "data/MA/005-2020vote",
+    "seats": 9,
+    "state": "MA",
+    "version": "2021B"
+  },
+  "progress": [
+    58,
+    58
+  ],
+  "start_time": 1629941109.7944827,
+  "status": true,
+  "summary": {
+    "Declination": 0.0389,
+    "Declination Absolute Percent Rank": 0.1873,
+    "Declination Positives": 0.136,
+    "Declination Relative Percent Rank": 0.6055,
+    "Declination SD": 0.1788,
+    "Efficiency Gap": 0.2182,
+    "Efficiency Gap +1 Dem": 0.2104,
+    "Efficiency Gap +1 Dem SD": 0.0754,
+    "Efficiency Gap +1 Rep": 0.2212,
+    "Efficiency Gap +1 Rep SD": 0.0862,
+    "Efficiency Gap +2 Dem": 0.2004,
+    "Efficiency Gap +2 Dem SD": 0.0759,
+    "Efficiency Gap +2 Rep": 0.2156,
+    "Efficiency Gap +2 Rep SD": 0.0949,
+    "Efficiency Gap +3 Dem": 0.1874,
+    "Efficiency Gap +3 Dem SD": 0.0737,
+    "Efficiency Gap +3 Rep": 0.2084,
+    "Efficiency Gap +3 Rep SD": 0.1038,
+    "Efficiency Gap +4 Dem": 0.1723,
+    "Efficiency Gap +4 Dem SD": 0.0751,
+    "Efficiency Gap +4 Rep": 0.197,
+    "Efficiency Gap +4 Rep SD": 0.1139,
+    "Efficiency Gap +5 Dem": 0.1546,
+    "Efficiency Gap +5 Dem SD": 0.0753,
+    "Efficiency Gap +5 Rep": 0.1724,
+    "Efficiency Gap +5 Rep SD": 0.1238,
+    "Efficiency Gap Absolute Percent Rank": 0.9964,
+    "Efficiency Gap Positives": 0.985,
+    "Efficiency Gap Relative Percent Rank": 1.0,
+    "Efficiency Gap SD": 0.0795,
+    "Mean-Median": -0.0123,
+    "Mean-Median Absolute Percent Rank": 0.1875,
+    "Mean-Median Positives": 0.206,
+    "Mean-Median Relative Percent Rank": 0.6232,
+    "Mean-Median SD": 0.0152,
+    "Partisan Bias": -0.0778,
+    "Partisan Bias Absolute Percent Rank": 0.6357,
+    "Partisan Bias Positives": 0.206,
+    "Partisan Bias Relative Percent Rank": 0.7875,
+    "Partisan Bias SD": 0.0996
+  }
+}

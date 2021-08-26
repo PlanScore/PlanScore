@@ -271,21 +271,26 @@ def calculate_D2(red_districts, blue_districts):
     red_wins = sorted([share for share in blue_shares if share <= 0.5])
     blue_wins = sorted([share for share in blue_shares if share > 0.5])
     
-    # Undefined if each party does not win at least one seat
-    if len(red_wins) < 1 or len(blue_wins) < 1:
-        return None
-    
-    theta = math.atan(
-        (1 - 2 * statistics.mean(red_wins)) * seats / len(red_wins)
-    )
+    if not red_wins:
+        # -1 if red party does not win at least one seat
+        declination = -1
 
-    gamma = math.atan(
-        (2 * statistics.mean(blue_wins) - 1) * seats / len(blue_wins)
-    )
+    elif not blue_wins:
+        # +1 if blue party does not win at least one seat
+        declination = +1
+
+    else:
+        theta = math.atan(
+            (1 - 2 * statistics.mean(red_wins)) * seats / len(red_wins)
+        )
+
+        gamma = math.atan(
+            (2 * statistics.mean(blue_wins) - 1) * seats / len(blue_wins)
+        )
     
-    # Convert to range [-1,1]
-    # A little extra precision just in case.
-    declination = 2.0 * (gamma - theta) / math.pi
+        # Convert to range [-1,1]
+        # A little extra precision just in case.
+        declination = 2.0 * (gamma - theta) / math.pi
 
     declination2 = declination * math.log(seats) / 2
     return -declination2

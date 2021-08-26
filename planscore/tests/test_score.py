@@ -259,8 +259,12 @@ class TestScore (unittest.TestCase):
             msg='Should see zero Dec2 even when one district is missing votes')
 
         d2e = score.calculate_D2((3, 4, 5), (2, 1, 0))
-        self.assertIsNone(d2e,
-            msg='Should see Dec2 = None when one party wins all districts')
+        self.assertAlmostEqual(d2e, -0.54930614,
+            msg='Should see low Dec2 when red party wins all districts in small state')
+
+        d2f = score.calculate_D2((2, 1, 0), (3, 4, 5))
+        self.assertAlmostEqual(d2f, 0.54930614,
+            msg='Should see high Dec2 when blue party wins all districts in small state')
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
@@ -1046,3 +1050,21 @@ class TestScore (unittest.TestCase):
         self.assertIsNone(output.districts[-1]['totals']['Republican Votes'])
         self.assertIsNone(output.districts[-1]['totals']['Democratic Votes'])
         self.assertIsNone(output.districts[-1]['totals']['Democratic Wins'])
+
+    @unittest.mock.patch('planscore.score.calculate_MMD')
+    @unittest.mock.patch('planscore.score.calculate_PB')
+    @unittest.mock.patch('planscore.score.calculate_EG')
+    def test_calculate_declination_in_lopsided_state(self, calculate_EG, calculate_PB, calculate_MMD):
+        ''' Declination can be meaningfully calculated in a one-party state
+        '''
+        with open(os.path.join(os.path.dirname(__file__), 'data', 'mass-2020-plan.json')) as file:
+            input = data.Upload.from_json(file.read())
+        
+        calculate_MMD.return_value = 0
+        calculate_PB.return_value = 0
+        calculate_EG.return_value = 0
+
+        output = score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input))))
+        
+        self.assertEqual(output.summary['Declination Absolute Percent Rank'], 1)
+        self.assertEqual(output.summary['Declination Relative Percent Rank'], 1)
