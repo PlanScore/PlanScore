@@ -140,20 +140,44 @@ def put_district_assignments(s3, bucket, upload, path):
     '''
     print('put_district_assignments:', (bucket, path))
     
+    def _stream2rows(stream):
+        head, tail = next(stream), stream
+        delimiter = '|' if '|' in head else ','
+        rows = csv.DictReader(
+            itertools.chain([head], tail),
+            delimiter=delimiter,
+        )
+        return rows.fieldnames, list(rows)
+    
     keys = []
 
     with open(path, 'r') as file:
-        district_key = operator.itemgetter('DISTRICT')
+        fieldnames, rows = _stream2rows(file)
     
-        rows = csv.DictReader(file, delimiter='|')
+        if len(fieldnames) != 2:
+            raise ValuError(f'Bad column count in {path}')
+
+        if 'GEOID10' in fieldnames:
+            block_column = 'GEOID10'
+            district_column = fieldnames[(fieldnames.index(block_column) + 1) % 2]
+        elif 'GEOID20' in fieldnames:
+            block_column = 'GEOID20'
+            district_column = fieldnames[(fieldnames.index(block_column) + 1) % 2]
+        elif 'DISTRICT' in fieldnames:
+            district_column = 'DISTRICT'
+            block_column = fieldnames[(fieldnames.index(district_column) + 1) % 2]
+        else:
+            block_column, district_column = fieldnames
+
+        district_key = operator.itemgetter(district_column)
         rows2 = itertools.groupby(sorted(rows, key=district_key), district_key)
         
         for (index, (key, rows3)) in enumerate(rows2):
-            rows4 = sorted(rows3, key=operator.itemgetter('BLOCKID'))
+            rows4 = sorted(rows3, key=operator.itemgetter(block_column))
             
             out = io.StringIO()
             for row in rows4:
-                print(row['BLOCKID'], file=out)
+                print(row[block_column], file=out)
         
             key = data.UPLOAD_ASSIGNMENTS_KEY.format(id=upload.id, index=index)
         
