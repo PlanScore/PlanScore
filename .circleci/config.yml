@@ -60,6 +60,23 @@ jobs:
           at: ~/repo
       - run: make live-deploy
 
+  # Deploy to block-assignment preview site!
+  Block-Deploy:
+    machine:
+      image: ubuntu-2004:202101-01
+    working_directory: ~/repo
+    steps:
+      - checkout
+      # Install Python things
+      - run: pyenv global 3.9.1
+      - run: pip3 install -U pip '.[deploy]'
+      # Install Node things (not slow enough to cache)
+      - run: npm install -g aws-cdk
+      # Build PlanScore thing
+      - attach_workspace:
+          at: ~/repo
+      - run: ./cdk-deploy.sh cf-blockassign
+
   # Update metrics-gathering code
   Metrics:
     machine:
@@ -83,6 +100,15 @@ workflows:
             branches:
               only:
                 - main
+                - migurski/remove-shapely
+      - Block-Deploy:
+          requires:
+            - Test
+            - Build
+          filters:
+            branches:
+              only:
+                - migurski/remove-shapely
       - Deploy:
           requires:
             - Test
