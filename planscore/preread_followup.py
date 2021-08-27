@@ -184,10 +184,11 @@ def get_block_assignments(path):
     def _stream2rows(stream):
         head, tail = next(stream), stream
         delimiter = '|' if '|' in head else ','
-        return list(csv.DictReader(
+        rows = csv.DictReader(
             itertools.chain([head], tail),
             delimiter=delimiter,
-        ))
+        )
+        return rows.fieldnames, list(rows)
     
     if ext == '.zip':
         with open(path, 'rb') as file:
@@ -199,14 +200,29 @@ def get_block_assignments(path):
 
             for name in namelist:
                 if os.path.splitext(name.lower())[1] in ('.txt', '.csv'):
-                    rows = _stream2rows(io.TextIOWrapper(zf.open(name)))
+                    fieldnames, rows = _stream2rows(io.TextIOWrapper(zf.open(name)))
                     break
 
     elif ext in ('.csv', '.txt'):
         with open(path, 'r') as file:
-            rows = _stream2rows(file)
+            fieldnames, rows = _stream2rows(file)
     
-    return [Assignment(row['BLOCKID'], row['DISTRICT']) for row in rows]
+    if len(fieldnames) != 2:
+        raise ValuError(f'Bad column count in {path}')
+
+    if 'GEOID10' in fieldnames:
+        block_column = 'GEOID10'
+        district_column = fieldnames[(fieldnames.index(block_column) + 1) % 2]
+    elif 'GEOID20' in fieldnames:
+        block_column = 'GEOID20'
+        district_column = fieldnames[(fieldnames.index(block_column) + 1) % 2]
+    elif 'DISTRICT' in fieldnames:
+        district_column = 'DISTRICT'
+        block_column = fieldnames[(fieldnames.index(district_column) + 1) % 2]
+    else:
+        block_column, district_column = fieldnames
+    
+    return [Assignment(row[block_column], row[district_column]) for row in rows]
 
 def count_district_geometries(path):
     '''
