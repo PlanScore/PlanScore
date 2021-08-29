@@ -112,10 +112,10 @@ class TestRunSlice (unittest.TestCase):
         partial_district_set = {"0000000001", "0000000003", "0000000005"}
         precincts = [
             {"GEOID": "0000000001", "Population 2010": 3, "US President 2016 - DEM": 100, "US President 2016 - REP": 50},
-            {"GEOID": "0000000002", "Population 2010": 5, "US President 2016 - DEM": 100, "US President 2016 - REP": 25},
-            {"GEOID": "0000000003", "Population 2010": 9, "US President 2016 - DEM": 100, "US President 2016 - REP": 25},
+            {"GEOID10": "0000000002", "Population 2010": 5, "US President 2016 - DEM": 100, "US President 2016 - REP": 25},
+            {"GEOID20": "0000000003", "Population 2010": 9, "US President 2016 - DEM": 100, "US President 2016 - REP": 25},
             {"GEOID": "0000000004", "Population 2010": 4, "US President 2016 - DEM": 0, "US President 2016 - REP": 100},
-            {"GEOID": "0000000005", "Population 2010": 2, "US President 2016 - DEM": 50, "US President 2016 - REP": 50},
+            {"GEOID10": "0000000005", "Population 2010": 2, "US President 2016 - DEM": 50, "US President 2016 - REP": 50},
         ]
         
         for precinct in precincts:
