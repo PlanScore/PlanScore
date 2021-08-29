@@ -9,6 +9,8 @@ def thing_geoid(thing):
         return thing['GEOID20']
     elif 'GEOID10' in thing:
         return thing['GEOID10']
+    elif 'BLOCKID' in thing:
+        return thing['BLOCKID']
     else:
         return thing['GEOID']
 

@@ -219,6 +219,9 @@ def get_block_assignments(path):
     elif 'GEOID20' in fieldnames:
         block_column = 'GEOID20'
         district_column = fieldnames[(fieldnames.index(block_column) + 1) % 2]
+    elif 'BLOCKID' in fieldnames:
+        block_column = 'BLOCKID'
+        district_column = fieldnames[(fieldnames.index(block_column) + 1) % 2]
     elif 'DISTRICT' in fieldnames:
         district_column = 'DISTRICT'
         block_column = fieldnames[(fieldnames.index(district_column) + 1) % 2]
