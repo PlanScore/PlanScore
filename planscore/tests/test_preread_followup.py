@@ -323,6 +323,16 @@ class TestPrereadFollowup (unittest.TestCase):
         assignments8 = preread_followup.get_block_assignments(null_plan8_path)
         self.assertEqual(len(assignments8), 10)
         self.assertEqual(assignments8[0], preread_followup.Assignment('0000000001', '02'))
+
+        null_plan9_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v9.csv')
+        assignments9 = preread_followup.get_block_assignments(null_plan9_path)
+        self.assertEqual(len(assignments9), 10)
+        self.assertEqual(assignments9[0], preread_followup.Assignment('0000000001', '02'))
+
+        null_plan10_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v10.csv')
+        assignments10 = preread_followup.get_block_assignments(null_plan10_path)
+        self.assertEqual(len(assignments10), 10)
+        self.assertEqual(assignments10[0], preread_followup.Assignment('0000000001', '02'))
     
     @unittest.mock.patch('sys.stdout')
     def test_count_district_geometries(self, stdout):

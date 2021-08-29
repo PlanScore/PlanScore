@@ -189,6 +189,14 @@ class TestPostreadCalculate (unittest.TestCase):
         null_plan8_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v8.csv')
         keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan8_path)
         self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
+
+        null_plan9_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v9.csv')
+        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan9_path)
+        self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
+
+        null_plan10_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v10.csv')
+        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan10_path)
+        self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
     
     @unittest.mock.patch('sys.stdout')
     def test_load_model_tiles_oldstyle(self, stdout):

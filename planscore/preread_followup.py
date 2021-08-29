@@ -184,10 +184,13 @@ def get_block_assignments(path):
     def _stream2rows(stream):
         head, tail = next(stream), stream
         delimiter = '|' if '|' in head else ','
-        rows = csv.DictReader(
-            itertools.chain([head], tail),
-            delimiter=delimiter,
-        )
+        if 'ID' in head:
+            # There's a header row with BLOCKID or GEOID
+            lines = itertools.chain([head], tail)
+        else:
+            # No header row, make a fake one
+            lines = itertools.chain([f'BLOCKID{delimiter}DISTRICT', head], tail)
+        rows = csv.DictReader(lines, delimiter=delimiter)
         return rows.fieldnames, list(rows)
     
     if ext == '.zip':
