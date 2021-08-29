@@ -1,4 +1,4 @@
-import urllib.parse, tempfile, shutil, os, contextlib, logging, zipfile, itertools, shutil, enum
+import urllib.parse, tempfile, shutil, os, contextlib, logging, zipfile, itertools, shutil, enum, csv
 from . import constants
 
 class UploadType (enum.Enum):
@@ -107,3 +107,18 @@ def event_query_args(event):
     '''
     '''
     return event.get('queryStringParameters') or {}
+
+def baf_stream_to_rows(stream):
+    '''
+    '''
+    head, tail = next(stream), stream
+    delimiter = '|' if '|' in head else ','
+    if 'ID' in head:
+        # There's a header row with BLOCKID or GEOID
+        lines = itertools.chain([head], tail)
+    else:
+        # No header row, make a fake one
+        lines = itertools.chain([f'BLOCKID{delimiter}DISTRICT', head], tail)
+    rows = csv.DictReader(lines, delimiter=delimiter)
+    return tuple(rows.fieldnames), list(rows)
+    

@@ -140,19 +140,10 @@ def put_district_assignments(s3, bucket, upload, path):
     '''
     print('put_district_assignments:', (bucket, path))
     
-    def _stream2rows(stream):
-        head, tail = next(stream), stream
-        delimiter = '|' if '|' in head else ','
-        rows = csv.DictReader(
-            itertools.chain([head], tail),
-            delimiter=delimiter,
-        )
-        return rows.fieldnames, list(rows)
-    
     keys = []
 
     with open(path, 'r') as file:
-        fieldnames, rows = _stream2rows(file)
+        fieldnames, rows = util.baf_stream_to_rows(file)
     
         if len(fieldnames) != 2:
             raise ValuError(f'Bad column count in {path}')

@@ -181,18 +181,6 @@ def get_block_assignments(path):
     '''
     _, ext = os.path.splitext(path.lower())
     
-    def _stream2rows(stream):
-        head, tail = next(stream), stream
-        delimiter = '|' if '|' in head else ','
-        if 'ID' in head:
-            # There's a header row with BLOCKID or GEOID
-            lines = itertools.chain([head], tail)
-        else:
-            # No header row, make a fake one
-            lines = itertools.chain([f'BLOCKID{delimiter}DISTRICT', head], tail)
-        rows = csv.DictReader(lines, delimiter=delimiter)
-        return rows.fieldnames, list(rows)
-    
     if ext == '.zip':
         with open(path, 'rb') as file:
             zf = zipfile.ZipFile(file)
@@ -203,12 +191,12 @@ def get_block_assignments(path):
 
             for name in namelist:
                 if os.path.splitext(name.lower())[1] in ('.txt', '.csv'):
-                    fieldnames, rows = _stream2rows(io.TextIOWrapper(zf.open(name)))
+                    fieldnames, rows = util.baf_stream_to_rows(io.TextIOWrapper(zf.open(name)))
                     break
 
     elif ext in ('.csv', '.txt'):
         with open(path, 'r') as file:
-            fieldnames, rows = _stream2rows(file)
+            fieldnames, rows = util.baf_stream_to_rows(file)
     
     if len(fieldnames) != 2:
         raise ValuError(f'Bad column count in {path}')

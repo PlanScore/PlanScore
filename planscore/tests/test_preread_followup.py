@@ -242,33 +242,6 @@ class TestPrereadFollowup (unittest.TestCase):
             preread_followup.guess_blockassign_model(null_plan4_path)
             self.assertEqual(str(err), 'Mississippi is not a currently supported state')
     
-    def test_guess_blockassign_model_variations(self):
-        ''' Test that guess_blockassign_model() guesses the correct U.S. state and house.
-        '''
-        null_plan1_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v1.csv')
-        self.assertEqual(preread_followup.guess_blockassign_model(null_plan1_path).key_prefix[:8], 'data/XX/')
-
-        null_plan2_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v2.csv')
-        self.assertEqual(preread_followup.guess_blockassign_model(null_plan2_path).key_prefix[:8], 'data/XX/')
-
-        null_plan3_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v3.csv')
-        self.assertEqual(preread_followup.guess_blockassign_model(null_plan3_path).key_prefix[:8], 'data/XX/')
-
-        null_plan4_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v4.csv')
-        self.assertEqual(preread_followup.guess_blockassign_model(null_plan4_path).key_prefix[:8], 'data/XX/')
-
-        null_plan5_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v5.csv')
-        self.assertEqual(preread_followup.guess_blockassign_model(null_plan5_path).key_prefix[:8], 'data/XX/')
-
-        null_plan6_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v6.csv')
-        self.assertEqual(preread_followup.guess_blockassign_model(null_plan6_path).key_prefix[:8], 'data/XX/')
-
-        null_plan7_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v7.csv')
-        self.assertEqual(preread_followup.guess_blockassign_model(null_plan7_path).key_prefix[:8], 'data/XX/')
-
-        null_plan8_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v8.csv')
-        self.assertEqual(preread_followup.guess_blockassign_model(null_plan8_path).key_prefix[:8], 'data/XX/')
-    
     def test_get_block_assignments_knowns(self):
         ''' Test that get_block_assignments() reads the right Assignment values
         '''
@@ -280,59 +253,6 @@ class TestPrereadFollowup (unittest.TestCase):
 
         null_plan3_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.csv')
         self.assertEqual(len(preread_followup.get_block_assignments(null_plan3_path)), 10)
-    
-    def test_get_block_assignments_variations(self):
-        ''' Test that get_block_assignments() reads the right Assignment values
-        '''
-        null_plan1_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v1.csv')
-        assignments1 = preread_followup.get_block_assignments(null_plan1_path)
-        self.assertEqual(len(assignments1), 10)
-        self.assertEqual(assignments1[0], preread_followup.Assignment('0000000001', '02'))
-
-        null_plan2_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v2.csv')
-        assignments2 = preread_followup.get_block_assignments(null_plan2_path)
-        self.assertEqual(len(assignments2), 10)
-        self.assertEqual(assignments2[0], preread_followup.Assignment('0000000001', '02'))
-
-        null_plan3_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v3.csv')
-        assignments3 = preread_followup.get_block_assignments(null_plan3_path)
-        self.assertEqual(len(assignments3), 10)
-        self.assertEqual(assignments3[0], preread_followup.Assignment('0000000001', '02'))
-
-        null_plan4_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v4.csv')
-        assignments4 = preread_followup.get_block_assignments(null_plan4_path)
-        self.assertEqual(len(assignments4), 10)
-        self.assertEqual(assignments4[0], preread_followup.Assignment('0000000001', '02'))
-
-        null_plan5_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v5.csv')
-        assignments5 = preread_followup.get_block_assignments(null_plan5_path)
-        self.assertEqual(len(assignments5), 10)
-        self.assertEqual(assignments5[0], preread_followup.Assignment('0000000001', '02'))
-
-        null_plan6_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v6.csv')
-        assignments6 = preread_followup.get_block_assignments(null_plan6_path)
-        self.assertEqual(len(assignments6), 10)
-        self.assertEqual(assignments6[0], preread_followup.Assignment('0000000001', '02'))
-
-        null_plan7_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v7.csv')
-        assignments7 = preread_followup.get_block_assignments(null_plan7_path)
-        self.assertEqual(len(assignments7), 10)
-        self.assertEqual(assignments7[0], preread_followup.Assignment('0000000001', '02'))
-
-        null_plan8_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v8.csv')
-        assignments8 = preread_followup.get_block_assignments(null_plan8_path)
-        self.assertEqual(len(assignments8), 10)
-        self.assertEqual(assignments8[0], preread_followup.Assignment('0000000001', '02'))
-
-        null_plan9_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v9.csv')
-        assignments9 = preread_followup.get_block_assignments(null_plan9_path)
-        self.assertEqual(len(assignments9), 10)
-        self.assertEqual(assignments9[0], preread_followup.Assignment('0000000001', '02'))
-
-        null_plan10_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v10.csv')
-        assignments10 = preread_followup.get_block_assignments(null_plan10_path)
-        self.assertEqual(len(assignments10), 10)
-        self.assertEqual(assignments10[0], preread_followup.Assignment('0000000001', '02'))
     
     @unittest.mock.patch('sys.stdout')
     def test_count_district_geometries(self, stdout):

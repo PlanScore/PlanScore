@@ -152,53 +152,6 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
     
     @unittest.mock.patch('sys.stdout')
-    def test_put_district_assignments_variations(self, stdout):
-        '''
-        '''
-        s3 = unittest.mock.Mock()
-        upload = data.Upload('ID', 'uploads/ID/upload/file.txt')
-
-        null_plan1_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v1.csv')
-        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan1_path)
-        self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
-
-        null_plan2_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v2.csv')
-        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan2_path)
-        self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
-
-        null_plan3_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v3.csv')
-        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan3_path)
-        self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
-
-        null_plan4_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v4.csv')
-        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan4_path)
-        self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
-
-        null_plan5_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v5.csv')
-        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan5_path)
-        self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
-
-        null_plan6_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v6.csv')
-        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan6_path)
-        self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
-
-        null_plan7_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v7.csv')
-        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan7_path)
-        self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
-
-        null_plan8_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v8.csv')
-        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan8_path)
-        self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
-
-        null_plan9_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v9.csv')
-        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan9_path)
-        self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
-
-        null_plan10_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v10.csv')
-        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan10_path)
-        self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
-    
-    @unittest.mock.patch('sys.stdout')
     def test_load_model_tiles_oldstyle(self, stdout):
         '''
         '''

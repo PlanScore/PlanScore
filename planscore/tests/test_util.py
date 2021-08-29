@@ -184,3 +184,66 @@ class TestUtil (unittest.TestCase):
 
         args4 = util.event_query_args({'queryStringParameters': {'foo': 'bar'}})
         self.assertEqual(args4, {'foo': 'bar'})
+    
+    def test_baf_stream_to_rows(self):
+        ''' Test that baf_stream_to_rows() reads the right row list
+        '''
+        null_plan1_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v1.csv')
+        fields1, rows1 = util.baf_stream_to_rows(open(null_plan1_path))
+        self.assertEqual(len(rows1), 10)
+        self.assertEqual(rows1[0], {'BLOCKID': '0000000001', 'DISTRICT': '02'})
+        self.assertEqual(fields1, ('BLOCKID', 'DISTRICT'))
+
+        null_plan2_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v2.csv')
+        fields2, rows2 = util.baf_stream_to_rows(open(null_plan2_path))
+        self.assertEqual(len(rows2), 10)
+        self.assertEqual(rows2[0], {'GEOID': '0000000001', 'DISTRICT': '02'})
+        self.assertEqual(fields2, ('GEOID', 'DISTRICT'))
+
+        null_plan3_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v3.csv')
+        fields3, rows3 = util.baf_stream_to_rows(open(null_plan3_path))
+        self.assertEqual(len(rows3), 10)
+        self.assertEqual(rows3[0], {'GEOID10': '0000000001', 'DISTRICT': '02'})
+        self.assertEqual(fields3, ('GEOID10', 'DISTRICT'))
+
+        null_plan4_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v4.csv')
+        fields4, rows4 = util.baf_stream_to_rows(open(null_plan4_path))
+        self.assertEqual(len(rows4), 10)
+        self.assertEqual(rows4[0], {'GEOID20': '0000000001', 'DISTRICT': '02'})
+        self.assertEqual(fields4, ('GEOID20', 'DISTRICT'))
+
+        null_plan5_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v5.csv')
+        fields5, rows5 = util.baf_stream_to_rows(open(null_plan5_path))
+        self.assertEqual(len(rows5), 10)
+        self.assertEqual(rows5[0], {'BLOCKID': '0000000001', 'DISTRICT': '02'})
+        self.assertEqual(fields5, ('BLOCKID', 'DISTRICT'))
+
+        null_plan6_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v6.csv')
+        fields6, rows6 = util.baf_stream_to_rows(open(null_plan6_path))
+        self.assertEqual(len(rows6), 10)
+        self.assertEqual(rows6[0], {'GEOID': '0000000001', 'DISTRICT': '02'})
+        self.assertEqual(fields6, ('GEOID', 'DISTRICT'))
+
+        null_plan7_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v7.csv')
+        fields7, rows7 = util.baf_stream_to_rows(open(null_plan7_path))
+        self.assertEqual(len(rows7), 10)
+        self.assertEqual(rows7[0], {'GEOID10': '0000000001', 'DISTRICT': '02'})
+        self.assertEqual(fields7, ('GEOID10', 'DISTRICT'))
+
+        null_plan8_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v8.csv')
+        fields8, rows8 = util.baf_stream_to_rows(open(null_plan8_path))
+        self.assertEqual(len(rows8), 10)
+        self.assertEqual(rows8[0], {'GEOID20': '0000000001', 'DISTRICT': '02'})
+        self.assertEqual(fields8, ('GEOID20', 'DISTRICT'))
+
+        null_plan9_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v9.csv')
+        fields9, rows9 = util.baf_stream_to_rows(open(null_plan9_path))
+        self.assertEqual(len(rows9), 10)
+        self.assertEqual(rows9[0], {'BLOCKID': '0000000001', 'DISTRICT': '02'})
+        self.assertEqual(fields9, ('BLOCKID', 'DISTRICT'))
+
+        null_plan10_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v10.csv')
+        fields10, rows10 = util.baf_stream_to_rows(open(null_plan10_path))
+        self.assertEqual(len(rows10), 10)
+        self.assertEqual(rows10[0], {'BLOCKID': '0000000001', 'DISTRICT': '02'})
+        self.assertEqual(fields10, ('BLOCKID', 'DISTRICT'))
