@@ -1107,13 +1107,12 @@ function load_plan_score(url, message_section, score_section,
             description_el.append(desc_el);
         }
 
+        const hr = document.createElement('hr');
+        hr.classList.add('no-margin-bottom');
+        description_el.append(hr);
+
         const info_el = document.createElement('div');
         info_el.classList.add('info');
-
-        info_el.append(
-          document.createElement('hr')
-          .classList.add('no-margin-bottom')
-        );
 
         info_el.append(
           create_info_box(
@@ -1141,7 +1140,7 @@ function load_plan_score(url, message_section, score_section,
         function create_info_box(label, info){
           const info_box = document.createElement('div');
           info_box.classList.add('box');
-          info_state_el.innerHTML = `<strong>${label}</strong> ${info}`;
+          info_box.innerHTML = `<strong>${label}</strong> ${info}`;
           return info_box;
         };
 
