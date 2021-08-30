@@ -1061,7 +1061,7 @@ function load_plan_score(url, message_section, score_section,
 
     function on_loaded_score(plan, modified_at)
     {
-        const is_plan_still_parsing = which_score_summary_name(plan) === null;
+        const is_plan_still_parsing = (plan.status !== true && which_score_summary_name(plan) === null);
         if(is_plan_still_parsing) {
             if (plan.message) {
                 // Still processing
