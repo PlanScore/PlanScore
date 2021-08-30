@@ -161,6 +161,46 @@ class TestObserveTiles (unittest.TestCase):
         self.assertEqual(districts[0]['compactness'], get_scores.return_value)
     
     @unittest.mock.patch('sys.stdout')
+    def test_build_blockassign_geojson(self, stdout):
+        '''
+        '''
+        lam, model = unittest.mock.Mock(), unittest.mock.Mock()
+        model.state.value = 'XX'
+        
+        lam.invoke.return_value = {'Payload': unittest.mock.Mock()}
+        lam.invoke.return_value['Payload'].read.return_value = '{"type": "Polygon"}'
+        
+        block_id_lists = [
+            [
+                '0000000010',
+                '0000000009',
+                '0000000008',
+                '0000000004',
+            ],
+            [
+                '0000000007',
+                '0000000006',
+                '0000000005',
+                '0000000003',
+                '0000000002',
+                '0000000001',
+            ],
+        ]
+        
+        geojson = observe.build_blockassign_geojson(lam, model, block_id_lists)
+        self.assertTrue(geojson.startswith('{'))
+        
+        self.assertEqual(len(lam.invoke.mock_calls), 2)
+        self.assertEqual(
+            lam.invoke.mock_calls[0][2]['Payload'],
+            b'{"block_ids": ["0000000004", "0000000008", "0000000009", "0000000010"], "state_code": "XX"}',
+        )
+        self.assertEqual(
+            lam.invoke.mock_calls[1][2]['Payload'],
+            b'{"block_ids": ["0000000001", "0000000002", "0000000003", "0000000005", "0000000006", "0000000007"], "state_code": "XX"}',
+        )
+    
+    @unittest.mock.patch('sys.stdout')
     def test_iterate_tile_subtotals(self, stdout):
         ''' Expected counts are returned from tiles.
         '''

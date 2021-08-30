@@ -20,7 +20,7 @@ import threading
 import boto3
 import osgeo.ogr
 
-from . import util, data, score, website, prepare_state, constants, observe, polygonize
+from . import util, data, score, website, prepare_state, constants, observe
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_PREREAD_FOLLOWUP') or 'PlanScore-PrereadFollowup'
 EMPTY_GEOMETRY = osgeo.ogr.Geometry(osgeo.ogr.wkbGeometryCollection)
@@ -107,11 +107,6 @@ def commence_blockassign_upload_parsing(s3, lam, bucket, upload, file_path):
     district_count = count_district_assignments(file_path)
 
     upload2 = upload.clone()
-    #upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
-    #put_geojson_file(
-    #    s3, bucket, upload2,
-    #    build_blockassign_geometry(lam, model, file_path, district_count),
-    #)
     
     # Used so that the length of the upload districts array is correct
     district_blanks = [None] * district_count
@@ -125,55 +120,6 @@ def commence_blockassign_upload_parsing(s3, lam, bucket, upload, file_path):
     observe.put_upload_index(storage, upload3)
     
     return upload3
-
-def build_blockassign_geometry(lam, model, file_path, district_count):
-    print('Starting pool...')
-    pool = multiprocessing.dummy.Pool(processes=district_count)
-    
-    def _invoke(block_ids):
-        resp = lam.invoke(
-            FunctionName=polygonize.FUNCTION_NAME,
-            InvocationType='RequestResponse',
-            Payload=json.dumps({
-                'block_ids': sorted(block_ids),
-                'state_code': model.state.value,
-            }).encode('utf8'),
-        )
-        return resp['Payload'].read()
-    
-    district_blocks = {
-        district_id: [assign.block_id for assign in assignments]
-        for (district_id, assignments)
-        in itertools.groupby(
-            sorted(
-                get_block_assignments(file_path),
-                key=operator.attrgetter('district_id'),
-            ),
-            key=operator.attrgetter('district_id'),
-        )
-    }
-    print('district_blocks:', district_blocks)
-    
-    handle, temp_path = tempfile.mkstemp(suffix='.geojson')
-    os.close(handle)
-    
-    with open(temp_path, 'w') as file:
-        json.dump(
-            {
-                'type': 'FeatureCollection',
-                'features': [
-                    {
-                        'type': 'Feature',
-                        'properties': {},
-                        'geometry': json.loads(result),
-                    }
-                    for result in pool.map(_invoke, district_blocks.values())
-                ]
-            },
-            file,
-        )
-    
-    return temp_path
 
 @functools.lru_cache()
 def get_block_assignments(path):

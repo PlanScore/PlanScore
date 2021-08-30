@@ -139,8 +139,6 @@ def build_blockassign_geojson(lam, model, block_id_lists):
         )
         return resp['Payload'].read()
     
-    print('block_id_lists:', block_id_lists)
-
     return json.dumps(
         {
             'type': 'FeatureCollection',
@@ -369,7 +367,6 @@ def lambda_handler(event, context):
         
         assignments = load_upload_assignments(storage, upload1)
         geojson = build_blockassign_geojson(lam, upload1.model, assignments)
-        print(geojson)
         upload1b = upload1.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload1.id))
 
         s3.put_object(Bucket=storage.bucket, Key=upload1b.geometry_key,

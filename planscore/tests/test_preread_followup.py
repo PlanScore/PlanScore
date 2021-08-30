@@ -270,43 +270,6 @@ class TestPrereadFollowup (unittest.TestCase):
         count = preread_followup.count_district_geometries(null_plan_path)
         self.assertEqual(count, 3)
     
-    @unittest.mock.patch('planscore.preread_followup.get_block_assignments')
-    @unittest.mock.patch('sys.stdout')
-    def test_build_blockassign_geometry(self, stdout, get_block_assignments):
-        '''
-        '''
-        lam, model = unittest.mock.Mock(), unittest.mock.Mock()
-        model.state.value = 'XX'
-        
-        lam.invoke.return_value = {'Payload': unittest.mock.Mock()}
-        lam.invoke.return_value['Payload'].read.return_value = '{"type": "Polygon"}'
-        
-        get_block_assignments.return_value = [
-            preread_followup.Assignment('0000000010', '01'),
-            preread_followup.Assignment('0000000009', '01'),
-            preread_followup.Assignment('0000000008', '01'),
-            preread_followup.Assignment('0000000007', '02'),
-            preread_followup.Assignment('0000000006', '02'),
-            preread_followup.Assignment('0000000005', '02'),
-            preread_followup.Assignment('0000000004', '01'),
-            preread_followup.Assignment('0000000003', '02'),
-            preread_followup.Assignment('0000000002', '02'),
-            preread_followup.Assignment('0000000001', '02'),
-        ]
-        
-        path = preread_followup.build_blockassign_geometry(lam, model, 'blocks.txt', 2)
-        self.assertTrue(path.endswith('.geojson'))
-        
-        self.assertEqual(len(lam.invoke.mock_calls), 2)
-        self.assertEqual(
-            lam.invoke.mock_calls[0][2]['Payload'],
-            b'{"block_ids": ["0000000004", "0000000008", "0000000009", "0000000010"], "state_code": "XX"}',
-        )
-        self.assertEqual(
-            lam.invoke.mock_calls[1][2]['Payload'],
-            b'{"block_ids": ["0000000001", "0000000002", "0000000003", "0000000005", "0000000006", "0000000007"], "state_code": "XX"}',
-        )
-    
     @unittest.mock.patch('sys.stdout')
     def test_count_district_assignments(self, stdout):
         '''
@@ -490,9 +453,8 @@ class TestPrereadFollowup (unittest.TestCase):
     @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.preread_followup.put_geojson_file')
     @unittest.mock.patch('planscore.preread_followup.count_district_assignments')
-    @unittest.mock.patch('planscore.preread_followup.build_blockassign_geometry')
     @unittest.mock.patch('planscore.preread_followup.guess_blockassign_model')
-    def test_commence_blockassign_upload_parsing_good_block_file(self, guess_blockassign_model, build_blockassign_geometry, count_district_assignments, put_geojson_file, put_upload_index):
+    def test_commence_blockassign_upload_parsing_good_block_file(self, guess_blockassign_model, count_district_assignments, put_geojson_file, put_upload_index):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
@@ -510,9 +472,6 @@ class TestPrereadFollowup (unittest.TestCase):
 
         self.assertEqual(info.id, upload.id)
 
-        #self.assertEqual(put_geojson_file.mock_calls[0][1][:2], (s3, bucket))
-        #self.assertEqual(put_geojson_file.mock_calls[0][1][2].id, upload.id)
-        #self.assertIs(put_geojson_file.mock_calls[0][1][3], build_blockassign_geometry.return_value)
         guess_blockassign_model.assert_called_once_with(nullplan_path)
 
         self.assertEqual(len(put_upload_index.mock_calls), 1)
@@ -521,19 +480,16 @@ class TestPrereadFollowup (unittest.TestCase):
         self.assertEqual(put_upload_index.mock_calls[0][1][1].message,
             'Found 2 districts in the "data/XX/006-tilesdir" None plan with 2 seats.')
         
-        #build_blockassign_geometry.assert_called_once_with(lam, guess_blockassign_model.return_value, nullplan_path, count_district_assignments.return_value)
         count_district_assignments.assert_called_once_with(nullplan_path)
         
         self.assertEqual(len(put_geojson_file.mock_calls), 0)
-        self.assertEqual(len(build_blockassign_geometry.mock_calls), 0)
         self.assertIsNone(info.geometry_key)
     
     @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.preread_followup.put_geojson_file')
     @unittest.mock.patch('planscore.preread_followup.count_district_assignments')
-    @unittest.mock.patch('planscore.preread_followup.build_blockassign_geometry')
     @unittest.mock.patch('planscore.preread_followup.guess_blockassign_model')
-    def test_commence_blockassign_upload_parsing_zipped_block_file(self, guess_blockassign_model, build_blockassign_geometry, count_district_assignments, put_geojson_file, put_upload_index):
+    def test_commence_blockassign_upload_parsing_zipped_block_file(self, guess_blockassign_model, count_district_assignments, put_geojson_file, put_upload_index):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
@@ -552,19 +508,13 @@ class TestPrereadFollowup (unittest.TestCase):
 
         self.assertEqual(info.id, upload.id)
         
-        #self.assertEqual(put_geojson_file.mock_calls[0][1][:2], (s3, bucket))
-        #self.assertEqual(put_geojson_file.mock_calls[0][1][2].id, upload.id)
-        #self.assertIs(put_geojson_file.mock_calls[0][1][3], build_blockassign_geometry.return_value)
-
         self.assertEqual(len(put_upload_index.mock_calls), 1)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
         self.assertEqual(len(put_upload_index.mock_calls[0][1][1].districts), 2)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].message,
             'Found 2 districts in the "data/XX/006-tilesdir" None plan with 2 seats.')
 
-        #build_blockassign_geometry.assert_called_once_with(lam, guess_blockassign_model.return_value, nullplan_path, count_district_assignments.return_value)
         count_district_assignments.assert_called_once_with(nullplan_path)
         
         self.assertEqual(len(put_geojson_file.mock_calls), 0)
-        self.assertEqual(len(build_blockassign_geometry.mock_calls), 0)
         self.assertIsNone(info.geometry_key)
