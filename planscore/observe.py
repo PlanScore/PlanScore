@@ -1,6 +1,7 @@
 import os, time, json, posixpath, io, gzip, collections, copy, csv, uuid, datetime, itertools
+import multiprocessing.dummy
 import boto3, botocore.exceptions
-from . import data, constants, run_tile, run_slice, score, compactness
+from . import data, constants, run_tile, run_slice, score, compactness, polygonize
 import osgeo.ogr
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_OBSERVE_TILES') or 'PlanScore-ObserveTiles'
@@ -86,10 +87,34 @@ def load_upload_geometries(storage, upload):
         if object.get('ContentEncoding') == 'gzip':
             object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
     
-        district_geom = osgeo.ogr.CreateGeometryFromWkt(object['Body'].read().decode('utf8'))
+        body_string = object['Body'].read().decode('utf8')
+        district_geom = osgeo.ogr.CreateGeometryFromWkt(body_string)
         geometries[district_index] = district_geom
     
     return [geom for (_, geom) in sorted(geometries.items())]
+
+def load_upload_assignments(storage, upload):
+    ''' Get ordered list of assignment lists for an upload.
+    '''
+    assignments = {}
+    
+    assigns_prefix = posixpath.dirname(data.UPLOAD_ASSIGNMENTS_KEY).format(id=upload.id)
+    response = storage.s3.list_objects(Bucket=storage.bucket, Prefix=f'{assigns_prefix}/')
+
+    assignment_keys = [object['Key'] for object in response['Contents']]
+    
+    for assignment_key in assignment_keys:
+        district_index = get_district_index(assignment_key, upload)
+        object = storage.s3.get_object(Bucket=storage.bucket, Key=assignment_key)
+
+        if object.get('ContentEncoding') == 'gzip':
+            object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
+    
+        body_string = object['Body'].read().decode('utf8')
+        district_assign = [line for line in body_string.split('\n') if line]
+        assignments[district_index] = district_assign
+    
+    return [assign for (_, assign) in sorted(assignments.items())]
 
 def populate_compactness(geometries):
     '''
@@ -98,6 +123,37 @@ def populate_compactness(geometries):
         for geometry in geometries]
     
     return districts
+
+def build_blockassign_geojson(lam, model, block_id_lists):
+    print('Starting pool...')
+    pool = multiprocessing.dummy.Pool(processes=len(block_id_lists))
+    
+    def _invoke(block_ids):
+        resp = lam.invoke(
+            FunctionName=polygonize.FUNCTION_NAME,
+            InvocationType='RequestResponse',
+            Payload=json.dumps({
+                'block_ids': sorted(block_ids),
+                'state_code': model.state.value,
+            }).encode('utf8'),
+        )
+        return resp['Payload'].read()
+    
+    print('block_id_lists:', block_id_lists)
+
+    return json.dumps(
+        {
+            'type': 'FeatureCollection',
+            'features': [
+                {
+                    'type': 'Feature',
+                    'properties': {},
+                    'geometry': json.loads(result),
+                }
+                for result in pool.map(_invoke, block_id_lists)
+            ]
+        },
+    )
 
 def iterate_tile_subtotals(expected_tiles, storage, upload, context):
     '''
@@ -296,6 +352,7 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3')
+    lam = boto3.client('lambda')
     storage = data.Storage.from_event(event['storage'], s3)
     upload1 = data.Upload.from_dict(event['upload'])
     
@@ -306,12 +363,27 @@ def lambda_handler(event, context):
     except s3.exceptions.NoSuchKey:
         obj = storage.s3.get_object(Bucket=storage.bucket,
             Key=data.UPLOAD_ASSIGNMENT_INDEX_KEY.format(id=upload1.id))
+
+        put_upload_index(storage, upload1.clone(
+            message='Scoring: Gonna run Polygonize in multiprocessing.dummy right here.'))
         
+        assignments = load_upload_assignments(storage, upload1)
+        geojson = build_blockassign_geojson(lam, upload1.model, assignments)
+        print(geojson)
+        upload1b = upload1.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload1.id))
+
+        s3.put_object(Bucket=storage.bucket, Key=upload1b.geometry_key,
+            Body=gzip.compress(geojson.encode('utf8')),
+            ContentType='text/json', ACL='public-read', ContentEncoding='gzip')
+
+        put_upload_index(storage, upload1b.clone(
+            message='Scoring: Finished the geometry bit.'))
+
         enqueued_parts = json.load(obj['Body'])
-        expected_parts = [get_expected_slice(slice_key, upload1)
+        expected_parts = [get_expected_slice(slice_key, upload1b)
             for slice_key in enqueued_parts]
     
-        upload2 = upload1.clone()
+        upload2 = upload1b.clone()
         subtotals = list(iterate_slice_subtotals(expected_parts, storage, upload2, context))
         part_type = 'slice'
 

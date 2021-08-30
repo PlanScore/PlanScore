@@ -79,7 +79,7 @@ def commence_blockassign_upload_scoring(s3, bucket, upload, file_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
     observe.put_upload_index(storage, upload)
     upload2 = upload.clone()
-    put_district_assignments(s3, bucket, upload2, file_path)
+    district_keys = put_district_assignments(s3, bucket, upload2, file_path)
 
     slice_keys = load_model_slices(storage, upload2.model)
     start_slice_observer_lambda(storage, upload2, slice_keys)

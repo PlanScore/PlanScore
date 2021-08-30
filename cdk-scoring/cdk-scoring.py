@@ -447,7 +447,7 @@ class PlanScoreScoring(cdk.Stack):
         )
 
         grant_data_bucket_access(data_bucket, polygonize)
-        grant_function_invoke(polygonize, 'FUNC_NAME_POLYGONIZE', preread_followup)
+        grant_function_invoke(polygonize, 'FUNC_NAME_POLYGONIZE', observe_tiles)
 
         # API-accessible functions
 

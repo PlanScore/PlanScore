@@ -107,15 +107,16 @@ Behind-the-scenes code sequence when a user scores a plan.
 6.  User posts annotation form with incumbency settings to `/uploaded` ([λ:`PlanScore-PostreadCallback`](planscore/postread_callback.py))
 7.  [λ:`PlanScore-PostreadCallback`](planscore/postread_callback.py) invokes [λ:`PlanScore-PostreadCalculate`](planscore/postread_calculate.py) and redirects user to `/plan.html?{id}` to wait
 8.  [λ:`PlanScore-PostreadCalculate`](planscore/postread_calculate.py) commences scoring:
-    1.  Uploads district geometry WKTs
-    2.  Loads model tiles
+    1.  Uploads district geometry WKTs or block assignment lists
+    2.  Loads model tiles or slices
     3.  Invokes [λ:`PlanScore-ObserveTiles`](planscore/observe.py)
-    4.  Fans out [λ:`PlanScore-RunTile`](planscore/tiles.py)
-9.  [λ:`PlanScore-RunTile`](planscore/tiles.py) aggregates district statistics in tile, saves results to S3
+    4.  Fans out [λ:`PlanScore-RunTile`](planscore/run_tile.py) or [λ:`PlanScore-RunSlice`](planscore/run_slice.py)
+9.  [λ:`PlanScore-RunTile`](planscore/run_tile.py) or [λ:`PlanScore-RunSlice`](planscore/run_slice.py) aggregate district statistics in tiles or slices, save results to S3
 10. [λ:`PlanScore-ObserveTiles`](planscore/observe.py) scores plan:
-    1.  Waits for all expected aggregated tile statistics
-    2.  Calculates final scores
-    3.  Saves index JSON with final data
+    1.  Optionally invokes [λ:`PlanScore-Polygonize`](planscore/polygonize.py)
+    2.  Waits for all expected aggregated tile or slice statistics
+    3.  Calculates final scores
+    4.  Saves index JSON with final data
 
 ### Adding a State
 

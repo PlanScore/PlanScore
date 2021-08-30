@@ -56,7 +56,7 @@ def assemble_graph(s3, state_code, block_ids):
     '''
     '''
     county_keys = {
-        'data/{}/graphs/2010/{}-tabblock.pickle'.format(state_code, block_id[:5])
+        'data/{}/graphs/2020/{}-tabblock.pickle'.format(state_code, block_id[:5])
         for block_id in block_ids
     }
 
