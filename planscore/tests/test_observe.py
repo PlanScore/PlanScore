@@ -280,6 +280,64 @@ class TestObserveTiles (unittest.TestCase):
         self.assertEqual(districts3[1]['totals']['X'], 2)
         self.assertEqual(districts3[0]['totals']['Voters'], 567.09)
         self.assertEqual(districts3[1]['totals']['Voters'], 932.89)
+    
+    def test_accumulate_district_subtotals_empties(self):
+        '''
+        '''
+        upload = unittest.mock.Mock()
+        upload.id = 'sample-plan'
+        
+        inputs = [
+            observe.SubTotal({
+                "uploads/sample-plan/geometries/0.wkt": {},
+                "uploads/sample-plan/geometries/1.wkt": {
+                    "Population 2010": 18,
+                    "US President 2016 - DEM": 100,
+                    "US President 2016 - REP": 200
+                },
+            }, {
+                "start_time": 1630364292.031,
+                "elapsed_time": 0.232,
+                "features": 3
+            }),
+            observe.SubTotal({
+                "uploads/sample-plan/geometries/0.wkt": {},
+            }, {
+                "start_time": 1630364291.918,
+                "elapsed_time": 0.271,
+                "features": 3
+            }),
+            observe.SubTotal({
+                "uploads/sample-plan/geometries/0.wkt": {},
+                "uploads/sample-plan/geometries/1.wkt": {
+                    "Population 2010": 4,
+                    "US President 2016 - DEM": 0,
+                    "US President 2016 - REP": 100
+                },
+            }, {
+                "start_time": 1630364291.997,
+                "elapsed_time": 0.259,
+                "features": 1
+            }),
+        ]
+
+        
+        upload.districts = [None, None]
+        districts = observe.accumulate_district_subtotals(inputs, upload)
+        
+        self.assertEqual(len(districts), 2)
+        self.assertIn('Population 2010', districts[0]['totals'])
+        self.assertIn('Population 2010', districts[1]['totals'])
+        self.assertIn('US President 2016 - DEM', districts[0]['totals'])
+        self.assertIn('US President 2016 - REP', districts[0]['totals'])
+        self.assertIn('US President 2016 - DEM', districts[1]['totals'])
+        self.assertIn('US President 2016 - REP', districts[1]['totals'])
+        self.assertEqual(districts[0]['totals']['Population 2010'], 0)
+        self.assertEqual(districts[1]['totals']['Population 2010'], 22)
+        self.assertEqual(districts[0]['totals']['US President 2016 - DEM'], 0)
+        self.assertEqual(districts[0]['totals']['US President 2016 - REP'], 0)
+        self.assertEqual(districts[1]['totals']['US President 2016 - DEM'], 100)
+        self.assertEqual(districts[1]['totals']['US President 2016 - REP'], 300)
 
     def test_adjust_household_income(self):
         '''
