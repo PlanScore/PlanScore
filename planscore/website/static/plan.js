@@ -1110,6 +1110,11 @@ function load_plan_score(url, message_section, score_section,
         const info_el = document.createElement('div');
         info_el.classList.add('info');
 
+        info_el.append(
+          document.createElement('hr')
+          .classList.add('no-margin-bottom')
+        );
+
         const info_state_el = document.createElement('div');
         info_state_el.classList.add('box');
         info_state_el.textContent = "<strong>State</strong> %state name" //needs state name - is it in headings?
@@ -1123,13 +1128,15 @@ function load_plan_score(url, message_section, score_section,
         const info_uploaded_el = document.createElement('div');
         info_uploaded_el.classList.add('box');
         info_uploaded_el.textContent = headings.uploaded;
+        info_el.append(info_uploaded_el);
 
         const info_author_el = document.createElement('div');
         info_author_el.classList.add('box');
-        info_uploaded_el.textContent = "%author"; //needs the author name
+        info_uploaded_el.textContent = "%author";  //needs the author name
+        info_el.append(info_author_el);
 
         description_el.append(info_el);
-        
+
         if(plan.model && (plan.model.version == '2017' || !plan.model.version)) {
             model_link.href = model_url_pattern.replace('data/2020', plan.model.key_prefix);
             model_footnote.href = model_url_pattern.replace('data/2020', plan.model.key_prefix);
