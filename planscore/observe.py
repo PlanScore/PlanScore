@@ -227,11 +227,6 @@ def accumulate_district_subtotals(part_subtotals, upload):
     '''
     districts = []
     
-    print('accumulate_district_subtotals part_subtotals:')
-    print(json.dumps(part_subtotals))
-    print('accumulate_district_subtotals upload:')
-    print(upload.to_json())
-    
     # Empty dict to use as a template for new totals
     empty_totals_dict = {
         subtotal_key: 0. for subtotal_key in
@@ -348,4 +343,4 @@ def lambda_handler(event, context):
 
     put_upload_index(storage, complete_upload)
     put_part_timings(storage, upload2, subtotals, part_type)
-    #clean_up_leftover_parts(storage, expected_parts)
+    clean_up_leftover_parts(storage, expected_parts)
