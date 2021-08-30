@@ -1115,13 +1115,16 @@ function load_plan_score(url, message_section, score_section,
           .classList.add('no-margin-bottom')
         );
 
-        const info_state_el = document.createElement('div');
-        info_state_el.classList.add('box');
-        info_state_el.textContent = "<strong>State</strong> %state name" //needs state name - is it in headings?
-        info_el.append(info_state_el);
+        info_el.append(
+          create_info_box(
+            'State',
+            '%state_name'
+          )
+        );
 
         const info_legislative_el = document.createElement('div');
         info_legislative_el.classList.add('box');
+        info_legislative_el.append(document.createElement('strong'))
         info_legislative_el.textContent = "%plan_type but without state" //needs just the legislative branch
         info_el.append(info_legislative_el);
 
@@ -1134,6 +1137,13 @@ function load_plan_score(url, message_section, score_section,
         info_author_el.classList.add('box');
         info_uploaded_el.textContent = "%author";  //needs the author name
         info_el.append(info_author_el);
+
+        function create_info_box(label, info){
+          const info_box = document.createElement('div');
+          info_box.classList.add('box');
+          info_state_el.innerHTML = `<strong>${label}</strong> ${info}`;
+          return info_box;
+        };
 
         description_el.append(info_el);
 
