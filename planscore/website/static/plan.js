@@ -1140,6 +1140,8 @@ function load_plan_score(url, message_section, score_section,
         info_author_el.classList.add('box');
         info_uploaded_el.textContent = "%author"; //needs the author name
 
+        description_el.append(info_el);
+        
         if(plan.model && (plan.model.version == '2017' || !plan.model.version)) {
             model_link.href = model_url_pattern.replace('data/2020', plan.model.key_prefix);
             model_footnote.href = model_url_pattern.replace('data/2020', plan.model.key_prefix);
