@@ -1091,29 +1091,16 @@ function load_plan_score(url, message_section, score_section,
 
         const info_el = document.createElement('div');
         info_el.classList.add('info');
+        //needs just the state name without the branch
+        info_el.append(create_info_box('State', '%state_name'));
 
-        info_el.append(
-          create_info_box(
-            'State',
-            '%state_name'
-          )
-        );
+        // needs just the legislative branch
+        info_el.append(create_info_box('Legislative', '%plan_type'));
 
-        const info_legislative_el = document.createElement('div');
-        info_legislative_el.classList.add('box');
-        info_legislative_el.append(document.createElement('strong'))
-        info_legislative_el.textContent = "%plan_type but without state" //needs just the legislative branch
-        info_el.append(info_legislative_el);
+        info_el.append(create_info_box('Added to PlanScore', headings.uploaded));
 
-        const info_uploaded_el = document.createElement('div');
-        info_uploaded_el.classList.add('box');
-        info_uploaded_el.textContent = headings.uploaded;
-        info_el.append(info_uploaded_el);
-
-        const info_author_el = document.createElement('div');
-        info_author_el.classList.add('box');
-        info_uploaded_el.textContent = "%author";  //needs the author name
-        info_el.append(info_author_el);
+        // needs the author name
+        info_el.append(create_info_box('Author', 'author'));
 
         function create_info_box(label, info){
           const info_box = document.createElement('div');
