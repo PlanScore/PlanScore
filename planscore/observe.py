@@ -1,4 +1,4 @@
-import os, time, json, posixpath, io, gzip, collections, copy, csv, uuid, datetime
+import os, time, json, posixpath, io, gzip, collections, copy, csv, uuid, datetime, itertools
 import boto3, botocore.exceptions
 from . import data, constants, run_tile, run_slice, score, compactness
 import osgeo.ogr
@@ -232,18 +232,24 @@ def accumulate_district_subtotals(part_subtotals, upload):
     print('accumulate_district_subtotals upload:')
     print(upload.to_json())
     
+    # Empty dict to use as a template for new totals
+    empty_totals_dict = {
+        subtotal_key: 0. for subtotal_key in
+        itertools.chain(*[
+            subtotal_dict.keys() for subtotal_dict in
+            itertools.chain(*[sub.totals.values() for sub in part_subtotals])
+        ])
+    }
+    
     # copy districts from the upload
     for upload_district in upload.districts:
-        # use a defaultdict to accept new values
-        totals = collections.defaultdict(float)
-        
         if upload_district is None:
             # initialize a new district
-            new_district = dict(totals=totals)
+            new_district = dict(totals=copy.deepcopy(empty_totals_dict))
         else:
             # use a copy of existing district to preserve values
             new_district = copy.deepcopy(upload_district)
-            new_district['totals'] = totals
+            new_district['totals'] = copy.deepcopy(empty_totals_dict)
             
             # copy existing totals, if any exist
             if 'totals' in upload_district:
