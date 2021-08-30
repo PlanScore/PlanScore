@@ -1101,18 +1101,32 @@ function load_plan_score(url, message_section, score_section,
         // Clear out and repopulate plan description, upload date, plan type
         clear_element(description_el);
         const headings = get_plan_headings(plan, modified_at);
-        if (headings.description) {
+        if (headings.plan_type) {
             const desc_el = document.createElement('h1');
-            desc_el.textContent = headings.description;
+            desc_el.textContent = headings.plan_type;
             description_el.append(desc_el);
         }
-        const uploaded_el = document.createElement('i');
-        uploaded_el.textContent = headings.uploaded;
-        description_el.append(uploaded_el);
-        const plan_type_el = document.createElement('h4');
-        plan_type_el.textContent = headings.plan_type;
-        description_el.append(plan_type_el);
 
+        const info_el = document.createElement('div');
+        info_el.classList.add('info');
+
+        const info_state_el = document.createElement('div');
+        info_state_el.classList.add('box');
+        info_state_el.textContent = "<strong>State</strong> %state name" //needs state name - is it in headings?
+        info_el.append(info_state_el);
+
+        const info_legislative_el = document.createElement('div');
+        info_legislative_el.classList.add('box');
+        info_legislative_el.textContent = "%plan_type but without state" //needs just the legislative branch
+        info_el.append(info_legislative_el);
+
+        const info_uploaded_el = document.createElement('div');
+        info_uploaded_el.classList.add('box');
+        info_uploaded_el.textContent = headings.uploaded;
+
+        const info_author_el = document.createElement('div');
+        info_author_el.classList.add('box');
+        info_uploaded_el.textContent = "%author"; //needs the author name
 
         if(plan.model && (plan.model.version == '2017' || !plan.model.version)) {
             model_link.href = model_url_pattern.replace('data/2020', plan.model.key_prefix);
