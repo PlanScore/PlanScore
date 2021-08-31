@@ -150,7 +150,25 @@ class TestObserveTiles (unittest.TestCase):
             Prefix="uploads/sample-plan/geometries/")
     
     def test_load_upload_assignments(self):
-        raise NotImplementedError()
+        ''' Expected assignments are retrieved from S3.
+        '''
+        s3, upload = unittest.mock.Mock(), unittest.mock.Mock()
+        storage = data.Storage(s3, 'bucket-name', 'XX')
+        upload.id = 'sample-plan3'
+
+        s3.get_object.side_effect = mock_s3_get_object
+        s3.list_objects.return_value = {'Contents': [
+            {'Key': "uploads/sample-plan3/assignments/0.txt"},
+            {'Key': "uploads/sample-plan3/assignments/1.txt"}
+            ]}
+
+        assignments = observe.load_upload_assignments(storage, upload)
+
+        self.assertIs(type(assignments), list)
+        self.assertEqual(len(assignments), 2)
+        
+        s3.list_objects.assert_called_once_with(Bucket='bucket-name',
+            Prefix="uploads/sample-plan3/assignments/")
 
     @unittest.mock.patch('planscore.compactness.get_scores')
     def test_populate_compactness(self, get_scores):
