@@ -172,14 +172,17 @@
       </div>
     </section>
 
+    <!-- Remove this entire section if no notes were added -->
     <section>
       <h2>Notes</h2>
       <hr />
       <div class="description">
-        {{ plan_notes }} <!--This is a flexible space for plan uploader notes, can we create a new field on upload for these notes? -->
+        {{ plan_notes }}
+        <i>Notes will appear here, if they exist</i> <!--This is a flexible space for plan uploader notes, can we create a new field on upload for these notes? -->
       </div>
     </section>
-
+    <!-- end notes section -->
+    
     <nav class="content-footer">
       <a class="btn btn-primary" href="/library">Back to Plan Library</a>
       <a class="btn btn-primary" href="/library/{{ state_name }}">View all {{ state_name }} Redistricting Plans</a>
