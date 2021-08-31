@@ -35,7 +35,7 @@
     <section id="plan-score">
     <div id="plan-description">
       <h1>(Loading)</h1>
-      <hr />
+      <hr class="no-margin-bottom"/>
     </div>
     <p style="display:none">
         This plan has <span id="plan-seat-count">N seats</span>.
@@ -50,6 +50,8 @@
     </p>
 
     {# these list items will be populated by load_plan_score() #}
+    <h2>Chart One lorem ipsum </h2>
+    <hr />
 
     <ul class="row" id="scores-box">
         <li class="col-md-4" id="score-efficiency-gap">
@@ -112,7 +114,11 @@
             <p>Not enough information to calculate this score.</p>
         </li>
     </ul>
+    <h2>Chart Two lorem ipsum </h2>
+    <hr />
     <p id="map"></p>
+    <h2>Chart Three lorem ipsum </h2>
+    <hr />
     <div class="col-xs-12 col-sm-12  table-jehl table-districts">
         <table class="table table-hover" id="districts">
             {# this table will be populated by load_plan_score() #}
