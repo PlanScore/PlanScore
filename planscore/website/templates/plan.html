@@ -152,10 +152,37 @@
     </ul>
 
     </section>
+    <section>
+      <h2>Explore plan resources.</h2>
+      <hr class="no-margin-bottom"/>
+
+      <div class="link-grid">
+        <a href="{{ authlink }}">Authoritative Link
+          <img width=20 height=20 src="/images/external-link.svg" />
+        </a>
+        <a href="{{ precedinglink }}">Preceding Enacted Plan
+          <img  width=20 height=20 src="/images/download.svg" />
+        </a>
+        <a href="{{ shapelink }}">Shapefile
+          <img width=20 height=20 src="/images/arrow-right.svg" />
+        </a>
+        <a href="{{ geosonlink}}">preview.geojson
+          <img  width=20 height=20 src="/images/download.svg" />
+        </a>
+      </div>
+    </section>
+
+    <section>
+      <h2>Notes</h2>
+      <hr />
+      <div class="description">
+        {{ plan_notes }} <!--This is a flexible space for plan uploader notes, can we create a new field on upload for these notes? -->
+      </div>
+    </section>
 
     <nav class="content-footer">
       <a class="btn btn-primary" href="/library">Back to Plan Library</a>
-      <a class="btn btn-primary" href="/library/{{ state_name }}">View all %state Redistricting Plans</a>
+      <a class="btn btn-primary" href="/library/{{ state_name }}">View all {{ state_name }} Redistricting Plans</a>
     </nav>
 
 	<script language="javascript">
