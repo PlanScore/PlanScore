@@ -159,7 +159,8 @@ assert.deepEqual(plan_array4[13],
 assert.deepEqual(plan.get_plan_headings(NC_multisim_index, new Date(2018, 0, 14)), {
     description: false,
     uploaded: 'Uploaded: 1/14/2018',
-    plan_type: [ 'Plan uploaded' ]
+    plan_type: [ 'Plan uploaded' ],
+    date_only: 'Jan. 14, 2018',
 });
 
 // North Carolina plan in proposed final form
