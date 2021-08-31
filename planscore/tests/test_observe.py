@@ -189,7 +189,7 @@ class TestObserveTiles (unittest.TestCase):
         model.state.value = 'XX'
         
         lam.invoke.return_value = {'Payload': unittest.mock.Mock()}
-        lam.invoke.return_value['Payload'].read.return_value = '{"type": "Polygon"}'
+        lam.invoke.return_value['Payload'].read.return_value = b'{"type": "Polygon"}'
         
         block_id_lists = [
             [

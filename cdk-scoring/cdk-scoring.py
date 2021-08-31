@@ -442,7 +442,7 @@ class PlanScoreScoring(cdk.Stack):
             self,
             "Polygonize",
             handler="lambda.polygonize",
-            memory_size=2048,
+            memory_size=10240,
             **function_kwargs
         )
 

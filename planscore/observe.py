@@ -129,6 +129,7 @@ def build_blockassign_geojson(lam, model, block_id_lists):
     pool = multiprocessing.dummy.Pool(processes=len(block_id_lists))
     
     def _invoke(block_ids):
+        start_time = time.time()
         resp = lam.invoke(
             FunctionName=polygonize.FUNCTION_NAME,
             InvocationType='RequestResponse',
@@ -137,7 +138,13 @@ def build_blockassign_geojson(lam, model, block_id_lists):
                 'state_code': model.state.value,
             }).encode('utf8'),
         )
-        return resp['Payload'].read()
+        result, elapsed = resp['Payload'].read().decode('utf8'), time.time() - start_time
+        if '"errorMessage"' in result:
+            print('Polygonize error for {}-block district in {:.1f}sec'.format(len(block_ids), elapsed))
+            print(json.loads(result).get('errorMessage'))
+        else:
+            print('Polygonize result for {}-block district in {:.1f}sec'.format(len(block_ids), elapsed))
+        return result
     
     return json.dumps(
         {
@@ -149,13 +156,14 @@ def build_blockassign_geojson(lam, model, block_id_lists):
                     'geometry': json.loads(result),
                 }
                 for result in pool.map(_invoke, block_id_lists)
+                #if '"errorMessage"' not in result
             ]
         },
     )
 
 def add_blockassign_upload_geometry(lam, storage, upload):
     put_upload_index(storage, upload.clone(
-        message='Scoring: Gonna run Polygonize in multiprocessing.dummy right here.'))
+        message='Scoring: Building a district map.'))
     
     assignments = load_upload_assignments(storage, upload)
     geojson = build_blockassign_geojson(lam, upload.model, assignments)
@@ -164,9 +172,6 @@ def add_blockassign_upload_geometry(lam, storage, upload):
     storage.s3.put_object(Bucket=storage.bucket, Key=upload2.geometry_key,
         Body=gzip.compress(geojson.encode('utf8')),
         ContentType='text/json', ACL='public-read', ContentEncoding='gzip')
-
-    put_upload_index(storage, upload2.clone(
-        message='Scoring: Finished the geometry bit.'))
 
     return upload2
 
