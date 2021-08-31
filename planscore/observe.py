@@ -153,6 +153,23 @@ def build_blockassign_geojson(lam, model, block_id_lists):
         },
     )
 
+def add_blockassign_upload_geometry(lam, storage, upload):
+    put_upload_index(storage, upload.clone(
+        message='Scoring: Gonna run Polygonize in multiprocessing.dummy right here.'))
+    
+    assignments = load_upload_assignments(storage, upload)
+    geojson = build_blockassign_geojson(lam, upload.model, assignments)
+    upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
+
+    storage.s3.put_object(Bucket=storage.bucket, Key=upload2.geometry_key,
+        Body=gzip.compress(geojson.encode('utf8')),
+        ContentType='text/json', ACL='public-read', ContentEncoding='gzip')
+
+    put_upload_index(storage, upload2.clone(
+        message='Scoring: Finished the geometry bit.'))
+
+    return upload2
+
 def iterate_tile_subtotals(expected_tiles, storage, upload, context):
     '''
     '''
@@ -362,20 +379,8 @@ def lambda_handler(event, context):
         obj = storage.s3.get_object(Bucket=storage.bucket,
             Key=data.UPLOAD_ASSIGNMENT_INDEX_KEY.format(id=upload1.id))
 
-        put_upload_index(storage, upload1.clone(
-            message='Scoring: Gonna run Polygonize in multiprocessing.dummy right here.'))
+        upload1b = add_blockassign_upload_geometry(lam, storage, upload1)
         
-        assignments = load_upload_assignments(storage, upload1)
-        geojson = build_blockassign_geojson(lam, upload1.model, assignments)
-        upload1b = upload1.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload1.id))
-
-        s3.put_object(Bucket=storage.bucket, Key=upload1b.geometry_key,
-            Body=gzip.compress(geojson.encode('utf8')),
-            ContentType='text/json', ACL='public-read', ContentEncoding='gzip')
-
-        put_upload_index(storage, upload1b.clone(
-            message='Scoring: Finished the geometry bit.'))
-
         enqueued_parts = json.load(obj['Body'])
         expected_parts = [get_expected_slice(slice_key, upload1b)
             for slice_key in enqueued_parts]

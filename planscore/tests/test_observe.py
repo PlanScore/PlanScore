@@ -148,6 +148,9 @@ class TestObserveTiles (unittest.TestCase):
         
         s3.list_objects.assert_called_once_with(Bucket='bucket-name',
             Prefix="uploads/sample-plan/geometries/")
+    
+    def test_load_upload_assignments(self):
+        raise NotImplementedError()
 
     @unittest.mock.patch('planscore.compactness.get_scores')
     def test_populate_compactness(self, get_scores):
@@ -199,7 +202,10 @@ class TestObserveTiles (unittest.TestCase):
             lam.invoke.mock_calls[1][2]['Payload'],
             b'{"block_ids": ["0000000001", "0000000002", "0000000003", "0000000005", "0000000006", "0000000007"], "state_code": "XX"}',
         )
-    
+
+    def test_add_blockassign_upload_geometry(self):
+        raise NotImplementedError()
+
     @unittest.mock.patch('sys.stdout')
     def test_iterate_tile_subtotals(self, stdout):
         ''' Expected counts are returned from tiles.
