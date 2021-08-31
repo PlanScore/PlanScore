@@ -1028,12 +1028,10 @@ function get_plan_headings(plan, modified_at)
         : modified_at.toLocaleString();
     const uploaded = `Uploaded: ${date_str}`;
 
-    const monthIndex = modified_at.getMonth();
-
     const date_only =
       months[modified_at.getMonth()] +
-      modified_at.getDay() + ', ' +
-      modified_at.getYear();
+      modified_at.getDate() + ', ' +
+      modified_at.getFullYear();
     // Jun. 29, 2021
     return {
         description,
