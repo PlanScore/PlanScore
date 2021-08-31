@@ -159,7 +159,6 @@ function date_age(date)
     return (new Date()).getTime() / 1000 - date.getTime() / 1000;
 }
 
-
 function which_score_summary_name(plan)
 {
     var summaries = [
@@ -1128,9 +1127,9 @@ function load_plan_score(url, message_section, score_section,
             description_el.append(desc_el);
         }
 
-        // const hr = document.createElement('hr');
-        // hr.classList.add('no-margin-bottom');
-        // description_el.append(hr);
+        const hr = document.createElement('hr');
+        hr.classList.add('no-margin-bottom');
+        description_el.append(hr);
 
         const info_el = document.createElement('div');
         info_el.classList.add('info');
