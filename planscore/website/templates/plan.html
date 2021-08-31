@@ -50,7 +50,7 @@
     </p>
 
     {# these list items will be populated by load_plan_score() #}
-    <h2>Chart One lorem ipsum </h2>
+    <h2>Charts and Graphs</h2>
     <hr />
 
     <ul class="row" id="scores-box">
@@ -114,10 +114,10 @@
             <p>Not enough information to calculate this score.</p>
         </li>
     </ul>
-    <h2>Chart Two lorem ipsum </h2>
+    <h2>District Map</h2>
     <hr />
     <p id="map"></p>
-    <h2>Chart Three lorem ipsum </h2>
+    <h2>District Data</h2>
     <hr />
     <div class="col-xs-12 col-sm-12  table-jehl table-districts">
         <table class="table table-hover" id="districts">
@@ -158,16 +158,16 @@
 
       <div class="link-grid">
         <a href="{{ authlink }}">Authoritative Link
-          <img width=20 height=20 src="/images/external-link.svg" />
+          <img width=20 height=20 src="/images/external-link.svg" alt="authoritative link for this plan"/>
         </a>
         <a href="{{ precedinglink }}">Preceding Enacted Plan
-          <img  width=20 height=20 src="/images/download.svg" />
+          <img  width=20 height=20 src="/images/arrow-right.svg" alt="link to the preceding enacted plan" />
         </a>
         <a href="{{ shapelink }}">Shapefile
-          <img width=20 height=20 src="/images/arrow-right.svg" />
+          <img width=20 height=20 src="/images/download.svg" alt="link to a shape file download"/>
         </a>
         <a href="{{ geosonlink}}">preview.geojson
-          <img  width=20 height=20 src="/images/download.svg" />
+          <img  width=20 height=20 src="/images/download.svg" alt="link to a geojson download"/>
         </a>
       </div>
     </section>
@@ -176,13 +176,13 @@
     <section>
       <h2>Notes</h2>
       <hr />
-      <div class="description">
+      <div class="notes">
         {{ plan_notes }}
         <i>Notes will appear here, if they exist</i> <!--This is a flexible space for plan uploader notes, can we create a new field on upload for these notes? -->
       </div>
     </section>
     <!-- end notes section -->
-    
+
     <nav class="content-footer">
       <a class="btn btn-primary" href="/library">Back to Plan Library</a>
       <a class="btn btn-primary" href="/library/{{ state_name }}">View all {{ state_name }} Redistricting Plans</a>
