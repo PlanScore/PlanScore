@@ -59,6 +59,21 @@ const houseNames = {
     'statehouse': 'State House'
 };
 
+const months = [
+  'Jan. ',
+  'Feb. ',
+  'Mar. ',
+  'Apr. ',
+  'May ',
+  'Jun. ',
+  'Jul. ',
+  'Aug. ',
+  'Sep. ',
+  'Oct. ',
+  'Nov. ',
+  'Dec. '
+];
+
 // Keep track of substring renames for adding tooltips
 const renamedHeadingToOrigField = new Map();
 
@@ -1047,10 +1062,18 @@ function get_plan_headings(plan, modified_at)
         : modified_at.toLocaleString();
     const uploaded = `Uploaded: ${date_str}`;
 
+    const monthIndex = modified_at.getMonth();
+
+    const date_only =
+      months[modified_at.getMonth()] +
+      modified_at.getDay() + ', ' +
+      modified_at.getYear();
+    // Jun. 29, 2021
     return {
         description,
         uploaded,
         plan_type: get_plan_type_text(plan),
+        date_only
     };
 }
 
@@ -1119,9 +1142,9 @@ function load_plan_score(url, message_section, score_section,
             description_el.append(desc_el);
         }
 
-        const hr = document.createElement('hr');
-        hr.classList.add('no-margin-bottom');
-        description_el.append(hr);
+        // const hr = document.createElement('hr');
+        // hr.classList.add('no-margin-bottom');
+        // description_el.append(hr);
 
         const info_el = document.createElement('div');
         info_el.classList.add('info');
@@ -1131,7 +1154,7 @@ function load_plan_score(url, message_section, score_section,
         // needs just the legislative branch
         info_el.append(create_info_box('Legislative', '%plan_type'));
 
-        info_el.append(create_info_box('Added to PlanScore', headings.uploaded));
+        info_el.append(create_info_box('Added to PlanScore', headings.date_only));
 
         // needs the author name
         info_el.append(create_info_box('Author', 'author'));
