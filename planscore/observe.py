@@ -129,6 +129,7 @@ def build_blockassign_geojson(lam, model, block_id_lists):
     pool = multiprocessing.dummy.Pool(processes=len(block_id_lists))
     
     def _invoke(block_ids):
+        print('Invoking Polygonize for {}-block district'.format(len(block_ids)))
         start_time = time.time()
         resp = lam.invoke(
             FunctionName=polygonize.FUNCTION_NAME,
@@ -138,6 +139,7 @@ def build_blockassign_geojson(lam, model, block_id_lists):
                 'state_code': model.state.value,
             }).encode('utf8'),
         )
+        print('Got a response for {}-block district'.format(len(block_ids)))
         result, elapsed = resp['Payload'].read().decode('utf8'), time.time() - start_time
         if '"errorMessage"' in result:
             print('Polygonize error for {}-block district in {:.1f}sec'.format(len(block_ids), elapsed))
