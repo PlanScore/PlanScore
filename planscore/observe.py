@@ -1,5 +1,4 @@
 import os, time, json, posixpath, io, gzip, collections, copy, csv, uuid, datetime, itertools
-import multiprocessing.dummy
 import boto3, botocore.exceptions
 from . import data, constants, run_tile, run_slice, score, compactness, polygonize
 import osgeo.ogr
@@ -93,15 +92,18 @@ def load_upload_geometries(storage, upload):
     
     return [geom for (_, geom) in sorted(geometries.items())]
 
-def load_upload_assignments(storage, upload):
-    ''' Get ordered list of assignment lists for an upload.
+def load_upload_assignment_keys(storage, upload):
+    ''' Get ordered list of assignment keys for an upload.
     '''
-    assignments = {}
-    
     assigns_prefix = posixpath.dirname(data.UPLOAD_ASSIGNMENTS_KEY).format(id=upload.id)
     response = storage.s3.list_objects(Bucket=storage.bucket, Prefix=f'{assigns_prefix}/')
 
-    assignment_keys = [object['Key'] for object in response['Contents']]
+    assignment_keys = sorted(
+        [object['Key'] for object in response['Contents']],
+        key=lambda key: get_district_index(key, upload),
+    )
+    
+    return assignment_keys
     
     for assignment_key in assignment_keys:
         district_index = get_district_index(assignment_key, upload)
@@ -124,51 +126,48 @@ def populate_compactness(geometries):
     
     return districts
 
-def build_blockassign_geojson(lam, model, block_id_lists):
-    print('Starting pool...')
-    pool = multiprocessing.dummy.Pool(processes=len(block_id_lists))
-    
-    def _invoke(block_ids):
-        print('Invoking Polygonize for {}-block district'.format(len(block_ids)))
-        start_time = time.time()
-        resp = lam.invoke(
+def build_blockassign_geojson(district_keys, model, storage, lam, context):
+    for (assignment_key, geometry_key) in district_keys:
+        print(f'Invoking Polygonize for {assignment_key}')
+        lam.invoke(
             FunctionName=polygonize.FUNCTION_NAME,
-            InvocationType='RequestResponse',
+            InvocationType='Event',
             Payload=json.dumps({
-                'block_ids': sorted(block_ids),
+                'storage': storage.to_event(),
+                'assignment_key': assignment_key,
+                'geometry_key': geometry_key,
                 'state_code': model.state.value,
-            }).encode('utf8'),
+            })
         )
-        print('Got a response for {}-block district'.format(len(block_ids)))
-        result, elapsed = resp['Payload'].read().decode('utf8'), time.time() - start_time
-        if '"errorMessage"' in result:
-            print('Polygonize error for {}-block district in {:.1f}sec'.format(len(block_ids), elapsed))
-            print(json.loads(result).get('errorMessage'))
-        else:
-            print('Polygonize result for {}-block district in {:.1f}sec'.format(len(block_ids), elapsed))
-        return result
     
-    return json.dumps(
-        {
-            'type': 'FeatureCollection',
-            'features': [
-                {
-                    'type': 'Feature',
-                    'properties': {},
-                    'geometry': json.loads(result),
-                }
-                for result in pool.map(_invoke, block_id_lists)
-                #if '"errorMessage"' not in result
-            ]
-        },
-    )
+    features = []
+    
+    for (_, geometry_key) in district_keys:
+        object = wait_for_object(context, storage, geometry_key)
+        content = object['Body'].read().decode('utf8')
+        geometry = osgeo.ogr.CreateGeometryFromWkt(content)
+        # TODO: simplify geometries here
+        features.append('{"type": "Feature", "geometry":'+geometry.ExportToJson()+', "properties": {}}')
+        print(geometry.ExportToJson(['COORDINATE_PRECISION=7'])[:256])
+    
+    return ('{"type": "FeatureCollection", "features": [\n'+',\n'.join(features)+'\n]}')
 
-def add_blockassign_upload_geometry(lam, storage, upload):
+def add_blockassign_upload_geometry(context, lam, storage, upload):
+    ''' Build district map from block assignments and return an Upload clone
+    '''
     put_upload_index(storage, upload.clone(
         message='Scoring: Building a district map.'))
     
-    assignments = load_upload_assignments(storage, upload)
-    geojson = build_blockassign_geojson(lam, upload.model, assignments)
+    assignment_keys = load_upload_assignment_keys(storage, upload)
+    geometry_keys = [
+        data.UPLOAD_GEOMETRIES_KEY.format(
+            id=upload.id,
+            index=os.path.splitext(os.path.basename(assignment_key))[0],
+        )
+        for assignment_key in assignment_keys
+    ]
+    district_keys = list(zip(assignment_keys, geometry_keys))
+    geojson = build_blockassign_geojson(district_keys, upload.model, storage, lam, context)
     upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
 
     storage.s3.put_object(Bucket=storage.bucket, Key=upload2.geometry_key,
@@ -176,6 +175,29 @@ def add_blockassign_upload_geometry(lam, storage, upload):
         ContentType='text/json', ACL='public-read', ContentEncoding='gzip')
 
     return upload2
+
+def wait_for_object(context, storage, key):
+    '''
+    '''
+    print(f'Sitting down to wait for {key}')
+    
+    while True:
+        try:
+            object = storage.s3.get_object(Bucket=storage.bucket, Key=key)
+        except botocore.exceptions.ClientError:
+            # Did not find the expected tile, wait a little before checking
+            time.sleep(3)
+        else:
+            if object.get('ContentEncoding') == 'gzip':
+                object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
+    
+            # Found the expected key, break out of this loop
+            return object
+
+        remain_msec = context.get_remaining_time_in_millis()
+
+        if remain_msec < 5000:
+            raise RuntimeError('Out of time')
 
 def iterate_tile_subtotals(expected_tiles, storage, upload, context):
     '''
@@ -195,29 +217,9 @@ def iterate_tile_subtotals(expected_tiles, storage, upload, context):
             next_update = time.time() + 1
 
         # Wait for one expected tile
-        while True:
-            try:
-                object = storage.s3.get_object(Bucket=storage.bucket, Key=expected_tile)
-            except botocore.exceptions.ClientError:
-                # Did not find the expected tile, wait a little before checking
-                time.sleep(3)
-            else:
-                if object.get('ContentEncoding') == 'gzip':
-                    object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
-        
-                content = json.load(object['Body'])
-                yield SubTotal(content.get('totals'), content.get('timing', {}))
-            
-                # Found the expected tile, break out of this loop
-                break
-
-            remain_msec = context.get_remaining_time_in_millis()
-
-            if remain_msec < 5000:
-                # Out of time, just stop
-                overdue_upload = upload.clone(status=False, message="Giving up on this plan after it took too long, sorry.")
-                put_upload_index(storage, overdue_upload)
-                return
+        object = wait_for_object(context, storage, expected_tile)
+        content = json.load(object['Body'])
+        yield SubTotal(content.get('totals'), content.get('timing', {}))
 
     print('iterate_tile_subtotals: all tiles complete')
 
@@ -239,29 +241,9 @@ def iterate_slice_subtotals(expected_slices, storage, upload, context):
             next_update = time.time() + 1
 
         # Wait for one expected slice
-        while True:
-            try:
-                object = storage.s3.get_object(Bucket=storage.bucket, Key=expected_slice)
-            except botocore.exceptions.ClientError:
-                # Did not find the expected slice, wait a little before checking
-                time.sleep(3)
-            else:
-                if object.get('ContentEncoding') == 'gzip':
-                    object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
-        
-                content = json.load(object['Body'])
-                yield SubTotal(content.get('totals'), content.get('timing', {}))
-            
-                # Found the expected slice, break out of this loop
-                break
-
-            remain_msec = context.get_remaining_time_in_millis()
-
-            if remain_msec < 5000:
-                # Out of time, just stop
-                overdue_upload = upload.clone(status=False, message="Giving up on this plan after it took too long, sorry.")
-                put_upload_index(storage, overdue_upload)
-                return
+        object = wait_for_object(context, storage, expected_slice)
+        content = json.load(object['Body'])
+        yield SubTotal(content.get('totals'), content.get('timing', {}))
 
     print('iterate_slice_subtotals: all slices complete')
 
@@ -386,13 +368,14 @@ def lambda_handler(event, context):
         obj = storage.s3.get_object(Bucket=storage.bucket,
             Key=data.UPLOAD_ASSIGNMENT_INDEX_KEY.format(id=upload1.id))
 
-        upload1b = add_blockassign_upload_geometry(lam, storage, upload1)
+        upload1b = add_blockassign_upload_geometry(context, lam, storage, upload1)
         
         enqueued_parts = json.load(obj['Body'])
         expected_parts = [get_expected_slice(slice_key, upload1b)
             for slice_key in enqueued_parts]
     
-        upload2 = upload1b.clone()
+        geometries = load_upload_geometries(storage, upload1b)
+        upload2 = upload1b.clone(districts=populate_compactness(geometries))
         subtotals = list(iterate_slice_subtotals(expected_parts, storage, upload2, context))
         part_type = 'slice'
 

@@ -149,8 +149,8 @@ class TestObserveTiles (unittest.TestCase):
         s3.list_objects.assert_called_once_with(Bucket='bucket-name',
             Prefix="uploads/sample-plan/geometries/")
     
-    def test_load_upload_assignments(self):
-        ''' Expected assignments are retrieved from S3.
+    def test_load_upload_assignment_keys(self):
+        ''' Expected assignment keys are retrieved from S3.
         '''
         s3, upload = unittest.mock.Mock(), unittest.mock.Mock()
         storage = data.Storage(s3, 'bucket-name', 'XX')
@@ -162,10 +162,10 @@ class TestObserveTiles (unittest.TestCase):
             {'Key': "uploads/sample-plan3/assignments/1.txt"}
             ]}
 
-        assignments = observe.load_upload_assignments(storage, upload)
+        assignment_keys = observe.load_upload_assignment_keys(storage, upload)
 
-        self.assertIs(type(assignments), list)
-        self.assertEqual(len(assignments), 2)
+        self.assertIs(type(assignment_keys), list)
+        self.assertEqual(len(assignment_keys), 2)
         
         s3.list_objects.assert_called_once_with(Bucket='bucket-name',
             Prefix="uploads/sample-plan3/assignments/")
@@ -181,44 +181,41 @@ class TestObserveTiles (unittest.TestCase):
         self.assertEqual(len(districts), len(geometries))
         self.assertEqual(districts[0]['compactness'], get_scores.return_value)
     
-    @unittest.mock.patch('sys.stdout')
-    def test_build_blockassign_geojson(self, stdout):
+    @unittest.mock.patch('planscore.observe.wait_for_object')
+    def test_build_blockassign_geojson(self, wait_for_object):
         '''
         '''
+        context, storage = unittest.mock.Mock(), unittest.mock.Mock()
         lam, model = unittest.mock.Mock(), unittest.mock.Mock()
         model.state.value = 'XX'
         
-        lam.invoke.return_value = {'Payload': unittest.mock.Mock()}
-        lam.invoke.return_value['Payload'].read.return_value = b'{"type": "Polygon"}'
+        storage.to_event.return_value = {}
         
-        block_id_lists = [
-            [
-                '0000000010',
-                '0000000009',
-                '0000000008',
-                '0000000004',
-            ],
-            [
-                '0000000007',
-                '0000000006',
-                '0000000005',
-                '0000000003',
-                '0000000002',
-                '0000000001',
-            ],
+        wait_for_object.return_value = {'Body': unittest.mock.Mock()}
+        wait_for_object.return_value['Body'].read.return_value = b'POINT(0 0)'
+        
+        district_keys = [
+            (
+                data.UPLOAD_ASSIGNMENTS_KEY.format(id='sample-plan3', index='0'),
+                data.UPLOAD_GEOMETRIES_KEY.format(id='sample-plan3', index='0'),
+            ),
+            (
+                data.UPLOAD_ASSIGNMENTS_KEY.format(id='sample-plan3', index='1'),
+                data.UPLOAD_GEOMETRIES_KEY.format(id='sample-plan3', index='1'),
+            )
         ]
         
-        geojson = observe.build_blockassign_geojson(lam, model, block_id_lists)
+        geojson = observe.build_blockassign_geojson(district_keys, model, storage, lam, context)
         self.assertTrue(geojson.startswith('{'))
         
         self.assertEqual(len(lam.invoke.mock_calls), 2)
         self.assertEqual(
             lam.invoke.mock_calls[0][2]['Payload'],
-            b'{"block_ids": ["0000000004", "0000000008", "0000000009", "0000000010"], "state_code": "XX"}',
+            '{"storage": {}, "assignment_key": "uploads/sample-plan3/assignments/0.txt", "geometry_key": "uploads/sample-plan3/geometries/0.wkt", "state_code": "XX"}',
         )
         self.assertEqual(
             lam.invoke.mock_calls[1][2]['Payload'],
-            b'{"block_ids": ["0000000001", "0000000002", "0000000003", "0000000005", "0000000006", "0000000007"], "state_code": "XX"}',
+            '{"storage": {}, "assignment_key": "uploads/sample-plan3/assignments/1.txt", "geometry_key": "uploads/sample-plan3/geometries/1.wkt", "state_code": "XX"}',
         )
 
     def test_add_blockassign_upload_geometry(self):

@@ -1,7 +1,9 @@
 import os
+import io
 import sys
 import csv
 import json
+import gzip
 import logging
 import operator
 import tempfile
@@ -11,13 +13,27 @@ import itertools
 import boto3
 import networkx
 import shapely.ops
+import shapely.wkt
 import shapely.geometry
 
-from . import constants
+from . import constants, data
 
 logging.basicConfig(level=logging.INFO)
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_POLYGONIZE', 'PlanScore-Polygonize')
+
+def load_assignment_block_ids(storage, assignment_key):
+    ''' 
+    '''
+    object = storage.s3.get_object(Bucket=storage.bucket, Key=assignment_key)
+
+    if object.get('ContentEncoding') == 'gzip':
+        object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
+
+    body_string = object['Body'].read().decode('utf8')
+    block_ids = [line for line in body_string.split('\n') if line]
+    
+    return block_ids
 
 @functools.lru_cache()
 def load_graph(s3, bucket, key):
@@ -135,10 +151,28 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3')
-    state_code, block_ids = event['state_code'], event['block_ids']
+    storage = data.Storage.from_event(event['storage'], s3)
+
+    state_code = event['state_code']
+    assignment_key = event['assignment_key']
+    geometry_key = event['geometry_key']
+
+    print('Assignment Key:', assignment_key)
+    print('Geometry Key:', geometry_key)
+
+    block_ids = load_assignment_block_ids(storage, assignment_key)
     block_graph = assemble_graph(s3, state_code, block_ids)
     polygon = polygonize_district(block_ids, block_graph)
-    print('Done.')
     print(polygon.centroid)
     print(json.dumps(shapely.geometry.mapping(polygon.centroid)))
+
+    print('Writing to', geometry_key)
+    s3.put_object(
+        Bucket=storage.bucket,
+        Key=geometry_key, ACL='bucket-owner-full-control',
+        Body=shapely.wkt.dumps(polygon, rounding_precision=7),
+        ContentType='text/plain',
+    )
+    print('Done.')
+
     return shapely.geometry.mapping(polygon.centroid)
