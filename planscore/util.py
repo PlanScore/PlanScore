@@ -139,4 +139,8 @@ def baf_stream_to_pairs(stream):
     else:
         block_column, district_column = rows.fieldnames
     
-    return [(row[block_column], row[district_column]) for row in rows]
+    # Exclude "ZZ" district, used by Census for all-water non-districts
+    return [
+        (row[block_column], row[district_column])
+        for row in rows if row[district_column] != 'ZZ'
+    ]

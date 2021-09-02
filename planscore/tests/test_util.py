@@ -237,3 +237,8 @@ class TestUtil (unittest.TestCase):
             rows10 = util.baf_stream_to_pairs(file10)
             self.assertEqual(len(rows10), 10)
             self.assertEqual(rows10[0], ('0000000001', '02'))
+
+        with open(os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v11.csv')) as file11:
+            rows11 = util.baf_stream_to_pairs(file11)
+            self.assertEqual(len(rows11), 10)
+            self.assertEqual(rows11[0], ('0000000001', '02'))
