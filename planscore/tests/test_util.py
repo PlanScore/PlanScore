@@ -196,44 +196,44 @@ class TestUtil (unittest.TestCase):
         with open(os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v2.csv')) as file2:
             rows2 = util.baf_stream_to_pairs(file2)
             self.assertEqual(len(rows2), 10)
-            self.assertEqual(rows1[0], ('0000000001', '02'))
+            self.assertEqual(rows2[0], ('0000000001', '02'))
 
         with open(os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v3.csv')) as file3:
             rows3 = util.baf_stream_to_pairs(file3)
             self.assertEqual(len(rows3), 10)
-            self.assertEqual(rows1[0], ('0000000001', '02'))
+            self.assertEqual(rows3[0], ('0000000001', '02'))
 
         with open(os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v4.csv')) as file4:
             rows4 = util.baf_stream_to_pairs(file4)
             self.assertEqual(len(rows4), 10)
-            self.assertEqual(rows1[0], ('0000000001', '02'))
+            self.assertEqual(rows4[0], ('0000000001', '02'))
 
         with open(os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v5.csv')) as file5:
             rows5 = util.baf_stream_to_pairs(file5)
             self.assertEqual(len(rows5), 10)
-            self.assertEqual(rows1[0], ('0000000001', '02'))
+            self.assertEqual(rows5[0], ('0000000001', '02'))
 
         with open(os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v6.csv')) as file6:
             rows6 = util.baf_stream_to_pairs(file6)
             self.assertEqual(len(rows6), 10)
-            self.assertEqual(rows1[0], ('0000000001', '02'))
+            self.assertEqual(rows6[0], ('0000000001', '02'))
 
         with open(os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v7.csv')) as file7:
             rows7 = util.baf_stream_to_pairs(file7)
             self.assertEqual(len(rows7), 10)
-            self.assertEqual(rows1[0], ('0000000001', '02'))
+            self.assertEqual(rows7[0], ('0000000001', '02'))
 
         with open(os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v8.csv')) as file8:
             rows8 = util.baf_stream_to_pairs(file8)
             self.assertEqual(len(rows8), 10)
-            self.assertEqual(rows1[0], ('0000000001', '02'))
+            self.assertEqual(rows8[0], ('0000000001', '02'))
 
         with open(os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v9.csv')) as file9:
             rows9 = util.baf_stream_to_pairs(file9)
             self.assertEqual(len(rows9), 10)
-            self.assertEqual(rows1[0], ('0000000001', '02'))
+            self.assertEqual(rows9[0], ('0000000001', '02'))
 
         with open(os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v10.csv')) as file10:
             rows10 = util.baf_stream_to_pairs(file10)
             self.assertEqual(len(rows10), 10)
-            self.assertEqual(rows1[0], ('0000000001', '02'))
+            self.assertEqual(rows10[0], ('0000000001', '02'))
