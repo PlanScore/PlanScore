@@ -137,32 +137,14 @@ def get_block_assignments(path):
 
             for name in namelist:
                 if os.path.splitext(name.lower())[1] in ('.txt', '.csv'):
-                    fieldnames, rows = util.baf_stream_to_rows(io.TextIOWrapper(zf.open(name)))
+                    rows = util.baf_stream_to_pairs(io.TextIOWrapper(zf.open(name)))
                     break
 
     elif ext in ('.csv', '.txt'):
         with open(path, 'r') as file:
-            fieldnames, rows = util.baf_stream_to_rows(file)
+            rows = util.baf_stream_to_pairs(file)
     
-    if len(fieldnames) != 2:
-        raise ValuError(f'Bad column count in {path}')
-
-    if 'GEOID10' in fieldnames:
-        block_column = 'GEOID10'
-        district_column = fieldnames[(fieldnames.index(block_column) + 1) % 2]
-    elif 'GEOID20' in fieldnames:
-        block_column = 'GEOID20'
-        district_column = fieldnames[(fieldnames.index(block_column) + 1) % 2]
-    elif 'BLOCKID' in fieldnames:
-        block_column = 'BLOCKID'
-        district_column = fieldnames[(fieldnames.index(block_column) + 1) % 2]
-    elif 'DISTRICT' in fieldnames:
-        district_column = 'DISTRICT'
-        block_column = fieldnames[(fieldnames.index(district_column) + 1) % 2]
-    else:
-        block_column, district_column = fieldnames
-    
-    return [Assignment(row[block_column], row[district_column]) for row in rows]
+    return [Assignment(block, district) for (block, district) in rows]
 
 def count_district_geometries(path):
     '''

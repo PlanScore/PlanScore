@@ -108,7 +108,7 @@ def event_query_args(event):
     '''
     return event.get('queryStringParameters') or {}
 
-def baf_stream_to_rows(stream):
+def baf_stream_to_pairs(stream):
     '''
     '''
     head, tail = next(stream), stream
@@ -120,5 +120,23 @@ def baf_stream_to_rows(stream):
         # No header row, make a fake one
         lines = itertools.chain([f'BLOCKID{delimiter}DISTRICT', head], tail)
     rows = csv.DictReader(lines, delimiter=delimiter)
-    return tuple(rows.fieldnames), list(rows)
     
+    if len(rows.fieldnames) != 2:
+        raise ValuError(f'Bad column count in {stream}')
+
+    if 'GEOID10' in rows.fieldnames:
+        block_column = 'GEOID10'
+        district_column = rows.fieldnames[(rows.fieldnames.index(block_column) + 1) % 2]
+    elif 'GEOID20' in rows.fieldnames:
+        block_column = 'GEOID20'
+        district_column = rows.fieldnames[(rows.fieldnames.index(block_column) + 1) % 2]
+    elif 'BLOCKID' in rows.fieldnames:
+        block_column = 'BLOCKID'
+        district_column = rows.fieldnames[(rows.fieldnames.index(block_column) + 1) % 2]
+    elif 'DISTRICT' in rows.fieldnames:
+        district_column = 'DISTRICT'
+        block_column = rows.fieldnames[(rows.fieldnames.index(district_column) + 1) % 2]
+    else:
+        block_column, district_column = rows.fieldnames
+    
+    return [(row[block_column], row[district_column]) for row in rows]

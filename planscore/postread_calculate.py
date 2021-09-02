@@ -154,40 +154,22 @@ def put_district_assignments(s3, bucket, upload, path):
 
             for name in namelist:
                 if os.path.splitext(name.lower())[1] in ('.txt', '.csv'):
-                    fieldnames, rows = util.baf_stream_to_rows(io.TextIOWrapper(zf.open(name)))
+                    rows = util.baf_stream_to_pairs(io.TextIOWrapper(zf.open(name)))
                     break
 
     elif ext in ('.csv', '.txt'):
         with open(path, 'r') as file:
-            fieldnames, rows = util.baf_stream_to_rows(file)
+            rows = util.baf_stream_to_pairs(file)
     
-    if len(fieldnames) != 2:
-        raise ValuError(f'Bad column count in {path}')
-
-    if 'GEOID10' in fieldnames:
-        block_column = 'GEOID10'
-        district_column = fieldnames[(fieldnames.index(block_column) + 1) % 2]
-    elif 'GEOID20' in fieldnames:
-        block_column = 'GEOID20'
-        district_column = fieldnames[(fieldnames.index(block_column) + 1) % 2]
-    elif 'BLOCKID' in fieldnames:
-        block_column = 'BLOCKID'
-        district_column = fieldnames[(fieldnames.index(block_column) + 1) % 2]
-    elif 'DISTRICT' in fieldnames:
-        district_column = 'DISTRICT'
-        block_column = fieldnames[(fieldnames.index(district_column) + 1) % 2]
-    else:
-        block_column, district_column = fieldnames
-    
-    district_key = operator.itemgetter(district_column)
+    district_key = lambda pair: int(pair[1])
     rows2 = itertools.groupby(sorted(rows, key=district_key), district_key)
     
     for (index, (key, rows3)) in enumerate(rows2):
-        rows4 = sorted(rows3, key=operator.itemgetter(block_column))
+        rows4 = sorted(rows3, key=operator.itemgetter(0))
         
         out = io.StringIO()
-        for row in rows4:
-            print(row[block_column], file=out)
+        for (block_id, _) in rows4:
+            print(block_id, file=out)
     
         key = data.UPLOAD_ASSIGNMENTS_KEY.format(id=upload.id, index=index)
     
