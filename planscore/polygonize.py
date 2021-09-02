@@ -94,28 +94,22 @@ def polygonize_district(node_ids, graph):
     
     multipoint = shapely.geometry.MultiPoint([graph.nodes[id]['pos'] for id in node_ids])
     logging.debug(f'District multipoint: {multipoint}')
-    print(1)
 
     boundary = list(networkx.algorithms.boundary.edge_boundary(graph, node_ids))
     logging.debug(f'District boundary: {boundary}')
-    print(2)
 
     lines = [graph.edges[(node1, node2)]['line'] for (node1, node2) in boundary]
     logging.debug(f'District lines: {lines}')
-    print(3)
 
     district_polygons = list(shapely.ops.polygonize(lines))
     logging.debug(f'District district_polygons: {district_polygons}')
-    print(4)
 
     polys = [poly for poly in district_polygons
         if poly.relate_pattern(multipoint, '0********')]
     logging.debug(f'District polys: {polys}')
-    print(5)
 
     multipolygon = shapely.ops.cascaded_union(polys)
     logging.debug(f'District multipolygon: {multipolygon}')
-    print(6)
     
     return multipolygon
 
@@ -157,14 +151,9 @@ def lambda_handler(event, context):
     assignment_key = event['assignment_key']
     geometry_key = event['geometry_key']
 
-    print('Assignment Key:', assignment_key)
-    print('Geometry Key:', geometry_key)
-
     block_ids = load_assignment_block_ids(storage, assignment_key)
     block_graph = assemble_graph(s3, state_code, block_ids)
     polygon = polygonize_district(block_ids, block_graph)
-    print(polygon.centroid)
-    print(json.dumps(shapely.geometry.mapping(polygon.centroid)))
 
     print('Writing to', geometry_key)
     s3.put_object(
@@ -173,6 +162,5 @@ def lambda_handler(event, context):
         Body=shapely.wkt.dumps(polygon, rounding_precision=7),
         ContentType='text/plain',
     )
-    print('Done.')
 
     return shapely.geometry.mapping(polygon.centroid)
