@@ -38,7 +38,8 @@ def get_home_page():
 @app.route('/upload.html')
 def get_upload():
     upload_fields_url = get_function_url(constants.API_UPLOAD_RELPATH)
-    return flask.render_template('upload.html', upload_fields_url=upload_fields_url)
+    return flask.render_template('upload.html', upload_fields_url=upload_fields_url,
+        planscore_website_base=flask.current_app.config['PLANSCORE_WEBSITE_BASE'].rstrip('/'))
 
 @app.route('/annotate.html')
 def get_annotate():
