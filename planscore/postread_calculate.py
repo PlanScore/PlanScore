@@ -4,7 +4,7 @@ Fans out asynchronous parallel calls to planscore.district function, then
 starts and observer process with planscore.score function.
 '''
 import os, io, json, urllib.parse, gzip, functools, time, math, threading
-import csv, operator, itertools
+import csv, operator, itertools, zipfile
 import boto3, osgeo.ogr
 from . import util, data, score, website, prepare_state, constants, run_tile, run_slice, observe
 
@@ -142,44 +142,60 @@ def put_district_assignments(s3, bucket, upload, path):
     
     keys = []
 
-    with open(path, 'r') as file:
-        fieldnames, rows = util.baf_stream_to_rows(file)
+    _, ext = os.path.splitext(path.lower())
     
-        if len(fieldnames) != 2:
-            raise ValuError(f'Bad column count in {path}')
+    if ext == '.zip':
+        with open(path, 'rb') as file:
+            zf = zipfile.ZipFile(file)
 
-        if 'GEOID10' in fieldnames:
-            block_column = 'GEOID10'
-            district_column = fieldnames[(fieldnames.index(block_column) + 1) % 2]
-        elif 'GEOID20' in fieldnames:
-            block_column = 'GEOID20'
-            district_column = fieldnames[(fieldnames.index(block_column) + 1) % 2]
-        elif 'BLOCKID' in fieldnames:
-            block_column = 'BLOCKID'
-            district_column = fieldnames[(fieldnames.index(block_column) + 1) % 2]
-        elif 'DISTRICT' in fieldnames:
-            district_column = 'DISTRICT'
-            block_column = fieldnames[(fieldnames.index(district_column) + 1) % 2]
-        else:
-            block_column, district_column = fieldnames
+            # Sort names so "real"-looking paths come first: not dot-names, not in '__MACOSX'
+            namelist = sorted(zf.namelist(), reverse=False,
+                key=lambda n: (os.path.basename(n).startswith('.'), n.startswith('__MACOSX')))
 
-        district_key = operator.itemgetter(district_column)
-        rows2 = itertools.groupby(sorted(rows, key=district_key), district_key)
-        
-        for (index, (key, rows3)) in enumerate(rows2):
-            rows4 = sorted(rows3, key=operator.itemgetter(block_column))
-            
-            out = io.StringIO()
-            for row in rows4:
-                print(row[block_column], file=out)
-        
-            key = data.UPLOAD_ASSIGNMENTS_KEY.format(id=upload.id, index=index)
-        
-            s3.put_object(Bucket=bucket, Key=key, ACL='bucket-owner-full-control',
-                Body=out.getvalue(), ContentType='text/plain')
-        
-            keys.append(key)
+            for name in namelist:
+                if os.path.splitext(name.lower())[1] in ('.txt', '.csv'):
+                    fieldnames, rows = util.baf_stream_to_rows(io.TextIOWrapper(zf.open(name)))
+                    break
+
+    elif ext in ('.csv', '.txt'):
+        with open(path, 'r') as file:
+            fieldnames, rows = util.baf_stream_to_rows(file)
     
+    if len(fieldnames) != 2:
+        raise ValuError(f'Bad column count in {path}')
+
+    if 'GEOID10' in fieldnames:
+        block_column = 'GEOID10'
+        district_column = fieldnames[(fieldnames.index(block_column) + 1) % 2]
+    elif 'GEOID20' in fieldnames:
+        block_column = 'GEOID20'
+        district_column = fieldnames[(fieldnames.index(block_column) + 1) % 2]
+    elif 'BLOCKID' in fieldnames:
+        block_column = 'BLOCKID'
+        district_column = fieldnames[(fieldnames.index(block_column) + 1) % 2]
+    elif 'DISTRICT' in fieldnames:
+        district_column = 'DISTRICT'
+        block_column = fieldnames[(fieldnames.index(district_column) + 1) % 2]
+    else:
+        block_column, district_column = fieldnames
+    
+    district_key = operator.itemgetter(district_column)
+    rows2 = itertools.groupby(sorted(rows, key=district_key), district_key)
+    
+    for (index, (key, rows3)) in enumerate(rows2):
+        rows4 = sorted(rows3, key=operator.itemgetter(block_column))
+        
+        out = io.StringIO()
+        for row in rows4:
+            print(row[block_column], file=out)
+    
+        key = data.UPLOAD_ASSIGNMENTS_KEY.format(id=upload.id, index=index)
+    
+        s3.put_object(Bucket=bucket, Key=key, ACL='bucket-owner-full-control',
+            Body=out.getvalue(), ContentType='text/plain')
+    
+        keys.append(key)
+
     return keys
 
 def load_model_tiles(storage, model):
