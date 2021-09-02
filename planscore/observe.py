@@ -133,9 +133,12 @@ def build_blockassign_geojson(district_keys, model, storage, lam, context):
         object = wait_for_object(context, storage, geometry_key)
         content = object['Body'].read().decode('utf8')
         geometry = osgeo.ogr.CreateGeometryFromWkt(content)
-        # TODO: simplify geometries here
-        features.append('{"type": "Feature", "geometry":'+geometry.ExportToJson()+', "properties": {}}')
-        print(geometry.ExportToJson(['COORDINATE_PRECISION=7'])[:256])
+        simple30ft = geometry.SimplifyPreserveTopology(.0001)
+        features.append(
+            '{"type": "Feature", "geometry":'
+            + simple30ft.ExportToJson(options=['COORDINATE_PRECISION=5'])
+            + ', "properties": {}}'
+        )
     
     return ('{"type": "FeatureCollection", "features": [\n'+',\n'.join(features)+'\n]}')
 
