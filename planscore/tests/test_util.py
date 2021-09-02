@@ -242,3 +242,8 @@ class TestUtil (unittest.TestCase):
             rows11 = util.baf_stream_to_pairs(file11)
             self.assertEqual(len(rows11), 10)
             self.assertEqual(rows11[0], ('0000000001', '02'))
+
+        with open(os.path.join(os.path.dirname(__file__), 'data', 'cocong_0623_doj_reformatted.csv')) as file12:
+            rows12 = util.baf_stream_to_pairs(file12)
+            self.assertEqual(len(rows12), 9)
+            self.assertEqual(rows12[0], ('080010078011000', '6'))

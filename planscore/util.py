@@ -1,4 +1,4 @@
-import urllib.parse, tempfile, shutil, os, contextlib, logging, zipfile, itertools, shutil, enum, csv
+import urllib.parse, tempfile, shutil, os, contextlib, logging, zipfile, itertools, shutil, enum, csv, re
 from . import constants
 
 class UploadType (enum.Enum):
@@ -113,8 +113,9 @@ def baf_stream_to_pairs(stream):
     '''
     head, tail = next(stream), stream
     delimiter = '|' if '|' in head else ','
-    if 'ID' in head:
-        # There's a header row with BLOCKID or GEOID
+    numeric_head = {bool(re.match(r'^\d+$', col)) for  col in head.split(delimiter)}
+    if False in numeric_head:
+        # There's a header row with non-numeric characters
         lines = itertools.chain([head], tail)
     else:
         # No header row, make a fake one
