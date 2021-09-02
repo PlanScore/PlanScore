@@ -218,8 +218,37 @@ class TestObserveTiles (unittest.TestCase):
             '{"storage": {}, "assignment_key": "uploads/sample-plan3/assignments/1.txt", "geometry_key": "uploads/sample-plan3/geometries/1.wkt", "state_code": "XX"}',
         )
 
-    def test_add_blockassign_upload_geometry(self):
-        raise NotImplementedError()
+    @unittest.mock.patch('planscore.observe.build_blockassign_geojson')
+    @unittest.mock.patch('planscore.observe.load_upload_assignment_keys')
+    @unittest.mock.patch('planscore.observe.put_upload_index')
+    def test_add_blockassign_upload_geometry(self, put_upload_index, load_upload_assignment_keys, build_blockassign_geojson):
+        context = unittest.mock.Mock()
+        lam = unittest.mock.Mock()
+        storage = unittest.mock.Mock()
+        upload = unittest.mock.Mock()
+        upload.id = 'sample-plan'
+        load_upload_assignment_keys.return_value = [
+            'uploads/sample-plan/assignments/0.txt',
+            'uploads/sample-plan/assignments/1.txt',
+        ]
+        build_blockassign_geojson.return_value = '{"type": "FeatureCollection"}'
+        
+        observe.add_blockassign_upload_geometry(context, lam, storage, upload)
+        
+        build_blockassign_geojson.assert_called_once_with(
+            [
+                ('uploads/sample-plan/assignments/0.txt', 'uploads/sample-plan/geometries/0.wkt'),
+                ('uploads/sample-plan/assignments/1.txt', 'uploads/sample-plan/geometries/1.wkt'),
+            ],
+            upload.model, storage, lam, context,
+        )
+        self.assertEqual(len(storage.s3.put_object.mock_calls), 1)
+        self.assertEqual(storage.s3.put_object.mock_calls[0][2]['Bucket'], storage.bucket)
+        self.assertEqual(storage.s3.put_object.mock_calls[0][2]['Key'], upload.clone().geometry_key)
+        self.assertEqual(
+            gzip.decompress(storage.s3.put_object.mock_calls[0][2]['Body']),
+            build_blockassign_geojson.return_value.encode('utf8'),
+        )
 
     @unittest.mock.patch('sys.stdout')
     def test_iterate_tile_subtotals(self, stdout):

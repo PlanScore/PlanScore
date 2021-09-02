@@ -104,19 +104,6 @@ def load_upload_assignment_keys(storage, upload):
     )
     
     return assignment_keys
-    
-    for assignment_key in assignment_keys:
-        district_index = get_district_index(assignment_key, upload)
-        object = storage.s3.get_object(Bucket=storage.bucket, Key=assignment_key)
-
-        if object.get('ContentEncoding') == 'gzip':
-            object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
-    
-        body_string = object['Body'].read().decode('utf8')
-        district_assign = [line for line in body_string.split('\n') if line]
-        assignments[district_index] = district_assign
-    
-    return [assign for (_, assign) in sorted(assignments.items())]
 
 def populate_compactness(geometries):
     '''

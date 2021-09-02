@@ -150,6 +150,11 @@ class TestPostreadCalculate (unittest.TestCase):
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.txt')
         keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
         self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
+        
+        self.assertEqual(s3.mock_calls[0][2]['Key'], 'uploads/ID/assignments/0.txt')
+        self.assertEqual(s3.mock_calls[1][2]['Key'], 'uploads/ID/assignments/1.txt')
+        self.assertEqual(s3.mock_calls[0][2]['Body'], '0000000004\n0000000008\n0000000009\n0000000010\n')
+        self.assertEqual(s3.mock_calls[1][2]['Body'], '0000000001\n0000000002\n0000000003\n0000000005\n0000000006\n0000000007\n')
     
     @unittest.mock.patch('sys.stdout')
     def test_load_model_tiles_oldstyle(self, stdout):
