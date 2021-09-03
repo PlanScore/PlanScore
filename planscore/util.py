@@ -1,4 +1,4 @@
-import urllib.parse, tempfile, shutil, os, contextlib, logging, zipfile, itertools, shutil, enum
+import urllib.parse, tempfile, shutil, os, contextlib, logging, zipfile, itertools, shutil, enum, csv, re
 from . import constants
 
 class UploadType (enum.Enum):
@@ -107,3 +107,41 @@ def event_query_args(event):
     '''
     '''
     return event.get('queryStringParameters') or {}
+
+def baf_stream_to_pairs(stream):
+    '''
+    '''
+    head, tail = next(stream), stream
+    delimiter = '|' if '|' in head else ','
+    numeric_head = {bool(re.match(r'^\d+$', col)) for  col in head.split(delimiter)}
+    if False in numeric_head:
+        # There's a header row with non-numeric characters
+        lines = itertools.chain([head], tail)
+    else:
+        # No header row, make a fake one
+        lines = itertools.chain([f'BLOCKID{delimiter}DISTRICT', head], tail)
+    rows = csv.DictReader(lines, delimiter=delimiter)
+    
+    if len(rows.fieldnames) != 2:
+        raise ValuError(f'Bad column count in {stream}')
+
+    if 'GEOID10' in rows.fieldnames:
+        block_column = 'GEOID10'
+        district_column = rows.fieldnames[(rows.fieldnames.index(block_column) + 1) % 2]
+    elif 'GEOID20' in rows.fieldnames:
+        block_column = 'GEOID20'
+        district_column = rows.fieldnames[(rows.fieldnames.index(block_column) + 1) % 2]
+    elif 'BLOCKID' in rows.fieldnames:
+        block_column = 'BLOCKID'
+        district_column = rows.fieldnames[(rows.fieldnames.index(block_column) + 1) % 2]
+    elif 'DISTRICT' in rows.fieldnames:
+        district_column = 'DISTRICT'
+        block_column = rows.fieldnames[(rows.fieldnames.index(district_column) + 1) % 2]
+    else:
+        block_column, district_column = rows.fieldnames
+    
+    # Exclude "ZZ" district, used by Census for all-water non-districts
+    return [
+        (row[block_column], row[district_column])
+        for row in rows if row[district_column] != 'ZZ'
+    ]

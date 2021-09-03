@@ -4,6 +4,16 @@ from . import constants, data, score
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_RUN_SLICE') or 'PlanScore-RunSlice'
 
+def thing_geoid(thing):
+    if 'GEOID20' in thing:
+        return thing['GEOID20']
+    elif 'GEOID10' in thing:
+        return thing['GEOID10']
+    elif 'BLOCKID' in thing:
+        return thing['BLOCKID']
+    else:
+        return thing['GEOID']
+
 def load_upload_assignments(storage, upload):
     ''' Get dictionary of assignments for an upload.
     '''
@@ -70,7 +80,7 @@ def slice_assignment(storage, slice_key):
     if object.get('ContentEncoding') == 'gzip':
         object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
     
-    assignment_list = [block['GEOID'] for block in json.load(object['Body'])]
+    assignment_list = [thing_geoid(block) for block in json.load(object['Body'])]
     return set(assignment_list)
 
 def score_district(district_set, precincts, slice_set):
@@ -96,7 +106,7 @@ def score_precinct(partial_district_set, precinct_properties):
     '''
     # Initialize totals to zero
     totals = {name: 0 for name in score.FIELD_NAMES if name in precinct_properties}
-    precint_geoid = precinct_properties['GEOID']
+    precint_geoid = thing_geoid(precinct_properties)
     
     if precint_geoid not in partial_district_set:
         return totals

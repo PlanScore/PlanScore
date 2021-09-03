@@ -38,7 +38,8 @@ def get_home_page():
 @app.route('/upload.html')
 def get_upload():
     upload_fields_url = get_function_url(constants.API_UPLOAD_RELPATH)
-    return flask.render_template('upload.html', upload_fields_url=upload_fields_url)
+    return flask.render_template('upload.html', upload_fields_url=upload_fields_url,
+        planscore_website_base=flask.current_app.config['PLANSCORE_WEBSITE_BASE'].rstrip('/'))
 
 @app.route('/annotate.html')
 def get_annotate():
@@ -47,6 +48,7 @@ def get_annotate():
     geom_url_prefix = constants.S3_URL_PATTERN.format(k='', b=flask.current_app.config['PLANSCORE_S3_BUCKET'])
     return flask.render_template('annotate.html', Incumbency=data.Incumbency,
         uploaded_url=uploaded_url, data_url_pattern=data_url_pattern,
+        planscore_website_base=flask.current_app.config['PLANSCORE_WEBSITE_BASE'].rstrip('/'),
         geom_url_prefix=geom_url_prefix)
 
 @app.route('/plan.html')
@@ -54,10 +56,9 @@ def get_plan():
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     geom_url_prefix = constants.S3_URL_PATTERN.format(k='', b=flask.current_app.config['PLANSCORE_S3_BUCKET'])
     text_url_pattern = get_text_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
-    geom_url_suffix_key=data.UPLOAD_GEOMETRY_KEY
     return flask.render_template('plan.html',
         data_url_pattern=data_url_pattern, geom_url_prefix=geom_url_prefix,
-        text_url_pattern=text_url_pattern, geom_url_suffix_key=geom_url_suffix_key,
+        text_url_pattern=text_url_pattern,
         planscore_website_base=flask.current_app.config['PLANSCORE_WEBSITE_BASE'].rstrip('/'))
 
 @app.route('/models/')

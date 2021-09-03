@@ -1,7 +1,9 @@
 import os
+import io
 import sys
 import csv
 import json
+import gzip
 import logging
 import operator
 import tempfile
@@ -11,27 +13,43 @@ import itertools
 import boto3
 import networkx
 import shapely.ops
+import shapely.wkt
 import shapely.geometry
 
-from . import constants
+from . import constants, data
 
 logging.basicConfig(level=logging.INFO)
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_POLYGONIZE', 'PlanScore-Polygonize')
 
+def load_assignment_block_ids(storage, assignment_key):
+    ''' 
+    '''
+    object = storage.s3.get_object(Bucket=storage.bucket, Key=assignment_key)
+
+    if object.get('ContentEncoding') == 'gzip':
+        object['Body'] = io.BytesIO(gzip.decompress(object['Body'].read()))
+
+    body_string = object['Body'].read().decode('utf8')
+    block_ids = [line for line in body_string.split('\n') if line]
+    
+    return block_ids
+
 @functools.lru_cache()
 def load_graph(s3, bucket, key):
     '''
     '''
-    print('Loading', bucket, f'{key}')
-
-    obj2 = s3.get_object(Bucket=bucket, Key=key)
-    
-    handle, tmp_path = tempfile.mkstemp(prefix='graph-', suffix='.pickle')
-    os.write(handle, obj2['Body'].read())
+    _, ext = os.path.splitext(key)
+    handle, tmp_path = tempfile.mkstemp(prefix='graph-', suffix=ext)
     os.close(handle)
+    
+    print(f'Downloading s3://{bucket}/{key} to {tmp_path}')
 
-    return networkx.read_gpickle(tmp_path)
+    s3.download_file(Bucket=bucket, Key=key, Filename=tmp_path)
+    graph = networkx.read_gpickle(tmp_path)
+    os.unlink(tmp_path)
+
+    return graph
 
 def combine_digraphs(graph1, graph2):
     '''
@@ -55,8 +73,10 @@ def combine_digraphs(graph1, graph2):
 def assemble_graph(s3, state_code, block_ids):
     '''
     '''
+    print('Polygonize assemble_graph() for {}-block district'.format(len(block_ids)))
+    
     county_keys = {
-        'data/{}/graphs/2010/{}-tabblock.pickle'.format(state_code, block_id[:5])
+        'data/{}/graphs/2020/{}-tabblock.pickle.gz'.format(state_code, block_id[:5])
         for block_id in block_ids
     }
 
@@ -64,11 +84,14 @@ def assemble_graph(s3, state_code, block_ids):
         load_graph(s3, constants.S3_BUCKET, key) for key in county_keys
     ]
 
+    print('Combining digraphs...')
     return functools.reduce(combine_digraphs, county_graphs)
 
 def polygonize_district(node_ids, graph):
     '''
     '''
+    print('Polygonizing district from graph...')
+    
     multipoint = shapely.geometry.MultiPoint([graph.nodes[id]['pos'] for id in node_ids])
     logging.debug(f'District multipoint: {multipoint}')
 
@@ -122,7 +145,22 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3')
-    state_code, block_ids = event['state_code'], event['block_ids']
+    storage = data.Storage.from_event(event['storage'], s3)
+
+    state_code = event['state_code']
+    assignment_key = event['assignment_key']
+    geometry_key = event['geometry_key']
+
+    block_ids = load_assignment_block_ids(storage, assignment_key)
     block_graph = assemble_graph(s3, state_code, block_ids)
     polygon = polygonize_district(block_ids, block_graph)
-    return shapely.geometry.mapping(polygon)
+
+    print('Writing to', geometry_key)
+    s3.put_object(
+        Bucket=storage.bucket,
+        Key=geometry_key, ACL='bucket-owner-full-control',
+        Body=shapely.wkt.dumps(polygon, rounding_precision=7),
+        ContentType='text/plain',
+    )
+
+    return shapely.geometry.mapping(polygon.centroid)

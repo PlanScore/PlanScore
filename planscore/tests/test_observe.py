@@ -148,6 +148,27 @@ class TestObserveTiles (unittest.TestCase):
         
         s3.list_objects.assert_called_once_with(Bucket='bucket-name',
             Prefix="uploads/sample-plan/geometries/")
+    
+    def test_load_upload_assignment_keys(self):
+        ''' Expected assignment keys are retrieved from S3.
+        '''
+        s3, upload = unittest.mock.Mock(), unittest.mock.Mock()
+        storage = data.Storage(s3, 'bucket-name', 'XX')
+        upload.id = 'sample-plan3'
+
+        s3.get_object.side_effect = mock_s3_get_object
+        s3.list_objects.return_value = {'Contents': [
+            {'Key': "uploads/sample-plan3/assignments/0.txt"},
+            {'Key': "uploads/sample-plan3/assignments/1.txt"}
+            ]}
+
+        assignment_keys = observe.load_upload_assignment_keys(storage, upload)
+
+        self.assertIs(type(assignment_keys), list)
+        self.assertEqual(len(assignment_keys), 2)
+        
+        s3.list_objects.assert_called_once_with(Bucket='bucket-name',
+            Prefix="uploads/sample-plan3/assignments/")
 
     @unittest.mock.patch('planscore.compactness.get_scores')
     def test_populate_compactness(self, get_scores):
@@ -160,6 +181,75 @@ class TestObserveTiles (unittest.TestCase):
         self.assertEqual(len(districts), len(geometries))
         self.assertEqual(districts[0]['compactness'], get_scores.return_value)
     
+    @unittest.mock.patch('planscore.observe.wait_for_object')
+    def test_build_blockassign_geojson(self, wait_for_object):
+        '''
+        '''
+        context, storage = unittest.mock.Mock(), unittest.mock.Mock()
+        lam, model = unittest.mock.Mock(), unittest.mock.Mock()
+        model.state.value = 'XX'
+        
+        storage.to_event.return_value = {}
+        
+        wait_for_object.return_value = {'Body': unittest.mock.Mock()}
+        wait_for_object.return_value['Body'].read.return_value = b'POINT(0 0)'
+        
+        district_keys = [
+            (
+                data.UPLOAD_ASSIGNMENTS_KEY.format(id='sample-plan3', index='0'),
+                data.UPLOAD_GEOMETRIES_KEY.format(id='sample-plan3', index='0'),
+            ),
+            (
+                data.UPLOAD_ASSIGNMENTS_KEY.format(id='sample-plan3', index='1'),
+                data.UPLOAD_GEOMETRIES_KEY.format(id='sample-plan3', index='1'),
+            )
+        ]
+        
+        geojson = observe.build_blockassign_geojson(district_keys, model, storage, lam, context)
+        self.assertTrue(geojson.startswith('{'))
+        
+        self.assertEqual(len(lam.invoke.mock_calls), 2)
+        self.assertEqual(
+            lam.invoke.mock_calls[0][2]['Payload'],
+            '{"storage": {}, "assignment_key": "uploads/sample-plan3/assignments/0.txt", "geometry_key": "uploads/sample-plan3/geometries/0.wkt", "state_code": "XX"}',
+        )
+        self.assertEqual(
+            lam.invoke.mock_calls[1][2]['Payload'],
+            '{"storage": {}, "assignment_key": "uploads/sample-plan3/assignments/1.txt", "geometry_key": "uploads/sample-plan3/geometries/1.wkt", "state_code": "XX"}',
+        )
+
+    @unittest.mock.patch('planscore.observe.build_blockassign_geojson')
+    @unittest.mock.patch('planscore.observe.load_upload_assignment_keys')
+    @unittest.mock.patch('planscore.observe.put_upload_index')
+    def test_add_blockassign_upload_geometry(self, put_upload_index, load_upload_assignment_keys, build_blockassign_geojson):
+        context = unittest.mock.Mock()
+        lam = unittest.mock.Mock()
+        storage = unittest.mock.Mock()
+        upload = unittest.mock.Mock()
+        upload.id = 'sample-plan'
+        load_upload_assignment_keys.return_value = [
+            'uploads/sample-plan/assignments/0.txt',
+            'uploads/sample-plan/assignments/1.txt',
+        ]
+        build_blockassign_geojson.return_value = '{"type": "FeatureCollection"}'
+        
+        observe.add_blockassign_upload_geometry(context, lam, storage, upload)
+        
+        build_blockassign_geojson.assert_called_once_with(
+            [
+                ('uploads/sample-plan/assignments/0.txt', 'uploads/sample-plan/geometries/0.wkt'),
+                ('uploads/sample-plan/assignments/1.txt', 'uploads/sample-plan/geometries/1.wkt'),
+            ],
+            upload.model, storage, lam, context,
+        )
+        self.assertEqual(len(storage.s3.put_object.mock_calls), 1)
+        self.assertEqual(storage.s3.put_object.mock_calls[0][2]['Bucket'], storage.bucket)
+        self.assertEqual(storage.s3.put_object.mock_calls[0][2]['Key'], upload.clone().geometry_key)
+        self.assertEqual(
+            gzip.decompress(storage.s3.put_object.mock_calls[0][2]['Body']),
+            build_blockassign_geojson.return_value.encode('utf8'),
+        )
+
     @unittest.mock.patch('sys.stdout')
     def test_iterate_tile_subtotals(self, stdout):
         ''' Expected counts are returned from tiles.

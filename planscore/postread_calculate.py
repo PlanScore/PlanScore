@@ -4,7 +4,7 @@ Fans out asynchronous parallel calls to planscore.district function, then
 starts and observer process with planscore.score function.
 '''
 import os, io, json, urllib.parse, gzip, functools, time, math, threading
-import csv, operator, itertools
+import csv, operator, itertools, zipfile
 import boto3, osgeo.ogr
 from . import util, data, score, website, prepare_state, constants, run_tile, run_slice, observe
 
@@ -79,7 +79,7 @@ def commence_blockassign_upload_scoring(s3, bucket, upload, file_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
     observe.put_upload_index(storage, upload)
     upload2 = upload.clone()
-    put_district_assignments(s3, bucket, upload2, file_path)
+    district_keys = put_district_assignments(s3, bucket, upload2, file_path)
 
     slice_keys = load_model_slices(storage, upload2.model)
     start_slice_observer_lambda(storage, upload2, slice_keys)
@@ -142,26 +142,42 @@ def put_district_assignments(s3, bucket, upload, path):
     
     keys = []
 
-    with open(path, 'r') as file:
-        district_key = operator.itemgetter('DISTRICT')
+    _, ext = os.path.splitext(path.lower())
     
-        rows = csv.DictReader(file, delimiter='|')
-        rows2 = itertools.groupby(sorted(rows, key=district_key), district_key)
-        
-        for (index, (key, rows3)) in enumerate(rows2):
-            rows4 = sorted(rows3, key=operator.itemgetter('BLOCKID'))
-            
-            out = io.StringIO()
-            for row in rows4:
-                print(row['BLOCKID'], file=out)
-        
-            key = data.UPLOAD_ASSIGNMENTS_KEY.format(id=upload.id, index=index)
-        
-            s3.put_object(Bucket=bucket, Key=key, ACL='bucket-owner-full-control',
-                Body=out.getvalue(), ContentType='text/plain')
-        
-            keys.append(key)
+    if ext == '.zip':
+        with open(path, 'rb') as file:
+            zf = zipfile.ZipFile(file)
+
+            # Sort names so "real"-looking paths come first: not dot-names, not in '__MACOSX'
+            namelist = sorted(zf.namelist(), reverse=False,
+                key=lambda n: (os.path.basename(n).startswith('.'), n.startswith('__MACOSX')))
+
+            for name in namelist:
+                if os.path.splitext(name.lower())[1] in ('.txt', '.csv'):
+                    rows = util.baf_stream_to_pairs(io.TextIOWrapper(zf.open(name)))
+                    break
+
+    elif ext in ('.csv', '.txt'):
+        with open(path, 'r') as file:
+            rows = util.baf_stream_to_pairs(file)
     
+    district_key = lambda pair: int(pair[1])
+    rows2 = itertools.groupby(sorted(rows, key=district_key), district_key)
+    
+    for (index, (key, rows3)) in enumerate(rows2):
+        rows4 = sorted(rows3, key=operator.itemgetter(0))
+        
+        out = io.StringIO()
+        for (block_id, _) in rows4:
+            print(block_id, file=out)
+    
+        key = data.UPLOAD_ASSIGNMENTS_KEY.format(id=upload.id, index=index)
+    
+        s3.put_object(Bucket=bucket, Key=key, ACL='bucket-owner-full-control',
+            Body=out.getvalue(), ContentType='text/plain')
+    
+        keys.append(key)
+
     return keys
 
 def load_model_tiles(storage, model):

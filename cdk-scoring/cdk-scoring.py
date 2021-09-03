@@ -442,12 +442,12 @@ class PlanScoreScoring(cdk.Stack):
             self,
             "Polygonize",
             handler="lambda.polygonize",
-            memory_size=2048,
+            memory_size=10240,
             **function_kwargs
         )
 
         grant_data_bucket_access(data_bucket, polygonize)
-        grant_function_invoke(polygonize, 'FUNC_NAME_POLYGONIZE', preread_followup)
+        grant_function_invoke(polygonize, 'FUNC_NAME_POLYGONIZE', observe_tiles)
 
         # API-accessible functions
 
