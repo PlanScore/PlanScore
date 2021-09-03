@@ -12,9 +12,8 @@ import itertools
 
 import boto3
 import networkx
-import shapely.ops
+import osgeo.ogr
 import shapely.wkt
-import shapely.geometry
 
 from . import constants, data
 
@@ -87,30 +86,93 @@ def assemble_graph(s3, state_code, block_ids):
     print('Combining digraphs...')
     return functools.reduce(combine_digraphs, county_graphs)
 
+def linestrings_to_multipolygon(linestrings):
+    '''
+    '''
+    def _union(a, b):
+        return a.Union(b)
+
+    multiline = osgeo.ogr.Geometry(osgeo.ogr.wkbMultiLineString)
+    for linestring in linestrings:
+        multiline.AddGeometry(linestring)
+
+    # BuildPolygonFromEdges() returns multi-ring polygon instead of multipolygon
+    unpolygon = osgeo.ogr.BuildPolygonFromEdges(multiline)
+    polygons = [
+        osgeo.ogr.ForceToPolygon(unpolygon.GetGeometryRef(i))
+        for i in range(unpolygon.GetGeometryCount())
+    ]
+    
+    # Directed graph of polygons that contain other polygons
+    containers = networkx.DiGraph()
+    for i in range(len(polygons)):
+        containers.add_node(i)
+    for ((a, A), (b, B)) in itertools.permutations(enumerate(polygons), 2):
+        if A.Contains(B):
+            containers.add_edge(a, b)
+    
+    # Combine pairs of polygons that form donuts
+    while(containers.edges):
+        # Get representations of outermost polygons and their holes
+        good_edges = [
+            (a, b)
+            for (a, b) in containers.edges
+            if not containers.in_degree(a)
+            and containers.in_degree(b) == 1
+        ]
+
+        # Stop if there is nothing to do
+        if not good_edges:
+            break
+
+        # Replace the two found polygons with a single difference (donut)
+        a, b = good_edges[0]
+        polygons.append(polygons[a].Difference(polygons[b]))
+        containers.remove_node(a)
+        containers.remove_node(b)
+        for i in list(containers.nodes):
+            if polygons[len(polygons) - 1].Contains(polygons[i]):
+                containers.add_edge(len(polygons) - 1, i)
+        containers.add_node(len(polygons) - 1)
+    
+    good_polygons = [polygons[i] for i in containers.nodes]
+    multipolygon = functools.reduce(_union, good_polygons)
+    
+    return multipolygon
+
 def polygonize_district(node_ids, graph):
     '''
     '''
     print('Polygonizing district from graph...')
-    
-    multipoint = shapely.geometry.MultiPoint([graph.nodes[id]['pos'] for id in node_ids])
-    logging.debug(f'District multipoint: {multipoint}')
 
+    multipoint = osgeo.ogr.Geometry(osgeo.ogr.wkbMultiPoint)
+    for id in node_ids:
+        point = osgeo.ogr.Geometry(osgeo.ogr.wkbPoint)
+        point.AddPoint(*graph.nodes[id]['pos'])
+        multipoint.AddGeometry(point)
+    logging.debug(f'District multipoint: {multipoint}')
+    
     boundary = list(networkx.algorithms.boundary.edge_boundary(graph, node_ids))
     logging.debug(f'District boundary: {boundary}')
 
-    lines = [graph.edges[(node1, node2)]['line'] for (node1, node2) in boundary]
-    logging.debug(f'District lines: {lines}')
-
-    district_polygons = list(shapely.ops.polygonize(lines))
-    logging.debug(f'District district_polygons: {district_polygons}')
-
-    polys = [poly for poly in district_polygons
-        if poly.relate_pattern(multipoint, '0********')]
-    logging.debug(f'District polys: {polys}')
-
-    multipolygon = shapely.ops.cascaded_union(polys)
+    linestrings = []
+    for (node1, node2) in boundary:
+        # TODO: store WKB or WKT in pickle, not shapely geometry objects
+        line = osgeo.ogr.CreateGeometryFromWkt(shapely.wkt.dumps(graph.edges[(node1, node2)]['line']))
+        if line.GetGeometryCount() == 0:
+            linestrings.append(line)
+        else:
+            for i in range(line.GetGeometryCount()):
+                linestrings.append(line.GetGeometryRef(i).Clone())
+    logging.debug(f'District linestrings: {linestrings}')
+    
+    multipolygon = linestrings_to_multipolygon(linestrings)
     logging.debug(f'District multipolygon: {multipolygon}')
     
+    for i in reversed(range(multipolygon.GetGeometryCount())):
+        if multipolygon.GetGeometryRef(i).Disjoint(multipoint):
+            multipolygon.RemoveGeometry(i)
+
     return multipolygon
 
 def main():
@@ -159,8 +221,8 @@ def lambda_handler(event, context):
     s3.put_object(
         Bucket=storage.bucket,
         Key=geometry_key, ACL='bucket-owner-full-control',
-        Body=shapely.wkt.dumps(polygon, rounding_precision=7),
+        Body=polygon.ExportToWkt(),
         ContentType='text/plain',
     )
 
-    return shapely.geometry.mapping(polygon.centroid)
+    return json.loads(polygon.Centroid().ExportToJson())
