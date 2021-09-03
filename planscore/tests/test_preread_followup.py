@@ -415,7 +415,7 @@ class TestPrereadFollowup (unittest.TestCase):
             preread_followup.commence_upload_parsing(s3, lam, bucket,
                 data.Upload('id', 'uploads/id/null-plan.geojson'))
 
-        self.assertEqual(str(error.exception), 'Failed to read GeoJSON data')
+        self.assertEqual(str(error.exception), 'Could not open file to guess U.S. state')
     
     @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.preread_followup.count_district_geometries')
