@@ -166,7 +166,7 @@
         <a href="{{ %shapelink }}">Shapefile
           <img width=20 height=20 src="/images/download.svg" alt="link to a shape file download"/>
         </a>
-        <a href="{{ %geosonlink}}">preview.geojson
+        <a href="{{ %geosonlink }}">preview.geojson
           <img  width=20 height=20 src="/images/download.svg" alt="link to a geojson download"/>
         </a>
       </div>
@@ -177,7 +177,7 @@
       <h2>Notes</h2>
       <hr />
       <div class="notes">
-        {{ %plan_notes }}
+        <!-- %plan_notes -->
         <i>Notes will appear here, if they exist</i> <!--This is a flexible space for plan uploader notes, can we create a new field on upload for these notes? -->
       </div>
     </section>
@@ -185,7 +185,9 @@
 
     <nav class="content-footer">
       <a class="btn btn-primary" href="/library">Back to Plan Library</a>
-      <a class="btn btn-primary" href="/library/{{ %state_name }}">View all {{ %state_name }} Redistricting Plans</a>
+      <a class="btn btn-primary" href="/library/{{ %state_name }}">
+        View all <!-- %state_name --> Redistricting Plans
+      </a>
     </nav>
 
 	<script language="javascript">
