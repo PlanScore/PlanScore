@@ -157,16 +157,16 @@
       <hr class="no-margin-bottom"/>
 
       <div class="link-grid">
-        <a href="{{ %authlink }}">Authoritative Link
+        <a href="#">Authoritative Link <!-- needs %authlink -->
           <img width=20 height=20 src="/images/external-link.svg" alt="authoritative link for this plan"/>
         </a>
-        <a href="{{ %precedinglink }}">Preceding Enacted Plan
+        <a href="#">Preceding Enacted Plan <!-- needs %precedinglink -->
           <img  width=20 height=20 src="/images/arrow-right.svg" alt="link to the preceding enacted plan" />
         </a>
-        <a href="{{ %shapelink }}">Shapefile
+        <a href="#">Shapefile <!-- needs %shapelink  -->
           <img width=20 height=20 src="/images/download.svg" alt="link to a shape file download"/>
         </a>
-        <a href="{{ %geosonlink }}">preview.geojson
+        <a href="#">preview.geojson <!-- needs %geosonlink -->
           <img  width=20 height=20 src="/images/download.svg" alt="link to a geojson download"/>
         </a>
       </div>
@@ -177,15 +177,16 @@
       <h2>Notes</h2>
       <hr />
       <div class="notes">
-        <!-- %plan_notes -->
-        <i>Notes will appear here, if they exist</i> <!--This is a flexible space for plan uploader notes, can we create a new field on upload for these notes? -->
+        <!-- needs %plan_notes -->
+        <i>Notes will appear here, if they exist</i>
+        <!--This is a flexible space for plan uploader notes, can we create a new field on upload for these notes? -->
       </div>
     </section>
     <!-- end notes section -->
 
     <nav class="content-footer">
       <a class="btn btn-primary" href="/library">Back to Plan Library</a>
-      <a class="btn btn-primary" href="/library/{{ %state_name }}">
+      <a class="btn btn-primary" href="/library/#"> <!-- needs a %state_name -->
         View all <!-- %state_name --> Redistricting Plans
       </a>
     </nav>
