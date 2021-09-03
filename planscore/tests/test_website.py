@@ -1,5 +1,6 @@
 import unittest, unittest.mock, os
 from .. import website, constants, data
+import flask
 
 class TestWebsite (unittest.TestCase):
     
@@ -20,15 +21,18 @@ class TestWebsite (unittest.TestCase):
         html = self.app.get('/plan.html?12345').data.decode('utf8')
         self.assertIn(constants.S3_URL_PATTERN.format(b='fake-bucket', k='uploads/{id}/index.json'), html)
     
-    @unittest.mock.patch('flask.current_app')
-    def test_get_function_url(self, current_app):
-        current_app.config = dict(PLANSCORE_API_BASE='http://example.com/yolo/')
+    def test_get_function_url(self):
+        with website.app.app_context():
+            prior_config = flask.current_app.config
+            flask.current_app.config = dict(PLANSCORE_API_BASE='http://example.com/yolo/')
 
-        url1 = website.get_function_url('good-times')
-        self.assertEqual(url1, 'http://example.com/yolo/good-times')
+            url1 = website.get_function_url('good-times')
+            self.assertEqual(url1, 'http://example.com/yolo/good-times')
 
-        url2 = website.get_function_url('/good-times')
-        self.assertEqual(url2, 'http://example.com/good-times')
+            url2 = website.get_function_url('/good-times')
+            self.assertEqual(url2, 'http://example.com/good-times')
+
+            flask.current_app.config = prior_config
         
     def test_model_descriptions(self):
         ''' Every current, active model should have a decription page

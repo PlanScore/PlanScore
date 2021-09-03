@@ -438,7 +438,7 @@ class TestPostreadCalculate (unittest.TestCase):
             postread_calculate.commence_upload_scoring(s3, bucket,
                 data.Upload('id', 'uploads/id/null-plan.geojson', model=data.MODELS[0]))
 
-        self.assertEqual(str(error.exception), 'Failed to read GeoJSON data')
+        self.assertEqual(str(error.exception), 'Could not open file to fan out district invocations')
     
     @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
