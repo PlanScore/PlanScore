@@ -1065,7 +1065,7 @@ function get_plan_headings(plan, modified_at)
       months[modified_at.getMonth()] +
       modified_at.getDate() + ', ' +
       modified_at.getFullYear();
-    // Jun. 29, 2021
+
     return {
         description,
         uploaded,
@@ -1145,6 +1145,7 @@ function load_plan_score(url, message_section, score_section,
 
         const info_el = document.createElement('div');
         info_el.classList.add('info');
+
         //needs just the state name without the branch
         info_el.append(create_info_box('State', '%state_name'));
 
@@ -1154,7 +1155,7 @@ function load_plan_score(url, message_section, score_section,
         info_el.append(create_info_box('Added to PlanScore', headings.date_only));
 
         // needs the author name
-        info_el.append(create_info_box('Author', 'author'));
+        info_el.append(create_info_box('Author', '%author'));
 
         function create_info_box(label, info){
           const info_box = document.createElement('div');
