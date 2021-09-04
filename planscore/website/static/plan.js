@@ -197,9 +197,17 @@ function which_district_color(district, plan)
     
     if(typeof totals['Democratic Wins'] === 'number')
     {
-        if(totals['Democratic Wins'] > .75) {
+        if(totals['Democratic Wins'] > .79 && plan.model.house == 'statesenate') {
+            // for p(Dem win)>0.5 & state senate, chance of flip in a decade = p^3
             return BLUE_COLOR_HEX;
-        } else if (totals['Democratic Wins'] < .25) {
+        } else if (totals['Democratic Wins'] > .87) {
+            // for p(Dem win)>0.5 & lower chamber/US House, chance of flip in a decade = p^5
+            return BLUE_COLOR_HEX;
+        } else if (totals['Democratic Wins'] < .21 && plan.model.house == 'statesenate') {
+            // for p(Dem win)<0.5 & state senate, chance of flip in a decade = (1-p)^3
+            return RED_COLOR_HEX;
+        } else if (totals['Democratic Wins'] < .13) {
+            // for p(Dem win)<0.5 & lower chamber/US House, chance of flip in a decade = (1-p)^5
             return RED_COLOR_HEX;
         } else if (totals['Democratic Wins'] > .5) {
             return LEAN_BLUE_COLOR_HEX;
