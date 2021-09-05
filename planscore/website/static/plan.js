@@ -53,12 +53,6 @@ const fieldSubstringToDisplayStr = {
     'Population': 'Pop.',
 };
 
-const houseNames = {
-    'ushouse': 'U.S. House',
-    'statesenate': 'State Senate',
-    'statehouse': 'State House'
-};
-
 const months = [
   'Jan. ',
   'Feb. ',
@@ -1000,7 +994,7 @@ function nice_plan_voteshare(plan)
         + 'and ' + nice_percent(red_votes / (blue_votes + red_votes)) + ' (Republican)');
 }
 
-function get_plan_type_text(plan)
+function get_state_full_name(postal_code)
 {
     var states = {
         'XX': 'Null Island',
@@ -1021,16 +1015,20 @@ function get_plan_type_text(plan)
         'MN': 'Minnesota', 'WV': 'West Virginia', 'MS': 'Mississippi',
         'WI': 'Wisconsin', 'MO': 'Missouri', 'WY': 'Wyoming',
         'MT': 'Montana'
-        };
+    };
+    
+    return states[postal_code];
+}
 
-    var plan_type_text = ['Plan uploaded'];
-
-    if(plan['model'])
-    {
-        plan_type_text = `${states[plan.model.state]} ${houseNames[plan.model.house]} plan`;
-    }
-
-    return plan_type_text;
+function get_house_full_name(house_code)
+{
+    var houseNames = {
+        'ushouse': 'U.S. House',
+        'statesenate': 'State Senate',
+        'statehouse': 'State House'
+    };
+    
+    return houseNames[house_code];
 }
 
 function get_plan_headings(plan, modified_at)
@@ -1057,7 +1055,6 @@ function get_plan_headings(plan, modified_at)
     return {
         description,
         uploaded,
-        plan_type: get_plan_type_text(plan),
         date_only
     };
 }
@@ -1121,9 +1118,9 @@ function load_plan_score(url, message_section, score_section,
         // Clear out and repopulate plan description, upload date, plan type
         clear_element(description_el);
         const headings = get_plan_headings(plan, modified_at);
-        if (headings.plan_type) {
+        if (headings.description) {
             const desc_el = document.createElement('h1');
-            desc_el.textContent = headings.plan_type;
+            desc_el.textContent = plan.description;
             description_el.append(desc_el);
         }
 
@@ -1135,10 +1132,10 @@ function load_plan_score(url, message_section, score_section,
         info_el.classList.add('info');
 
         //needs just the state name without the branch
-        info_el.append(create_info_box('State', '%state_name'));
+        info_el.append(create_info_box('State', get_state_full_name(plan.model.state)));
 
         // needs just the legislative branch
-        info_el.append(create_info_box('Legislative', '%plan_type'));
+        info_el.append(create_info_box('Legislative', get_house_full_name(plan.model.house)));
 
         info_el.append(create_info_box('Added to PlanScore', headings.date_only));
 
