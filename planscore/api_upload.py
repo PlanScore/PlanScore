@@ -41,6 +41,7 @@ def kick_it_off(geojson, temporary, auth_token):
     upload2 = preread_followup.commence_upload_parsing(s3, lam, constants.S3_BUCKET, upload1)
     
     # assign description and incumbents as in postread_callback.py
+    # and library_metadata which is only used here in api_upload.py
     
     upload3 = upload2.clone(
         description = geojson.get('description', 'plan.geojson'),
@@ -48,6 +49,7 @@ def kick_it_off(geojson, temporary, auth_token):
             feature['properties'].get('Incumbent', 'O')
             for feature in geojson['features']
         ],
+        library_metadata = geojson.get('library_metadata'),
         auth_token = auth_token,
     )
 
