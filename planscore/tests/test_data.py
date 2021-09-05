@@ -127,6 +127,12 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload11.id, 'ID')
         self.assertEqual(upload11.key, 'KEY')
         self.assertEqual(upload11.auth_token, 'Heyo')
+
+        upload12 = data.Upload.from_json('{"id": "ID", "key": "KEY", '
+            '"library_metadata": {"key": "value"}}')
+        self.assertEqual(upload12.id, 'ID')
+        self.assertEqual(upload12.key, 'KEY')
+        self.assertEqual(upload12.library_metadata['key'], 'value')
     
     def test_upload_overdue(self):
         ''' data.Upload self-reports correct overdue state
@@ -237,6 +243,14 @@ class TestData (unittest.TestCase):
             auth_token='Heyo')
 
         self.assertIsNone(json.loads(upload21.to_json()).get('auth_token'))
+    
+        upload22 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
+            library_metadata={'key': 'value'})
+        upload23 = data.Upload.from_json(upload22.to_json())
+
+        self.assertEqual(upload23.id, upload22.id)
+        self.assertEqual(upload23.key, upload22.key)
+        self.assertEqual(upload23.library_metadata, upload22.library_metadata)
     
     def test_upload_plaintext(self):
         ''' data.Upload instances can be converted to plaintext
@@ -422,3 +436,8 @@ class TestData (unittest.TestCase):
         self.assertEqual(output11.id, input.id)
         self.assertEqual(output11.key, input.key)
         self.assertEqual(output11.auth_token, 'Heyo')
+
+        output12 = input.clone(library_metadata={'key': 'value'})
+        self.assertEqual(output12.id, input.id)
+        self.assertEqual(output12.key, input.key)
+        self.assertEqual(output12.library_metadata['key'], 'value')
