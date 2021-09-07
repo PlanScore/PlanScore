@@ -350,6 +350,7 @@ function show_declination2_score(plan, score_DEC2)
 
         } else if(node.nodeName == 'P') {
             var win_party = (declination < 0 ? 'Republican' : 'Democratic'),
+                win_partisans = (declination < 0 ? 'Republicans' : 'Democrats'),
                 lose_party = (declination < 0 ? 'Democratic' : 'Republican');
 
             clear_element(node);
@@ -366,7 +367,7 @@ function show_declination2_score(plan, score_DEC2)
                         districts is expected to be higher than the mean
                         ${win_party} vote share in ${win_party} districts.
                         Along with the relative fraction of seats won by each party,
-                        this leads to a declination that favors Republicans in
+                        this leads to a declination that favors ${win_partisans} in
                         ${nice_round_percent(positives)} of predicted scenarios.<sup>*</sup>
                         <a href="${window.d2_metric_url}">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>
                         `;
@@ -376,7 +377,7 @@ function show_declination2_score(plan, score_DEC2)
                         districts is expected to be ${nice_percent(Math.abs(dec2_difference))}
                         higher than the mean ${win_party} vote share in ${win_party} districts.
                         Along with the relative fraction of seats won by each party,
-                        this leads to a declination that favors Republicans in
+                        this leads to a declination that favors ${win_partisans} in
                         ${nice_round_percent(positives)} of predicted scenarios.<sup>*</sup>
                         <a href="${window.d2_metric_url}">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>
                         `;
