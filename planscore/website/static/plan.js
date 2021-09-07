@@ -197,9 +197,17 @@ function which_district_color(district, plan)
     
     if(typeof totals['Democratic Wins'] === 'number')
     {
-        if(totals['Democratic Wins'] > .75) {
+        if(totals['Democratic Wins'] > .79 && plan.model.house == 'statesenate') {
+            // for p(Dem win)>0.5 & state senate, chance of flip in a decade = p^3
             return BLUE_COLOR_HEX;
-        } else if (totals['Democratic Wins'] < .25) {
+        } else if (totals['Democratic Wins'] > .87) {
+            // for p(Dem win)>0.5 & lower chamber/US House, chance of flip in a decade = p^5
+            return BLUE_COLOR_HEX;
+        } else if (totals['Democratic Wins'] < .21 && plan.model.house == 'statesenate') {
+            // for p(Dem win)<0.5 & state senate, chance of flip in a decade = (1-p)^3
+            return RED_COLOR_HEX;
+        } else if (totals['Democratic Wins'] < .13) {
+            // for p(Dem win)<0.5 & lower chamber/US House, chance of flip in a decade = (1-p)^5
             return RED_COLOR_HEX;
         } else if (totals['Democratic Wins'] > .5) {
             return LEAN_BLUE_COLOR_HEX;
@@ -827,12 +835,13 @@ function update_cvap2019_percentages(head, row)
 function plan_array(plan)
 {
     var incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'},
+        flippy_colors = [LEAN_BLUE_COLOR_HEX, LEAN_RED_COLOR_HEX],
         fields = FIELDS.slice();
 
     // Build list of columns
     var head_row = ['District'],
         all_rows = [head_row],
-        field, current_row, field_missing;
+        field, current_row, field_missing, flip_chance;
     
     const has_incumbency = plan_has_incumbency(plan);
 
@@ -874,6 +883,18 @@ function plan_array(plan)
         
         if(field_missing) {
             continue;
+        }
+        
+        if(field == 'Democratic Wins')
+        {
+            head_row.push('Chance of 1+ Flips');
+            
+            for(var j in plan.districts)
+            {
+                current_row = all_rows[parseInt(j) + 1];
+                flip_chance = flippy_colors.indexOf(which_district_color(plan.districts[j], plan)) != -1;
+                current_row.push(flip_chance);
+            }
         }
         
         head_row.push(field);
@@ -1142,6 +1163,8 @@ function load_plan_score(url, message_section, score_section,
                     value = nice_count(table_array[i][j]);
                 } else if(typeof table_array[i][j] == 'string') {
                     value = nice_string(table_array[i][j]);
+                } else if(typeof table_array[i][j] == 'boolean') {
+                    value = table_array[i][j] ? 'Yes' : 'No';
                 } else {
                     value = '???';
                 }

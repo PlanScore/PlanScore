@@ -323,7 +323,7 @@ assert.equal(plan.which_district_color(NC_2020_unified.districts[2], NC_2020_uni
     '#D45557', 'Should return the red district color for District 3');
 
 assert.equal(plan.which_district_color(NC_2020_unified.districts[3], NC_2020_unified),
-    '#D45557', 'Should return the red district color for District 4');
+    '#B56E6B', 'Should return the lean-red district color for District 4');
 
 assert.equal(plan.which_district_color(NC_2020_unified.districts[4], NC_2020_unified),
     '#4D90D1', 'Should return the blue district color for District 5');
