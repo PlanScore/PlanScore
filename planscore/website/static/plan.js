@@ -616,8 +616,8 @@ function show_metrics_table(plan, metrics_table)
                 <th>Metric</th>
                 <th>Value</th>
                 <th>Favors Democrats in this % of Scenarios<sup>*</sup></th>
-                <th>More Skewed than this % of Historical Plans<sup>†</sup></th>
-                <th>More Pro-Democratic than this % of Historical Plans<sup>†</sup></th>
+                <th>More Skewed than this % of Historical Plans<sup>‡</sup></th>
+                <th>More Pro-Democratic than this % of Historical Plans<sup>‡</sup></th>
             </tr>
             </thead>
             <tbody>
@@ -888,7 +888,7 @@ function plan_array(plan)
         
         if(field == 'Democratic Wins')
         {
-            head_row.push('Chance of 1+ Flips');
+            head_row.push('Chance of 1+ Flips<sup>†</sup>');
             
             for(var j in plan.districts)
             {
