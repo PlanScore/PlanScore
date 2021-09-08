@@ -606,22 +606,17 @@ class PlanScoreScoring(cdk.Stack):
             ),
         )
 
-        upload_resource.add_method("GET", upload_fields_integration)
+        upload_resource.add_method(
+            "GET",
+            upload_fields_integration,
+            authorizer=token_authorizer,
+        )
 
         upload_resource.add_method(
             "POST",
             api_upload_integration,
             authorizer=token_authorizer,
         )
-
-        upload_interactive_resource = upload_resource.add_resource(
-            'interactive',
-            default_cors_preflight_options=aws_apigateway.CorsOptions(
-                allow_origins=aws_apigateway.Cors.ALL_ORIGINS,
-            ),
-        )
-
-        upload_interactive_resource.add_method("GET", upload_fields_integration)
 
         upload_temporary_resource = upload_resource.add_resource(
             'temporary',
@@ -635,6 +630,15 @@ class PlanScoreScoring(cdk.Stack):
             api_upload_integration,
             authorizer=token_authorizer,
         )
+
+        upload_interactive_resource = upload_resource.add_resource(
+            'interactive',
+            default_cors_preflight_options=aws_apigateway.CorsOptions(
+                allow_origins=aws_apigateway.Cors.ALL_ORIGINS,
+            ),
+        )
+
+        upload_interactive_resource.add_method("GET", upload_fields_integration)
 
         preread_integration = aws_apigateway.LambdaIntegration(
             preread,
