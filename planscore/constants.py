@@ -13,7 +13,7 @@ API_NAME = 'PlanScore'
 # environment variables like WEBSITE_BASE and API_BASE via URL path joins.
 
 API_UPLOADED_OLD_RELPATH = 'uploaded'
-API_UPLOAD_RELPATH = 'upload'
+API_UPLOAD_RELPATH = 'upload/interactive'
 API_UPLOADED_RELPATH = 'uploaded'
 API_PREREAD_RELPATH = 'preread'
 
