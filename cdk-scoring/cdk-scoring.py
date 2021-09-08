@@ -614,6 +614,15 @@ class PlanScoreScoring(cdk.Stack):
             authorizer=token_authorizer,
         )
 
+        upload_interactive_resource = upload_resource.add_resource(
+            'interactive',
+            default_cors_preflight_options=aws_apigateway.CorsOptions(
+                allow_origins=aws_apigateway.Cors.ALL_ORIGINS,
+            ),
+        )
+
+        upload_interactive_resource.add_method("GET", upload_fields_integration)
+
         upload_temporary_resource = upload_resource.add_resource(
             'temporary',
             default_cors_preflight_options=aws_apigateway.CorsOptions(
