@@ -43,7 +43,7 @@ class TestUploadFields (unittest.TestCase):
         get_upload_fields.return_value = 'https://s3.example.com', {'field': 'value'}
         event_url.return_value = 'http://example.com'
         get_assumed_role.return_value = {}
-        event = {'requestContext': unittest.mock.Mock()}
+        event = {'requestContext': {'authorizer': {}}}
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
         response = upload_fields.lambda_handler(event, None)
@@ -57,7 +57,31 @@ class TestUploadFields (unittest.TestCase):
         
         self.assertEqual(len(get_upload_fields.mock_calls), 1)
         self.assertEqual(get_upload_fields.mock_calls[0][1][2], build_api_base.return_value)
-        self.assertEqual(get_upload_fields.mock_calls[0][1][3:], ('fake-secret', ))
+        self.assertEqual(get_upload_fields.mock_calls[0][1][3:], ('preread', 'fake-secret', ))
+    
+    @unittest.mock.patch('planscore.util.event_url')
+    @unittest.mock.patch('planscore.upload_fields.get_assumed_role')
+    @unittest.mock.patch('planscore.upload_fields.get_upload_fields')
+    @unittest.mock.patch('planscore.upload_fields.build_api_base')
+    def test_lambda_handler_authorized(self, build_api_base, get_upload_fields, get_assumed_role, event_url):
+        get_upload_fields.return_value = 'https://s3.example.com', {'field': 'value'}
+        event_url.return_value = 'http://example.com'
+        get_assumed_role.return_value = {}
+        event = {'requestContext': {'authorizer': {'authToken': 'yup'}}}
+
+        os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
+        response = upload_fields.lambda_handler(event, None)
+        
+        self.assertEqual(response['statusCode'], '200')
+        self.assertIn('Access-Control-Allow-Origin', response['headers'])
+        self.assertIn('https://s3.example.com', response['body'])
+        self.assertIn('"field": "value"', response['body'])
+        
+        build_api_base.assert_called_once_with(event['requestContext'])
+        
+        self.assertEqual(len(get_upload_fields.mock_calls), 1)
+        self.assertEqual(get_upload_fields.mock_calls[0][1][2], build_api_base.return_value)
+        self.assertEqual(get_upload_fields.mock_calls[0][1][3:], ('uploaded', 'fake-secret', ))
     
     @unittest.mock.patch('planscore.upload_fields.generate_signed_id')
     @unittest.mock.patch('planscore.upload_fields.build_api_base')
@@ -68,7 +92,7 @@ class TestUploadFields (unittest.TestCase):
         s3.generate_presigned_post.return_value = {'url': None, 'fields': {}}
 
         generate_signed_id.return_value = 'id', 'id.sig'
-        url, fields = upload_fields.get_upload_fields(s3, creds, 'https://api.example.org/', 'sec')
+        url, fields = upload_fields.get_upload_fields(s3, creds, 'https://api.example.org/', 'https://api.example.org/preread', 'sec')
         
         s3.generate_presigned_post.assert_called_once_with('the-bucket',
             'uploads/id/upload/${filename}', Conditions=[{'acl': 'bucket-owner-full-control'},
@@ -89,7 +113,7 @@ class TestUploadFields (unittest.TestCase):
         creds.token = None
 
         generate_signed_id.return_value = 'id', 'id.sig'
-        url, fields = upload_fields.get_upload_fields(s3, creds, 'https://api.example.org/', 'sec')
+        url, fields = upload_fields.get_upload_fields(s3, creds, 'https://api.example.org/', 'https://api.example.org/preread', 'sec')
         
         s3.generate_presigned_post.assert_called_once_with('the-bucket',
             'uploads/id/upload/${filename}', Conditions=[{'acl': 'bucket-owner-full-control'},
