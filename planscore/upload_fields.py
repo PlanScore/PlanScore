@@ -97,7 +97,7 @@ def lambda_handler(event, context):
     '''
     authorizer = event['requestContext'].get('authorizer', {})
 
-    if 'authToken' in authorizer:
+    if 'planscoreApiToken' in authorizer:
         # GET request arrived via API request
         redirect_relpath = constants.API_UPLOADED_RELPATH
     else:
