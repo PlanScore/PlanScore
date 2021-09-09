@@ -44,7 +44,7 @@ def get_assumed_role(arn):
             aws_session_token=resp['Credentials']['SessionToken'],
             )
 
-def get_upload_fields(s3, creds, api_base, secret):
+def get_upload_fields(s3, creds, api_base, redirect_relpath, secret):
     '''
     '''
     rules = {rule.endpoint: str(rule) for rule in website.app.url_map.iter_rules()}
@@ -55,7 +55,7 @@ def get_upload_fields(s3, creds, api_base, secret):
     redirect_query = urllib.parse.urlencode(dict(id=signed_id))
     #redirect_path = '{}?{}'.format(rules['get_annotate'], redirect_query)
     #redirect_url = urllib.parse.urljoin(constants.WEBSITE_BASE, redirect_path)
-    redirect_path = '{}?{}'.format(constants.API_PREREAD_RELPATH, redirect_query)
+    redirect_path = '{}?{}'.format(redirect_relpath, redirect_query)
     redirect_url = urllib.parse.urljoin(api_base, redirect_path)
     
     presigned = s3.generate_presigned_post(
@@ -95,13 +95,22 @@ def generate_signed_id(secret, temporary=False):
 def lambda_handler(event, context):
     '''
     '''
+    authorizer = event['requestContext'].get('authorizer', {})
+
+    if 'authToken' in authorizer:
+        # GET request arrived via API request
+        redirect_relpath = constants.API_UPLOADED_RELPATH
+    else:
+        # GET request came unauthenticated from a browser
+        redirect_relpath = constants.API_PREREAD_RELPATH
+    
     # Get longer-lasting credentials with sts:AssumeRole
     role = get_assumed_role('arn:aws:iam::466184106004:role/ModelEC2Instance')
     s3 = boto3.client('s3', **role)
     creds = boto3.session.Session(**role).get_credentials()
 
     api_base = build_api_base(event['requestContext'])
-    url, fields = get_upload_fields(s3, creds, api_base, constants.SECRET)
+    url, fields = get_upload_fields(s3, creds, api_base, redirect_relpath, constants.SECRET)
     
     return {
         'statusCode': '200',

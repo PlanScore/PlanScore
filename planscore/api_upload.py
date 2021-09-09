@@ -74,14 +74,6 @@ def kick_it_off(geojson, temporary, auth_token):
 def lambda_handler(event, context):
     '''
     '''
-    is_interactive = bool(event['httpMethod'] == 'GET')
-
-    if is_interactive:
-        return {
-            'statusCode': '501',
-            'body': json.dumps({"try": "later"}, indent=2),
-            }
-
     try:
         geojson = json.loads(event['body'])
     except TypeError:
