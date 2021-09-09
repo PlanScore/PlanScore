@@ -8,5 +8,6 @@ from planscore.run_slice import lambda_handler as run_slice
 from planscore.observe import lambda_handler as observe_tiles
 from planscore.authorizer import lambda_handler as authorizer
 from planscore.api_upload import lambda_handler as api_upload
+from planscore.api_uploaded import lambda_handler as api_uploaded
 from planscore.get_states import lambda_handler as get_states
 from planscore.polygonize import lambda_handler as polygonize

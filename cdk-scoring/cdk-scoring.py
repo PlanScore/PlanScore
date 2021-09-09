@@ -467,6 +467,18 @@ class PlanScoreScoring(cdk.Stack):
         grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', api_upload)
         api_upload.add_permission('Permission', principal=apigateway_role)
 
+        api_uploaded = aws_lambda.Function(
+            self,
+            "APIUploaded",
+            handler="lambda.api_uploaded",
+            memory_size=2048,
+            **function_kwargs
+        )
+
+        grant_data_bucket_access(data_bucket, api_uploaded)
+        grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', api_uploaded)
+        api_uploaded.add_permission('Permission', principal=apigateway_role)
+
         function_kwargs.update(dict(
             timeout=cdk.Duration.seconds(3),
         ))
@@ -521,6 +533,7 @@ class PlanScoreScoring(cdk.Stack):
             preread_followup,
             polygonize,
             api_upload,
+            api_uploaded,
             get_states,
             upload_fields,
             preread,
@@ -538,6 +551,7 @@ class PlanScoreScoring(cdk.Stack):
             preread_followup,
             polygonize,
             api_upload,
+            api_uploaded,
             get_states,
             upload_fields,
             preread,
@@ -663,6 +677,18 @@ class PlanScoreScoring(cdk.Stack):
         )
 
         uploaded_resource.add_method("GET", uploaded_integration)
+
+        api_uploaded_integration = aws_apigateway.LambdaIntegration(
+            api_uploaded,
+            credentials_role=apigateway_role,
+            **integration_kwargs
+        )
+
+        uploaded_resource.add_method(
+            "POST",
+            api_uploaded_integration,
+            authorizer=token_authorizer,
+        )
 
 if __name__ == '__main__':
     app = cdk.App()
