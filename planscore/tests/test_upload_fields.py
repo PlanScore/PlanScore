@@ -67,7 +67,7 @@ class TestUploadFields (unittest.TestCase):
         get_upload_fields.return_value = 'https://s3.example.com', {'field': 'value'}
         event_url.return_value = 'http://example.com'
         get_assumed_role.return_value = {}
-        event = {'requestContext': {'authorizer': {'authToken': 'yup'}}}
+        event = {'requestContext': {'authorizer': {'planscoreApiToken': 'yup'}}}
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
         response = upload_fields.lambda_handler(event, None)
