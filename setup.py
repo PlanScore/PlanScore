@@ -41,6 +41,7 @@ setup(
             'numpy == 1.19.2',
             ],
         'deploy': [
+            'pip >= 20.2',
             'aws-cdk.aws-apigateway == 1.114.0',
             'aws-cdk.aws-certificatemanager == 1.114.0',
             'aws-cdk.aws-cloudfront == 1.114.0',
