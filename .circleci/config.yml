@@ -35,7 +35,7 @@ jobs:
       - checkout
       # Install Python things
       - run: pyenv global 3.6.5
-      - run: pip3 install -U pip '.[deploy]'
+      - run: pip3 install '.[deploy]'
       # Build PlanScore thing
       - run: make planscore-lambda.zip
       - run: python3 -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
@@ -54,7 +54,7 @@ jobs:
       - checkout
       # Install Python things
       - run: pyenv global 3.9.1
-      - run: pip3 install -U pip '.[deploy]'
+      - run: pip3 install '.[deploy]'
       # Install Node things (not slow enough to cache)
       - run: npm install -g aws-cdk
       # Build PlanScore thing
