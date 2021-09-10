@@ -29,12 +29,35 @@ run in AWS Lambda with API Gateway.
 
 3.  Install the rest of PlanScore, keeping it editable, and run the test suite.
     
-        pip3 install --editable .
+        pip3 install --editable '.[compiled]'
         python3 setup.py test
 
-4.  Deploy to [dev.planscore.org](https://dev.planscore.org).
+Install on AWS
+---
+
+All of PlanScore can be deployed to AWS via Cloudformation. For testing code
+on new branches and debugging, use the steps below to create a new set of
+stacks. Replace “my-stack-name” with something meaningful but keep the “cf-”
+prefix required for all permissions to function.
+
+1.  Install packages needed for deployment.
     
-        make dev-website dev-lambda
+        pip3 install '.[deploy]'
+        npm install aws-cdk
+        export PATH="${PATH}:${PWD}/node_modules/.bin"
+    
+2.  Build code package.
+    
+        make cleanish planscore-lambda.zip
+    
+3.  Deploy to AWS using AWS-CDK. Two Cloudformation stacks will be created
+    by this command, `cf-my-stack-name-Scoring` and `cf-my-stack-name-Content`.
+    
+        ./cdk-deploy.sh cf-my-stack-name
+    
+    Deploy script will output a working website base URL when complete, ending
+    in “.cloudfront.net”. Stacks can be reviewed and deleted in
+    [AWS Console](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks?filteringStatus=active&filteringText=&viewNested=true&hideStacks=false).
 
 GDAL
 ---
