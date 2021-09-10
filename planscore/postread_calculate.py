@@ -161,7 +161,13 @@ def put_district_assignments(s3, bucket, upload, path):
         with open(path, 'r') as file:
             rows = util.baf_stream_to_pairs(file)
     
-    district_key = lambda pair: int(pair[1])
+    def district_key(pair):
+        _, district_id = pair
+        try:
+            return '{:04d}'.format(int(district_id))
+        except ValueError:
+            return district_id
+    
     rows2 = itertools.groupby(sorted(rows, key=district_key), district_key)
     
     for (index, (key, rows3)) in enumerate(rows2):
