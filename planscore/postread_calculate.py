@@ -164,9 +164,9 @@ def put_district_assignments(s3, bucket, upload, path):
     def district_key(pair):
         _, district_id = pair
         try:
-            return '{:04d}'.format(int(district_id))
+            return int(district_id)
         except ValueError:
-            return district_id
+            return 0
     
     rows2 = itertools.groupby(sorted(rows, key=district_key), district_key)
     
