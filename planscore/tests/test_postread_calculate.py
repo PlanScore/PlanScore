@@ -157,6 +157,23 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(s3.mock_calls[1][2]['Body'], '0000000001\n0000000002\n0000000003\n0000000005\n0000000006\n0000000007\n')
     
     @unittest.mock.patch('sys.stdout')
+    def test_put_district_assignments_funky_districts(self, stdout):
+        '''
+        '''
+        s3 = unittest.mock.Mock()
+        upload = data.Upload('ID', 'uploads/ID/upload/file.txt')
+        null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'ohio-1195_001.csv')
+        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
+        self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt', 'uploads/ID/assignments/2.txt'])
+        
+        self.assertEqual(s3.mock_calls[0][2]['Key'], 'uploads/ID/assignments/0.txt')
+        self.assertEqual(s3.mock_calls[1][2]['Key'], 'uploads/ID/assignments/1.txt')
+        self.assertEqual(s3.mock_calls[2][2]['Key'], 'uploads/ID/assignments/2.txt')
+        self.assertEqual(s3.mock_calls[0][2]['Body'], '390017701001008\n')
+        self.assertEqual(s3.mock_calls[1][2]['Body'], '390017701001004\n390017701001005\n390017701001006\n390017701001007\n')
+        self.assertEqual(s3.mock_calls[2][2]['Body'], '390017701001000\n390017701001001\n390017701001002\n390017701001003\n')
+    
+    @unittest.mock.patch('sys.stdout')
     def test_put_district_assignments_zipped(self, stdout):
         '''
         '''
