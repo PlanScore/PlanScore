@@ -129,7 +129,8 @@ class TestPostreadCallback (unittest.TestCase):
         #self.assertIn(b'"incumbents": ["D", "R"]', lambda_dict['Payload'])
     
     @unittest.mock.patch('planscore.postread_callback.dummy_upload')
-    def test_lambda_handler_bad_id(self, dummy_upload):
+    @unittest.mock.patch('boto3.client')
+    def test_lambda_handler_bad_id(self, boto3_client, dummy_upload):
         ''' Lambda event with an incorrectly-signed ID fails as expected
         '''
         event = {
