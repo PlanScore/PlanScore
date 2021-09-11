@@ -86,7 +86,7 @@ a dictionary of additional form fields for a pre-signed POST request:
     HTTP/1.1 200
     
     [
-        "https://planscore.s3.amazonaws.com",
+        "https://planscore.s3.amazonaws.com/",
         {
             "key": {key},
             "AWSAccessKeyId": {AWSAccessKeyId},
@@ -111,8 +111,11 @@ in a `multipart/form-data` HTTP POST request:
         --form signature={signature} \
         --form acl={acl} \
         --form success_action_redirect={success_action_redirect} \
-        --form file=@null-plan.gpkg \
-        https://planscore.s3.amazonaws.com
+        --form file=@null-plan-blockassignments.csv \
+        https://planscore.s3.amazonaws.com/
+
+See [null-plan-blockassignments.csv](planscore/tests/data/null-plan-blockassignments.csv)
+for example input.
 
 Retrieve the complete HTTP redirect URL from the S3 response:
 
