@@ -6,7 +6,7 @@ More details on "success_action_redirect" in browser-based S3 uploads:
     http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-post-example.html
 '''
 import boto3, itsdangerous, urllib.parse, json, re
-from . import postread_calculate, constants, util, website, data, score, observe, preread
+from . import postread_calculate, constants, util, website, data, score, observe, preread, preread_followup
 
 def dummy_upload(key, id):
     '''
@@ -36,6 +36,7 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3')
+    lam = boto3.client('lambda')
     query = util.event_query_args(event)
     website_base = constants.WEBSITE_BASE
 
@@ -53,7 +54,8 @@ def lambda_handler(event, context):
 
     if 'planscoreApiToken' in authorizer:
         # GET request arrived via API request, no index yet exists
-        prior_upload = preread.create_upload(s3, query['bucket'], query['key'], id)
+        initial_upload = preread.create_upload(s3, query['bucket'], query['key'], id)
+        prior_upload = preread_followup.commence_upload_parsing(s3, lam, query['bucket'], initial_upload)
         description = None
         incumbents = None
         print(f"Read description and incumbents from {event['body']}...")

@@ -86,9 +86,10 @@ class TestPostreadCallback (unittest.TestCase):
         self.assertIn(b'"description": "A fine new plan"', lambda_dict['Payload'])
         self.assertIn(b'"incumbents": ["D", "R"]', lambda_dict['Payload'])
 
+    @unittest.mock.patch('planscore.preread_followup.commence_upload_parsing')
     @unittest.mock.patch('planscore.preread.create_upload')
     @unittest.mock.patch('boto3.client')
-    def test_lambda_handler_authorized(self, boto3_client, create_upload):
+    def test_lambda_handler_authorized(self, boto3_client, create_upload, commence_upload_parsing):
         ''' Lambda event triggers the right call to dummy_upload()
         '''
         query = {'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson',
@@ -97,8 +98,11 @@ class TestPostreadCallback (unittest.TestCase):
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
 
-        create_upload.return_value = data.Upload(
-            query['id'], query['key'], description=query['description'])
+        the_upload = data.Upload(
+            query['id'], query['key'], description=query['description'],
+        )
+        create_upload.return_value = the_upload
+        commence_upload_parsing.return_value = the_upload
         
         event = {
             'queryStringParameters': query,
@@ -108,6 +112,7 @@ class TestPostreadCallback (unittest.TestCase):
         response = postread_callback.lambda_handler(event, None)
 
         self.assertEqual(create_upload.mock_calls[0][1][1:], (query['bucket'], query['key'], 'id'))
+        self.assertEqual(commence_upload_parsing.mock_calls[0][1][2:], (query['bucket'], the_upload))
         
         self.assertEqual(response['statusCode'], '200')
         self.assertIn('"index_url"', response['body'])
