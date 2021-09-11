@@ -62,7 +62,11 @@ class TestPostreadCallback (unittest.TestCase):
         get_upload_index.return_value = data.Upload(
             query['id'], query['key'], description=query['description'])
         
-        response = postread_callback.lambda_handler({'queryStringParameters': query}, None)
+        event = {
+            'queryStringParameters': query,
+            'requestContext': {'authorizer': {}},
+        }
+        response = postread_callback.lambda_handler(event, None)
 
         self.assertEqual(get_upload_index.mock_calls[0][1][0].bucket, query['bucket'])
         self.assertEqual(get_upload_index.mock_calls[0][1][1], data.UPLOAD_INDEX_KEY.format(id=query['id']))
@@ -81,9 +85,52 @@ class TestPostreadCallback (unittest.TestCase):
         self.assertIn(b'"bucket": "planscore-bucket"', lambda_dict['Payload'])
         self.assertIn(b'"description": "A fine new plan"', lambda_dict['Payload'])
         self.assertIn(b'"incumbents": ["D", "R"]', lambda_dict['Payload'])
+
+    @unittest.mock.patch('planscore.preread_followup.commence_upload_parsing')
+    @unittest.mock.patch('planscore.preread.create_upload')
+    @unittest.mock.patch('boto3.client')
+    def test_lambda_handler_authorized(self, boto3_client, create_upload, commence_upload_parsing):
+        ''' Lambda event triggers the right call to dummy_upload()
+        '''
+        query = {'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson',
+            'id': 'id.k0_XwbOLGLUdv241zsPluNc3HYs', 'bucket': 'planscore-bucket',
+            'description': 'A fine new plan', 'incumbent-1': 'D', 'incumbent-2': 'R'}
+
+        os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
+
+        the_upload = data.Upload(
+            query['id'], query['key'], description=query['description'],
+        )
+        create_upload.return_value = the_upload
+        commence_upload_parsing.return_value = the_upload
+        
+        event = {
+            'queryStringParameters': query,
+            'requestContext': {'authorizer': {'planscoreApiToken': 'yup'}},
+            'body': None,
+        }
+        response = postread_callback.lambda_handler(event, None)
+
+        self.assertEqual(create_upload.mock_calls[0][1][1:], (query['bucket'], query['key'], 'id'))
+        self.assertEqual(commence_upload_parsing.mock_calls[0][1][2:], (query['bucket'], the_upload))
+        
+        self.assertEqual(response['statusCode'], '200')
+        self.assertIn('"index_url"', response['body'])
+        self.assertIn('"plan_url"', response['body'])
+        
+        lambda_dict = boto3_client.return_value.invoke.mock_calls[0][2]
+        
+        self.assertEqual(lambda_dict['FunctionName'], 'PlanScore-PostreadCalculate')
+        self.assertEqual(lambda_dict['InvocationType'], 'Event')
+        self.assertIn(b'"id": "id.k0_XwbOLGLUdv241zsPluNc3HYs"', lambda_dict['Payload'])
+        self.assertIn(b'"key": "uploads/id/upload/file.geojson"', lambda_dict['Payload'])
+        self.assertIn(b'"bucket": "planscore-bucket"', lambda_dict['Payload'])
+        #self.assertIn(b'"description": "A fine new plan"', lambda_dict['Payload'])
+        #self.assertIn(b'"incumbents": ["D", "R"]', lambda_dict['Payload'])
     
     @unittest.mock.patch('planscore.postread_callback.dummy_upload')
-    def test_lambda_handler_bad_id(self, dummy_upload):
+    @unittest.mock.patch('boto3.client')
+    def test_lambda_handler_bad_id(self, boto3_client, dummy_upload):
         ''' Lambda event with an incorrectly-signed ID fails as expected
         '''
         event = {

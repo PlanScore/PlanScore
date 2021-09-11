@@ -74,14 +74,6 @@ def kick_it_off(geojson, temporary, auth_token):
 def lambda_handler(event, context):
     '''
     '''
-    is_interactive = bool(event['httpMethod'] == 'GET')
-
-    if is_interactive:
-        return {
-            'statusCode': '501',
-            'body': json.dumps({"try": "later"}, indent=2),
-            }
-
     try:
         geojson = json.loads(event['body'])
     except TypeError:
@@ -90,7 +82,7 @@ def lambda_handler(event, context):
         status, body = '400', json.dumps(dict(message='Bad GeoJSON input'))
     else:
         is_temporary = event['path'].endswith('/temporary')
-        auth_token = event['requestContext'].get('authorizer', {}).get('authToken')
+        auth_token = event['requestContext'].get('authorizer', {}).get('planscoreApiToken')
         result = kick_it_off(geojson, is_temporary, auth_token)
         status, body = '200', json.dumps(result, indent=2)
     
