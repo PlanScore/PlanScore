@@ -392,9 +392,9 @@ MODELS = [
     Model(State.IL, House.ushouse,      17,  True, VERSION, 'data/IL/005-decennial'), # 4ee6b60
     Model(State.IL, House.statesenate,  59,  True, VERSION, 'data/IL/005-decennial'), # 4ee6b60
     Model(State.IL, House.statehouse,  118,  True, VERSION, 'data/IL/005-decennial'), # 4ee6b60
-    Model(State.IN, House.ushouse,       9,  True, VERSION, 'data/IN/003-decennial'), # 4ee6b60
-    Model(State.IN, House.statesenate,  50,  True, VERSION, 'data/IN/003-decennial'), # 4ee6b60
-    Model(State.IN, House.statehouse,  100,  True, VERSION, 'data/IN/003-decennial'), # 4ee6b60
+    Model(State.IN, House.ushouse,       9,  True, VERSION, 'data/IN/004-2020vote'), # 6f95c55
+    Model(State.IN, House.statesenate,  50,  True, VERSION, 'data/IN/004-2020vote'), # 6f95c55
+    Model(State.IN, House.statehouse,  100,  True, VERSION, 'data/IN/004-2020vote'), # 6f95c55
     Model(State.KS, House.ushouse,       5,  True, VERSION, 'data/KS/004-decennial'), # 4ee6b60
     Model(State.KS, House.statesenate,  40,  True, VERSION, 'data/KS/004-decennial'), # 4ee6b60
     Model(State.KS, House.statehouse,  125,  True, VERSION, 'data/KS/004-decennial'), # 4ee6b60
@@ -407,9 +407,9 @@ MODELS = [
     Model(State.MA, House.ushouse,       9,  True, VERSION, 'data/MA/005-2020vote'), # 2fa2d05
     Model(State.MA, House.statesenate,  40,  True, VERSION, 'data/MA/005-2020vote'), # 2fa2d05
     Model(State.MA, House.statehouse,  160,  True, VERSION, 'data/MA/005-2020vote'), # 2fa2d05
-    Model(State.MD, House.ushouse,       8,  True, VERSION, 'data/MD/006-decennial'), # 4ee6b60
-    Model(State.MD, House.statesenate,  47,  True, VERSION, 'data/MD/006-decennial'), # 4ee6b60
-    Model(State.MD, House.statehouse,   68,  True, VERSION, 'data/MD/006-decennial'), # 4ee6b60
+    Model(State.MD, House.ushouse,       8,  True, VERSION, 'data/MD/007-2020vote'), # 6f95c55
+    Model(State.MD, House.statesenate,  47,  True, VERSION, 'data/MD/007-2020vote'), # 6f95c55
+    Model(State.MD, House.statehouse,   68,  True, VERSION, 'data/MD/007-2020vote'), # 6f95c55
     Model(State.ME, House.ushouse,       2,  True, VERSION, 'data/ME/005-decennial'), # 4ee6b60
     Model(State.ME, House.statesenate,  35,  True, VERSION, 'data/ME/005-decennial'), # 4ee6b60
     Model(State.ME, House.statehouse,  151,  True, VERSION, 'data/ME/005-decennial'), # 4ee6b60
