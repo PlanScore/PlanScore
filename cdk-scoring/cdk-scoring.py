@@ -90,7 +90,7 @@ class PlanScoreScoring(cdk.Stack):
         
         apigateway_role, api = self.make_api(stack_id, formation_info)
         site_buckets = self.make_site_buckets(formation_info)
-        website_base = self.make_website_base(*site_buckets)
+        website_base = self.make_website_base(formation_info, *site_buckets)
 
         functions = self.make_lambda_functions(
             apigateway_role,
@@ -153,6 +153,7 @@ class PlanScoreScoring(cdk.Stack):
                 'Forward-SSL-Certificate',
                 formation_info.forward_cert,
             ),
+            comment=f'{formation_info.prefix} Forwarding',
             domain_names=formation_info.forward_domains,
             default_behavior=static_behavior,
             price_class=aws_cloudfront.PriceClass.PRICE_CLASS_100,
@@ -201,7 +202,7 @@ class PlanScoreScoring(cdk.Stack):
 
         return static_site_bucket, scoring_site_bucket
 
-    def make_website_base(self, static_site_bucket, scoring_site_bucket):
+    def make_website_base(self, formation_info, static_site_bucket, scoring_site_bucket):
 
         static_origin = aws_cloudfront_origins.S3Origin(static_site_bucket)
         scoring_origin = aws_cloudfront_origins.S3Origin(scoring_site_bucket)
@@ -248,6 +249,7 @@ class PlanScoreScoring(cdk.Stack):
                     formation_info.website_cert,
                 ),
                 domain_names=[formation_info.website_domain],
+                comment=f'{formation_info.prefix} Website',
                 **distribution_kwargs,
             )
             website_base = concat_strings('https://', formation_info.website_domain, '/')
@@ -255,6 +257,7 @@ class PlanScoreScoring(cdk.Stack):
             distribution = aws_cloudfront.Distribution(
                 self,
                 'Website',
+                comment=f'{formation_info.prefix} Website',
                 **distribution_kwargs,
             )
             website_base = concat_strings('https://', distribution.distribution_domain_name, '/')
