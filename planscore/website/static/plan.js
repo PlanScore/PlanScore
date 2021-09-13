@@ -851,7 +851,7 @@ function plan_array(plan)
     var head_row = ['District'],
         all_rows = [head_row],
         field, current_row, field_missing, flip_chance;
-    
+
     const has_incumbency = plan_has_incumbency(plan);
 
     if(has_incumbency) {
@@ -893,11 +893,11 @@ function plan_array(plan)
         if(field_missing) {
             continue;
         }
-        
+
         if(field == 'Democratic Wins')
         {
             head_row.push('Chance of 1+ Flips<sup>†</sup>');
-            
+
             for(var j in plan.districts)
             {
                 current_row = all_rows[parseInt(j) + 1];
@@ -905,7 +905,7 @@ function plan_array(plan)
                 current_row.push(flip_chance);
             }
         }
-        
+
         head_row.push(field);
 
         for(var j in plan.districts)
@@ -1016,7 +1016,7 @@ function get_state_full_name(postal_code)
         'WI': 'Wisconsin', 'MO': 'Missouri', 'WY': 'Wyoming',
         'MT': 'Montana'
     };
-    
+
     return states[postal_code];
 }
 
@@ -1027,7 +1027,7 @@ function get_house_full_name(house_code)
         'statesenate': 'State Senate',
         'statehouse': 'State House'
     };
-    
+
     return houseNames[house_code];
 }
 
@@ -1131,16 +1131,16 @@ function load_plan_score(url, message_section, score_section,
         const info_el = document.createElement('div');
         info_el.classList.add('info');
 
-        //needs just the state name without the branch
         info_el.append(create_info_box('State', get_state_full_name(plan.model.state)));
 
-        // needs just the legislative branch
         info_el.append(create_info_box('Legislative', get_house_full_name(plan.model.house)));
 
         info_el.append(create_info_box('Added to PlanScore', headings.date_only));
 
         // needs the author name
-        info_el.append(create_info_box('Author', '%author'));
+        if (false) { // check for a plan author
+          info_el.append(create_info_box('Author', '%author'));
+        }
 
         function create_info_box(label, info){
           const info_box = document.createElement('div');
