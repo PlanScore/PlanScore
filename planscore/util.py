@@ -1,5 +1,9 @@
 import urllib.parse, tempfile, shutil, os, contextlib, logging, zipfile, itertools, shutil, enum, csv, re
 from . import constants
+import osgeo.ogr
+
+EMPTY_GEOMETRY = osgeo.ogr.Geometry(osgeo.ogr.wkbGeometryCollection)
+POLYGONAL_TYPES = {osgeo.ogr.wkbPolygon, osgeo.ogr.wkbMultiPolygon}
 
 class UploadType (enum.Enum):
     OGR_DATASOURCE = 1
@@ -145,3 +149,7 @@ def baf_stream_to_pairs(stream):
         (row[block_column], row[district_column])
         for row in rows if row[district_column] != 'ZZ'
     ]
+
+def is_polygonal_feature(feature):
+    geometry = feature.GetGeometryRef() or EMPTY_GEOMETRY
+    return bool(geometry.GetGeometryType() in POLYGONAL_TYPES)

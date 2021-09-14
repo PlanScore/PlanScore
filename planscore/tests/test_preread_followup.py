@@ -52,7 +52,7 @@ class TestPrereadFollowup (unittest.TestCase):
         self.assertEqual(put_upload_index.mock_calls[0][1][1].message,
             "Can't score this plan: Bad time")
     
-    @unittest.mock.patch('planscore.preread_followup.is_polygonal_feature')
+    @unittest.mock.patch('planscore.util.is_polygonal_feature')
     @unittest.mock.patch('sys.stdout')
     def test_ordered_districts(self, stdout, is_polygonal_feature):
         '''
@@ -180,7 +180,7 @@ class TestPrereadFollowup (unittest.TestCase):
 
         self.assertEqual(str(ni_error.exception), 'PlanScore only works for U.S. states')
     
-    @unittest.mock.patch('planscore.preread_followup.is_polygonal_feature')
+    @unittest.mock.patch('planscore.util.is_polygonal_feature')
     @unittest.mock.patch('osgeo.ogr')
     def test_guess_geometry_model_imagined(self, osgeo_ogr, is_polygonal_feature):
         ''' Test that guess_geometry_model() guesses the correct U.S. state and house.
