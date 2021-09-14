@@ -24,6 +24,7 @@ from . import util, data, score, website, prepare_state, constants, observe
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_PREREAD_FOLLOWUP') or 'PlanScore-PrereadFollowup'
 EMPTY_GEOMETRY = osgeo.ogr.Geometry(osgeo.ogr.wkbGeometryCollection)
+POLYGONAL_TYPES = {osgeo.ogr.wkbPolygon, osgeo.ogr.wkbMultiPolygon}
 
 Assignment = collections.namedtuple('Assignment', ('block_id', 'district_id'))
 
@@ -31,17 +32,22 @@ osgeo.ogr.UseExceptions()
 
 states_path = os.path.join(os.path.dirname(__file__), 'geodata', 'cb_2013_us_state_20m.geojson')
 
+def is_polygonal_feature(feature):
+    geometry = feature.GetGeometryRef() or EMPTY_GEOMETRY
+    return bool(geometry.GetGeometryType() in POLYGONAL_TYPES)
+
 def ordered_districts(layer):
     ''' Return field name and list of layer features ordered by guessed district numbers.
     '''
     defn = layer.GetLayerDefn()
     expected_values = {i+1 for i in range(len(layer))}
-    features = list(layer)
     fields = list()
     
+    polygon_features = [feat for feat in layer if is_polygonal_feature(feat)]
+
     for index in range(defn.GetFieldCount()):
         name = defn.GetFieldDefn(index).GetName()
-        raw_values = [feat.GetField(name) for feat in features]
+        raw_values = [feat.GetField(name) for feat in polygon_features]
         
         try:
             values = {int(raw) for raw in raw_values}
@@ -54,13 +60,13 @@ def ordered_districts(layer):
         fields.append((2 if 'district' in name.lower() else 1, name))
 
     if not fields:
-        return None, features
+        return None, polygon_features
     
     name = sorted(fields)[-1][1]
     
     print('Sorting layer on', name)
-
-    return name, sorted(features, key=lambda f: int(f.GetField(name)))
+    
+    return name, sorted(polygon_features, key=lambda f: int(f.GetField(name)))
 
 def commence_upload_parsing(s3, lam, bucket, upload):
     '''
@@ -193,7 +199,7 @@ def guess_geometry_model(path):
         else:
             return a.Union(b)
     
-    features = list(ds.GetLayer(0))
+    features = [feat for feat in ds.GetLayer(0) if is_polygonal_feature(feat)]
     geometries = [_simplify_coarsely(feature.GetGeometryRef()) for feature in features]
     footprint = functools.reduce(_union_safely, geometries)
     
@@ -287,7 +293,9 @@ def put_geojson_file(s3, bucket, upload, path):
     _, features = ordered_districts(ds.GetLayer(0))
     
     for (index, feature) in enumerate(features):
-        geometry = feature.GetGeometryRef() or EMPTY_GEOMETRY
+        if not is_polygonal_feature(feature):
+            continue
+        geometry = feature.GetGeometryRef()
         if geometry.GetSpatialReference():
             geometry.TransformTo(prepare_state.EPSG4326)
         simple30ft = geometry.SimplifyPreserveTopology(.0001)
