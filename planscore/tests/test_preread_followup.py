@@ -1,4 +1,4 @@
-import unittest, unittest.mock, io, os, contextlib
+import unittest, unittest.mock, io, os, contextlib, json
 from .. import preread_followup, data, constants
 from osgeo import ogr
 
@@ -130,6 +130,17 @@ class TestPrereadFollowup (unittest.TestCase):
             Body=compress.return_value, ContentEncoding='gzip',
             ACL='public-read', ContentType='text/json')
     
+    @unittest.mock.patch('gzip.compress')
+    def test_put_geojson_file_mixed_geometries(self, compress):
+        ''' Geometry GeoJSON file is posted to S3
+        '''
+        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'PA-DRA-points-included.geojson')
+        s3, bucket, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
+        preread_followup.put_geojson_file(s3, bucket, upload, nullplan_path)
+        geojson = json.loads(compress.mock_calls[0][1][0])
+        geometry_types = {feature['geometry']['type'] for feature in geojson['features']}
+        self.assertNotIn('Point', geometry_types, 'Should see just the Polygon features')
+    
     def test_get_redirect_url(self):
         ''' Expected redirect URL is returned from get_redirect_url()
         '''
@@ -225,6 +236,14 @@ class TestPrereadFollowup (unittest.TestCase):
         plan_path = os.path.join(os.path.dirname(__file__), 'data', 'mi_cong_2012_to_2021.shp')
         self.assertEqual(preread_followup.guess_geometry_model(plan_path).key_prefix[:8], 'data/MI/')
     
+    def test_guess_geometry_model_mixed_geometries(self):
+        ''' Test that guess_geometry_model() guesses the correct U.S. state and house.
+        '''
+        plan_path = os.path.join(os.path.dirname(__file__), 'data', 'PA-DRA-points-included.geojson')
+        plan_model = preread_followup.guess_geometry_model(plan_path)
+        self.assertEqual(plan_model.key_prefix[:8], 'data/PA/')
+        self.assertEqual(plan_model.house, data.House.statehouse)
+    
     def test_guess_blockassign_model_knowns(self):
         ''' Test that guess_blockassign_model() guesses the correct U.S. state and house.
         '''
@@ -269,6 +288,14 @@ class TestPrereadFollowup (unittest.TestCase):
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-missing-geometries.geojson')
         count = preread_followup.count_district_geometries(null_plan_path)
         self.assertEqual(count, 3)
+    
+    @unittest.mock.patch('sys.stdout')
+    def test_count_district_geometries_mixed_geometries(self, stdout):
+        '''
+        '''
+        plan_path = os.path.join(os.path.dirname(__file__), 'data', 'PA-DRA-points-included.geojson')
+        count = preread_followup.count_district_geometries(plan_path)
+        self.assertEqual(count, 50)
     
     @unittest.mock.patch('sys.stdout')
     def test_count_district_assignments(self, stdout):
