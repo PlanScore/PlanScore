@@ -50,10 +50,13 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(put_upload_index.mock_calls[0][1][1].message,
             "Can't score this plan: Bad time")
     
+    @unittest.mock.patch('planscore.util.is_polygonal_feature')
     @unittest.mock.patch('sys.stdout')
-    def test_ordered_districts(self, stdout):
+    def test_ordered_districts(self, stdout, is_polygonal_feature):
         '''
         '''
+        is_polygonal_feature.return_value = True
+
         ds1 = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'unordered1.geojson'))
         layer1 = ds1.GetLayer(0)
         name1, features1 = postread_calculate.ordered_districts(layer1)
@@ -133,13 +136,18 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(keys, [
             'uploads/ID/geometries/0.wkt',
             'uploads/ID/geometries/1.wkt',
-            'uploads/ID/geometries/2.wkt',
             'uploads/ID/geometry-bboxes.geojson',
         ])
-        
-        put_kwargs = s3.put_object.mock_calls[2][2]
-        self.assertEqual(put_kwargs['Key'], 'uploads/ID/geometries/2.wkt')
-        self.assertEqual(put_kwargs['Body'], 'GEOMETRYCOLLECTION EMPTY')
+    
+    @unittest.mock.patch('sys.stdout')
+    def test_put_district_geometries_mixed_geometries(self, stdout):
+        '''
+        '''
+        s3 = unittest.mock.Mock()
+        upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
+        plan_path = os.path.join(os.path.dirname(__file__), 'data', 'PA-DRA-points-included.geojson')
+        keys = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, plan_path)
+        self.assertEqual(len(keys), 51)
     
     @unittest.mock.patch('sys.stdout')
     def test_put_district_assignments(self, stdout):

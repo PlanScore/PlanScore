@@ -1,4 +1,4 @@
-import unittest, unittest.mock, io, os, contextlib
+import unittest, unittest.mock, io, os, contextlib, json
 from .. import preread_followup, data, constants
 from osgeo import ogr
 
@@ -52,10 +52,13 @@ class TestPrereadFollowup (unittest.TestCase):
         self.assertEqual(put_upload_index.mock_calls[0][1][1].message,
             "Can't score this plan: Bad time")
     
+    @unittest.mock.patch('planscore.util.is_polygonal_feature')
     @unittest.mock.patch('sys.stdout')
-    def test_ordered_districts(self, stdout):
+    def test_ordered_districts(self, stdout, is_polygonal_feature):
         '''
         '''
+        is_polygonal_feature.return_value = True
+
         ds1 = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'unordered1.geojson'))
         layer1 = ds1.GetLayer(0)
         name1, features1 = preread_followup.ordered_districts(layer1)
@@ -124,11 +127,22 @@ class TestPrereadFollowup (unittest.TestCase):
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-missing-geometries.geojson')
         s3, bucket, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
         preread_followup.put_geojson_file(s3, bucket, upload, nullplan_path)
-        compress.assert_called_once_with(b'{"type": "FeatureCollection", "features": [\n{"type": "Feature", "properties": {}, "geometry": { "type": "Polygon", "coordinates": [ [ [ -0.00024, 0.00045 ], [ -0.00068, 0.00025 ], [ -0.00064, -0.00035 ], [ -0.00003, -0.00047 ], [ -0.00002, -0.00002 ], [ -0.00024, 0.00045 ] ] ] }},\n{"type": "Feature", "properties": {}, "geometry": { "type": "Polygon", "coordinates": [ [ [ -0.00023, 0.00043 ], [ 0.00045, 0.00061 ], [ 0.00053, -0.00051 ], [ -0.00009, -0.00049 ], [ -0.00002, -0.00002 ], [ -0.00023, 0.00043 ] ] ] }},\n{"type": "Feature", "properties": {}, "geometry": { "type": "GeometryCollection", "geometries": [ ] }}\n]}')
+        compress.assert_called_once_with(b'{"type": "FeatureCollection", "features": [\n{"type": "Feature", "properties": {}, "geometry": { "type": "Polygon", "coordinates": [ [ [ -0.00024, 0.00045 ], [ -0.00068, 0.00025 ], [ -0.00064, -0.00035 ], [ -0.00003, -0.00047 ], [ -0.00002, -0.00002 ], [ -0.00024, 0.00045 ] ] ] }},\n{"type": "Feature", "properties": {}, "geometry": { "type": "Polygon", "coordinates": [ [ [ -0.00023, 0.00043 ], [ 0.00045, 0.00061 ], [ 0.00053, -0.00051 ], [ -0.00009, -0.00049 ], [ -0.00002, -0.00002 ], [ -0.00023, 0.00043 ] ] ] }}\n]}')
         s3.put_object.assert_called_once_with(Bucket=bucket,
             Key=upload.geometry_key,
             Body=compress.return_value, ContentEncoding='gzip',
             ACL='public-read', ContentType='text/json')
+    
+    @unittest.mock.patch('gzip.compress')
+    def test_put_geojson_file_mixed_geometries(self, compress):
+        ''' Geometry GeoJSON file is posted to S3
+        '''
+        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'PA-DRA-points-included.geojson')
+        s3, bucket, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
+        preread_followup.put_geojson_file(s3, bucket, upload, nullplan_path)
+        geojson = json.loads(compress.mock_calls[0][1][0])
+        geometry_types = {feature['geometry']['type'] for feature in geojson['features']}
+        self.assertNotIn('Point', geometry_types, 'Should see just the Polygon features')
     
     def test_get_redirect_url(self):
         ''' Expected redirect URL is returned from get_redirect_url()
@@ -166,10 +180,13 @@ class TestPrereadFollowup (unittest.TestCase):
 
         self.assertEqual(str(ni_error.exception), 'PlanScore only works for U.S. states')
     
+    @unittest.mock.patch('planscore.util.is_polygonal_feature')
     @unittest.mock.patch('osgeo.ogr')
-    def test_guess_geometry_model_imagined(self, osgeo_ogr):
+    def test_guess_geometry_model_imagined(self, osgeo_ogr, is_polygonal_feature):
         ''' Test that guess_geometry_model() guesses the correct U.S. state and house.
         '''
+        is_polygonal_feature.return_value = True
+        
         # Mock OGR boilerplate
         ogr_feature = unittest.mock.Mock()
         ogr_geometry = ogr_feature.GetGeometryRef.return_value
@@ -225,6 +242,14 @@ class TestPrereadFollowup (unittest.TestCase):
         plan_path = os.path.join(os.path.dirname(__file__), 'data', 'mi_cong_2012_to_2021.shp')
         self.assertEqual(preread_followup.guess_geometry_model(plan_path).key_prefix[:8], 'data/MI/')
     
+    def test_guess_geometry_model_mixed_geometries(self):
+        ''' Test that guess_geometry_model() guesses the correct U.S. state and house.
+        '''
+        plan_path = os.path.join(os.path.dirname(__file__), 'data', 'PA-DRA-points-included.geojson')
+        plan_model = preread_followup.guess_geometry_model(plan_path)
+        self.assertEqual(plan_model.key_prefix[:8], 'data/PA/')
+        self.assertEqual(plan_model.house, data.House.statesenate)
+    
     def test_guess_blockassign_model_knowns(self):
         ''' Test that guess_blockassign_model() guesses the correct U.S. state and house.
         '''
@@ -268,7 +293,15 @@ class TestPrereadFollowup (unittest.TestCase):
         '''
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-missing-geometries.geojson')
         count = preread_followup.count_district_geometries(null_plan_path)
-        self.assertEqual(count, 3)
+        self.assertEqual(count, 2)
+    
+    @unittest.mock.patch('sys.stdout')
+    def test_count_district_geometries_mixed_geometries(self, stdout):
+        '''
+        '''
+        plan_path = os.path.join(os.path.dirname(__file__), 'data', 'PA-DRA-points-included.geojson')
+        count = preread_followup.count_district_geometries(plan_path)
+        self.assertEqual(count, 50)
     
     @unittest.mock.patch('sys.stdout')
     def test_count_district_assignments(self, stdout):
