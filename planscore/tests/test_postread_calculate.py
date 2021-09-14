@@ -50,10 +50,13 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(put_upload_index.mock_calls[0][1][1].message,
             "Can't score this plan: Bad time")
     
+    @unittest.mock.patch('planscore.util.is_polygonal_feature')
     @unittest.mock.patch('sys.stdout')
-    def test_ordered_districts(self, stdout):
+    def test_ordered_districts(self, stdout, is_polygonal_feature):
         '''
         '''
+        is_polygonal_feature.return_value = True
+
         ds1 = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'unordered1.geojson'))
         layer1 = ds1.GetLayer(0)
         name1, features1 = postread_calculate.ordered_districts(layer1)

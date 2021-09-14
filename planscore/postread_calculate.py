@@ -9,7 +9,6 @@ import boto3, osgeo.ogr
 from . import util, data, score, website, prepare_state, constants, run_tile, run_slice, observe
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_POSTREAD_CALCULATE') or 'PlanScore-PostreadCalculate'
-EMPTY_GEOMETRY = osgeo.ogr.Geometry(osgeo.ogr.wkbGeometryCollection)
 
 osgeo.ogr.UseExceptions()
 
@@ -20,12 +19,13 @@ def ordered_districts(layer):
     '''
     defn = layer.GetLayerDefn()
     expected_values = {i+1 for i in range(len(layer))}
-    features = list(layer)
     fields = list()
     
+    polygon_features = [feat for feat in layer if util.is_polygonal_feature(feat)]
+
     for index in range(defn.GetFieldCount()):
         name = defn.GetFieldDefn(index).GetName()
-        raw_values = [feat.GetField(name) for feat in features]
+        raw_values = [feat.GetField(name) for feat in polygon_features]
         
         try:
             values = {int(raw) for raw in raw_values}
@@ -38,13 +38,13 @@ def ordered_districts(layer):
         fields.append((2 if 'district' in name.lower() else 1, name))
 
     if not fields:
-        return None, features
+        return None, polygon_features
     
     name = sorted(fields)[-1][1]
     
     print('Sorting layer on', name)
 
-    return name, sorted(features, key=lambda f: int(f.GetField(name)))
+    return name, sorted(polygon_features, key=lambda f: int(f.GetField(name)))
 
 def commence_upload_scoring(s3, bucket, upload):
     '''
@@ -98,7 +98,7 @@ def put_district_geometries(s3, bucket, upload, path):
     _, features = ordered_districts(ds.GetLayer(0))
     
     for (index, feature) in enumerate(features):
-        geometry = feature.GetGeometryRef() or EMPTY_GEOMETRY
+        geometry = feature.GetGeometryRef()
 
         if geometry.GetSpatialReference():
             geometry.TransformTo(prepare_state.EPSG4326)
