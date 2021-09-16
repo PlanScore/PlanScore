@@ -1,14 +1,35 @@
-FROM lambci/lambda:build-python3.6
+FROM amazonlinux:2.0.20210813.1
 
 # Install deps
 
 RUN \
-  touch /var/lib/rpm/* \
-  && yum install -y \
-    automake16 \
-    libcurl-devel \
-    sqlite-devel \
-    libpng-devel
+    touch /var/lib/rpm/* && \
+    yum install -y \
+        automake16 \
+        bzip2 \
+        bzip2-devel \
+        curl \
+        gzip \
+        libffi-devel \
+        libpng-devel \
+        openssl-devel \
+        sqlite-devel \
+        tar \
+        && \
+    yum group install -y \
+        "Development Tools"
+
+# Fetch, build, and install Python 3.9
+
+RUN \
+    curl -L https://www.python.org/ftp/python/3.9.6/Python-3.9.6.tgz | tar zxf - -C /tmp
+
+WORKDIR /tmp/Python-3.9.6
+
+RUN \
+    ./configure --enable-optimizations && \
+    make -j $(nproc) && \
+    make install
 
 # Fetch PROJ.4
 
@@ -57,6 +78,7 @@ RUN \
     --datarootdir=/var/task/share/gdal \
     --with-jpeg=internal \
     --with-sqlite3 \
+    --without-curl \
     --without-qhull \
     --without-mrf \
     --without-grib \
@@ -88,32 +110,30 @@ RUN \
 
 # Install Python deps in a virtualenv
 
-RUN \
-  pip install virtualenv && \
-  virtualenv /tmp/virtualenv
-
+RUN python3.9 -m venv /tmp/virtualenv
 ENV PATH /tmp/virtualenv/bin:/var/task/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-RUN pip install 'numpy == 1.19.2' 'GDAL == 2.1.3'
+RUN \
+    pip install -U pip wheel && \
+    pip install 'numpy == 1.19.2' 'GDAL == 2.1.3'
 
 # Add Python deps to the function tarball
 
-WORKDIR /tmp/virtualenv/lib/python3.6/site-packages
+WORKDIR /tmp/virtualenv/lib/python3.9/site-packages
 
 RUN \
   tar -rvf \
     /tmp/task.tar \
+    __pycache__/gdal.cpython-39.pyc \
+    __pycache__/gdalconst.cpython-39.pyc \
+    __pycache__/ogr.cpython-39.pyc \
+    __pycache__/osr.cpython-39.pyc \
+    gdal.py \
+    gdalconst.py \
     numpy \
     numpy-1.19.2.dist-info \
-    numpy.libs \
-    gdalconst.py \
     ogr.py \
-    osr.py \
-    osgeo/*.so \
+    osgeo/__pycache__/*.cpython-39.pyc \
     osgeo/*.py \
-    gdal.py \
-    __pycache__/gdalconst.cpython-36.pyc \
-    __pycache__/ogr.cpython-36.pyc \
-    __pycache__/osr.cpython-36.pyc \
-    osgeo/__pycache__/*.cpython-36.pyc \
-    __pycache__/gdal.cpython-36.pyc
+    osgeo/*.so \
+    osr.py
