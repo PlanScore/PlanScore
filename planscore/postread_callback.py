@@ -56,9 +56,16 @@ def lambda_handler(event, context):
         # GET request arrived via API request, no index yet exists
         initial_upload = preread.create_upload(s3, query['bucket'], query['key'], id)
         prior_upload = preread_followup.commence_upload_parsing(s3, lam, query['bucket'], initial_upload)
-        description = None
-        incumbents = None
-        print(f"Read description and incumbents from {event['body']}...")
+        try:
+            body = json.loads(event['body'])
+        except:
+            print(f"Could not read description and incumbents from {event['body']}.")
+            description = None
+            incumbents = None
+        else:
+            print(f"Read description and incumbents from {event['body']}...")
+            description = body.get('description', None)
+            incumbents = body.get('incumbents', None)
 
         response = {
             'statusCode': '200',
