@@ -107,7 +107,10 @@ class TestPostreadCallback (unittest.TestCase):
         event = {
             'queryStringParameters': query,
             'requestContext': {'authorizer': {'planscoreApiToken': 'yup'}},
-            'body': None,
+            'body': '''{
+                "description": "A fine new plan",
+                "incumbents": ["R", "D"]
+            }''',
         }
         response = postread_callback.lambda_handler(event, None)
 
@@ -125,8 +128,8 @@ class TestPostreadCallback (unittest.TestCase):
         self.assertIn(b'"id": "id.k0_XwbOLGLUdv241zsPluNc3HYs"', lambda_dict['Payload'])
         self.assertIn(b'"key": "uploads/id/upload/file.geojson"', lambda_dict['Payload'])
         self.assertIn(b'"bucket": "planscore-bucket"', lambda_dict['Payload'])
-        #self.assertIn(b'"description": "A fine new plan"', lambda_dict['Payload'])
-        #self.assertIn(b'"incumbents": ["D", "R"]', lambda_dict['Payload'])
+        self.assertIn(b'"description": "A fine new plan"', lambda_dict['Payload'])
+        self.assertIn(b'"incumbents": ["R", "D"]', lambda_dict['Payload'])
     
     @unittest.mock.patch('planscore.postread_callback.dummy_upload')
     @unittest.mock.patch('boto3.client')
