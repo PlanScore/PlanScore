@@ -53,7 +53,7 @@ def lambda_handler(event, context):
     authorizer = event['requestContext'].get('authorizer', {})
 
     if 'planscoreApiToken' in authorizer:
-        # GET request arrived via API request, no index yet exists
+        # POST request arrived via API request, no index yet exists
         initial_upload = preread.create_upload(s3, query['bucket'], query['key'], id)
         prior_upload = preread_followup.commence_upload_parsing(s3, lam, query['bucket'], initial_upload)
         try:
