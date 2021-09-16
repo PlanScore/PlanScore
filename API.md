@@ -129,8 +129,13 @@ Post a final request with additional detail to the redirect URL:
     curl --request POST \
         --header 'Authorization: Bearer {TOKEN}' \
         --header 'Content-Type: application/json' \
-        --data '{}' \
+        --data '{"description": "A Plan", "incumbents": ["R","D"]}' \
         {redirect URL}
+
+POST data should be a JSON dictionary with these optional keys:
+
+- `description` (string): Short description of the plan will appear as the top-most header on the plan page.
+- `incumbents` (list): Ordered list of incumbency scenario strings for each district. See above for possible values.
 
 On success, two URLs will be returned in a JSON response identical to _Simple Interaction_ above:
 
