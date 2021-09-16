@@ -366,7 +366,7 @@ class PlanScoreScoring(cdk.Stack):
         
         function_kwargs = dict(
             timeout=cdk.Duration.seconds(300),
-            runtime=aws_lambda.Runtime.PYTHON_3_6,
+            runtime=aws_lambda.Runtime.PYTHON_3_9,
             log_retention=aws_logs.RetentionDays.TWO_WEEKS,
             code=aws_lambda.Code.from_asset("../planscore-lambda.zip"),
             environment={
