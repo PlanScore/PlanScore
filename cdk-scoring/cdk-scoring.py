@@ -374,6 +374,7 @@ class PlanScoreScoring(cdk.Stack):
                 'S3_BUCKET': data_bucket.bucket_name,
                 'PLANSCORE_SECRET': PLANSCORE_SECRET,
                 'WEBSITE_BASE': website_base,
+                'LD_LIBRARY_PATH': '/var/task/lib',
             },
         )
 

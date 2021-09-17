@@ -131,24 +131,22 @@ RUN \
     lib/libproj.so* \
     share/gdal/
 
-# Install Python deps in a virtualenv
+# Install Python deps to /var/task
 
-RUN python3.9 -m venv /tmp/virtualenv
-ENV PATH /tmp/virtualenv/bin:/var/task/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV PATH /var/task/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV LD_LIBRARY_PATH /var/task/lib
 
-RUN pip install 'numpy == 1.19.2' 'GDAL == 3.2.1'
+RUN pip3.9 install -t /var/task 'numpy == 1.19.2' 'GDAL == 3.2.1'
 
 # So, did it work?
-RUN python -c 'import osgeo.ogr'
+RUN python3.9 -c 'import osgeo.ogr'
 
 # Add Python deps to the function tarball
-
-WORKDIR /tmp/virtualenv/lib/python3.9/site-packages
 
 RUN \
   tar -rvf \
     /tmp/task.tar \
     numpy \
     numpy-1.19.2.dist-info \
-    GDAL-3.2.1.dist-info \
+    GDAL-3.2.1-py3.9.egg-info \
     osgeo
