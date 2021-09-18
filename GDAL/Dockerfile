@@ -98,10 +98,12 @@ WORKDIR /var/task
 ENV PATH /var/task/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ENV LD_LIBRARY_PATH /var/task/lib
 
-RUN pip3.9 install -t /var/task 'numpy == 1.19.2' 'GDAL == 3.2.1'
+RUN pip3.9 install -t /var/task 'numpy == 1.21.2' 'GDAL == 3.2.1'
 
 # So, did it work?
-RUN python3.9 -c 'import osgeo.ogr'
+RUN \
+  python3.9 -c 'import numpy' && \
+  python3.9 -c 'import osgeo.ogr'
 
 # Create the function tarball
 
@@ -138,6 +140,7 @@ RUN \
     share/gdal/ \
     share/proj/ \
     numpy \
-    numpy-1.19.2.dist-info \
+    numpy-1.21.2.dist-info \
+    numpy.libs \
     GDAL-3.2.1-py3.9.egg-info \
     osgeo
