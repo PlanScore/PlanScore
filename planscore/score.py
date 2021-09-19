@@ -96,6 +96,11 @@ FIELD_NAMES = (
     'US President 2016 - DEM', 'US President 2016 - REP',
     'US President 2020 - DEM', 'US President 2020 - REP',
     
+    # Fields for FVA votes
+    'US Senate 2016 - DEM', 'US Senate 2016 - REP',
+    'US Senate 2018 - DEM', 'US Senate 2018 - REP',
+    'US Senate 2020 - DEM', 'US Senate 2020 - REP',
+    
     # Extra fields
     'US Senate 2016 - DEM', 'US Senate 2016 - REP',
     )
