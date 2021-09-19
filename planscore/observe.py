@@ -388,8 +388,9 @@ def lambda_handler(event, context):
     upload5 = score.calculate_open_biases(upload4)
     upload6 = score.calculate_biases(upload5)
     upload7 = score.calculate_district_biases(upload6)
+    upload8 = score.calculate_fva_biases(upload7)
 
-    complete_upload = upload7.clone(
+    complete_upload = upload8.clone(
         status=True,
         message='Finished scoring this plan.',
         progress=data.Progress(len(expected_parts), len(expected_parts)),

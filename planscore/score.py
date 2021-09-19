@@ -613,6 +613,31 @@ def calculate_district_biases(upload):
     rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
     return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
 
+def calculate_fva_biases(upload):
+    ''' Calculate partisan metrics relevant to Freedom To Vote Act
+    
+        Derive EG from last two U.S. Senate and last two Presidential races.
+    '''
+    totals0 = upload.districts[0]['totals']
+    summary = copy.deepcopy(upload.summary)
+    
+    races = [
+        'US President 2016',
+        'US President 2020',
+        'US Senate 2016',
+        'US Senate 2018',
+        'US Senate 2020',
+    ]
+    
+    for race in races:
+        if (f'{race} - DEM' in totals0 and f'{race} - REP' in totals0):
+            summary[f'{race} Efficiency Gap'] = calculate_EG(
+                [d['totals'][f'{race} - REP'] for d in upload.districts],
+                [d['totals'][f'{race} - DEM'] for d in upload.districts],
+            )
+
+    return upload.clone(summary=summary)
+
 parser = argparse.ArgumentParser()
 parser.add_argument('upload_url')
 
@@ -628,8 +653,9 @@ def main():
     upload3 = calculate_open_biases(upload2)
     upload4 = calculate_biases(upload3)
     upload5 = calculate_district_biases(upload4)
+    upload6 = calculate_fva_biases(upload5)
 
-    complete_upload = upload5.clone(message='Finished scoring this plan.')
+    complete_upload = upload6.clone(message='Finished scoring this plan.')
     
     print('''Scores for {id} ({state}, {house}):
 EG: {EG:.1f}%; {EG_wins:.0f}% favor D
