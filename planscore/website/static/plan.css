@@ -124,45 +124,45 @@ div.planscore-partylegend div.planscore-partylegend-words {
     margin: 6em 0 12em;
 }
 
-ul#scores-box
+ul.scores-box
 {
-    padding: 0;
+    padding: 0 !important;
 }
 
-    ul#scores-box li
+    ul.scores-box li
     {
-        list-style-type: none;
+        list-style-type: none !important;
     }
 
-    ul#scores-box li h3
+    ul.scores-box li h3
     {
-        white-space: nowrap;
-        font-size: 20px;
-        color: #858073;
+        white-space: nowrap !important;
+        font-size: 20px !important;
+        color: #858073 !important;
     }
 
-    ul#scores-box li p
+    ul.scores-box li p
     {
-        font-size: 14px;
-        color: #606980;
-        margin-bottom: 0;
+        font-size: 14px !important;
+        color: #606980 !important;
+        margin-bottom: 0 !important;
     }
 
-    ul#scores-box li p a
+    ul.scores-box li p a
     {
-        white-space: nowrap;
+        white-space: nowrap !important;
     }
 
-    ul#scores-box li p.score
+    ul.scores-box li p.score
     {
-        font-size: 64px;
+        font-size: 64px !important;
     }
 
-    ul#scores-box li p.score-na
+    ul.scores-box li p.score-na
     {
-        font-size: 36px;
-        color: #BBBBBB;
-        letter-spacing: -5px;
+        font-size: 36px !important;
+        color: #BBBBBB !important;
+        letter-spacing: -5px !important;
     }
 
 #map

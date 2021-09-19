@@ -751,6 +751,69 @@ function show_library_metadata(plan, metadata_el, geom_prefix)
     console.log(links);
 }
 
+function show_fva_race_scores(plan, scores_FVA)
+{
+    if('US President 2020 Efficiency Gap' in plan.summary && location.hash.match(/\bshowall\b/))
+    {
+        var fva_races = [{office: 'U.S. President', year: '2020', gap: plan.summary['US President 2020 Efficiency Gap']}];
+
+        if('US President 2016 Efficiency Gap' in plan.summary) {
+            fva_races.push({office: 'U.S. President', year: '2016', gap: plan.summary['US President 2016 Efficiency Gap']});
+        }
+        
+        if('US Senate 2020 Efficiency Gap' in plan.summary) {
+            fva_races.push({office: 'U.S. Senate', year: '2020', gap: plan.summary['US Senate 2020 Efficiency Gap']});
+        }
+        
+        if('US Senate 2018 Efficiency Gap' in plan.summary) {
+            fva_races.push({office: 'U.S. Senate', year: '2018', gap: plan.summary['US Senate 2018 Efficiency Gap']});
+        }
+        
+        if('US Senate 2016 Efficiency Gap' in plan.summary) {
+            fva_races.push({office: 'U.S. Senate', year: '2016', gap: plan.summary['US Senate 2016 Efficiency Gap']});
+        }
+        
+        for(var i = 0; i < scores_FVA.length && i < fva_races.length; i++)
+        {
+            var score_FVA = scores_FVA[i],
+                //summary_name = which_score_summary_name(plan),
+                gap = fva_races[i].gap,
+                gap_amount = nice_percent(Math.abs(gap));
+
+            for(node = score_FVA.firstChild; node = node.nextSibling; node)
+            {
+                if(node.nodeName == 'H3') {
+                    node.innerHTML = `${fva_races[i].office} ${fva_races[i].year}: ${gap_amount}`;
+
+                } else if(node.nodeName == 'DIV') {
+                    drawBiasBellChart('eg', gap, node.id,
+                        (plan.model ? plan.model.house : 'ushouse'), 'plan');
+
+                } else if(node.nodeName == 'P') {
+                    var win_party = (gap < 0 ? 'Republican' : 'Democratic'),
+                        win_partisans = (gap < 0 ? 'Republicans' : 'Democrats'),
+                        lose_party = (gap < 0 ? 'Democratic' : 'Republican');
+
+                    clear_element(node);
+        
+                    node.innerHTML = `
+                        Under this plan, votes for the ${win_party}
+                        candidate for ${fva_races[i].office} in
+                        ${fva_races[i].year} were inefficient at a rate
+                        ${gap_amount} lower than votes for the
+                        ${lose_party} candidate.
+                        `;
+                }
+            }
+        }
+    } else {
+        for(var i = 0; i < scores_FVA.length; i++)
+        {
+            scores_FVA[i].parentNode.style.display = 'none';
+        }
+    }
+}
+
 function update_heading_titles(head)
 {
     var dem_index = head.indexOf('Democratic Votes'),
@@ -1160,13 +1223,13 @@ function plan_has_incumbency(plan)
 function start_load_plan_polling(url, message_section, score_section,
     description_el, metadata_el, model_link, model_footnote, model_url_pattern,
     districts_table, metrics_table, score_EG, score_PB, score_MM, score_DEC2,
-    score_sense, text_url, text_link, geom_prefix, map_div, seat_count)
+    score_sense, scores_FVA, text_url, text_link, geom_prefix, map_div, seat_count)
 {
     const make_xhr = () => {
         load_plan_score(url, message_section, score_section,
             description_el, metadata_el, model_link, model_footnote, model_url_pattern,
             districts_table, metrics_table, score_EG, score_PB, score_MM,
-            score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div,
+            score_DEC2, score_sense, scores_FVA, text_url, text_link, geom_prefix, map_div,
             seat_count, xhr_retry_callback);
     };
 
@@ -1183,7 +1246,7 @@ function start_load_plan_polling(url, message_section, score_section,
 function load_plan_score(url, message_section, score_section,
     description_el, metadata_el, model_link, model_footnote, model_url_pattern,
     districts_table, metrics_table, score_EG, score_PB, score_MM, score_DEC2,
-    score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
+    score_sense, scores_FVA, text_url, text_link, geom_prefix, map_div, seat_count,
     xhr_retry_callback)
 {
     var request = new XMLHttpRequest();
@@ -1362,6 +1425,7 @@ function load_plan_score(url, message_section, score_section,
         }
 
         show_metrics_table(plan, metrics_table);
+        show_fva_race_scores(plan, scores_FVA);
         
         if('library_metadata' in plan && plan['library_metadata']) {
             show_library_metadata(plan, metadata_el, geom_prefix);
