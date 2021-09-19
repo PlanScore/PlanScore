@@ -22,10 +22,10 @@ run in AWS Lambda with API Gateway.
 1.  Clone the PlanScore git repository and prepare a
     [Python virtual environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/#virtualenv) running Python 3.6.
 
-2.  Install GDAL 2.1.3, a binary dependency required by PlanScore.
+2.  Install GDAL 3.2.1, a binary dependency required by PlanScore.
     See _GDAL_ section below for more details on operating systems.
     
-        pip3 install GDAL==2.1.3
+        pip3 install GDAL==3.2.1
 
 3.  Install the rest of PlanScore, keeping it editable, and run the test suite.
     
@@ -62,55 +62,19 @@ prefix required for all permissions to function.
 GDAL
 ---
 
-PlanScore requires GDAL 2.
+PlanScore requires GDAL 3.
 
 ##### Mac OS X
 
 On Mac, [GDAL is gettable from KyngChaos](http://www.kyngchaos.com/software:frameworks).
-After installing the framework to `/Library/Frameworks/GDAL.framework/Versions/2.1`,
+After installing the framework to `/Library/Frameworks/GDAL.framework/Versions/3.2`,
 install GDAL with [custom library and include directories](https://stackoverflow.com/questions/18783390/python-pip-specify-a-library-directory-and-an-include-directory).
 
     pip3 install \
         --global-option=build_ext \
-        --global-option="-I/Library/Frameworks/GDAL.framework/Versions/2.1/Headers" \
-        --global-option="-L/Library/Frameworks/GDAL.framework/Versions/2.1/unix/lib" \
-        GDAL==2.1.3
-
-##### Ubuntu 17 (Artful Aardvark)
-
-Repositories already offer GDAL 2:
-
-    sudo apt install gdal-bin libgdal-dev python3-gdal
-
-##### Ubuntu 16 (Xenial Xerus)
-
-Ubuntu 16 repositories offer GDAL 1, but GDAL 2 is in
-[UbuntuGIS unstable PPA](https://launchpad.net/~ubuntugis/+archive/ubuntu/ubuntugis-unstable).
-Add the unstable PPA and upgrade:
-
-    # GDAL 2 utilities and headers
-    sudo add-apt-repository -y ppa:ubuntugis/ubuntugis-unstable
-    sudo apt update
-    sudo apt upgrade
-    sudo apt install gdal-bin libgdal-dev python3-gdal
-
-    # within the virtualenv, set these environment variables when pip tries
-    # to compile the new GDAL these will tell it where to find headers + libs
-    export CPLUS_INCLUDE_PATH=/usr/include/gdal
-    export C_INCLUDE_PATH=/usr/include/gdal
-    pip3 install gdal==2.1.3
-
-##### GDAL From Source
-
-Alternately, you may install GDAL from source and into some specific
-subdirectory. That usually includes a bunch of other libraries depending on the
-formats you want to support.
-
-This technique could be attractive if you are running an OS whose repositories
-do not offer GDAL 2, but you're reluctant to update to unstable packages.
-
-Once that is done, within the virtualenv you will need to export some
-environment variables, as described in Ubuntu 16.
+        --global-option="-I/Library/Frameworks/GDAL.framework/Versions/3.2/Headers" \
+        --global-option="-L/Library/Frameworks/GDAL.framework/Versions/3.2/unix/lib" \
+        GDAL==3.2.1
 
 Scoring Process
 ---

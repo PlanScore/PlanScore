@@ -15,6 +15,9 @@ SLICE_KEY_FORMAT = 'data/{directory}/slices/{geoid}.json'
 
 EPSG4326 = osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)
 
+# https://github.com/OSGeo/gdal/pull/3311#issuecomment-748728574
+EPSG4326.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+
 def get_projection():
     ''' Return a spherical mercator MMaps Projection instance.
     '''

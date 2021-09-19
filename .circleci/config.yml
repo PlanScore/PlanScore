@@ -4,24 +4,22 @@ jobs:
   # Run tests.
   Test:
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202107-02
     working_directory: ~/repo
     steps:
       - checkout
-      - run: pyenv global 3.6.5
+      - run: pyenv global 3.9.4
       - restore_cache:
           keys:
             - test-dependencies-py-{{ checksum "setup.py" }}
-      - run: sudo add-apt-repository -y ppa:migurski/planscore
+      - run: sudo add-apt-repository -y ppa:migurski/planscore2021
       - run: sudo apt-get update -y
-      - run: sudo apt-get install -y libgeos-c1v5=3.5.1-3~xenial0 libgdal20=2.2.2+dfsg-1~xenial1 libgdal-dev=2.2.2+dfsg-1~xenial1 libspatialindex-dev
-      - run: CPLUS_INCLUDE_PATH=/usr/include/gdal C_INCLUDE_PATH=/usr/include/gdal pip3 install "GDAL <= `gdal-config --version`"
-      - run: pip3 install 'numpy < 2'
-      - run: pip3 install .
+      - run: sudo apt-get install -y libgeos-3.9.0=3.9.0-1~focal0 libgdal-dev=3.2.1+dfsg-1~focal0
+      - run: CPLUS_INCLUDE_PATH=/usr/include/gdal C_INCLUDE_PATH=/usr/include/gdal pip3 install '.[compiled]'
       - save_cache:
           key: test-dependencies-py-{{ checksum "setup.py" }}
           paths:
-            - /opt/circleci/.pyenv/versions/3.6.5
+            - /opt/circleci/.pyenv/versions/3.9.4
       - run: python3 lambda.py
       - run: python3 setup.py test
       - run: node tests.js

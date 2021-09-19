@@ -6,6 +6,11 @@ from .. import constants
 # Spherical mercator should work at typical district sizes
 EPSG4326 = osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)
 EPSG3857 = osr.SpatialReference(); EPSG3857.ImportFromEPSG(3857)
+
+# https://github.com/OSGeo/gdal/pull/3311#issuecomment-748728574
+EPSG4326.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+EPSG3857.SetAxisMappingStrategy(osr.OAMS_TRADITIONAL_GIS_ORDER)
+
 projection = osr.CoordinateTransformation(EPSG4326, EPSG3857)
 
 def get_scores(geometry):

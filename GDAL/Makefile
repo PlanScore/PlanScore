@@ -1,5 +1,8 @@
-gdal-2.1.3-geos-3.6.1-numpy-1.19.2-python-3.6.1.tar.gz: Dockerfile
-	docker run --rm --entrypoint cat $$(docker build -q .) /tmp/task.tar | gzip --stdout > $@
+gdal-3.2.1-geos-3.9.0-numpy-1.21.2-python-3.9.6.tar.gz: Dockerfile
+	docker run --rm --entrypoint cat $$(docker build -q .) /tmp/task.tgz > $@
+
+live: gdal-3.2.1-geos-3.9.0-numpy-1.21.2-python-3.9.6.tar.gz
+	aws s3 cp --acl=public-read $^ s3://planscore/code/
 
 clean:
-	rm -f gdal-2.1.3-geos-3.6.1-numpy-1.19.2-python-3.6.1.tar.gz
+	rm -f gdal-3.2.1-geos-3.9.0-numpy-1.21.2-python-3.9.6.tar.gz
