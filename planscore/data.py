@@ -375,9 +375,9 @@ MODELS = [
     Model(State.CT, House.ushouse,       5,  True, VERSION, 'data/CT/001-decennial'), # 6e1f2f9
     Model(State.CT, House.statesenate,  36,  True, VERSION, 'data/CT/001-decennial'), # 6e1f2f9
     Model(State.CT, House.statehouse,  151,  True, VERSION, 'data/CT/001-decennial'), # 6e1f2f9
-    Model(State.DE, House.ushouse,       1,  True, VERSION, 'data/DE/005-decennial'), # 4ee6b60
-    Model(State.DE, House.statesenate,  21,  True, VERSION, 'data/DE/005-decennial'), # 4ee6b60
-    Model(State.DE, House.statehouse,   41,  True, VERSION, 'data/DE/005-decennial'), # 4ee6b60
+    Model(State.DE, House.ushouse,       1,  True, VERSION, 'data/DE/006-fva-votes'), # 6bf8449
+    Model(State.DE, House.statesenate,  21,  True, VERSION, 'data/DE/006-fva-votes'), # 6bf8449
+    Model(State.DE, House.statehouse,   41,  True, VERSION, 'data/DE/006-fva-votes'), # 6bf8449
     Model(State.FL, House.ushouse,      28,  True, VERSION, 'data/FL/005-decennial'), # 4ee6b60
     Model(State.FL, House.statesenate,  40,  True, VERSION, 'data/FL/005-decennial'), # 4ee6b60
     Model(State.FL, House.statehouse,  120,  True, VERSION, 'data/FL/005-decennial'), # 4ee6b60
@@ -461,9 +461,9 @@ MODELS = [
     Model(State.PA, House.ushouse,      17,  True, VERSION, 'data/PA/012-decennial'), # 4ee6b60
     Model(State.PA, House.statesenate,  50,  True, VERSION, 'data/PA/012-decennial'), # 4ee6b60
     Model(State.PA, House.statehouse,  203,  True, VERSION, 'data/PA/012-decennial'), # 4ee6b60
-    Model(State.RI, House.ushouse,       2,  True, VERSION, 'data/RI/005-decennial'), # 4ee6b60
-    Model(State.RI, House.statesenate,  38,  True, VERSION, 'data/RI/005-decennial'), # 4ee6b60
-    Model(State.RI, House.statehouse,   75,  True, VERSION, 'data/RI/005-decennial'), # 4ee6b60
+    Model(State.RI, House.ushouse,       2,  True, VERSION, 'data/RI/006-fva-votes'), # 6bf8449
+    Model(State.RI, House.statesenate,  38,  True, VERSION, 'data/RI/006-fva-votes'), # 6bf8449
+    Model(State.RI, House.statehouse,   75,  True, VERSION, 'data/RI/006-fva-votes'), # 6bf8449
     Model(State.SC, House.ushouse,       7,  True, VERSION, 'data/SC/003-decennial'), # 4ee6b60
     Model(State.SC, House.statesenate,  46,  True, VERSION, 'data/SC/003-decennial'), # 4ee6b60
     Model(State.SC, House.statehouse,  124,  True, VERSION, 'data/SC/003-decennial'), # 4ee6b60
