@@ -372,9 +372,9 @@ MODELS = [
     Model(State.CO, House.ushouse,       8,  True, VERSION, 'data/CO/008-decennial'), # 4ee6b60
     Model(State.CO, House.statesenate,  35,  True, VERSION, 'data/CO/008-decennial'), # 4ee6b60
     Model(State.CO, House.statehouse,   65,  True, VERSION, 'data/CO/008-decennial'), # 4ee6b60
-    Model(State.CT, House.ushouse,       5,  True, VERSION, 'data/CT/001-decennial'), # 6e1f2f9
-    Model(State.CT, House.statesenate,  36,  True, VERSION, 'data/CT/001-decennial'), # 6e1f2f9
-    Model(State.CT, House.statehouse,  151,  True, VERSION, 'data/CT/001-decennial'), # 6e1f2f9
+    Model(State.CT, House.ushouse,       5,  True, VERSION, 'data/CT/002-fva-votes'), # 6bf8449
+    Model(State.CT, House.statesenate,  36,  True, VERSION, 'data/CT/002-fva-votes'), # 6bf8449
+    Model(State.CT, House.statehouse,  151,  True, VERSION, 'data/CT/002-fva-votes'), # 6bf8449
     Model(State.DE, House.ushouse,       1,  True, VERSION, 'data/DE/006-fva-votes'), # 6bf8449
     Model(State.DE, House.statesenate,  21,  True, VERSION, 'data/DE/006-fva-votes'), # 6bf8449
     Model(State.DE, House.statehouse,   41,  True, VERSION, 'data/DE/006-fva-votes'), # 6bf8449
@@ -437,9 +437,9 @@ MODELS = [
     Model(State.ND, House.statehouse,   94,  True, VERSION, 'data/ND/005-decennial'), # 4ee6b60
     Model(State.NE, House.ushouse,       3,  True, VERSION, 'data/NE/003-decennial'), # 4ee6b60
     Model(State.NE, House.statesenate,  49,  True, VERSION, 'data/NE/003-decennial'), # 4ee6b60
-    Model(State.NH, House.ushouse,       2,  True, VERSION, 'data/NH/005-decennial'), # 4ee6b60
-    Model(State.NH, House.statesenate,  24,  True, VERSION, 'data/NH/005-decennial'), # 4ee6b60
-    Model(State.NH, House.statehouse,  400,  True, VERSION, 'data/NH/005-decennial'), # 4ee6b60
+    Model(State.NH, House.ushouse,       2,  True, VERSION, 'data/NH/006-fva-votes'), # 6bf8449
+    Model(State.NH, House.statesenate,  24,  True, VERSION, 'data/NH/006-fva-votes'), # 6bf8449
+    Model(State.NH, House.statehouse,  400,  True, VERSION, 'data/NH/006-fva-votes'), # 6bf8449
     Model(State.NJ, House.ushouse,      12,  True, VERSION, 'data/NJ/002-decennial'), # 4ee6b60
     Model(State.NJ, House.statesenate,  40,  True, VERSION, 'data/NJ/002-decennial'), # 4ee6b60
     Model(State.NJ, House.statehouse,   80,  True, VERSION, 'data/NJ/002-decennial'), # 4ee6b60

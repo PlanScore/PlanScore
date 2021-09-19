@@ -32,10 +32,16 @@ var FIELDS = [
     'Democratic Wins',
     'Democratic Votes',
     'Republican Votes',
+    'US President 2020 - DEM',
+    'US President 2020 - REP',
     'US President 2016 - DEM',
     'US President 2016 - REP',
-    'US President 2020 - DEM',
-    'US President 2020 - REP'
+    'US Senate 2020 - DEM',
+    'US Senate 2020 - REP',
+    'US Senate 2018 - DEM',
+    'US Senate 2018 - REP',
+    'US Senate 2016 - DEM',
+    'US Senate 2016 - REP',
     /*, 'Polsby-Popper', 'Reock'*/
 ];
 
@@ -46,6 +52,12 @@ const votesFieldToDisplayStr = {
     'US President 2016 - REP': 'Trump (R) 2016',
     'US President 2020 - DEM': 'Biden (D) 2020',
     'US President 2020 - REP': 'Trump (R) 2020',
+    'US Senate 2016 - DEM': 'U.S.&nbsp;Sen. Dem. 2016',
+    'US Senate 2016 - REP': 'U.S.&nbsp;Sen. Rep. 2016',
+    'US Senate 2018 - DEM': 'U.S.&nbsp;Sen. Dem. 2018',
+    'US Senate 2018 - REP': 'U.S.&nbsp;Sen. Rep. 2018',
+    'US Senate 2020 - DEM': 'U.S.&nbsp;Sen. Dem. 2020',
+    'US Senate 2020 - REP': 'U.S.&nbsp;Sen. Rep. 2020',
 };
 
 const fieldSubstringToDisplayStr = {
