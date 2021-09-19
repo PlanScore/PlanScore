@@ -27,12 +27,12 @@ jobs:
   # Ensure that packages can be built in deploy step
   Build:
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202107-02
     working_directory: ~/repo
     steps:
       - checkout
       # Install Python things
-      - run: pyenv global 3.6.5
+      - run: pyenv global 3.9.4
       - run: pip3 install '.[deploy]'
       # Build PlanScore thing
       - run: make planscore-lambda.zip
@@ -80,12 +80,12 @@ jobs:
   # Update metrics-gathering code
   Metrics:
     machine:
-      image: ubuntu-1604:201903-01
+      image: ubuntu-2004:202107-02
     working_directory: ~/repo
     steps:
       - checkout
       # Install Python things
-      - run: pyenv global 3.6.5
+      - run: pyenv global 3.9.4
       - run: pip3 install -U pip awscli
       # Push metrics thing
       - run: make live-metrics
