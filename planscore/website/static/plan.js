@@ -36,14 +36,20 @@ var FIELDS = [
     'US President 2020 - REP',
     'US President 2016 - DEM',
     'US President 2016 - REP',
-    'US Senate 2020 - DEM',
-    'US Senate 2020 - REP',
-    'US Senate 2018 - DEM',
-    'US Senate 2018 - REP',
-    'US Senate 2016 - DEM',
-    'US Senate 2016 - REP',
     /*, 'Polsby-Popper', 'Reock'*/
 ];
+
+if(typeof location !== 'undefined' && location.hash.match(/\bshowall\b/))
+{
+    FIELDS = FIELDS.concat([
+        'US Senate 2020 - DEM',
+        'US Senate 2020 - REP',
+        'US Senate 2018 - DEM',
+        'US Senate 2018 - REP',
+        'US Senate 2016 - DEM',
+        'US Senate 2016 - REP',
+    ]);
+}
 
 const votesFieldToDisplayStr = {
     'Democratic Votes': 'Democratic Votes',
