@@ -75,6 +75,22 @@ class TestPolygonize (unittest.TestCase):
             diamonds[6].GetArea() - diamonds[5].GetArea() + diamonds[4].GetArea() - diamonds[3].GetArea() + diamonds[2].GetArea() - diamonds[1].GetArea() + diamonds[0].GetArea()
         )
     
+    def test_linestrings_to_multipolygon_mixed(self):
+        '''
+        '''
+        pieces = [
+            osgeo.ogr.CreateGeometryFromWkt('point(0 0)'),
+            osgeo.ogr.CreateGeometryFromWkt('linestring(0 0, 1 0)'),
+            osgeo.ogr.CreateGeometryFromWkt('multilinestring((0 0, 0 1), (1 0, 1 1))'),
+            osgeo.ogr.CreateGeometryFromWkt('multipoint(0 1, 1 1)'),
+            osgeo.ogr.CreateGeometryFromWkt('geometrycollection(linestring(0 1, 1 1))'),
+        ]
+
+        self.assertAlmostEqual(
+            polygonize.linestrings_to_multipolygon(pieces).GetArea(),
+            1
+        )
+    
     def test_polygonize_district(self):
         '''
         '''

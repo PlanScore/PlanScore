@@ -18,8 +18,10 @@ import shapely.wkt
 from . import constants, data
 
 logging.basicConfig(level=logging.INFO)
+osgeo.ogr.UseExceptions()
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_POLYGONIZE', 'PlanScore-Polygonize')
+LINE_CONTAINERS = osgeo.ogr.wkbMultiLineString, osgeo.ogr.wkbGeometryCollection
 
 def load_assignment_block_ids(storage, assignment_key):
     ''' 
@@ -94,7 +96,15 @@ def linestrings_to_multipolygon(linestrings):
 
     multiline = osgeo.ogr.Geometry(osgeo.ogr.wkbMultiLineString)
     for linestring in linestrings:
-        multiline.AddGeometry(linestring)
+        if linestring.GetGeometryType() == osgeo.ogr.wkbLineString:
+            # Add the expected line
+            multiline.AddGeometry(linestring)
+        elif linestring.GetGeometryType() in LINE_CONTAINERS:
+            # find eligible lines to add
+            for i in range(linestring.GetGeometryCount()):
+                part = linestring.GetGeometryRef(i)
+                if part.GetGeometryType() == osgeo.ogr.wkbLineString:
+                    multiline.AddGeometry(part)
 
     # BuildPolygonFromEdges() returns multi-ring polygon instead of multipolygon
     unpolygon = osgeo.ogr.BuildPolygonFromEdges(multiline)
