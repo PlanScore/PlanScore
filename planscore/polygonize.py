@@ -13,7 +13,6 @@ import itertools
 import boto3
 import networkx
 import osgeo.ogr
-import shapely.wkt
 
 from . import constants, data
 
@@ -77,7 +76,7 @@ def assemble_graph(s3, state_code, block_ids):
     print('Polygonize assemble_graph() for {}-block district'.format(len(block_ids)))
     
     county_keys = {
-        'data/{}/graphs/2020/{}-tabblock.pickle.gz'.format(state_code, block_id[:5])
+        'data/{}/graphs/2020-WKB/{}-tabblock.pickle.gz'.format(state_code, block_id[:5])
         for block_id in block_ids
     }
 
@@ -167,8 +166,7 @@ def polygonize_district(node_ids, graph):
 
     linestrings = []
     for (node1, node2) in boundary:
-        # TODO: store WKB or WKT in pickle, not shapely geometry objects
-        line = osgeo.ogr.CreateGeometryFromWkt(shapely.wkt.dumps(graph.edges[(node1, node2)]['line']))
+        line = osgeo.ogr.CreateGeometryFromWkb(graph.edges[(node1, node2)]['line'])
         if line.GetGeometryCount() == 0:
             linestrings.append(line)
         else:

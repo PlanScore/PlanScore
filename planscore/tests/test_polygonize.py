@@ -94,7 +94,7 @@ class TestPolygonize (unittest.TestCase):
     def test_polygonize_district(self):
         '''
         '''
-        path = os.path.join(os.path.dirname(__file__), 'data', 'XX-graphs', '2020', '00000-tabblock.pickle.gz')
+        path = os.path.join(os.path.dirname(__file__), 'data', 'XX-graphs', '2020-WKB', '00000-tabblock.pickle.gz')
         graph = networkx.read_gpickle(path)
 
         node_ids1 = ['0000000004', '0000000008', '0000000009', '0000000010']
