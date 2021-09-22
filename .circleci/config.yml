@@ -60,7 +60,7 @@ jobs:
           at: ~/repo
       - run: make live-deploy
 
-  # Deploy to scenarios preview site!
+  # Deploy to preview site!
   Dev-Deploy:
     machine:
       image: ubuntu-2004:202101-01
@@ -100,7 +100,7 @@ workflows:
             branches:
               only:
                 - main
-                - spncr/development
+                - development
       - Dev-Deploy:
           requires:
             - Test
@@ -108,7 +108,7 @@ workflows:
           filters:
             branches:
               only:
-                - spncr/development
+                - development
       - Deploy:
           requires:
             - Test
