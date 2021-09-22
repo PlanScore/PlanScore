@@ -660,6 +660,71 @@ function show_metrics_table(plan, metrics_table)
         </tbody>`;
 }
 
+function show_library_metadata(plan, metadata_el, geom_prefix)
+{
+    var links = [
+        {
+            text: 'Authoritative Link',
+            href: plan.library_metadata['authoritative_link'],
+            img: window.metadata_link_img_url,
+            alt: "authoritative link for this plan"
+        },
+        {
+            text: 'Preceding Enacted Plan',
+            href: plan.library_metadata['predecessor_link'],
+            img: window.metadata_arrow_img_url,
+            alt: "link to the preceding enacted plan"
+        },
+        {
+            text: 'Shapefile',
+            href: plan.library_metadata['shapefile_file'],
+            img: window.metadata_file_img_url,
+            alt: "link to a shapefile download"
+        },
+        {
+            text: 'Block Assignment File',
+            href: plan.library_metadata['blockassign_file'],
+            img: window.metadata_file_img_url,
+            alt: "link to a block assignment file download"
+        },
+        {
+            text: 'Preview GeoJSON',
+            href: geom_prefix + plan.geometry_key,
+            img: window.metadata_file_img_url,
+            alt: "link to a geojson download"
+        },
+    ];
+    
+    for(node = metadata_el.firstChild; node = node.nextSibling; node)
+    {
+        if(node.nodeName == 'DIV' && node.className == 'link-grid') {
+            clear_element(node);
+
+            for(var i = 0; i < links.length; i++)
+            {
+                if(!links[i].href)
+                    continue;
+                
+                var a = document.createElement('a');
+                a.href = links[i].href;
+                a.innerHTML = `
+                    ${links[i].text}
+                    <img width="20" height="20" src="${links[i].img}" alt="${links[i].alt}"/>
+                `;
+                node.appendChild(a);
+            }
+        } else if(node.nodeName == 'DIV' && node.className == 'notes') {
+            if(plan.library_metadata['notes']) {
+                node.innerHTML = plan.library_metadata['notes'];
+            } else {
+                node.innerHTML = '<i>N/A</i>';
+            }
+        }
+    }
+    
+    console.log(links);
+}
+
 function update_heading_titles(head)
 {
     var dem_index = head.indexOf('Democratic Votes'),
@@ -1067,13 +1132,13 @@ function plan_has_incumbency(plan)
 }
 
 function start_load_plan_polling(url, message_section, score_section,
-    description_el, model_link, model_footnote, model_url_pattern,
+    description_el, metadata_el, model_link, model_footnote, model_url_pattern,
     districts_table, metrics_table, score_EG, score_PB, score_MM, score_DEC2,
     score_sense, text_url, text_link, geom_prefix, map_div, seat_count)
 {
     const make_xhr = () => {
         load_plan_score(url, message_section, score_section,
-            description_el, model_link, model_footnote, model_url_pattern,
+            description_el, metadata_el, model_link, model_footnote, model_url_pattern,
             districts_table, metrics_table, score_EG, score_PB, score_MM,
             score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div,
             seat_count, xhr_retry_callback);
@@ -1090,7 +1155,7 @@ function start_load_plan_polling(url, message_section, score_section,
 }
 
 function load_plan_score(url, message_section, score_section,
-    description_el, model_link, model_footnote, model_url_pattern,
+    description_el, metadata_el, model_link, model_footnote, model_url_pattern,
     districts_table, metrics_table, score_EG, score_PB, score_MM, score_DEC2,
     score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
     xhr_retry_callback)
@@ -1257,6 +1322,12 @@ function load_plan_score(url, message_section, score_section,
         }
 
         show_metrics_table(plan, metrics_table);
+        
+        if('library_metadata' in plan && plan['library_metadata']) {
+            show_library_metadata(plan, metadata_el, geom_prefix);
+        } else {
+            metadata_el.style.display = 'none';
+        }
 
         // Go on to load the map.
         load_plan_map(geom_prefix + plan.geometry_key, map_div, plan, districts_table);
