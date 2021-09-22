@@ -62,10 +62,12 @@ def lambda_handler(event, context):
             print(f"Could not read description and incumbents from {event['body']}.")
             description = None
             incumbents = None
+            library_metadata = None
         else:
             print(f"Read description and incumbents from {event['body']}...")
             description = body.get('description', None)
             incumbents = body.get('incumbents', None)
+            library_metadata = body.get('library_metadata', None)
 
         response = {
             'statusCode': '200',
@@ -84,6 +86,7 @@ def lambda_handler(event, context):
         prior_upload = observe.get_upload_index(storage, temp_upload.index_key())
         description = query['description']
         incumbents = ordered_incumbents(query)
+        library_metadata = None
 
         response = {
             'statusCode': '302',
@@ -95,6 +98,7 @@ def lambda_handler(event, context):
         message = 'Scoring: Starting analysis.',
         description = description,
         incumbents = incumbents,
+        library_metadata = library_metadata,
     )
     observe.put_upload_index(storage, upload)
     

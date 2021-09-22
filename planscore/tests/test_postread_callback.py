@@ -109,7 +109,8 @@ class TestPostreadCallback (unittest.TestCase):
             'requestContext': {'authorizer': {'planscoreApiToken': 'yup'}},
             'body': '''{
                 "description": "A fine new plan",
-                "incumbents": ["R", "D"]
+                "incumbents": ["R", "D"],
+                "library_metadata": {"Hello": "World"}
             }''',
         }
         response = postread_callback.lambda_handler(event, None)
@@ -130,6 +131,7 @@ class TestPostreadCallback (unittest.TestCase):
         self.assertIn(b'"bucket": "planscore-bucket"', lambda_dict['Payload'])
         self.assertIn(b'"description": "A fine new plan"', lambda_dict['Payload'])
         self.assertIn(b'"incumbents": ["R", "D"]', lambda_dict['Payload'])
+        self.assertIn(b'"library_metadata": {"Hello": "World"}', lambda_dict['Payload'])
     
     @unittest.mock.patch('planscore.postread_callback.dummy_upload')
     @unittest.mock.patch('boto3.client')
