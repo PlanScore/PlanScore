@@ -148,11 +148,8 @@
             <a href="{{planscore_website_base}}/about/historical-data/">historical dataset</a>.
     </small></p>
 
-    <ul id="library-metadata">
-    </ul>
-
-    <section>
-      <h2>Explore plan resources.</h2>
+    <section id="library-metadata">
+      <h2>Explore Plan Resources</h2>
       <hr class="no-margin-bottom"/>
 
       <div class="link-grid">
@@ -169,10 +166,7 @@
           <img  width=20 height=20 src="{{planscore_website_base}}/images/download.svg" alt="link to a geojson download"/>
         </a>
       </div>
-    </section>
 
-    <!-- Remove this entire section if no notes were added -->
-    <section>
       <h2>Notes</h2>
       <hr />
       <div class="notes">
@@ -181,16 +175,17 @@
         <!--This is a flexible space for plan uploader notes, can we create a new field on upload for these notes? -->
       </div>
     </section>
-    <!-- end notes section -->
 
-    </section>
-
+    {#
     <nav class="content-footer">
       <a class="btn btn-primary" href="/library">Back to Plan Library</a>
       <a class="btn btn-primary" href="/library/#"> <!-- needs a %state_name -->
         View all <!-- %state_name --> Redistricting Plans
       </a>
     </nav>
+    #}
+
+    </section>
 
 	<script language="javascript">
 	    var LEAN_BLUE_PATTERN_URL = "{{ url_for('static', filename='lean-blue-pattern.png') }}",
@@ -207,6 +202,9 @@
 	        pb_metric_url = '{{planscore_website_base}}/metrics/partisanbias/',
 	        mm_metric_url = '{{planscore_website_base}}/metrics/meanmedian/',
 	        d2_metric_url = '{{planscore_website_base}}/metrics/declination/',
+	        metadata_link_img_url = '{{planscore_website_base}}/images/external-link.svg',
+	        metadata_arrow_img_url = '{{planscore_website_base}}/arrow-right.svg',
+	        metadata_file_img_url = '{{planscore_website_base}}/images/download.svg',
 	        model_url_pattern = '{{ url_for("get_model_description", prefix="data/2020") }}';
 
 	    start_load_plan_polling(

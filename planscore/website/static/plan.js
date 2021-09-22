@@ -662,14 +662,67 @@ function show_metrics_table(plan, metrics_table)
 
 function show_library_metadata(plan, metadata_el, geom_prefix)
 {
-    clear_element(metadata_el);
-
-    for(var key in plan.library_metadata)
+    var links = [
+        {
+            text: 'Authoritative Link',
+            href: plan.library_metadata['authoritative_link'],
+            img: window.metadata_link_img_url,
+            alt: "authoritative link for this plan"
+        },
+        {
+            text: 'Preceding Enacted Plan',
+            href: plan.library_metadata['predecessor_link'],
+            img: window.metadata_arrow_img_url,
+            alt: "link to the preceding enacted plan"
+        },
+        {
+            text: 'Shapefile',
+            href: plan.library_metadata['shapefile_file'],
+            img: window.metadata_file_img_url,
+            alt: "link to a shapefile download"
+        },
+        {
+            text: 'Block Assignment File',
+            href: plan.library_metadata['blockassign_file'],
+            img: window.metadata_file_img_url,
+            alt: "link to a block assignment file download"
+        },
+        {
+            text: 'Preview GeoJSON',
+            href: geom_prefix + plan.geometry_key,
+            img: window.metadata_file_img_url,
+            alt: "link to a geojson download"
+        },
+    ];
+    
+    for(node = metadata_el.firstChild; node = node.nextSibling; node)
     {
-        var li = document.createElement('li');
-        li.innerHTML = `${key}: <i>${plan.library_metadata[key]}</i>`;
-        metadata_el.appendChild(li);
+        if(node.nodeName == 'DIV' && node.className == 'link-grid') {
+            clear_element(node);
+
+            for(var i = 0; i < links.length; i++)
+            {
+                if(!links[i].href)
+                    continue;
+                
+                var a = document.createElement('a');
+                a.href = links[i].href;
+                a.innerHTML = `
+                    ${links[i].text}
+                    <img width="20" height="20" src="${links[i].img}" alt="${links[i].alt}"/>
+                `;
+                node.appendChild(a);
+            }
+        } else if(node.nodeName == 'DIV' && node.className == 'notes') {
+            if(plan.library_metadata['notes']) {
+                node.innerHTML = plan.library_metadata['notes'];
+            } else {
+                node.innerHTML = '<i>N/A</i>';
+            }
+        }
     }
+    
+    console.log(links);
 }
 
 function update_heading_titles(head)
@@ -1270,7 +1323,7 @@ function load_plan_score(url, message_section, score_section,
 
         show_metrics_table(plan, metrics_table);
         
-        if('library_metadata' in plan && plan['library_metadata'] && location.hash.match(/\bshowall\b/)) {
+        if('library_metadata' in plan && plan['library_metadata']) {
             show_library_metadata(plan, metadata_el, geom_prefix);
         } else {
             metadata_el.style.display = 'none';
