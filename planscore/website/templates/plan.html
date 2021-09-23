@@ -138,7 +138,12 @@
             plan metrics are featured in our
             <a href="{{planscore_website_base}}/about/historical-data/">historical dataset</a>.
     </small></p>
+
+    <ul id="library-metadata">
+    </ul>
+
     </section>
+
 	<script language="javascript">
 	    var LEAN_BLUE_PATTERN_URL = "{{ url_for('static', filename='lean-blue-pattern.png') }}",
 	        LEAN_RED_PATTERN_URL = "{{ url_for('static', filename='lean-red-pattern.png') }}",
@@ -156,10 +161,12 @@
 	        d2_metric_url = '{{planscore_website_base}}/metrics/declination/',
 	        model_url_pattern = '{{ url_for("get_model_description", prefix="data/2020") }}';
 
-	    start_load_plan_polling(plan_url,
+	    start_load_plan_polling(
+	        plan_url,
 	        document.getElementById('message'),
 	        document.getElementById('plan-score'),
 	        document.getElementById('plan-description'),
+	        document.getElementById('library-metadata'),
 	        document.getElementById('plan-model-link'),
 	        document.getElementById('plan-model-footnote'),
 	        model_url_pattern,
@@ -170,11 +177,12 @@
 	        document.getElementById('score-mean-median'),
 	        document.getElementById('score-declination'),
 	        document.getElementById('score-sensitivity'),
-	        text_url, document.getElementById('text-link'),
+	        text_url,
+	        document.getElementById('text-link'),
 	        geom_prefix,
 	        document.getElementById('map'),
 	        document.getElementById('plan-seat-count')
-	        );
+        );
 	</script>
 
 	{% include 'olark-embed.html' %}

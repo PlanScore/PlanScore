@@ -652,6 +652,18 @@ function show_metrics_table(plan, metrics_table)
         </tbody>`;
 }
 
+function show_library_metadata(plan, metadata_el, geom_prefix)
+{
+    clear_element(metadata_el);
+
+    for(var key in plan.library_metadata)
+    {
+        var li = document.createElement('li');
+        li.innerHTML = `${key}: <i>${plan.library_metadata[key]}</i>`;
+        metadata_el.appendChild(li);
+    }
+}
+
 function update_heading_titles(head)
 {
     var dem_index = head.indexOf('Democratic Votes'),
@@ -1050,13 +1062,13 @@ function plan_has_incumbency(plan)
 }
 
 function start_load_plan_polling(url, message_section, score_section,
-    description_el, model_link, model_footnote, model_url_pattern,
+    description_el, metadata_el, model_link, model_footnote, model_url_pattern,
     districts_table, metrics_table, score_EG, score_PB, score_MM, score_DEC2,
     score_sense, text_url, text_link, geom_prefix, map_div, seat_count)
 {
     const make_xhr = () => {
         load_plan_score(url, message_section, score_section,
-            description_el, model_link, model_footnote, model_url_pattern,
+            description_el, metadata_el, model_link, model_footnote, model_url_pattern,
             districts_table, metrics_table, score_EG, score_PB, score_MM,
             score_DEC2, score_sense, text_url, text_link, geom_prefix, map_div,
             seat_count, xhr_retry_callback);
@@ -1073,7 +1085,7 @@ function start_load_plan_polling(url, message_section, score_section,
 }
 
 function load_plan_score(url, message_section, score_section,
-    description_el, model_link, model_footnote, model_url_pattern,
+    description_el, metadata_el, model_link, model_footnote, model_url_pattern,
     districts_table, metrics_table, score_EG, score_PB, score_MM, score_DEC2,
     score_sense, text_url, text_link, geom_prefix, map_div, seat_count,
     xhr_retry_callback)
@@ -1221,6 +1233,12 @@ function load_plan_score(url, message_section, score_section,
         
         show_metrics_table(plan, metrics_table);
         
+        if('library_metadata' in plan && plan['library_metadata'] && location.hash.match(/\bshowall\b/)) {
+            show_library_metadata(plan, metadata_el, geom_prefix);
+        } else {
+            metadata_el.style.display = 'none';
+        }
+
         // Go on to load the map.
         load_plan_map(geom_prefix + plan.geometry_key, map_div, plan, districts_table);
     }
