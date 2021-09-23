@@ -432,6 +432,17 @@ class PlanScoreScoring(cdk.Stack):
         grant_function_invoke(run_tile, 'FUNC_NAME_RUN_TILE', postread_calculate)
         grant_function_invoke(run_slice, 'FUNC_NAME_RUN_SLICE', postread_calculate)
 
+        postread_intermediate = aws_lambda.Function(
+            self,
+            "PostreadIntermediate",
+            handler="lambda.postread_intermediate",
+            memory_size=1024,
+            **function_kwargs
+        )
+
+        grant_data_bucket_access(data_bucket, postread_intermediate)
+        grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', postread_intermediate)
+
         preread_followup = aws_lambda.Function(
             self,
             "PrereadFollowup",
@@ -514,6 +525,7 @@ class PlanScoreScoring(cdk.Stack):
 
         grant_data_bucket_access(data_bucket, postread_callback)
         grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', postread_callback)
+        grant_function_invoke(postread_intermediate, 'FUNC_NAME_POSTREAD_INTERMEDIATE', postread_callback)
         postread_callback.add_permission('Permission', principal=apigateway_role)
 
         return (

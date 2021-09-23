@@ -6,7 +6,7 @@ More details on "success_action_redirect" in browser-based S3 uploads:
     http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-post-example.html
 '''
 import boto3, itsdangerous, urllib.parse, json, re
-from . import postread_calculate, constants, util, website, data, score, observe, preread, preread_followup
+from . import postread_calculate, constants, util, website, data, score, observe, preread, postread_intermediate
 
 def dummy_upload(key, id):
     '''
@@ -54,21 +54,6 @@ def lambda_handler(event, context):
 
     if 'planscoreApiToken' in authorizer:
         # POST request arrived via API request, no index yet exists
-        initial_upload = preread.create_upload(s3, query['bucket'], query['key'], id)
-        prior_upload = preread_followup.commence_upload_parsing(s3, lam, query['bucket'], initial_upload)
-        try:
-            body = json.loads(event['body'])
-        except:
-            print(f"Could not read description and incumbents from {event['body']}.")
-            description = None
-            incumbents = None
-            library_metadata = None
-        else:
-            print(f"Read description and incumbents from {event['body']}...")
-            description = body.get('description', None)
-            incumbents = body.get('incumbents', None)
-            library_metadata = body.get('library_metadata', None)
-
         response = {
             'statusCode': '200',
             'body': json.dumps({
@@ -79,20 +64,33 @@ def lambda_handler(event, context):
                 'plan_url': get_redirect_url(website_base, id),
             }, indent=2),
         }
+    
+        upload = preread.create_upload(s3, query['bucket'], query['key'], id)
+        observe.put_upload_index(storage, upload)
 
-    else:
-        # GET request came unauthenticated from a browser after annotation step
-        temp_upload = dummy_upload(query['key'], id)
-        prior_upload = observe.get_upload_index(storage, temp_upload.index_key())
-        description = query['description']
-        incumbents = ordered_incumbents(query)
-        library_metadata = None
+        event = dict(bucket=query['bucket'], callback_body=event['body'])
+        event.update(upload.to_dict())
 
-        response = {
-            'statusCode': '302',
-            'headers': {'Location': get_redirect_url(website_base, id)},
-            'body': '',
-        }
+        lam.invoke(
+            FunctionName=postread_intermediate.FUNCTION_NAME,
+            InvocationType='Event',
+            Payload=json.dumps(event).encode('utf8'),
+        )
+    
+        return response
+
+    # GET request came unauthenticated from a browser after annotation step
+    temp_upload = dummy_upload(query['key'], id)
+    prior_upload = observe.get_upload_index(storage, temp_upload.index_key())
+    description = query['description']
+    incumbents = ordered_incumbents(query)
+    library_metadata = None
+
+    response = {
+        'statusCode': '302',
+        'headers': {'Location': get_redirect_url(website_base, id)},
+        'body': '',
+    }
     
     upload = prior_upload.clone(
         message = 'Scoring: Starting analysis.',
