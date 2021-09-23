@@ -3,6 +3,7 @@ from planscore.preread import lambda_handler as preread
 from planscore.preread_followup import lambda_handler as preread_followup
 from planscore.postread_callback import lambda_handler as postread_callback
 from planscore.postread_calculate import lambda_handler as postread_calculate
+from planscore.postread_intermediate import lambda_handler as postread_intermediate
 from planscore.run_tile import lambda_handler as run_tile
 from planscore.run_slice import lambda_handler as run_slice
 from planscore.observe import lambda_handler as observe_tiles

@@ -1,4 +1,4 @@
-import unittest, unittest.mock, os, urllib.parse
+import unittest, unittest.mock, os, urllib.parse, json
 from .. import postread_callback, data, constants
 
 class TestPostreadCallback (unittest.TestCase):
@@ -86,10 +86,9 @@ class TestPostreadCallback (unittest.TestCase):
         self.assertIn(b'"description": "A fine new plan"', lambda_dict['Payload'])
         self.assertIn(b'"incumbents": ["D", "R"]', lambda_dict['Payload'])
 
-    @unittest.mock.patch('planscore.preread_followup.commence_upload_parsing')
     @unittest.mock.patch('planscore.preread.create_upload')
     @unittest.mock.patch('boto3.client')
-    def test_lambda_handler_authorized(self, boto3_client, create_upload, commence_upload_parsing):
+    def test_lambda_handler_authorized(self, boto3_client, create_upload):
         ''' Lambda event triggers the right call to dummy_upload()
         '''
         query = {'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson',
@@ -102,7 +101,6 @@ class TestPostreadCallback (unittest.TestCase):
             query['id'], query['key'], description=query['description'],
         )
         create_upload.return_value = the_upload
-        commence_upload_parsing.return_value = the_upload
         
         event = {
             'queryStringParameters': query,
@@ -116,22 +114,21 @@ class TestPostreadCallback (unittest.TestCase):
         response = postread_callback.lambda_handler(event, None)
 
         self.assertEqual(create_upload.mock_calls[0][1][1:], (query['bucket'], query['key'], 'id'))
-        self.assertEqual(commence_upload_parsing.mock_calls[0][1][2:], (query['bucket'], the_upload))
         
         self.assertEqual(response['statusCode'], '200')
         self.assertIn('"index_url"', response['body'])
         self.assertIn('"plan_url"', response['body'])
         
         lambda_dict = boto3_client.return_value.invoke.mock_calls[0][2]
+        payload = json.loads(lambda_dict['Payload'])
         
-        self.assertEqual(lambda_dict['FunctionName'], 'PlanScore-PostreadCalculate')
+        self.assertEqual(lambda_dict['FunctionName'], 'PlanScore-PostreadIntermediate')
         self.assertEqual(lambda_dict['InvocationType'], 'Event')
-        self.assertIn(b'"id": "id.k0_XwbOLGLUdv241zsPluNc3HYs"', lambda_dict['Payload'])
-        self.assertIn(b'"key": "uploads/id/upload/file.geojson"', lambda_dict['Payload'])
-        self.assertIn(b'"bucket": "planscore-bucket"', lambda_dict['Payload'])
-        self.assertIn(b'"description": "A fine new plan"', lambda_dict['Payload'])
-        self.assertIn(b'"incumbents": ["R", "D"]', lambda_dict['Payload'])
-        self.assertIn(b'"library_metadata": {"Hello": "World"}', lambda_dict['Payload'])
+        self.assertEqual(payload['id'], "id.k0_XwbOLGLUdv241zsPluNc3HYs")
+        self.assertEqual(payload['bucket'], "planscore-bucket")
+        self.assertIn('"description": "A fine new plan"', payload['callback_body'])
+        self.assertIn('"incumbents": ["R", "D"]', payload['callback_body'])
+        self.assertIn('"library_metadata": {"Hello": "World"}', payload['callback_body'])
     
     @unittest.mock.patch('planscore.postread_callback.dummy_upload')
     @unittest.mock.patch('boto3.client')
