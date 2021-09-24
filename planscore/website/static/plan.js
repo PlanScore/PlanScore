@@ -1438,7 +1438,13 @@ function load_plan_map(url, div, plan, table)
 
         // Add a GeoJSON layer and fit it into view
         geojson.addTo(map);
-        map.fitBounds(geojson.getBounds());
+        if(plan.model.state == 'AK') {
+            map.fitBounds(L.latLngBounds(L.latLng(54.6, -128.8), L.latLng(71.2, -174.1)));
+        } else if(plan.model.state == 'HI') {
+            map.fitBounds(L.latLngBounds(L.latLng(18.6, -154.3), L.latLng(22.5, -160.2)));
+        } else {
+            map.fitBounds(geojson.getBounds());
+        }
 
         // Add Toner label tiles for base map
         L.tileLayer('https://stamen-tiles.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}{r}.png', {
