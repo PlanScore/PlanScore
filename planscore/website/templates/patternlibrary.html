@@ -3,7 +3,7 @@
 <head>
     <title>PlanScore :: {% block title %}{% endblock %}</title>
 
-    
+
     <!-- Viewport meta tags -->
     <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
     <meta charset='utf-8' />
@@ -18,9 +18,10 @@
     <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 
 
-    <!-- PlanScore Website Framework -->    
+    <!-- PlanScore Website Framework -->
     <link href="{{planscore_website_base}}/sitewide.css" rel="stylesheet" />
     <script src="{{planscore_website_base}}/sitewide.js"></script>
+    <script src="{{planscore_website_base}}/global.js"></script>
     <link href="{{planscore_website_base}}/images/favicon.svg" rel="icon" type="image/svg+xml">
 
     <!-- OG tags -->
@@ -39,7 +40,7 @@
 </head>
 <body>
 
-    
+
     <nav class="navbar navbar-default">
         <div class="container">
             <div class="navbar-header">
@@ -53,6 +54,7 @@
             </div>
             <div class="collapse navbar-collapse" id="navbar">
                 <ul class="nav navbar-nav navbar-right">
+                    <li><a href="/library">View the Library</a></li>
                     <li><a href="{{ url_for('get_upload') }}">Score a Plan</a></li>
                     <li><a href="{{planscore_website_base}}/about/">What is PlanScore?</a></li>
                 </ul>
@@ -65,11 +67,11 @@
         {% block content %}{% endblock %}
     </div><!--/container-mainbody-->
 
-    
+
     <div class="footer">
     <div class="callout">
       <a href="https://campaignlegal.org" title="Visit Campaign Legal Center">
-        <img src="{{planscore_website_base}}/images/CLC-logo.svg" alt="Campaign Legal Center Logo" />
+        <img src="{{planscore_website_base}}/images/CLC-logo.svg" class="logo" alt="Campaign Legal Center Logo" />
       </a>
       <p>
         PlanScore is a project of Campaign Legal Center.
@@ -158,7 +160,7 @@
 
       gtag('config', 'UA-65629552-4');
     </script>
-    
+
 
 </body>
 </html>

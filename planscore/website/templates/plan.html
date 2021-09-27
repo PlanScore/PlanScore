@@ -33,7 +33,10 @@
         <p>Loading district plan</p>
     </section>
     <section id="plan-score">
-    <div id="plan-description"><h3>(Loading)</h3></div>
+    <div id="plan-description">
+      <h1>(Loading)</h1>
+      <hr class="no-margin-bottom"/>
+    </div>
     <p style="display:none">
         This plan has <span id="plan-seat-count">N seats</span>.
         Fairness metrics for plans with fewer than seven seats should be interpreted with great caution.
@@ -47,6 +50,8 @@
     </p>
 
     {# these list items will be populated by load_plan_score() #}
+    <h2>Charts and Graphs</h2>
+    <hr />
 
     <ul class="row" id="scores-box">
         <li class="col-md-4" id="score-efficiency-gap">
@@ -109,7 +114,11 @@
             <p>Not enough information to calculate this score.</p>
         </li>
     </ul>
+    <h2>District Map</h2>
+    <hr />
     <p id="map"></p>
+    <h2>District Data</h2>
+    <hr />
     <div class="col-xs-12 col-sm-12  table-jehl table-districts">
         <table class="table table-hover" id="districts">
             {# this table will be populated by load_plan_score() #}
@@ -139,8 +148,42 @@
             <a href="{{planscore_website_base}}/about/historical-data/">historical dataset</a>.
     </small></p>
 
-    <ul id="library-metadata">
-    </ul>
+    <section id="library-metadata">
+      <h2>Explore Plan Resources</h2>
+      <hr class="no-margin-bottom"/>
+
+      <div class="link-grid">
+        <a href="#">Authoritative Link <!-- needs %authlink -->
+          <img width=20 height=20 src="{{planscore_website_base}}/images/external-link.svg" alt="authoritative link for this plan"/>
+        </a>
+        <a href="#">Preceding Enacted Plan <!-- needs %precedinglink -->
+          <img  width=20 height=20 src="{{planscore_website_base}}/images/arrow-right.svg" alt="link to the preceding enacted plan" />
+        </a>
+        <a href="#">Shapefile <!-- needs %shapelink  -->
+          <img width=20 height=20 src="{{planscore_website_base}}/images/download.svg" alt="link to a shape file download"/>
+        </a>
+        <a href="#">preview.geojson <!-- needs %geosonlink -->
+          <img  width=20 height=20 src="{{planscore_website_base}}/images/download.svg" alt="link to a geojson download"/>
+        </a>
+      </div>
+
+      <h2>Notes</h2>
+      <hr />
+      <div class="notes">
+        <!-- needs %plan_notes -->
+        <i>Notes will appear here, if they exist</i>
+        <!--This is a flexible space for plan uploader notes, can we create a new field on upload for these notes? -->
+      </div>
+    </section>
+
+    {#
+    <nav class="content-footer">
+      <a class="btn btn-primary" href="/library">Back to Plan Library</a>
+      <a class="btn btn-primary" href="/library/#"> <!-- needs a %state_name -->
+        View all <!-- %state_name --> Redistricting Plans
+      </a>
+    </nav>
+    #}
 
     </section>
 
@@ -150,7 +193,7 @@
 	        BLUEISH_PATTERN_URL = "{{ url_for('static', filename='blueish-pattern.png') }}",
 	        REDDISH_PATTERN_URL = "{{ url_for('static', filename='reddish-pattern.png') }}",
 	        UNKNOWN_PATTERN_URL = "{{ url_for('static', filename='unknown-pattern.png') }}";
-	    
+
 	    var plan_id = location.search.replace('?', ''),
 	        plan_url = format_url('{{ data_url_pattern }}', plan_id),
 	        geom_prefix = '{{ geom_url_prefix }}';
@@ -159,6 +202,9 @@
 	        pb_metric_url = '{{planscore_website_base}}/metrics/partisanbias/',
 	        mm_metric_url = '{{planscore_website_base}}/metrics/meanmedian/',
 	        d2_metric_url = '{{planscore_website_base}}/metrics/declination/',
+	        metadata_link_img_url = '{{planscore_website_base}}/images/external-link.svg',
+	        metadata_arrow_img_url = '{{planscore_website_base}}/arrow-right.svg',
+	        metadata_file_img_url = '{{planscore_website_base}}/images/download.svg',
 	        model_url_pattern = '{{ url_for("get_model_description", prefix="data/2020") }}';
 
 	    start_load_plan_polling(
