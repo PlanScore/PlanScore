@@ -160,6 +160,9 @@ class TestScore (unittest.TestCase):
         gap4 = score.calculate_EG((2, 3, 5, 6), (6, 5, 3, 2), 0)
         self.assertAlmostEqual(gap4, gap1, msg='Should see identical EG with unchanged vote swing')
 
+        gap5 = score.calculate_EG((2, 3, 5, 6, 0), (6, 5, 3, 2, 0))
+        self.assertAlmostEqual(gap5, gap1, msg='Should see identical EG with one district missing votes')
+
     def test_calculate_EG_unfair(self):
         ''' Efficiency gap can be correctly calculated for an unfair election
         '''

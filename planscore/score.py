@@ -200,12 +200,13 @@ def calculate_EG(red_districts, blue_districts, vote_swing=0):
         By convention, result is positive for blue and negative for red.
     '''
     swung_red, swung_blue = swing_vote(red_districts, blue_districts, vote_swing)
+    nonzero_districts = [(r, b) for (r, b) in zip(swung_red, swung_blue) if r+b > 0]
 
     district_blue_wins = len([
-        1 for (red_votes, blue_votes) in zip(swung_red, swung_blue)
+        1 for (red_votes, blue_votes) in nonzero_districts
         if blue_votes > red_votes
     ])
-    statewide_seat_share = district_blue_wins / len(swung_blue)
+    statewide_seat_share = district_blue_wins / len(nonzero_districts)
     
     district_raw_blue_votes = sum(swung_blue)
     district_raw_total_votes = sum(swung_red) + district_raw_blue_votes
