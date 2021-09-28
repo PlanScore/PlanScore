@@ -225,8 +225,8 @@ class TestScore (unittest.TestCase):
             msg='Should see +blue PB with 40% blue vote share and 60% blue seats')
 
         pb5 = score.calculate_PB((6, 6, 4, 4, 0), (4, 4, 6, 6, 0))
-        self.assertAlmostEqual(pb5, -.1, places=2,
-            msg='Should see defined PB even when one district is missing votes')
+        self.assertAlmostEqual(pb5, pb1, places=2,
+            msg='Should see zero PB even when one district is missing votes')
 
     def test_calculate_D2(self):
         ''' Declination can be correctly calculated for various elections

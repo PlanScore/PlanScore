@@ -240,10 +240,14 @@ def calculate_PB(red_districts, blue_districts):
     
         By convention, result is positive for blue and negative for red.
     '''
-    red_total, blue_total = sum(red_districts), sum(blue_districts)
+    nonzero_reds, nonzero_blues = zip(*[
+        (r, b) for (r, b) in zip(red_districts, blue_districts) if r+b > 0
+    ])
+    
+    red_total, blue_total = sum(nonzero_reds), sum(nonzero_blues)
     blue_margin = (blue_total - red_total) / (blue_total + red_total)
     
-    reds_5050, blues_5050 = swing_vote(red_districts, blue_districts, -blue_margin/2)
+    reds_5050, blues_5050 = swing_vote(nonzero_reds, nonzero_blues, -blue_margin/2)
     blue_seats = len([True for (R, B) in zip(reds_5050, blues_5050) if R < B])
     blue_seatshare = blue_seats / len(blues_5050)
     blue_voteshare = sum(blues_5050) / (sum(blues_5050) + sum(reds_5050))
