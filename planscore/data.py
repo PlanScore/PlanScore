@@ -455,9 +455,9 @@ MODELS = [
     Model(State.OK, House.ushouse,       5,  True, VERSION, 'data/OK/004-fva-votes'), # 423b365
     Model(State.OK, House.statesenate,  48,  True, VERSION, 'data/OK/004-fva-votes'), # 423b365
     Model(State.OK, House.statehouse,  101,  True, VERSION, 'data/OK/004-fva-votes'), # 423b365
-    Model(State.OR, House.ushouse,       6,  True, VERSION, 'data/OR/003-decennial'), # 4ee6b60
-    Model(State.OR, House.statesenate,  30,  True, VERSION, 'data/OR/003-decennial'), # 4ee6b60
-    Model(State.OR, House.statehouse,   60,  True, VERSION, 'data/OR/003-decennial'), # 4ee6b60
+    Model(State.OR, House.ushouse,       6,  True, VERSION, 'data/OR/004-fva-votes'), # ed7e6db
+    Model(State.OR, House.statesenate,  30,  True, VERSION, 'data/OR/004-fva-votes'), # ed7e6db
+    Model(State.OR, House.statehouse,   60,  True, VERSION, 'data/OR/004-fva-votes'), # ed7e6db
     Model(State.PA, House.ushouse,      17,  True, VERSION, 'data/PA/012-decennial'), # 4ee6b60
     Model(State.PA, House.statesenate,  50,  True, VERSION, 'data/PA/012-decennial'), # 4ee6b60
     Model(State.PA, House.statehouse,  203,  True, VERSION, 'data/PA/012-decennial'), # 4ee6b60
