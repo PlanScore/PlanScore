@@ -200,12 +200,13 @@ def calculate_EG(red_districts, blue_districts, vote_swing=0):
         By convention, result is positive for blue and negative for red.
     '''
     swung_red, swung_blue = swing_vote(red_districts, blue_districts, vote_swing)
+    nonzero_districts = [(r, b) for (r, b) in zip(swung_red, swung_blue) if r+b > 0]
 
     district_blue_wins = len([
-        1 for (red_votes, blue_votes) in zip(swung_red, swung_blue)
+        1 for (red_votes, blue_votes) in nonzero_districts
         if blue_votes > red_votes
     ])
-    statewide_seat_share = district_blue_wins / len(swung_blue)
+    statewide_seat_share = district_blue_wins / len(nonzero_districts)
     
     district_raw_blue_votes = sum(swung_blue)
     district_raw_total_votes = sum(swung_red) + district_raw_blue_votes
@@ -239,10 +240,14 @@ def calculate_PB(red_districts, blue_districts):
     
         By convention, result is positive for blue and negative for red.
     '''
-    red_total, blue_total = sum(red_districts), sum(blue_districts)
+    nonzero_reds, nonzero_blues = zip(*[
+        (r, b) for (r, b) in zip(red_districts, blue_districts) if r+b > 0
+    ])
+    
+    red_total, blue_total = sum(nonzero_reds), sum(nonzero_blues)
     blue_margin = (blue_total - red_total) / (blue_total + red_total)
     
-    reds_5050, blues_5050 = swing_vote(red_districts, blue_districts, -blue_margin/2)
+    reds_5050, blues_5050 = swing_vote(nonzero_reds, nonzero_blues, -blue_margin/2)
     blue_seats = len([True for (R, B) in zip(reds_5050, blues_5050) if R < B])
     blue_seatshare = blue_seats / len(blues_5050)
     blue_voteshare = sum(blues_5050) / (sum(blues_5050) + sum(reds_5050))
