@@ -379,6 +379,14 @@ var head6 = ['Population 2016', 'Black Population 2016', 'Hispanic Population 20
 plan.update_heading_titles(head6)
 assert.deepEqual(head6, ['Pop. 2016', 'Black Pop. 2016', 'Hispanic Pop. 2016']);
 
+var head7 = ['US President 2020 - DEM', 'US President 2020 - REP']
+plan.update_heading_titles(head7)
+assert.deepEqual(head7, ['Biden (D) 2020', 'Trump (R) 2020']);
+
+var head8 = ['US President 2016 - DEM', 'US President 2016 - REP', 'US President 2020 - DEM', 'US President 2020 - REP']
+plan.update_heading_titles(head8)
+assert.deepEqual(head8, [plan.SHY_COLUMN, plan.SHY_COLUMN, 'Biden (D) 2020', 'Trump (R) 2020']);
+
 var row1 = [4, 6];
 plan.update_vote_percentages(['Democratic Votes', 'Republican Votes'], row1, {});
 assert.deepEqual(row1, ['40.0%', '60.0%']);

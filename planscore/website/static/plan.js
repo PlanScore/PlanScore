@@ -1,4 +1,4 @@
-const SHY_COLUMN = 'Hide this column';
+const SHY_COLUMN = 'PlanScore:ShyColumn';
 
 var FIELDS = [
     'Population 2010',
@@ -848,10 +848,17 @@ function update_heading_titles(head)
                 head[i] = newTitle;
             }
         }
+    });
+    
+    // Hide selected shy columns by renaming them to a signal value
+    head.forEach((dataTitle, i) => {
+        if(head[i] == 'Trump (R) 2016' && head.indexOf('Trump (R) 2020') >= 0) {
+            head[i] = SHY_COLUMN;
 
-        // TODO: find a less hacky way to hide CVAP 2019 column while keeping percentage values
-        if(head[i] == 'CVAP 2019')
-        {
+        } else if(head[i] == 'Clinton (D) 2016' && head.indexOf('Biden (D) 2020') >= 0) {
+            head[i] = SHY_COLUMN;
+
+        } else  if(head[i] == 'CVAP 2019') {
             head[i] = SHY_COLUMN;
         }
     });
@@ -1778,5 +1785,6 @@ if(typeof module !== 'undefined' && module.exports)
         update_cvap2015_percentages,
         update_heading_titles,
         calculate_declination2_difference,
+        SHY_COLUMN,
     };
 }
