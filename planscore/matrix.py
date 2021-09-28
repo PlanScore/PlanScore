@@ -159,17 +159,7 @@ def prepare_district_data(upload):
     data = []
     
     for (district, incumbency) in zip(upload.districts, upload.incumbents):
-        if 'US President 2016 - DEM' in district['totals']:
-            total = district['totals']['US President 2016 - DEM'] \
-                  + district['totals']['US President 2016 - REP']
-            try:
-                pvote_2016 = district['totals']['US President 2016 - DEM'] / total
-            except ZeroDivisionError:
-                pvote = -1
-            else:
-                pvote = PVOTE2016_SCALE * pvote_2016 + PVOTE2016_OFFSET
-
-        elif 'US President 2020 - DEM' in district['totals']:
+        if 'US President 2020 - DEM' in district['totals']:
             total = district['totals']['US President 2020 - DEM'] \
                   + district['totals']['US President 2020 - REP']
             try:
@@ -179,6 +169,16 @@ def prepare_district_data(upload):
             else:
                 pvote = PVOTE2020_SCALE * pvote_2020 + PVOTE2020_OFFSET
         
+        elif 'US President 2016 - DEM' in district['totals']:
+            total = district['totals']['US President 2016 - DEM'] \
+                  + district['totals']['US President 2016 - REP']
+            try:
+                pvote_2016 = district['totals']['US President 2016 - DEM'] / total
+            except ZeroDivisionError:
+                pvote = -1
+            else:
+                pvote = PVOTE2016_SCALE * pvote_2016 + PVOTE2016_OFFSET
+
         else:
             raise ValueError('Missing presidential vote columns')
 

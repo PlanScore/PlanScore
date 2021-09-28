@@ -1,4 +1,4 @@
-import argparse, math, itertools, io, gzip, os, json, tempfile, operator
+import argparse, math, itertools, io, gzip, os, json, tempfile, operator, subprocess
 from osgeo import ogr, osr
 import boto3, ModestMaps.Geo, ModestMaps.Core
 from . import constants
@@ -122,18 +122,19 @@ def load_geojson(filename):
     # Make a list with just original properties
     properties_only = [feature['properties'] for feature in features]
     
-    # Create a temporary GeoJSON file with no original properties
-    handle, tmp_path = tempfile.mkstemp(prefix='load_geojson-', suffix='.geojson')
+    # Create a temporary GPKG file with no original properties
+    handle, tmp_path = tempfile.mkstemp(prefix='load_geojson-', suffix='.gpkg')
     os.close(handle)
+    os.remove(tmp_path)
     
-    # Use a floating-point 1.0 for fraction field to avoid integer field type
-    geometry_geojson = {'type': 'FeatureCollection',
-        'features': [{'type': 'Feature', 'geometry': feature['geometry'],
-            'id': index, 'properties': {INDEX_FIELD: index, FRACTION_FIELD: 1.0}}
-            for (index, feature) in enumerate(features)]}
-    
-    with open(tmp_path, 'w') as file2:
-        json.dump(geometry_geojson, file2)
+    subprocess.check_call((
+        'ogr2ogr', '-f', 'GPKG',
+        '-sql', f'''
+            select FID as "{INDEX_FIELD}", 1.0 as "{FRACTION_FIELD}"
+            from "{os.path.splitext(os.path.basename(filename))[0]}"
+        ''',
+        tmp_path, filename,
+    ))
     
     # Return geometry-only OGR datasource and properties-only list
     datasource = ogr.Open(tmp_path)

@@ -354,144 +354,144 @@ VERSION = '2021B'
 
 MODELS = [
     Model(State.XX, House.statehouse,    2,  True, VERSION, 'data/XX/006-tilesdir'), # b8e19879
-    Model(State.AK, House.ushouse,       1,  True, VERSION, 'data/AK/003-decennial'), # 4ee6b60
-    Model(State.AK, House.statesenate,  20,  True, VERSION, 'data/AK/003-decennial'), # 4ee6b60
-    Model(State.AK, House.statehouse,   40,  True, VERSION, 'data/AK/003-decennial'), # 4ee6b60
+    Model(State.AK, House.ushouse,       1,  True, VERSION, 'data/AK/004-fva-votes'), # 423b365
+    Model(State.AK, House.statesenate,  20,  True, VERSION, 'data/AK/004-fva-votes'), # 423b365
+    Model(State.AK, House.statehouse,   40,  True, VERSION, 'data/AK/004-fva-votes'), # 423b365
     Model(State.AL, House.ushouse,       7,  True, VERSION, 'data/AL/003-decennial'), # 4ee6b60
     Model(State.AL, House.statesenate,  35,  True, VERSION, 'data/AL/003-decennial'), # 4ee6b60
     Model(State.AL, House.statehouse,  105,  True, VERSION, 'data/AL/003-decennial'), # 4ee6b60
-    Model(State.AR, House.ushouse,       4,  True, VERSION, 'data/AR/003-decennial'), # 4ee6b60
-    Model(State.AR, House.statesenate,  35,  True, VERSION, 'data/AR/003-decennial'), # 4ee6b60
-    Model(State.AR, House.statehouse,  100,  True, VERSION, 'data/AR/003-decennial'), # 4ee6b60
-    Model(State.AZ, House.ushouse,       9,  True, VERSION, 'data/AZ/006-decennial'), # 4ee6b60
-    Model(State.AZ, House.statesenate,  30,  True, VERSION, 'data/AZ/006-decennial'), # 4ee6b60
-    Model(State.AZ, House.statehouse,   60,  True, VERSION, 'data/AZ/006-decennial'), # 4ee6b60
-    Model(State.CA, House.ushouse,      52,  True, VERSION, 'data/CA/003-decennial'), # 4ee6b60
-    Model(State.CA, House.statesenate,  40,  True, VERSION, 'data/CA/003-decennial'), # 4ee6b60
-    Model(State.CA, House.statehouse,   80,  True, VERSION, 'data/CA/003-decennial'), # 4ee6b60
-    Model(State.CO, House.ushouse,       8,  True, VERSION, 'data/CO/008-decennial'), # 4ee6b60
-    Model(State.CO, House.statesenate,  35,  True, VERSION, 'data/CO/008-decennial'), # 4ee6b60
-    Model(State.CO, House.statehouse,   65,  True, VERSION, 'data/CO/008-decennial'), # 4ee6b60
-    Model(State.CT, House.ushouse,       5,  True, VERSION, 'data/CT/001-decennial'), # 6e1f2f9
-    Model(State.CT, House.statesenate,  36,  True, VERSION, 'data/CT/001-decennial'), # 6e1f2f9
-    Model(State.CT, House.statehouse,  151,  True, VERSION, 'data/CT/001-decennial'), # 6e1f2f9
-    Model(State.DE, House.ushouse,       1,  True, VERSION, 'data/DE/005-decennial'), # 4ee6b60
-    Model(State.DE, House.statesenate,  21,  True, VERSION, 'data/DE/005-decennial'), # 4ee6b60
-    Model(State.DE, House.statehouse,   41,  True, VERSION, 'data/DE/005-decennial'), # 4ee6b60
+    Model(State.AR, House.ushouse,       4,  True, VERSION, 'data/AR/004-fva-votes'), # 423b365
+    Model(State.AR, House.statesenate,  35,  True, VERSION, 'data/AR/004-fva-votes'), # 423b365
+    Model(State.AR, House.statehouse,  100,  True, VERSION, 'data/AR/004-fva-votes'), # 423b365
+    Model(State.AZ, House.ushouse,       9,  True, VERSION, 'data/AZ/007-fva-votes'), # 423b365
+    Model(State.AZ, House.statesenate,  30,  True, VERSION, 'data/AZ/007-fva-votes'), # 423b365
+    Model(State.AZ, House.statehouse,   60,  True, VERSION, 'data/AZ/007-fva-votes'), # 423b365
+    Model(State.CA, House.ushouse,      52,  True, VERSION, 'data/CA/004-2020votes'), # 7737424
+    Model(State.CA, House.statesenate,  40,  True, VERSION, 'data/CA/004-2020votes'), # 7737424
+    Model(State.CA, House.statehouse,   80,  True, VERSION, 'data/CA/004-2020votes'), # 7737424
+    Model(State.CO, House.ushouse,       8,  True, VERSION, 'data/CO/009-fva-votes'), # 423b365
+    Model(State.CO, House.statesenate,  35,  True, VERSION, 'data/CO/009-fva-votes'), # 423b365
+    Model(State.CO, House.statehouse,   65,  True, VERSION, 'data/CO/009-fva-votes'), # 423b365
+    Model(State.CT, House.ushouse,       5,  True, VERSION, 'data/CT/002-fva-votes'), # 6bf8449
+    Model(State.CT, House.statesenate,  36,  True, VERSION, 'data/CT/002-fva-votes'), # 6bf8449
+    Model(State.CT, House.statehouse,  151,  True, VERSION, 'data/CT/002-fva-votes'), # 6bf8449
+    Model(State.DE, House.ushouse,       1,  True, VERSION, 'data/DE/006-fva-votes'), # 6bf8449
+    Model(State.DE, House.statesenate,  21,  True, VERSION, 'data/DE/006-fva-votes'), # 6bf8449
+    Model(State.DE, House.statehouse,   41,  True, VERSION, 'data/DE/006-fva-votes'), # 6bf8449
     Model(State.FL, House.ushouse,      28,  True, VERSION, 'data/FL/005-decennial'), # 4ee6b60
     Model(State.FL, House.statesenate,  40,  True, VERSION, 'data/FL/005-decennial'), # 4ee6b60
     Model(State.FL, House.statehouse,  120,  True, VERSION, 'data/FL/005-decennial'), # 4ee6b60
-    Model(State.GA, House.ushouse,      14,  True, VERSION, 'data/GA/007-decennial'), # 4ee6b60
-    Model(State.GA, House.statesenate,  56,  True, VERSION, 'data/GA/007-decennial'), # 4ee6b60
-    Model(State.GA, House.statehouse,  180,  True, VERSION, 'data/GA/007-decennial'), # 4ee6b60
-    Model(State.HI, House.ushouse,       2,  True, VERSION, 'data/HI/003-decennial'), # 4ee6b60
-    Model(State.HI, House.statesenate,  25,  True, VERSION, 'data/HI/003-decennial'), # 4ee6b60
-    Model(State.HI, House.statehouse,   51,  True, VERSION, 'data/HI/003-decennial'), # 4ee6b60
-    Model(State.IA, House.ushouse,       4,  True, VERSION, 'data/IA/003-decennial'), # 4ee6b60
-    Model(State.IA, House.statesenate,  50,  True, VERSION, 'data/IA/003-decennial'), # 4ee6b60
-    Model(State.IA, House.statehouse,  100,  True, VERSION, 'data/IA/003-decennial'), # 4ee6b60
-    Model(State.ID, House.ushouse,       2,  True, VERSION, 'data/ID/003-decennial'), # 4ee6b60
-    Model(State.ID, House.statesenate,  35,  True, VERSION, 'data/ID/003-decennial'), # 4ee6b60
-    Model(State.ID, House.statehouse,   70,  True, VERSION, 'data/ID/003-decennial'), # 4ee6b60
-    Model(State.IL, House.ushouse,      17,  True, VERSION, 'data/IL/005-decennial'), # 4ee6b60
-    Model(State.IL, House.statesenate,  59,  True, VERSION, 'data/IL/005-decennial'), # 4ee6b60
-    Model(State.IL, House.statehouse,  118,  True, VERSION, 'data/IL/005-decennial'), # 4ee6b60
-    Model(State.IN, House.ushouse,       9,  True, VERSION, 'data/IN/004-2020vote'), # 6f95c55
-    Model(State.IN, House.statesenate,  50,  True, VERSION, 'data/IN/004-2020vote'), # 6f95c55
-    Model(State.IN, House.statehouse,  100,  True, VERSION, 'data/IN/004-2020vote'), # 6f95c55
-    Model(State.KS, House.ushouse,       5,  True, VERSION, 'data/KS/004-decennial'), # 4ee6b60
-    Model(State.KS, House.statesenate,  40,  True, VERSION, 'data/KS/004-decennial'), # 4ee6b60
-    Model(State.KS, House.statehouse,  125,  True, VERSION, 'data/KS/004-decennial'), # 4ee6b60
+    Model(State.GA, House.ushouse,      14,  True, VERSION, 'data/GA/008-fva-votes'), # 423b365
+    Model(State.GA, House.statesenate,  56,  True, VERSION, 'data/GA/008-fva-votes'), # 423b365
+    Model(State.GA, House.statehouse,  180,  True, VERSION, 'data/GA/008-fva-votes'), # 423b365
+    Model(State.HI, House.ushouse,       2,  True, VERSION, 'data/HI/004-fva-votes'), # 423b365
+    Model(State.HI, House.statesenate,  25,  True, VERSION, 'data/HI/004-fva-votes'), # 423b365
+    Model(State.HI, House.statehouse,   51,  True, VERSION, 'data/HI/004-fva-votes'), # 423b365
+    Model(State.IA, House.ushouse,       4,  True, VERSION, 'data/IA/004-fva-votes'), # 423b365
+    Model(State.IA, House.statesenate,  50,  True, VERSION, 'data/IA/004-fva-votes'), # 423b365
+    Model(State.IA, House.statehouse,  100,  True, VERSION, 'data/IA/004-fva-votes'), # 423b365
+    Model(State.ID, House.ushouse,       2,  True, VERSION, 'data/ID/004-fva-votes'), # 423b365
+    Model(State.ID, House.statesenate,  35,  True, VERSION, 'data/ID/004-fva-votes'), # 423b365
+    Model(State.ID, House.statehouse,   70,  True, VERSION, 'data/ID/004-fva-votes'), # 423b365
+    Model(State.IL, House.ushouse,      17,  True, VERSION, 'data/IL/006-fva-votes'), # 423b365
+    Model(State.IL, House.statesenate,  59,  True, VERSION, 'data/IL/006-fva-votes'), # 423b365
+    Model(State.IL, House.statehouse,  118,  True, VERSION, 'data/IL/006-fva-votes'), # 423b365
+    Model(State.IN, House.ushouse,       9,  True, VERSION, 'data/IN/005-fva-votes'), # 423b365
+    Model(State.IN, House.statesenate,  50,  True, VERSION, 'data/IN/005-fva-votes'), # 423b365
+    Model(State.IN, House.statehouse,  100,  True, VERSION, 'data/IN/005-fva-votes'), # 423b365
+    Model(State.KS, House.ushouse,       5,  True, VERSION, 'data/KS/005-fva-votes'), # 423b365
+    Model(State.KS, House.statesenate,  40,  True, VERSION, 'data/KS/005-fva-votes'), # 423b365
+    Model(State.KS, House.statehouse,  125,  True, VERSION, 'data/KS/005-fva-votes'), # 423b365
     Model(State.KY, House.ushouse,       6,  True, VERSION, 'data/KY/002-decennial'), # 4ee6b60
     Model(State.KY, House.statesenate,  38,  True, VERSION, 'data/KY/002-decennial'), # 4ee6b60
     Model(State.KY, House.statehouse,  100,  True, VERSION, 'data/KY/002-decennial'), # 4ee6b60
     Model(State.LA, House.ushouse,       6,  True, VERSION, 'data/LA/003-decennial'), # 4ee6b60
     Model(State.LA, House.statesenate,  39,  True, VERSION, 'data/LA/003-decennial'), # 4ee6b60
     Model(State.LA, House.statehouse,  105,  True, VERSION, 'data/LA/003-decennial'), # 4ee6b60
-    Model(State.MA, House.ushouse,       9,  True, VERSION, 'data/MA/005-2020vote'), # 2fa2d05
-    Model(State.MA, House.statesenate,  40,  True, VERSION, 'data/MA/005-2020vote'), # 2fa2d05
-    Model(State.MA, House.statehouse,  160,  True, VERSION, 'data/MA/005-2020vote'), # 2fa2d05
-    Model(State.MD, House.ushouse,       8,  True, VERSION, 'data/MD/007-2020vote'), # 6f95c55
-    Model(State.MD, House.statesenate,  47,  True, VERSION, 'data/MD/007-2020vote'), # 6f95c55
-    Model(State.MD, House.statehouse,   68,  True, VERSION, 'data/MD/007-2020vote'), # 6f95c55
-    Model(State.ME, House.ushouse,       2,  True, VERSION, 'data/ME/005-decennial'), # 4ee6b60
-    Model(State.ME, House.statesenate,  35,  True, VERSION, 'data/ME/005-decennial'), # 4ee6b60
-    Model(State.ME, House.statehouse,  151,  True, VERSION, 'data/ME/005-decennial'), # 4ee6b60
-    Model(State.MI, House.ushouse,      13,  True, VERSION, 'data/MI/006-decennial'), # 4ee6b60
-    Model(State.MI, House.statesenate,  38,  True, VERSION, 'data/MI/006-decennial'), # 4ee6b60
-    Model(State.MI, House.statehouse,  110,  True, VERSION, 'data/MI/006-decennial'), # 4ee6b60
-    Model(State.MN, House.ushouse,       8,  True, VERSION, 'data/MN/005-decennial'), # 4ee6b60
-    Model(State.MN, House.statesenate,  67,  True, VERSION, 'data/MN/005-decennial'), # 4ee6b60
-    Model(State.MN, House.statehouse,  134,  True, VERSION, 'data/MN/005-decennial'), # 4ee6b60
-    Model(State.MO, House.ushouse,       8,  True, VERSION, 'data/MO/004-2020vote'), # 2fa2d05
-    Model(State.MO, House.statesenate,  34,  True, VERSION, 'data/MO/004-2020vote'), # 2fa2d05
-    Model(State.MO, House.statehouse,  163,  True, VERSION, 'data/MO/004-2020vote'), # 2fa2d05
-    Model(State.MT, House.ushouse,       2,  True, VERSION, 'data/MT/005-decennial'), # 4ee6b60
-    Model(State.MT, House.statesenate,  50,  True, VERSION, 'data/MT/005-decennial'), # 4ee6b60
-    Model(State.MT, House.statehouse,  100,  True, VERSION, 'data/MT/005-decennial'), # 4ee6b60
-    Model(State.NC, House.ushouse,      14,  True, VERSION, 'data/NC/017-decennial'), # 4ee6b60
-    Model(State.NC, House.statesenate,  50,  True, VERSION, 'data/NC/017-decennial'), # 4ee6b60
-    Model(State.NC, House.statehouse,  120,  True, VERSION, 'data/NC/017-decennial'), # 4ee6b60
-    Model(State.ND, House.ushouse,       1,  True, VERSION, 'data/ND/005-decennial'), # 4ee6b60
-    Model(State.ND, House.statesenate,  47,  True, VERSION, 'data/ND/005-decennial'), # 4ee6b60
-    Model(State.ND, House.statehouse,   94,  True, VERSION, 'data/ND/005-decennial'), # 4ee6b60
-    Model(State.NE, House.ushouse,       3,  True, VERSION, 'data/NE/003-decennial'), # 4ee6b60
-    Model(State.NE, House.statesenate,  49,  True, VERSION, 'data/NE/003-decennial'), # 4ee6b60
-    Model(State.NH, House.ushouse,       2,  True, VERSION, 'data/NH/005-decennial'), # 4ee6b60
-    Model(State.NH, House.statesenate,  24,  True, VERSION, 'data/NH/005-decennial'), # 4ee6b60
-    Model(State.NH, House.statehouse,  400,  True, VERSION, 'data/NH/005-decennial'), # 4ee6b60
+    Model(State.MA, House.ushouse,       9,  True, VERSION, 'data/MA/006-fva-votes'), # 423b365
+    Model(State.MA, House.statesenate,  40,  True, VERSION, 'data/MA/006-fva-votes'), # 423b365
+    Model(State.MA, House.statehouse,  160,  True, VERSION, 'data/MA/006-fva-votes'), # 423b365
+    Model(State.MD, House.ushouse,       8,  True, VERSION, 'data/MD/008-fva-votes'), # 423b365
+    Model(State.MD, House.statesenate,  47,  True, VERSION, 'data/MD/008-fva-votes'), # 423b365
+    Model(State.MD, House.statehouse,   68,  True, VERSION, 'data/MD/008-fva-votes'), # 423b365
+    Model(State.ME, House.ushouse,       2,  True, VERSION, 'data/ME/006-fva-votes'), # 423b365
+    Model(State.ME, House.statesenate,  35,  True, VERSION, 'data/ME/006-fva-votes'), # 423b365
+    Model(State.ME, House.statehouse,  151,  True, VERSION, 'data/ME/006-fva-votes'), # 423b365
+    Model(State.MI, House.ushouse,      13,  True, VERSION, 'data/MI/007-fva-votes'), # 423b365
+    Model(State.MI, House.statesenate,  38,  True, VERSION, 'data/MI/007-fva-votes'), # 423b365
+    Model(State.MI, House.statehouse,  110,  True, VERSION, 'data/MI/007-fva-votes'), # 423b365
+    Model(State.MN, House.ushouse,       8,  True, VERSION, 'data/MN/006-fva-votes'), # 423b365
+    Model(State.MN, House.statesenate,  67,  True, VERSION, 'data/MN/006-fva-votes'), # 423b365
+    Model(State.MN, House.statehouse,  134,  True, VERSION, 'data/MN/006-fva-votes'), # 423b365
+    Model(State.MO, House.ushouse,       8,  True, VERSION, 'data/MO/005-fva-votes'), # 423b365
+    Model(State.MO, House.statesenate,  34,  True, VERSION, 'data/MO/005-fva-votes'), # 423b365
+    Model(State.MO, House.statehouse,  163,  True, VERSION, 'data/MO/005-fva-votes'), # 423b365
+    Model(State.MT, House.ushouse,       2,  True, VERSION, 'data/MT/006-fva-votes'), # 423b365
+    Model(State.MT, House.statesenate,  50,  True, VERSION, 'data/MT/006-fva-votes'), # 423b365
+    Model(State.MT, House.statehouse,  100,  True, VERSION, 'data/MT/006-fva-votes'), # 423b365
+    Model(State.NC, House.ushouse,      14,  True, VERSION, 'data/NC/018-fva-votes'), # 423b365
+    Model(State.NC, House.statesenate,  50,  True, VERSION, 'data/NC/018-fva-votes'), # 423b365
+    Model(State.NC, House.statehouse,  120,  True, VERSION, 'data/NC/018-fva-votes'), # 423b365
+    Model(State.ND, House.ushouse,       1,  True, VERSION, 'data/ND/006-fva-votes'), # 423b365
+    Model(State.ND, House.statesenate,  47,  True, VERSION, 'data/ND/006-fva-votes'), # 423b365
+    Model(State.ND, House.statehouse,   94,  True, VERSION, 'data/ND/006-fva-votes'), # 423b365
+    Model(State.NE, House.ushouse,       3,  True, VERSION, 'data/NE/004-fva-votes'), # 423b365
+    Model(State.NE, House.statesenate,  49,  True, VERSION, 'data/NE/004-fva-votes'), # 423b365
+    Model(State.NH, House.ushouse,       2,  True, VERSION, 'data/NH/006-fva-votes'), # 6bf8449
+    Model(State.NH, House.statesenate,  24,  True, VERSION, 'data/NH/006-fva-votes'), # 6bf8449
+    Model(State.NH, House.statehouse,  400,  True, VERSION, 'data/NH/006-fva-votes'), # 6bf8449
     Model(State.NJ, House.ushouse,      12,  True, VERSION, 'data/NJ/002-decennial'), # 4ee6b60
     Model(State.NJ, House.statesenate,  40,  True, VERSION, 'data/NJ/002-decennial'), # 4ee6b60
     Model(State.NJ, House.statehouse,   80,  True, VERSION, 'data/NJ/002-decennial'), # 4ee6b60
     Model(State.NM, House.ushouse,       3,  True, VERSION, 'data/NM/002-decennial'), # 4ee6b60
     Model(State.NM, House.statesenate,  42,  True, VERSION, 'data/NM/002-decennial'), # 4ee6b60
     Model(State.NM, House.statehouse,   70,  True, VERSION, 'data/NM/002-decennial'), # 4ee6b60
-    Model(State.NV, House.ushouse,       4,  True, VERSION, 'data/NV/003-decennial'), # 4ee6b60
-    Model(State.NV, House.statesenate,  21,  True, VERSION, 'data/NV/003-decennial'), # 4ee6b60
-    Model(State.NV, House.statehouse,   42,  True, VERSION, 'data/NV/003-decennial'), # 4ee6b60
-    Model(State.OH, House.ushouse,      15,  True, VERSION, 'data/OH/004-decennial'), # 4ee6b60
-    Model(State.OH, House.statesenate,  33,  True, VERSION, 'data/OH/004-decennial'), # 4ee6b60
-    Model(State.OH, House.statehouse,   99,  True, VERSION, 'data/OH/004-decennial'), # 4ee6b60
-    Model(State.OK, House.ushouse,       5,  True, VERSION, 'data/OK/003-decennial'), # 4ee6b60
-    Model(State.OK, House.statesenate,  48,  True, VERSION, 'data/OK/003-decennial'), # 4ee6b60
-    Model(State.OK, House.statehouse,  101,  True, VERSION, 'data/OK/003-decennial'), # 4ee6b60
-    Model(State.OR, House.ushouse,       6,  True, VERSION, 'data/OR/003-decennial'), # 4ee6b60
-    Model(State.OR, House.statesenate,  30,  True, VERSION, 'data/OR/003-decennial'), # 4ee6b60
-    Model(State.OR, House.statehouse,   60,  True, VERSION, 'data/OR/003-decennial'), # 4ee6b60
+    Model(State.NV, House.ushouse,       4,  True, VERSION, 'data/NV/004-fva-votes'), # 423b365
+    Model(State.NV, House.statesenate,  21,  True, VERSION, 'data/NV/004-fva-votes'), # 423b365
+    Model(State.NV, House.statehouse,   42,  True, VERSION, 'data/NV/004-fva-votes'), # 423b365
+    Model(State.OH, House.ushouse,      15,  True, VERSION, 'data/OH/005-fva-votes'), # 423b365
+    Model(State.OH, House.statesenate,  33,  True, VERSION, 'data/OH/005-fva-votes'), # 423b365
+    Model(State.OH, House.statehouse,   99,  True, VERSION, 'data/OH/005-fva-votes'), # 423b365
+    Model(State.OK, House.ushouse,       5,  True, VERSION, 'data/OK/004-fva-votes'), # 423b365
+    Model(State.OK, House.statesenate,  48,  True, VERSION, 'data/OK/004-fva-votes'), # 423b365
+    Model(State.OK, House.statehouse,  101,  True, VERSION, 'data/OK/004-fva-votes'), # 423b365
+    Model(State.OR, House.ushouse,       6,  True, VERSION, 'data/OR/004-fva-votes'), # ed7e6db
+    Model(State.OR, House.statesenate,  30,  True, VERSION, 'data/OR/004-fva-votes'), # ed7e6db
+    Model(State.OR, House.statehouse,   60,  True, VERSION, 'data/OR/004-fva-votes'), # ed7e6db
     Model(State.PA, House.ushouse,      17,  True, VERSION, 'data/PA/012-decennial'), # 4ee6b60
     Model(State.PA, House.statesenate,  50,  True, VERSION, 'data/PA/012-decennial'), # 4ee6b60
     Model(State.PA, House.statehouse,  203,  True, VERSION, 'data/PA/012-decennial'), # 4ee6b60
-    Model(State.RI, House.ushouse,       2,  True, VERSION, 'data/RI/005-decennial'), # 4ee6b60
-    Model(State.RI, House.statesenate,  38,  True, VERSION, 'data/RI/005-decennial'), # 4ee6b60
-    Model(State.RI, House.statehouse,   75,  True, VERSION, 'data/RI/005-decennial'), # 4ee6b60
-    Model(State.SC, House.ushouse,       7,  True, VERSION, 'data/SC/003-decennial'), # 4ee6b60
-    Model(State.SC, House.statesenate,  46,  True, VERSION, 'data/SC/003-decennial'), # 4ee6b60
-    Model(State.SC, House.statehouse,  124,  True, VERSION, 'data/SC/003-decennial'), # 4ee6b60
+    Model(State.RI, House.ushouse,       2,  True, VERSION, 'data/RI/006-fva-votes'), # 6bf8449
+    Model(State.RI, House.statesenate,  38,  True, VERSION, 'data/RI/006-fva-votes'), # 6bf8449
+    Model(State.RI, House.statehouse,   75,  True, VERSION, 'data/RI/006-fva-votes'), # 6bf8449
+    Model(State.SC, House.ushouse,       7,  True, VERSION, 'data/SC/004-fva-votes'), # 423b365
+    Model(State.SC, House.statesenate,  46,  True, VERSION, 'data/SC/004-fva-votes'), # 423b365
+    Model(State.SC, House.statehouse,  124,  True, VERSION, 'data/SC/004-fva-votes'), # 423b365
     Model(State.SD, House.ushouse,       1,  True, VERSION, 'data/SD/004-decennial'), # 4ee6b60
     Model(State.SD, House.statesenate,  35,  True, VERSION, 'data/SD/004-decennial'), # 4ee6b60
     Model(State.SD, House.statehouse,   70,  True, VERSION, 'data/SD/004-decennial'), # 4ee6b60
-    Model(State.TN, House.ushouse,       9,  True, VERSION, 'data/TN/005-2020vote'), # 2fa2d05
-    Model(State.TN, House.statesenate,  33,  True, VERSION, 'data/TN/005-2020vote'), # 2fa2d05
-    Model(State.TN, House.statehouse,   99,  True, VERSION, 'data/TN/005-2020vote'), # 2fa2d05
-    Model(State.TX, House.ushouse,      38,  True, VERSION, 'data/TX/005-decennial'), # 4ee6b60
-    Model(State.TX, House.statesenate,  31,  True, VERSION, 'data/TX/005-decennial'), # 4ee6b60
-    Model(State.TX, House.statehouse,  150,  True, VERSION, 'data/TX/005-decennial'), # 4ee6b60
-    Model(State.UT, House.ushouse,       4,  True, VERSION, 'data/UT/003-decennial'), # 4ee6b60
-    Model(State.UT, House.statesenate,  29,  True, VERSION, 'data/UT/003-decennial'), # 4ee6b60
-    Model(State.UT, House.statehouse,   75,  True, VERSION, 'data/UT/003-decennial'), # 4ee6b60
+    Model(State.TN, House.ushouse,       9,  True, VERSION, 'data/TN/005-decennial'), # 4ee6b60
+    Model(State.TN, House.statesenate,  33,  True, VERSION, 'data/TN/005-decennial'), # 4ee6b60
+    Model(State.TN, House.statehouse,   99,  True, VERSION, 'data/TN/005-decennial'), # 4ee6b60
+    Model(State.TX, House.ushouse,      38,  True, VERSION, 'data/TX/006-fva-votes'), # 423b365
+    Model(State.TX, House.statesenate,  31,  True, VERSION, 'data/TX/006-fva-votes'), # 423b365
+    Model(State.TX, House.statehouse,  150,  True, VERSION, 'data/TX/006-fva-votes'), # 423b365
+    Model(State.UT, House.ushouse,       4,  True, VERSION, 'data/UT/004-fva-votes'), # 423b365
+    Model(State.UT, House.statesenate,  29,  True, VERSION, 'data/UT/004-fva-votes'), # 423b365
+    Model(State.UT, House.statehouse,   75,  True, VERSION, 'data/UT/004-fva-votes'), # 423b365
     Model(State.VA, House.ushouse,      11,  True, VERSION, 'data/VA/005-decennial'), # 4ee6b60
     Model(State.VA, House.statesenate,  40,  True, VERSION, 'data/VA/005-decennial'), # 4ee6b60
     Model(State.VA, House.statehouse,  100,  True, VERSION, 'data/VA/005-decennial'), # 4ee6b60
-    Model(State.VT, House.ushouse,       1,  True, VERSION, 'data/VT/005-decennial'), # 4ee6b60
-    Model(State.VT, House.statesenate,  30,  True, VERSION, 'data/VT/005-decennial'), # 4ee6b60
-    Model(State.VT, House.statehouse,  150,  True, VERSION, 'data/VT/005-decennial'), # 4ee6b60
-    Model(State.WA, House.ushouse,      10,  True, VERSION, 'data/WA/004-2020vote'), # 2fa2d05
-    Model(State.WA, House.statesenate,  49,  True, VERSION, 'data/WA/004-2020vote'), # 2fa2d05
-    Model(State.WA, House.statehouse,   98,  True, VERSION, 'data/WA/004-2020vote'), # 2fa2d05
-    Model(State.WI, House.ushouse,       8,  True, VERSION, 'data/WI/009-decennial'), # 4ee6b60
-    Model(State.WI, House.statesenate,  33,  True, VERSION, 'data/WI/009-decennial'), # 4ee6b60
-    Model(State.WI, House.statehouse,   99,  True, VERSION, 'data/WI/009-decennial'), # 4ee6b60
-    Model(State.WY, House.ushouse,       1,  True, VERSION, 'data/WY/005-decennial'), # 4ee6b60
-    Model(State.WY, House.statesenate,  30,  True, VERSION, 'data/WY/005-decennial'), # 4ee6b60
-    Model(State.WY, House.statehouse,   60,  True, VERSION, 'data/WY/005-decennial'), # 4ee6b60
+    Model(State.VT, House.ushouse,       1,  True, VERSION, 'data/VT/006-fva-votes'), # 423b365
+    Model(State.VT, House.statesenate,  30,  True, VERSION, 'data/VT/006-fva-votes'), # 423b365
+    Model(State.VT, House.statehouse,  150,  True, VERSION, 'data/VT/006-fva-votes'), # 423b365
+    Model(State.WA, House.ushouse,      10,  True, VERSION, 'data/WA/005-fva-votes'), # 423b365
+    Model(State.WA, House.statesenate,  49,  True, VERSION, 'data/WA/005-fva-votes'), # 423b365
+    Model(State.WA, House.statehouse,   98,  True, VERSION, 'data/WA/005-fva-votes'), # 423b365
+    Model(State.WI, House.ushouse,       8,  True, VERSION, 'data/WI/010-fva-votes'), # 423b365
+    Model(State.WI, House.statesenate,  33,  True, VERSION, 'data/WI/010-fva-votes'), # 423b365
+    Model(State.WI, House.statehouse,   99,  True, VERSION, 'data/WI/010-fva-votes'), # 423b365
+    Model(State.WY, House.ushouse,       1,  True, VERSION, 'data/WY/006-fva-votes'), # 423b365
+    Model(State.WY, House.statesenate,  30,  True, VERSION, 'data/WY/006-fva-votes'), # 423b365
+    Model(State.WY, House.statehouse,   60,  True, VERSION, 'data/WY/006-fva-votes'), # 423b365
     ]

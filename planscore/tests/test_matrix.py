@@ -165,3 +165,19 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(output[1], (4.95, 3.05, 'O'))
         self.assertEqual(output[2], (3.13, 4.87, 'O'))
         self.assertEqual(output[3], (2.22, 5.78, 'O'))
+    
+    def test_prepare_district_data_mixed_years(self):
+        input = data.Upload(id=None, key=None,
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, '2020', None),
+            districts = [
+                dict(totals={'US President 2016 - REP': 2, 'US President 2020 - REP': 2, 'US President 2020 - DEM': 6, 'US President 2016 - DEM': 6}, tile=None),
+                dict(totals={'US President 2016 - REP': 3, 'US President 2020 - REP': 3, 'US President 2020 - DEM': 5, 'US President 2016 - DEM': 5}, tile=None),
+                dict(totals={'US President 2016 - REP': 5, 'US President 2020 - REP': 5, 'US President 2020 - DEM': 3, 'US President 2016 - DEM': 3}, tile=None),
+                dict(totals={'US President 2016 - REP': 6, 'US President 2020 - REP': 6, 'US President 2020 - DEM': 2, 'US President 2016 - DEM': 2}, tile=None),
+                ])
+        
+        output = matrix.prepare_district_data(input)
+        self.assertEqual(output[0], (5.84, 2.16, 'O'))
+        self.assertEqual(output[1], (4.88, 3.12, 'O'))
+        self.assertEqual(output[2], (2.96, 5.04, 'O'))
+        self.assertEqual(output[3], (2.00, 6.00, 'O'))
