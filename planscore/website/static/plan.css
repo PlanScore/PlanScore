@@ -72,6 +72,7 @@ div.planscore-partylegend div.planscore-partylegend-words {
 .table-districts tbody td, .table-metrics tbody td {
     white-space: nowrap; /* nowrap => body rows stay single-line => more dense display */
 }
+.table-districts tbody tr.no-votes td { text-decoration: line-through }
 .table-districts table, .table-metrics table {
     margin: 0;
 }

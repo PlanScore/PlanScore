@@ -39,7 +39,9 @@ var FIELDS = [
     /*, 'Polsby-Popper', 'Reock'*/
 ];
 
-const fieldToDisplayStr = {
+const votesFieldToDisplayStr = {
+    'Democratic Votes': 'Democratic Votes',
+    'Republican Votes': 'Republican Votes',
     'US President 2016 - DEM': 'Clinton (D) 2016',
     'US President 2016 - REP': 'Trump (R) 2016',
     'US President 2020 - DEM': 'Biden (D) 2020',
@@ -112,12 +114,18 @@ function nice_count(value)
 
 function nice_percent(value)
 {
+    if(isNaN(value)) {
+        return '–';
+    }
+    
     return (100 * value).toFixed(1) + '%';
 }
 
 function nice_round_percent(value)
 {
-    if(value < .01) {
+    if(isNaN(value)) {
+        return '–';
+    } else if(value < .01) {
         return '<1%';
     } else if(value > .99) {
         return '>99%';
@@ -748,8 +756,8 @@ function update_heading_titles(head)
     // Rename titles for optimal text-wrapping
     head.forEach((dataTitle, i) => {
         // Rename entire titles
-        if (fieldToDisplayStr[dataTitle]) {
-            head[i] = fieldToDisplayStr[dataTitle];
+        if (votesFieldToDisplayStr[dataTitle]) {
+            head[i] = votesFieldToDisplayStr[dataTitle];
         }
         // Rename title substrings, eg 'Citizen Voting-Age Population' => 'CVAP'
         for (const [substrMatch, substrReplacement] of Object.entries(fieldSubstringToDisplayStr)) {
@@ -1254,7 +1262,21 @@ function load_plan_score(url, message_section, score_section,
         tags = tags.concat(['</tr>', '</thead>', '<tbody>']);
         for(var i = 1; i < table_array.length; i++)
         {
-            tags = tags.concat(['<tr>']);
+            var row_class = 'no-votes',
+                row_title = `District ${table_array[i][0]} has no votes and does not count toward partisan scores`;
+            for(var j = 0; j < table_array[i].length; j++)
+            {
+                for(var p in votesFieldToDisplayStr)
+                {
+                    if(table_array[0][j] == votesFieldToDisplayStr[p] && table_array[i][j] > 0)
+                    {
+                        row_class = 'has-votes';
+                        row_title = '';
+                    }
+                }
+            }
+            
+            tags = tags.concat([`<tr class="${row_class}" title="${row_title}">`]);
             for(var j = 0; j < table_array[i].length; j++)
             {
                 const headingTitle = table_array[0][j];
