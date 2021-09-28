@@ -202,7 +202,7 @@ class TestScore (unittest.TestCase):
             msg='Should see +blue MMD with 28% mean and 13% median red vote share')
 
         mmd6 = score.calculate_MMD((6, 6, 4, 4, 4, 0), (5, 5, 5, 8, 8, 0))
-        self.assertAlmostEqual(mmd6, 0, places=2,
+        self.assertAlmostEqual(mmd6, mmd1, places=2,
             msg='Should see defined MMD even when one district is missing votes')
 
     def test_calculate_PB(self):
@@ -259,14 +259,18 @@ class TestScore (unittest.TestCase):
 
         d2d = score.calculate_D2((1, 2, 3, 4, 0), (4, 3, 2, 1, 0))
         self.assertAlmostEqual(d2d, 0, places=3,
+            msg='Should see zero Dec2')
+
+        d2e = score.calculate_D2((1, 2, 3, 4, 0), (4, 3, 2, 1, 0))
+        self.assertAlmostEqual(d2e, d2d, places=3,
             msg='Should see zero Dec2 even when one district is missing votes')
 
-        d2e = score.calculate_D2((3, 4, 5), (2, 1, 0))
-        self.assertAlmostEqual(d2e, -0.54930614,
+        d2f = score.calculate_D2((3, 4, 5), (2, 1, 0))
+        self.assertAlmostEqual(d2f, -0.54930614,
             msg='Should see low Dec2 when red party wins all districts in small state')
 
-        d2f = score.calculate_D2((2, 1, 0), (3, 4, 5))
-        self.assertAlmostEqual(d2f, 0.54930614,
+        d2g = score.calculate_D2((2, 1, 0), (3, 4, 5))
+        self.assertAlmostEqual(d2g, 0.54930614,
             msg='Should see high Dec2 when blue party wins all districts in small state')
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
