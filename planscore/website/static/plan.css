@@ -59,6 +59,7 @@ div.planscore-partylegend div.planscore-partylegend-words {
     margin-bottom: 15px;
 }
 .table-districts {
+    height: calc(100vh - 400px - 20px); /* fit on screen along with the 400px tall map, and some margin */
     min-height: 300px;
 }
 .table-metrics {
