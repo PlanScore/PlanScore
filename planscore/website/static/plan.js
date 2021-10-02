@@ -36,20 +36,14 @@ var FIELDS = [
     'US President 2020 - REP',
     'US President 2016 - DEM',
     'US President 2016 - REP',
+    'US Senate 2020 - DEM',
+    'US Senate 2020 - REP',
+    'US Senate 2018 - DEM',
+    'US Senate 2018 - REP',
+    'US Senate 2016 - DEM',
+    'US Senate 2016 - REP',
     /*, 'Polsby-Popper', 'Reock'*/
 ];
-
-if(typeof location !== 'undefined' && location.hash.match(/\bshowall\b/))
-{
-    FIELDS = FIELDS.concat([
-        'US Senate 2020 - DEM',
-        'US Senate 2020 - REP',
-        'US Senate 2018 - DEM',
-        'US Senate 2018 - REP',
-        'US Senate 2016 - DEM',
-        'US Senate 2016 - REP',
-    ]);
-}
 
 const votesFieldToDisplayStr = {
     'Democratic Votes': 'Democratic Votes',
@@ -753,7 +747,7 @@ function show_library_metadata(plan, metadata_el, geom_prefix)
 
 function show_fva_race_scores(plan, scores_FVA)
 {
-    if('US President 2020 Efficiency Gap' in plan.summary && location.hash.match(/\bshowall\b/))
+    if('US President 2020 Efficiency Gap' in plan.summary)
     {
         var fva_races = [{office: 'U.S. President', year: '2020', gap: plan.summary['US President 2020 Efficiency Gap']}];
 
