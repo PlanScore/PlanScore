@@ -36,12 +36,14 @@ var FIELDS = [
     'US President 2020 - REP',
     'US President 2016 - DEM',
     'US President 2016 - REP',
+    /*
     'US Senate 2020 - DEM',
     'US Senate 2020 - REP',
     'US Senate 2018 - DEM',
     'US Senate 2018 - REP',
     'US Senate 2016 - DEM',
     'US Senate 2016 - REP',
+    */
     /*, 'Polsby-Popper', 'Reock'*/
 ];
 
@@ -852,7 +854,7 @@ function update_heading_titles(head)
         } else if(head[i] == 'Clinton (D) 2016' && head.indexOf('Biden (D) 2020') >= 0) {
             head[i] = SHY_COLUMN;
 
-        } else  if(head[i] == 'CVAP 2019') {
+        } else if(head[i] == 'CVAP 2019') {
             head[i] = SHY_COLUMN;
         }
     });
