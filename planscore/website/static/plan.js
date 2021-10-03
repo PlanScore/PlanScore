@@ -782,7 +782,7 @@ function show_ftva_race_scores(plan, scores_FTVA)
                     node.innerHTML = `${ftva_races[i].office} ${ftva_races[i].year}: ${gap_amount}`;
 
                 } else if(node.nodeName == 'DIV') {
-                    drawBiasBellChart('eg', gap, node.id,
+                    drawBiasBellChart('ftva', gap, node.id,
                         (plan.model ? plan.model.house : 'ushouse'), 'plan');
 
                 } else if(node.nodeName == 'P') {
