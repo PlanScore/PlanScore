@@ -357,9 +357,9 @@ MODELS = [
     Model(State.AK, House.ushouse,       1,  True, VERSION, 'data/AK/004-fva-votes'), # 423b365
     Model(State.AK, House.statesenate,  20,  True, VERSION, 'data/AK/004-fva-votes'), # 423b365
     Model(State.AK, House.statehouse,   40,  True, VERSION, 'data/AK/004-fva-votes'), # 423b365
-    Model(State.AL, House.ushouse,       7,  True, VERSION, 'data/AL/003-decennial'), # 4ee6b60
-    Model(State.AL, House.statesenate,  35,  True, VERSION, 'data/AL/003-decennial'), # 4ee6b60
-    Model(State.AL, House.statehouse,  105,  True, VERSION, 'data/AL/003-decennial'), # 4ee6b60
+    Model(State.AL, House.ushouse,       7,  True, VERSION, 'data/AL/004-fva-votes'), # 423b365
+    Model(State.AL, House.statesenate,  35,  True, VERSION, 'data/AL/004-fva-votes'), # 423b365
+    Model(State.AL, House.statehouse,  105,  True, VERSION, 'data/AL/004-fva-votes'), # 423b365
     Model(State.AR, House.ushouse,       4,  True, VERSION, 'data/AR/004-fva-votes'), # 423b365
     Model(State.AR, House.statesenate,  35,  True, VERSION, 'data/AR/004-fva-votes'), # 423b365
     Model(State.AR, House.statehouse,  100,  True, VERSION, 'data/AR/004-fva-votes'), # 423b365
