@@ -774,8 +774,25 @@ function show_ftva_race_scores(plan, scores_FTVA)
             var score_FTVA = scores_FTVA[i],
                 //summary_name = which_score_summary_name(plan),
                 gap = ftva_races[i].gap,
-                gap_amount = nice_percent(Math.abs(gap));
+                gap_amount = nice_percent(Math.abs(gap)),
+                win_party = (gap < 0 ? 'Republican' : 'Democratic'),
+                win_partisans = (gap < 0 ? 'Republicans' : 'Democrats'),
+                lose_party = (gap < 0 ? 'Democratic' : 'Republican');
 
+            clear_element(score_FTVA);
+
+            score_FTVA.innerHTML = `
+                <h5>${ftva_races[i].office} ${ftva_races[i].year}: ${gap_amount}</h5>
+                <p>
+                Under this plan, votes for the ${win_party}
+                candidate <!--for ${ftva_races[i].office} in
+                ${ftva_races[i].year}--> were inefficient at a rate
+                ${gap_amount} lower than votes for the
+                ${lose_party} candidate.
+                </p>
+                `;
+
+            /*
             for(node = score_FTVA.firstChild; node = node.nextSibling; node)
             {
                 if(node.nodeName == 'H3') {
@@ -801,6 +818,7 @@ function show_ftva_race_scores(plan, scores_FTVA)
                         `;
                 }
             }
+            */
         }
     } else {
         for(var i = 0; i < scores_FTVA.length; i++)
