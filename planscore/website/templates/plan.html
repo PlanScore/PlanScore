@@ -119,13 +119,13 @@
     <p id="map"></p>
     <h2>District Data</h2>
     <hr />
-    <div class="col-xs-12 col-sm-12  table-jehl table-districts">
+    <div class="table-jehl table-districts">
         <table class="table table-hover" id="districts">
             {# this table will be populated by load_plan_score() #}
         </table>
     </div>
     <a href="#" id="text-link">Download raw data as tab-delimited text</a>.
-    <div class="col-xs-12 col-sm-12 table-jehl table-metrics">
+    <div class="table-jehl table-metrics">
         <table class="table table-hover" id="metrics">
             {# this table will be populated by load_plan_score() #}
         </table>
@@ -135,17 +135,20 @@
         <li class="col-md-4">
             <h3>Freedom to Vote Act Races</h3>
             <p>
-                “The Act specifies exactly what data should be employed for this
-                purpose: the two most recent presidential elections and the two
-                most recent Senate elections in a state. An enacted plan’s bias
-                has to be computed with respect to each of those four
-                elections.”
-                (<a href="https://electionlawblog.org/?p=124617">Nicholas Stephanopolous</a>)
+                <a href="https://www.congress.gov/bill/117th-congress/senate-bill/2747/text">Section 5003(c)(3) of the FTVA</a>
+                specifies that partisan fairness should be assessed using a
+                state's two most recent elections for U.S. President and two
+                most recent elections for U.S. Senate.
             </p>
         </li>
-        <li class="col-md-4" id="score-fva1-efficiency-gap">
-            <h3>FVA Efficiency Gap 1</h3>
-            <div class="metric-bellchart" id="metric-bellchart-fva1-eg">
+        <li class="col-md-2" id="score-ftva1-efficiency-gap">EG 1</li>
+        <li class="col-md-2" id="score-ftva2-efficiency-gap">EG 2</li>
+        <li class="col-md-2" id="score-ftva3-efficiency-gap">EG 3</li>
+        <li class="col-md-2" id="score-ftva4-efficiency-gap">EG 4</li>
+        {#
+        <li class="col-md-4" id="score-ftva1-efficiency-gap">
+            <h3>FTVA Efficiency Gap 1</h3>
+            <div class="metric-bellchart" id="metric-bellchart-ftva1-eg">
                 <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
                 <div class="row metric-bellchart-legend">
                     <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
@@ -155,9 +158,9 @@
             </div>
             <p>Not enough information to calculate this score.</p>
         </li>
-        <li class="col-md-4" id="score-fva2-efficiency-gap">
-            <h3>FVA Efficiency Gap 2</h3>
-            <div class="metric-bellchart" id="metric-bellchart-fva2-eg">
+        <li class="col-md-4" id="score-ftva2-efficiency-gap">
+            <h3>FTVA Efficiency Gap 2</h3>
+            <div class="metric-bellchart" id="metric-bellchart-ftva2-eg">
                 <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
                 <div class="row metric-bellchart-legend">
                     <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
@@ -171,9 +174,9 @@
     <ul class="row scores-box">
         <li class="col-md-2">
         </li>
-        <li class="col-md-4" id="score-fva3-efficiency-gap">
-            <h3>FVA Efficiency Gap 3</h3>
-            <div class="metric-bellchart" id="metric-bellchart-fva3-eg">
+        <li class="col-md-4" id="score-ftva3-efficiency-gap">
+            <h3>FTVA Efficiency Gap 3</h3>
+            <div class="metric-bellchart" id="metric-bellchart-ftva3-eg">
                 <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
                 <div class="row metric-bellchart-legend">
                     <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
@@ -183,9 +186,9 @@
             </div>
             <p>Not enough information to calculate this score.</p>
         </li>
-        <li class="col-md-4" id="score-fva4-efficiency-gap">
-            <h3>FVA Efficiency Gap 4</h3>
-            <div class="metric-bellchart" id="metric-bellchart-fva4-eg">
+        <li class="col-md-4" id="score-ftva4-efficiency-gap">
+            <h3>FTVA Efficiency Gap 4</h3>
+            <div class="metric-bellchart" id="metric-bellchart-ftva4-eg">
                 <div class="curve"><div class="marklabel">This Plan</div><div class="markline"></div></div>
                 <div class="row metric-bellchart-legend">
                     <div class="col-xs-4 left">+<span data-field="metric-bellchart-spread"></span>% D</div>
@@ -195,6 +198,7 @@
             </div>
             <p>Not enough information to calculate this score.</p>
         </li>
+        #}
     </ul>
 
     <p><small>
@@ -291,10 +295,10 @@
 	        document.getElementById('score-declination'),
 	        document.getElementById('score-sensitivity'),
             [
-                document.getElementById('score-fva1-efficiency-gap'),
-                document.getElementById('score-fva2-efficiency-gap'),
-                document.getElementById('score-fva3-efficiency-gap'),
-                document.getElementById('score-fva4-efficiency-gap'),
+                document.getElementById('score-ftva1-efficiency-gap'),
+                document.getElementById('score-ftva2-efficiency-gap'),
+                document.getElementById('score-ftva3-efficiency-gap'),
+                document.getElementById('score-ftva4-efficiency-gap'),
             ],
 	        text_url,
 	        document.getElementById('text-link'),
