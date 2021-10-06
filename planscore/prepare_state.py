@@ -113,17 +113,44 @@ def excerpt_feature(original_feature, bbox_geom):
     
     return new_feature
 
-def load_geojson(filename):
+def load_datafile(filename):
     ''' Load GeoJSON into property-free OGR datasource and property-only list.
     '''
-    with open(filename, 'rb') as file1:
-        features = json.load(file1)['features']
+    datasource1 = ogr.Open(filename)
+    layer = datasource1.GetLayer(0)
+    layer_defn = layer.GetLayerDefn()
+
+    def _string_getter(field_index):
+        return lambda feature: feature.GetFieldAsString(field_index)
+    
+    def _int_getter(field_index):
+        return lambda feature: feature.GetFieldAsInteger(field_index)
+    
+    def _float_getter(field_index):
+        return lambda feature: feature.GetFieldAsDouble(field_index)
+    
+    field_getters = {}
+    
+    for field_index in range(layer_defn.GetFieldCount()):
+        field_defn = layer_defn.GetFieldDefn(field_index)
+        field_name, field_type = field_defn.GetName(), field_defn.GetTypeName()
+        if field_type.startswith('String'):
+            field_getters[field_name] = _string_getter(field_index)
+        elif field_type.startswith('Integer'):
+            field_getters[field_name] = _int_getter(field_index)
+        elif field_type.startswith('Real'):
+            field_getters[field_name] = _float_getter(field_index)
+        else:
+            raise RuntimeError()
     
     # Make a list with just original properties
-    properties_only = [feature['properties'] for feature in features]
+    properties_only = [
+        {key: getter(feature) for (key, getter) in field_getters.items()}
+        for (feature_index, feature) in enumerate(layer)
+    ]
     
     # Create a temporary GPKG file with no original properties
-    handle, tmp_path = tempfile.mkstemp(prefix='load_geojson-', suffix='.gpkg')
+    handle, tmp_path = tempfile.mkstemp(prefix='load_datafile-', suffix='.gpkg')
     os.close(handle)
     os.remove(tmp_path)
     
@@ -137,9 +164,9 @@ def load_geojson(filename):
     ))
     
     # Return geometry-only OGR datasource and properties-only list
-    datasource = ogr.Open(tmp_path)
+    datasource2 = ogr.Open(tmp_path)
     
-    return datasource, properties_only
+    return datasource2, properties_only
 
 def feature_geojson(ogr_feature, properties):
     ''' Return GeoJSON feature string for an OGR feature and properties dict.
@@ -192,7 +219,7 @@ def main():
     s3 = boto3.client('s3') if args.s3 else None
 
     print('Loading', args.filename, '...')
-    ds, properties = load_geojson(args.filename)
+    ds, properties = load_datafile(args.filename)
     print('Loaded', len(properties), 'features and made', ds.name)
     layer = ds.GetLayer(0)
     
