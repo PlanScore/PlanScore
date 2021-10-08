@@ -82,6 +82,8 @@ FIELD_NAMES = (
     'Hispanic Citizen Voting-Age Population 2019, Margin',
     'Asian Citizen Voting-Age Population 2019',
     'Asian Citizen Voting-Age Population 2019, Margin',
+    'American Indian or Alaska Native Citizen Voting-Age Population 2019',
+    'American Indian or Alaska Native Citizen Voting-Age Population 2019, Margin',
     
     # Census 2010 fields
     'Population 2010',

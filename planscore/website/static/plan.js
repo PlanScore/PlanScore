@@ -29,6 +29,7 @@ var FIELDS = [
     'Black Citizen Voting-Age Population 2019',
     'Hispanic Citizen Voting-Age Population 2019',
     'Asian Citizen Voting-Age Population 2019',
+    'American Indian or Alaska Native Citizen Voting-Age Population 2019',
     'Democratic Wins',
     'Democratic Votes',
     'Republican Votes',
@@ -65,6 +66,7 @@ const votesFieldToDisplayStr = {
 const fieldSubstringToDisplayStr = {
     'Black Citizen Voting-Age Population': 'Non-Hisp. Black CVAP',
     'Asian Citizen Voting-Age Population': 'Non-Hisp. Asian CVAP',
+    'American Indian or Alaska Native Citizen Voting-Age Population': 'Non-Hisp. Native CVAP',
     'Citizen Voting-Age Population': 'CVAP',
     'Population': 'Pop.',
 };
@@ -995,7 +997,8 @@ function update_cvap2019_percentages(head, row)
     var total_index = head.indexOf('Citizen Voting-Age Population 2019'),
         black_index = head.indexOf('Black Citizen Voting-Age Population 2019'),
         latin_index = head.indexOf('Hispanic Citizen Voting-Age Population 2019'),
-        asian_index = head.indexOf('Asian Citizen Voting-Age Population 2019');
+        asian_index = head.indexOf('Asian Citizen Voting-Age Population 2019'),
+        native_index = head.indexOf('American Indian or Alaska Native Citizen Voting-Age Population 2019');
 
     if(total_index >= 0 && black_index >= 0)
     {
@@ -1010,6 +1013,11 @@ function update_cvap2019_percentages(head, row)
     if(total_index >= 0 && asian_index >= 0)
     {
         row[asian_index] = nice_percent(row[asian_index] / row[total_index]);
+    }
+
+    if(total_index >= 0 && native_index >= 0)
+    {
+        row[native_index] = nice_percent(row[native_index] / row[total_index]);
     }
 }
 

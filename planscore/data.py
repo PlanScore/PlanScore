@@ -363,9 +363,9 @@ MODELS = [
     Model(State.AR, House.ushouse,       4,  True, VERSION, 'data/AR/004-fva-votes'), # 423b365
     Model(State.AR, House.statesenate,  35,  True, VERSION, 'data/AR/004-fva-votes'), # 423b365
     Model(State.AR, House.statehouse,  100,  True, VERSION, 'data/AR/004-fva-votes'), # 423b365
-    Model(State.AZ, House.ushouse,       9,  True, VERSION, 'data/AZ/007-fva-votes'), # 423b365
-    Model(State.AZ, House.statesenate,  30,  True, VERSION, 'data/AZ/007-fva-votes'), # 423b365
-    Model(State.AZ, House.statehouse,   60,  True, VERSION, 'data/AZ/007-fva-votes'), # 423b365
+    Model(State.AZ, House.ushouse,       9,  True, VERSION, 'data/AZ/008-native-cvap'), # df6d09b
+    Model(State.AZ, House.statesenate,  30,  True, VERSION, 'data/AZ/008-native-cvap'), # df6d09b
+    Model(State.AZ, House.statehouse,   60,  True, VERSION, 'data/AZ/008-native-cvap'), # df6d09b
     Model(State.CA, House.ushouse,      52,  True, VERSION, 'data/CA/004-2020votes'), # 7737424
     Model(State.CA, House.statesenate,  40,  True, VERSION, 'data/CA/004-2020votes'), # 7737424
     Model(State.CA, House.statehouse,   80,  True, VERSION, 'data/CA/004-2020votes'), # 7737424
