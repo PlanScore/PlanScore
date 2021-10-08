@@ -443,9 +443,9 @@ MODELS = [
     Model(State.NJ, House.ushouse,      12,  True, VERSION, 'data/NJ/002-decennial'), # 4ee6b60
     Model(State.NJ, House.statesenate,  40,  True, VERSION, 'data/NJ/002-decennial'), # 4ee6b60
     Model(State.NJ, House.statehouse,   80,  True, VERSION, 'data/NJ/002-decennial'), # 4ee6b60
-    Model(State.NM, House.ushouse,       3,  True, VERSION, 'data/NM/002-decennial'), # 4ee6b60
-    Model(State.NM, House.statesenate,  42,  True, VERSION, 'data/NM/002-decennial'), # 4ee6b60
-    Model(State.NM, House.statehouse,   70,  True, VERSION, 'data/NM/002-decennial'), # 4ee6b60
+    Model(State.NM, House.ushouse,       3,  True, VERSION, 'data/NM/003-native-cvap'), # df6d09b
+    Model(State.NM, House.statesenate,  42,  True, VERSION, 'data/NM/003-native-cvap'), # df6d09b
+    Model(State.NM, House.statehouse,   70,  True, VERSION, 'data/NM/003-native-cvap'), # df6d09b
     Model(State.NV, House.ushouse,       4,  True, VERSION, 'data/NV/004-fva-votes'), # 423b365
     Model(State.NV, House.statesenate,  21,  True, VERSION, 'data/NV/004-fva-votes'), # 423b365
     Model(State.NV, House.statehouse,   42,  True, VERSION, 'data/NV/004-fva-votes'), # 423b365
