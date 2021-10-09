@@ -206,6 +206,11 @@ def calculate_EG(red_districts, blue_districts, vote_swing=0):
     swung_red, swung_blue = swing_vote(red_districts, blue_districts, vote_swing)
     nonzero_districts = [(r, b) for (r, b) in zip(swung_red, swung_blue) if r+b > 0]
 
+    statewide_vote_share = sum(swung_blue) / (sum(swung_blue) + sum(swung_red))
+    if not (.25 < statewide_vote_share and statewide_vote_share < .75):
+        # For extremely lop-sided vote shares, clamp EG to 0.0
+        return 0.0
+    
     district_blue_wins = len([
         1 for (red_votes, blue_votes) in nonzero_districts
         if blue_votes > red_votes
