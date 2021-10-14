@@ -203,14 +203,21 @@ def calculate_EG(red_districts, blue_districts, vote_swing=0):
     
         By convention, result is positive for blue and negative for red.
     '''
-    swung_red, swung_blue = swing_vote(red_districts, blue_districts, vote_swing)
+    init_red, init_blue = swing_vote(red_districts, blue_districts, vote_swing)
+    init_vote_share = sum(init_blue) / (sum(init_blue) + sum(init_red))
+
+    if init_vote_share < .25:
+        # Very red state, swing to 25 blue/75 red
+        clamped_swing = vote_swing + (.25 - init_vote_share)
+    elif init_vote_share > .75:
+        # Very blue state, swing to 75 blue/25 red
+        clamped_swing = vote_swing - (init_vote_share - .75)
+    else:
+        clamped_swing = vote_swing
+
+    swung_red, swung_blue = swing_vote(red_districts, blue_districts, clamped_swing)
     nonzero_districts = [(r, b) for (r, b) in zip(swung_red, swung_blue) if r+b > 0]
 
-    statewide_vote_share = sum(swung_blue) / (sum(swung_blue) + sum(swung_red))
-    if not (.25 < statewide_vote_share and statewide_vote_share < .75):
-        # For extremely lop-sided vote shares, clamp EG to 0.0
-        return 0.0
-    
     district_blue_wins = len([
         1 for (red_votes, blue_votes) in nonzero_districts
         if blue_votes > red_votes
