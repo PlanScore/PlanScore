@@ -59,6 +59,13 @@ class TestData (unittest.TestCase):
         self.assertEqual(model5.key_prefix, 'data/NC/001')
         self.assertEqual(model5.version, '2020')
 
+        model6 = data.Model.from_json('{"state": "NC", "house": "localplan", "seats": null, "key_prefix": "data/NC/001", "version": "2020"}')
+        self.assertEqual(model6.state, data.State.NC)
+        self.assertEqual(model6.house, data.House.localplan)
+        self.assertIsNone(model6.seats)
+        self.assertEqual(model6.key_prefix, 'data/NC/001')
+        self.assertEqual(model6.version, '2020')
+
     def test_upload_storage(self):
         ''' Past and future data.Upload instances are readable
         '''

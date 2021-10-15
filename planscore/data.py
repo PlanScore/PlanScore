@@ -68,7 +68,10 @@ class State (enum.Enum):
     WY = 'WY'
 
 class House (enum.Enum):
-    ushouse = 'ushouse'; statesenate = 'statesenate'; statehouse = 'statehouse'
+    ushouse = 'ushouse'
+    statesenate = 'statesenate'
+    statehouse = 'statehouse'
+    localplan = 'localplan'
 
 class Incumbency (enum.Enum):
     Open = 'O'
@@ -144,7 +147,7 @@ class Model:
         return Model(
             state = State[data['state']],
             house = House[data['house']],
-            seats = int(data['seats']),
+            seats = None if data['seats'] is None else int(data['seats']),
             key_prefix = str(data['key_prefix']),
             incumbency = bool(data.get('incumbency')),
             version = str(data.get('version', '2017')),
@@ -357,141 +360,187 @@ MODELS = [
     Model(State.AK, House.ushouse,       1,  True, VERSION, 'data/AK/005-3rd-party'), # 0cba4e2
     Model(State.AK, House.statesenate,  20,  True, VERSION, 'data/AK/005-3rd-party'), # 0cba4e2
     Model(State.AK, House.statehouse,   40,  True, VERSION, 'data/AK/005-3rd-party'), # 0cba4e2
+    Model(State.AK, House.localplan,  None,  True, VERSION, 'data/AK/005-3rd-party'), # 0cba4e2
     Model(State.AL, House.ushouse,       7,  True, VERSION, 'data/AL/005-3rd-party'), # 0cba4e2
     Model(State.AL, House.statesenate,  35,  True, VERSION, 'data/AL/005-3rd-party'), # 0cba4e2
     Model(State.AL, House.statehouse,  105,  True, VERSION, 'data/AL/005-3rd-party'), # 0cba4e2
+    Model(State.AL, House.localplan,  None,  True, VERSION, 'data/AL/005-3rd-party'), # 0cba4e2
     Model(State.AR, House.ushouse,       4,  True, VERSION, 'data/AR/005-3rd-party'), # 0cba4e2
     Model(State.AR, House.statesenate,  35,  True, VERSION, 'data/AR/005-3rd-party'), # 0cba4e2
     Model(State.AR, House.statehouse,  100,  True, VERSION, 'data/AR/005-3rd-party'), # 0cba4e2
+    Model(State.AR, House.localplan,  None,  True, VERSION, 'data/AR/005-3rd-party'), # 0cba4e2
     Model(State.AZ, House.ushouse,       9,  True, VERSION, 'data/AZ/009-3rd-party'), # 0cba4e2
     Model(State.AZ, House.statesenate,  30,  True, VERSION, 'data/AZ/009-3rd-party'), # 0cba4e2
     Model(State.AZ, House.statehouse,   60,  True, VERSION, 'data/AZ/009-3rd-party'), # 0cba4e2
+    Model(State.AZ, House.localplan,  None,  True, VERSION, 'data/AZ/009-3rd-party'), # 0cba4e2
     Model(State.CA, House.ushouse,      52,  True, VERSION, 'data/CA/005-3rd-party'), # 0cba4e2
     Model(State.CA, House.statesenate,  40,  True, VERSION, 'data/CA/005-3rd-party'), # 0cba4e2
     Model(State.CA, House.statehouse,   80,  True, VERSION, 'data/CA/005-3rd-party'), # 0cba4e2
+    Model(State.CA, House.localplan,  None,  True, VERSION, 'data/CA/005-3rd-party'), # 0cba4e2
     Model(State.CO, House.ushouse,       8,  True, VERSION, 'data/CO/010-3rd-party'), # 0cba4e2
     Model(State.CO, House.statesenate,  35,  True, VERSION, 'data/CO/010-3rd-party'), # 0cba4e2
     Model(State.CO, House.statehouse,   65,  True, VERSION, 'data/CO/010-3rd-party'), # 0cba4e2
+    Model(State.CO, House.localplan,  None,  True, VERSION, 'data/CO/010-3rd-party'), # 0cba4e2
     Model(State.CT, House.ushouse,       5,  True, VERSION, 'data/CT/003-3rd-party'), # 0cba4e2
     Model(State.CT, House.statesenate,  36,  True, VERSION, 'data/CT/003-3rd-party'), # 0cba4e2
     Model(State.CT, House.statehouse,  151,  True, VERSION, 'data/CT/003-3rd-party'), # 0cba4e2
+    Model(State.CT, House.localplan,  None,  True, VERSION, 'data/CT/003-3rd-party'), # 0cba4e2
     Model(State.DE, House.ushouse,       1,  True, VERSION, 'data/DE/007-3rd-party'), # 0cba4e2
     Model(State.DE, House.statesenate,  21,  True, VERSION, 'data/DE/007-3rd-party'), # 0cba4e2
     Model(State.DE, House.statehouse,   41,  True, VERSION, 'data/DE/007-3rd-party'), # 0cba4e2
+    Model(State.DE, House.localplan,  None,  True, VERSION, 'data/DE/007-3rd-party'), # 0cba4e2
     Model(State.FL, House.ushouse,      28,  True, VERSION, 'data/FL/006-3rd-party'), # 0cba4e2
     Model(State.FL, House.statesenate,  40,  True, VERSION, 'data/FL/006-3rd-party'), # 0cba4e2
     Model(State.FL, House.statehouse,  120,  True, VERSION, 'data/FL/006-3rd-party'), # 0cba4e2
+    Model(State.FL, House.localplan,  None,  True, VERSION, 'data/FL/006-3rd-party'), # 0cba4e2
     Model(State.GA, House.ushouse,      14,  True, VERSION, 'data/GA/009-3rd-party'), # 0cba4e2
     Model(State.GA, House.statesenate,  56,  True, VERSION, 'data/GA/009-3rd-party'), # 0cba4e2
     Model(State.GA, House.statehouse,  180,  True, VERSION, 'data/GA/009-3rd-party'), # 0cba4e2
+    Model(State.GA, House.localplan,  None,  True, VERSION, 'data/GA/009-3rd-party'), # 0cba4e2
     Model(State.HI, House.ushouse,       2,  True, VERSION, 'data/HI/005-3rd-party'), # 0cba4e2
     Model(State.HI, House.statesenate,  25,  True, VERSION, 'data/HI/005-3rd-party'), # 0cba4e2
     Model(State.HI, House.statehouse,   51,  True, VERSION, 'data/HI/005-3rd-party'), # 0cba4e2
+    Model(State.HI, House.localplan,  None,  True, VERSION, 'data/HI/005-3rd-party'), # 0cba4e2
     Model(State.IA, House.ushouse,       4,  True, VERSION, 'data/IA/005-3rd-party'), # 0cba4e2
     Model(State.IA, House.statesenate,  50,  True, VERSION, 'data/IA/005-3rd-party'), # 0cba4e2
     Model(State.IA, House.statehouse,  100,  True, VERSION, 'data/IA/005-3rd-party'), # 0cba4e2
+    Model(State.IA, House.localplan,  None,  True, VERSION, 'data/IA/005-3rd-party'), # 0cba4e2
     Model(State.ID, House.ushouse,       2,  True, VERSION, 'data/ID/005-3rd-party'), # 0cba4e2
     Model(State.ID, House.statesenate,  35,  True, VERSION, 'data/ID/005-3rd-party'), # 0cba4e2
     Model(State.ID, House.statehouse,   70,  True, VERSION, 'data/ID/005-3rd-party'), # 0cba4e2
+    Model(State.ID, House.localplan,  None,  True, VERSION, 'data/ID/005-3rd-party'), # 0cba4e2
     Model(State.IL, House.ushouse,      17,  True, VERSION, 'data/IL/007-3rd-party'), # 0cba4e2
     Model(State.IL, House.statesenate,  59,  True, VERSION, 'data/IL/007-3rd-party'), # 0cba4e2
     Model(State.IL, House.statehouse,  118,  True, VERSION, 'data/IL/007-3rd-party'), # 0cba4e2
+    Model(State.IL, House.localplan,  None,  True, VERSION, 'data/IL/007-3rd-party'), # 0cba4e2
     Model(State.IN, House.ushouse,       9,  True, VERSION, 'data/IN/006-3rd-party'), # 0cba4e2
     Model(State.IN, House.statesenate,  50,  True, VERSION, 'data/IN/006-3rd-party'), # 0cba4e2
     Model(State.IN, House.statehouse,  100,  True, VERSION, 'data/IN/006-3rd-party'), # 0cba4e2
+    Model(State.IN, House.localplan,  None,  True, VERSION, 'data/IN/006-3rd-party'), # 0cba4e2
     Model(State.KS, House.ushouse,       5,  True, VERSION, 'data/KS/006-3rd-party'), # 0cba4e2
     Model(State.KS, House.statesenate,  40,  True, VERSION, 'data/KS/006-3rd-party'), # 0cba4e2
     Model(State.KS, House.statehouse,  125,  True, VERSION, 'data/KS/006-3rd-party'), # 0cba4e2
+    Model(State.KS, House.localplan,  None,  True, VERSION, 'data/KS/006-3rd-party'), # 0cba4e2
     Model(State.KY, House.ushouse,       6,  True, VERSION, 'data/KY/003-3rd-party'), # 0cba4e2
     Model(State.KY, House.statesenate,  38,  True, VERSION, 'data/KY/003-3rd-party'), # 0cba4e2
     Model(State.KY, House.statehouse,  100,  True, VERSION, 'data/KY/003-3rd-party'), # 0cba4e2
+    Model(State.KY, House.localplan,  None,  True, VERSION, 'data/KY/003-3rd-party'), # 0cba4e2
     Model(State.LA, House.ushouse,       6,  True, VERSION, 'data/LA/004-3rd-party'), # 0cba4e2
     Model(State.LA, House.statesenate,  39,  True, VERSION, 'data/LA/004-3rd-party'), # 0cba4e2
     Model(State.LA, House.statehouse,  105,  True, VERSION, 'data/LA/004-3rd-party'), # 0cba4e2
+    Model(State.LA, House.localplan,  None,  True, VERSION, 'data/LA/004-3rd-party'), # 0cba4e2
     Model(State.MA, House.ushouse,       9,  True, VERSION, 'data/MA/007-3rd-party'), # 0cba4e2
     Model(State.MA, House.statesenate,  40,  True, VERSION, 'data/MA/007-3rd-party'), # 0cba4e2
     Model(State.MA, House.statehouse,  160,  True, VERSION, 'data/MA/007-3rd-party'), # 0cba4e2
+    Model(State.MA, House.localplan,  None,  True, VERSION, 'data/MA/007-3rd-party'), # 0cba4e2
     Model(State.MD, House.ushouse,       8,  True, VERSION, 'data/MD/009-3rd-party'), # 0cba4e2
     Model(State.MD, House.statesenate,  47,  True, VERSION, 'data/MD/009-3rd-party'), # 0cba4e2
     Model(State.MD, House.statehouse,   68,  True, VERSION, 'data/MD/009-3rd-party'), # 0cba4e2
+    Model(State.MD, House.localplan,  None,  True, VERSION, 'data/MD/009-3rd-party'), # 0cba4e2
     Model(State.ME, House.ushouse,       2,  True, VERSION, 'data/ME/007-3rd-party'), # 0cba4e2
     Model(State.ME, House.statesenate,  35,  True, VERSION, 'data/ME/007-3rd-party'), # 0cba4e2
     Model(State.ME, House.statehouse,  151,  True, VERSION, 'data/ME/007-3rd-party'), # 0cba4e2
+    Model(State.ME, House.localplan,  None,  True, VERSION, 'data/ME/007-3rd-party'), # 0cba4e2
     Model(State.MI, House.ushouse,      13,  True, VERSION, 'data/MI/008-3rd-party'), # 0cba4e2
     Model(State.MI, House.statesenate,  38,  True, VERSION, 'data/MI/008-3rd-party'), # 0cba4e2
     Model(State.MI, House.statehouse,  110,  True, VERSION, 'data/MI/008-3rd-party'), # 0cba4e2
+    Model(State.MI, House.localplan,  None,  True, VERSION, 'data/MI/008-3rd-party'), # 0cba4e2
     Model(State.MN, House.ushouse,       8,  True, VERSION, 'data/MN/007-3rd-party'), # 0cba4e2
     Model(State.MN, House.statesenate,  67,  True, VERSION, 'data/MN/007-3rd-party'), # 0cba4e2
     Model(State.MN, House.statehouse,  134,  True, VERSION, 'data/MN/007-3rd-party'), # 0cba4e2
+    Model(State.MN, House.localplan,  None,  True, VERSION, 'data/MN/007-3rd-party'), # 0cba4e2
     Model(State.MO, House.ushouse,       8,  True, VERSION, 'data/MO/006-3rd-party'), # 0cba4e2
     Model(State.MO, House.statesenate,  34,  True, VERSION, 'data/MO/006-3rd-party'), # 0cba4e2
     Model(State.MO, House.statehouse,  163,  True, VERSION, 'data/MO/006-3rd-party'), # 0cba4e2
+    Model(State.MO, House.localplan,  None,  True, VERSION, 'data/MO/006-3rd-party'), # 0cba4e2
     Model(State.MT, House.ushouse,       2,  True, VERSION, 'data/MT/007-3rd-party'), # 0cba4e2
     Model(State.MT, House.statesenate,  50,  True, VERSION, 'data/MT/007-3rd-party'), # 0cba4e2
     Model(State.MT, House.statehouse,  100,  True, VERSION, 'data/MT/007-3rd-party'), # 0cba4e2
+    Model(State.MT, House.localplan,  None,  True, VERSION, 'data/MT/007-3rd-party'), # 0cba4e2
     Model(State.NC, House.ushouse,      14,  True, VERSION, 'data/NC/019-3rd-party'), # 0cba4e2
     Model(State.NC, House.statesenate,  50,  True, VERSION, 'data/NC/019-3rd-party'), # 0cba4e2
     Model(State.NC, House.statehouse,  120,  True, VERSION, 'data/NC/019-3rd-party'), # 0cba4e2
+    Model(State.NC, House.localplan,  None,  True, VERSION, 'data/NC/019-3rd-party'), # 0cba4e2
     Model(State.ND, House.ushouse,       1,  True, VERSION, 'data/ND/007-3rd-party'), # 0cba4e2
     Model(State.ND, House.statesenate,  47,  True, VERSION, 'data/ND/007-3rd-party'), # 0cba4e2
     Model(State.ND, House.statehouse,   94,  True, VERSION, 'data/ND/007-3rd-party'), # 0cba4e2
+    Model(State.ND, House.localplan,  None,  True, VERSION, 'data/ND/007-3rd-party'), # 0cba4e2
     Model(State.NE, House.ushouse,       3,  True, VERSION, 'data/NE/005-3rd-party'), # 0cba4e2
     Model(State.NE, House.statesenate,  49,  True, VERSION, 'data/NE/005-3rd-party'), # 0cba4e2
     Model(State.NH, House.ushouse,       2,  True, VERSION, 'data/NH/007-3rd-party'), # 0cba4e2
     Model(State.NH, House.statesenate,  24,  True, VERSION, 'data/NH/007-3rd-party'), # 0cba4e2
     Model(State.NH, House.statehouse,  400,  True, VERSION, 'data/NH/007-3rd-party'), # 0cba4e2
+    Model(State.NH, House.localplan,  None,  True, VERSION, 'data/NH/007-3rd-party'), # 0cba4e2
     Model(State.NJ, House.ushouse,      12,  True, VERSION, 'data/NJ/003-3rd-party'), # 0cba4e2
     Model(State.NJ, House.statesenate,  40,  True, VERSION, 'data/NJ/003-3rd-party'), # 0cba4e2
     Model(State.NJ, House.statehouse,   80,  True, VERSION, 'data/NJ/003-3rd-party'), # 0cba4e2
+    Model(State.NJ, House.localplan,  None,  True, VERSION, 'data/NJ/003-3rd-party'), # 0cba4e2
     Model(State.NM, House.ushouse,       3,  True, VERSION, 'data/NM/004-3rd-party'), # 0cba4e2
     Model(State.NM, House.statesenate,  42,  True, VERSION, 'data/NM/004-3rd-party'), # 0cba4e2
     Model(State.NM, House.statehouse,   70,  True, VERSION, 'data/NM/004-3rd-party'), # 0cba4e2
+    Model(State.NM, House.localplan,  None,  True, VERSION, 'data/NM/004-3rd-party'), # 0cba4e2
     Model(State.NV, House.ushouse,       4,  True, VERSION, 'data/NV/005-3rd-party'), # 0cba4e2
     Model(State.NV, House.statesenate,  21,  True, VERSION, 'data/NV/005-3rd-party'), # 0cba4e2
     Model(State.NV, House.statehouse,   42,  True, VERSION, 'data/NV/005-3rd-party'), # 0cba4e2
+    Model(State.NV, House.localplan,  None,  True, VERSION, 'data/NV/005-3rd-party'), # 0cba4e2
     Model(State.OH, House.ushouse,      15,  True, VERSION, 'data/OH/006-3rd-party'), # 0cba4e2
     Model(State.OH, House.statesenate,  33,  True, VERSION, 'data/OH/006-3rd-party'), # 0cba4e2
     Model(State.OH, House.statehouse,   99,  True, VERSION, 'data/OH/006-3rd-party'), # 0cba4e2
+    Model(State.OH, House.localplan,  None,  True, VERSION, 'data/OH/006-3rd-party'), # 0cba4e2
     Model(State.OK, House.ushouse,       5,  True, VERSION, 'data/OK/005-3rd-party'), # 0cba4e2
     Model(State.OK, House.statesenate,  48,  True, VERSION, 'data/OK/005-3rd-party'), # 0cba4e2
     Model(State.OK, House.statehouse,  101,  True, VERSION, 'data/OK/005-3rd-party'), # 0cba4e2
+    Model(State.OK, House.localplan,  None,  True, VERSION, 'data/OK/005-3rd-party'), # 0cba4e2
     Model(State.OR, House.ushouse,       6,  True, VERSION, 'data/OR/005-3rd-party'), # 0cba4e2
     Model(State.OR, House.statesenate,  30,  True, VERSION, 'data/OR/005-3rd-party'), # 0cba4e2
     Model(State.OR, House.statehouse,   60,  True, VERSION, 'data/OR/005-3rd-party'), # 0cba4e2
+    Model(State.OR, House.localplan,  None,  True, VERSION, 'data/OR/005-3rd-party'), # 0cba4e2
     Model(State.PA, House.ushouse,      17,  True, VERSION, 'data/PA/013-3rd-party'), # e015b2e
     Model(State.PA, House.statesenate,  50,  True, VERSION, 'data/PA/013-3rd-party'), # e015b2e
     Model(State.PA, House.statehouse,  203,  True, VERSION, 'data/PA/013-3rd-party'), # e015b2e
+    Model(State.PA, House.localplan,  None,  True, VERSION, 'data/PA/013-3rd-party'), # e015b2e
     Model(State.RI, House.ushouse,       2,  True, VERSION, 'data/RI/007-3rd-party'), # 0cba4e2
     Model(State.RI, House.statesenate,  38,  True, VERSION, 'data/RI/007-3rd-party'), # 0cba4e2
     Model(State.RI, House.statehouse,   75,  True, VERSION, 'data/RI/007-3rd-party'), # 0cba4e2
+    Model(State.RI, House.localplan,  None,  True, VERSION, 'data/RI/007-3rd-party'), # 0cba4e2
     Model(State.SC, House.ushouse,       7,  True, VERSION, 'data/SC/005-3rd-party'), # 0cba4e2
     Model(State.SC, House.statesenate,  46,  True, VERSION, 'data/SC/005-3rd-party'), # 0cba4e2
     Model(State.SC, House.statehouse,  124,  True, VERSION, 'data/SC/005-3rd-party'), # 0cba4e2
+    Model(State.SC, House.localplan,  None,  True, VERSION, 'data/SC/005-3rd-party'), # 0cba4e2
     Model(State.SD, House.ushouse,       1,  True, VERSION, 'data/SD/005-3rd-party'), # 0cba4e2
     Model(State.SD, House.statesenate,  35,  True, VERSION, 'data/SD/005-3rd-party'), # 0cba4e2
     Model(State.SD, House.statehouse,   70,  True, VERSION, 'data/SD/005-3rd-party'), # 0cba4e2
+    Model(State.SD, House.localplan,  None,  True, VERSION, 'data/SD/005-3rd-party'), # 0cba4e2
     Model(State.TN, House.ushouse,       9,  True, VERSION, 'data/TN/006-3rd-party'), # 0cba4e2
     Model(State.TN, House.statesenate,  33,  True, VERSION, 'data/TN/006-3rd-party'), # 0cba4e2
     Model(State.TN, House.statehouse,   99,  True, VERSION, 'data/TN/006-3rd-party'), # 0cba4e2
+    Model(State.TN, House.localplan,  None,  True, VERSION, 'data/TN/006-3rd-party'), # 0cba4e2
     Model(State.TX, House.ushouse,      38,  True, VERSION, 'data/TX/007-3rd-party'), # 0cba4e2
     Model(State.TX, House.statesenate,  31,  True, VERSION, 'data/TX/007-3rd-party'), # 0cba4e2
     Model(State.TX, House.statehouse,  150,  True, VERSION, 'data/TX/007-3rd-party'), # 0cba4e2
+    Model(State.TX, House.localplan,  None,  True, VERSION, 'data/TX/007-3rd-party'), # 0cba4e2
     Model(State.UT, House.ushouse,       4,  True, VERSION, 'data/UT/005-3rd-party'), # 0cba4e2
     Model(State.UT, House.statesenate,  29,  True, VERSION, 'data/UT/005-3rd-party'), # 0cba4e2
     Model(State.UT, House.statehouse,   75,  True, VERSION, 'data/UT/005-3rd-party'), # 0cba4e2
+    Model(State.UT, House.localplan,  None,  True, VERSION, 'data/UT/005-3rd-party'), # 0cba4e2
     Model(State.VA, House.ushouse,      11,  True, VERSION, 'data/VA/006-3rd-party'), # 0cba4e2
     Model(State.VA, House.statesenate,  40,  True, VERSION, 'data/VA/006-3rd-party'), # 0cba4e2
     Model(State.VA, House.statehouse,  100,  True, VERSION, 'data/VA/006-3rd-party'), # 0cba4e2
+    Model(State.VA, House.localplan,  None,  True, VERSION, 'data/VA/006-3rd-party'), # 0cba4e2
     Model(State.VT, House.ushouse,       1,  True, VERSION, 'data/VT/007-3rd-party'), # 0cba4e2
     Model(State.VT, House.statesenate,  30,  True, VERSION, 'data/VT/007-3rd-party'), # 0cba4e2
     Model(State.VT, House.statehouse,  150,  True, VERSION, 'data/VT/007-3rd-party'), # 0cba4e2
+    Model(State.VT, House.localplan,  None,  True, VERSION, 'data/VT/007-3rd-party'), # 0cba4e2
     Model(State.WA, House.ushouse,      10,  True, VERSION, 'data/WA/006-3rd-party'), # 0cba4e2
     Model(State.WA, House.statesenate,  49,  True, VERSION, 'data/WA/006-3rd-party'), # 0cba4e2
     Model(State.WA, House.statehouse,   98,  True, VERSION, 'data/WA/006-3rd-party'), # 0cba4e2
+    Model(State.WA, House.localplan,  None,  True, VERSION, 'data/WA/006-3rd-party'), # 0cba4e2
     Model(State.WI, House.ushouse,       8,  True, VERSION, 'data/WI/011-3rd-party'), # 0cba4e2
     Model(State.WI, House.statesenate,  33,  True, VERSION, 'data/WI/011-3rd-party'), # 0cba4e2
     Model(State.WI, House.statehouse,   99,  True, VERSION, 'data/WI/011-3rd-party'), # 0cba4e2
+    Model(State.WI, House.localplan,  None,  True, VERSION, 'data/WI/011-3rd-party'), # 0cba4e2
     Model(State.WY, House.ushouse,       1,  True, VERSION, 'data/WY/007-3rd-party'), # 0cba4e2
     Model(State.WY, House.statesenate,  30,  True, VERSION, 'data/WY/007-3rd-party'), # 0cba4e2
     Model(State.WY, House.statehouse,   60,  True, VERSION, 'data/WY/007-3rd-party'), # 0cba4e2
+    Model(State.WY, House.localplan,  None,  True, VERSION, 'data/WY/007-3rd-party'), # 0cba4e2
     ]

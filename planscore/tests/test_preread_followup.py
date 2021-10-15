@@ -190,8 +190,11 @@ class TestPrereadFollowup (unittest.TestCase):
         # Mock OGR boilerplate
         ogr_feature = unittest.mock.Mock()
         ogr_geometry = ogr_feature.GetGeometryRef.return_value
-        ogr_geometry.Intersection.return_value.Area.return_value = 0
+        ogr_geometry.Area.return_value = 0
+        ogr_geometry.Intersection.return_value.Area.return_value = 1
         ogr_geometry.GetEnvelope.return_value = (0, 1, 0, 1)
+        ogr_geometry.Union.return_value = ogr_geometry
+        ogr_geometry.SimplifyPreserveTopology.return_value.Union.return_value = ogr_geometry
         feature_iter = osgeo_ogr.Open.return_value.GetLayer.return_value.__iter__
         state_field = ogr_feature.GetField
 
@@ -249,6 +252,14 @@ class TestPrereadFollowup (unittest.TestCase):
         plan_model = preread_followup.guess_geometry_model(plan_path)
         self.assertEqual(plan_model.key_prefix[:8], 'data/PA/')
         self.assertEqual(plan_model.house, data.House.statesenate)
+    
+    def test_guess_geometry_model_local_coverage(self):
+        ''' Test that guess_geometry_model() guesses the correct U.S. state and house.
+        '''
+        plan_path = os.path.join(os.path.dirname(__file__), 'data', 'IL-Ward_Map_Shapefile.geojson')
+        plan_model = preread_followup.guess_geometry_model(plan_path)
+        self.assertEqual(plan_model.key_prefix[:8], 'data/IL/')
+        self.assertEqual(plan_model.house, data.House.localplan)
     
     def test_guess_blockassign_model_knowns(self):
         ''' Test that guess_blockassign_model() guesses the correct U.S. state and house.

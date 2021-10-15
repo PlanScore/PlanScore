@@ -211,24 +211,40 @@ def guess_geometry_model(path):
     
     for state_feature in states_layer:
         overlap = state_feature.GetGeometryRef().Intersection(footprint)
-        state_guesses.append((overlap.Area(), state_feature.GetField('STUSPS')))
+        state_guesses.append((
+            overlap.Area(),
+            state_feature.GetGeometryRef().Area(),
+            state_feature.GetField('STUSPS'),
+        ))
         state_names[state_feature.GetField('STUSPS')] = state_feature.GetField('NAME')
     
     if state_guesses:
         # Sort by area to findest largest overlap
-        state_abbr = [abbr for (_, abbr) in sorted(state_guesses)][-1]
+        state_abbr, state_area = [(abbr, area) for (_, area, abbr) in sorted(state_guesses)][-1]
     else:
         # Fall back to Null Island?
         xmin, xmax, ymin, ymax = footprint.GetEnvelope()
         if xmin < 0 and 0 < xmax and ymin < 0 and 0 < ymax:
-            state_abbr = 'XX'
+            state_abbr, state_area = 'XX', 0
         else:
             raise RuntimeError('PlanScore only works for U.S. states')
-
-    # Sort by log(seats) to findest smallest difference
-    model_guesses = [(abs(math.log(len(features) / model.seats)), model)
-        for model in data.MODELS
-        if model.state.value == state_abbr]
+    
+    if footprint.Area() < state_area/3:
+        # Look for the local plan whose seat count doesn't matter
+        model_guesses = [
+            (None, model)
+            for model in data.MODELS
+            if model.state.value == state_abbr
+            and model.house == data.House.localplan
+        ]
+    else:
+        # Sort by log(seats) to findest smallest difference
+        model_guesses = [
+            (abs(math.log(len(features) / model.seats)), model)
+            for model in data.MODELS
+            if model.state.value == state_abbr
+            and model.seats is not None
+        ]
     
     try:
         return sorted(model_guesses)[0][1]
@@ -265,9 +281,12 @@ def guess_blockassign_model(path):
             raise RuntimeError('PlanScore only works for U.S. states')
 
     # Sort by log(seats) to findest smallest difference
-    model_guesses = [(abs(math.log(len(seat_count) / model.seats)), model)
+    model_guesses = [
+        (abs(math.log(len(seat_count) / model.seats)), model)
         for model in data.MODELS
-        if model.state.value == state_abbr]
+        if model.state.value == state_abbr
+        and model.seats is not None
+    ]
     
     try:
         return sorted(model_guesses)[0][1]

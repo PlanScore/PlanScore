@@ -87,6 +87,11 @@ class TestScore (unittest.TestCase):
     def test_percentrank_abs(self):
         ''' Absolute percent rank is correctly calculated by chamber
         '''
+        self.assertIsNone(score.percentrank_abs(score.COLUMN_EG, data.House.localplan, 0))
+        self.assertIsNone(score.percentrank_abs(score.COLUMN_D2, data.House.localplan, 0))
+        self.assertIsNone(score.percentrank_abs(score.COLUMN_PB, data.House.localplan, 0))
+        self.assertIsNone(score.percentrank_abs(score.COLUMN_MMD, data.House.localplan, 0))
+
         # https://planscore.campaignlegal.org/texas/#!1994-plan-ushouse-eg
         self.assertAlmostEqual(score.percentrank_abs(score.COLUMN_EG, data.House.ushouse, .19), 0.9875)
         
@@ -138,6 +143,11 @@ class TestScore (unittest.TestCase):
     def test_percentrank_rel(self):
         ''' Relative percent rank is correctly calculated by chamber
         '''
+        self.assertIsNone(score.percentrank_rel(score.COLUMN_EG, data.House.localplan, 0))
+        self.assertIsNone(score.percentrank_rel(score.COLUMN_D2, data.House.localplan, 0))
+        self.assertIsNone(score.percentrank_rel(score.COLUMN_PB, data.House.localplan, 0))
+        self.assertIsNone(score.percentrank_rel(score.COLUMN_MMD, data.House.localplan, 0))
+
         self.assertAlmostEqual(score.percentrank_rel(score.COLUMN_EG, data.House.ushouse, 1), 1)
         self.assertAlmostEqual(score.percentrank_rel(score.COLUMN_EG, data.House.ushouse, -1), 1)
         self.assertAlmostEqual(score.percentrank_rel(score.COLUMN_EG, data.House.ushouse, .1), 0.8803571)
@@ -162,6 +172,10 @@ class TestScore (unittest.TestCase):
 
         gap5 = score.calculate_EG((2, 3, 5, 6, 0), (6, 5, 3, 2, 0))
         self.assertAlmostEqual(gap5, gap1, msg='Should see identical EG with one district missing votes')
+
+        gap6 = score.calculate_EG((2, 3, 5, 6), (6, 5, 3, 2), .25)
+        gap7 = score.calculate_EG((2, 3, 5, 6), (6, 5, 3, 2), .30)
+        self.assertAlmostEqual(gap7, gap6, msg='Should see EG clamped with a huge vote swing')
 
     def test_calculate_EG_unfair(self):
         ''' Efficiency gap can be correctly calculated for an unfair election
@@ -292,24 +306,24 @@ class TestScore (unittest.TestCase):
                 dict(totals={'Voters': 10, 'Red Votes': 6, 'Blue Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_fva_biases(score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))))
+        output = score.calculate_everything(input)
 
-        self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
+        self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value.__round__.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
-        self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
+        self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value.__round__.return_value)
         self.assertEqual(calculate_PB.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
-        self.assertEqual(output.summary['Declination'], calculate_D2.return_value)
+        self.assertEqual(output.summary['Declination'], calculate_D2.return_value.__round__.return_value)
         self.assertEqual(calculate_D2.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
-        self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
+        self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value.__round__.return_value)
         self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
-        self.assertEqual(output.summary['Efficiency Gap +1 Blue'], calculate_EG.return_value)
+        self.assertEqual(output.summary['Efficiency Gap +1 Blue'], calculate_EG.return_value.__round__.return_value)
         self.assertEqual(calculate_EG.mock_calls[1][1], ([2, 3, 5, 6], [6, 5, 3, 2], .01))
 
-        self.assertEqual(output.summary['Efficiency Gap +1 Red'], calculate_EG.return_value)
+        self.assertEqual(output.summary['Efficiency Gap +1 Red'], calculate_EG.return_value.__round__.return_value)
         self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
 
     @unittest.mock.patch('planscore.score.calculate_MMD')
@@ -328,21 +342,21 @@ class TestScore (unittest.TestCase):
                 dict(totals={'US House Rep Votes': 6, 'US House Dem Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_fva_biases(score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))))
+        output = score.calculate_everything(input)
 
-        self.assertEqual(output.summary['US House Mean-Median'], calculate_MMD.return_value)
+        self.assertEqual(output.summary['US House Mean-Median'], calculate_MMD.return_value.__round__.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
-        self.assertEqual(output.summary['US House Partisan Bias'], calculate_PB.return_value)
+        self.assertEqual(output.summary['US House Partisan Bias'], calculate_PB.return_value.__round__.return_value)
         self.assertEqual(calculate_PB.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
-        self.assertEqual(output.summary['US House Efficiency Gap'], calculate_EG.return_value)
+        self.assertEqual(output.summary['US House Efficiency Gap'], calculate_EG.return_value.__round__.return_value)
         self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
-        self.assertEqual(output.summary['US House Efficiency Gap +1 Dem'], calculate_EG.return_value)
+        self.assertEqual(output.summary['US House Efficiency Gap +1 Dem'], calculate_EG.return_value.__round__.return_value)
         self.assertEqual(calculate_EG.mock_calls[1][1], ([2, 3, 5, 6], [6, 5, 3, 2], .01))
 
-        self.assertEqual(output.summary['US House Efficiency Gap +1 Rep'], calculate_EG.return_value)
+        self.assertEqual(output.summary['US House Efficiency Gap +1 Rep'], calculate_EG.return_value.__round__.return_value)
         self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
 
     @unittest.mock.patch('planscore.score.calculate_MMD')
@@ -361,21 +375,21 @@ class TestScore (unittest.TestCase):
                 dict(totals={'SLDU Rep Votes': 6, 'SLDU Dem Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_fva_biases(score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))))
+        output = score.calculate_everything(input)
 
-        self.assertEqual(output.summary['SLDU Mean-Median'], calculate_MMD.return_value)
+        self.assertEqual(output.summary['SLDU Mean-Median'], calculate_MMD.return_value.__round__.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
-        self.assertEqual(output.summary['SLDU Partisan Bias'], calculate_PB.return_value)
+        self.assertEqual(output.summary['SLDU Partisan Bias'], calculate_PB.return_value.__round__.return_value)
         self.assertEqual(calculate_PB.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
-        self.assertEqual(output.summary['SLDU Efficiency Gap'], calculate_EG.return_value)
+        self.assertEqual(output.summary['SLDU Efficiency Gap'], calculate_EG.return_value.__round__.return_value)
         self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
-        self.assertEqual(output.summary['SLDU Efficiency Gap +1 Dem'], calculate_EG.return_value)
+        self.assertEqual(output.summary['SLDU Efficiency Gap +1 Dem'], calculate_EG.return_value.__round__.return_value)
         self.assertEqual(calculate_EG.mock_calls[1][1], ([2, 3, 5, 6], [6, 5, 3, 2], .01))
 
-        self.assertEqual(output.summary['SLDU Efficiency Gap +1 Rep'], calculate_EG.return_value)
+        self.assertEqual(output.summary['SLDU Efficiency Gap +1 Rep'], calculate_EG.return_value.__round__.return_value)
         self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
 
     @unittest.mock.patch('planscore.score.calculate_MMD')
@@ -394,21 +408,21 @@ class TestScore (unittest.TestCase):
                 dict(totals={'SLDL Rep Votes': 6, 'SLDL Dem Votes': 2}, tile=None),
                 ])
         
-        output = score.calculate_fva_biases(score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))))
+        output = score.calculate_everything(input)
 
-        self.assertEqual(output.summary['SLDL Mean-Median'], calculate_MMD.return_value)
+        self.assertEqual(output.summary['SLDL Mean-Median'], calculate_MMD.return_value.__round__.return_value)
         self.assertEqual(calculate_MMD.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
-        self.assertEqual(output.summary['SLDL Partisan Bias'], calculate_PB.return_value)
+        self.assertEqual(output.summary['SLDL Partisan Bias'], calculate_PB.return_value.__round__.return_value)
         self.assertEqual(calculate_PB.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
-        self.assertEqual(output.summary['SLDL Efficiency Gap'], calculate_EG.return_value)
+        self.assertEqual(output.summary['SLDL Efficiency Gap'], calculate_EG.return_value.__round__.return_value)
         self.assertEqual(calculate_EG.mock_calls[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
 
-        self.assertEqual(output.summary['SLDL Efficiency Gap +1 Dem'], calculate_EG.return_value)
+        self.assertEqual(output.summary['SLDL Efficiency Gap +1 Dem'], calculate_EG.return_value.__round__.return_value)
         self.assertEqual(calculate_EG.mock_calls[1][1], ([2, 3, 5, 6], [6, 5, 3, 2], .01))
 
-        self.assertEqual(output.summary['SLDL Efficiency Gap +1 Rep'], calculate_EG.return_value)
+        self.assertEqual(output.summary['SLDL Efficiency Gap +1 Rep'], calculate_EG.return_value.__round__.return_value)
         self.assertEqual(calculate_EG.mock_calls[2][1], ([2, 3, 5, 6], [6, 5, 3, 2], -.01))
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
@@ -436,7 +450,7 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_fva_biases(score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))))
+        output = score.calculate_everything(input)
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
         self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
@@ -511,7 +525,7 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_fva_biases(score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))))
+        output = score.calculate_everything(input)
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
@@ -604,7 +618,7 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_fva_biases(score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))))
+        output = score.calculate_everything(input)
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
@@ -729,7 +743,7 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_fva_biases(score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))))
+        output = score.calculate_everything(input)
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
@@ -798,7 +812,7 @@ class TestScore (unittest.TestCase):
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
-        output = score.calculate_fva_biases(score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))))
+        output = score.calculate_everything(input)
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median SD'], 0)
         self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
@@ -874,7 +888,7 @@ class TestScore (unittest.TestCase):
              [2.7, 5.3],
              [2.6, 5.4]],
         ])
-        output = score.calculate_fva_biases(score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))))
+        output = score.calculate_everything(input)
         self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, None, prepare_district_data.return_value))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
@@ -961,7 +975,7 @@ class TestScore (unittest.TestCase):
              [2.7, 5.3],
              [2.6, 5.4]],
         ])
-        output = score.calculate_fva_biases(score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))))
+        output = score.calculate_everything(input)
         self.assertEqual(model_votes.mock_calls[0][1][:2], (data.State.XX, None))
         self.assertEqual(model_votes.mock_calls[0][1][2][0], (5.86, 2.14, 'R'))
         self.assertEqual(model_votes.mock_calls[0][1][2][1], (4.95, 3.05, 'D'))
@@ -1030,7 +1044,7 @@ class TestScore (unittest.TestCase):
              [2.7, 5.3],
              [2.6, 5.4]],
         ])
-        output = score.calculate_fva_biases(score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))))
+        output = score.calculate_everything(input)
         
         last4_EGs = calculate_EG.mock_calls[-4:]
         self.assertEqual(last4_EGs[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
@@ -1091,7 +1105,7 @@ class TestScore (unittest.TestCase):
              [numpy.nan, numpy.nan],
              [numpy.nan, numpy.nan]],
         ])
-        output = score.calculate_fva_biases(score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))))
+        output = score.calculate_everything(input)
         self.assertEqual(model_votes.mock_calls[0][1][:2], (data.State.XX, None))
         self.assertEqual(model_votes.mock_calls[0][1][2][0], (5.86, 2.14, 'O'))
         self.assertEqual(model_votes.mock_calls[0][1][2][1], (4.95, 3.05, 'O'))
@@ -1147,7 +1161,7 @@ class TestScore (unittest.TestCase):
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
 
-        output = score.calculate_fva_biases(score.calculate_district_biases(score.calculate_biases(score.calculate_open_biases(score.calculate_bias(input)))))
+        output = score.calculate_everything(input)
         
         self.assertEqual(output.summary['Declination Absolute Percent Rank'], 1)
         self.assertEqual(output.summary['Declination Relative Percent Rank'], 1)

@@ -591,7 +591,7 @@ function hide_message(score_section, message_section)
 
 function show_metrics_table(plan, metrics_table)
 {
-    if(typeof plan.summary['Efficiency Gap Absolute Percent Rank'] != 'number')
+    if(!('Efficiency Gap Absolute Percent Rank' in plan.summary))
     {
         metrics_table.parentNode.style.display = 'none';
         return;
@@ -641,47 +641,80 @@ function show_metrics_table(plan, metrics_table)
             mmd_percentrank_abs = 'N/A',
             mmd_percentrank_rel = 'N/A';
     }
-
-    metrics_table.innerHTML = `
-        <thead>
-            <tr>
-                <th>Metric</th>
-                <th>Value</th>
-                <th>Favors Democrats in this % of Scenarios<sup>*</sup></th>
-                <th>More Skewed than this % of Historical Plans<sup>‡</sup></th>
-                <th>More Pro-Democratic than this % of Historical Plans<sup>‡</sup></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-                <th><a href="${window.eg_metric_url}">Efficiency Gap</a></th>
-                <td>${nice_percent(Math.abs(eg_value))} Pro-${eg_win_party}</td>
-                <td>${nice_round_percent(eg_positives)}</td>
-                <td>${nice_round_percent(eg_percentrank_abs)}</td>
-                <td>${nice_round_percent(eg_percentrank_rel)}</td>
-            </tr>
-            <tr>
-                <th><a href="${window.d2_metric_url}">Declination</a></th>
-                <td>${Math.round(Math.abs(dec2_value) * 100)/100} Pro-${dec2_win_party}</td>
-                <td>${nice_round_percent(dec2_positives)}</td>
-                <td>${nice_round_percent(dec2_percentrank_abs)}</td>
-                <td>${nice_round_percent(dec2_percentrank_rel)}</td>
-            </tr>
-            <tr>
-                <th><a href="${window.pb_metric_url}">Partisan Bias</a></th>
-                <td>${pb_display}</td>
-                <td>${pb_positives}</td>
-                <td>${pb_percentrank_abs}</td>
-                <td>${pb_percentrank_rel}</td>
-            </tr>
-            <tr>
-                <th><a href="${window.mm_metric_url}">Mean-Median Difference</a></th>
-                <td>${mmd_display}</td>
-                <td>${mmd_positives}</td>
-                <td>${mmd_percentrank_abs}</td>
-                <td>${mmd_percentrank_rel}</td>
-            </tr>
-        </tbody>`;
+    
+    if(plan.summary['Efficiency Gap Absolute Percent Rank'] === null) {
+        metrics_table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                    <th>Favors Democrats in this % of Scenarios<sup>*</sup></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <th><a href="${window.eg_metric_url}">Efficiency Gap</a></th>
+                    <td>${nice_percent(Math.abs(eg_value))} Pro-${eg_win_party}</td>
+                    <td>${nice_round_percent(eg_positives)}</td>
+                </tr>
+                <tr>
+                    <th><a href="${window.d2_metric_url}">Declination</a></th>
+                    <td>${Math.round(Math.abs(dec2_value) * 100)/100} Pro-${dec2_win_party}</td>
+                    <td>${nice_round_percent(dec2_positives)}</td>
+                </tr>
+                <tr>
+                    <th><a href="${window.pb_metric_url}">Partisan Bias</a></th>
+                    <td>${pb_display}</td>
+                    <td>${pb_positives}</td>
+                </tr>
+                <tr>
+                    <th><a href="${window.mm_metric_url}">Mean-Median Difference</a></th>
+                    <td>${mmd_display}</td>
+                    <td>${mmd_positives}</td>
+                </tr>
+            </tbody>`;
+    } else {
+        metrics_table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                    <th>Favors Democrats in this % of Scenarios<sup>*</sup></th>
+                    <th>More Skewed than this % of Historical Plans<sup>‡</sup></th>
+                    <th>More Pro-Democratic than this % of Historical Plans<sup>‡</sup></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <th><a href="${window.eg_metric_url}">Efficiency Gap</a></th>
+                    <td>${nice_percent(Math.abs(eg_value))} Pro-${eg_win_party}</td>
+                    <td>${nice_round_percent(eg_positives)}</td>
+                    <td>${nice_round_percent(eg_percentrank_abs)}</td>
+                    <td>${nice_round_percent(eg_percentrank_rel)}</td>
+                </tr>
+                <tr>
+                    <th><a href="${window.d2_metric_url}">Declination</a></th>
+                    <td>${Math.round(Math.abs(dec2_value) * 100)/100} Pro-${dec2_win_party}</td>
+                    <td>${nice_round_percent(dec2_positives)}</td>
+                    <td>${nice_round_percent(dec2_percentrank_abs)}</td>
+                    <td>${nice_round_percent(dec2_percentrank_rel)}</td>
+                </tr>
+                <tr>
+                    <th><a href="${window.pb_metric_url}">Partisan Bias</a></th>
+                    <td>${pb_display}</td>
+                    <td>${pb_positives}</td>
+                    <td>${pb_percentrank_abs}</td>
+                    <td>${pb_percentrank_rel}</td>
+                </tr>
+                <tr>
+                    <th><a href="${window.mm_metric_url}">Mean-Median Difference</a></th>
+                    <td>${mmd_display}</td>
+                    <td>${mmd_positives}</td>
+                    <td>${mmd_percentrank_abs}</td>
+                    <td>${mmd_percentrank_rel}</td>
+                </tr>
+            </tbody>`;
+    }
 }
 
 function show_library_metadata(plan, metadata_el, geom_prefix)
@@ -1208,7 +1241,8 @@ function get_house_full_name(house_code)
     var houseNames = {
         'ushouse': 'U.S. House',
         'statesenate': 'State Senate',
-        'statehouse': 'State House'
+        'statehouse': 'State House',
+        'localplan': 'Local Plan',
     };
 
     return houseNames[house_code];
@@ -1426,6 +1460,12 @@ function load_plan_score(url, message_section, score_section,
             {
                 console.log(seat_count.parentNode.style.display = 'block');
             }
+        }
+        
+        if(plan.model.house == 'localplan')
+        {
+            // TODO: figure out something more elegant than lying about the house
+            plan.model.house = 'statehouse';
         }
 
         // Populate scores.

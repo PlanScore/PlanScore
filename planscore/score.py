@@ -161,6 +161,9 @@ def safe_positives(values):
 def percentrank_abs(column, house, value):
     '''
     '''
+    if house == data.House.localplan:
+        return None
+    
     path = os.path.join(os.path.dirname(__file__), 'model', {
         data.House.ushouse: 'bias_ushouse.csv.gz',
         data.House.statehouse: 'bias_statehouse.csv.gz',
@@ -179,6 +182,9 @@ def percentrank_abs(column, house, value):
 def percentrank_rel(column, house, value):
     '''
     '''
+    if house == data.House.localplan:
+        return None
+    
     path = os.path.join(os.path.dirname(__file__), 'model', {
         data.House.ushouse: 'bias_ushouse.csv.gz',
         data.House.statehouse: 'bias_statehouse.csv.gz',
@@ -203,7 +209,19 @@ def calculate_EG(red_districts, blue_districts, vote_swing=0):
     
         By convention, result is positive for blue and negative for red.
     '''
-    swung_red, swung_blue = swing_vote(red_districts, blue_districts, vote_swing)
+    init_red, init_blue = swing_vote(red_districts, blue_districts, vote_swing)
+    init_vote_share = sum(init_blue) / (sum(init_blue) + sum(init_red))
+
+    if init_vote_share < .25:
+        # Very red state, swing to 25 blue/75 red
+        clamped_swing = vote_swing + (.25 - init_vote_share)
+    elif init_vote_share > .75:
+        # Very blue state, swing to 75 blue/25 red
+        clamped_swing = vote_swing - (init_vote_share - .75)
+    else:
+        clamped_swing = vote_swing
+
+    swung_red, swung_blue = swing_vote(red_districts, blue_districts, clamped_swing)
     nonzero_districts = [(r, b) for (r, b) in zip(swung_red, swung_blue) if r+b > 0]
 
     district_blue_wins = len([
@@ -609,8 +627,7 @@ def calculate_district_biases(upload):
             f'Efficiency Gap +{swing} Rep SD': safe_stdev(EGs[-swing]),
         })
 
-    rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
-    return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
+    return upload.clone(districts=copied_districts, summary=summary_dict)
 
 def calculate_fva_biases(upload):
     ''' Calculate partisan metrics relevant to Freedom To Vote Act
@@ -640,6 +657,22 @@ def calculate_fva_biases(upload):
 parser = argparse.ArgumentParser()
 parser.add_argument('upload_url')
 
+def calculate_everything(upload1):
+    '''
+    '''
+    upload2 = calculate_bias(upload1)
+    upload3 = calculate_open_biases(upload2)
+    upload4 = calculate_biases(upload3)
+    upload5 = calculate_district_biases(upload4)
+    upload6 = calculate_fva_biases(upload5)
+    
+    rounded_summary_dict = {
+        k: None if v is None else round(v, constants.ROUND_FLOAT)
+        for (k, v) in upload6.summary.items()
+    }
+
+    return upload6.clone(summary=rounded_summary_dict)
+
 def main():
     ''' Write all district vote simulations to single CSV file
     '''
@@ -647,14 +680,8 @@ def main():
 
     got = urllib.request.urlopen(args.upload_url)
     upload1 = data.Upload.from_json(got.read())
-
-    upload2 = calculate_bias(upload1)
-    upload3 = calculate_open_biases(upload2)
-    upload4 = calculate_biases(upload3)
-    upload5 = calculate_district_biases(upload4)
-    upload6 = calculate_fva_biases(upload5)
-
-    complete_upload = upload6.clone(message='Finished scoring this plan.')
+    upload2 = calculate_everything(upload1)
+    complete_upload = upload2.clone(message='Finished scoring this plan.')
     
     print('''Scores for {id} ({state}, {house}):
 EG: {EG:.1f}%; {EG_wins:.0f}% favor D
