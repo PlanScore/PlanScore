@@ -627,11 +627,7 @@ def calculate_district_biases(upload):
             f'Efficiency Gap +{swing} Rep SD': safe_stdev(EGs[-swing]),
         })
 
-    rounded_summary_dict = {
-        k: None if v is None else round(v, constants.ROUND_FLOAT)
-        for (k, v) in summary_dict.items()
-    }
-    return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
+    return upload.clone(districts=copied_districts, summary=summary_dict)
 
 def calculate_fva_biases(upload):
     ''' Calculate partisan metrics relevant to Freedom To Vote Act
@@ -661,6 +657,22 @@ def calculate_fva_biases(upload):
 parser = argparse.ArgumentParser()
 parser.add_argument('upload_url')
 
+def calculate_everything(upload1):
+    '''
+    '''
+    upload2 = calculate_bias(upload1)
+    upload3 = calculate_open_biases(upload2)
+    upload4 = calculate_biases(upload3)
+    upload5 = calculate_district_biases(upload4)
+    upload6 = calculate_fva_biases(upload5)
+    
+    rounded_summary_dict = {
+        k: None if v is None else round(v, constants.ROUND_FLOAT)
+        for (k, v) in upload6.summary.items()
+    }
+
+    return upload6.clone(summary=rounded_summary_dict)
+
 def main():
     ''' Write all district vote simulations to single CSV file
     '''
@@ -668,14 +680,8 @@ def main():
 
     got = urllib.request.urlopen(args.upload_url)
     upload1 = data.Upload.from_json(got.read())
-
-    upload2 = calculate_bias(upload1)
-    upload3 = calculate_open_biases(upload2)
-    upload4 = calculate_biases(upload3)
-    upload5 = calculate_district_biases(upload4)
-    upload6 = calculate_fva_biases(upload5)
-
-    complete_upload = upload6.clone(message='Finished scoring this plan.')
+    upload2 = calculate_everything(upload1)
+    complete_upload = upload2.clone(message='Finished scoring this plan.')
     
     print('''Scores for {id} ({state}, {house}):
 EG: {EG:.1f}%; {EG_wins:.0f}% favor D
