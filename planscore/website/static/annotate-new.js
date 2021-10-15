@@ -82,8 +82,13 @@ function get_description(plan, modified_at)
         'MT': 'Montana'
         };
     
-    var description = ['Plan uploaded'], houses = {'ushouse': 'U.S. House',
-        'statesenate': 'State Senate', 'statehouse': 'State House'};
+    var description = ['Plan uploaded'],
+        houses = {
+            'ushouse': 'U.S. House',
+            'statesenate': 'State Senate',
+            'statehouse': 'State House',
+            'localplan': 'local',
+        };
     
     if(plan['start_time'])
     {
