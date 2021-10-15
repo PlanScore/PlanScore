@@ -161,6 +161,9 @@ def safe_positives(values):
 def percentrank_abs(column, house, value):
     '''
     '''
+    if house == data.House.localplan:
+        return None
+    
     path = os.path.join(os.path.dirname(__file__), 'model', {
         data.House.ushouse: 'bias_ushouse.csv.gz',
         data.House.statehouse: 'bias_statehouse.csv.gz',
@@ -179,6 +182,9 @@ def percentrank_abs(column, house, value):
 def percentrank_rel(column, house, value):
     '''
     '''
+    if house == data.House.localplan:
+        return None
+    
     path = os.path.join(os.path.dirname(__file__), 'model', {
         data.House.ushouse: 'bias_ushouse.csv.gz',
         data.House.statehouse: 'bias_statehouse.csv.gz',
@@ -621,7 +627,10 @@ def calculate_district_biases(upload):
             f'Efficiency Gap +{swing} Rep SD': safe_stdev(EGs[-swing]),
         })
 
-    rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
+    rounded_summary_dict = {
+        k: None if v is None else round(v, constants.ROUND_FLOAT)
+        for (k, v) in summary_dict.items()
+    }
     return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
 
 def calculate_fva_biases(upload):

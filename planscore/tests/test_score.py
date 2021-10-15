@@ -87,6 +87,11 @@ class TestScore (unittest.TestCase):
     def test_percentrank_abs(self):
         ''' Absolute percent rank is correctly calculated by chamber
         '''
+        self.assertIsNone(score.percentrank_abs(score.COLUMN_EG, data.House.localplan, 0))
+        self.assertIsNone(score.percentrank_abs(score.COLUMN_D2, data.House.localplan, 0))
+        self.assertIsNone(score.percentrank_abs(score.COLUMN_PB, data.House.localplan, 0))
+        self.assertIsNone(score.percentrank_abs(score.COLUMN_MMD, data.House.localplan, 0))
+
         # https://planscore.campaignlegal.org/texas/#!1994-plan-ushouse-eg
         self.assertAlmostEqual(score.percentrank_abs(score.COLUMN_EG, data.House.ushouse, .19), 0.9875)
         
@@ -138,6 +143,11 @@ class TestScore (unittest.TestCase):
     def test_percentrank_rel(self):
         ''' Relative percent rank is correctly calculated by chamber
         '''
+        self.assertIsNone(score.percentrank_rel(score.COLUMN_EG, data.House.localplan, 0))
+        self.assertIsNone(score.percentrank_rel(score.COLUMN_D2, data.House.localplan, 0))
+        self.assertIsNone(score.percentrank_rel(score.COLUMN_PB, data.House.localplan, 0))
+        self.assertIsNone(score.percentrank_rel(score.COLUMN_MMD, data.House.localplan, 0))
+
         self.assertAlmostEqual(score.percentrank_rel(score.COLUMN_EG, data.House.ushouse, 1), 1)
         self.assertAlmostEqual(score.percentrank_rel(score.COLUMN_EG, data.House.ushouse, -1), 1)
         self.assertAlmostEqual(score.percentrank_rel(score.COLUMN_EG, data.House.ushouse, .1), 0.8803571)
