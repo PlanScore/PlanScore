@@ -293,6 +293,88 @@ function which_district_color(district, plan)
     return '#808080';
 }
 
+function get_seatshare_array(plan)
+{
+    if(typeof plan.districts[0].totals['Democratic Wins'] !== 'number')
+    {
+        return undefined;
+    }
+
+    var box_colors = [],
+        box_districts = plan.districts.slice(),
+        red_seats = 0,
+        blue_seats = 0;
+
+    box_districts.sort((d1, d2) => (d2.totals['Democratic Wins'] - d1.totals['Democratic Wins']));
+
+    for(var i = 0; i < box_districts.length; i++)
+    {
+        var color = which_district_color(box_districts[i], plan),
+            last_color = color;
+        
+        if(color == BLUE_COLOR_HEX) {
+            blue_seats++;
+        } else if(color == RED_COLOR_HEX) {
+            red_seats++;
+        } else if(color == LEAN_BLUE_COLOR_HEX) {
+            blue_seats++;
+        } else if(color == LEAN_RED_COLOR_HEX) {
+            red_seats++;
+        }
+
+        box_colors.push(color);
+    }
+    
+    return {
+        colors: box_colors,
+        red_count: red_seats,
+        blue_count: blue_seats,
+        total_count: box_districts.length,
+    };
+}
+
+function show_seatshare_graphic(plan, districts_table)
+{
+    var seatshare_array = get_seatshare_array(plan),
+        tags = [],
+        last_color = false;
+    
+    if(seatshare_array === undefined)
+    {
+        return;
+    }
+
+    for(var i = 0; i < seatshare_array.colors.length; i++)
+    {
+        var color = seatshare_array.colors[i],
+            gutter = (last_color && color != last_color) ? '3px' : '1px',
+            width = `calc(${100/(seatshare_array.colors.length)}% - ${gutter})`,
+            last_color = color;
+    
+        if(color == LEAN_BLUE_COLOR_HEX) {
+            color += ' url(&quot;/static/lean-blue-pattern.png&quot;) repeat';
+        } else if(color == LEAN_RED_COLOR_HEX) {
+            color += ' url(&quot;/static/lean-red-pattern.png&quot;)';
+        }
+
+        tags.push(
+            `<span style="display:inline-block;overflow:hidden;height:14px;width:${width};margin-left:${gutter};background:${color};"> </span>`
+        );
+    }
+
+    tags.push(`
+        <br>Predicted seat shares:
+        ${nice_round_percent(seatshare_array.blue_count / (seatshare_array.total_count))} Democratic
+        / ${nice_round_percent(seatshare_array.red_count / (seatshare_array.total_count))} Republican.
+        `);
+
+    svg_div = document.createElement('div');
+    svg_div.innerHTML = tags.join('');
+
+    // TODO: something more elegant than looking up two levels from the table
+    districts_table.parentNode.parentNode.insertBefore(svg_div, districts_table.parentNode.nextSibling);
+}
+
 function show_efficiency_gap_score(plan, score_EG)
 {
     var summary_name = which_score_summary_name(plan),
@@ -1458,45 +1540,7 @@ function load_plan_score(url, message_section, score_section,
 
         tags = tags.concat(['</tbody>']);
         districts_table.innerHTML = tags.join('');
-        
-        var box_tags = [],
-            box_districts = plan.districts.slice(),
-            last_color = false,
-            red_seats = 0,
-            blue_seats = 0;
-        box_districts.sort((d1, d2) => (d2.totals['Democratic Wins'] - d1.totals['Democratic Wins']));
-        for(var i = 0; i < box_districts.length; i++)
-        {
-            var color = which_district_color(box_districts[i], plan),
-                gutter = (last_color && color != last_color) ? '3px' : '1px',
-                width = `calc(${100/(box_districts.length)}% - ${gutter})`,
-                last_color = color;
-            
-            if(color == BLUE_COLOR_HEX) {
-                blue_seats++;
-            } else if(color == RED_COLOR_HEX) {
-                red_seats++;
-            } else if(color == LEAN_BLUE_COLOR_HEX) {
-                color += ' url(&quot;/static/lean-blue-pattern.png&quot;) repeat';
-                blue_seats++;
-            } else if(color == LEAN_RED_COLOR_HEX) {
-                color += ' url(&quot;/static/lean-red-pattern.png&quot;)';
-                red_seats++;
-            }
-
-            box_tags.push(
-                `<span style="display:inline-block;overflow:hidden;height:14px;width:${width};margin-left:${gutter};background:${color};"> </span>`
-            );
-        }
-        box_tags.push(`
-            <br>Predicted seat shares:
-            ${nice_round_percent(blue_seats / (blue_seats + red_seats))} Democratic
-            / ${nice_round_percent(red_seats / (blue_seats + red_seats))} Republican.
-            `);
-        svg_div = document.createElement('div');
-        svg_div.innerHTML = box_tags.join('');
-        // TODO: something more elegant than looking up two levels from the table
-        districts_table.parentNode.parentNode.insertBefore(svg_div, districts_table.parentNode.nextSibling);
+        show_seatshare_graphic(plan, districts_table);
         
         text_link.href = text_url;
 
@@ -1884,6 +1928,7 @@ if(typeof module !== 'undefined' && module.exports)
         which_score_summary_name,
         which_score_column_names,
         which_district_color,
+        get_seatshare_array,
         plan_array,
         plan_has_incumbency,
         update_vote_percentages,
