@@ -555,7 +555,19 @@ function show_sensitivity_test(plan, score_sense)
             categories: ['+5 D', '+4 D', '+3 D', '+2 D', '+1 D', '0', '+1 R', '+2 R', '+3 R', '+4 R', '+5 R'],
             title: { text: 'Possible Vote Swing' }
         },
-        yAxis: { title: { text: null } },
+        yAxis: {
+            title: { text: null },
+            labels: {
+                formatter: function()
+                {
+                    return [
+                        Math.abs(this.value),
+                        '% ',
+                        (this.value == 0 ? '' : (this.value < 0 ? 'R' : 'D')),
+                    ].join('');
+                },
+            },
+        },
         plotOptions: {
             line: {
                 dataLabels: { enabled: false },
