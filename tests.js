@@ -44,6 +44,8 @@ assert.equal(plan.which_district_color(NC_simple_index.districts[0], NC_simple_i
 assert.equal(plan.which_district_color(NC_simple_index.districts[7], NC_simple_index),
     '#4D90D1', 'Should return the blue district color');
 
+assert.equal(plan.get_seatshare_array(NC_simple_index), undefined, 'Should omit seat shares');
+
 var plan_array1 = plan.plan_array(NC_simple_index);
 assert.equal(plan_array1.length, 14, 'Should have a header with 13 districts');
 
@@ -81,6 +83,8 @@ assert.equal(plan.which_district_color(NC_index.districts[0], NC_index),
 
 assert.equal(plan.which_district_color(NC_index.districts[7], NC_index),
     '#4D90D1', 'Should return the blue district color');
+
+assert.equal(plan.get_seatshare_array(NC_index), undefined, 'Should omit seat shares');
 
 var plan_array3 = plan.plan_array(NC_index);
 assert.equal(plan_array3.length, 14, 'Should have a header with 13 districts');
@@ -140,6 +144,8 @@ assert.equal(plan.which_district_color(NC_multisim_index.districts[0], NC_multis
 
 assert.equal(plan.which_district_color(NC_multisim_index.districts[7], NC_multisim_index),
     '#4D90D1', 'Should return the blue district color');
+
+assert.equal(plan.get_seatshare_array(NC_multisim_index), undefined, 'Should omit seat shares');
 
 var plan_array4 = plan.plan_array(NC_multisim_index);
 assert.equal(plan_array4.length, 14, 'Should have a header with 13 districts');
@@ -204,6 +210,8 @@ assert.equal(plan.which_district_color(NC_public_index.districts[1], NC_public_i
 
 assert.equal(plan.which_district_color(NC_public_index.districts[2], NC_public_index),
     '#D45557', 'Should return the red district color');
+
+assert.equal(plan.get_seatshare_array(NC_public_index), undefined, 'Should omit seat shares');
 
 // Plan with default incumbency and no model support
 
@@ -302,6 +310,8 @@ assert.equal(plan.which_district_color(NC_2020.districts[11], NC_2020),
 assert.equal(plan.which_district_color(NC_2020.districts[12], NC_2020),
     '#D45557', 'Should return the red district color for District 13');
 
+assert.equal(plan.get_seatshare_array(NC_2020), undefined, 'Should omit seat shares');
+
 var plan_array9 = plan.plan_array(NC_2020_unified);
 assert.equal(plan_array9.length, 14, 'Should have a header with 13 districts');
 
@@ -351,6 +361,17 @@ assert.equal(plan.which_district_color(NC_2020_unified.districts[11], NC_2020_un
 
 assert.equal(plan.which_district_color(NC_2020_unified.districts[12], NC_2020_unified),
     '#6D8AB1', 'Should return the lean-blue district color for District 13');
+
+var NC_2020_unified_seatshare = plan.get_seatshare_array(NC_2020_unified);
+
+assert.equal(
+    NC_2020_unified_seatshare.colors.length,
+    NC_2020_unified_seatshare.total_count,
+    'Should see the correct number of colors',
+);
+
+assert.equal(NC_2020_unified_seatshare.red_count, 7, 'Should see the correct number of red seats');
+assert.equal(NC_2020_unified_seatshare.blue_count, 6, 'Should see the correct number of blue seats');
 
 // Display preparation functions
 
