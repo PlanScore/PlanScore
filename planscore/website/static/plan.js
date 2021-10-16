@@ -1514,12 +1514,6 @@ function load_plan_score(url, message_section, score_section,
             }
         }
         
-        if(plan.model.house == 'localplan')
-        {
-            // TODO: figure out something more elegant than lying about the house
-            plan.model.house = 'statehouse';
-        }
-
         // Populate scores.
         show_efficiency_gap_score(plan, score_EG);
         show_sensitivity_test(plan, score_sense);
