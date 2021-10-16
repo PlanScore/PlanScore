@@ -75,7 +75,7 @@ jobs:
 
 workflows:
   version: 2
-  everything:
+  Everything:
     jobs:
       - Test
       - Build:
