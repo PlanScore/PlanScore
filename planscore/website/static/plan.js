@@ -1559,7 +1559,6 @@ function load_plan_score(url, message_section, score_section,
             // Returns a dictionary with a list of districts
             var data = JSON.parse(request.responseText),
                 modified_at = new Date(request.getResponseHeader('Last-Modified'));
-            console.log('Loaded plan:', data);
 
             // older uploads had geometries but did not include geometry_key
             if(!('geometry_key' in data)) {
