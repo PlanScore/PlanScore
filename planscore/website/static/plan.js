@@ -302,6 +302,8 @@ function get_seatshare_array(plan)
 
     var box_colors = [],
         box_districts = plan.districts.slice(),
+        red_votes = 0,
+        blue_votes = 0,
         red_seats = 0,
         blue_seats = 0;
 
@@ -323,13 +325,18 @@ function get_seatshare_array(plan)
         }
 
         box_colors.push(color);
+        red_votes += box_districts[i].totals['Republican Votes'];
+        blue_votes += box_districts[i].totals['Democratic Votes'];
     }
     
     return {
         colors: box_colors,
-        red_count: red_seats,
-        blue_count: blue_seats,
-        total_count: box_districts.length,
+        red_votes: red_votes,
+        blue_votes: blue_votes,
+        total_votes: red_votes + blue_votes,
+        red_seats: red_seats,
+        blue_seats: blue_seats,
+        total_seats: box_districts.length,
     };
 }
 
@@ -369,8 +376,12 @@ function show_seatshare_graphic(plan, districts_table)
 
     tags.push(`
         <br>Predicted seat shares:
-        ${nice_round_percent(seatshare_array.blue_count / (seatshare_array.total_count))} Democratic
-        / ${nice_round_percent(seatshare_array.red_count / (seatshare_array.total_count))} Republican.
+        ${nice_round_percent(seatshare_array.blue_seats / (seatshare_array.total_seats))} Democratic
+        / ${nice_round_percent(seatshare_array.red_seats / (seatshare_array.total_seats))} Republican
+        vs.
+        ${nice_round_percent(seatshare_array.blue_votes / (seatshare_array.total_votes))} D
+        / ${nice_round_percent(seatshare_array.red_votes / (seatshare_array.total_votes))} R
+        vote shares.
         `);
 
     svg_div = document.createElement('div');

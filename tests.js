@@ -366,12 +366,14 @@ var NC_2020_unified_seatshare = plan.get_seatshare_array(NC_2020_unified);
 
 assert.equal(
     NC_2020_unified_seatshare.colors.length,
-    NC_2020_unified_seatshare.total_count,
+    NC_2020_unified_seatshare.total_seats,
     'Should see the correct number of colors',
 );
 
-assert.equal(NC_2020_unified_seatshare.red_count, 7, 'Should see the correct number of red seats');
-assert.equal(NC_2020_unified_seatshare.blue_count, 6, 'Should see the correct number of blue seats');
+assert.equal(Math.round(NC_2020_unified_seatshare.red_votes), 2273424, 'Should see the correct number of red votes');
+assert.equal(Math.round(NC_2020_unified_seatshare.blue_votes), 2181551, 'Should see the correct number of blue votes');
+assert.equal(NC_2020_unified_seatshare.red_seats, 7, 'Should see the correct number of red seats');
+assert.equal(NC_2020_unified_seatshare.blue_seats, 6, 'Should see the correct number of blue seats');
 
 // Display preparation functions
 
