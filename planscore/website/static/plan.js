@@ -350,15 +350,20 @@ function show_seatshare_graphic(plan, districts_table)
             gutter = (last_color && color != last_color) ? '3px' : '1px',
             width = `calc(${100/(seatshare_array.colors.length)}% - ${gutter})`,
             last_color = color;
-    
+        
         if(color == LEAN_BLUE_COLOR_HEX) {
-            color += ' url(&quot;/static/lean-blue-pattern.png&quot;) repeat';
+            color += ' url(&quot;/static/lean-blue-pattern.png&quot;)';
         } else if(color == LEAN_RED_COLOR_HEX) {
             color += ' url(&quot;/static/lean-red-pattern.png&quot;)';
         }
+    
+        if(seatshare_array.colors.length > 50)
+        {
+            color += ' fixed';
+        }
 
         tags.push(
-            `<span style="display:inline-block;overflow:hidden;height:14px;width:${width};margin-left:${gutter};background:${color};"> </span>`
+            `<span style="width:${width};margin-left:${gutter};background:${color};" class="seatshare-box"> </span>`
         );
     }
 

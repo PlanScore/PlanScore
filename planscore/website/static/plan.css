@@ -187,3 +187,12 @@ table tr.highlighted {
 path.highlight {
     stroke-width: 5;
 }
+
+.seatshare-box
+{
+    display: inline-block;
+    overflow: hidden;
+    height: 14px;
+    margin: 0;
+    background-repeat: repeat;
+}
