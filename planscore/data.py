@@ -381,10 +381,10 @@ MODELS = [
     Model(State.CO, House.statesenate,  35,  True, VERSION, 'data/CO/010-3rd-party'), # 0cba4e2
     Model(State.CO, House.statehouse,   65,  True, VERSION, 'data/CO/010-3rd-party'), # 0cba4e2
     Model(State.CO, House.localplan,  None,  True, VERSION, 'data/CO/010-3rd-party'), # 0cba4e2
-    Model(State.CT, House.ushouse,       5,  True, VERSION, 'data/CT/003-3rd-party'), # 0cba4e2
-    Model(State.CT, House.statesenate,  36,  True, VERSION, 'data/CT/003-3rd-party'), # 0cba4e2
-    Model(State.CT, House.statehouse,  151,  True, VERSION, 'data/CT/003-3rd-party'), # 0cba4e2
-    Model(State.CT, House.localplan,  None,  True, VERSION, 'data/CT/003-3rd-party'), # 0cba4e2
+    Model(State.CT, House.ushouse,       5,  True, VERSION, 'data/CT/004-dra-block'), # 5caa70e
+    Model(State.CT, House.statesenate,  36,  True, VERSION, 'data/CT/004-dra-block'), # 5caa70e
+    Model(State.CT, House.statehouse,  151,  True, VERSION, 'data/CT/004-dra-block'), # 5caa70e
+    Model(State.CT, House.localplan,  None,  True, VERSION, 'data/CT/004-dra-block'), # 5caa70e
     Model(State.DE, House.ushouse,       1,  True, VERSION, 'data/DE/007-3rd-party'), # 0cba4e2
     Model(State.DE, House.statesenate,  21,  True, VERSION, 'data/DE/007-3rd-party'), # 0cba4e2
     Model(State.DE, House.statehouse,   41,  True, VERSION, 'data/DE/007-3rd-party'), # 0cba4e2
@@ -429,18 +429,18 @@ MODELS = [
     Model(State.LA, House.statesenate,  39,  True, VERSION, 'data/LA/004-3rd-party'), # 0cba4e2
     Model(State.LA, House.statehouse,  105,  True, VERSION, 'data/LA/004-3rd-party'), # 0cba4e2
     Model(State.LA, House.localplan,  None,  True, VERSION, 'data/LA/004-3rd-party'), # 0cba4e2
-    Model(State.MA, House.ushouse,       9,  True, VERSION, 'data/MA/007-3rd-party'), # 0cba4e2
-    Model(State.MA, House.statesenate,  40,  True, VERSION, 'data/MA/007-3rd-party'), # 0cba4e2
-    Model(State.MA, House.statehouse,  160,  True, VERSION, 'data/MA/007-3rd-party'), # 0cba4e2
-    Model(State.MA, House.localplan,  None,  True, VERSION, 'data/MA/007-3rd-party'), # 0cba4e2
+    Model(State.MA, House.ushouse,       9,  True, VERSION, 'data/MA/008-dra-block'), # 5caa70e
+    Model(State.MA, House.statesenate,  40,  True, VERSION, 'data/MA/008-dra-block'), # 5caa70e
+    Model(State.MA, House.statehouse,  160,  True, VERSION, 'data/MA/008-dra-block'), # 5caa70e
+    Model(State.MA, House.localplan,  None,  True, VERSION, 'data/MA/008-dra-block'), # 5caa70e
     Model(State.MD, House.ushouse,       8,  True, VERSION, 'data/MD/009-3rd-party'), # 0cba4e2
     Model(State.MD, House.statesenate,  47,  True, VERSION, 'data/MD/009-3rd-party'), # 0cba4e2
     Model(State.MD, House.statehouse,   68,  True, VERSION, 'data/MD/009-3rd-party'), # 0cba4e2
     Model(State.MD, House.localplan,  None,  True, VERSION, 'data/MD/009-3rd-party'), # 0cba4e2
-    Model(State.ME, House.ushouse,       2,  True, VERSION, 'data/ME/007-3rd-party'), # 0cba4e2
-    Model(State.ME, House.statesenate,  35,  True, VERSION, 'data/ME/007-3rd-party'), # 0cba4e2
-    Model(State.ME, House.statehouse,  151,  True, VERSION, 'data/ME/007-3rd-party'), # 0cba4e2
-    Model(State.ME, House.localplan,  None,  True, VERSION, 'data/ME/007-3rd-party'), # 0cba4e2
+    Model(State.ME, House.ushouse,       2,  True, VERSION, 'data/ME/008-dra-block'), # 5caa70e
+    Model(State.ME, House.statesenate,  35,  True, VERSION, 'data/ME/008-dra-block'), # 5caa70e
+    Model(State.ME, House.statehouse,  151,  True, VERSION, 'data/ME/008-dra-block'), # 5caa70e
+    Model(State.ME, House.localplan,  None,  True, VERSION, 'data/ME/008-dra-block'), # 5caa70e
     Model(State.MI, House.ushouse,      13,  True, VERSION, 'data/MI/008-3rd-party'), # 0cba4e2
     Model(State.MI, House.statesenate,  38,  True, VERSION, 'data/MI/008-3rd-party'), # 0cba4e2
     Model(State.MI, House.statehouse,  110,  True, VERSION, 'data/MI/008-3rd-party'), # 0cba4e2
@@ -467,10 +467,10 @@ MODELS = [
     Model(State.ND, House.localplan,  None,  True, VERSION, 'data/ND/007-3rd-party'), # 0cba4e2
     Model(State.NE, House.ushouse,       3,  True, VERSION, 'data/NE/005-3rd-party'), # 0cba4e2
     Model(State.NE, House.statesenate,  49,  True, VERSION, 'data/NE/005-3rd-party'), # 0cba4e2
-    Model(State.NH, House.ushouse,       2,  True, VERSION, 'data/NH/007-3rd-party'), # 0cba4e2
-    Model(State.NH, House.statesenate,  24,  True, VERSION, 'data/NH/007-3rd-party'), # 0cba4e2
-    Model(State.NH, House.statehouse,  400,  True, VERSION, 'data/NH/007-3rd-party'), # 0cba4e2
-    Model(State.NH, House.localplan,  None,  True, VERSION, 'data/NH/007-3rd-party'), # 0cba4e2
+    Model(State.NH, House.ushouse,       2,  True, VERSION, 'data/NH/008-dra-block'), # 5caa70e
+    Model(State.NH, House.statesenate,  24,  True, VERSION, 'data/NH/008-dra-block'), # 5caa70e
+    Model(State.NH, House.statehouse,  400,  True, VERSION, 'data/NH/008-dra-block'), # 5caa70e
+    Model(State.NH, House.localplan,  None,  True, VERSION, 'data/NH/008-dra-block'), # 5caa70e
     Model(State.NJ, House.ushouse,      12,  True, VERSION, 'data/NJ/003-3rd-party'), # 0cba4e2
     Model(State.NJ, House.statesenate,  40,  True, VERSION, 'data/NJ/003-3rd-party'), # 0cba4e2
     Model(State.NJ, House.statehouse,   80,  True, VERSION, 'data/NJ/003-3rd-party'), # 0cba4e2
@@ -499,10 +499,10 @@ MODELS = [
     Model(State.PA, House.statesenate,  50,  True, VERSION, 'data/PA/013-3rd-party'), # e015b2e
     Model(State.PA, House.statehouse,  203,  True, VERSION, 'data/PA/013-3rd-party'), # e015b2e
     Model(State.PA, House.localplan,  None,  True, VERSION, 'data/PA/013-3rd-party'), # e015b2e
-    Model(State.RI, House.ushouse,       2,  True, VERSION, 'data/RI/007-3rd-party'), # 0cba4e2
-    Model(State.RI, House.statesenate,  38,  True, VERSION, 'data/RI/007-3rd-party'), # 0cba4e2
-    Model(State.RI, House.statehouse,   75,  True, VERSION, 'data/RI/007-3rd-party'), # 0cba4e2
-    Model(State.RI, House.localplan,  None,  True, VERSION, 'data/RI/007-3rd-party'), # 0cba4e2
+    Model(State.RI, House.ushouse,       2,  True, VERSION, 'data/RI/008-dra-block'), # 5caa70e
+    Model(State.RI, House.statesenate,  38,  True, VERSION, 'data/RI/008-dra-block'), # 5caa70e
+    Model(State.RI, House.statehouse,   75,  True, VERSION, 'data/RI/008-dra-block'), # 5caa70e
+    Model(State.RI, House.localplan,  None,  True, VERSION, 'data/RI/008-dra-block'), # 5caa70e
     Model(State.SC, House.ushouse,       7,  True, VERSION, 'data/SC/005-3rd-party'), # 0cba4e2
     Model(State.SC, House.statesenate,  46,  True, VERSION, 'data/SC/005-3rd-party'), # 0cba4e2
     Model(State.SC, House.statehouse,  124,  True, VERSION, 'data/SC/005-3rd-party'), # 0cba4e2
@@ -527,10 +527,10 @@ MODELS = [
     Model(State.VA, House.statesenate,  40,  True, VERSION, 'data/VA/006-3rd-party'), # 0cba4e2
     Model(State.VA, House.statehouse,  100,  True, VERSION, 'data/VA/006-3rd-party'), # 0cba4e2
     Model(State.VA, House.localplan,  None,  True, VERSION, 'data/VA/006-3rd-party'), # 0cba4e2
-    Model(State.VT, House.ushouse,       1,  True, VERSION, 'data/VT/007-3rd-party'), # 0cba4e2
-    Model(State.VT, House.statesenate,  30,  True, VERSION, 'data/VT/007-3rd-party'), # 0cba4e2
-    Model(State.VT, House.statehouse,  150,  True, VERSION, 'data/VT/007-3rd-party'), # 0cba4e2
-    Model(State.VT, House.localplan,  None,  True, VERSION, 'data/VT/007-3rd-party'), # 0cba4e2
+    Model(State.VT, House.ushouse,       1,  True, VERSION, 'data/VT/008-dra-block'), # 5caa70e
+    Model(State.VT, House.statesenate,  30,  True, VERSION, 'data/VT/008-dra-block'), # 5caa70e
+    Model(State.VT, House.statehouse,  150,  True, VERSION, 'data/VT/008-dra-block'), # 5caa70e
+    Model(State.VT, House.localplan,  None,  True, VERSION, 'data/VT/008-dra-block'), # 5caa70e
     Model(State.WA, House.ushouse,      10,  True, VERSION, 'data/WA/006-3rd-party'), # 0cba4e2
     Model(State.WA, House.statesenate,  49,  True, VERSION, 'data/WA/006-3rd-party'), # 0cba4e2
     Model(State.WA, House.statehouse,   98,  True, VERSION, 'data/WA/006-3rd-party'), # 0cba4e2
