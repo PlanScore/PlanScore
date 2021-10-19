@@ -48,7 +48,7 @@ def ordered_districts(layer):
         except:
             continue
         
-        if values != expected_values:
+        if values > expected_values:
             continue
         
         fields.append((2 if 'district' in name.lower() else 1, name))
