@@ -25,7 +25,8 @@ var NC_index = require('./data/sample-NC-1-992/index.json'),
     NC_2019_incumbency = require('./data/sample-NC2019/index-incumbency.json'),
     NC_2020 = require('./data/sample-NC2020/index.json'),
     NC_2020_unified = require('./data/sample-NC-unified/index.json'),
-    FL_2020_declination = require('./data/sample-FL-declination/index.json');
+    FL_2020_declination = require('./data/sample-FL-declination/index.json'),
+    CT_2021_water_district = require('./data/sample-CT-mostly-water-district/index.json');
 
 // Old-style red vs. blue plan
 
@@ -536,6 +537,15 @@ assert.equal(
     Math.round(1000000 * plan.calculate_declination2_difference(FL_2020_declination)),
     Math.round(1000000 * -0.0025963086751557007),
     'Should find correct margin difference');
+
+var CT_2021_water_seatshare = plan.get_seatshare_array(CT_2021_water_district);
+
+assert.equal(CT_2021_water_seatshare.colors.length, 5, 'Should see the correct number of colors');
+assert.equal(Math.round(CT_2021_water_seatshare.red_votes), 682129, 'Should see the correct number of red votes');
+assert.equal(Math.round(CT_2021_water_seatshare.blue_votes), 814115, 'Should see the correct number of blue votes');
+assert.equal(CT_2021_water_seatshare.red_seats, 0, 'Should see the correct number of red seats');
+assert.equal(CT_2021_water_seatshare.blue_seats, 5, 'Should see the correct number of blue seats');
+assert.equal(CT_2021_water_seatshare.total_seats, 5, 'Should see the correct number of seats');
 
 // Annotate page
 

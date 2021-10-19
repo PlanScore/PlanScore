@@ -295,13 +295,13 @@ function which_district_color(district, plan)
 
 function get_seatshare_array(plan)
 {
-    if(typeof plan.districts[0].totals['Democratic Wins'] !== 'number')
+    if(!('Democratic Wins' in plan.districts[0].totals))
     {
         return undefined;
     }
 
     var box_colors = [],
-        box_districts = plan.districts.slice(),
+        box_districts = plan.districts.filter((d) => (d['is_counted'] !== false)),
         red_votes = 0,
         blue_votes = 0,
         red_seats = 0,
@@ -1529,6 +1529,12 @@ function load_plan_score(url, message_section, score_section,
                         row_title = '';
                     }
                 }
+            }
+            
+            if(plan.districts[i - 1]['is_counted'] === false)
+            {
+                row_class = 'no-votes';
+                row_title = `District ${table_array[i][0]} has insufficient votes and does not count toward partisan scores`;
             }
             
             tags = tags.concat([`<tr class="${row_class}" title="${row_title}">`]);
