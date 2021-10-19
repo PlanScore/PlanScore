@@ -375,9 +375,10 @@ function show_seatshare_graphic(plan, districts_table)
     }
 
     tags.push(`
-        <br>Predicted seat share:
+        <br>Predicted
         ${nice_round_percent(seatshare_array.blue_seats / (seatshare_array.total_seats))} Democratic
         / ${nice_round_percent(seatshare_array.red_seats / (seatshare_array.total_seats))} Republican
+        seat share
         vs.
         ${nice_round_percent(seatshare_array.blue_votes / (seatshare_array.total_votes))} D
         / ${nice_round_percent(seatshare_array.red_votes / (seatshare_array.total_votes))} R
