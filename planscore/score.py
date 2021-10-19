@@ -550,7 +550,7 @@ def calculate_district_biases(upload):
     output_votes = matrix.model_votes(
         upload.model.state,
         matrix.YEAR,
-        matrix.prepare_district_data(upload),
+        matrix.filter_district_data(matrix.prepare_district_data(upload)),
     )
     
     # Record per-district vote totals and confidence intervals
@@ -567,6 +567,7 @@ def calculate_district_biases(upload):
                 'Democratic Votes SD': round(statistics.stdev(blue_votes), constants.ROUND_COUNT),
                 'Republican Votes SD': round(statistics.stdev(red_votes), constants.ROUND_COUNT)
                 })
+            district['is_counted'] = True
         except statistics.StatisticsError:
             district['totals'].update({
                 'Democratic Wins': None,
@@ -575,6 +576,7 @@ def calculate_district_biases(upload):
                 'Democratic Votes SD': None,
                 'Republican Votes SD': None,
                 })
+            district['is_counted'] = False
     
     # For each sim, a list of red votes and a list of blue votes in districts
     red_votes_blue_votes = [
@@ -702,6 +704,6 @@ R votes: {votes_R}'''.format(
         MMD_wins=complete_upload.summary['Mean-Median Positives'] * 100,
         DEC=complete_upload.summary['Declination'],
         DEC_wins=complete_upload.summary['Declination Positives'] * 100,
-        votes_D=[round(d['totals']['Democratic Votes'], 1) for d in complete_upload.districts],
-        votes_R=[round(d['totals']['Republican Votes'], 1) for d in complete_upload.districts],
+        votes_D=[d['totals']['Democratic Votes'] for d in complete_upload.districts],
+        votes_R=[d['totals']['Republican Votes'] for d in complete_upload.districts],
     ))
