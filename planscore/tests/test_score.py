@@ -852,8 +852,8 @@ class TestScore (unittest.TestCase):
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
-    @unittest.mock.patch('planscore.matrix.prepare_district_data')
-    def test_calculate_gap_unified(self, prepare_district_data, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
+    @unittest.mock.patch('planscore.matrix.filter_district_data')
+    def test_calculate_gap_unified(self, filter_district_data, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
@@ -889,7 +889,7 @@ class TestScore (unittest.TestCase):
              [2.6, 5.4]],
         ])
         output = score.calculate_everything(input)
-        self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, None, prepare_district_data.return_value))
+        self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, None, filter_district_data.return_value))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median Positives'], 0.0)
@@ -1106,6 +1106,12 @@ class TestScore (unittest.TestCase):
              [numpy.nan, numpy.nan]],
         ])
         output = score.calculate_everything(input)
+        self.assertEqual(output.districts[0]['is_counted'], True, 'Should count 1st district')
+        self.assertEqual(output.districts[1]['is_counted'], True, 'Should count 2nd district')
+        self.assertEqual(output.districts[2]['is_counted'], True, 'Should count 3rd district')
+        self.assertEqual(output.districts[3]['is_counted'], True, 'Should count 5th district')
+        self.assertEqual(output.districts[4]['is_counted'], False, 'Should not count empty 5th district')
+        
         self.assertEqual(model_votes.mock_calls[0][1][:2], (data.State.XX, None))
         self.assertEqual(model_votes.mock_calls[0][1][2][0], (5.86, 2.14, 'O'))
         self.assertEqual(model_votes.mock_calls[0][1][2][1], (4.95, 3.05, 'O'))
@@ -1163,5 +1169,5 @@ class TestScore (unittest.TestCase):
 
         output = score.calculate_everything(input)
         
-        self.assertEqual(output.summary['Declination Absolute Percent Rank'], 1)
-        self.assertEqual(output.summary['Declination Relative Percent Rank'], 1)
+        self.assertEqual(output.summary['Declination Absolute Percent Rank'], 1.0)
+        self.assertEqual(output.summary['Declination Relative Percent Rank'], 1.0)

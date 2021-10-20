@@ -1,4 +1,4 @@
-import urllib.parse, tempfile, shutil, os, contextlib, logging, zipfile, itertools, shutil, enum, csv, re
+import urllib.parse, tempfile, shutil, os, contextlib, logging, zipfile, itertools, functools, enum, csv, re
 from . import constants
 import osgeo.ogr
 
@@ -150,6 +150,61 @@ def baf_stream_to_pairs(stream):
         for row in rows if row[district_column] != 'ZZ'
     ]
 
+def ordered_districts(layer):
+    ''' Return field name and list of layer features ordered by guessed district numbers.
+    '''
+    defn = layer.GetLayerDefn()
+    fields = list()
+    
+    polygon_features = [feat for feat in layer if is_polygonal_feature(feat)]
+    has_multipolygons = True in [is_multipolygon_feature(f) for f in polygon_features]
+
+    for index in range(defn.GetFieldCount()):
+        name = defn.GetFieldDefn(index).GetName()
+        raw_values = [feat.GetField(name) for feat in polygon_features]
+        
+        try:
+            values = {int(raw) for raw in raw_values}
+        except:
+            continue
+        
+        has_no_repeats = bool(len(values) == len(polygon_features))
+        
+        if 1 not in values or values > {i+1 for i in range(len(values))}:
+            continue
+        
+        fields.append((2 if 'district' in name.lower() else 1, name, has_no_repeats))
+
+    if not fields:
+        # No district field found, return everything as-is
+        return None, polygon_features
+    
+    field_name, has_no_repeats = sorted(fields)[-1][1:]
+    district_number = lambda f: int(f.GetField(field_name))
+    
+    if has_multipolygons or has_no_repeats:
+        # Don't try to merge when a multipolygon is present or no repeats exist
+        return field_name, sorted(polygon_features, key=district_number)
+
+    sorted_features = sorted(polygon_features, key=district_number)
+    output_features = []
+    
+    def _union_features(f1, f2):
+        dissolved_geom = f1.GetGeometryRef().Union(f2.GetGeometryRef())
+        f1.SetGeometry(dissolved_geom)
+        return f1
+
+    # Union feature geometries based on district number
+    for (_, group) in itertools.groupby(sorted_features, key=district_number):
+        head = next(group)
+        output_features.append(functools.reduce(_union_features, group, head))
+    
+    return field_name, output_features
+    
 def is_polygonal_feature(feature):
     geometry = feature.GetGeometryRef() or EMPTY_GEOMETRY
     return bool(geometry.GetGeometryType() in POLYGONAL_TYPES)
+
+def is_multipolygon_feature(feature):
+    geometry = feature.GetGeometryRef() or EMPTY_GEOMETRY
+    return bool(geometry.GetGeometryType() == osgeo.ogr.wkbMultiPolygon)

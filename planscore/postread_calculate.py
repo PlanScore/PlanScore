@@ -3,7 +3,7 @@
 Fans out asynchronous parallel calls to planscore.district function, then
 starts and observer process with planscore.score function.
 '''
-import os, io, json, urllib.parse, gzip, functools, time, math, threading
+import os, io, json, urllib.parse, gzip, time, math, threading
 import csv, operator, itertools, zipfile
 import boto3, osgeo.ogr
 from . import util, data, score, website, prepare_state, constants, run_tile, run_slice, observe
@@ -13,38 +13,6 @@ FUNCTION_NAME = os.environ.get('FUNC_NAME_POSTREAD_CALCULATE') or 'PlanScore-Pos
 osgeo.ogr.UseExceptions()
 
 states_path = os.path.join(os.path.dirname(__file__), 'geodata', 'cb_2013_us_state_20m.geojson')
-
-def ordered_districts(layer):
-    ''' Return field name and list of layer features ordered by guessed district numbers.
-    '''
-    defn = layer.GetLayerDefn()
-    expected_values = {i+1 for i in range(len(layer))}
-    fields = list()
-    
-    polygon_features = [feat for feat in layer if util.is_polygonal_feature(feat)]
-
-    for index in range(defn.GetFieldCount()):
-        name = defn.GetFieldDefn(index).GetName()
-        raw_values = [feat.GetField(name) for feat in polygon_features]
-        
-        try:
-            values = {int(raw) for raw in raw_values}
-        except:
-            continue
-        
-        if values != expected_values:
-            continue
-        
-        fields.append((2 if 'district' in name.lower() else 1, name))
-
-    if not fields:
-        return None, polygon_features
-    
-    name = sorted(fields)[-1][1]
-    
-    print('Sorting layer on', name)
-
-    return name, sorted(polygon_features, key=lambda f: int(f.GetField(name)))
 
 def commence_upload_scoring(s3, bucket, upload):
     '''
@@ -95,7 +63,7 @@ def put_district_geometries(s3, bucket, upload, path):
     if not ds:
         raise RuntimeError('Could not open file to fan out district invocations')
 
-    _, features = ordered_districts(ds.GetLayer(0))
+    _, features = util.ordered_districts(ds.GetLayer(0))
     
     for (index, feature) in enumerate(features):
         geometry = feature.GetGeometryRef()

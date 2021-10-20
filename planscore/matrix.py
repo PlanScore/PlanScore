@@ -4,6 +4,7 @@ import gzip
 import itertools
 import collections
 import argparse
+import statistics
 import urllib.request
 
 import numpy
@@ -189,6 +190,24 @@ def prepare_district_data(upload):
         ))
     
     return data
+
+def filter_district_data(prepared_data):
+    ''' Set to zero any district with votes 90% below mean()
+    '''
+    district_sums = numpy.array(prepared_data)[:,:2].astype(float).sum(axis=1)
+    district_cutoff = statistics.mean(district_sums) / 10
+    
+    filtered_data = [
+        (
+            blue_votes if high_enough else 0,
+            red_votes if high_enough else 0,
+            incumbency,
+        )
+        for ((blue_votes, red_votes, incumbency), high_enough)
+        in zip(prepared_data, district_sums >= district_cutoff)
+    ]
+    
+    return filtered_data
 
 parser = argparse.ArgumentParser()
 parser.add_argument('upload_url')

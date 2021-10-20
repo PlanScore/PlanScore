@@ -52,61 +52,6 @@ class TestPrereadFollowup (unittest.TestCase):
         self.assertEqual(put_upload_index.mock_calls[0][1][1].message,
             "Can't score this plan: Bad time")
     
-    @unittest.mock.patch('planscore.util.is_polygonal_feature')
-    @unittest.mock.patch('sys.stdout')
-    def test_ordered_districts(self, stdout, is_polygonal_feature):
-        '''
-        '''
-        is_polygonal_feature.return_value = True
-
-        ds1 = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'unordered1.geojson'))
-        layer1 = ds1.GetLayer(0)
-        name1, features1 = preread_followup.ordered_districts(layer1)
-        self.assertEqual(name1, 'DISTRICT')
-        self.assertEqual([f.GetField(name1) for f in features1],
-            [str(i + 1) for i in range(18)])
-
-        ds2 = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'unordered2.geojson'))
-        layer2 = ds2.GetLayer(0)
-        name2, features2 = preread_followup.ordered_districts(layer2)
-        self.assertEqual(name2, 'DISTRICT')
-        self.assertEqual([f.GetField(name2) for f in features2],
-            [f'{i:02d}' for i in range(1, 19)])
-
-        ds3 = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'unordered3.geojson'))
-        layer3 = ds3.GetLayer(0)
-        name3, features3 = preread_followup.ordered_districts(layer3)
-        self.assertEqual(name3, 'DISTRICT')
-        self.assertEqual([f.GetField(name3) for f in features3],
-            [str(i + 1) for i in range(18)])
-
-        # Weird data source with no obvious district numbers
-        ds4 = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'unordered4.geojson'))
-        layer4 = ds4.GetLayer(0)
-        name4, features4 = preread_followup.ordered_districts(layer4)
-        self.assertIsNone(name4)
-
-        ds5 = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'unordered5.geojson'))
-        layer5 = ds5.GetLayer(0)
-        name5, features5 = preread_followup.ordered_districts(layer5)
-        self.assertEqual(name5, 'District')
-        self.assertEqual([f.GetField(name5) for f in features5],
-            [float(i + 1) for i in range(18)])
-
-        ds6 = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'unordered6.geojson'))
-        layer6 = ds6.GetLayer(0)
-        name6, features6 = preread_followup.ordered_districts(layer6)
-        self.assertEqual(name6, 'District')
-        self.assertEqual([f.GetField(name6) for f in features6],
-            [str(i + 1) for i in range(18)])
-
-        ds7 = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'unordered7.geojson'))
-        layer7 = ds7.GetLayer(0)
-        name7, features7 = preread_followup.ordered_districts(layer7)
-        self.assertEqual(name7, 'District_N')
-        self.assertEqual([f.GetField(name7) for f in features7],
-            [str(i + 1) for i in range(18)])
-    
     @unittest.mock.patch('gzip.compress')
     def test_put_geojson_file(self, compress):
         ''' Geometry GeoJSON file is posted to S3

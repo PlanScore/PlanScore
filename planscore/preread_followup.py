@@ -30,38 +30,6 @@ osgeo.ogr.UseExceptions()
 
 states_path = os.path.join(os.path.dirname(__file__), 'geodata', 'cb_2013_us_state_20m.geojson')
 
-def ordered_districts(layer):
-    ''' Return field name and list of layer features ordered by guessed district numbers.
-    '''
-    defn = layer.GetLayerDefn()
-    expected_values = {i+1 for i in range(len(layer))}
-    fields = list()
-    
-    polygon_features = [feat for feat in layer if util.is_polygonal_feature(feat)]
-
-    for index in range(defn.GetFieldCount()):
-        name = defn.GetFieldDefn(index).GetName()
-        raw_values = [feat.GetField(name) for feat in polygon_features]
-        
-        try:
-            values = {int(raw) for raw in raw_values}
-        except:
-            continue
-        
-        if values != expected_values:
-            continue
-        
-        fields.append((2 if 'district' in name.lower() else 1, name))
-
-    if not fields:
-        return None, polygon_features
-    
-    name = sorted(fields)[-1][1]
-    
-    print('Sorting layer on', name)
-    
-    return name, sorted(polygon_features, key=lambda f: int(f.GetField(name)))
-
 def commence_upload_parsing(s3, lam, bucket, upload):
     '''
     '''
@@ -155,7 +123,7 @@ def count_district_geometries(path):
     if not ds:
         raise RuntimeError('Could not open file to fan out district invocations')
 
-    _, features = ordered_districts(ds.GetLayer(0))
+    _, features = util.ordered_districts(ds.GetLayer(0))
     
     return len(features)
 
@@ -303,7 +271,7 @@ def put_geojson_file(s3, bucket, upload, path):
     if not ds:
         raise RuntimeError('Could not open "{}"'.format(path))
 
-    _, features = ordered_districts(ds.GetLayer(0))
+    _, features = util.ordered_districts(ds.GetLayer(0))
     
     for (index, feature) in enumerate(features):
         if not util.is_polygonal_feature(feature):

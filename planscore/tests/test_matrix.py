@@ -181,3 +181,25 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(output[1], (4.88, 3.12, 'O'))
         self.assertEqual(output[2], (2.96, 5.04, 'O'))
         self.assertEqual(output[3], (2.00, 6.00, 'O'))
+    
+    def test_filter_district_data(self):
+        data1 = [(5.86, 2.14, 'O'), (4.95, 3.05, 'O'), (3.13, 4.87, 'O'), (2.22, 5.78, 'O')]
+        data2 = matrix.filter_district_data(data1)
+        for (d1, d2) in zip(data1, data2):
+            self.assertEqual(d1, d2)
+
+        data3 = [(5.86, 2.14, 'O'), (4.95, 3.05, 'O'), (3.13, 4.87, 'O'), (2.22, 5.78, 'O'), (0, 0, 'O')]
+        data4 = matrix.filter_district_data(data3)
+        for (d3, d4) in zip(data3, data4):
+            self.assertEqual(d3, d4)
+
+        data5 = [(5.86, 2.14, 'O'), (4.95, 3.05, 'O'), (3.13, 4.87, 'O'), (2.22, 5.78, 'O'), (.1, .1, 'O')]
+        data6 = matrix.filter_district_data(data5)
+        for (d5, d6) in zip(data5, data6[:4]):
+            self.assertEqual(d5, d6)
+        self.assertEqual(data6[4], (0, 0, 'O'), 'Should see zeros at the end')
+
+        data7 = [(10, 10, 'O'), (10, 10, 'O'), (10, 10, 'O'), (10, 10, 'O'), (10, 10, 'O')]
+        data8 = matrix.filter_district_data(data7)
+        for (d7, d8) in zip(data7, data8):
+            self.assertEqual(d7, d8)
