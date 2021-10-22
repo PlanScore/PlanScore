@@ -365,16 +365,11 @@ assert.equal(plan.which_district_color(NC_2020_unified.districts[12], NC_2020_un
 
 var NC_2020_unified_seatshare = plan.get_seatshare_array(NC_2020_unified);
 
-assert.equal(
-    NC_2020_unified_seatshare.colors.length,
-    NC_2020_unified_seatshare.total_seats,
-    'Should see the correct number of colors',
-);
+assert.equal(NC_2020_unified_seatshare.colors.length, 13, 'Should see the correct number of colors');
 
 assert.equal(Math.round(NC_2020_unified_seatshare.red_votes), 2273424, 'Should see the correct number of red votes');
 assert.equal(Math.round(NC_2020_unified_seatshare.blue_votes), 2181551, 'Should see the correct number of blue votes');
-assert.equal(NC_2020_unified_seatshare.red_seats, 7, 'Should see the correct number of red seats');
-assert.equal(NC_2020_unified_seatshare.blue_seats, 6, 'Should see the correct number of blue seats');
+assert.equal(Math.round(NC_2020_unified_seatshare.seat_share*1000)/1000, 0.421, 'Should see the correct share of blue seats');
 
 // Display preparation functions
 
@@ -543,9 +538,7 @@ var CT_2021_water_seatshare = plan.get_seatshare_array(CT_2021_water_district);
 assert.equal(CT_2021_water_seatshare.colors.length, 5, 'Should see the correct number of colors');
 assert.equal(Math.round(CT_2021_water_seatshare.red_votes), 682129, 'Should see the correct number of red votes');
 assert.equal(Math.round(CT_2021_water_seatshare.blue_votes), 814115, 'Should see the correct number of blue votes');
-assert.equal(CT_2021_water_seatshare.red_seats, 0, 'Should see the correct number of red seats');
-assert.equal(CT_2021_water_seatshare.blue_seats, 5, 'Should see the correct number of blue seats');
-assert.equal(CT_2021_water_seatshare.total_seats, 5, 'Should see the correct number of seats');
+assert.equal(Math.round(CT_2021_water_seatshare.seat_share*1000)/1000, 0.747, 'Should see the correct share of blue seats');
 
 // Annotate page
 

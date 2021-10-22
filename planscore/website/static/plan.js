@@ -304,8 +304,7 @@ function get_seatshare_array(plan)
         box_districts = plan.districts.filter((d) => (d['is_counted'] !== false)),
         red_votes = 0,
         blue_votes = 0,
-        red_seats = 0,
-        blue_seats = 0;
+        seat_share = 0;
 
     box_districts.sort((d1, d2) => (d2.totals['Democratic Wins'] - d1.totals['Democratic Wins']));
 
@@ -314,29 +313,20 @@ function get_seatshare_array(plan)
         var color = which_district_color(box_districts[i], plan),
             last_color = color;
         
-        if(color == BLUE_COLOR_HEX) {
-            blue_seats++;
-        } else if(color == RED_COLOR_HEX) {
-            red_seats++;
-        } else if(color == LEAN_BLUE_COLOR_HEX) {
-            blue_seats++;
-        } else if(color == LEAN_RED_COLOR_HEX) {
-            red_seats++;
-        }
-
         box_colors.push(color);
         red_votes += box_districts[i].totals['Republican Votes'];
         blue_votes += box_districts[i].totals['Democratic Votes'];
+        seat_share += box_districts[i].totals['Democratic Wins'];
     }
+    
+    seat_share /= box_districts.length;
     
     return {
         colors: box_colors,
         red_votes: red_votes,
         blue_votes: blue_votes,
         total_votes: red_votes + blue_votes,
-        red_seats: red_seats,
-        blue_seats: blue_seats,
-        total_seats: box_districts.length,
+        seat_share: seat_share,
     };
 }
 
@@ -376,9 +366,9 @@ function show_seatshare_graphic(plan, districts_table)
 
     tags.push(`
         <br>Predicted
-        ${nice_round_percent(seatshare_array.blue_seats / (seatshare_array.total_seats))} Democratic
-        / ${nice_round_percent(seatshare_array.red_seats / (seatshare_array.total_seats))} Republican
-        seat share
+        ${nice_round_percent(seatshare_array.seat_share)} D
+        / ${nice_round_percent(1 - seatshare_array.seat_share)} R
+        seat share across scenarios<sup>*</sup>
         vs.
         ${nice_round_percent(seatshare_array.blue_votes / (seatshare_array.total_votes))} D
         / ${nice_round_percent(seatshare_array.red_votes / (seatshare_array.total_votes))} R
