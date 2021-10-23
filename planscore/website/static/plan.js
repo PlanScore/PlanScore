@@ -1182,7 +1182,15 @@ function plan_array(plan)
 
     for(var j = 0; j < plan.districts.length; j++)
     {
-        var new_row = [(j + 1).toString()];
+        var new_row = [],
+            number;
+        
+        if('number' in plan.districts[j]) {
+            number = plan.districts[j].number;
+            new_row.push(typeof number == 'number' ? number.toFixed(0) : '–');
+        } else {
+            new_row.push((j + 1).toString());
+        }
 
         if(has_incumbency) {
             new_row.push(incumbency[plan.incumbents[j]]);
