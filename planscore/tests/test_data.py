@@ -301,6 +301,24 @@ class TestData (unittest.TestCase):
         self.assertEqual(row2, '2\tD\t400\t600\t500\t0.3')
         self.assertEqual(row3, '3\tR\t700\t900\t800\t0.4')
         self.assertEqual(tail, '')
+
+        upload4 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
+            model=data.Model(data.State.XX, data.House.statehouse, 2, True, '2020', 'data/XX/000'),
+            incumbents=['O', 'D', 'R'],
+            districts=[
+                { "number": 1, "totals": { "Democratic Votes": 100, "Population 2015": 200, "Republican Votes": 300 }, "compactness": { "Reock": .2 } },
+                { "number": None, "totals": { "Democratic Votes": 400, "Population 2015": 500, "Republican Votes": 600 }, "compactness": { "Reock": .3 } },
+                { "number": 2, "totals": { "Democratic Votes": 700, "Population 2015": 800, "Republican Votes": 900 }, "compactness": { "Reock": .4 } }
+              ])
+        
+        plaintext4 = upload4.to_plaintext()
+        head, row1, row2, row3, tail = plaintext4.split('\r\n', 4)
+        
+        self.assertEqual(head, 'District\tCandidate Scenario\tDemocratic Votes\tRepublican Votes\tPopulation 2015\tReock')
+        self.assertEqual(row1, '1\tO\t100\t300\t200\t0.2')
+        self.assertEqual(row2, '\tD\t400\t600\t500\t0.3')
+        self.assertEqual(row3, '2\tR\t700\t900\t800\t0.4')
+        self.assertEqual(tail, '')
     
     @unittest.mock.patch('time.time')
     def test_upload_to_logentry(self, time):

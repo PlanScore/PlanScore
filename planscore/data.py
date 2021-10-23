@@ -223,7 +223,10 @@ class Upload:
             for (index, district) in enumerate(self.districts):
                 totals, compactness = district['totals'], district['compactness']
                 extra_values = {'Candidate Scenario': self.incumbents[index]} if has_incumbency else {}
-                rows.writerow(dict(District=index+1, **dict(totals, **dict(compactness, **extra_values))))
+                rows.writerow(dict(
+                    District = district.get('number', index+1),
+                    **dict(totals, **dict(compactness, **extra_values)),
+                ))
         
         except Exception as e:
             return f'Error: {e}\n'
