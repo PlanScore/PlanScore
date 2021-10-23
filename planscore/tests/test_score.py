@@ -1111,6 +1111,11 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.districts[2]['is_counted'], True, 'Should count 3rd district')
         self.assertEqual(output.districts[3]['is_counted'], True, 'Should count 5th district')
         self.assertEqual(output.districts[4]['is_counted'], False, 'Should not count empty 5th district')
+        self.assertEqual(output.districts[0]['number'], 1, 'Should count 1st district')
+        self.assertEqual(output.districts[1]['number'], 2, 'Should count 2nd district')
+        self.assertEqual(output.districts[2]['number'], 3, 'Should count 3rd district')
+        self.assertEqual(output.districts[3]['number'], 4, 'Should count 5th district')
+        self.assertIsNone(output.districts[4]['number'], 'Should not count empty 5th district')
         
         self.assertEqual(model_votes.mock_calls[0][1][:2], (data.State.XX, None))
         self.assertEqual(model_votes.mock_calls[0][1][2][0], (5.86, 2.14, 'O'))
