@@ -555,6 +555,7 @@ def calculate_district_biases(upload):
     
     # Record per-district vote totals and confidence intervals
     copied_districts = copy.deepcopy(upload.districts)
+    district_number = itertools.count(1)
     
     for (i, district) in enumerate(copied_districts):
         red_votes = matrix.dropna(output_votes[i,:,1])
@@ -568,6 +569,7 @@ def calculate_district_biases(upload):
                 'Republican Votes SD': round(statistics.stdev(red_votes), constants.ROUND_COUNT)
                 })
             district['is_counted'] = True
+            district['number'] = next(district_number)
         except statistics.StatisticsError:
             district['totals'].update({
                 'Democratic Wins': None,
@@ -577,6 +579,7 @@ def calculate_district_biases(upload):
                 'Republican Votes SD': None,
                 })
             district['is_counted'] = False
+            district['number'] = None
     
     # For each sim, a list of red votes and a list of blue votes in districts
     red_votes_blue_votes = [
