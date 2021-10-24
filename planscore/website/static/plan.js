@@ -128,6 +128,15 @@ function nice_count(value)
     }
 }
 
+function partisan_suffix(value)
+{
+    if(isNaN(value) || value == 0) {
+        return '';
+    }
+    
+    return '&nbsp;' + (value > 0 ? 'D' : 'R');
+}
+
 function nice_percent(value)
 {
     if(isNaN(value)) {
@@ -386,7 +395,7 @@ function show_efficiency_gap_score(plan, score_EG)
 {
     var summary_name = which_score_summary_name(plan),
         gap = plan.summary[summary_name],
-        gap_amount = nice_percent(Math.abs(gap));
+        gap_amount = nice_percent(gap) + partisan_suffix(gap);
 
     for(node = score_EG.firstChild; node = node.nextSibling; node)
     {
@@ -457,7 +466,7 @@ function calculate_declination2_difference(plan)
 function show_declination2_score(plan, score_DEC2)
 {
     var declination = plan.summary['Declination'],
-        dec2_amount = Math.round(Math.abs(declination) * 100) / 100,
+        dec2_amount = (Math.round(Math.abs(declination) * 100) / 100) + partisan_suffix(declination),
         dec2_difference = calculate_declination2_difference(plan);
 
     for(node = score_DEC2.firstChild; node = node.nextSibling; node)
@@ -511,7 +520,7 @@ function show_declination2_score(plan, score_DEC2)
 function show_partisan_bias_score(plan, score_PB)
 {
     var bias = plan.summary['Partisan Bias'],
-        bias_amount = nice_percent(Math.abs(bias));
+        bias_amount = nice_percent(Math.abs(bias)) + partisan_suffix(bias);
 
     for(node = score_PB.firstChild; node = node.nextSibling; node)
     {
@@ -573,7 +582,7 @@ function hide_score_with_reason(score_node, reason)
 function show_mean_median_score(plan, score_MM)
 {
     var diff = plan.summary['Mean-Median'],
-        diff_amount = nice_percent(Math.abs(diff));
+        diff_amount = nice_percent(Math.abs(diff)) + partisan_suffix(diff);
 
     for(node = score_MM.firstChild; node = node.nextSibling; node)
     {
@@ -910,7 +919,7 @@ function show_ftva_race_scores(plan, scores_FTVA)
             var score_FTVA = scores_FTVA[i],
                 //summary_name = which_score_summary_name(plan),
                 gap = ftva_races[i].gap,
-                gap_amount = nice_percent(Math.abs(gap)),
+                gap_amount = nice_percent(Math.abs(gap)) + partisan_suffix(gap),
                 win_party = (gap < 0 ? 'Republican' : 'Democratic'),
                 win_partisans = (gap < 0 ? 'Republicans' : 'Democrats'),
                 lose_party = (gap < 0 ? 'Democratic' : 'Republican');
@@ -1943,6 +1952,7 @@ if(typeof module !== 'undefined' && module.exports)
         nice_string,
         nice_percent,
         nice_round_percent,
+        partisan_suffix,
         get_plan_headings,
         nice_gap,
         date_age,

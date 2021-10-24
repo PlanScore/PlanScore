@@ -528,6 +528,10 @@ assert.equal(plan.nice_gap(-.1), '+10.0% for Republicans', 'Negative gaps should
 
 assert.equal(plan.nice_string('yo'), '&#121;&#111;');
 
+assert.equal(plan.partisan_suffix(0), '');
+assert.equal(plan.partisan_suffix(1), '&nbsp;D');
+assert.equal(plan.partisan_suffix(-1), '&nbsp;R');
+
 assert.equal(
     Math.round(1000000 * plan.calculate_declination2_difference(FL_2020_declination)),
     Math.round(1000000 * -0.0025963086751557007),
