@@ -487,6 +487,10 @@ MODELS = [
     Model(State.NV, House.statesenate,  21,  True, VERSION, 'data/NV/006-dra-block'), # db6985b
     Model(State.NV, House.statehouse,   42,  True, VERSION, 'data/NV/006-dra-block'), # db6985b
     Model(State.NV, House.localplan,  None,  True, VERSION, 'data/NV/006-dra-block'), # db6985b
+    Model(State.NY, House.ushouse,      19,  True, VERSION, 'data/NY/001-first-rev'), # e117e8c
+    Model(State.NY, House.statesenate,  63,  True, VERSION, 'data/NY/001-first-rev'), # e117e8c
+    Model(State.NY, House.statehouse,  150,  True, VERSION, 'data/NY/001-first-rev'), # e117e8c
+    Model(State.NY, House.localplan,  None,  True, VERSION, 'data/NY/001-first-rev'), # e117e8c
     Model(State.OH, House.ushouse,      15,  True, VERSION, 'data/OH/007-dra-block'), # db6985b
     Model(State.OH, House.statesenate,  33,  True, VERSION, 'data/OH/007-dra-block'), # db6985b
     Model(State.OH, House.statehouse,   99,  True, VERSION, 'data/OH/007-dra-block'), # db6985b
