@@ -51,6 +51,7 @@ class State (enum.Enum):
     NJ = 'NJ'
     NM = 'NM'
     NV = 'NV'
+    NY = 'NY'
     OH = 'OH'
     OK = 'OK'
     OR = 'OR'
