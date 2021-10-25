@@ -395,7 +395,7 @@ function show_efficiency_gap_score(plan, score_EG)
 {
     var summary_name = which_score_summary_name(plan),
         gap = plan.summary[summary_name],
-        gap_amount = nice_percent(gap) + partisan_suffix(gap);
+        gap_amount = nice_percent(Math.abs(gap)) + partisan_suffix(gap);
 
     for(node = score_EG.firstChild; node = node.nextSibling; node)
     {
