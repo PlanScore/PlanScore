@@ -332,6 +332,26 @@ def calculate_D2(red_districts, blue_districts):
 
     return -declination2
 
+def calculate_D2_diff(red_districts, blue_districts):
+    ''' Convert two lists of district vote counts into vote share difference.
+    
+        Relevant for the textual description of Declination.
+    '''
+    blue_shares = [
+        B / (R + B) for (R, B) in zip(red_districts, blue_districts)
+        if (R + B) > 0 and B >= R
+    ]
+
+    red_shares = [
+        R / (R + B) for (R, B) in zip(red_districts, blue_districts)
+        if (R + B) > 0 and B < R
+    ]
+    
+    if red_shares and blue_shares:
+        return statistics.mean(blue_shares) - statistics.mean(red_shares)
+    
+    return None
+
 def calculate_bias(upload):
     ''' Calculate partisan metrics for districts with plain vote counts.
         
@@ -612,6 +632,7 @@ def calculate_district_biases(upload):
     MMDs = [calculate_MMD(r, b) for (r, b) in red_votes_blue_votes]
     PBs = [calculate_PB(r, b) for (r, b) in red_votes_blue_votes]
     D2s = [calculate_D2(r, b) for (r, b) in red_votes_blue_votes]
+    D2ds = [calculate_D2_diff(r, b) for (r, b) in red_votes_blue_votes]
     
     # EG alone also gets a sensitivity test for vote swing scenarios
     EGs = {
@@ -633,6 +654,7 @@ def calculate_district_biases(upload):
         'Declination': safe_mean(D2s),
         'Declination SD': safe_stdev(D2s),
         'Declination Positives': safe_positives(D2s),
+        'Declination Difference': safe_mean(D2ds),
         'Declination Absolute Percent Rank': percentrank_abs(COLUMN_D2, upload.model.house, safe_mean(D2s)),
         'Declination Relative Percent Rank': percentrank_rel(COLUMN_D2, upload.model.house, safe_mean(D2s)),
         'Efficiency Gap': safe_mean(EGs[0]),
@@ -710,7 +732,7 @@ def main():
 EG: {EG:.1f}%; {EG_wins:.0f}% favor D
 GK Bias: {PB:.1f}%; {PB_wins:.0f}% favor D
 Mean-Med: {MMD:.1f}%; {MMD_wins:.0f}% favor D
-Declination: {DEC:.3f}; {DEC_wins:.0f}% favor D
+Declination: {DEC:.3f}; {DEC_wins:.0f}% favor D with {DEC_diff:.3f} difference
 -
 D votes: {votes_D}
 R votes: {votes_R}'''.format(
@@ -725,6 +747,7 @@ R votes: {votes_R}'''.format(
         MMD_wins=complete_upload.summary['Mean-Median Positives'] * 100,
         DEC=complete_upload.summary['Declination'],
         DEC_wins=complete_upload.summary['Declination Positives'] * 100,
+        DEC_diff=complete_upload.summary['Declination Difference'],
         votes_D=[d['totals']['Democratic Votes'] for d in complete_upload.districts],
         votes_R=[d['totals']['Republican Votes'] for d in complete_upload.districts],
     ))

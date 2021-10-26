@@ -289,11 +289,12 @@ class TestScore (unittest.TestCase):
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
+    @unittest.mock.patch('planscore.score.calculate_D2_diff')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_bias(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
+    def test_calculate_bias(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated for an election
         
             Use obsolete vote properties from early 2018 PlanScore models.
@@ -427,11 +428,12 @@ class TestScore (unittest.TestCase):
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
+    @unittest.mock.patch('planscore.score.calculate_D2_diff')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_fewsims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
+    def test_calculate_gap_fewsims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated using a few input sims.
         
             Use "DEM000"-style vote properties from 2018 and 2019 PlanScore models.
@@ -447,6 +449,7 @@ class TestScore (unittest.TestCase):
         percentrank_rel.return_value = 0
         percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
+        calculate_D2_diff.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
@@ -485,11 +488,12 @@ class TestScore (unittest.TestCase):
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
+    @unittest.mock.patch('planscore.score.calculate_D2_diff')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_manysims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
+    def test_calculate_gap_manysims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated using many input sims.
         
             Use "DEM000"-style vote properties from 2018 and 2019 PlanScore models.
@@ -522,6 +526,7 @@ class TestScore (unittest.TestCase):
         percentrank_rel.return_value = 0
         percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
+        calculate_D2_diff.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
@@ -568,11 +573,12 @@ class TestScore (unittest.TestCase):
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
+    @unittest.mock.patch('planscore.score.calculate_D2_diff')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_opensims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
+    def test_calculate_gap_opensims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated using many open-seat sims.
         
             Use "O:DEM000"-style vote properties from PlanScore models starting 2020.
@@ -615,6 +621,7 @@ class TestScore (unittest.TestCase):
         percentrank_rel.return_value = 0
         percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
+        calculate_D2_diff.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
@@ -663,11 +670,12 @@ class TestScore (unittest.TestCase):
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
+    @unittest.mock.patch('planscore.score.calculate_D2_diff')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_incumbentsims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
+    def test_calculate_gap_incumbentsims(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated using mixed incumbency sims.
         
             Use "O:DEM000"-style vote properties from PlanScore models starting 2020.
@@ -740,6 +748,7 @@ class TestScore (unittest.TestCase):
         percentrank_rel.return_value = 0
         percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
+        calculate_D2_diff.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
@@ -788,11 +797,12 @@ class TestScore (unittest.TestCase):
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
+    @unittest.mock.patch('planscore.score.calculate_D2_diff')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
-    def test_calculate_gap_blanks(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
+    def test_calculate_gap_blanks(self, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated using input sims with blank districts.
         
             Use "DEM000"-style vote properties from 2018 and 2019 PlanScore models.
@@ -809,6 +819,7 @@ class TestScore (unittest.TestCase):
         percentrank_rel.return_value = 0
         percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
+        calculate_D2_diff.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
@@ -847,13 +858,14 @@ class TestScore (unittest.TestCase):
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
+    @unittest.mock.patch('planscore.score.calculate_D2_diff')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
     @unittest.mock.patch('planscore.matrix.filter_district_data')
-    def test_calculate_gap_unified(self, filter_district_data, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
+    def test_calculate_gap_unified(self, filter_district_data, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
@@ -868,6 +880,7 @@ class TestScore (unittest.TestCase):
         percentrank_rel.return_value = 0
         percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
+        calculate_D2_diff.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
@@ -934,12 +947,13 @@ class TestScore (unittest.TestCase):
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
+    @unittest.mock.patch('planscore.score.calculate_D2_diff')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
-    def test_calculate_gap_unified_incumbents(self, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
+    def test_calculate_gap_unified_incumbents(self, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
         ''' Incumbency values are correctly passedon for presidential vote only
         '''
         input = data.Upload(id=None, key=None,
@@ -955,6 +969,7 @@ class TestScore (unittest.TestCase):
         percentrank_rel.return_value = 0
         percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
+        calculate_D2_diff.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
@@ -984,12 +999,13 @@ class TestScore (unittest.TestCase):
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
+    @unittest.mock.patch('planscore.score.calculate_D2_diff')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
-    def test_calculate_fva_votes(self, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
+    def test_calculate_fva_votes(self, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
         ''' Relevant FVA races are correctly identified
         '''
         input = data.Upload(id=None, key=None,
@@ -1024,6 +1040,7 @@ class TestScore (unittest.TestCase):
         percentrank_rel.return_value = 0
         percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
+        calculate_D2_diff.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
@@ -1060,12 +1077,13 @@ class TestScore (unittest.TestCase):
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
+    @unittest.mock.patch('planscore.score.calculate_D2_diff')
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
     @unittest.mock.patch('planscore.score.calculate_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
-    def test_calculate_gap_with_zeros(self, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, percentrank_abs, percentrank_rel):
+    def test_calculate_gap_with_zeros(self, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
@@ -1081,6 +1099,7 @@ class TestScore (unittest.TestCase):
         percentrank_rel.return_value = 0
         percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
+        calculate_D2_diff.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
         calculate_EG.return_value = 0
