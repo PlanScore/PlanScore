@@ -320,6 +320,16 @@ def calculate_D2(red_districts, blue_districts):
         declination = 2.0 * (gamma - theta) / math.pi
 
     declination2 = declination * math.log(seats) / 2
+    
+    ## TODO: remove print output unless running planscore-score-locally
+    #with open('D2s.csv', 'a') as file:
+    #    print(
+    #        f'{-declination2:.3f}',
+    #        ','.join([f'{s:.3f}' for s in blue_shares]),
+    #        sep=',',
+    #        file=file,
+    #    )
+
     return -declination2
 
 def calculate_bias(upload):
@@ -531,6 +541,14 @@ def calculate_district_biases(upload):
     #
     #with open('PBs.csv', 'w') as file:
     #    print('blue_seatshare,blue_voteshare', file=file)
+    #
+    #with open('D2s.csv', 'w') as file:
+    #    print(
+    #        'Declination2',
+    #        ','.join([f'D{i+1}' for i in range(len(upload.districts))]),
+    #        sep=',',
+    #        file=file,
+    #    )
     
     has_president_votes = (
         (
