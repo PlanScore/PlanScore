@@ -657,7 +657,6 @@ def calculate_district_biases(upload):
         'Declination': safe_mean(D2s),
         'Declination SD': safe_stdev(D2s),
         'Declination Positives': safe_positives(D2s),
-        'Declination Difference': safe_mean(D2ds),
         'Declination Is Valid': D2_is_valid,
         'Declination Absolute Percent Rank': percentrank_abs(COLUMN_D2, upload.model.house, safe_mean(D2s)),
         'Declination Relative Percent Rank': percentrank_rel(COLUMN_D2, upload.model.house, safe_mean(D2s)),
@@ -736,7 +735,7 @@ def main():
 EG: {EG:.1f}%; {EG_wins:.0f}% favor D
 GK Bias: {PB:.1f}%; {PB_wins:.0f}% favor D
 Mean-Med: {MMD:.1f}%; {MMD_wins:.0f}% favor D
-Declination: {DEC:.3f}; {DEC_wins:.0f}% favor D with {DEC_diff:.3f} difference
+Declination: {DEC:.3f}; {DEC_wins:.0f}% favor D
 -
 D votes: {votes_D}
 R votes: {votes_R}'''.format(
@@ -751,7 +750,6 @@ R votes: {votes_R}'''.format(
         MMD_wins=complete_upload.summary['Mean-Median Positives'] * 100,
         DEC=complete_upload.summary['Declination'],
         DEC_wins=complete_upload.summary['Declination Positives'] * 100,
-        DEC_diff=complete_upload.summary['Declination Difference'],
         votes_D=[d['totals']['Democratic Votes'] for d in complete_upload.districts],
         votes_R=[d['totals']['Republican Votes'] for d in complete_upload.districts],
     ))
