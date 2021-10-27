@@ -634,6 +634,9 @@ def calculate_district_biases(upload):
     D2s = [calculate_D2(r, b) for (r, b) in red_votes_blue_votes]
     D2ds = [calculate_D2_diff(r, b) for (r, b) in red_votes_blue_votes]
     
+    # Need <50% simulations with single-party outcomes for valid declination
+    D2_is_valid = len(list(filter(None, D2ds))) > len(red_votes_blue_votes) / 2
+    
     # EG alone also gets a sensitivity test for vote swing scenarios
     EGs = {
         swing: [calculate_EG(r, b, swing/100) for (r, b) in red_votes_blue_votes]
@@ -655,6 +658,7 @@ def calculate_district_biases(upload):
         'Declination SD': safe_stdev(D2s),
         'Declination Positives': safe_positives(D2s),
         'Declination Difference': safe_mean(D2ds),
+        'Declination Is Valid': D2_is_valid,
         'Declination Absolute Percent Rank': percentrank_abs(COLUMN_D2, upload.model.house, safe_mean(D2s)),
         'Declination Relative Percent Rank': percentrank_rel(COLUMN_D2, upload.model.house, safe_mean(D2s)),
         'Efficiency Gap': safe_mean(EGs[0]),

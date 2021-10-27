@@ -286,6 +286,12 @@ class TestScore (unittest.TestCase):
         d2g = score.calculate_D2((2, 1, 0), (3, 4, 5))
         self.assertAlmostEqual(d2g, 0.54930614,
             msg='Should see high Dec2 when blue party wins all districts in small state')
+    
+    def test_calculate_D2_diff(self):
+        '''
+        '''
+        self.assertIsNone(score.calculate_D2_diff((1, 2, 3), (4, 5, 6)))
+        self.assertEqual(score.calculate_D2_diff((1, 2, 3, 4), (4, 3, 2, 1)), 0)
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
