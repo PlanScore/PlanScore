@@ -320,7 +320,37 @@ def calculate_D2(red_districts, blue_districts):
         declination = 2.0 * (gamma - theta) / math.pi
 
     declination2 = declination * math.log(seats) / 2
+    
+    ## TODO: remove print output unless running planscore-score-locally
+    #with open('D2s.csv', 'a') as file:
+    #    print(
+    #        f'{-declination2:.3f}',
+    #        ','.join([f'{s:.3f}' for s in blue_shares]),
+    #        sep=',',
+    #        file=file,
+    #    )
+
     return -declination2
+
+def calculate_D2_diff(red_districts, blue_districts):
+    ''' Convert two lists of district vote counts into vote share difference.
+    
+        Relevant for the textual description of Declination.
+    '''
+    blue_shares = [
+        B / (R + B) for (R, B) in zip(red_districts, blue_districts)
+        if (R + B) > 0 and B >= R
+    ]
+
+    red_shares = [
+        R / (R + B) for (R, B) in zip(red_districts, blue_districts)
+        if (R + B) > 0 and B < R
+    ]
+    
+    if red_shares and blue_shares:
+        return statistics.mean(blue_shares) - statistics.mean(red_shares)
+    
+    return None
 
 def calculate_bias(upload):
     ''' Calculate partisan metrics for districts with plain vote counts.
@@ -531,6 +561,14 @@ def calculate_district_biases(upload):
     #
     #with open('PBs.csv', 'w') as file:
     #    print('blue_seatshare,blue_voteshare', file=file)
+    #
+    #with open('D2s.csv', 'w') as file:
+    #    print(
+    #        'Declination2',
+    #        ','.join([f'D{i+1}' for i in range(len(upload.districts))]),
+    #        sep=',',
+    #        file=file,
+    #    )
     
     has_president_votes = (
         (
@@ -594,6 +632,10 @@ def calculate_district_biases(upload):
     MMDs = [calculate_MMD(r, b) for (r, b) in red_votes_blue_votes]
     PBs = [calculate_PB(r, b) for (r, b) in red_votes_blue_votes]
     D2s = [calculate_D2(r, b) for (r, b) in red_votes_blue_votes]
+    D2ds = [calculate_D2_diff(r, b) for (r, b) in red_votes_blue_votes]
+    
+    # Need <50% simulations with single-party outcomes for valid declination
+    D2_is_valid = len(list(filter(None, D2ds))) > len(red_votes_blue_votes) / 2
     
     # EG alone also gets a sensitivity test for vote swing scenarios
     EGs = {
@@ -615,6 +657,7 @@ def calculate_district_biases(upload):
         'Declination': safe_mean(D2s),
         'Declination SD': safe_stdev(D2s),
         'Declination Positives': safe_positives(D2s),
+        'Declination Is Valid': D2_is_valid,
         'Declination Absolute Percent Rank': percentrank_abs(COLUMN_D2, upload.model.house, safe_mean(D2s)),
         'Declination Relative Percent Rank': percentrank_rel(COLUMN_D2, upload.model.house, safe_mean(D2s)),
         'Efficiency Gap': safe_mean(EGs[0]),

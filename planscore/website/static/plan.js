@@ -440,34 +440,10 @@ function show_efficiency_gap_score(plan, score_EG)
     }
 }
 
-function calculate_declination2_difference(plan)
-{
-    var dem_districts = [],
-        rep_districts = [];
-
-    for(var i = 0; i < plan.districts.length; i++)
-    {
-        var dem_votes = plan.districts[i].totals['Democratic Votes'],
-            rep_votes = plan.districts[i].totals['Republican Votes'];
-
-        if(dem_votes > rep_votes) {
-            dem_districts.push(dem_votes / (dem_votes + rep_votes));
-        } else {
-            rep_districts.push(rep_votes / (dem_votes + rep_votes));
-        }
-    }
-
-    var dem_margin_avg = dem_districts.reduce((a, b) => (a + b), 0) / dem_districts.length,
-        rep_margin_avg = rep_districts.reduce((a, b) => (a + b), 0) / rep_districts.length;
-
-    return rep_margin_avg - dem_margin_avg;
-}
-
 function show_declination2_score(plan, score_DEC2)
 {
     var declination = plan.summary['Declination'],
-        dec2_amount = (Math.round(Math.abs(declination) * 100) / 100) + partisan_suffix(declination),
-        dec2_difference = calculate_declination2_difference(plan);
+        dec2_amount = (Math.round(Math.abs(declination) * 100) / 100) + partisan_suffix(declination);
 
     for(node = score_DEC2.firstChild; node = node.nextSibling; node)
     {
@@ -491,27 +467,15 @@ function show_declination2_score(plan, score_DEC2)
                     ? (1 - plan.summary['Declination Positives'])
                     : plan.summary['Declination Positives']);
 
-                if(isNaN(dec2_difference)) {
-                    node.innerHTML = `
-                        The mean ${lose_party} vote share in ${lose_party}
-                        districts is expected to be higher than the mean
-                        ${win_party} vote share in ${win_party} districts.
-                        Along with the relative fraction of seats won by each party,
-                        this leads to a declination that favors ${win_partisans} in
-                        ${nice_round_percent(positives)} of predicted scenarios.<sup>*</sup>
-                        <a href="${window.d2_metric_url}">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>
-                        `;
-                } else {
-                    node.innerHTML = `
-                        The mean ${lose_party} vote share in ${lose_party}
-                        districts is expected to be ${nice_percent(Math.abs(dec2_difference))}
-                        higher than the mean ${win_party} vote share in ${win_party} districts.
-                        Along with the relative fraction of seats won by each party,
-                        this leads to a declination that favors ${win_partisans} in
-                        ${nice_round_percent(positives)} of predicted scenarios.<sup>*</sup>
-                        <a href="${window.d2_metric_url}">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>
-                        `;
-                }
+                node.innerHTML = `
+                    The difference between mean ${lose_party} vote share in
+                    ${lose_party} districts and mean ${win_party} vote share in
+                    ${win_party} districts along with the relative fraction of
+                    seats won by each party leads to a declination that favors
+                    ${win_partisans} in ${nice_round_percent(positives)} of
+                    predicted scenarios.<sup>*</sup>
+                    <a href="${window.d2_metric_url}">Learn more <i class="glyphicon glyphicon-chevron-right" style="font-size:0.8em;"></i></a>
+                    `;
             }
         }
     }
@@ -574,7 +538,7 @@ function hide_score_with_reason(score_node, reason)
 
         } else if(node.nodeName == 'P') {
             clear_element(node);
-            node.appendChild(document.createTextNode(reason));
+            node.innerHTML = reason;
         }
     }
 }
@@ -1592,8 +1556,12 @@ function load_plan_score(url, message_section, score_section,
         show_efficiency_gap_score(plan, score_EG);
         show_sensitivity_test(plan, score_sense);
 
-        if('Declination' in plan.summary) {
+        if('Declination' in plan.summary && plan.summary['Declination Is Valid'] !== 0) {
             show_declination2_score(plan, score_DEC2);
+        } else if('Declination' in plan.summary) {
+            hide_score_with_reason(score_DEC2,
+                'Declination is only shown where both parties each win one or more'
+                + 'seats in the majority of predicted scenarios<sup>*</sup>.');
         } else {
             hide_score_with_reason(score_DEC2,
                 'We were not yet calculating declination at the time that we scored this plan.');
@@ -1967,7 +1935,6 @@ if(typeof module !== 'undefined' && module.exports)
         update_acs2016_percentages,
         update_cvap2015_percentages,
         update_heading_titles,
-        calculate_declination2_difference,
         SHY_COLUMN,
     };
 }

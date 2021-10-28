@@ -532,11 +532,6 @@ assert.equal(plan.partisan_suffix(0), '');
 assert.equal(plan.partisan_suffix(1), '&nbsp;D');
 assert.equal(plan.partisan_suffix(-1), '&nbsp;R');
 
-assert.equal(
-    Math.round(1000000 * plan.calculate_declination2_difference(FL_2020_declination)),
-    Math.round(1000000 * -0.0025963086751557007),
-    'Should find correct margin difference');
-
 var CT_2021_water_seatshare = plan.get_seatshare_array(CT_2021_water_district);
 
 assert.equal(CT_2021_water_seatshare.colors.length, 5, 'Should see the correct number of colors');
