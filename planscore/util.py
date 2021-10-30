@@ -158,6 +158,7 @@ def ordered_districts(layer):
     
     polygon_features = [feat for feat in layer if is_polygonal_feature(feat)]
     has_multipolygons = True in [is_multipolygon_feature(f) for f in polygon_features]
+    district_pattern = re.compile(r'(\bdistrict|^SLDLST$|^SLDUST$|^CD1\d\dFP$)', re.I)
 
     for index in range(defn.GetFieldCount()):
         name = defn.GetFieldDefn(index).GetName()
@@ -173,7 +174,7 @@ def ordered_districts(layer):
         if 1 not in values or values > {i+1 for i in range(len(values))}:
             continue
         
-        fields.append((2 if 'district' in name.lower() else 1, name, has_no_repeats))
+        fields.append((2 if district_pattern.search(name) else 1, name, has_no_repeats))
 
     if not fields:
         # No district field found, return everything as-is
