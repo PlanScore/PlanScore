@@ -66,6 +66,7 @@ class State (enum.Enum):
     VT = 'VT'
     WA = 'WA'
     WI = 'WI'
+    WV = 'WV'
     WY = 'WY'
 
 class House (enum.Enum):
@@ -547,6 +548,10 @@ MODELS = [
     Model(State.WI, House.statesenate,  33,  True, VERSION, 'data/WI/012-dra-block'), # db6985b
     Model(State.WI, House.statehouse,   99,  True, VERSION, 'data/WI/012-dra-block'), # db6985b
     Model(State.WI, House.localplan,  None,  True, VERSION, 'data/WI/012-dra-block'), # db6985b
+    Model(State.WV, House.ushouse,       3,  True, VERSION, 'data/WV/001-NYT-votes'), # b0150fc
+    Model(State.WV, House.statesenate,  34,  True, VERSION, 'data/WV/001-NYT-votes'), # b0150fc
+    Model(State.WV, House.statehouse,  100,  True, VERSION, 'data/WV/001-NYT-votes'), # b0150fc
+    Model(State.WV, House.localplan,  None,  True, VERSION, 'data/WV/001-NYT-votes'), # b0150fc
     Model(State.WY, House.ushouse,       1,  True, VERSION, 'data/WY/008-dra-block'), # db6985b
     Model(State.WY, House.statesenate,  30,  True, VERSION, 'data/WY/008-dra-block'), # db6985b
     Model(State.WY, House.statehouse,   60,  True, VERSION, 'data/WY/008-dra-block'), # db6985b
