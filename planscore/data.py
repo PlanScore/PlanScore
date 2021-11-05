@@ -443,10 +443,10 @@ MODELS = [
     Model(State.MD, House.statesenate,  47,  True, VERSION, 'data/MD/010-dra-block'), # db6985b
     Model(State.MD, House.statehouse,   68,  True, VERSION, 'data/MD/010-dra-block'), # db6985b
     Model(State.MD, House.localplan,  None,  True, VERSION, 'data/MD/010-dra-block'), # db6985b
-    Model(State.ME, House.ushouse,       2,  True, VERSION, 'data/ME/008-dra-block'), # 5caa70e
-    Model(State.ME, House.statesenate,  35,  True, VERSION, 'data/ME/008-dra-block'), # 5caa70e
-    Model(State.ME, House.statehouse,  151,  True, VERSION, 'data/ME/008-dra-block'), # 5caa70e
-    Model(State.ME, House.localplan,  None,  True, VERSION, 'data/ME/008-dra-block'), # 5caa70e
+    Model(State.ME, House.ushouse,       2,  True, VERSION, 'data/ME/009-fresh-VEST'), # df52341
+    Model(State.ME, House.statesenate,  35,  True, VERSION, 'data/ME/009-fresh-VEST'), # df52341
+    Model(State.ME, House.statehouse,  151,  True, VERSION, 'data/ME/009-fresh-VEST'), # df52341
+    Model(State.ME, House.localplan,  None,  True, VERSION, 'data/ME/009-fresh-VEST'), # df52341
     Model(State.MI, House.ushouse,      13,  True, VERSION, 'data/MI/009-dra-block'), # db6985b
     Model(State.MI, House.statesenate,  38,  True, VERSION, 'data/MI/009-dra-block'), # db6985b
     Model(State.MI, House.statehouse,  110,  True, VERSION, 'data/MI/009-dra-block'), # db6985b
@@ -471,10 +471,10 @@ MODELS = [
     Model(State.NC, House.statesenate,  50,  True, VERSION, 'data/NC/020-dra-block'), # db6985b
     Model(State.NC, House.statehouse,  120,  True, VERSION, 'data/NC/020-dra-block'), # db6985b
     Model(State.NC, House.localplan,  None,  True, VERSION, 'data/NC/020-dra-block'), # db6985b
-    Model(State.ND, House.ushouse,       1,  True, VERSION, 'data/ND/008-dra-block'), # db6985b
-    Model(State.ND, House.statesenate,  47,  True, VERSION, 'data/ND/008-dra-block'), # db6985b
-    Model(State.ND, House.statehouse,   94,  True, VERSION, 'data/ND/008-dra-block'), # db6985b
-    Model(State.ND, House.localplan,  None,  True, VERSION, 'data/ND/008-dra-block'), # db6985b
+    Model(State.ND, House.ushouse,       1,  True, VERSION, 'data/ND/009-fresh-VEST'), # df52341
+    Model(State.ND, House.statesenate,  47,  True, VERSION, 'data/ND/009-fresh-VEST'), # df52341
+    Model(State.ND, House.statehouse,   94,  True, VERSION, 'data/ND/009-fresh-VEST'), # df52341
+    Model(State.ND, House.localplan,  None,  True, VERSION, 'data/ND/009-fresh-VEST'), # df52341
     Model(State.NE, House.ushouse,       3,  True, VERSION, 'data/NE/006-dra-block'), # db6985b
     Model(State.NE, House.statesenate,  49,  True, VERSION, 'data/NE/006-dra-block'), # db6985b
     Model(State.NH, House.ushouse,       2,  True, VERSION, 'data/NH/008-dra-block'), # 5caa70e
@@ -537,10 +537,10 @@ MODELS = [
     Model(State.UT, House.statesenate,  29,  True, VERSION, 'data/UT/006-dra-block'), # db6985b
     Model(State.UT, House.statehouse,   75,  True, VERSION, 'data/UT/006-dra-block'), # db6985b
     Model(State.UT, House.localplan,  None,  True, VERSION, 'data/UT/006-dra-block'), # db6985b
-    Model(State.VA, House.ushouse,      11,  True, VERSION, 'data/VA/007-dra-block'), # db6985b
-    Model(State.VA, House.statesenate,  40,  True, VERSION, 'data/VA/007-dra-block'), # db6985b
-    Model(State.VA, House.statehouse,  100,  True, VERSION, 'data/VA/007-dra-block'), # db6985b
-    Model(State.VA, House.localplan,  None,  True, VERSION, 'data/VA/007-dra-block'), # db6985b
+    Model(State.VA, House.ushouse,      11,  True, VERSION, 'data/VA/008-2020-vote'), # abfb730
+    Model(State.VA, House.statesenate,  40,  True, VERSION, 'data/VA/008-2020-vote'), # abfb730
+    Model(State.VA, House.statehouse,  100,  True, VERSION, 'data/VA/008-2020-vote'), # abfb730
+    Model(State.VA, House.localplan,  None,  True, VERSION, 'data/VA/008-2020-vote'), # abfb730
     Model(State.VT, House.ushouse,       1,  True, VERSION, 'data/VT/008-dra-block'), # 5caa70e
     Model(State.VT, House.statesenate,  30,  True, VERSION, 'data/VT/008-dra-block'), # 5caa70e
     Model(State.VT, House.statehouse,  150,  True, VERSION, 'data/VT/008-dra-block'), # 5caa70e

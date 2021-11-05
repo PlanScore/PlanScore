@@ -878,7 +878,7 @@ function show_ftva_race_scores(plan, scores_FTVA)
             ftva_races.push({office: 'U.S. Senate', year: '2016', gap: plan.summary['US Senate 2016 Efficiency Gap']});
         }
         
-        for(var i = 0; i < scores_FTVA.length && i < ftva_races.length; i++)
+        for(var i = 0; i < ftva_races.length; i++)
         {
             var score_FTVA = scores_FTVA[i],
                 //summary_name = which_score_summary_name(plan),
@@ -928,6 +928,11 @@ function show_ftva_race_scores(plan, scores_FTVA)
                 }
             }
             */
+        }
+
+        for(var j = i; j < scores_FTVA.length; j++)
+        {
+            scores_FTVA[j].style.display = 'none';
         }
     } else {
         for(var i = 0; i < scores_FTVA.length; i++)
