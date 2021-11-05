@@ -537,10 +537,10 @@ MODELS = [
     Model(State.UT, House.statesenate,  29,  True, VERSION, 'data/UT/006-dra-block'), # db6985b
     Model(State.UT, House.statehouse,   75,  True, VERSION, 'data/UT/006-dra-block'), # db6985b
     Model(State.UT, House.localplan,  None,  True, VERSION, 'data/UT/006-dra-block'), # db6985b
-    Model(State.VA, House.ushouse,      11,  True, VERSION, 'data/VA/007-dra-block'), # db6985b
-    Model(State.VA, House.statesenate,  40,  True, VERSION, 'data/VA/007-dra-block'), # db6985b
-    Model(State.VA, House.statehouse,  100,  True, VERSION, 'data/VA/007-dra-block'), # db6985b
-    Model(State.VA, House.localplan,  None,  True, VERSION, 'data/VA/007-dra-block'), # db6985b
+    Model(State.VA, House.ushouse,      11,  True, VERSION, 'data/VA/008-2020-vote'), # abfb730
+    Model(State.VA, House.statesenate,  40,  True, VERSION, 'data/VA/008-2020-vote'), # abfb730
+    Model(State.VA, House.statehouse,  100,  True, VERSION, 'data/VA/008-2020-vote'), # abfb730
+    Model(State.VA, House.localplan,  None,  True, VERSION, 'data/VA/008-2020-vote'), # abfb730
     Model(State.VT, House.ushouse,       1,  True, VERSION, 'data/VT/008-dra-block'), # 5caa70e
     Model(State.VT, House.statesenate,  30,  True, VERSION, 'data/VT/008-dra-block'), # 5caa70e
     Model(State.VT, House.statehouse,  150,  True, VERSION, 'data/VT/008-dra-block'), # 5caa70e
