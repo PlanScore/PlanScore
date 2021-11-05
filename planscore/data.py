@@ -43,6 +43,7 @@ class State (enum.Enum):
     MI = 'MI'
     MN = 'MN'
     MO = 'MO'
+    MS = 'MS'
     MT = 'MT'
     NC = 'NC'
     NE = 'NE'
@@ -458,6 +459,10 @@ MODELS = [
     Model(State.MO, House.statesenate,  34,  True, VERSION, 'data/MO/007-dra-block'), # db6985b
     Model(State.MO, House.statehouse,  163,  True, VERSION, 'data/MO/007-dra-block'), # db6985b
     Model(State.MO, House.localplan,  None,  True, VERSION, 'data/MO/007-dra-block'), # db6985b
+    Model(State.MS, House.ushouse,       4,  True, VERSION, 'data/MS/001-NYT-votes'), # 5849072
+    Model(State.MS, House.statesenate,  52,  True, VERSION, 'data/MS/001-NYT-votes'), # 5849072
+    Model(State.MS, House.statehouse,  122,  True, VERSION, 'data/MS/001-NYT-votes'), # 5849072
+    Model(State.MS, House.localplan,  None,  True, VERSION, 'data/MS/001-NYT-votes'), # 5849072
     Model(State.MT, House.ushouse,       2,  True, VERSION, 'data/MT/008-dra-block'), # db6985b
     Model(State.MT, House.statesenate,  50,  True, VERSION, 'data/MT/008-dra-block'), # db6985b
     Model(State.MT, House.statehouse,  100,  True, VERSION, 'data/MT/008-dra-block'), # db6985b
