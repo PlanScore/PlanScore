@@ -43,6 +43,7 @@ class State (enum.Enum):
     MI = 'MI'
     MN = 'MN'
     MO = 'MO'
+    MS = 'MS'
     MT = 'MT'
     NC = 'NC'
     NE = 'NE'
@@ -66,6 +67,7 @@ class State (enum.Enum):
     VT = 'VT'
     WA = 'WA'
     WI = 'WI'
+    WV = 'WV'
     WY = 'WY'
 
 class House (enum.Enum):
@@ -457,6 +459,10 @@ MODELS = [
     Model(State.MO, House.statesenate,  34,  True, VERSION, 'data/MO/007-dra-block'), # db6985b
     Model(State.MO, House.statehouse,  163,  True, VERSION, 'data/MO/007-dra-block'), # db6985b
     Model(State.MO, House.localplan,  None,  True, VERSION, 'data/MO/007-dra-block'), # db6985b
+    Model(State.MS, House.ushouse,       4,  True, VERSION, 'data/MS/001-NYT-votes'), # 5849072
+    Model(State.MS, House.statesenate,  52,  True, VERSION, 'data/MS/001-NYT-votes'), # 5849072
+    Model(State.MS, House.statehouse,  122,  True, VERSION, 'data/MS/001-NYT-votes'), # 5849072
+    Model(State.MS, House.localplan,  None,  True, VERSION, 'data/MS/001-NYT-votes'), # 5849072
     Model(State.MT, House.ushouse,       2,  True, VERSION, 'data/MT/008-dra-block'), # db6985b
     Model(State.MT, House.statesenate,  50,  True, VERSION, 'data/MT/008-dra-block'), # db6985b
     Model(State.MT, House.statehouse,  100,  True, VERSION, 'data/MT/008-dra-block'), # db6985b
@@ -503,10 +509,10 @@ MODELS = [
     Model(State.OR, House.statesenate,  30,  True, VERSION, 'data/OR/006-dra-block'), # db6985b
     Model(State.OR, House.statehouse,   60,  True, VERSION, 'data/OR/006-dra-block'), # db6985b
     Model(State.OR, House.localplan,  None,  True, VERSION, 'data/OR/006-dra-block'), # db6985b
-    Model(State.PA, House.ushouse,      17,  True, VERSION, 'data/PA/014-dra-block'), # db6985b
-    Model(State.PA, House.statesenate,  50,  True, VERSION, 'data/PA/014-dra-block'), # db6985b
-    Model(State.PA, House.statehouse,  203,  True, VERSION, 'data/PA/014-dra-block'), # db6985b
-    Model(State.PA, House.localplan,  None,  True, VERSION, 'data/PA/014-dra-block'), # db6985b
+    Model(State.PA, House.ushouse,      17,  True, VERSION, 'data/PA/015-NYT-votes'), # fdb4172
+    Model(State.PA, House.statesenate,  50,  True, VERSION, 'data/PA/015-NYT-votes'), # fdb4172
+    Model(State.PA, House.statehouse,  203,  True, VERSION, 'data/PA/015-NYT-votes'), # fdb4172
+    Model(State.PA, House.localplan,  None,  True, VERSION, 'data/PA/015-NYT-votes'), # fdb4172
     Model(State.RI, House.ushouse,       2,  True, VERSION, 'data/RI/008-dra-block'), # 5caa70e
     Model(State.RI, House.statesenate,  38,  True, VERSION, 'data/RI/008-dra-block'), # 5caa70e
     Model(State.RI, House.statehouse,   75,  True, VERSION, 'data/RI/008-dra-block'), # 5caa70e
@@ -547,6 +553,10 @@ MODELS = [
     Model(State.WI, House.statesenate,  33,  True, VERSION, 'data/WI/012-dra-block'), # db6985b
     Model(State.WI, House.statehouse,   99,  True, VERSION, 'data/WI/012-dra-block'), # db6985b
     Model(State.WI, House.localplan,  None,  True, VERSION, 'data/WI/012-dra-block'), # db6985b
+    Model(State.WV, House.ushouse,       3,  True, VERSION, 'data/WV/001-NYT-votes'), # b0150fc
+    Model(State.WV, House.statesenate,  34,  True, VERSION, 'data/WV/001-NYT-votes'), # b0150fc
+    Model(State.WV, House.statehouse,  100,  True, VERSION, 'data/WV/001-NYT-votes'), # b0150fc
+    Model(State.WV, House.localplan,  None,  True, VERSION, 'data/WV/001-NYT-votes'), # b0150fc
     Model(State.WY, House.ushouse,       1,  True, VERSION, 'data/WY/008-dra-block'), # db6985b
     Model(State.WY, House.statesenate,  30,  True, VERSION, 'data/WY/008-dra-block'), # db6985b
     Model(State.WY, House.statehouse,   60,  True, VERSION, 'data/WY/008-dra-block'), # db6985b

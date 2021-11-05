@@ -107,12 +107,6 @@ class TestPrereadFollowup (unittest.TestCase):
     def test_guess_geometry_model_nonexistent(self):
         ''' Test that guess_geometry_model() guesses the correct U.S. state and house.
         '''
-        with self.assertRaises(RuntimeError) as ms_error:
-            ms_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'mississippi.geojson')
-            preread_followup.guess_geometry_model(ms_plan_path)
-
-        self.assertEqual(str(ms_error.exception), 'Mississippi is not a currently supported state')
-
         with self.assertRaises(RuntimeError) as dc_error:
             dc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'district-of-columbia.geojson')
             preread_followup.guess_geometry_model(dc_plan_path)
@@ -217,11 +211,6 @@ class TestPrereadFollowup (unittest.TestCase):
 
         null_plan3_path = os.path.join(os.path.dirname(__file__), 'data', 'maryland-blocks2010.csv')
         self.assertEqual(preread_followup.guess_blockassign_model(null_plan3_path).key_prefix[:8], 'data/MD/')
-
-        null_plan4_path = os.path.join(os.path.dirname(__file__), 'data', 'mississippi-blocks2010.csv')
-        with self.assertRaises(RuntimeError) as err:
-            preread_followup.guess_blockassign_model(null_plan4_path)
-            self.assertEqual(str(err), 'Mississippi is not a currently supported state')
     
     def test_get_block_assignments_knowns(self):
         ''' Test that get_block_assignments() reads the right Assignment values
