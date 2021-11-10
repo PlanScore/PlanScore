@@ -15,12 +15,12 @@ from . import data
 # this adjustment value from the presidential vote values in each district.
 # Values are given as Democratic vote portion from 0. to 1. and become
 # approximately -0.5 to +0.5.
-VOTE_ADJUST = -0.496875
+VOTE_ADJUST = -0.4985419
 
-# True 2016 and 2020 presidential votes need to be scaled and offset
+# True 2016 and 2020 presidential votes may need to be scaled and offset
 # for compatibility with the C and E matrixes.
-PVOTE2016_SCALE, PVOTE2016_OFFSET = 0.91, 0.05
-PVOTE2020_SCALE, PVOTE2020_OFFSET = 0.96, 0.01
+PVOTE2016_SCALE, PVOTE2016_OFFSET = 1, 0
+PVOTE2020_SCALE, PVOTE2020_OFFSET = 1, 0
 
 # A hard-coded year to use for matrix, nothing for now
 YEAR = None
