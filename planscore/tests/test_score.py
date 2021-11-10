@@ -998,10 +998,10 @@ class TestScore (unittest.TestCase):
         ])
         output = score.calculate_everything(input)
         self.assertEqual(model_votes.mock_calls[0][1][:2], (data.State.XX, None))
-        self.assertEqual(model_votes.mock_calls[0][1][2][0], (5.86, 2.14, 'R'))
-        self.assertEqual(model_votes.mock_calls[0][1][2][1], (4.95, 3.05, 'D'))
-        self.assertEqual(model_votes.mock_calls[0][1][2][2], (3.13, 4.87, 'R'))
-        self.assertEqual(model_votes.mock_calls[0][1][2][3], (2.22, 5.78, 'D'))
+        self.assertEqual(model_votes.mock_calls[0][1][2][0], (6.0, 2.0, 'R'))
+        self.assertEqual(model_votes.mock_calls[0][1][2][1], (5.0, 3.0, 'D'))
+        self.assertEqual(model_votes.mock_calls[0][1][2][2], (3.0, 5.0, 'R'))
+        self.assertEqual(model_votes.mock_calls[0][1][2][3], (2.0, 6.0, 'D'))
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
@@ -1143,10 +1143,10 @@ class TestScore (unittest.TestCase):
         self.assertIsNone(output.districts[4]['number'], 'Should not count empty 5th district')
         
         self.assertEqual(model_votes.mock_calls[0][1][:2], (data.State.XX, None))
-        self.assertEqual(model_votes.mock_calls[0][1][2][0], (5.86, 2.14, 'O'))
-        self.assertEqual(model_votes.mock_calls[0][1][2][1], (4.95, 3.05, 'O'))
-        self.assertEqual(model_votes.mock_calls[0][1][2][2], (3.13, 4.87, 'O'))
-        self.assertEqual(model_votes.mock_calls[0][1][2][3], (2.22, 5.78, 'O'))
+        self.assertEqual(model_votes.mock_calls[0][1][2][0], (6.0, 2.0, 'O'))
+        self.assertEqual(model_votes.mock_calls[0][1][2][1], (5.0, 3.0, 'O'))
+        self.assertEqual(model_votes.mock_calls[0][1][2][2], (3.0, 5.0, 'O'))
+        self.assertEqual(model_votes.mock_calls[0][1][2][3], (2.0, 6.0, 'O'))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(len(calculate_MMD.mock_calls[0][1][0]), 4, 'Should skip empty 5th district')
@@ -1199,5 +1199,5 @@ class TestScore (unittest.TestCase):
 
         output = score.calculate_everything(input)
         
-        self.assertEqual(output.summary['Declination Absolute Percent Rank'], 1.0)
-        self.assertEqual(output.summary['Declination Relative Percent Rank'], 1.0)
+        self.assertEqual(output.summary['Declination Absolute Percent Rank'], 0.9273)
+        self.assertEqual(output.summary['Declination Relative Percent Rank'], 0.9673)
