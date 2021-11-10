@@ -18,9 +18,9 @@ class TestMatrix (unittest.TestCase):
         self.assertTrue((matrix.dropna(numpy.array([numpy.nan, 1])) == numpy.array([1])).all())
     
     def test_load_model(self):
-        model = matrix.load_model('-2021B', 'ak', None)
+        model = matrix.load_model('-2021B', 'ak', 2020)
         
-        self.assertEqual(model.c_matrix.shape, (6, 1000))
+        self.assertEqual(model.c_matrix.shape, (9, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
         
         self.assertEqual(model.intercept[0], model.c_matrix[0,0])
@@ -29,22 +29,22 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(model.state_intercept[0], model.c_matrix[3,0])
         self.assertEqual(model.state_vote[0], model.c_matrix[4,0])
         self.assertEqual(model.state_incumbent[0], model.c_matrix[5,0])
-        #self.assertEqual(model.year_intercept[0], model.c_matrix[6,0])
-        #self.assertEqual(model.year_vote[0], model.c_matrix[7,0])
-        #self.assertEqual(model.year_incumbent[0], model.c_matrix[8,0])
+        self.assertEqual(model.year_intercept[0], model.c_matrix[6,0])
+        self.assertEqual(model.year_vote[0], model.c_matrix[7,0])
+        self.assertEqual(model.year_incumbent[0], model.c_matrix[8,0])
 
-        self.assertAlmostEqual(model.c_matrix[0,0], 0.5144)
-        self.assertAlmostEqual(model.c_matrix[1,0], 0.7598)
-        self.assertAlmostEqual(model.c_matrix[2,0], 0.0569)
-        self.assertAlmostEqual(model.c_matrix[3,0], -0.0122)
-        self.assertAlmostEqual(model.c_matrix[4,0], 0.0286)
-        self.assertAlmostEqual(model.c_matrix[5,0], -0.0042)
-        #self.assertAlmostEqual(model.c_matrix[6,0], 0.006908099)
-        #self.assertAlmostEqual(model.c_matrix[7,0], -0.130211000)
-        #self.assertAlmostEqual(model.c_matrix[8,0], 0.0129821061)
+        self.assertAlmostEqual(model.c_matrix[0,0], 0.4989)
+        self.assertAlmostEqual(model.c_matrix[1,0], 0.7485)
+        self.assertAlmostEqual(model.c_matrix[2,0], 0.0583)
+        self.assertAlmostEqual(model.c_matrix[3,0], -0.0003)
+        self.assertAlmostEqual(model.c_matrix[4,0], 0.0261)
+        self.assertAlmostEqual(model.c_matrix[5,0], 0.0040)
+        self.assertAlmostEqual(model.c_matrix[6,0], -0.0087)
+        self.assertAlmostEqual(model.c_matrix[7,0], 0.1354)
+        self.assertAlmostEqual(model.c_matrix[8,0], -0.0241)
     
     def test_apply_model(self):
-        model = matrix.load_model('-2021B', 'ca', None)
+        model = matrix.load_model('-2021B', 'ca', 2020)
         
         R = matrix.apply_model(
             [
@@ -72,7 +72,7 @@ class TestMatrix (unittest.TestCase):
         self.assertTrue(R[2].sum() < R[5].sum() and R[5].sum() < R[8].sum())
     
     def test_apply_model_with_zeros(self):
-        model = matrix.load_model('-2021B', 'ca', None)
+        model = matrix.load_model('-2021B', 'ca', 2020)
         
         R = matrix.apply_model(
             [
@@ -163,10 +163,10 @@ class TestMatrix (unittest.TestCase):
                 ])
         
         output = matrix.prepare_district_data(input)
-        self.assertEqual(output[0], (5.86, 2.14, 'O'))
-        self.assertEqual(output[1], (4.95, 3.05, 'O'))
-        self.assertEqual(output[2], (3.13, 4.87, 'O'))
-        self.assertEqual(output[3], (2.22, 5.78, 'O'))
+        self.assertEqual(output[0], (6.0, 2.0, 'O'))
+        self.assertEqual(output[1], (5.0, 3.0, 'O'))
+        self.assertEqual(output[2], (3.0, 5.0, 'O'))
+        self.assertEqual(output[3], (2.0, 6.0, 'O'))
     
     def test_prepare_district_data_mixed_years(self):
         input = data.Upload(id=None, key=None,
@@ -179,10 +179,10 @@ class TestMatrix (unittest.TestCase):
                 ])
         
         output = matrix.prepare_district_data(input)
-        self.assertEqual(output[0], (5.84, 2.16, 'O'))
-        self.assertEqual(output[1], (4.88, 3.12, 'O'))
-        self.assertEqual(output[2], (2.96, 5.04, 'O'))
-        self.assertEqual(output[3], (2.00, 6.00, 'O'))
+        self.assertEqual(output[0], (6.0, 2.0, 'O'))
+        self.assertEqual(output[1], (5.0, 3.0, 'O'))
+        self.assertEqual(output[2], (3.0, 5.0, 'O'))
+        self.assertEqual(output[3], (2.0, 6.0, 'O'))
     
     def test_filter_district_data(self):
         data1 = [(5.86, 2.14, 'O'), (4.95, 3.05, 'O'), (3.13, 4.87, 'O'), (2.22, 5.78, 'O')]
