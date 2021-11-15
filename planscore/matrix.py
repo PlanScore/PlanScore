@@ -22,8 +22,8 @@ VOTE_ADJUST = -0.4985419
 PVOTE2016_SCALE, PVOTE2016_OFFSET = 1, 0
 PVOTE2020_SCALE, PVOTE2020_OFFSET = 1, 0
 
-# A hard-coded year to use for matrix, nothing for now
-YEAR = None
+# A hard-coded year to make predictions for
+YEAR = 2020
 
 INCUMBENCY = {
     data.Incumbency.Open.value: 0,
@@ -37,7 +37,7 @@ STATE = dict([(s, s.value.lower()) for s in data.State] + [(data.State.XX, 'ks')
 Model = collections.namedtuple('Model', (
     'intercept', 'vote', 'incumbent',
     'state_intercept', 'state_vote', 'state_incumbent',
-    #'year_intercept', 'year_vote', 'year_incumbent',
+    'year_intercept', 'year_vote', 'year_incumbent',
     'c_matrix', 'e_matrix',
     ))
 
@@ -45,8 +45,6 @@ def dropna(a):
     return a[~numpy.isnan(a)]
 
 def load_model(state, year):
-    assert year is None, f'Year should be None, not {year}'
-
     matrix_dir = os.path.join(os.path.dirname(__file__), 'model')
     c_path = os.path.join(matrix_dir, 'C_matrix_full.csv.gz')
     e_path = os.path.join(matrix_dir, 'E_matrix_full.csv.gz')
@@ -56,9 +54,9 @@ def load_model(state, year):
         f'r_stateabrev[{state},Intercept]',
         f'r_stateabrev[{state},dpres_mn]',
         f'r_stateabrev[{state},incumb]',
-        #f'r_cycle[{year},Intercept]',
-        #f'r_cycle[{year},dpres_mn]',
-        #f'r_cycle[{year},incumb]',
+        f'r_cycle[{year},Intercept]',
+        f'r_cycle[{year},dpres_mn]',
+        f'r_cycle[{year},incumb]',
     )
     
     with gzip.open(c_path, 'rt') as c_file:
@@ -93,7 +91,7 @@ def apply_model(districts, model):
         - -1 for Republican, 0 for open seat, and 1 for Democratic incumbents
     '''
     AD = numpy.array([
-        [1, numpy.nan if numpy.isnan(vote) else (vote + VOTE_ADJUST), incumbency] * 2
+        [1, numpy.nan if numpy.isnan(vote) else (vote + VOTE_ADJUST), incumbency] * 3
         for (vote, incumbency)
         in districts
     ])
