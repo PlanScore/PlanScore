@@ -17,8 +17,34 @@ class TestMatrix (unittest.TestCase):
         self.assertTrue((matrix.dropna(numpy.array([1, numpy.nan])) == numpy.array([1])).all())
         self.assertTrue((matrix.dropna(numpy.array([numpy.nan, 1])) == numpy.array([1])).all())
     
-    def test_load_model(self):
+    def test_load_model_2021B(self):
         model = matrix.load_model('-2021B', 'ak', 2020)
+        
+        self.assertEqual(model.c_matrix.shape, (9, 1000))
+        self.assertEqual(model.e_matrix.shape, (500, 1000))
+        
+        self.assertEqual(model.intercept[0], model.c_matrix[0,0])
+        self.assertEqual(model.vote[0], model.c_matrix[1,0])
+        self.assertEqual(model.incumbent[0], model.c_matrix[2,0])
+        self.assertEqual(model.state_intercept[0], model.c_matrix[3,0])
+        self.assertEqual(model.state_vote[0], model.c_matrix[4,0])
+        self.assertEqual(model.state_incumbent[0], model.c_matrix[5,0])
+        self.assertEqual(model.year_intercept[0], model.c_matrix[6,0])
+        self.assertEqual(model.year_vote[0], model.c_matrix[7,0])
+        self.assertEqual(model.year_incumbent[0], model.c_matrix[8,0])
+
+        self.assertAlmostEqual(model.c_matrix[0,0], 0.5144)
+        self.assertAlmostEqual(model.c_matrix[1,0], 0.7598)
+        self.assertAlmostEqual(model.c_matrix[2,0], 0.0569)
+        self.assertAlmostEqual(model.c_matrix[3,0], -0.0122)
+        self.assertAlmostEqual(model.c_matrix[4,0], 0.0286)
+        self.assertAlmostEqual(model.c_matrix[5,0], -0.0042)
+        self.assertAlmostEqual(model.c_matrix[6,0], -0.0112)
+        self.assertAlmostEqual(model.c_matrix[7,0], 0.1187)
+        self.assertAlmostEqual(model.c_matrix[8,0], -0.0158)
+    
+    def test_load_model_2021C(self):
+        model = matrix.load_model('-2021C', 'ak', 2020)
         
         self.assertEqual(model.c_matrix.shape, (9, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))

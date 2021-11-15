@@ -364,7 +364,7 @@ class Upload:
 
 # Active version of each state model
 
-VERSIONS = ['2021B']
+VERSIONS = ['2021B', '2021C']
 
 MODELS = [
     Model(State.XX, House.statehouse,    2,  True, VERSIONS, 'data/XX/006-tilesdir'), # b8e19879

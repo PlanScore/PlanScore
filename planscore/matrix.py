@@ -127,6 +127,8 @@ def model_votes(model_version, state, year, districts):
     '''
     if model_version in ('2021B', None):
         path_suffix = '-2021B'
+    elif model_version == '2021C':
+        path_suffix = '-2021C'
     else:
         raise ValueError(f'Unknown model_version {repr(model_version)}')
     
