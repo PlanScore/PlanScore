@@ -22,6 +22,7 @@ live-metrics: metrics-lambda.zip
 	aws lambda update-function-code --region us-east-1 \
 		--function-name PlanScore-Update-Metrics \
 		--zip-file fileb://metrics-lambda.zip
+	sleep 10
 	aws lambda update-function-configuration --region us-east-1 \
 		--function-name PlanScore-Update-Metrics \
 		--handler planscore.update_metrics.lambda_handler \
