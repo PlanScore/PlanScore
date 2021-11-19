@@ -509,10 +509,10 @@ MODELS = [
     Model(State.OR, House.statesenate,  30,  True, VERSION, 'data/OR/006-dra-block'), # db6985b
     Model(State.OR, House.statehouse,   60,  True, VERSION, 'data/OR/006-dra-block'), # db6985b
     Model(State.OR, House.localplan,  None,  True, VERSION, 'data/OR/006-dra-block'), # db6985b
-    Model(State.PA, House.ushouse,      17,  True, VERSION, 'data/PA/015-NYT-votes'), # fdb4172
-    Model(State.PA, House.statesenate,  50,  True, VERSION, 'data/PA/015-NYT-votes'), # fdb4172
-    Model(State.PA, House.statehouse,  203,  True, VERSION, 'data/PA/015-NYT-votes'), # fdb4172
-    Model(State.PA, House.localplan,  None,  True, VERSION, 'data/PA/015-NYT-votes'), # fdb4172
+    Model(State.PA, House.ushouse,      17,  True, VERSION, 'data/PA/016-other-src'), # ce5edad
+    Model(State.PA, House.statesenate,  50,  True, VERSION, 'data/PA/016-other-src'), # ce5edad
+    Model(State.PA, House.statehouse,  203,  True, VERSION, 'data/PA/016-other-src'), # ce5edad
+    Model(State.PA, House.localplan,  None,  True, VERSION, 'data/PA/016-other-src'), # ce5edad
     Model(State.RI, House.ushouse,       2,  True, VERSION, 'data/RI/008-dra-block'), # 5caa70e
     Model(State.RI, House.statesenate,  38,  True, VERSION, 'data/RI/008-dra-block'), # 5caa70e
     Model(State.RI, House.statehouse,   75,  True, VERSION, 'data/RI/008-dra-block'), # 5caa70e
