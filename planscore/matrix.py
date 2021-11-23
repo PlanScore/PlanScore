@@ -44,12 +44,13 @@ Model = collections.namedtuple('Model', (
 def dropna(a):
     return a[~numpy.isnan(a)]
 
-def load_model(state, year):
+def load_model(path_suffix, state, year):
     assert year is None, f'Year should be None, not {year}'
+    assert path_suffix == '', f'Path suffix should be "", not "{path_suffix}"'
 
     matrix_dir = os.path.join(os.path.dirname(__file__), 'model')
-    c_path = os.path.join(matrix_dir, 'C_matrix_full.csv.gz')
-    e_path = os.path.join(matrix_dir, 'E_matrix_full.csv.gz')
+    c_path = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}.csv.gz')
+    e_path = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}.csv.gz')
     
     c_keys = (
         'b_Intercept', 'b_dpres_mn', 'b_incumb',
@@ -127,13 +128,16 @@ def model_votes(state, year, districts):
         
         Return is a DxSx2 matrix for D districts, S simulations, and Dem/Rep parties.
     '''
+    # TODO: make this work
+    path_suffix = ''
+    
     # Get DxS array from apply_model() with modeled vote fractions
     fractions = apply_model(
         [
             (dem / ((dem + rep) or numpy.nan), INCUMBENCY[inc])
             for (dem, rep, inc) in districts
         ],
-        load_model(STATE[state], year),
+        load_model(path_suffix, STATE[state], year),
     )
     
     # Make DxS array with total vote counts for each district and simulation
