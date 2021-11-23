@@ -95,6 +95,7 @@ class TestMatrix (unittest.TestCase):
         ])
 
         R = matrix.model_votes(
+            data.VERSIONS[0],
             data.State.NC,
             None,
             [
@@ -127,6 +128,7 @@ class TestMatrix (unittest.TestCase):
         ])
 
         R = matrix.model_votes(
+            data.VERSIONS[0],
             data.State.NC,
             None,
             [

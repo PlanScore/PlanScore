@@ -875,7 +875,8 @@ class TestScore (unittest.TestCase):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
-            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2020'], None),
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2021B'], None),
+            model_version = '2021B',
             districts = [
                 dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
                 dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
@@ -908,7 +909,7 @@ class TestScore (unittest.TestCase):
              [2.6, 5.4]],
         ])
         output = score.calculate_everything(input)
-        self.assertEqual(model_votes.mock_calls[0][1], (data.State.XX, None, filter_district_data.return_value))
+        self.assertEqual(model_votes.mock_calls[0][1], ('2021B', data.State.XX, None, filter_district_data.return_value))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median Positives'], 0.0)
@@ -963,7 +964,8 @@ class TestScore (unittest.TestCase):
         ''' Incumbency values are correctly passedon for presidential vote only
         '''
         input = data.Upload(id=None, key=None,
-            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2017'], None),
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2021B'], None),
+            model_version = '2021B',
             incumbents = ['R', 'D', 'R', 'D'],
             districts = [
                 dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
@@ -997,11 +999,11 @@ class TestScore (unittest.TestCase):
              [2.6, 5.4]],
         ])
         output = score.calculate_everything(input)
-        self.assertEqual(model_votes.mock_calls[0][1][:2], (data.State.XX, None))
-        self.assertEqual(model_votes.mock_calls[0][1][2][0], (5.86, 2.14, 'R'))
-        self.assertEqual(model_votes.mock_calls[0][1][2][1], (4.95, 3.05, 'D'))
-        self.assertEqual(model_votes.mock_calls[0][1][2][2], (3.13, 4.87, 'R'))
-        self.assertEqual(model_votes.mock_calls[0][1][2][3], (2.22, 5.78, 'D'))
+        self.assertEqual(model_votes.mock_calls[0][1][:3], ('2021B', data.State.XX, None))
+        self.assertEqual(model_votes.mock_calls[0][1][3][0], (5.86, 2.14, 'R'))
+        self.assertEqual(model_votes.mock_calls[0][1][3][1], (4.95, 3.05, 'D'))
+        self.assertEqual(model_votes.mock_calls[0][1][3][2], (3.13, 4.87, 'R'))
+        self.assertEqual(model_votes.mock_calls[0][1][3][3], (2.22, 5.78, 'D'))
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
@@ -1093,7 +1095,8 @@ class TestScore (unittest.TestCase):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
-            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2020'], None),
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2021B'], None),
+            model_version = '2021B',
             districts = [
                 dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
                 dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
@@ -1142,11 +1145,11 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.districts[3]['number'], 4, 'Should count 5th district')
         self.assertIsNone(output.districts[4]['number'], 'Should not count empty 5th district')
         
-        self.assertEqual(model_votes.mock_calls[0][1][:2], (data.State.XX, None))
-        self.assertEqual(model_votes.mock_calls[0][1][2][0], (5.86, 2.14, 'O'))
-        self.assertEqual(model_votes.mock_calls[0][1][2][1], (4.95, 3.05, 'O'))
-        self.assertEqual(model_votes.mock_calls[0][1][2][2], (3.13, 4.87, 'O'))
-        self.assertEqual(model_votes.mock_calls[0][1][2][3], (2.22, 5.78, 'O'))
+        self.assertEqual(model_votes.mock_calls[0][1][:3], ('2021B', data.State.XX, None))
+        self.assertEqual(model_votes.mock_calls[0][1][3][0], (5.86, 2.14, 'O'))
+        self.assertEqual(model_votes.mock_calls[0][1][3][1], (4.95, 3.05, 'O'))
+        self.assertEqual(model_votes.mock_calls[0][1][3][2], (3.13, 4.87, 'O'))
+        self.assertEqual(model_votes.mock_calls[0][1][3][3], (2.22, 5.78, 'O'))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(len(calculate_MMD.mock_calls[0][1][0]), 4, 'Should skip empty 5th district')

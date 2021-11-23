@@ -117,7 +117,7 @@ def apply_model(districts, model):
     #numpy.savetxt('ADCE.csv', (ADC + E), fmt='%.9f', delimiter=',')
     return ADC + E
 
-def model_votes(state, year, districts):
+def model_votes(model_version, state, year, districts):
     ''' Convert presidential votes to range of possible modeled chamber votes.
         
         state is from data.State enum, year is an integer.
@@ -128,8 +128,10 @@ def model_votes(state, year, districts):
         
         Return is a DxSx2 matrix for D districts, S simulations, and Dem/Rep parties.
     '''
-    # TODO: make this work
-    path_suffix = ''
+    if model_version in ('2021B', None):
+        path_suffix = ''
+    else:
+        raise ValueError(f'Unknown model_version {repr(model_version)}')
     
     # Get DxS array from apply_model() with modeled vote fractions
     fractions = apply_model(
@@ -227,7 +229,7 @@ def main():
     input_district_data = prepare_district_data(upload)
     
     # Get large number of simulated outputs
-    output_votes = model_votes(upload.model.state, YEAR, input_district_data)
+    output_votes = model_votes(upload.model_version, upload.model.state, YEAR, input_district_data)
 
     with open(args.matrix_path, 'w') as file:
         districts, sims, parties = output_votes.shape
