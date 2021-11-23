@@ -45,6 +45,9 @@ def dropna(a):
     return a[~numpy.isnan(a)]
 
 def load_model(path_suffix, state, year):
+
+    # TODO: accept year = None
+
     matrix_dir = os.path.join(os.path.dirname(__file__), 'model')
     c_path = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}.csv.gz')
     e_path = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}.csv.gz')
@@ -114,7 +117,7 @@ def apply_model(districts, model):
     #numpy.savetxt('ADCE.csv', (ADC + E), fmt='%.9f', delimiter=',')
     return ADC + E
 
-def model_votes(model_version, state, year, districts):
+def model_votes(model_version, state, districts):
     ''' Convert presidential votes to range of possible modeled chamber votes.
         
         state is from data.State enum, year is an integer.
@@ -125,6 +128,8 @@ def model_votes(model_version, state, year, districts):
         
         Return is a DxSx2 matrix for D districts, S simulations, and Dem/Rep parties.
     '''
+    # TODO: figure out year based on model_version
+    
     if model_version in ('2021B', None):
         path_suffix = '-2021B'
     elif model_version == '2021C':
@@ -165,6 +170,9 @@ def prepare_district_data(upload):
     data = []
     
     for (district, incumbency) in zip(upload.districts, upload.incumbents):
+    
+        # TODO: apply pvote adjustment based on upload.model_version here
+    
         if 'US President 2020 - DEM' in district['totals']:
             total = district['totals']['US President 2020 - DEM'] \
                   + district['totals']['US President 2020 - REP']
@@ -228,7 +236,7 @@ def main():
     input_district_data = prepare_district_data(upload)
     
     # Get large number of simulated outputs
-    output_votes = model_votes(upload.model_version, upload.model.state, YEAR, input_district_data)
+    output_votes = model_votes(upload.model_version, upload.model.state, input_district_data)
 
     with open(args.matrix_path, 'w') as file:
         districts, sims, parties = output_votes.shape
