@@ -106,12 +106,12 @@ function get_description(plan, modified_at)
             : [description, 'at', modified_at.toLocaleString()].join(' ');
 }
 
-function start_plan_preread_polling(url, message_section, preread_section, description,
+function start_plan_preread_polling(url, form, message_section, preread_section, description,
     incumbency_unavailable, incumbency_scenarios, first_incumbent_row, geom_prefix, map_div)
 {
 
     const make_xhr = () => {
-        load_plan_preread(url, message_section, preread_section, description,
+        load_plan_preread(url, form, message_section, preread_section, description,
             incumbency_unavailable, incumbency_scenarios, first_incumbent_row, geom_prefix, 
             map_div, xhr_retry_callback)
     };
@@ -126,7 +126,7 @@ function start_plan_preread_polling(url, message_section, preread_section, descr
     make_xhr();
 }
 
-function load_plan_preread(url, message_section, preread_section, description,
+function load_plan_preread(url, form, message_section, preread_section, description,
     incumbency_unavailable, incumbency_scenarios, first_incumbent_row, geom_prefix, map_div,
     xhr_retry_callback)
 {
@@ -159,6 +159,12 @@ function load_plan_preread(url, message_section, preread_section, description,
         {
             incumbency_unavailable.style.display = 'block';
             incumbency_scenarios.style.display = 'none';
+        }
+        
+        if('version' in plan.model) {
+            form.elements['model_version'].value = plan.model.version;
+        } else {
+            form.elements['model_version'].value = plan.model.versions[0];
         }
         
         var table_body = first_incumbent_row.parentNode,

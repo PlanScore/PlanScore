@@ -51,6 +51,10 @@ def lambda_handler(event, context):
     
     storage = data.Storage(s3, query['bucket'], None)
     authorizer = event['requestContext'].get('authorizer', {})
+    
+    # TODO: read model_version
+    print('Get model_version here:')
+    print(json.dumps(query))
 
     if 'planscoreApiToken' in authorizer:
         # POST request arrived via API request, no index yet exists
