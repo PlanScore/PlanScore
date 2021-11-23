@@ -50,21 +50,35 @@ class TestData (unittest.TestCase):
         self.assertEqual(model4.seats, 13)
         self.assertEqual(model4.key_prefix, 'data/NC/001')
         self.assertEqual(model4.incumbency, True)
-        self.assertEqual(model4.version, '2017')
+        self.assertEqual(model4.versions, ['2017'])
 
         model5 = data.Model.from_json('{"state": "NC", "house": "ushouse", "seats": 13, "key_prefix": "data/NC/001", "version": "2020"}')
         self.assertEqual(model5.state, data.State.NC)
         self.assertEqual(model5.house, data.House.ushouse)
         self.assertEqual(model5.seats, 13)
         self.assertEqual(model5.key_prefix, 'data/NC/001')
-        self.assertEqual(model5.version, '2020')
+        self.assertEqual(model5.versions, ['2020'])
 
         model6 = data.Model.from_json('{"state": "NC", "house": "localplan", "seats": null, "key_prefix": "data/NC/001", "version": "2020"}')
         self.assertEqual(model6.state, data.State.NC)
         self.assertEqual(model6.house, data.House.localplan)
         self.assertIsNone(model6.seats)
         self.assertEqual(model6.key_prefix, 'data/NC/001')
-        self.assertEqual(model6.version, '2020')
+        self.assertEqual(model6.versions, ['2020'])
+
+        model7 = data.Model.from_json('{"state": "NC", "house": "localplan", "seats": null, "key_prefix": "data/NC/001", "versions": ["2020"]}')
+        self.assertEqual(model7.state, data.State.NC)
+        self.assertEqual(model7.house, data.House.localplan)
+        self.assertIsNone(model7.seats)
+        self.assertEqual(model7.key_prefix, 'data/NC/001')
+        self.assertEqual(model7.versions, ['2020'])
+
+        model8 = data.Model.from_json('{"state": "NC", "house": "localplan", "seats": null, "key_prefix": "data/NC/001", "versions": ["2020", "2021"]}')
+        self.assertEqual(model8.state, data.State.NC)
+        self.assertEqual(model8.house, data.House.localplan)
+        self.assertIsNone(model8.seats)
+        self.assertEqual(model8.key_prefix, 'data/NC/001')
+        self.assertEqual(model8.versions, ['2020', '2021'])
 
     def test_upload_storage(self):
         ''' Past and future data.Upload instances are readable
@@ -344,7 +358,7 @@ class TestData (unittest.TestCase):
         )
         logentry4 = upload4.to_logentry()
         self.assertEqual(logentry4, 'ID\t-999\t0\tYo.\tNC\tushouse\t'
-            '{"house":"ushouse","incumbency":false,"key_prefix":"data/NC/001","seats":13,"state":"NC","version":"2020"}'
+            '{"house":"ushouse","incumbency":false,"key_prefix":"data/NC/001","seats":13,"state":"NC","versions":["2020"]}'
             '\twhatever\t\t\r\n')
 
         upload5 = data.Upload(id='ID', message="Hell's Bells", key='whatever', auth_token='Heyo')
