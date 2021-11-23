@@ -273,6 +273,14 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload23.key, upload22.key)
         self.assertEqual(upload23.library_metadata, upload22.library_metadata)
     
+        upload24 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
+            model_version='1999')
+        upload25 = data.Upload.from_json(upload24.to_json())
+
+        self.assertEqual(upload25.id, upload24.id)
+        self.assertEqual(upload25.key, upload24.key)
+        self.assertEqual(upload25.model_version, upload24.model_version)
+    
     def test_upload_plaintext(self):
         ''' data.Upload instances can be converted to plaintext
         '''

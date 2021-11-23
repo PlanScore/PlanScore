@@ -165,7 +165,8 @@ class Upload:
     def __init__(self, id, key, model:Model=None, districts=None, incumbents=None,
             summary=None, progress=None, start_time=None, message=None,
             description=None, geometry_key=None, status=None,
-            library_metadata=None, auth_token=None, **ignored):
+            library_metadata=None, auth_token=None, model_version=None,
+            **ignored):
         self.id = id
         self.key = key
         self.model = model
@@ -181,6 +182,7 @@ class Upload:
         self.commit_sha = os.environ.get('GIT_COMMIT_SHA')
         self.library_metadata = library_metadata
         self.auth_token = auth_token
+        self.model_version = model_version
         
         if not incumbents:
             self.incumbents = [Incumbency.Open.value for i in range(len(self.districts))]
@@ -255,6 +257,7 @@ class Upload:
             geometry_key = self.geometry_key,
             commit_sha = self.commit_sha,
             library_metadata = self.library_metadata,
+            model_version = self.model_version,
             )
     
     def to_json(self):
@@ -315,7 +318,7 @@ class Upload:
     
     def clone(self, model=None, districts=None, incumbents=None, summary=None, progress=None,
         start_time=None, message=None, description=None, geometry_key=None, status=None,
-        library_metadata=None, auth_token=None):
+        library_metadata=None, auth_token=None, model_version=None):
         return Upload(self.id, self.key,
             model = model or self.model,
             status = status if (self.status is None) else self.status,
@@ -329,6 +332,7 @@ class Upload:
             geometry_key = geometry_key or self.geometry_key,
             library_metadata = library_metadata or self.library_metadata,
             auth_token = auth_token,
+            model_version = model_version or self.model_version,
             )
     
     @staticmethod
@@ -351,6 +355,7 @@ class Upload:
             geometry_key = data.get('geometry_key'),
             library_metadata = data.get('library_metadata'),
             auth_token = data.get('auth_token'),
+            model_version = data.get('model_version'),
             )
     
     @staticmethod
