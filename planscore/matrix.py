@@ -46,7 +46,6 @@ def dropna(a):
 
 def load_model(path_suffix, state, year):
     assert year is None, f'Year should be None, not {year}'
-    assert path_suffix == '', f'Path suffix should be "", not "{path_suffix}"'
 
     matrix_dir = os.path.join(os.path.dirname(__file__), 'model')
     c_path = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}.csv.gz')
@@ -129,7 +128,7 @@ def model_votes(model_version, state, year, districts):
         Return is a DxSx2 matrix for D districts, S simulations, and Dem/Rep parties.
     '''
     if model_version in ('2021B', None):
-        path_suffix = ''
+        path_suffix = '-2021B'
     else:
         raise ValueError(f'Unknown model_version {repr(model_version)}')
     
