@@ -51,7 +51,7 @@ def lambda_handler(event, context):
     
     storage = data.Storage(s3, query['bucket'], None)
     authorizer = event['requestContext'].get('authorizer', {})
-
+    
     if 'planscoreApiToken' in authorizer:
         # POST request arrived via API request, no index yet exists
         response = {
@@ -85,6 +85,7 @@ def lambda_handler(event, context):
     description = query['description']
     incumbents = ordered_incumbents(query)
     library_metadata = None
+    model_version = query.get('model_version')
 
     response = {
         'statusCode': '302',
@@ -97,6 +98,7 @@ def lambda_handler(event, context):
         description = description,
         incumbents = incumbents,
         library_metadata = library_metadata,
+        model_version = model_version,
     )
     observe.put_upload_index(storage, upload)
     

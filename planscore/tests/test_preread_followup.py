@@ -371,7 +371,7 @@ class TestPrereadFollowup (unittest.TestCase):
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
-        guess_geometry_model.return_value = data.Model(data.State.XX, None, 2, True, '2020', 'data/XX/006-tilesdir')
+        guess_geometry_model.return_value = data.Model(data.State.XX, None, 2, True, ['2020'], 'data/XX/006-tilesdir')
         
         count_district_geometries.return_value = 2
 
@@ -402,7 +402,7 @@ class TestPrereadFollowup (unittest.TestCase):
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.shp.zip'
-        guess_geometry_model.return_value = data.Model(data.State.XX, None, 2, True, '2020', 'data/XX/006-tilesdir')
+        guess_geometry_model.return_value = data.Model(data.State.XX, None, 2, True, ['2020'], 'data/XX/006-tilesdir')
         
         count_district_geometries.return_value = 2
 
@@ -438,7 +438,7 @@ class TestPrereadFollowup (unittest.TestCase):
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.txt')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan-blockassignments.txt'
-        guess_blockassign_model.return_value = data.Model(data.State.XX, None, 2, True, '2020', 'data/XX/006-tilesdir')
+        guess_blockassign_model.return_value = data.Model(data.State.XX, None, 2, True, ['2020'], 'data/XX/006-tilesdir')
         
         count_district_assignments.return_value = 2
 
@@ -473,7 +473,7 @@ class TestPrereadFollowup (unittest.TestCase):
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.zip')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan-blockassignments.txt'
-        guess_blockassign_model.return_value = data.Model(data.State.XX, None, 2, True, '2020', 'data/XX/006-tilesdir')
+        guess_blockassign_model.return_value = data.Model(data.State.XX, None, 2, True, ['2020'], 'data/XX/006-tilesdir')
         
         count_district_assignments.return_value = 2
 

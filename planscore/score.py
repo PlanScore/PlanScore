@@ -586,6 +586,7 @@ def calculate_district_biases(upload):
     
     # Get large number of simulated outputs
     output_votes = matrix.model_votes(
+        upload.model_version,
         upload.model.state,
         matrix.YEAR,
         matrix.filter_district_data(matrix.prepare_district_data(upload)),

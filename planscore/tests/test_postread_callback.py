@@ -54,7 +54,8 @@ class TestPostreadCallback (unittest.TestCase):
         '''
         query = {'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson',
             'id': 'id.k0_XwbOLGLUdv241zsPluNc3HYs', 'bucket': 'planscore-bucket',
-            'description': 'A fine new plan', 'incumbent-1': 'D', 'incumbent-2': 'R'}
+            'description': 'A fine new plan', 'incumbent-1': 'D', 'incumbent-2': 'R',
+            'model_version': '1999'}
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
 
@@ -85,6 +86,7 @@ class TestPostreadCallback (unittest.TestCase):
         self.assertIn(b'"bucket": "planscore-bucket"', lambda_dict['Payload'])
         self.assertIn(b'"description": "A fine new plan"', lambda_dict['Payload'])
         self.assertIn(b'"incumbents": ["D", "R"]', lambda_dict['Payload'])
+        self.assertIn(b'"model_version": "1999"', lambda_dict['Payload'])
 
     @unittest.mock.patch('planscore.preread.create_upload')
     @unittest.mock.patch('boto3.client')

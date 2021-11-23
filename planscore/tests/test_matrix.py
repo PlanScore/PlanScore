@@ -18,7 +18,7 @@ class TestMatrix (unittest.TestCase):
         self.assertTrue((matrix.dropna(numpy.array([numpy.nan, 1])) == numpy.array([1])).all())
     
     def test_load_model(self):
-        model = matrix.load_model('ak', None)
+        model = matrix.load_model('', 'ak', None)
         
         self.assertEqual(model.c_matrix.shape, (6, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
@@ -44,7 +44,7 @@ class TestMatrix (unittest.TestCase):
         #self.assertAlmostEqual(model.c_matrix[8,0], 0.0129821061)
     
     def test_apply_model(self):
-        model = matrix.load_model('ca', None)
+        model = matrix.load_model('', 'ca', None)
         
         R = matrix.apply_model(
             [
@@ -72,7 +72,7 @@ class TestMatrix (unittest.TestCase):
         self.assertTrue(R[2].sum() < R[5].sum() and R[5].sum() < R[8].sum())
     
     def test_apply_model_with_zeros(self):
-        model = matrix.load_model('ca', None)
+        model = matrix.load_model('', 'ca', None)
         
         R = matrix.apply_model(
             [
@@ -95,6 +95,7 @@ class TestMatrix (unittest.TestCase):
         ])
 
         R = matrix.model_votes(
+            data.VERSIONS[0],
             data.State.NC,
             None,
             [
@@ -105,7 +106,7 @@ class TestMatrix (unittest.TestCase):
         )
         
         self.assertEqual(apply_model.mock_calls[0][1], ([(.4, -1), (.5, 0), (.6, 1)], load_model.return_value))
-        self.assertEqual(load_model.mock_calls[0][1], ('nc', None))
+        self.assertEqual(load_model.mock_calls[0][1], ('', 'nc', None))
 
         self.assertEqual(R.tolist(), [
             [[3.0, 7.0],
@@ -127,6 +128,7 @@ class TestMatrix (unittest.TestCase):
         ])
 
         R = matrix.model_votes(
+            data.VERSIONS[0],
             data.State.NC,
             None,
             [
@@ -141,7 +143,7 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(apply_model.mock_calls[0][1][0][1][1], 0)
         self.assertEqual(apply_model.mock_calls[0][1][1], load_model.return_value)
         
-        self.assertEqual(load_model.mock_calls[0][1], ('nc', None))
+        self.assertEqual(load_model.mock_calls[0][1], ('', 'nc', None))
 
         self.assertEqual(R[0].tolist(), [
             [1.5, 3.5],
@@ -152,7 +154,7 @@ class TestMatrix (unittest.TestCase):
     
     def test_prepare_district_data(self):
         input = data.Upload(id=None, key=None,
-            model = data.Model(data.State.XX, data.House.ushouse, 4, False, '2020', None),
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2020'], None),
             districts = [
                 dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
                 dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
@@ -168,7 +170,7 @@ class TestMatrix (unittest.TestCase):
     
     def test_prepare_district_data_mixed_years(self):
         input = data.Upload(id=None, key=None,
-            model = data.Model(data.State.XX, data.House.ushouse, 4, False, '2020', None),
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2020'], None),
             districts = [
                 dict(totals={'US President 2016 - REP': 2, 'US President 2020 - REP': 2, 'US President 2020 - DEM': 6, 'US President 2016 - DEM': 6}, tile=None),
                 dict(totals={'US President 2016 - REP': 3, 'US President 2020 - REP': 3, 'US President 2020 - DEM': 5, 'US President 2016 - DEM': 5}, tile=None),
