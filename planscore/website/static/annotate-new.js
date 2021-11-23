@@ -161,10 +161,10 @@ function load_plan_preread(url, form, message_section, preread_section, descript
             incumbency_scenarios.style.display = 'none';
         }
         
-        if('version' in plan.model) {
-            form.elements['model_version'].value = plan.model.version;
-        } else {
+        if('versions' in plan.model) {
             form.elements['model_version'].value = plan.model.versions[0];
+        } else {
+            form.elements['model_version'].value = plan.model.version;
         }
         
         var table_body = first_incumbent_row.parentNode,

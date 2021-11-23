@@ -1455,7 +1455,11 @@ function load_plan_score(url, message_section, score_section,
 
         description_el.append(info_el);
 
-        if(plan.model && (plan.model.version == '2017' || !plan.model.version)) {
+        if(plan.model_version) {
+            model_link.href = model_url_pattern.replace('2020', plan.model_version);
+            model_footnote.href = model_url_pattern.replace('2020', plan.model_version);
+        
+        } else if(plan.model && (plan.model.version == '2017' || !plan.model.version)) {
             model_link.href = model_url_pattern.replace('data/2020', plan.model.key_prefix);
             model_footnote.href = model_url_pattern.replace('data/2020', plan.model.key_prefix);
 
