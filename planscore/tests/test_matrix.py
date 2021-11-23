@@ -152,7 +152,7 @@ class TestMatrix (unittest.TestCase):
     
     def test_prepare_district_data(self):
         input = data.Upload(id=None, key=None,
-            model = data.Model(data.State.XX, data.House.ushouse, 4, False, '2020', None),
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2020'], None),
             districts = [
                 dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
                 dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
@@ -168,7 +168,7 @@ class TestMatrix (unittest.TestCase):
     
     def test_prepare_district_data_mixed_years(self):
         input = data.Upload(id=None, key=None,
-            model = data.Model(data.State.XX, data.House.ushouse, 4, False, '2020', None),
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2020'], None),
             districts = [
                 dict(totals={'US President 2016 - REP': 2, 'US President 2020 - REP': 2, 'US President 2020 - DEM': 6, 'US President 2016 - DEM': 6}, tile=None),
                 dict(totals={'US President 2016 - REP': 3, 'US President 2020 - REP': 3, 'US President 2020 - DEM': 5, 'US President 2016 - DEM': 5}, tile=None),

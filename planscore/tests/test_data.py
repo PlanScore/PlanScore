@@ -210,7 +210,7 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload8.start_time, upload7.start_time)
     
         upload9 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
-            model=data.Model(data.State.NC, data.House.ushouse, 13, False, '2020', 'data/NC/001'))
+            model=data.Model(data.State.NC, data.House.ushouse, 13, False, ['2020'], 'data/NC/001'))
         upload10 = data.Upload.from_json(upload9.to_json())
 
         self.assertEqual(upload10.id, upload9.id)
@@ -299,7 +299,7 @@ class TestData (unittest.TestCase):
         self.assertEqual(plaintext2, "Error: 'totals'\n")
 
         upload3 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
-            model=data.Model(data.State.XX, data.House.statehouse, 2, True, '2020', 'data/XX/000'),
+            model=data.Model(data.State.XX, data.House.statehouse, 2, True, ['2020'], 'data/XX/000'),
             incumbents=['O', 'D', 'R'],
             districts=[
                 { "totals": { "Democratic Votes": 100, "Population 2015": 200, "Republican Votes": 300 }, "compactness": { "Reock": .2 } },
@@ -317,7 +317,7 @@ class TestData (unittest.TestCase):
         self.assertEqual(tail, '')
 
         upload4 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
-            model=data.Model(data.State.XX, data.House.statehouse, 2, True, '2020', 'data/XX/000'),
+            model=data.Model(data.State.XX, data.House.statehouse, 2, True, ['2020'], 'data/XX/000'),
             incumbents=['O', 'D', 'R'],
             districts=[
                 { "number": 1, "totals": { "Democratic Votes": 100, "Population 2015": 200, "Republican Votes": 300 }, "compactness": { "Reock": .2 } },
