@@ -965,7 +965,7 @@ class TestScore (unittest.TestCase):
         '''
         input = data.Upload(id=None, key=None,
             model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2021B'], None),
-            model_version = '2021B',
+            model_version = '2021C',
             incumbents = ['R', 'D', 'R', 'D'],
             districts = [
                 dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
@@ -999,7 +999,7 @@ class TestScore (unittest.TestCase):
              [2.6, 5.4]],
         ])
         output = score.calculate_everything(input)
-        self.assertEqual(model_votes.mock_calls[0][1][:2], ('2021B', data.State.XX))
+        self.assertEqual(model_votes.mock_calls[0][1][:2], ('2021C', data.State.XX))
         self.assertEqual(model_votes.mock_calls[0][1][2][0], (6.0, 2.0, 'R'))
         self.assertEqual(model_votes.mock_calls[0][1][2][1], (5.0, 3.0, 'D'))
         self.assertEqual(model_votes.mock_calls[0][1][2][2], (3.0, 5.0, 'R'))
@@ -1095,8 +1095,8 @@ class TestScore (unittest.TestCase):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
-            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2021B'], None),
-            model_version = '2021B',
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2021C'], None),
+            model_version = '2021C',
             districts = [
                 dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
                 dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
@@ -1145,7 +1145,7 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.districts[3]['number'], 4, 'Should count 5th district')
         self.assertIsNone(output.districts[4]['number'], 'Should not count empty 5th district')
         
-        self.assertEqual(model_votes.mock_calls[0][1][:2], ('2021B', data.State.XX))
+        self.assertEqual(model_votes.mock_calls[0][1][:2], ('2021C', data.State.XX))
         self.assertEqual(model_votes.mock_calls[0][1][2][0], (6.0, 2.0, 'O'))
         self.assertEqual(model_votes.mock_calls[0][1][2][1], (5.0, 3.0, 'O'))
         self.assertEqual(model_votes.mock_calls[0][1][2][2], (3.0, 5.0, 'O'))

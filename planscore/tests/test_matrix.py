@@ -4,10 +4,6 @@ import numpy
 
 class TestMatrix (unittest.TestCase):
 
-    def test_adjustment(self):
-        self.assertAlmostEqual(0. + matrix.VOTE_ADJUST, -.5, 2)
-        self.assertAlmostEqual(1. + matrix.VOTE_ADJUST, .5, 2)
-    
     def test_states(self):
         for state in data.State:
             self.assertIn(state, matrix.STATE, f'{state.value} should be in matrix.STATE')
@@ -20,7 +16,7 @@ class TestMatrix (unittest.TestCase):
     def test_load_model_2021B(self):
         model = matrix.load_model('-2021B', 'ak', None)
         
-        self.assertEqual(model.c_matrix.shape, (6, 1000))
+        self.assertEqual(model.c_matrix.shape, (9, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
         
         self.assertEqual(model.intercept[0], model.c_matrix[0,0])
@@ -36,6 +32,9 @@ class TestMatrix (unittest.TestCase):
         self.assertAlmostEqual(model.c_matrix[3,0], -0.0122)
         self.assertAlmostEqual(model.c_matrix[4,0], 0.0286)
         self.assertAlmostEqual(model.c_matrix[5,0], -0.0042)
+        self.assertAlmostEqual(model.c_matrix[6,0], 0.0)
+        self.assertAlmostEqual(model.c_matrix[7,0], 0.0)
+        self.assertAlmostEqual(model.c_matrix[8,0], 0.0)
     
     def test_load_model_2021C(self):
         model = matrix.load_model('-2021C', 'ak', 2020)
@@ -79,6 +78,7 @@ class TestMatrix (unittest.TestCase):
                 (.6, 1),
             ],
             model,
+            data.VERSION_PARAMETERS['2021C'],
         )
         
         # In identical incumbent scenarios, predicted vote tracks presidential vote
@@ -101,6 +101,7 @@ class TestMatrix (unittest.TestCase):
                 (numpy.nan, 0),
             ],
             model,
+            data.VERSION_PARAMETERS['2021C'],
         )
         
         self.assertTrue(numpy.isnan(R).all(), 'Everything should be NaN')
@@ -124,7 +125,11 @@ class TestMatrix (unittest.TestCase):
             ],
         )
         
-        self.assertEqual(apply_model.mock_calls[0][1], ([(.4, -1), (.5, 0), (.6, 1)], load_model.return_value))
+        self.assertEqual(apply_model.mock_calls[0][1], (
+            [(.4, -1), (.5, 0), (.6, 1)],
+            load_model.return_value,
+            data.VERSION_PARAMETERS['2021B'],
+        ))
         self.assertEqual(load_model.mock_calls[0][1], ('-2021B', 'nc', None))
 
         self.assertEqual(R.tolist(), [
