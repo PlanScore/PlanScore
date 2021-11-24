@@ -116,7 +116,7 @@ class TestMatrix (unittest.TestCase):
         ])
 
         R = matrix.model_votes(
-            data.VERSIONS[0],
+            '2021B',
             data.State.NC,
             [
                 (4, 6, 'R'),
@@ -152,7 +152,7 @@ class TestMatrix (unittest.TestCase):
         ])
 
         R = matrix.model_votes(
-            data.VERSIONS[0],
+            '2021B',
             data.State.NC,
             [
                 (4, 6, 'R'),
