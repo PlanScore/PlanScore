@@ -47,10 +47,16 @@ def get_annotate():
     uploaded_url = get_function_url(constants.API_UPLOADED_RELPATH)
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     geom_url_prefix = constants.S3_URL_PATTERN.format(k='', b=flask.current_app.config['PLANSCORE_S3_BUCKET'])
-    return flask.render_template('annotate.html', Incumbency=data.Incumbency,
-        uploaded_url=uploaded_url, data_url_pattern=data_url_pattern,
+
+    return flask.render_template(
+        'annotate.html',
+        Incumbency=data.Incumbency,
+        uploaded_url=uploaded_url,
+        data_url_pattern=data_url_pattern,
         planscore_website_base=flask.current_app.config['PLANSCORE_WEBSITE_BASE'].rstrip('/'),
-        geom_url_prefix=geom_url_prefix)
+        geom_url_prefix=geom_url_prefix,
+        version_parameters=data.VERSION_PARAMETERS,
+    )
 
 @app.route('/plan.html')
 def get_plan():

@@ -44,7 +44,6 @@
             <input type="hidden" name="id">
             <input type="hidden" name="bucket">
             <input type="hidden" name="key">
-            <input type="hidden" name="model_version">
             <input type="submit" name="submission" value="Score This Plan" class="btn btn-primary">
         </p>
         <div id="plan-description"><h3>(Loading)</h3></div>
@@ -58,6 +57,10 @@
         </section>
         
         <p id="map"></p>
+
+        <p id="model-versions">
+            Choose prediction data:
+        </p>
 
         <section id="incumbency-scenarios">
         <h3>Optional: Incumbent Candidates</h3>
@@ -97,7 +100,8 @@
 
 	<script language="javascript">
 	
-	    var model_url_pattern = '{{ url_for("get_model_description", prefix="data/XX/003") }}';
+	    var model_url_pattern = '{{ url_for("get_model_description", prefix="data/XX/003") }}',
+	        version_parameters = {{ version_parameters|tojson }};
 	    
 	    var signed_id = getUrlParameter('id', location.search),
 	        s3_key = getUrlParameter('key', location.search),
@@ -118,10 +122,13 @@
 	        document.getElementById('message'),
 	        document.getElementById('plan-preread'),
 	        document.getElementById('plan-description'),
+	        document.getElementById('model-versions'),
 	        document.getElementById('incumbency-unavailable'),
 	        document.getElementById('incumbency-scenarios'),
 	        document.getElementById('first-incumbent'),
-	        geom_prefix, document.getElementById('map'));
+	        geom_prefix,
+	        document.getElementById('map')
+        );
 
 	</script>
 
