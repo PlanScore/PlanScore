@@ -107,12 +107,12 @@ function get_description(plan, modified_at)
 }
 
 function start_plan_preread_polling(url, form, message_section, preread_section, description,
-    incumbency_unavailable, incumbency_scenarios, first_incumbent_row, geom_prefix, map_div)
+    model_versions, incumbency_unavailable, incumbency_scenarios, first_incumbent_row, geom_prefix, map_div)
 {
 
     const make_xhr = () => {
         load_plan_preread(url, form, message_section, preread_section, description,
-            incumbency_unavailable, incumbency_scenarios, first_incumbent_row, geom_prefix, 
+            model_versions, incumbency_unavailable, incumbency_scenarios, first_incumbent_row, geom_prefix, 
             map_div, xhr_retry_callback)
     };
 
@@ -127,7 +127,7 @@ function start_plan_preread_polling(url, form, message_section, preread_section,
 }
 
 function load_plan_preread(url, form, message_section, preread_section, description,
-    incumbency_unavailable, incumbency_scenarios, first_incumbent_row, geom_prefix, map_div,
+    model_versions, incumbency_unavailable, incumbency_scenarios, first_incumbent_row, geom_prefix, map_div,
     xhr_retry_callback)
 {
     var request = new XMLHttpRequest();
@@ -161,10 +161,15 @@ function load_plan_preread(url, form, message_section, preread_section, descript
             incumbency_scenarios.style.display = 'none';
         }
         
-        if('versions' in plan.model) {
-            form.elements['model_version'].value = plan.model.versions[0];
-        } else {
-            form.elements['model_version'].value = plan.model.version;
+        for(var i = 0; i < plan.model.versions.length; i++)
+        {
+            var value = plan.model.versions[i],
+                text = window.version_parameters[value][0],
+                state = (i == 0) ? 'checked' : '';
+
+            model_versions.appendChild(document.createElement('br'));
+            model_versions.appendChild(document.createElement('label'));
+            model_versions.lastChild.innerHTML = `<input type="radio" name="model_version" value="${value}" ${state}> ${text}`;
         }
         
         var table_body = first_incumbent_row.parentNode,

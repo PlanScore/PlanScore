@@ -11,20 +11,6 @@ import numpy
 
 from . import data
 
-# The presidential vote in the model is mean-deviated, so you have to subtract
-# this adjustment value from the presidential vote values in each district.
-# Values are given as Democratic vote portion from 0. to 1. and become
-# approximately -0.5 to +0.5.
-VOTE_ADJUST = -0.496875
-
-# True 2016 and 2020 presidential votes need to be scaled and offset
-# for compatibility with the C and E matrixes.
-PVOTE2016_SCALE, PVOTE2016_OFFSET = 0.91, 0.05
-PVOTE2020_SCALE, PVOTE2020_OFFSET = 0.96, 0.01
-
-# A hard-coded year to use for matrix, nothing for now
-YEAR = None
-
 INCUMBENCY = {
     data.Incumbency.Open.value: 0,
     data.Incumbency.Democrat.value: 1,
@@ -37,7 +23,7 @@ STATE = dict([(s, s.value.lower()) for s in data.State] + [(data.State.XX, 'ks')
 Model = collections.namedtuple('Model', (
     'intercept', 'vote', 'incumbent',
     'state_intercept', 'state_vote', 'state_incumbent',
-    #'year_intercept', 'year_vote', 'year_incumbent',
+    'year_intercept', 'year_vote', 'year_incumbent',
     'c_matrix', 'e_matrix',
     ))
 
@@ -45,21 +31,23 @@ def dropna(a):
     return a[~numpy.isnan(a)]
 
 def load_model(path_suffix, state, year):
-    assert year is None, f'Year should be None, not {year}'
-    assert path_suffix == '', f'Path suffix should be "", not "{path_suffix}"'
+
+    # TODO: accept year = None
 
     matrix_dir = os.path.join(os.path.dirname(__file__), 'model')
     c_path = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}.csv.gz')
     e_path = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}.csv.gz')
     
     c_keys = (
-        'b_Intercept', 'b_dpres_mn', 'b_incumb',
+        'b_Intercept',
+        'b_dpres_mn',
+        'b_incumb',
         f'r_stateabrev[{state},Intercept]',
         f'r_stateabrev[{state},dpres_mn]',
         f'r_stateabrev[{state},incumb]',
-        #f'r_cycle[{year},Intercept]',
-        #f'r_cycle[{year},dpres_mn]',
-        #f'r_cycle[{year},incumb]',
+        f'r_cycle[{year},Intercept]',
+        f'r_cycle[{year},dpres_mn]',
+        f'r_cycle[{year},incumb]',
     )
     
     with gzip.open(c_path, 'rt') as c_file:
@@ -88,13 +76,13 @@ def load_model(path_suffix, state, year):
     
     return Model(*args)
 
-def apply_model(districts, model):
+def apply_model(districts, model, params):
     ''' districts is an array of two-element tuples:
         - Democratic vote portion from 0. to 1.
         - -1 for Republican, 0 for open seat, and 1 for Democratic incumbents
     '''
     AD = numpy.array([
-        [1, numpy.nan if numpy.isnan(vote) else (vote + VOTE_ADJUST), incumbency] * 2
+        [1, numpy.nan if numpy.isnan(vote) else (vote + params.vote_adjust), incumbency] * 3
         for (vote, incumbency)
         in districts
     ])
@@ -117,7 +105,7 @@ def apply_model(districts, model):
     #numpy.savetxt('ADCE.csv', (ADC + E), fmt='%.9f', delimiter=',')
     return ADC + E
 
-def model_votes(model_version, state, year, districts):
+def model_votes(model_version, state, districts):
     ''' Convert presidential votes to range of possible modeled chamber votes.
         
         state is from data.State enum, year is an integer.
@@ -128,10 +116,10 @@ def model_votes(model_version, state, year, districts):
         
         Return is a DxSx2 matrix for D districts, S simulations, and Dem/Rep parties.
     '''
-    if model_version in ('2021B', None):
-        path_suffix = ''
+    if model_version is None:
+        params = data.VERSION_PARAMETERS['2021B']
     else:
-        raise ValueError(f'Unknown model_version {repr(model_version)}')
+        params = data.VERSION_PARAMETERS[model_version]
     
     # Get DxS array from apply_model() with modeled vote fractions
     fractions = apply_model(
@@ -139,7 +127,8 @@ def model_votes(model_version, state, year, districts):
             (dem / ((dem + rep) or numpy.nan), INCUMBENCY[inc])
             for (dem, rep, inc) in districts
         ],
-        load_model(path_suffix, STATE[state], year),
+        load_model(params.path_suffix, STATE[state], params.year),
+        params,
     )
     
     # Make DxS array with total vote counts for each district and simulation
@@ -163,7 +152,12 @@ def model_votes(model_version, state, year, districts):
 def prepare_district_data(upload):
     ''' Simple presidential vote input for model_votes()
     '''
-    data = []
+    if upload.model_version is None:
+        params = data.VERSION_PARAMETERS['2021B']
+    else:
+        params = data.VERSION_PARAMETERS[upload.model_version]
+    
+    out_data = []
     
     for (district, incumbency) in zip(upload.districts, upload.incumbents):
         if 'US President 2020 - DEM' in district['totals']:
@@ -174,7 +168,7 @@ def prepare_district_data(upload):
             except ZeroDivisionError:
                 pvote = -1
             else:
-                pvote = PVOTE2020_SCALE * pvote_2020 + PVOTE2020_OFFSET
+                pvote = params.pvote2020_scale * pvote_2020 + params.pvote2020_offset
         
         elif 'US President 2016 - DEM' in district['totals']:
             total = district['totals']['US President 2016 - DEM'] \
@@ -184,18 +178,18 @@ def prepare_district_data(upload):
             except ZeroDivisionError:
                 pvote = -1
             else:
-                pvote = PVOTE2016_SCALE * pvote_2016 + PVOTE2016_OFFSET
+                pvote = params.pvote2016_scale * pvote_2016 + params.pvote2016_offset
 
         else:
             raise ValueError('Missing presidential vote columns')
 
-        data.append((
+        out_data.append((
             round(total * pvote, 7),
             round(total * (1 - pvote), 7),
             incumbency,
         ))
     
-    return data
+    return out_data
 
 def filter_district_data(prepared_data):
     ''' Set to zero any district with votes 90% below mean()
@@ -229,7 +223,7 @@ def main():
     input_district_data = prepare_district_data(upload)
     
     # Get large number of simulated outputs
-    output_votes = model_votes(upload.model_version, upload.model.state, YEAR, input_district_data)
+    output_votes = model_votes(upload.model_version, upload.model.state, input_district_data)
 
     with open(args.matrix_path, 'w') as file:
         districts, sims, parties = output_votes.shape
