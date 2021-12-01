@@ -36,8 +36,8 @@ class TestMatrix (unittest.TestCase):
         self.assertAlmostEqual(model.c_matrix[7,0], 0.0)
         self.assertAlmostEqual(model.c_matrix[8,0], 0.0)
     
-    def test_load_model_2021C(self):
-        model = matrix.load_model('-2021C', 'ak', 2020)
+    def test_load_model_2021D(self):
+        model = matrix.load_model('-2021D', 'ak', 2020)
         
         self.assertEqual(model.c_matrix.shape, (9, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
@@ -52,15 +52,15 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(model.year_vote[0], model.c_matrix[7,0])
         self.assertEqual(model.year_incumbent[0], model.c_matrix[8,0])
 
-        self.assertAlmostEqual(model.c_matrix[0,0], 0.4989)
-        self.assertAlmostEqual(model.c_matrix[1,0], 0.7485)
-        self.assertAlmostEqual(model.c_matrix[2,0], 0.0583)
-        self.assertAlmostEqual(model.c_matrix[3,0], -0.0003)
-        self.assertAlmostEqual(model.c_matrix[4,0], 0.0261)
-        self.assertAlmostEqual(model.c_matrix[5,0], 0.0040)
-        self.assertAlmostEqual(model.c_matrix[6,0], -0.0087)
-        self.assertAlmostEqual(model.c_matrix[7,0], 0.1354)
-        self.assertAlmostEqual(model.c_matrix[8,0], -0.0241)
+        self.assertAlmostEqual(model.c_matrix[0,0], 0.4982)
+        self.assertAlmostEqual(model.c_matrix[1,0], 0.8451)
+        self.assertAlmostEqual(model.c_matrix[2,0], 0.0451)
+        self.assertAlmostEqual(model.c_matrix[3,0], -0.0024)
+        self.assertAlmostEqual(model.c_matrix[4,0], -0.0070)
+        self.assertAlmostEqual(model.c_matrix[5,0], -0.0094)
+        self.assertAlmostEqual(model.c_matrix[6,0], -0.0123)
+        self.assertAlmostEqual(model.c_matrix[7,0], 0.0582)
+        self.assertAlmostEqual(model.c_matrix[8,0], -0.0118)
     
     def test_apply_model(self):
         model = matrix.load_model('-2021B', 'ca', None)
@@ -78,7 +78,7 @@ class TestMatrix (unittest.TestCase):
                 (.6, 1),
             ],
             model,
-            data.VERSION_PARAMETERS['2021C'],
+            data.VERSION_PARAMETERS['2021D'],
         )
         
         # In identical incumbent scenarios, predicted vote tracks presidential vote
@@ -101,7 +101,7 @@ class TestMatrix (unittest.TestCase):
                 (numpy.nan, 0),
             ],
             model,
-            data.VERSION_PARAMETERS['2021C'],
+            data.VERSION_PARAMETERS['2021D'],
         )
         
         self.assertTrue(numpy.isnan(R).all(), 'Everything should be NaN')
@@ -224,10 +224,10 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(output[2], (3.13, 4.87, 'O'))
         self.assertEqual(output[3], (2.22, 5.78, 'O'))
     
-    def test_prepare_district_data_2021C_version(self):
+    def test_prepare_district_data_2021D_version(self):
         input = data.Upload(id=None, key=None,
             model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2020'], None),
-            model_version = '2021C',
+            model_version = '2021D',
             districts = [
                 dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
                 dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
