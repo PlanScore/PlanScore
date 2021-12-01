@@ -525,14 +525,14 @@ MODELS = [
     Model(State.NH, House.statesenate,  24,  True, VERSIONS, 'data/NH/008-dra-block'), # 5caa70e
     Model(State.NH, House.statehouse,  400,  True, VERSIONS, 'data/NH/008-dra-block'), # 5caa70e
     Model(State.NH, House.localplan,  None,  True, VERSIONS, 'data/NH/008-dra-block'), # 5caa70e
-    Model(State.NJ, House.ushouse,      12,  True, VERSIONS, 'data/NJ/004-dra-block'), # db6985b
-    Model(State.NJ, House.statesenate,  40,  True, VERSIONS, 'data/NJ/004-dra-block'), # db6985b
-    Model(State.NJ, House.statehouse,   80,  True, VERSIONS, 'data/NJ/004-dra-block'), # db6985b
-    Model(State.NJ, House.localplan,  None,  True, VERSIONS, 'data/NJ/004-dra-block'), # db6985b
-    Model(State.NM, House.ushouse,       3,  True, VERSIONS, 'data/NM/005-dra-block'), # db6985b
-    Model(State.NM, House.statesenate,  42,  True, VERSIONS, 'data/NM/005-dra-block'), # db6985b
-    Model(State.NM, House.statehouse,   70,  True, VERSIONS, 'data/NM/005-dra-block'), # db6985b
-    Model(State.NM, House.localplan,  None,  True, VERSIONS, 'data/NM/005-dra-block'), # db6985b
+    Model(State.NJ, House.ushouse,      12,  True, VERSIONS, 'data/NJ/005-2020-vote'), # 3477462
+    Model(State.NJ, House.statesenate,  40,  True, VERSIONS, 'data/NJ/005-2020-vote'), # 3477462
+    Model(State.NJ, House.statehouse,   80,  True, VERSIONS, 'data/NJ/005-2020-vote'), # 3477462
+    Model(State.NJ, House.localplan,  None,  True, VERSIONS, 'data/NJ/005-2020-vote'), # 3477462
+    Model(State.NM, House.ushouse,       3,  True, VERSIONS, 'data/NM/006-2020-vote'), # 3477462
+    Model(State.NM, House.statesenate,  42,  True, VERSIONS, 'data/NM/006-2020-vote'), # 3477462
+    Model(State.NM, House.statehouse,   70,  True, VERSIONS, 'data/NM/006-2020-vote'), # 3477462
+    Model(State.NM, House.localplan,  None,  True, VERSIONS, 'data/NM/006-2020-vote'), # 3477462
     Model(State.NV, House.ushouse,       4,  True, VERSIONS, 'data/NV/006-dra-block'), # db6985b
     Model(State.NV, House.statesenate,  21,  True, VERSIONS, 'data/NV/006-dra-block'), # db6985b
     Model(State.NV, House.statehouse,   42,  True, VERSIONS, 'data/NV/006-dra-block'), # db6985b
@@ -553,10 +553,10 @@ MODELS = [
     Model(State.OR, House.statesenate,  30,  True, VERSIONS, 'data/OR/006-dra-block'), # db6985b
     Model(State.OR, House.statehouse,   60,  True, VERSIONS, 'data/OR/006-dra-block'), # db6985b
     Model(State.OR, House.localplan,  None,  True, VERSIONS, 'data/OR/006-dra-block'), # db6985b
-    Model(State.PA, House.ushouse,      17,  True, VERSIONS, 'data/PA/016-other-src'), # ce5edad
-    Model(State.PA, House.statesenate,  50,  True, VERSIONS, 'data/PA/016-other-src'), # ce5edad
-    Model(State.PA, House.statehouse,  203,  True, VERSIONS, 'data/PA/016-other-src'), # ce5edad
-    Model(State.PA, House.localplan,  None,  True, VERSIONS, 'data/PA/016-other-src'), # ce5edad
+    Model(State.PA, House.ushouse,      17,  True, VERSIONS, 'data/PA/017-VEST-2020'), # 3477462
+    Model(State.PA, House.statesenate,  50,  True, VERSIONS, 'data/PA/017-VEST-2020'), # 3477462
+    Model(State.PA, House.statehouse,  203,  True, VERSIONS, 'data/PA/017-VEST-2020'), # 3477462
+    Model(State.PA, House.localplan,  None,  True, VERSIONS, 'data/PA/017-VEST-2020'), # 3477462
     Model(State.RI, House.ushouse,       2,  True, VERSIONS, 'data/RI/008-dra-block'), # 5caa70e
     Model(State.RI, House.statesenate,  38,  True, VERSIONS, 'data/RI/008-dra-block'), # 5caa70e
     Model(State.RI, House.statehouse,   75,  True, VERSIONS, 'data/RI/008-dra-block'), # 5caa70e
