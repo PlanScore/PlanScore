@@ -346,6 +346,9 @@ class Upload:
             
             # Auth token
             obscured_token,
+            
+            # User-selected model version
+            self.model_version,
         ]
         
         try:
