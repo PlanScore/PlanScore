@@ -350,15 +350,15 @@ class TestData (unittest.TestCase):
         
         upload1 = data.Upload(id='ID', message='Yo.', key='whatever')
         logentry1 = upload1.to_logentry()
-        self.assertEqual(logentry1, 'ID\t-999\t0\tYo.\t\t\t\twhatever\t\t\r\n')
+        self.assertEqual(logentry1, 'ID\t-999\t0\tYo.\t\t\t\twhatever\t\t\t\r\n')
 
         upload2 = data.Upload(id='ID', message="Hell's Bells", key='whatever', status=True)
         logentry2 = upload2.to_logentry()
-        self.assertEqual(logentry2, "ID\t-999\t0\tHell's Bells\t\t\t\twhatever\tt\t\r\n")
+        self.assertEqual(logentry2, "ID\t-999\t0\tHell's Bells\t\t\t\twhatever\tt\t\t\r\n")
 
         upload3 = data.Upload(id='ID', message="Oh, really?", key='whatever', status=False)
         logentry3 = upload3.to_logentry()
-        self.assertEqual(logentry3, 'ID\t-999\t0\tOh, really?\t\t\t\twhatever\tf\t\r\n')
+        self.assertEqual(logentry3, 'ID\t-999\t0\tOh, really?\t\t\t\twhatever\tf\t\t\r\n')
         
         upload4 = data.Upload(
             id='ID', message='Yo.', key='whatever',
@@ -367,11 +367,15 @@ class TestData (unittest.TestCase):
         logentry4 = upload4.to_logentry()
         self.assertEqual(logentry4, 'ID\t-999\t0\tYo.\tNC\tushouse\t'
             '{"house":"ushouse","incumbency":false,"key_prefix":"data/NC/001","seats":13,"state":"NC","versions":["2020"]}'
-            '\twhatever\t\t\r\n')
+            '\twhatever\t\t\t\r\n')
 
         upload5 = data.Upload(id='ID', message="Hell's Bells", key='whatever', auth_token='Heyo')
         logentry5 = upload5.to_logentry()
-        self.assertEqual(logentry5, "ID\t-999\t0\tHell's Bells\t\t\t\twhatever\t\tHe********\r\n")
+        self.assertEqual(logentry5, "ID\t-999\t0\tHell's Bells\t\t\t\twhatever\t\tHe********\t\r\n")
+
+        upload6 = data.Upload(id='ID', message="Hell's Bells", key='whatever', model_version='1999A')
+        logentry6 = upload6.to_logentry()
+        self.assertEqual(logentry6, "ID\t-999\t0\tHell's Bells\t\t\t\twhatever\t\t\t1999A\r\n")
 
     def test_upload_index_key(self):
         ''' data.Upload.index_key() correctly munges Upload.key

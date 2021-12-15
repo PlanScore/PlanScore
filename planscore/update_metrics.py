@@ -62,7 +62,8 @@ def update_metrics(cred_data, spreadsheet_id):
           `model_json` string, 
           `key` string,
           `status` string,
-          `token` string
+          `token` string,
+          `model_version` string
         )
         PARTITIONED BY ( 
           `ds` date)
