@@ -25,6 +25,19 @@
             clear: both;
         }
         
+        #model-versions label
+        {
+            margin-left: 2em;
+            position: relative;
+        }
+
+        #model-versions label input
+        {
+            font-size: 200%;
+            position: absolute;
+            left: -.8em;
+        }
+        
     </style>
 {% endblock %}
 {% block content %}
@@ -48,6 +61,17 @@
         </p>
         <div id="plan-description"><h3>(Loading)</h3></div>
         
+        <section>
+        <h3>Optional: Prediction Method</h3>
+        <div class="row">
+            <p class="col-md-7 col-md-push-5">
+                <small>PlanScore is trying out a new prediction model based on the relationship between legislative elections and the most recent presidential election in 2020. Both models incorporate uncertainty due to electoral slumps for either party (2014 and 2018). The new model incorporates the nationalization of elections and the decline in the incumbency advantage that has occurred over the past decade.</small>
+            </p>
+            <p class="col-md-5 col-md-pull-7" id="model-versions">
+            </p>
+        </div>
+        </section>
+
         <section id="incumbency-unavailable" style="display: none">
             <h3>Unavailable: Incumbent Candidates</h3>
             <p>
@@ -57,10 +81,6 @@
         </section>
         
         <p id="map"></p>
-
-        <p id="model-versions">
-            Choose prediction method:
-        </p>
 
         <section id="incumbency-scenarios">
         <h3>Optional: Incumbent Candidates</h3>

@@ -54,7 +54,7 @@ VERSION_PARAMETERS = {
     #    '-2021C', 2020, -0.4985419, 1., 0., 1., 0.,
     #),
     '2021D': VersionParameters(
-        'Beta: rerun the 2020 election with more accurate updated data',
+        'New: rerun the 2020 election with more accurate updated data',
         '-2021D', 2020, -0.4985419, 1., 0., 1., 0.,
     ),
 }
