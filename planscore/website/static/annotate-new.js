@@ -167,7 +167,7 @@ function load_plan_preread(url, form, message_section, preread_section, descript
                 text = window.version_parameters[value][0],
                 state = (i == 0) ? 'checked' : '';
 
-            model_versions.appendChild(document.createElement('br'));
+            //model_versions.appendChild(document.createElement('br'));
             model_versions.appendChild(document.createElement('label'));
             model_versions.lastChild.innerHTML = `<input type="radio" name="model_version" value="${value}" ${state}> ${text}`;
         }
