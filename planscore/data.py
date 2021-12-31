@@ -510,10 +510,10 @@ MODELS = [
     Model(State.MO, House.statesenate,  34,  True, VERSIONS, 'data/MO/007-dra-block'), # db6985b
     Model(State.MO, House.statehouse,  163,  True, VERSIONS, 'data/MO/007-dra-block'), # db6985b
     Model(State.MO, House.localplan,  None,  True, VERSIONS, 'data/MO/007-dra-block'), # db6985b
-    Model(State.MS, House.ushouse,       4,  True, VERSIONS, 'data/MS/001-NYT-votes'), # 5849072
-    Model(State.MS, House.statesenate,  52,  True, VERSIONS, 'data/MS/001-NYT-votes'), # 5849072
-    Model(State.MS, House.statehouse,  122,  True, VERSIONS, 'data/MS/001-NYT-votes'), # 5849072
-    Model(State.MS, House.localplan,  None,  True, VERSIONS, 'data/MS/001-NYT-votes'), # 5849072
+    Model(State.MS, House.ushouse,       4,  True, VERSIONS, 'data/MS/002-VEST-data'), # ae7a959
+    Model(State.MS, House.statesenate,  52,  True, VERSIONS, 'data/MS/002-VEST-data'), # ae7a959
+    Model(State.MS, House.statehouse,  122,  True, VERSIONS, 'data/MS/002-VEST-data'), # ae7a959
+    Model(State.MS, House.localplan,  None,  True, VERSIONS, 'data/MS/002-VEST-data'), # ae7a959
     Model(State.MT, House.ushouse,       2,  True, VERSIONS, 'data/MT/008-dra-block'), # db6985b
     Model(State.MT, House.statesenate,  50,  True, VERSIONS, 'data/MT/008-dra-block'), # db6985b
     Model(State.MT, House.statehouse,  100,  True, VERSIONS, 'data/MT/008-dra-block'), # db6985b
