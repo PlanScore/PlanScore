@@ -26,6 +26,7 @@ GeoJSON representing a district plan can be posted directly to `/upload`:
         https://api.planscore.org/upload
 
 See [null-plan-incumbency.geojson](planscore/tests/data/null-plan-incumbency.geojson)
+or [null-plan-modelversion.geojson](planscore/tests/data/null-plan-modelversion.geojson)
 for example input.
 
 Data should be provided in [GeoJSON](https://geojson.org), one Polygon or

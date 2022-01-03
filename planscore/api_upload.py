@@ -40,6 +40,13 @@ def kick_it_off(geojson, temporary, auth_token):
     
     upload2 = preread_followup.commence_upload_parsing(s3, lam, constants.S3_BUCKET, upload1)
     
+    # Check for a valid model_version
+    
+    model_version = geojson.get('model_version')
+    
+    if model_version and model_version not in data.VERSION_PARAMETERS:
+        raise ValueError(f'Bad model_version {repr(model_version)}')
+    
     # assign description and incumbents as in postread_callback.py
     # and library_metadata which is only used here in api_upload.py
     
@@ -50,6 +57,7 @@ def kick_it_off(geojson, temporary, auth_token):
             for feature in geojson['features']
         ],
         library_metadata = geojson.get('library_metadata'),
+        model_version = geojson.get('model_version'),
         auth_token = auth_token,
     )
 
