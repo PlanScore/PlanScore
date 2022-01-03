@@ -137,7 +137,7 @@ POST data should be a JSON dictionary with these optional keys:
 
 - `description` (string): Short description of the plan will appear as the top-most header on the plan page.
 - `incumbents` (list): Ordered list of incumbency scenario strings for each district. See above for possible values.
-- `model_version` (string): Predictive model version.
+- `model_version` (string): Predictive model version. See _Additional Methods_ below for valid inputs. When omitted, the first one is used.
 - `library_metadata` (dictionary): Any additional data to be passed through for possible later use.
 
 On success, two URLs will be returned in a JSON response identical to _Simple Interaction_ above:
@@ -153,3 +153,8 @@ Additional Methods
 JSON representation of all currently-supported states is available at `/states`:
 
     curl https://api.planscore.org/states
+
+JSON representation of IDs and descriptions for all currently-supported
+predictive model versions is available at `/model_versions`:
+
+    curl https://api.planscore.org/model_versions
