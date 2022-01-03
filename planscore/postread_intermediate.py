@@ -21,17 +21,33 @@ def lambda_handler(event, context):
         description = None
         incumbents = None
         library_metadata = None
+        model_version = None
     else:
         print(f"Read description and incumbents from {event['callback_body']}...")
         description = body.get('description', None)
         incumbents = body.get('incumbents', None)
         library_metadata = body.get('library_metadata', None)
+        model_version = body.get('model_version', None)
 
+    # Check for a valid model_version
+    
+    if model_version and model_version not in data.VERSION_PARAMETERS:
+        observe.put_upload_index(
+            storage,
+            upload1.clone(
+                status = False,
+                message = f'Bad model_version {repr(model_version)}',
+                model_version = model_version,
+            ),
+        )
+        return
+    
     upload2 = upload1.clone(
         message = 'Scoring: Starting analysis.',
         description = description,
         incumbents = incumbents,
         library_metadata = library_metadata,
+        model_version = model_version,
     )
 
     observe.put_upload_index(storage, upload2)

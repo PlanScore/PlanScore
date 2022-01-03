@@ -137,6 +137,7 @@ POST data should be a JSON dictionary with these optional keys:
 
 - `description` (string): Short description of the plan will appear as the top-most header on the plan page.
 - `incumbents` (list): Ordered list of incumbency scenario strings for each district. See above for possible values.
+- `model_version` (string): Predictive model version.
 - `library_metadata` (dictionary): Any additional data to be passed through for possible later use.
 
 On success, two URLs will be returned in a JSON response identical to _Simple Interaction_ above:
