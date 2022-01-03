@@ -495,6 +495,15 @@ class PlanScoreScoring(cdk.Stack):
 
         get_states.add_permission('Permission', principal=apigateway_role)
 
+        get_model_versions = aws_lambda.Function(
+            self,
+            "APIModelVersions",
+            handler="lambda.get_model_versions",
+            **function_kwargs
+        )
+
+        get_model_versions.add_permission('Permission', principal=apigateway_role)
+
         upload_fields = aws_lambda.Function(
             self,
             "UploadFields",
@@ -538,6 +547,7 @@ class PlanScoreScoring(cdk.Stack):
             polygonize,
             api_upload,
             get_states,
+            get_model_versions,
             upload_fields,
             preread,
             postread_callback,
@@ -555,6 +565,7 @@ class PlanScoreScoring(cdk.Stack):
             polygonize,
             api_upload,
             get_states,
+            get_model_versions,
             upload_fields,
             preread,
             postread_callback,
@@ -607,6 +618,24 @@ class PlanScoreScoring(cdk.Stack):
         get_states_resource.add_method(
             "GET",
             get_states_integration,
+        )
+
+        get_model_versions_integration = aws_apigateway.LambdaIntegration(
+            get_model_versions,
+            credentials_role=apigateway_role,
+            **integration_kwargs
+        )
+
+        get_model_versions_resource = api.root.add_resource(
+            'model_versions',
+            default_cors_preflight_options=aws_apigateway.CorsOptions(
+                allow_origins=aws_apigateway.Cors.ALL_ORIGINS,
+            ),
+        )
+
+        get_model_versions_resource.add_method(
+            "GET",
+            get_model_versions_integration,
         )
 
         upload_fields_integration = aws_apigateway.LambdaIntegration(
