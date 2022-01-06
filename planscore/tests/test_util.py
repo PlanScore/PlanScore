@@ -338,3 +338,20 @@ class TestUtil (unittest.TestCase):
             feature3_a.GetGeometryRef().Area() + feature3_b.GetGeometryRef().Area(),
             features3[2].GetGeometryRef().Area(),
         )
+    
+    def test_is_polygonal_feature(self):
+        '''
+        '''
+        feature = unittest.mock.Mock()
+
+        feature.GetGeometryRef.return_value = ogr.CreateGeometryFromWkt('LINESTRING (-87.855131 41.148036,-87.860482 41.148024,-87.857652 41.16262,-87.866291 41.162616,-87.866302 41.161839,-87.855131 41.148036)')
+        self.assertFalse(util.is_polygonal_feature(feature))
+
+        feature.GetGeometryRef.return_value = ogr.CreateGeometryFromWkt('POLYGON ((-87.855131 41.148036,-87.860482 41.148024,-87.857652 41.16262,-87.866291 41.162616,-87.866302 41.161839,-87.855131 41.148036))')
+        self.assertTrue(util.is_polygonal_feature(feature))
+
+        feature.GetGeometryRef.return_value = ogr.CreateGeometryFromWkt('LINESTRING Z (-87.855131 41.148036 0,-87.860482 41.148024 0,-87.857652 41.16262 0,-87.866291 41.162616 0,-87.866302 41.161839 0,-87.855131 41.148036 0)')
+        self.assertFalse(util.is_polygonal_feature(feature))
+
+        feature.GetGeometryRef.return_value = ogr.CreateGeometryFromWkt('POLYGON Z ((-87.855131 41.148036 0,-87.860482 41.148024 0,-87.857652 41.16262 0,-87.866291 41.162616 0,-87.866302 41.161839 0,-87.855131 41.148036 0))')
+        self.assertTrue(util.is_polygonal_feature(feature))

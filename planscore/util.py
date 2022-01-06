@@ -203,6 +203,7 @@ def ordered_districts(layer):
     
 def is_polygonal_feature(feature):
     geometry = feature.GetGeometryRef() or EMPTY_GEOMETRY
+    geometry.FlattenTo2D()
     return bool(geometry.GetGeometryType() in POLYGONAL_TYPES)
 
 def is_multipolygon_feature(feature):
