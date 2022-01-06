@@ -71,6 +71,20 @@ class TestPostreadCalculate (unittest.TestCase):
         ])
     
     @unittest.mock.patch('sys.stdout')
+    def test_put_district_geometries_25d(self, stdout):
+        '''
+        '''
+        s3 = unittest.mock.Mock()
+        upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
+        null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-25d.geojson')
+        keys = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
+        self.assertEqual(keys, [
+            'uploads/ID/geometries/0.wkt',
+            'uploads/ID/geometries/1.wkt',
+            'uploads/ID/geometry-bboxes.geojson',
+        ])
+    
+    @unittest.mock.patch('sys.stdout')
     def test_put_district_geometries_missing_geometries(self, stdout):
         '''
         '''
