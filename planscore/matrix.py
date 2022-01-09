@@ -117,7 +117,7 @@ def model_votes(model_version, state, districts):
         Return is a DxSx2 matrix for D districts, S simulations, and Dem/Rep parties.
     '''
     if model_version is None:
-        params = data.VERSION_PARAMETERS['2021B']
+        params = data.VERSION_PARAMETERS[data.VERSIONS[0]]
     else:
         params = data.VERSION_PARAMETERS[model_version]
     

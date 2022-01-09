@@ -166,6 +166,7 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(apply_model.mock_calls[0][1][0][1][1], 0)
         self.assertEqual(apply_model.mock_calls[0][1][1], load_model.return_value)
         
+        self.assertIs(apply_model.mock_calls[0][1][-1], data.VERSION_PARAMETERS['2021B'])
         self.assertEqual(load_model.mock_calls[0][1], ('-2021B', 'nc', None))
 
         self.assertEqual(R[0].tolist(), [
@@ -174,6 +175,27 @@ class TestMatrix (unittest.TestCase):
         ])
         
         self.assertTrue(numpy.isnan(R[1]).all())
+    
+    @unittest.mock.patch('planscore.matrix.load_model')
+    @unittest.mock.patch('planscore.matrix.apply_model')
+    def test_model_votes_without_model_version(self, apply_model, load_model):
+        apply_model.return_value = numpy.array([
+            [0.3, 0.4],
+            [numpy.nan, numpy.nan]
+        ])
+
+        R = matrix.model_votes(
+            None,
+            data.State.NC,
+            [
+                (4, 6, 'R'),
+                (0, 0, 'O'),
+            ],
+        )
+        
+        default_version = data.VERSION_PARAMETERS[data.VERSIONS[0]]
+        self.assertIs(apply_model.mock_calls[0][1][-1], default_version)
+        self.assertEqual(load_model.mock_calls[0][1], ('-2021D', 'nc', 2020))
     
     def test_prepare_district_data(self):
         input = data.Upload(id=None, key=None,

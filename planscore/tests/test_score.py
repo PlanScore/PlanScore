@@ -1202,5 +1202,5 @@ class TestScore (unittest.TestCase):
 
         output = score.calculate_everything(input)
         
-        self.assertEqual(output.summary['Declination Absolute Percent Rank'], 1.)
-        self.assertEqual(output.summary['Declination Relative Percent Rank'], 1.)
+        self.assertEqual(output.summary['Declination Absolute Percent Rank'], 0.9927)
+        self.assertEqual(output.summary['Declination Relative Percent Rank'], 0.9927)
