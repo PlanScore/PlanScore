@@ -193,7 +193,7 @@ class TestMatrix (unittest.TestCase):
             ],
         )
         
-        default_version = data.VERSION_PARAMETERS[data.VERSIONS[0]]
+        default_version = data.VERSION_PARAMETERS[data.DEFAULT_VERSION]
         self.assertIs(apply_model.mock_calls[0][1][-1], default_version)
         self.assertEqual(load_model.mock_calls[0][1], ('-2021D', 'nc', 2020))
     

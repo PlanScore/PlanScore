@@ -42,7 +42,7 @@ def kick_it_off(geojson, temporary, auth_token):
     
     # Check for a valid model_version
     
-    model_version = geojson.get('model_version')
+    model_version = geojson.get('model_version', data.DEFAULT_VERSION)
     
     if model_version and model_version not in data.VERSION_PARAMETERS:
         raise ValueError(f'Bad model_version {repr(model_version)}')
@@ -57,7 +57,7 @@ def kick_it_off(geojson, temporary, auth_token):
             for feature in geojson['features']
         ],
         library_metadata = geojson.get('library_metadata'),
-        model_version = geojson.get('model_version'),
+        model_version = model_version,
         auth_token = auth_token,
     )
 

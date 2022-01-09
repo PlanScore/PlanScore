@@ -407,6 +407,7 @@ class Upload:
 # Active version of each state model
 
 VERSIONS = list(VERSION_PARAMETERS.keys()) # rely on dict order
+DEFAULT_VERSION = VERSIONS[0]
 
 MODELS = [
     Model(State.XX, House.statehouse,    2,  True, VERSIONS, 'data/XX/006-tilesdir'), # b8e19879
