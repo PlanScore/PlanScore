@@ -153,7 +153,7 @@ def prepare_district_data(upload):
     ''' Simple presidential vote input for model_votes()
     '''
     if upload.model_version is None:
-        params = data.VERSION_PARAMETERS['2021B']
+        params = data.VERSION_PARAMETERS[data.DEFAULT_VERSION]
     else:
         params = data.VERSION_PARAMETERS[upload.model_version]
     

@@ -200,6 +200,7 @@ class TestMatrix (unittest.TestCase):
     def test_prepare_district_data(self):
         input = data.Upload(id=None, key=None,
             model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2020'], None),
+            model_version = '2021B',
             districts = [
                 dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
                 dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
@@ -216,6 +217,7 @@ class TestMatrix (unittest.TestCase):
     def test_prepare_district_data_mixed_years(self):
         input = data.Upload(id=None, key=None,
             model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2020'], None),
+            model_version = '2021B',
             districts = [
                 dict(totals={'US President 2016 - REP': 2, 'US President 2020 - REP': 2, 'US President 2020 - DEM': 6, 'US President 2016 - DEM': 6}, tile=None),
                 dict(totals={'US President 2016 - REP': 3, 'US President 2020 - REP': 3, 'US President 2020 - DEM': 5, 'US President 2016 - DEM': 5}, tile=None),
@@ -250,6 +252,23 @@ class TestMatrix (unittest.TestCase):
         input = data.Upload(id=None, key=None,
             model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2020'], None),
             model_version = '2021D',
+            districts = [
+                dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
+                dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
+                dict(totals={'US President 2016 - REP': 5, 'US President 2016 - DEM': 3}, tile=None),
+                dict(totals={'US President 2016 - REP': 6, 'US President 2016 - DEM': 2}, tile=None),
+                ])
+        
+        output = matrix.prepare_district_data(input)
+        self.assertEqual(output[0], (6.0, 2.0, 'O'))
+        self.assertEqual(output[1], (5.0, 3.0, 'O'))
+        self.assertEqual(output[2], (3.0, 5.0, 'O'))
+        self.assertEqual(output[3], (2.0, 6.0, 'O'))
+    
+    def test_prepare_district_data_default_version(self):
+        input = data.Upload(id=None, key=None,
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2020'], None),
+            model_version = None,
             districts = [
                 dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
                 dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
