@@ -878,6 +878,9 @@ function show_ftva_race_scores(plan, scores_FTVA)
             ftva_races.push({office: 'U.S. Senate', year: '2016', gap: plan.summary['US Senate 2016 Efficiency Gap']});
         }
         
+        // We have space for no more than four FTVA races
+        ftva_races = ftva_races.slice(0, 4);
+        
         for(var i = 0; i < ftva_races.length; i++)
         {
             var score_FTVA = scores_FTVA[i],
