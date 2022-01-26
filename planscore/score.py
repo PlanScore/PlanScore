@@ -635,7 +635,7 @@ def calculate_district_biases(upload):
     D2ds = [calculate_D2_diff(r, b) for (r, b) in red_votes_blue_votes]
     
     # Need <50% simulations with single-party outcomes for valid declination
-    D2_is_valid = len(list(filter(None, D2ds))) > len(red_votes_blue_votes) / 2
+    D2_is_valid = len(list(filter(None, D2ds))) > len(red_votes_blue_votes) * .75
     
     # EG alone also gets a sensitivity test for vote swing scenarios
     EGs = {
@@ -735,7 +735,7 @@ def main():
 EG: {EG:.1f}%; {EG_wins:.0f}% favor D
 GK Bias: {PB:.1f}%; {PB_wins:.0f}% favor D
 Mean-Med: {MMD:.1f}%; {MMD_wins:.0f}% favor D
-Declination: {DEC:.3f}; {DEC_wins:.0f}% favor D
+Declination: {DEC:.3f}; {DEC_wins:.0f}% favor D, valid={DEC_valid}
 -
 D votes: {votes_D}
 R votes: {votes_R}'''.format(
@@ -750,6 +750,7 @@ R votes: {votes_R}'''.format(
         MMD_wins=complete_upload.summary['Mean-Median Positives'] * 100,
         DEC=complete_upload.summary['Declination'],
         DEC_wins=complete_upload.summary['Declination Positives'] * 100,
+        DEC_valid=bool(complete_upload.summary['Declination Is Valid']),
         votes_D=[d['totals']['Democratic Votes'] for d in complete_upload.districts],
         votes_R=[d['totals']['Republican Votes'] for d in complete_upload.districts],
     ))

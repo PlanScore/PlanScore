@@ -1573,7 +1573,7 @@ function load_plan_score(url, message_section, score_section,
         } else if('Declination' in plan.summary) {
             hide_score_with_reason(score_DEC2,
                 'Declination is only shown where both parties each win one or more'
-                + 'seats in the majority of predicted scenarios<sup>*</sup>.');
+                + 'seats in a sufficient number of predicted scenarios<sup>*</sup>.');
         } else {
             hide_score_with_reason(score_DEC2,
                 'We were not yet calculating declination at the time that we scored this plan.');
