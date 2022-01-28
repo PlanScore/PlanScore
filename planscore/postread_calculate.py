@@ -188,6 +188,9 @@ def load_model_slices(storage, model):
         response = storage.s3.list_objects(Bucket=storage.bucket,
             Prefix=prefix, Marker=marker)
 
+        if 'Contents' not in response:
+            raise RuntimeError(f'Missing model data for {model.state.value} state')
+        
         contents.extend(response['Contents'])
         is_truncated = response['IsTruncated']
         
