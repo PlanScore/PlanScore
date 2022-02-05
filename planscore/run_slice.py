@@ -134,6 +134,16 @@ def score_precinct(partial_district_set, precinct_properties):
 
             continue
 
+        if name == 'Household Income 2019, Margin' and 'Households 2019' in precinct_properties:
+            # Household income can't be summed up like populations,
+            # and needs to be weighted by number of households.
+            precinct_value *= (precinct_properties['Households 2019'] or 0)
+            totals['Sum Household Income 2019, Margin'] = \
+                round(totals.get('Sum Household Income 2019, Margin', 0)
+                    + precinct_value, constants.ROUND_COUNT)
+
+            continue
+
         totals[name] = round(precinct_value, constants.ROUND_COUNT)
     
     return totals

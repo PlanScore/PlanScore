@@ -133,9 +133,9 @@ class TestRunSlice (unittest.TestCase):
         totals = collections.defaultdict(int)
         partial_district_set = {"0000000001", "0000000003", "0000000005"}
         precincts = [
-            {"GEOID": "0000000001", "Households 2019": 3, "Household Income 2019": 59039},
-            {"GEOID": "0000000003", "Households 2019": 3, "Household Income 2019": 59039},
-            {"GEOID": "0000000005", "Households 2019": 3, "Household Income 2019": 59039},
+            {"GEOID": "0000000001", "Households 2019": 3, "Household Income 2019": 59039, "Household Income 2019, Margin": 5904},
+            {"GEOID": "0000000003", "Households 2019": 3, "Household Income 2019": 59039, "Household Income 2019, Margin": 5904},
+            {"GEOID": "0000000005", "Households 2019": 3, "Household Income 2019": 59039, "Household Income 2019, Margin": 5904},
         ]
         
         for precinct in precincts:
@@ -145,5 +145,7 @@ class TestRunSlice (unittest.TestCase):
         
         self.assertAlmostEqual(totals['Households 2019'], 9)
         self.assertAlmostEqual(totals['Sum Household Income 2019'], 531351)
+        self.assertAlmostEqual(totals['Sum Household Income 2019, Margin'], 53136)
         self.assertEqual(totals['Household Income 2019'], 0)
+        self.assertEqual(totals['Household Income 2019, Margin'], 0)
     

@@ -335,6 +335,11 @@ def adjust_household_income(input_subtotals):
             / totals['Households 2019'], constants.ROUND_COUNT)
         del totals['Sum Household Income 2019']
     
+    if 'Households 2019' in totals and 'Sum Household Income 2019, Margin' in totals:
+        totals['Household Income 2019, Margin'] = round(totals['Sum Household Income 2019, Margin']
+            / totals['Households 2019'], constants.ROUND_COUNT)
+        del totals['Sum Household Income 2019, Margin']
+    
     return totals
 
 def clean_up_leftover_parts(storage, part_keys):

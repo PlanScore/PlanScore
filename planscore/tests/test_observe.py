@@ -447,11 +447,12 @@ class TestObserveTiles (unittest.TestCase):
     def test_adjust_household_income_2019(self):
         '''
         '''
-        totals1 = {'Households 2019': 1000, 'Sum Household Income 2019': 59000000}
+        totals1 = {'Households 2019': 1000, 'Sum Household Income 2019': 59000000, 'Sum Household Income 2019, Margin': 5900000}
         totals2 = observe.adjust_household_income(totals1)
         
         self.assertEqual(totals2['Households 2019'], 1000)
         self.assertEqual(totals2['Household Income 2019'], 59000)
+        self.assertEqual(totals2['Household Income 2019, Margin'], 5900)
 
         totals3 = {'Households 2019': 1000, 'Voters': 2000}
         totals4 = observe.adjust_household_income(totals3)
