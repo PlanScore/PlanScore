@@ -61,7 +61,7 @@ FIELD_NAMES = (
     'Voting-Age Population 2019', 'Voting-Age Population 2019, Margin',
     #'Education Population 2019', 'Education Population 2019, Margin',
     'High School or GED 2019', 'High School or GED 2019, Margin',
-    #'Households 2019', 'Households 2019, Margin',
+    'Households 2019', 'Households 2019, Margin',
     'Household Income 2019', 'Household Income 2019, Margin',
     'Citizen Voting-Age Population 2019', 'Citizen Voting-Age Population 2019, Margin',
     
