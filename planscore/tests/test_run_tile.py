@@ -180,7 +180,7 @@ class TestRunTile (unittest.TestCase):
         self.assertAlmostEqual(totals['DEM999'], 0, places=2)
         self.assertAlmostEqual(totals['O:DEM999'], 0, places=2)
     
-    def test_score_precinct_incomes(self):
+    def test_score_precinct_2016_incomes(self):
         ''' Correct values appears in totals dict after scoring a precinct.
         '''
         totals = collections.defaultdict(int)
