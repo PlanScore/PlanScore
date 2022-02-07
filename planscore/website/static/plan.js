@@ -717,6 +717,18 @@ function show_metrics_table(plan, metrics_table)
     }
     
     if(plan.summary['Efficiency Gap Absolute Percent Rank'] === null) {
+        if(plan.summary['Declination Is Valid'] !== 0) {
+            var declination_row = `
+                <tr>
+                    <th><a href="${window.d2_metric_url}">Declination</a></th>
+                    <td>${Math.round(Math.abs(dec2_value) * 100)/100} Pro-${dec2_win_party}</td>
+                    <td>${nice_round_percent(dec2_positives)}</td>
+                </tr>
+            `;
+        } else {
+            var declination_row = '';
+        }
+
         metrics_table.innerHTML = `
             <thead>
                 <tr>
@@ -731,11 +743,7 @@ function show_metrics_table(plan, metrics_table)
                     <td>${nice_percent(Math.abs(eg_value))} Pro-${eg_win_party}</td>
                     <td>${nice_round_percent(eg_positives)}</td>
                 </tr>
-                <tr>
-                    <th><a href="${window.d2_metric_url}">Declination</a></th>
-                    <td>${Math.round(Math.abs(dec2_value) * 100)/100} Pro-${dec2_win_party}</td>
-                    <td>${nice_round_percent(dec2_positives)}</td>
-                </tr>
+                ${declination_row}
                 <tr>
                     <th><a href="${window.pb_metric_url}">Partisan Bias</a></th>
                     <td>${pb_display}</td>
@@ -748,6 +756,20 @@ function show_metrics_table(plan, metrics_table)
                 </tr>
             </tbody>`;
     } else {
+        if(plan.summary['Declination Is Valid'] !== 0) {
+            var declination_row = `
+                <tr>
+                    <th><a href="${window.d2_metric_url}">Declination</a></th>
+                    <td>${Math.round(Math.abs(dec2_value) * 100)/100} Pro-${dec2_win_party}</td>
+                    <td>${nice_round_percent(dec2_positives)}</td>
+                    <td>${nice_round_percent(dec2_percentrank_abs)}</td>
+                    <td>${nice_round_percent(dec2_percentrank_rel)}</td>
+                </tr>
+            `;
+        } else {
+            var declination_row = '';
+        }
+
         metrics_table.innerHTML = `
             <thead>
                 <tr>
@@ -766,13 +788,7 @@ function show_metrics_table(plan, metrics_table)
                     <td>${nice_round_percent(eg_percentrank_abs)}</td>
                     <td>${nice_round_percent(eg_percentrank_rel)}</td>
                 </tr>
-                <tr>
-                    <th><a href="${window.d2_metric_url}">Declination</a></th>
-                    <td>${Math.round(Math.abs(dec2_value) * 100)/100} Pro-${dec2_win_party}</td>
-                    <td>${nice_round_percent(dec2_positives)}</td>
-                    <td>${nice_round_percent(dec2_percentrank_abs)}</td>
-                    <td>${nice_round_percent(dec2_percentrank_rel)}</td>
-                </tr>
+                ${declination_row}
                 <tr>
                     <th><a href="${window.pb_metric_url}">Partisan Bias</a></th>
                     <td>${pb_display}</td>
