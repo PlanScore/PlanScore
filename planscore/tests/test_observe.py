@@ -429,7 +429,7 @@ class TestObserveTiles (unittest.TestCase):
         self.assertEqual(districts[1]['totals']['US President 2016 - DEM'], 100)
         self.assertEqual(districts[1]['totals']['US President 2016 - REP'], 300)
 
-    def test_adjust_household_income(self):
+    def test_adjust_household_income_2016(self):
         '''
         '''
         totals1 = {'Households 2016': 1000, 'Sum Household Income 2016': 59000000}
@@ -442,6 +442,22 @@ class TestObserveTiles (unittest.TestCase):
         totals4 = observe.adjust_household_income(totals3)
         
         self.assertEqual(totals4['Households 2016'], 1000)
+        self.assertEqual(totals4['Voters'], 2000)
+
+    def test_adjust_household_income_2019(self):
+        '''
+        '''
+        totals1 = {'Households 2019': 1000, 'Sum Household Income 2019': 59000000, 'Sum Household Income 2019, Margin': 5900000}
+        totals2 = observe.adjust_household_income(totals1)
+        
+        self.assertEqual(totals2['Households 2019'], 1000)
+        self.assertEqual(totals2['Household Income 2019'], 59000)
+        self.assertEqual(totals2['Household Income 2019, Margin'], 5900)
+
+        totals3 = {'Households 2019': 1000, 'Voters': 2000}
+        totals4 = observe.adjust_household_income(totals3)
+        
+        self.assertEqual(totals4['Households 2019'], 1000)
         self.assertEqual(totals4['Voters'], 2000)
     
     def test_clean_up_leftover_parts(self):

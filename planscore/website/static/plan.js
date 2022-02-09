@@ -1214,6 +1214,9 @@ function plan_array(plan)
 
         if(field_missing) {
             continue;
+        } else if(field == 'Population 2019' && fields.indexOf('Population 2020') !== -1) {
+            // Do not show 2019 ACS population if 2020 Census population is present
+            continue;
         }
 
         if(field == 'Democratic Wins')

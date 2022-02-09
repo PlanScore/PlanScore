@@ -126,3 +126,26 @@ class TestRunSlice (unittest.TestCase):
         self.assertAlmostEqual(totals['Population 2010'], 14)
         self.assertAlmostEqual(totals['US President 2016 - DEM'], 250)
         self.assertAlmostEqual(totals['US President 2016 - REP'], 125)
+
+    def test_score_precinct_2019_incomes(self):
+        ''' Correct values appears in totals dict after scoring a precinct.
+        '''
+        totals = collections.defaultdict(int)
+        partial_district_set = {"0000000001", "0000000003", "0000000005"}
+        precincts = [
+            {"GEOID": "0000000001", "Households 2019": 3, "Household Income 2019": 59039, "Household Income 2019, Margin": 5904},
+            {"GEOID": "0000000003", "Households 2019": 3, "Household Income 2019": 59039, "Household Income 2019, Margin": 5904},
+            {"GEOID": "0000000005", "Households 2019": 3, "Household Income 2019": 59039, "Household Income 2019, Margin": 5904},
+        ]
+        
+        for precinct in precincts:
+            slice_totals = run_slice.score_precinct(partial_district_set, precinct)
+            for (key, value) in slice_totals.items():
+                totals[key] += value
+        
+        self.assertAlmostEqual(totals['Households 2019'], 9)
+        self.assertAlmostEqual(totals['Sum Household Income 2019'], 531351)
+        self.assertAlmostEqual(totals['Sum Household Income 2019, Margin'], 53136)
+        self.assertEqual(totals['Household Income 2019'], 0)
+        self.assertEqual(totals['Household Income 2019, Margin'], 0)
+    
