@@ -107,12 +107,6 @@ class TestPrereadFollowup (unittest.TestCase):
     def test_guess_geometry_model_nonexistent(self):
         ''' Test that guess_geometry_model() guesses the correct U.S. state and house.
         '''
-        with self.assertRaises(RuntimeError) as dc_error:
-            dc_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'district-of-columbia.geojson')
-            preread_followup.guess_geometry_model(dc_plan_path)
-
-        self.assertEqual(str(dc_error.exception), 'District of Columbia is not a currently supported state')
-
         with self.assertRaises(RuntimeError) as ni_error:
             ni_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'nicaragua.geojson')
             preread_followup.guess_geometry_model(ni_plan_path)
