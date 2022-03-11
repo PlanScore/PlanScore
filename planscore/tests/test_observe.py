@@ -459,6 +459,12 @@ class TestObserveTiles (unittest.TestCase):
         
         self.assertEqual(totals4['Households 2019'], 1000)
         self.assertEqual(totals4['Voters'], 2000)
+
+        totals5 = {'Households 2019': 0, 'Sum Household Income 2019': 59000000}
+        totals6 = observe.adjust_household_income(totals5)
+        
+        self.assertEqual(totals6['Households 2019'], 0)
+        self.assertNotIn('Household Income 2019', totals6)
     
     def test_clean_up_leftover_parts(self):
         '''

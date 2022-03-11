@@ -104,16 +104,3 @@ Behind-the-scenes code sequence when a user scores a plan.
     2.  Waits for all expected aggregated tile or slice statistics
     3.  Calculates final scores
     4.  Saves index JSON with final data
-
-### Adding a State
-
-How to add a new state model to the scoring process.
-
--   Add to `State` enum in [`planscore/data.py`](planscore/data.py)
--   Add to `MODELS` list in [`planscore/data.py`](planscore/data.py)
--   Add to listing and alt text in [`planscore/website/templates/upload.html`](planscore/website/templates/upload.html)
--   Add to `supported` expression in [`design/Upload-Map.qgz`](design/Upload-Map.qgz)
--   Export SVG file from [`design/Upload-Map.qgz`](design/Upload-Map.qgz) to `design/Upload-Map.svg`
--   Compress [`planscore/website/static/supported-states.svg`](planscore/website/static/supported-states.svg) via [`planscore-svg:latest`](SVG):
-    
-        make planscore/website/static/supported-states.svg
