@@ -525,6 +525,7 @@ MODELS = [
     Model(State.ND, House.localplan,  None,  True, VERSIONS, 'data/ND/010-more-acs'), # a926eb0
     Model(State.NE, House.ushouse,       3,  True, VERSIONS, 'data/NE/007-more-acs'), # a926eb0
     Model(State.NE, House.statesenate,  49,  True, VERSIONS, 'data/NE/007-more-acs'), # a926eb0
+    Model(State.NE, House.localplan,  None,  True, VERSIONS, 'data/NE/007-more-acs'), # a926eb0
     Model(State.NH, House.ushouse,       2,  True, VERSIONS, 'data/NH/009-more-acs'), # a926eb0
     Model(State.NH, House.statesenate,  24,  True, VERSIONS, 'data/NH/009-more-acs'), # a926eb0
     Model(State.NH, House.statehouse,  400,  True, VERSIONS, 'data/NH/009-more-acs'), # a926eb0
