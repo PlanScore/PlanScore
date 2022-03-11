@@ -723,6 +723,12 @@ if __name__ == '__main__':
     if formation_prefix is None or formation_prefix == "unknown":
         raise ValueError('USAGE: cdk <command> -c formation_prefix=cf-development <stack>')
 
+    is_prodlike = formation_prefix in ('cf-canary', 'cf-production')
+    has_environment = 'API_TOKENS' in os.environ and 'PLANSCORE_SECRET' in os.environ
+    
+    if not has_environment and is_prodlike:
+        raise RuntimeError("Don't deploy without API_TOKENS or PLANSCORE_SECRET")
+
     assert formation_prefix.startswith('cf-')
     formation_info = FormationInfo(formation_prefix, None, None, None, None, None, None, None, None)
 
