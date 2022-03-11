@@ -39,3 +39,4 @@ def handler(event, context):
             location=json.dumps(location),
         ),
     }
+
