@@ -330,15 +330,16 @@ def adjust_household_income(input_subtotals):
             / totals['Households 2016'], constants.ROUND_COUNT)
         del totals['Sum Household Income 2016']
     
-    if 'Households 2019' in totals and 'Sum Household Income 2019' in totals:
-        totals['Household Income 2019'] = round(totals['Sum Household Income 2019']
-            / totals['Households 2019'], constants.ROUND_COUNT)
-        del totals['Sum Household Income 2019']
+    if 'Households 2019' in totals and totals['Households 2019'] > 0:
+        if 'Sum Household Income 2019' in totals:
+            totals['Household Income 2019'] = round(totals['Sum Household Income 2019']
+                / totals['Households 2019'], constants.ROUND_COUNT)
+            del totals['Sum Household Income 2019']
     
-    if 'Households 2019' in totals and 'Sum Household Income 2019, Margin' in totals:
-        totals['Household Income 2019, Margin'] = round(totals['Sum Household Income 2019, Margin']
-            / totals['Households 2019'], constants.ROUND_COUNT)
-        del totals['Sum Household Income 2019, Margin']
+        if 'Sum Household Income 2019, Margin' in totals:
+            totals['Household Income 2019, Margin'] = round(totals['Sum Household Income 2019, Margin']
+                / totals['Households 2019'], constants.ROUND_COUNT)
+            del totals['Sum Household Income 2019, Margin']
     
     return totals
 
