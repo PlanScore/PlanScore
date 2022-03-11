@@ -65,7 +65,6 @@ class State (enum.Enum):
     CA = 'CA'
     CO = 'CO'
     CT = 'CT'
-    DC = 'DC'
     DE = 'DE'
     FL = 'FL'
     GA = 'GA'
@@ -440,8 +439,6 @@ MODELS = [
     Model(State.CT, House.statesenate,  36,  True, VERSIONS, 'data/CT/005-more-acs'), # a926eb0
     Model(State.CT, House.statehouse,  151,  True, VERSIONS, 'data/CT/005-more-acs'), # a926eb0
     Model(State.CT, House.localplan,  None,  True, VERSIONS, 'data/CT/005-more-acs'), # a926eb0
-    Model(State.DC, House.statehouse,    8,  True, VERSIONS, 'data/DC/001-first-up'), # a926eb0
-    Model(State.DC, House.localplan,  None,  True, VERSIONS, 'data/DC/001-first-up'), # a926eb0
     Model(State.DE, House.ushouse,       1,  True, VERSIONS, 'data/DE/009-more-acs'), # a926eb0
     Model(State.DE, House.statesenate,  21,  True, VERSIONS, 'data/DE/009-more-acs'), # a926eb0
     Model(State.DE, House.statehouse,   41,  True, VERSIONS, 'data/DE/009-more-acs'), # a926eb0
