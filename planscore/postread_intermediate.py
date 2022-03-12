@@ -50,14 +50,20 @@ def lambda_handler(event, context):
         model_version = model_version,
     )
 
-    observe.put_upload_index(storage, upload2)
-    upload3 = preread_followup.commence_upload_parsing(s3, lam, event['bucket'], upload2)
-    
-    next_event = dict(bucket=event['bucket'])
-    next_event.update(upload3.to_dict())
+    try:
+        observe.put_upload_index(storage, upload2)
+        upload3 = preread_followup.commence_upload_parsing(s3, lam, event['bucket'], upload2)
+    except Exception as err:
+        observe.put_upload_index(storage, upload2.clone(
+            status=False,
+            message=f'Something went wrong: {err}',
+        ))
+    else:
+        next_event = dict(bucket=event['bucket'])
+        next_event.update(upload3.to_dict())
 
-    lam.invoke(
-        FunctionName=postread_calculate.FUNCTION_NAME,
-        InvocationType='Event',
-        Payload=json.dumps(next_event).encode('utf8'),
-    )
+        lam.invoke(
+            FunctionName=postread_calculate.FUNCTION_NAME,
+            InvocationType='Event',
+            Payload=json.dumps(next_event).encode('utf8'),
+        )
