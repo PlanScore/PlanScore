@@ -393,16 +393,23 @@ def lambda_handler(event, context):
     put_upload_index(storage, upload2.clone(
         message='Scoring: Adding up votes. Almost done.'))
 
-    districts = accumulate_district_subtotals(subtotals, upload2)
-    upload3 = upload2.clone(districts=districts)
-    upload4 = score.calculate_everything(upload3)
+    try:
+        districts = accumulate_district_subtotals(subtotals, upload2)
+        upload3 = upload2.clone(districts=districts)
+        upload4 = score.calculate_everything(upload3)
+    except Exception as err:
+        upload_final = upload4.clone(
+            status=False,
+            message=f'Something went wrong: {err}',
+            progress=data.Progress(len(expected_parts), len(expected_parts)),
+        )
+    else:
+        upload_final = upload4.clone(
+            status=True,
+            message='Finished scoring this plan.',
+            progress=data.Progress(len(expected_parts), len(expected_parts)),
+        )
 
-    complete_upload = upload4.clone(
-        status=True,
-        message='Finished scoring this plan.',
-        progress=data.Progress(len(expected_parts), len(expected_parts)),
-    )
-
-    put_upload_index(storage, complete_upload)
+    put_upload_index(storage, upload_final)
     put_part_timings(storage, upload2, subtotals, part_type)
     clean_up_leftover_parts(storage, expected_parts)
