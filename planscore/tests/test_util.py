@@ -308,6 +308,13 @@ class TestUtil (unittest.TestCase):
         self.assertEqual(name7, 'District_N')
         self.assertEqual([f.GetField(name7) for f in features7],
             [str(i + 1) for i in range(18)])
+
+        ds8 = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'unordered8.geojson'))
+        layer8 = ds8.GetLayer(0)
+        name8, features8 = util.ordered_districts(layer8)
+        self.assertEqual(name8, 'DISTNO')
+        self.assertEqual([f.GetField(name8) for f in features8],
+            [(i + 1) for i in range(5)])
     
     def test_ordered_districts_grouped(self):
         '''

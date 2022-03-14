@@ -164,16 +164,21 @@ def ordered_districts(layer):
         raw_values = [feat.GetField(name) for feat in polygon_features]
         
         try:
-            values = {int(raw) for raw in raw_values}
+            int_values = {int(raw) for raw in raw_values}
+            float_values = {float(raw) for raw in raw_values}
         except:
             continue
         
-        has_no_repeats = bool(len(values) == len(polygon_features))
-        
-        if 1 not in values or values > {i+1 for i in range(len(values))}:
+        if (int_values != float_values):
+            # All values must be integers
             continue
         
-        fields.append((2 if 'district' in name.lower() else 1, name, has_no_repeats))
+        has_no_repeats = bool(len(int_values) == len(polygon_features))
+        
+        if 1 not in int_values or int_values > {i+1 for i in range(len(int_values))}:
+            continue
+        
+        fields.append((2 if 'dist' in name.lower() else 1, name, has_no_repeats))
 
     if not fields:
         # No district field found, return everything as-is

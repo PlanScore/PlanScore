@@ -1,0 +1,12 @@
+{
+"type": "FeatureCollection",
+"name": "RDW_District_Data",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "OBJECTID": 1, "SUPERVISOR": "1ST SUPERVISORIAL DIST", "DISTNO": 1, "NAME": "Nora Vargas", "PHONE": "(619)531-5511", "WEBSITE": "www.supervisornoravargas.com", "ShapeSTArea": 0.048709082032000008, "ShapeSTLength": 1.620772519674164 }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 2, "SUPERVISOR": "2ND SUPERVISORIAL DIST", "DISTNO": 2, "NAME": "Joel Anderson", "PHONE": "(619)531-5522", "WEBSITE": "www.supervisorjoelanderson.com", "ShapeSTArea": 0.39100438953250005, "ShapeSTLength": 4.7260338604326115 }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 3, "SUPERVISOR": "3RD SUPERVISORIAL DIST", "DISTNO": 3, "NAME": "Terra Lawson_Rem", "PHONE": "(619)531-5533", "WEBSITE": "www.supervisorterralawsonremer.com", "ShapeSTArea": 0.10206095744050002, "ShapeSTLength": 2.229010158606632 }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 4, "SUPERVISOR": "4TH SUPERVISORIAL DIST", "DISTNO": 4, "NAME": "Nathan Fletcher", "PHONE": "(619)531-5544", "WEBSITE": "www.supervisornathanfletcher.com", "ShapeSTArea": 0.025098164675500006, "ShapeSTLength": 1.392359081419118 }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "OBJECTID": 5, "SUPERVISOR": "5TH SUPERVISORIAL DIST", "DISTNO": 5, "NAME": "Jim Desmond", "PHONE": "(619)531-5555", "WEBSITE": "www.supervisorjimdesmond.com", "ShapeSTArea": 0.56446073156450016, "ShapeSTLength": 5.2948425870213347 }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } }
+]
+}
