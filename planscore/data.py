@@ -50,6 +50,10 @@ VERSION_PARAMETERS = {
         'New: rerun the 2020 election with more accurate updated data',
         '-2021D', 2020, -0.4985419, 1., 0., 1., 0.,
     ),
+    '2022E': VersionParameters(
+        'New (v2): rerun the 2020 election with more accurate updated data',
+        '-2022E', 2020, -0.4985419, 1., 0., 1., 0.,
+    ),
     '2021B': VersionParameters(
         'Original: rerun an average election from the past 10 years with best available data from before Census release',
         '-2021B', None, -0.496875, 0.91, 0.05, 0.96, 0.01,
