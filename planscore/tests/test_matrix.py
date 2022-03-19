@@ -14,7 +14,7 @@ class TestMatrix (unittest.TestCase):
         self.assertTrue((matrix.dropna(numpy.array([numpy.nan, 1])) == numpy.array([1])).all())
     
     def test_load_model_2021B(self):
-        model = matrix.load_model('-2021B', 'ak', None)
+        model = matrix.load_model('-2021B', 'ak', None, None, None)
         
         self.assertEqual(model.c_matrix.shape, (9, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
@@ -37,7 +37,7 @@ class TestMatrix (unittest.TestCase):
         self.assertAlmostEqual(model.c_matrix[8,0], 0.0)
     
     def test_load_model_2021D(self):
-        model = matrix.load_model('-2021D', 'ak', 2020)
+        model = matrix.load_model('-2021D', 'ak', 2020, None, None)
         
         self.assertEqual(model.c_matrix.shape, (9, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
@@ -62,8 +62,86 @@ class TestMatrix (unittest.TestCase):
         self.assertAlmostEqual(model.c_matrix[7,0], 0.0582)
         self.assertAlmostEqual(model.c_matrix[8,0], -0.0118)
     
+    def test_load_model_2022E_incumbents(self):
+        model = matrix.load_model('-2022E', 'ak', 2020, True, None)
+        
+        self.assertEqual(model.c_matrix.shape, (9, 1000))
+        self.assertEqual(model.e_matrix.shape, (500, 1000))
+        
+        self.assertEqual(model.intercept[0], model.c_matrix[0,0])
+        self.assertEqual(model.vote[0], model.c_matrix[1,0])
+        self.assertEqual(model.incumbent[0], model.c_matrix[2,0])
+        self.assertEqual(model.state_intercept[0], model.c_matrix[3,0])
+        self.assertEqual(model.state_vote[0], model.c_matrix[4,0])
+        self.assertEqual(model.state_incumbent[0], model.c_matrix[5,0])
+        self.assertEqual(model.year_intercept[0], model.c_matrix[6,0])
+        self.assertEqual(model.year_vote[0], model.c_matrix[7,0])
+        self.assertEqual(model.year_incumbent[0], model.c_matrix[8,0])
+
+        self.assertAlmostEqual(model.c_matrix[0,0], 0.4982)
+        self.assertAlmostEqual(model.c_matrix[1,0], 0.8451)
+        self.assertAlmostEqual(model.c_matrix[2,0], 0.0451)
+        self.assertAlmostEqual(model.c_matrix[3,0], -0.0024)
+        self.assertAlmostEqual(model.c_matrix[4,0], -0.0070)
+        self.assertAlmostEqual(model.c_matrix[5,0], -0.0094)
+        self.assertAlmostEqual(model.c_matrix[6,0], -0.0123)
+        self.assertAlmostEqual(model.c_matrix[7,0], 0.0582)
+        self.assertAlmostEqual(model.c_matrix[8,0], -0.0118)
+    
+    def test_load_model_2022E_openseat_congress(self):
+        model = matrix.load_model('-2022E', 'ak', 2020, False, True)
+        
+        self.assertEqual(model.c_matrix.shape, (9, 1000))
+        self.assertEqual(model.e_matrix.shape, (500, 1000))
+        
+        self.assertEqual(model.intercept[0], model.c_matrix[0,0])
+        self.assertEqual(model.vote[0], model.c_matrix[1,0])
+        self.assertEqual(model.incumbent[0], model.c_matrix[2,0])
+        self.assertEqual(model.state_intercept[0], model.c_matrix[3,0])
+        self.assertEqual(model.state_vote[0], model.c_matrix[4,0])
+        self.assertEqual(model.state_incumbent[0], model.c_matrix[5,0])
+        self.assertEqual(model.year_intercept[0], model.c_matrix[6,0])
+        self.assertEqual(model.year_vote[0], model.c_matrix[7,0])
+        self.assertEqual(model.year_incumbent[0], model.c_matrix[8,0])
+
+        self.assertAlmostEqual(model.c_matrix[0,0], 0.4282)
+        self.assertAlmostEqual(model.c_matrix[1,0], 1.2379)
+        self.assertAlmostEqual(model.c_matrix[2,0], 0.)
+        self.assertAlmostEqual(model.c_matrix[3,0], -0.0076)
+        self.assertAlmostEqual(model.c_matrix[4,0], 0.1164)
+        self.assertAlmostEqual(model.c_matrix[5,0], 0.)
+        self.assertAlmostEqual(model.c_matrix[6,0], 0.0125)
+        self.assertAlmostEqual(model.c_matrix[7,0], -0.0418)
+        self.assertAlmostEqual(model.c_matrix[8,0], 0.)
+    
+    def test_load_model_2022E_openseat_statelege(self):
+        model = matrix.load_model('-2022E', 'ak', 2020, False, False)
+        
+        self.assertEqual(model.c_matrix.shape, (9, 1000))
+        self.assertEqual(model.e_matrix.shape, (500, 1000))
+        
+        self.assertEqual(model.intercept[0], model.c_matrix[0,0])
+        self.assertEqual(model.vote[0], model.c_matrix[1,0])
+        self.assertEqual(model.incumbent[0], model.c_matrix[2,0])
+        self.assertEqual(model.state_intercept[0], model.c_matrix[3,0])
+        self.assertEqual(model.state_vote[0], model.c_matrix[4,0])
+        self.assertEqual(model.state_incumbent[0], model.c_matrix[5,0])
+        self.assertEqual(model.year_intercept[0], model.c_matrix[6,0])
+        self.assertEqual(model.year_vote[0], model.c_matrix[7,0])
+        self.assertEqual(model.year_incumbent[0], model.c_matrix[8,0])
+
+        self.assertAlmostEqual(model.c_matrix[0,0], 0.4282)
+        self.assertAlmostEqual(model.c_matrix[1,0], 1.2379)
+        self.assertAlmostEqual(model.c_matrix[2,0], 0.)
+        self.assertAlmostEqual(model.c_matrix[3,0], -0.0076)
+        self.assertAlmostEqual(model.c_matrix[4,0], 0.1164)
+        self.assertAlmostEqual(model.c_matrix[5,0], 0.)
+        self.assertAlmostEqual(model.c_matrix[6,0], -0.0194)
+        self.assertAlmostEqual(model.c_matrix[7,0], 0.0893)
+        self.assertAlmostEqual(model.c_matrix[8,0], 0.)
+    
     def test_apply_model(self):
-        model = matrix.load_model('-2021B', 'ca', None)
+        model = matrix.load_model('-2021B', 'ca', None, None, None)
         
         R = matrix.apply_model(
             [
@@ -92,7 +170,7 @@ class TestMatrix (unittest.TestCase):
         self.assertTrue(R[2].sum() < R[5].sum() and R[5].sum() < R[8].sum())
     
     def test_apply_model_with_zeros(self):
-        model = matrix.load_model('-2021B', 'ca', None)
+        model = matrix.load_model('-2021B', 'ca', None, None, None)
         
         R = matrix.apply_model(
             [

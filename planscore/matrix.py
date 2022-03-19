@@ -30,13 +30,17 @@ Model = collections.namedtuple('Model', (
 def dropna(a):
     return a[~numpy.isnan(a)]
 
-def load_model(path_suffix, state, year):
+def load_model(path_suffix, state, year, has_incumbents, is_congress):
 
     # TODO: accept year = None
 
     matrix_dir = os.path.join(os.path.dirname(__file__), 'model')
-    c_path = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}.csv.gz')
-    e_path = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}.csv.gz')
+    c_path__ = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}.csv.gz')
+    e_path__ = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}.csv.gz')
+    c_path_o = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}-openseat.csv.gz')
+    e_path_o = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}-openseat.csv.gz')
+    c_path_i = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}-incumbency.csv.gz')
+    e_path_i = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}-incumbency.csv.gz')
     
     c_keys = (
         'b_Intercept',
@@ -50,6 +54,23 @@ def load_model(path_suffix, state, year):
         f'r_cycle[{year},incumb]',
     )
     
+    if has_incumbents and os.path.exists(c_path_i) and os.path.exists(e_path_i):
+        c_path, e_path = c_path_i, e_path_i
+    elif not has_incumbents and os.path.exists(c_path_o) and os.path.exists(e_path_o):
+        c_path, e_path = c_path_o, e_path_o
+
+        # Open seat matrix file is missing "incumb" rows
+        c_keys = (
+            'b_Intercept',
+            'b_dpres_mn',
+            f'r_stateabrev[{state},Intercept]',
+            f'r_stateabrev[{state},dpres_mn]',
+            f'r_congress:cycle[{str(is_congress).upper()}_{year},Intercept]',
+            f'r_congress:cycle[{str(is_congress).upper()}_{year},dpres_mn]',
+        )
+    else:
+        c_path, e_path = c_path__, e_path__
+
     with gzip.open(c_path, 'rt') as c_file:
         c_rows = {
             c_row['']: [
@@ -71,9 +92,18 @@ def load_model(path_suffix, state, year):
             for e_row in csv.DictReader(e_file)
         ]
     
-    c_values = [c_rows[c_key] for c_key in c_keys]
-    args = c_values + [numpy.array(c_values), numpy.array(e_rows)]
+    c_values = [c_rows[c_key] for c_key in c_keys if c_key is not None]
     
+    # If necessary, add all-zero "incumb" series
+    if len(c_values) == 6:
+        zeros = [0.] * len(c_values[0])
+        c_values.insert(2, zeros)
+        c_values.insert(5, zeros)
+        c_values.insert(9, zeros)
+    
+    assert len(c_values) == 9
+    args = c_values + [numpy.array(c_values), numpy.array(e_rows)]
+
     return Model(*args)
 
 def apply_model(districts, model, params):
