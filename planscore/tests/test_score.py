@@ -909,7 +909,7 @@ class TestScore (unittest.TestCase):
              [2.6, 5.4]],
         ])
         output = score.calculate_everything(input)
-        self.assertEqual(model_votes.mock_calls[0][1], ('2021B', data.State.XX, filter_district_data.return_value))
+        self.assertEqual(model_votes.mock_calls[0][1], ('2021B', data.State.XX, data.House.ushouse, filter_district_data.return_value))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median Positives'], 0.0)
@@ -1000,10 +1000,10 @@ class TestScore (unittest.TestCase):
         ])
         output = score.calculate_everything(input)
         self.assertEqual(model_votes.mock_calls[0][1][:2], ('2021D', data.State.XX))
-        self.assertEqual(model_votes.mock_calls[0][1][2][0], (6.0, 2.0, 'R'))
-        self.assertEqual(model_votes.mock_calls[0][1][2][1], (5.0, 3.0, 'D'))
-        self.assertEqual(model_votes.mock_calls[0][1][2][2], (3.0, 5.0, 'R'))
-        self.assertEqual(model_votes.mock_calls[0][1][2][3], (2.0, 6.0, 'D'))
+        self.assertEqual(model_votes.mock_calls[0][1][3][0], (6.0, 2.0, 'R'))
+        self.assertEqual(model_votes.mock_calls[0][1][3][1], (5.0, 3.0, 'D'))
+        self.assertEqual(model_votes.mock_calls[0][1][3][2], (3.0, 5.0, 'R'))
+        self.assertEqual(model_votes.mock_calls[0][1][3][3], (2.0, 6.0, 'D'))
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
@@ -1146,10 +1146,10 @@ class TestScore (unittest.TestCase):
         self.assertIsNone(output.districts[4]['number'], 'Should not count empty 5th district')
         
         self.assertEqual(model_votes.mock_calls[0][1][:2], ('2021D', data.State.XX))
-        self.assertEqual(model_votes.mock_calls[0][1][2][0], (6.0, 2.0, 'O'))
-        self.assertEqual(model_votes.mock_calls[0][1][2][1], (5.0, 3.0, 'O'))
-        self.assertEqual(model_votes.mock_calls[0][1][2][2], (3.0, 5.0, 'O'))
-        self.assertEqual(model_votes.mock_calls[0][1][2][3], (2.0, 6.0, 'O'))
+        self.assertEqual(model_votes.mock_calls[0][1][3][0], (6.0, 2.0, 'O'))
+        self.assertEqual(model_votes.mock_calls[0][1][3][1], (5.0, 3.0, 'O'))
+        self.assertEqual(model_votes.mock_calls[0][1][3][2], (3.0, 5.0, 'O'))
+        self.assertEqual(model_votes.mock_calls[0][1][3][3], (2.0, 6.0, 'O'))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(len(calculate_MMD.mock_calls[0][1][0]), 4, 'Should skip empty 5th district')

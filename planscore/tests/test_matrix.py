@@ -196,6 +196,7 @@ class TestMatrix (unittest.TestCase):
         R = matrix.model_votes(
             '2021B',
             data.State.NC,
+            data.House.ushouse,
             [
                 (4, 6, 'R'),
                 (5, 5, 'O'),
@@ -208,7 +209,7 @@ class TestMatrix (unittest.TestCase):
             load_model.return_value,
             data.VERSION_PARAMETERS['2021B'],
         ))
-        self.assertEqual(load_model.mock_calls[0][1], ('-2021B', 'nc', None))
+        self.assertEqual(load_model.mock_calls[0][1], ('-2021B', 'nc', None, True, True))
 
         self.assertEqual(R.tolist(), [
             [[3.0, 7.0],
@@ -232,6 +233,7 @@ class TestMatrix (unittest.TestCase):
         R = matrix.model_votes(
             '2021B',
             data.State.NC,
+            data.House.ushouse,
             [
                 (4, 6, 'R'),
                 (0, 0, 'O'),
@@ -245,7 +247,7 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(apply_model.mock_calls[0][1][1], load_model.return_value)
         
         self.assertIs(apply_model.mock_calls[0][1][-1], data.VERSION_PARAMETERS['2021B'])
-        self.assertEqual(load_model.mock_calls[0][1], ('-2021B', 'nc', None))
+        self.assertEqual(load_model.mock_calls[0][1], ('-2021B', 'nc', None, True, True))
 
         self.assertEqual(R[0].tolist(), [
             [1.5, 3.5],
@@ -265,6 +267,7 @@ class TestMatrix (unittest.TestCase):
         R = matrix.model_votes(
             None,
             data.State.NC,
+            data.House.ushouse,
             [
                 (4, 6, 'R'),
                 (0, 0, 'O'),
@@ -273,7 +276,7 @@ class TestMatrix (unittest.TestCase):
         
         default_version = data.VERSION_PARAMETERS[data.DEFAULT_VERSION]
         self.assertIs(apply_model.mock_calls[0][1][-1], default_version)
-        self.assertEqual(load_model.mock_calls[0][1], ('-2021D', 'nc', 2020))
+        self.assertEqual(load_model.mock_calls[0][1], ('-2021D', 'nc', 2020, True, True))
     
     def test_prepare_district_data(self):
         input = data.Upload(id=None, key=None,

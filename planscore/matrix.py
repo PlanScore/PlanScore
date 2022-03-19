@@ -135,10 +135,12 @@ def apply_model(districts, model, params):
     #numpy.savetxt('ADCE.csv', (ADC + E), fmt='%.9f', delimiter=',')
     return ADC + E
 
-def model_votes(model_version, state, districts):
+def model_votes(model_version, state, house, districts):
     ''' Convert presidential votes to range of possible modeled chamber votes.
         
-        state is from data.State enum, year is an integer.
+        model_version is a string like '2021D' from data.VERSION_PARAMETERS.
+        state is from data.State enum.
+        house is from data.House enum.
         districts is an array of three-element tuples:
         - Input Democratic vote count
         - Input Republican vote count
@@ -151,13 +153,16 @@ def model_votes(model_version, state, districts):
     else:
         params = data.VERSION_PARAMETERS[model_version]
     
+    has_incumbents = bool({inc for (_, _, inc) in districts} != {'O'})
+    is_congress = bool(house == data.House.ushouse)
+    
     # Get DxS array from apply_model() with modeled vote fractions
     fractions = apply_model(
         [
             (dem / ((dem + rep) or numpy.nan), INCUMBENCY[inc])
             for (dem, rep, inc) in districts
         ],
-        load_model(params.path_suffix, STATE[state], params.year),
+        load_model(params.path_suffix, STATE[state], params.year, has_incumbents, is_congress),
         params,
     )
     
@@ -253,7 +258,12 @@ def main():
     input_district_data = prepare_district_data(upload)
     
     # Get large number of simulated outputs
-    output_votes = model_votes(upload.model_version, upload.model.state, input_district_data)
+    output_votes = model_votes(
+        upload.model_version,
+        upload.model.state,
+        upload.model.house,
+        input_district_data,
+    )
 
     with open(args.matrix_path, 'w') as file:
         districts, sims, parties = output_votes.shape
