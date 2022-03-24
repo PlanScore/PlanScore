@@ -23,6 +23,7 @@ STATE = dict([(s, s.value.lower()) for s in data.State] + [(data.State.XX, 'ks')
 Model = collections.namedtuple('Model', (
     'intercept', 'vote', 'incumbent',
     'state_intercept', 'state_vote', 'state_incumbent',
+    'congress_intercept', 'congress_vote', 'congress_incumbent',
     'year_intercept', 'year_vote', 'year_incumbent',
     'c_matrix', 'e_matrix',
     ))
@@ -65,6 +66,8 @@ def load_model(path_suffix, state, year, has_incumbents, is_congress):
             'b_dpres_mn',
             f'r_stateabrev[{state},Intercept]',
             f'r_stateabrev[{state},dpres_mn]',
+            f'r_congress[{str(is_congress).upper()},Intercept]',
+            f'r_congress[{str(is_congress).upper()},dpres_mn]',
             f'r_congress:cycle[{str(is_congress).upper()}_{year},Intercept]',
             f'r_congress:cycle[{str(is_congress).upper()}_{year},dpres_mn]',
         )
@@ -93,15 +96,22 @@ def load_model(path_suffix, state, year, has_incumbents, is_congress):
         ]
     
     c_values = [c_rows[c_key] for c_key in c_keys if c_key is not None]
+    zeros = [0.] * len(c_values[0])
     
-    # If necessary, add all-zero "incumb" series
-    if len(c_values) == 6:
-        zeros = [0.] * len(c_values[0])
+    if len(c_values) == 9:
+        # If necessary, add all-zero congress series
+        c_values.insert(6, zeros)
+        c_values.insert(7, zeros)
+        c_values.insert(8, zeros)
+    elif len(c_values) == 8:
+        # If necessary, add all-zero "incumb" series
         c_values.insert(2, zeros)
         c_values.insert(5, zeros)
-        c_values.insert(9, zeros)
+        c_values.insert(8, zeros)
+        c_values.insert(11, zeros)
+    elif len(c_values) != 12:
+        raise RuntimeError(f'Unexpectedly seeing {len(c_values)} c_values')
     
-    assert len(c_values) == 9
     args = c_values + [numpy.array(c_values), numpy.array(e_rows)]
 
     return Model(*args)
@@ -111,8 +121,10 @@ def apply_model(districts, model, params):
         - Democratic vote portion from 0. to 1.
         - -1 for Republican, 0 for open seat, and 1 for Democratic incumbents
     '''
+    sim_count = model.c_matrix.shape[1]
+    
     AD = numpy.array([
-        [1, numpy.nan if numpy.isnan(vote) else (vote + params.vote_adjust), incumbency] * 3
+        [1, numpy.nan if numpy.isnan(vote) else (vote + params.vote_adjust), incumbency] * 4
         for (vote, incumbency)
         in districts
     ])
@@ -133,6 +145,7 @@ def apply_model(districts, model, params):
 
     #print('ADCE:', (ADC + E).shape)
     #numpy.savetxt('ADCE.csv', (ADC + E), fmt='%.9f', delimiter=',')
+    assert (ADC + E).shape == (len(districts), sim_count)
     return ADC + E
 
 def model_votes(model_version, state, house, districts):
