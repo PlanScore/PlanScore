@@ -9,6 +9,7 @@ import functools
 from aws_cdk import (
     core as cdk,
     aws_iam,
+    aws_glue,
     aws_s3,
     aws_s3_deployment,
     aws_lambda,
@@ -88,13 +89,17 @@ class PlanScoreScoring(cdk.Stack):
 
         # Do the work
         
+        data_bucket = self.make_data_bucket(stack_id, formation_info)
+        athena_db = self.make_athena_database(formation_info, data_bucket)
+        
         apigateway_role, api = self.make_api(stack_id, formation_info)
         site_buckets = self.make_site_buckets(formation_info)
         website_base = self.make_website_base(formation_info, *site_buckets)
 
         functions = self.make_lambda_functions(
             apigateway_role,
-            self.make_data_bucket(stack_id, formation_info),
+            data_bucket,
+            athena_db,
             website_base,
         )
 
@@ -325,6 +330,121 @@ class PlanScoreScoring(cdk.Stack):
 
         return data_bucket
 
+    def make_athena_database(self, formation_info, data_bucket):
+
+        athena_db = aws_glue.Database(
+            self,
+            f'{formation_info.prefix}-database'.replace('-', '_'),
+            database_name=f'{formation_info.prefix}-database'.replace('-', '_'),
+        )
+
+        blocks_table = aws_glue.Table(
+            self,
+            'blocks',
+            bucket=data_bucket,
+            database=athena_db,
+            table_name='blocks',
+            s3_prefix='data',
+            columns=[
+                aws_glue.Column(name=n, type=t)
+                for (t, n) in [
+                    (aws_glue.Schema.STRING, "GEOID20"),
+                    (aws_glue.Schema.BIG_INT, "precinct2020"),
+                    (aws_glue.Schema.DOUBLE, "US President 2020 - DEM"),
+                    (aws_glue.Schema.DOUBLE, "US President 2020 - REP"),
+                    (aws_glue.Schema.DOUBLE, "US President 2020 - Other"),
+                    (aws_glue.Schema.DOUBLE, "US Senate 2020 - DEM"),
+                    (aws_glue.Schema.DOUBLE, "US Senate 2020 - REP"),
+                    (aws_glue.Schema.DOUBLE, "US Senate 2020 - Other"),
+                    (aws_glue.Schema.BIG_INT, "Population 2020"),
+                    (aws_glue.Schema.DOUBLE, "Population 2019"),
+                    (aws_glue.Schema.DOUBLE, "Population 2019, Margin"),
+                    (aws_glue.Schema.DOUBLE, "Black Population 2019"),
+                    (aws_glue.Schema.DOUBLE, "Black Population 2019, Margin"),
+                    (aws_glue.Schema.BIG_INT, "Black Population 2020"),
+                    (aws_glue.Schema.DOUBLE, "Hispanic Population 2019"),
+                    (aws_glue.Schema.DOUBLE, "Hispanic Population 2019, Margin"),
+                    (aws_glue.Schema.BIG_INT, "Hispanic Population 2020"),
+                    (aws_glue.Schema.BIG_INT, "Asian Population 2020"),
+                    (aws_glue.Schema.DOUBLE, "Population 25+ 2019"),
+                    (aws_glue.Schema.DOUBLE, "Population 25+ 2019, Margin"),
+                    (aws_glue.Schema.DOUBLE, "High School or GED (25+) 2019"),
+                    (aws_glue.Schema.DOUBLE, "High School or GED (25+) 2019, Margin"),
+                    (aws_glue.Schema.DOUBLE, "Some College or AA (25+) 2019"),
+                    (aws_glue.Schema.DOUBLE, "Some College or AA (25+) 2019, Margin"),
+                    (aws_glue.Schema.DOUBLE, "Bachelor's or Higher (25+) 2019"),
+                    (aws_glue.Schema.DOUBLE, "Bachelor's or Higher (25+) 2019, Margin"),
+                    (aws_glue.Schema.DOUBLE, "Foreign-born Population 2019"),
+                    (aws_glue.Schema.DOUBLE, "Foreign-born Population 2019, Margin"),
+                    (aws_glue.Schema.DOUBLE, "Naturalized Population 2019"),
+                    (aws_glue.Schema.DOUBLE, "Naturalized Population 2019, Margin"),
+                    (aws_glue.Schema.DOUBLE, "Households 2019"),
+                    (aws_glue.Schema.DOUBLE, "Households 2019, Margin"),
+                    (aws_glue.Schema.DOUBLE, "Household Income 2019"),
+                    (aws_glue.Schema.DOUBLE, "Household Income 2019, Margin"),
+                    (aws_glue.Schema.DOUBLE, "Citizen Voting-Age Population 2019"),
+                    (aws_glue.Schema.DOUBLE, "Citizen Voting-Age Population 2019, Margin"),
+                    (aws_glue.Schema.DOUBLE, "Black Citizen Voting-Age Population 2019"),
+                    (aws_glue.Schema.DOUBLE, "Black Citizen Voting-Age Population 2019, Margin"),
+                    (aws_glue.Schema.DOUBLE, "Asian Citizen Voting-Age Population 2019"),
+                    (aws_glue.Schema.DOUBLE, "Asian Citizen Voting-Age Population 2019, Margin"),
+                    (aws_glue.Schema.DOUBLE, "American Indian or Alaska Native Citizen Voting-Age Population 2019"),
+                    (aws_glue.Schema.DOUBLE, "American Indian or Alaska Native Citizen Voting-Age Population 2019, Margin"),
+                    (aws_glue.Schema.DOUBLE, "Hispanic Citizen Voting-Age Population 2019"),
+                    (aws_glue.Schema.DOUBLE, "Hispanic Citizen Voting-Age Population 2019, Margin"),
+                    (aws_glue.Schema.BIG_INT, "Voting-Age Population 2020"),
+                    (aws_glue.Schema.STRING, "Point"),
+                ]
+            ],
+            partition_keys=[
+                aws_glue.Column(name='prefix', type=aws_glue.Schema.STRING),
+            ],
+            data_format=aws_glue.DataFormat.PARQUET,
+        )
+
+        # Partition projection hack
+        # See https://github.com/aws/aws-cdk/issues/14159#issuecomment-977769082
+        blocks_table_cfn = blocks_table.node.default_child
+        blocks_table_cfn.add_property_override('TableInput.Parameters.projection\\.enabled', 'true')
+        blocks_table_cfn.add_property_override('TableInput.Parameters.projection\\.prefix\\.type', 'injected')
+        blocks_table_cfn.add_property_override(
+            'TableInput.Parameters.storage\\.location\\.template',
+            concat_strings('s3://', data_bucket.bucket_name, '/data/${prefix}/blocks'),
+        )
+
+        districts_table = aws_glue.Table(
+            self,
+            'districts',
+            bucket=data_bucket,
+            database=athena_db,
+            table_name='districts',
+            s3_prefix='uploads',
+            columns=[
+                aws_glue.Column(name=n, type=t)
+                for (n, t) in [
+                    ('Number', aws_glue.Schema.INTEGER),
+                    ('Polygon', aws_glue.Schema.STRING),
+                    ('GEOID20', aws_glue.Schema.STRING),
+                ]
+            ],
+            partition_keys=[
+                aws_glue.Column(name='upload', type=aws_glue.Schema.STRING),
+            ],
+            data_format=aws_glue.DataFormat.CSV,
+        )
+
+        # Partition projection hack
+        # See https://github.com/aws/aws-cdk/issues/14159#issuecomment-977769082
+        districts_table_cfn = districts_table.node.default_child
+        districts_table_cfn.add_property_override('TableInput.Parameters.projection\\.enabled', 'true')
+        districts_table_cfn.add_property_override('TableInput.Parameters.projection\\.upload\\.type', 'injected')
+        districts_table_cfn.add_property_override(
+            'TableInput.Parameters.storage\\.location\\.template',
+            concat_strings('s3://', data_bucket.bucket_name, '/uploads/${upload}/districts'),
+        )
+        
+        return athena_db
+    
     def make_api(self, stack_id, formation_info):
 
         apigateway_role = aws_iam.Role(
@@ -360,7 +480,7 @@ class PlanScoreScoring(cdk.Stack):
 
         return apigateway_role, api
 
-    def make_lambda_functions(self, apigateway_role, data_bucket, website_base):
+    def make_lambda_functions(self, apigateway_role, data_bucket, athena_db, website_base):
 
         git_commit_sha = subprocess.check_output(('git', 'rev-parse', 'HEAD')).strip().decode('ascii')
         
@@ -372,6 +492,7 @@ class PlanScoreScoring(cdk.Stack):
             environment={
                 'GIT_COMMIT_SHA': git_commit_sha,
                 'S3_BUCKET': data_bucket.bucket_name,
+                'ATHENA_DB': athena_db.database_name,
                 'PLANSCORE_SECRET': PLANSCORE_SECRET,
                 'WEBSITE_BASE': website_base,
                 'LD_LIBRARY_PATH': '/var/task/lib',

@@ -17,6 +17,7 @@ setup(
             'data/*/*/*/*.geojson',
             'data/*/tiles/*/*/*.geojson',
             'data/*/slices/*.json',
+            'data/*/blocks/*.parquet',
             'data/*-graphs/*/*.pickle',
             'data/uploads/sample-plan/districts/?.json',
             'data/uploads/sample-plan/tiles/*/*/*.json',
@@ -46,6 +47,7 @@ setup(
             'aws-cdk.aws-certificatemanager == 1.144.0',
             'aws-cdk.aws-cloudfront == 1.144.0',
             'aws-cdk.aws-cloudfront-origins == 1.144.0',
+            'aws-cdk.aws-glue == 1.144.0',
             'aws-cdk.aws-iam == 1.144.0',
             'aws-cdk.aws-lambda == 1.144.0',
             'aws-cdk.aws-logs == 1.144.0',
@@ -57,6 +59,11 @@ setup(
         'metrics': [
             'google-api-python-client == 2.9.0',
             'oauth2client == 4.1.3',
+            ],
+        'prepare': [
+            'geopandas == 0.10.2',
+            'pandas == 1.4.1',
+            'pyarrow == 6.0.1',
             ],
         },
     entry_points = dict(
