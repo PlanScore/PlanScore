@@ -345,20 +345,58 @@ class PlanScoreScoring(cdk.Stack):
             database=athena_db,
             table_name='blocks',
             s3_prefix='data',
-            columns=[aws_glue.Column(name='Point', type=aws_glue.Schema.STRING)],
-            partition_keys=[aws_glue.Column(name='prefix', type=aws_glue.Schema.STRING)],
+            columns=[
+                aws_glue.Column(name=n, type=t)
+                for (n, t) in [
+                    ('Point', aws_glue.Schema.STRING),
+                ]
+            ],
+            partition_keys=[
+                aws_glue.Column(name='prefix', type=aws_glue.Schema.STRING),
+            ],
             data_format=aws_glue.DataFormat.PARQUET,
         )
 
         # Partition projection hack
         # See https://github.com/aws/aws-cdk/issues/14159#issuecomment-977769082
         blocks_table_cfn = blocks_table.node.default_child
+        blocks_table_cfn.add_property_override('TableInput.Parameters.projection\\.enabled', 'true')
+        blocks_table_cfn.add_property_override('TableInput.Parameters.projection\\.prefix\\.type', 'injected')
         blocks_table_cfn.add_property_override(
             'TableInput.Parameters.storage\\.location\\.template',
             concat_strings('s3://', data_bucket.bucket_name, '/data/${prefix}/blocks'),
         )
-        blocks_table_cfn.add_property_override('TableInput.Parameters.projection\\.enabled', 'true')
-        blocks_table_cfn.add_property_override('TableInput.Parameters.projection\\.prefix\\.type', 'injected')
+
+        districts_table = aws_glue.Table(
+            self,
+            'districts',
+            bucket=data_bucket,
+            database=athena_db,
+            table_name='districts',
+            s3_prefix='uploads',
+            columns=[
+                aws_glue.Column(name=n, type=t)
+                for (n, t) in [
+                    ('Number', aws_glue.Schema.STRING),
+                    ('Polygon', aws_glue.Schema.STRING),
+                    ('GEOID20', aws_glue.Schema.STRING),
+                ]
+            ],
+            partition_keys=[
+                aws_glue.Column(name='upload', type=aws_glue.Schema.STRING),
+            ],
+            data_format=aws_glue.DataFormat.CSV,
+        )
+
+        # Partition projection hack
+        # See https://github.com/aws/aws-cdk/issues/14159#issuecomment-977769082
+        districts_table_cfn = districts_table.node.default_child
+        districts_table_cfn.add_property_override('TableInput.Parameters.projection\\.enabled', 'true')
+        districts_table_cfn.add_property_override('TableInput.Parameters.projection\\.upload\\.type', 'injected')
+        districts_table_cfn.add_property_override(
+            'TableInput.Parameters.storage\\.location\\.template',
+            concat_strings('s3://', data_bucket.bucket_name, '/uploads/${upload}/districts'),
+        )
         
         return athena_db
     
