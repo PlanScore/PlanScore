@@ -17,6 +17,7 @@ setup(
             'data/*/*/*/*.geojson',
             'data/*/tiles/*/*/*.geojson',
             'data/*/slices/*.json',
+            'data/*/blocks/*.parquet',
             'data/*-graphs/*/*.pickle',
             'data/uploads/sample-plan/districts/?.json',
             'data/uploads/sample-plan/tiles/*/*/*.json',
