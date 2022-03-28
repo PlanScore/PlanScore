@@ -63,6 +63,9 @@ def put_district_geometries(s3, bucket, upload, path):
     if not ds:
         raise RuntimeError('Could not open file to fan out district invocations')
 
+    partition_buffer = io.StringIO()
+    partition_csv = csv.writer(partition_buffer, dialect='excel')
+
     _, features = util.ordered_districts(ds.GetLayer(0))
     
     for (index, feature) in enumerate(features):
@@ -78,6 +81,7 @@ def put_district_geometries(s3, bucket, upload, path):
         
         keys.append(key)
         bboxes.append((key, geometry.GetEnvelope()))
+        partition_csv.writerow((index, geometry.ExportToWkt(), None))
     
     bboxes_geojson = {
         'type': 'FeatureCollection',
@@ -100,6 +104,14 @@ def put_district_geometries(s3, bucket, upload, path):
         Body=json.dumps(bboxes_geojson), ContentType='application/json')
     
     keys.append(key)
+    
+    s3.put_object(
+        Bucket=bucket,
+        Key=data.UPLOAD_DISTRICTS_PARTITION_KEY.format(id=upload.id),
+        ACL='bucket-owner-full-control',
+        Body=partition_buffer.getvalue(),
+        ContentType='text/plain',
+    )
     
     return keys
 
@@ -129,6 +141,9 @@ def put_district_assignments(s3, bucket, upload, path):
         with open(path, 'r') as file:
             rows = util.baf_stream_to_pairs(file)
     
+    partition_buffer = io.StringIO()
+    partition_csv = csv.writer(partition_buffer, dialect='excel')
+    
     def district_key(pair):
         _, district_id = pair
         try:
@@ -144,6 +159,7 @@ def put_district_assignments(s3, bucket, upload, path):
         out = io.StringIO()
         for (block_id, _) in rows4:
             print(block_id, file=out)
+            partition_csv.writerow((index, None, block_id))
     
         key = data.UPLOAD_ASSIGNMENTS_KEY.format(id=upload.id, index=index)
     
@@ -151,6 +167,14 @@ def put_district_assignments(s3, bucket, upload, path):
             Body=out.getvalue(), ContentType='text/plain')
     
         keys.append(key)
+
+    s3.put_object(
+        Bucket=bucket,
+        Key=data.UPLOAD_DISTRICTS_PARTITION_KEY.format(id=upload.id),
+        ACL='bucket-owner-full-control',
+        Body=partition_buffer.getvalue(),
+        ContentType='text/plain',
+    )
 
     return keys
 

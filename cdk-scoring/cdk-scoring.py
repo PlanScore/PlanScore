@@ -377,7 +377,7 @@ class PlanScoreScoring(cdk.Stack):
             columns=[
                 aws_glue.Column(name=n, type=t)
                 for (n, t) in [
-                    ('Number', aws_glue.Schema.STRING),
+                    ('Number', aws_glue.Schema.INTEGER),
                     ('Polygon', aws_glue.Schema.STRING),
                     ('GEOID20', aws_glue.Schema.STRING),
                 ]
