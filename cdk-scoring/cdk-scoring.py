@@ -62,6 +62,7 @@ FORMATIONS = [
 
 API_TOKENS = os.environ.get('API_TOKENS', 'Good,Better,Best')
 PLANSCORE_SECRET = os.environ.get('PLANSCORE_SECRET', 'fake-fake')
+ATHENA_BUCKET, ATHENA_PREFIX = 'planscore-stuff-logs', 'athena-output'
 
 def concat_strings(*things):
     return functools.reduce(
@@ -409,7 +410,7 @@ class PlanScoreScoring(cdk.Stack):
         blocks_table_cfn.add_property_override('TableInput.Parameters.projection\\.prefix\\.type', 'injected')
         blocks_table_cfn.add_property_override(
             'TableInput.Parameters.storage\\.location\\.template',
-            concat_strings('s3://', data_bucket.bucket_name, '/data/${prefix}/blocks'),
+            concat_strings('s3://', data_bucket.bucket_name, '/${prefix}/blocks'),
         )
 
         districts_table = aws_glue.Table(
@@ -497,6 +498,39 @@ class PlanScoreScoring(cdk.Stack):
                 'WEBSITE_BASE': website_base,
                 'LD_LIBRARY_PATH': '/var/task/lib',
             },
+            initial_policy=[
+                # Policy literals for Athena DB queries
+                aws_iam.PolicyStatement(
+                    actions=[
+                        'athena:StopQueryExecution',
+                        'athena:StartQueryExecution',
+                        'athena:GetQueryExecution',
+                        'athena:GetQueryResults',
+                        'athena:GetQueryResultsStream',
+                        'glue:GetTable',
+                        'glue:GetPartitions',
+                        'glue:GetTables',
+                        'glue:GetPartition',
+                        'glue:GetDatabases',
+                        'glue:GetDatabase',
+                    ],
+                    resources=['*'],
+                ),
+                aws_iam.PolicyStatement(
+                    actions=[
+                        's3:PutObject',
+                        's3:GetObjectAcl',
+                        's3:GetObject',
+                        's3:ListBucket',
+                        's3:GetBucketLocation',
+                        's3:PutObjectAcl',
+                    ],
+                    resources=[
+                        f'arn:aws:s3:::{ATHENA_BUCKET}/{ATHENA_PREFIX}/*',
+                        f'arn:aws:s3:::{ATHENA_BUCKET}',
+                    ],
+                ),
+            ],
         )
 
         # Behind-the-scenes functions
