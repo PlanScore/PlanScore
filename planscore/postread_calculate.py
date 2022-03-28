@@ -4,7 +4,7 @@ Fans out asynchronous parallel calls to planscore.district function, then
 starts and observer process with planscore.score function.
 '''
 import os, io, json, urllib.parse, gzip, time, math, threading
-import csv, operator, itertools, zipfile
+import csv, operator, itertools, zipfile, gzip
 import boto3, osgeo.ogr
 from . import util, data, score, website, prepare_state, constants, run_tile, run_slice, observe
 
@@ -109,8 +109,9 @@ def put_district_geometries(s3, bucket, upload, path):
         Bucket=bucket,
         Key=data.UPLOAD_DISTRICTS_PARTITION_KEY.format(id=upload.id),
         ACL='bucket-owner-full-control',
-        Body=partition_buffer.getvalue(),
+        Body=gzip.compress(partition_buffer.getvalue().encode('utf8')),
         ContentType='text/plain',
+        ContentEncoding='gzip',
     )
     
     return keys
@@ -172,8 +173,9 @@ def put_district_assignments(s3, bucket, upload, path):
         Bucket=bucket,
         Key=data.UPLOAD_DISTRICTS_PARTITION_KEY.format(id=upload.id),
         ACL='bucket-owner-full-control',
-        Body=partition_buffer.getvalue(),
+        Body=gzip.compress(partition_buffer.getvalue().encode('utf8')),
         ContentType='text/plain',
+        ContentEncoding='gzip',
     )
 
     return keys

@@ -1,4 +1,4 @@
-import unittest, unittest.mock, io, os, contextlib
+import unittest, unittest.mock, io, os, contextlib, gzip
 from .. import postread_calculate, data, constants
 from osgeo import ogr
 
@@ -70,7 +70,7 @@ class TestPostreadCalculate (unittest.TestCase):
             'uploads/ID/geometry-bboxes.geojson',
         ])
         
-        self.assertEqual(s3.mock_calls[-1][2]['Key'], 'uploads/ID/districts/partition.csv')
+        self.assertEqual(s3.mock_calls[-1][2]['Key'], 'uploads/ID/districts/partition.csv.gz')
     
     @unittest.mock.patch('sys.stdout')
     def test_put_district_geometries_25d(self, stdout):
@@ -86,7 +86,7 @@ class TestPostreadCalculate (unittest.TestCase):
             'uploads/ID/geometry-bboxes.geojson',
         ])
         
-        self.assertEqual(s3.mock_calls[-1][2]['Key'], 'uploads/ID/districts/partition.csv')
+        self.assertEqual(s3.mock_calls[-1][2]['Key'], 'uploads/ID/districts/partition.csv.gz')
     
     @unittest.mock.patch('sys.stdout')
     def test_put_district_geometries_missing_geometries(self, stdout):
@@ -102,7 +102,7 @@ class TestPostreadCalculate (unittest.TestCase):
             'uploads/ID/geometry-bboxes.geojson',
         ])
         
-        self.assertEqual(s3.mock_calls[-1][2]['Key'], 'uploads/ID/districts/partition.csv')
+        self.assertEqual(s3.mock_calls[-1][2]['Key'], 'uploads/ID/districts/partition.csv.gz')
     
     @unittest.mock.patch('sys.stdout')
     def test_put_district_geometries_mixed_geometries(self, stdout):
@@ -114,7 +114,7 @@ class TestPostreadCalculate (unittest.TestCase):
         keys = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, plan_path)
         self.assertEqual(len(keys), 51)
         
-        self.assertEqual(s3.mock_calls[-1][2]['Key'], 'uploads/ID/districts/partition.csv')
+        self.assertEqual(s3.mock_calls[-1][2]['Key'], 'uploads/ID/districts/partition.csv.gz')
     
     @unittest.mock.patch('sys.stdout')
     def test_put_district_assignments(self, stdout):
@@ -130,8 +130,8 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(s3.mock_calls[1][2]['Key'], 'uploads/ID/assignments/1.txt')
         self.assertEqual(s3.mock_calls[0][2]['Body'], '0000000004\n0000000008\n0000000009\n0000000010\n')
         self.assertEqual(s3.mock_calls[1][2]['Body'], '0000000001\n0000000002\n0000000003\n0000000005\n0000000006\n0000000007\n')
-        self.assertEqual(s3.mock_calls[2][2]['Key'], 'uploads/ID/districts/partition.csv')
-        self.assertEqual(s3.mock_calls[2][2]['Body'], '0,,0000000004\r\n0,,0000000008\r\n0,,0000000009\r\n0,,0000000010\r\n1,,0000000001\r\n1,,0000000002\r\n1,,0000000003\r\n1,,0000000005\r\n1,,0000000006\r\n1,,0000000007\r\n')
+        self.assertEqual(s3.mock_calls[2][2]['Key'], 'uploads/ID/districts/partition.csv.gz')
+        self.assertEqual(gzip.decompress(s3.mock_calls[2][2]['Body']), b'0,,0000000004\r\n0,,0000000008\r\n0,,0000000009\r\n0,,0000000010\r\n1,,0000000001\r\n1,,0000000002\r\n1,,0000000003\r\n1,,0000000005\r\n1,,0000000006\r\n1,,0000000007\r\n')
     
     @unittest.mock.patch('sys.stdout')
     def test_put_district_assignments_funky_districts(self, stdout):
@@ -149,8 +149,8 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(s3.mock_calls[0][2]['Body'], '390017701001008\n')
         self.assertEqual(s3.mock_calls[1][2]['Body'], '390017701001004\n390017701001005\n390017701001006\n390017701001007\n')
         self.assertEqual(s3.mock_calls[2][2]['Body'], '390017701001000\n390017701001001\n390017701001002\n390017701001003\n')
-        self.assertEqual(s3.mock_calls[3][2]['Key'], 'uploads/ID/districts/partition.csv')
-        self.assertEqual(s3.mock_calls[3][2]['Body'], '0,,390017701001008\r\n1,,390017701001004\r\n1,,390017701001005\r\n1,,390017701001006\r\n1,,390017701001007\r\n2,,390017701001000\r\n2,,390017701001001\r\n2,,390017701001002\r\n2,,390017701001003\r\n')
+        self.assertEqual(s3.mock_calls[3][2]['Key'], 'uploads/ID/districts/partition.csv.gz')
+        self.assertEqual(gzip.decompress(s3.mock_calls[3][2]['Body']), b'0,,390017701001008\r\n1,,390017701001004\r\n1,,390017701001005\r\n1,,390017701001006\r\n1,,390017701001007\r\n2,,390017701001000\r\n2,,390017701001001\r\n2,,390017701001002\r\n2,,390017701001003\r\n')
     
     @unittest.mock.patch('sys.stdout')
     def test_put_district_assignments_zipped(self, stdout):
@@ -166,8 +166,8 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(s3.mock_calls[1][2]['Key'], 'uploads/ID/assignments/1.txt')
         self.assertEqual(s3.mock_calls[0][2]['Body'], '0000000004\n0000000008\n0000000009\n0000000010\n')
         self.assertEqual(s3.mock_calls[1][2]['Body'], '0000000001\n0000000002\n0000000003\n0000000005\n0000000006\n0000000007\n')
-        self.assertEqual(s3.mock_calls[2][2]['Key'], 'uploads/ID/districts/partition.csv')
-        self.assertEqual(s3.mock_calls[2][2]['Body'], '0,,0000000004\r\n0,,0000000008\r\n0,,0000000009\r\n0,,0000000010\r\n1,,0000000001\r\n1,,0000000002\r\n1,,0000000003\r\n1,,0000000005\r\n1,,0000000006\r\n1,,0000000007\r\n')
+        self.assertEqual(s3.mock_calls[2][2]['Key'], 'uploads/ID/districts/partition.csv.gz')
+        self.assertEqual(gzip.decompress(s3.mock_calls[2][2]['Body']), b'0,,0000000004\r\n0,,0000000008\r\n0,,0000000009\r\n0,,0000000010\r\n1,,0000000001\r\n1,,0000000002\r\n1,,0000000003\r\n1,,0000000005\r\n1,,0000000006\r\n1,,0000000007\r\n')
     
     @unittest.mock.patch('sys.stdout')
     def test_load_model_tiles_oldstyle(self, stdout):
