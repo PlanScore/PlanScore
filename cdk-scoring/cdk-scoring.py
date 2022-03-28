@@ -90,8 +90,7 @@ class PlanScoreScoring(cdk.Stack):
         # Do the work
         
         data_bucket = self.make_data_bucket(stack_id, formation_info)
-        self.make_athena_database(formation_info, data_bucket)
-        return
+        athena_db = self.make_athena_database(formation_info, data_bucket)
         
         apigateway_role, api = self.make_api(stack_id, formation_info)
         site_buckets = self.make_site_buckets(formation_info)
@@ -100,6 +99,7 @@ class PlanScoreScoring(cdk.Stack):
         functions = self.make_lambda_functions(
             apigateway_role,
             data_bucket,
+            athena_db,
             website_base,
         )
 
@@ -332,7 +332,7 @@ class PlanScoreScoring(cdk.Stack):
 
     def make_athena_database(self, formation_info, data_bucket):
 
-        db = aws_glue.Database(
+        athena_db = aws_glue.Database(
             self,
             f'{formation_info.prefix}-database'.replace('-', '_'),
             database_name=f'{formation_info.prefix}-database'.replace('-', '_'),
@@ -342,7 +342,7 @@ class PlanScoreScoring(cdk.Stack):
             self,
             'blocks',
             bucket=data_bucket,
-            database=db,
+            database=athena_db,
             table_name='blocks',
             s3_prefix='data',
             columns=[aws_glue.Column(name='Point', type=aws_glue.Schema.STRING)],
@@ -360,7 +360,7 @@ class PlanScoreScoring(cdk.Stack):
         blocks_table_cfn.add_property_override('TableInput.Parameters.projection\\.enabled', 'true')
         blocks_table_cfn.add_property_override('TableInput.Parameters.projection\\.prefix\\.type', 'injected')
         
-        cdk.CfnOutput(self, 'DatabaseName', value=db.database_name)
+        return athena_db
     
     def make_api(self, stack_id, formation_info):
 
@@ -397,7 +397,7 @@ class PlanScoreScoring(cdk.Stack):
 
         return apigateway_role, api
 
-    def make_lambda_functions(self, apigateway_role, data_bucket, website_base):
+    def make_lambda_functions(self, apigateway_role, data_bucket, athena_db, website_base):
 
         git_commit_sha = subprocess.check_output(('git', 'rev-parse', 'HEAD')).strip().decode('ascii')
         
@@ -409,6 +409,7 @@ class PlanScoreScoring(cdk.Stack):
             environment={
                 'GIT_COMMIT_SHA': git_commit_sha,
                 'S3_BUCKET': data_bucket.bucket_name,
+                'ATHENA_DB': athena_db.database_name,
                 'PLANSCORE_SECRET': PLANSCORE_SECRET,
                 'WEBSITE_BASE': website_base,
                 'LD_LIBRARY_PATH': '/var/task/lib',
