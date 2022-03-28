@@ -493,3 +493,13 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(len(start_tile_observer_lambda.mock_calls), 1)
         self.assertEqual(start_tile_observer_lambda.mock_calls[0][1][1].id, upload.id)
         self.assertIs(start_tile_observer_lambda.mock_calls[0][1][2], load_model_tiles.return_value)
+    
+    @unittest.mock.patch('planscore.util.athena_exec_and_wait')
+    def test_accumulate_district_totals(self, athena_exec_and_wait):
+        '''
+        '''
+        athena, upload = unittest.mock.Mock(), unittest.mock.Mock()
+        upload.id, upload.model.key_prefix = 'ID', 'data/XX'
+        
+        athena_exec_and_wait.return_value = True, {}
+        postread_calculate.accumulate_district_totals(athena, upload, 'this = that')

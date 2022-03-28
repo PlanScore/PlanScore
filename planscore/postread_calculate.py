@@ -71,12 +71,22 @@ def commence_blockassign_upload_scoring(s3, bucket, upload, file_path):
 def accumulate_district_totals(athena, upload, where_clause):
     '''
     '''
+    aggregators = {
+        score.Aggregator.Sum: 'SUM("{}")',
+        score.Aggregator.Median: 'APPROX_PERCENTILE("{}", 0.5)',
+    }
+    
+    columns = [
+        f'{aggregators[agg].format(name)} AS "{name}"'
+        for (name, _, agg) in score.BLOCK_TABLE_FIELDS
+    ]
+    
+    indent = ',\n            '
+    
     query = f'''
         SELECT
             d.number AS district_number,
-            sum(b."Population 2020") AS "Population 2020",
-            sum(b."US President 2020 - DEM") AS "US President 2020 - DEM",
-            sum(b."US President 2020 - REP") AS "US President 2020 - REP"
+            {indent.join(columns)}
         FROM
             "{os.environ.get('ATHENA_DB')}"."blocks" as b,
             "{os.environ.get('ATHENA_DB')}"."districts" as d
@@ -87,7 +97,7 @@ def accumulate_district_totals(athena, upload, where_clause):
         GROUP BY d.number
         ORDER BY d.number
     '''
-    print(json.dumps(query))
+    print(query)
 
     state, results = util.athena_exec_and_wait(athena, query)
     print(json.dumps(state))
