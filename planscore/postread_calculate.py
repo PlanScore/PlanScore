@@ -42,6 +42,30 @@ def commence_geometry_upload_scoring(s3, bucket, upload, ds_path):
     tile_keys = load_model_tiles(storage, upload2.model)
     start_tile_observer_lambda(storage, upload2, tile_keys)
     fan_out_tile_lambdas(storage, upload2, tile_keys)
+    
+    athena = boto3.client('athena')
+    import os
+    
+    query = f'''
+        SELECT d.number, sum(b."Population 2020")
+        FROM
+            "{os.environ.get('ATHENA_DB')}"."blocks" as b,
+            "{os.environ.get('ATHENA_DB')}"."districts" as d
+        WHERE
+            ST_Within(
+                ST_GeometryFromText(b.point),
+                ST_GeometryFromText(d.polygon)
+            )
+            and b.prefix IN ('{upload.model.key_prefix}')
+            and d.upload IN ('{upload.id}')
+        group by d.number
+        order by d.number
+    '''
+    print(query)
+
+    state, results = util.athena_exec_and_wait(athena, query)
+    print(state)
+    print(results)
 
 def commence_blockassign_upload_scoring(s3, bucket, upload, file_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
@@ -52,6 +76,27 @@ def commence_blockassign_upload_scoring(s3, bucket, upload, file_path):
     slice_keys = load_model_slices(storage, upload2.model)
     start_slice_observer_lambda(storage, upload2, slice_keys)
     fan_out_slice_lambdas(storage, upload2, slice_keys)
+    
+    athena = boto3.client('athena')
+    import os
+    
+    query = f'''
+        SELECT d.number, sum(b."Population 2020")
+        FROM
+            "{os.environ.get('ATHENA_DB')}"."blocks" as b,
+            "{os.environ.get('ATHENA_DB')}"."districts" as d
+        WHERE
+            b.geoid20 = d.geoid20
+            and b.prefix IN ('{upload.model.key_prefix}')
+            and d.upload IN ('{upload.id}')
+        group by d.number
+        order by d.number
+    '''
+    print(query)
+
+    state, results = util.athena_exec_and_wait(athena, query)
+    print(state)
+    print(results)
 
 def put_district_geometries(s3, bucket, upload, path):
     '''
