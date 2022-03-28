@@ -47,6 +47,7 @@ setup(
             'aws-cdk.aws-certificatemanager == 1.144.0',
             'aws-cdk.aws-cloudfront == 1.144.0',
             'aws-cdk.aws-cloudfront-origins == 1.144.0',
+            'aws-cdk.aws-glue == 1.144.0',
             'aws-cdk.aws-iam == 1.144.0',
             'aws-cdk.aws-lambda == 1.144.0',
             'aws-cdk.aws-logs == 1.144.0',

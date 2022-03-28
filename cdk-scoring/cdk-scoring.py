@@ -9,6 +9,7 @@ import functools
 from aws_cdk import (
     core as cdk,
     aws_iam,
+    aws_glue,
     aws_s3,
     aws_s3_deployment,
     aws_lambda,
@@ -88,13 +89,17 @@ class PlanScoreScoring(cdk.Stack):
 
         # Do the work
         
+        data_bucket = self.make_data_bucket(stack_id, formation_info)
+        self.make_athena_database(formation_info, data_bucket)
+        return
+        
         apigateway_role, api = self.make_api(stack_id, formation_info)
         site_buckets = self.make_site_buckets(formation_info)
         website_base = self.make_website_base(formation_info, *site_buckets)
 
         functions = self.make_lambda_functions(
             apigateway_role,
-            self.make_data_bucket(stack_id, formation_info),
+            data_bucket,
             website_base,
         )
 
@@ -325,6 +330,38 @@ class PlanScoreScoring(cdk.Stack):
 
         return data_bucket
 
+    def make_athena_database(self, formation_info, data_bucket):
+
+        db = aws_glue.Database(
+            self,
+            f'{formation_info.prefix}-database'.replace('-', '_'),
+            database_name=f'{formation_info.prefix}-database'.replace('-', '_'),
+        )
+
+        blocks_table = aws_glue.Table(
+            self,
+            'blocks',
+            bucket=data_bucket,
+            database=db,
+            table_name='blocks',
+            s3_prefix='data',
+            columns=[aws_glue.Column(name='Point', type=aws_glue.Schema.STRING)],
+            partition_keys=[aws_glue.Column(name='prefix', type=aws_glue.Schema.STRING)],
+            data_format=aws_glue.DataFormat.PARQUET,
+        )
+
+        # Partition projection hack
+        # See https://github.com/aws/aws-cdk/issues/14159#issuecomment-977769082
+        blocks_table_cfn = blocks_table.node.default_child
+        blocks_table_cfn.add_property_override(
+            'TableInput.Parameters.storage\\.location\\.template',
+            concat_strings('s3://', data_bucket.bucket_name, '/data/${prefix}/blocks'),
+        )
+        blocks_table_cfn.add_property_override('TableInput.Parameters.projection\\.enabled', 'true')
+        blocks_table_cfn.add_property_override('TableInput.Parameters.projection\\.prefix\\.type', 'injected')
+        
+        cdk.CfnOutput(self, 'DatabaseName', value=db.database_name)
+    
     def make_api(self, stack_id, formation_info):
 
         apigateway_role = aws_iam.Role(
