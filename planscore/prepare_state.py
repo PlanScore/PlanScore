@@ -12,6 +12,7 @@ INDEX_FIELD = 'PlanScore:Index'
 FRACTION_FIELD = 'PlanScore:Fraction'
 TILE_KEY_FORMAT = 'data/{directory}/tiles/{zxy}.geojson'
 SLICE_KEY_FORMAT = 'data/{directory}/slices/{geoid}.json'
+BLOCKS_KEY_FORMAT = 'data/{directory}/blocks/assembled-state.parquet'
 
 EPSG4326 = osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)
 
@@ -162,14 +163,21 @@ def iter_slices(property_dicts, length):
     for slice in itertools.zip_longest(*args):
         yield [d for d in slice if d]
 
-def write_buffer(s3, key, buffer, prefix):
-    if s3:
+def write_buffer(s3, key, buffer, prefix, compress=True):
+    if s3 and compress:
         body = gzip.compress(buffer.getvalue().encode('utf8'))
         line = f's3://{constants.S3_BUCKET}/{key}', '-', '{:.1f}KB'.format(len(body) / 1024)
         print(prefix, 'Write', *line)
 
         s3.put_object(Bucket=constants.S3_BUCKET, Key=key, Body=body,
             ContentEncoding='gzip', ContentType='text/json', ACL='public-read')
+    elif s3 and not compress:
+        body = buffer.getvalue()
+        line = f's3://{constants.S3_BUCKET}/{key}', '-', '{:.1f}KB'.format(len(body) / 1024)
+        print(prefix, 'Write', *line)
+
+        s3.put_object(Bucket=constants.S3_BUCKET, Key=key, Body=body,
+            ContentType='application/octet-stream', ACL='public-read')
     else:
         os.makedirs(os.path.dirname(key), exist_ok=True)
         print(prefix, 'Write', key)
@@ -188,8 +196,27 @@ parser.add_argument('--s3', action='store_true',
     help='Upload to S3 instead of local directory')
 
 def main():
+    import geopandas, pandas # import optional packages
+
     args = parser.parse_args()
     s3 = boto3.client('s3') if args.s3 else None
+    
+    print('Reading', args.filename, '...')
+    df_geojson = geopandas.read_file(args.filename)
+    df_geojson['Point'] = df_geojson.geometry.astype(str)
+    del df_geojson['geometry']
+    df_parquet = pandas.DataFrame(df_geojson)
+    
+    if args.s3 and s3:
+        buffer = io.BytesIO()
+        df_parquet.to_parquet(buffer)
+        write_buffer(
+            args.s3 and s3,
+            BLOCKS_KEY_FORMAT.format(directory=args.directory),
+            buffer,
+            '      ',
+            compress=False,
+        )
 
     print('Loading', args.filename, '...')
     ds, properties = load_geojson(args.filename)

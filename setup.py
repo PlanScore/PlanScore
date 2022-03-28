@@ -59,6 +59,11 @@ setup(
             'google-api-python-client == 2.9.0',
             'oauth2client == 4.1.3',
             ],
+        'prepare': [
+            'geopandas == 0.10.2',
+            'pandas == 1.4.1',
+            'pyarrow == 6.0.1',
+            ],
         },
     entry_points = dict(
         console_scripts = [
