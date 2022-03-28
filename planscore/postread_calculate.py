@@ -43,29 +43,14 @@ def commence_geometry_upload_scoring(s3, bucket, upload, ds_path):
     start_tile_observer_lambda(storage, upload2, tile_keys)
     fan_out_tile_lambdas(storage, upload2, tile_keys)
     
-    athena = boto3.client('athena')
-    import os
-    
-    query = f'''
-        SELECT d.number, sum(b."Population 2020")
-        FROM
-            "{os.environ.get('ATHENA_DB')}"."blocks" as b,
-            "{os.environ.get('ATHENA_DB')}"."districts" as d
-        WHERE
-            ST_Within(
-                ST_GeometryFromText(b.point),
-                ST_GeometryFromText(d.polygon)
-            )
-            and b.prefix IN ('{upload.model.key_prefix}')
-            and d.upload IN ('{upload.id}')
-        group by d.number
-        order by d.number
-    '''
-    print(query)
-
-    state, results = util.athena_exec_and_wait(athena, query)
-    print(state)
-    print(results)
+    accumulate_district_totals(
+        boto3.client('athena'),
+        upload,
+        '''ST_Within(
+            ST_GeometryFromText(b.point),
+            ST_GeometryFromText(d.polygon)
+        )''',
+    )
 
 def commence_blockassign_upload_scoring(s3, bucket, upload, file_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
@@ -77,26 +62,36 @@ def commence_blockassign_upload_scoring(s3, bucket, upload, file_path):
     start_slice_observer_lambda(storage, upload2, slice_keys)
     fan_out_slice_lambdas(storage, upload2, slice_keys)
     
-    athena = boto3.client('athena')
-    import os
-    
+    accumulate_district_totals(
+        boto3.client('athena'),
+        upload,
+        'b.geoid20 = d.geoid20',
+    )
+
+def accumulate_district_totals(athena, upload, where_clause):
+    '''
+    '''
     query = f'''
-        SELECT d.number, sum(b."Population 2020")
+        SELECT
+            d.number AS district_number,
+            sum(b."Population 2020") AS "Population 2020",
+            sum(b."US President 2020 - DEM") AS "US President 2020 - DEM",
+            sum(b."US President 2020 - REP") AS "US President 2020 - REP"
         FROM
             "{os.environ.get('ATHENA_DB')}"."blocks" as b,
             "{os.environ.get('ATHENA_DB')}"."districts" as d
         WHERE
-            b.geoid20 = d.geoid20
-            and b.prefix IN ('{upload.model.key_prefix}')
-            and d.upload IN ('{upload.id}')
-        group by d.number
-        order by d.number
+            {where_clause}
+            AND b.prefix = '{upload.model.key_prefix}'
+            AND d.upload = '{upload.id}'
+        GROUP BY d.number
+        ORDER BY d.number
     '''
-    print(query)
+    print(json.dumps(query))
 
     state, results = util.athena_exec_and_wait(athena, query)
-    print(state)
-    print(results)
+    print(json.dumps(state))
+    print(json.dumps(results))
 
 def put_district_geometries(s3, bucket, upload, path):
     '''

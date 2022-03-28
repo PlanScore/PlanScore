@@ -414,11 +414,12 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(str(error.exception), 'Could not open file to fan out district invocations')
     
     @unittest.mock.patch('planscore.observe.put_upload_index')
+    @unittest.mock.patch('planscore.postread_calculate.accumulate_district_totals')
     @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
     @unittest.mock.patch('planscore.postread_calculate.start_tile_observer_lambda')
     @unittest.mock.patch('planscore.postread_calculate.fan_out_tile_lambdas')
     @unittest.mock.patch('planscore.postread_calculate.load_model_tiles')
-    def test_commence_geometry_upload_scoring_good_ogr_file(self, load_model_tiles, fan_out_tile_lambdas, start_tile_observer_lambda, put_district_geometries, put_upload_index):
+    def test_commence_geometry_upload_scoring_good_ogr_file(self, load_model_tiles, fan_out_tile_lambdas, start_tile_observer_lambda, put_district_geometries, accumulate_district_totals, put_upload_index):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
@@ -453,11 +454,12 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertIs(start_tile_observer_lambda.mock_calls[0][1][2], load_model_tiles.return_value)
     
     @unittest.mock.patch('planscore.observe.put_upload_index')
+    @unittest.mock.patch('planscore.postread_calculate.accumulate_district_totals')
     @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
     @unittest.mock.patch('planscore.postread_calculate.start_tile_observer_lambda')
     @unittest.mock.patch('planscore.postread_calculate.fan_out_tile_lambdas')
     @unittest.mock.patch('planscore.postread_calculate.load_model_tiles')
-    def test_commence_geometry_upload_scoring_zipped_ogr_file(self, load_model_tiles, fan_out_tile_lambdas, start_tile_observer_lambda, put_district_geometries, put_upload_index):
+    def test_commence_geometry_upload_scoring_zipped_ogr_file(self, load_model_tiles, fan_out_tile_lambdas, start_tile_observer_lambda, put_district_geometries, accumulate_district_totals, put_upload_index):
         ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'
