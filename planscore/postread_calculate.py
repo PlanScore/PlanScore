@@ -43,14 +43,7 @@ def commence_geometry_upload_scoring(s3, bucket, upload, ds_path):
     start_tile_observer_lambda(storage, upload2, tile_keys)
     fan_out_tile_lambdas(storage, upload2, tile_keys)
     
-    accumulate_district_totals(
-        boto3.client('athena'),
-        upload,
-        '''ST_Within(
-            ST_GeometryFromText(b.point),
-            ST_GeometryFromText(d.polygon)
-        )''',
-    )
+    accumulate_district_totals(boto3.client('athena'), upload, True)
 
 def commence_blockassign_upload_scoring(s3, bucket, upload, file_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
@@ -62,13 +55,9 @@ def commence_blockassign_upload_scoring(s3, bucket, upload, file_path):
     start_slice_observer_lambda(storage, upload2, slice_keys)
     fan_out_slice_lambdas(storage, upload2, slice_keys)
     
-    accumulate_district_totals(
-        boto3.client('athena'),
-        upload,
-        'b.geoid20 = d.geoid20',
-    )
+    accumulate_district_totals(boto3.client('athena'), upload, False)
 
-def accumulate_district_totals(athena, upload, where_clause):
+def accumulate_district_totals(athena, upload, is_spatial):
     '''
     '''
     aggregators = {
@@ -81,22 +70,64 @@ def accumulate_district_totals(athena, upload, where_clause):
         for (name, _, agg) in score.BLOCK_TABLE_FIELDS
     ]
     
-    indent = ',\n            '
+    indent = ',\n                '
     
-    query = f'''
-        SELECT
-            d.number AS district_number,
-            {indent.join(columns)}
-        FROM
-            "{os.environ.get('ATHENA_DB')}"."blocks" as b,
-            "{os.environ.get('ATHENA_DB')}"."districts" as d
-        WHERE
-            {where_clause}
-            AND b.prefix = '{upload.model.key_prefix}'
-            AND d.upload = '{upload.id}'
-        GROUP BY d.number
-        ORDER BY d.number
-    '''
+    if is_spatial:
+        query = f'''
+            -- Split district polygons into tiled rows based on area.
+            -- Area < .1 degrees = zoom 11
+            -- Area < 1. degrees = zoom 10
+            -- Area < 10 degrees = zoom 9
+            -- All other = zoom 8
+            WITH d AS (
+                SELECT
+                    d1.number,
+                    ST_Intersection(
+                        ST_GeometryFromText(d1.polygon),
+                        bing_tile_polygon(t.tile)
+                    ) AS polygon
+                FROM "{os.environ.get('ATHENA_DB')}"."districts" AS d1
+                CROSS JOIN UNNEST(
+                    geometry_to_bing_tiles(
+                        ST_GeometryFromText(d1.polygon),
+                        CASE
+                            WHEN ST_Area(d1.polygon) < .1 THEN 11
+                            WHEN ST_Area(d1.polygon) < 1. THEN 10
+                            WHEN ST_Area(d1.polygon) < 10 THEN 9
+                            ELSE 8
+                        END
+                    )
+                ) AS t (tile)
+                WHERE d1.upload = '{upload.id}'
+            )
+            SELECT
+                d.number AS district_number,
+                {indent.join(columns)}
+            FROM
+                "{os.environ.get('ATHENA_DB')}"."blocks" as b,
+                d
+            WHERE
+                ST_Within(ST_GeometryFromText(b.point), d.polygon)
+                AND b.prefix = '{upload.model.key_prefix}'
+            GROUP BY d.number
+            ORDER BY d.number
+        '''
+    else:
+        query = f'''
+            SELECT
+                d.number AS district_number,
+                {indent.join(columns)}
+            FROM
+                "{os.environ.get('ATHENA_DB')}"."blocks" as b,
+                "{os.environ.get('ATHENA_DB')}"."districts" AS d
+            WHERE
+                b.geoid20 = d.geoid20
+                AND b.prefix = '{upload.model.key_prefix}'
+                AND d.upload = '{upload.id}'
+            GROUP BY d.number
+            ORDER BY d.number
+        '''
+    
     print(query)
 
     state, results = util.athena_exec_and_wait(athena, query)

@@ -223,7 +223,7 @@ def athena_exec_and_wait(ath, query_string):
         state = execution['QueryExecution']['Status']['State']
         print(execution['QueryExecution']['Status'])
         
-        if state in ('SUCCEEDED', 'FAILED'):
+        if state in ('SUCCEEDED', 'FAILED', 'CANCELLED'):
             break
     
         time.sleep(2)
