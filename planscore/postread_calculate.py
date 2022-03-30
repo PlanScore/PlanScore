@@ -43,7 +43,13 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     start_tile_observer_lambda(storage, upload2, tile_keys)
     fan_out_tile_lambdas(storage, upload2, tile_keys)
     
-    accumulate_district_totals(athena, upload, True)
+    response = accumulate_district_totals(athena, upload, True)
+
+    for (state, results) in response:
+        pass
+
+    print(json.dumps(state))
+    print(json.dumps(results))
 
 def commence_blockassign_upload_scoring(s3, athena, bucket, upload, file_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
@@ -55,7 +61,13 @@ def commence_blockassign_upload_scoring(s3, athena, bucket, upload, file_path):
     start_slice_observer_lambda(storage, upload2, slice_keys)
     fan_out_slice_lambdas(storage, upload2, slice_keys)
     
-    accumulate_district_totals(athena, upload, False)
+    response = accumulate_district_totals(athena, upload, False)
+
+    for (state, results) in response:
+        pass
+
+    print(json.dumps(state))
+    print(json.dumps(results))
 
 def accumulate_district_totals(athena, upload, is_spatial):
     '''
@@ -95,11 +107,7 @@ def accumulate_district_totals(athena, upload, is_spatial):
     
     print(query)
     
-    for (state, results) in util.iter_athena_exec(athena, query):
-        pass
-
-    print(json.dumps(state))
-    print(json.dumps(results))
+    return util.iter_athena_exec(athena, query)
 
 def partition_large_geometries(geom):
     '''

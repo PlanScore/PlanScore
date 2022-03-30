@@ -427,6 +427,7 @@ class TestPostreadCalculate (unittest.TestCase):
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
         
         put_district_geometries.return_value = [unittest.mock.Mock()] * 2
+        accumulate_district_totals.return_value = [(None, None)]
 
         s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
@@ -467,6 +468,7 @@ class TestPostreadCalculate (unittest.TestCase):
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.shp.zip'
         
         put_district_geometries.return_value = [unittest.mock.Mock()] * 2
+        accumulate_district_totals.return_value = [(None, None)]
 
         s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
@@ -533,14 +535,16 @@ class TestPostreadCalculate (unittest.TestCase):
         
         iter_athena_exec.return_value = [(True, {})]
 
-        postread_calculate.accumulate_district_totals(athena, upload, True)
+        response1 = postread_calculate.accumulate_district_totals(athena, upload, True)
         query1 = iter_athena_exec.mock_calls[-1][1][1]
         self.assertIn('ST_Within(', query1)
         self.assertIn(f"b.prefix = '{upload.model.key_prefix}'", query1)
         self.assertIn(f"d.upload = '{upload.id}'", query1)
+        self.assertIs(response1, iter_athena_exec.return_value)
 
-        postread_calculate.accumulate_district_totals(athena, upload, False)
+        response2 = postread_calculate.accumulate_district_totals(athena, upload, False)
         query2 = iter_athena_exec.mock_calls[-1][1][1]
         self.assertIn('b.geoid20 = d.geoid20', query2)
         self.assertIn(f"b.prefix = '{upload.model.key_prefix}'", query2)
         self.assertIn(f"d.upload = '{upload.id}'", query2)
+        self.assertIs(response2, iter_athena_exec.return_value)
