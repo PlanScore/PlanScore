@@ -78,7 +78,7 @@ def accumulate_district_totals(athena, upload, is_spatial):
         where_clause = 'b.geoid20 = d.geoid20'
 
     query = f'''
-        -- Join {upload.model.key_prefix} and {upload.id}
+        -- {os.environ.get('ATHENA_DB')} {upload.model.key_prefix} and {upload.id[:2]}…{upload.id[-4:]}
         SELECT
             d.number AS district_number,
             {indent.join(columns)}
@@ -129,8 +129,8 @@ def partition_large_geometries(geom):
             f'polygon(({xmin-1} {ymid},{xmin-1} {ymax+1},{xmax+1} {ymax+1},{xmax+1} {ymid},{xmin-1} {ymid}))'
         )
     
-    return partition_large_geometries(bbox1.Intersection(geom)) \
-         + partition_large_geometries(bbox2.Intersection(geom))
+    return partition_large_geometries(geom.Intersection(bbox1)) \
+         + partition_large_geometries(geom.Intersection(bbox2))
 
 def put_district_geometries(s3, bucket, upload, path):
     '''

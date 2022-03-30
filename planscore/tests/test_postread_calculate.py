@@ -494,6 +494,36 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(start_tile_observer_lambda.mock_calls[0][1][1].id, upload.id)
         self.assertIs(start_tile_observer_lambda.mock_calls[0][1][2], load_model_tiles.return_value)
     
+    def test_partition_large_geometries(self):
+        '''
+        '''
+        geom1 = unittest.mock.Mock()
+        geom1.WkbSize.return_value = 0x3fff
+        geom1.IsValid.return_value = True
+        (geom2, ) = postread_calculate.partition_large_geometries(geom1)
+        self.assertIs(geom2, geom1, 'Should see same geometry back')
+
+        geom3 = unittest.mock.Mock()
+        geom3.WkbSize.return_value = 0x3fff
+        geom3.IsValid.return_value = False
+        (geom4, ) = postread_calculate.partition_large_geometries(geom3)
+        self.assertIs(geom4, geom3.Buffer.return_value, 'Should see one buffered geometry')
+
+        geom5 = unittest.mock.Mock()
+        geom5.WkbSize.return_value = 0x4001
+        geom5.IsValid.return_value = True
+        geom5.GetEnvelope.return_value = (0, 1, 0, 1)
+        geom5.Intersection.return_value.WkbSize.return_value = 0x2000
+        geom5.Intersection.return_value.IsValid.return_value = True
+        geom6, geom7 = postread_calculate.partition_large_geometries(geom5)
+        self.assertIs(geom6, geom5.Intersection.return_value, 'Should see first intersected geometry')
+        self.assertIs(geom7, geom5.Intersection.return_value, 'Should see second intersected geometry')
+        self.assertEqual(
+            geom5.Intersection.mock_calls[0][1][0].GetEnvelope(),
+            (-1, 2, -1, .5),
+            'Should see top half passed to first intersection call',
+        )
+    
     @unittest.mock.patch('planscore.util.athena_exec_and_wait')
     def test_accumulate_district_totals(self, athena_exec_and_wait):
         '''
@@ -502,4 +532,15 @@ class TestPostreadCalculate (unittest.TestCase):
         upload.id, upload.model.key_prefix = 'ID', 'data/XX'
         
         athena_exec_and_wait.return_value = True, {}
-        postread_calculate.accumulate_district_totals(athena, upload, 'this = that')
+
+        postread_calculate.accumulate_district_totals(athena, upload, True)
+        query1 = athena_exec_and_wait.mock_calls[-1][1][1]
+        self.assertIn('ST_Within(', query1)
+        self.assertIn(f"b.prefix = '{upload.model.key_prefix}'", query1)
+        self.assertIn(f"d.upload = '{upload.id}'", query1)
+
+        postread_calculate.accumulate_district_totals(athena, upload, False)
+        query2 = athena_exec_and_wait.mock_calls[-1][1][1]
+        self.assertIn('b.geoid20 = d.geoid20', query2)
+        self.assertIn(f"b.prefix = '{upload.model.key_prefix}'", query2)
+        self.assertIn(f"d.upload = '{upload.id}'", query2)
