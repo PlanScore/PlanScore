@@ -39,9 +39,9 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
     put_district_geometries(s3, bucket, upload2, ds_path)
     
-    tile_keys = load_model_tiles(storage, upload2.model)
-    start_tile_observer_lambda(storage, upload2, tile_keys)
-    fan_out_tile_lambdas(storage, upload2, tile_keys)
+    #tile_keys = load_model_tiles(storage, upload2.model)
+    #start_tile_observer_lambda(storage, upload2, tile_keys)
+    #fan_out_tile_lambdas(storage, upload2, tile_keys)
     
     response = accumulate_district_totals(athena, upload, True)
 
@@ -50,6 +50,9 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
 
     print(json.dumps(state))
     print(json.dumps(results))
+
+    abort_upload = upload.clone(status=False, message='Stopped scoring this geometry plan')
+    observe.put_upload_index(storage, abort_upload)
 
 def commence_blockassign_upload_scoring(s3, athena, bucket, upload, file_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
