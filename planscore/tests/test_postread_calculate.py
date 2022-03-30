@@ -524,23 +524,23 @@ class TestPostreadCalculate (unittest.TestCase):
             'Should see top half passed to first intersection call',
         )
     
-    @unittest.mock.patch('planscore.util.athena_exec_and_wait')
-    def test_accumulate_district_totals(self, athena_exec_and_wait):
+    @unittest.mock.patch('planscore.util.iter_athena_exec')
+    def test_accumulate_district_totals(self, iter_athena_exec):
         '''
         '''
         athena, upload = unittest.mock.Mock(), unittest.mock.Mock()
         upload.id, upload.model.key_prefix = 'ID', 'data/XX'
         
-        athena_exec_and_wait.return_value = True, {}
+        iter_athena_exec.return_value = [(True, {})]
 
         postread_calculate.accumulate_district_totals(athena, upload, True)
-        query1 = athena_exec_and_wait.mock_calls[-1][1][1]
+        query1 = iter_athena_exec.mock_calls[-1][1][1]
         self.assertIn('ST_Within(', query1)
         self.assertIn(f"b.prefix = '{upload.model.key_prefix}'", query1)
         self.assertIn(f"d.upload = '{upload.id}'", query1)
 
         postread_calculate.accumulate_district_totals(athena, upload, False)
-        query2 = athena_exec_and_wait.mock_calls[-1][1][1]
+        query2 = iter_athena_exec.mock_calls[-1][1][1]
         self.assertIn('b.geoid20 = d.geoid20', query2)
         self.assertIn(f"b.prefix = '{upload.model.key_prefix}'", query2)
         self.assertIn(f"d.upload = '{upload.id}'", query2)

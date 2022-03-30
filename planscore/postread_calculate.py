@@ -94,8 +94,10 @@ def accumulate_district_totals(athena, upload, is_spatial):
     '''
     
     print(query)
+    
+    for (state, results) in util.iter_athena_exec(athena, query):
+        pass
 
-    state, results = util.athena_exec_and_wait(athena, query)
     print(json.dumps(state))
     print(json.dumps(results))
 

@@ -1,4 +1,4 @@
-import urllib.parse, tempfile, shutil, os, contextlib, logging, zipfile, itertools, functools, enum, csv, re, time
+import urllib.parse, tempfile, shutil, os, contextlib, logging, zipfile, itertools, functools, enum, csv, re, time, json
 from . import constants
 import osgeo.ogr
 
@@ -215,18 +215,18 @@ def is_multipolygon_feature(feature):
     geometry = feature.GetGeometryRef() or EMPTY_GEOMETRY
     return bool(geometry.GetGeometryType() == osgeo.ogr.wkbMultiPolygon)
 
-def athena_exec_and_wait(ath, query_string):
+def iter_athena_exec(ath, query_string):
     query_id = ath.start_query_execution(QueryString=query_string)['QueryExecutionId']
     
     while True:
         execution = ath.get_query_execution(QueryExecutionId=query_id)
         state = execution['QueryExecution']['Status']['State']
-        print(execution['QueryExecution']['Status'])
+        yield state, execution['QueryExecution']['Status']
         
         if state in ('SUCCEEDED', 'FAILED', 'CANCELLED'):
             break
     
         time.sleep(2)
     
-    print(execution['QueryExecution']['Statistics'])
-    return state, ath.get_query_results(QueryExecutionId=query_id)
+    print(json.dumps(execution['QueryExecution']['Statistics']))
+    yield state, ath.get_query_results(QueryExecutionId=query_id)
