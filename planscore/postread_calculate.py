@@ -70,69 +70,67 @@ def accumulate_district_totals(athena, upload, is_spatial):
         for (name, _, agg) in score.BLOCK_TABLE_FIELDS
     ]
     
-    indent = ',\n                '
+    indent = ',\n            '
     
     if is_spatial:
-        query = f'''
-            -- Split district polygons into tiled rows based on area.
-            -- Area < .1 degrees = zoom 11
-            -- Area < 1. degrees = zoom 10
-            -- Area < 10 degrees = zoom 9
-            -- All other = zoom 8
-            WITH d AS (
-                SELECT
-                    d1.number,
-                    ST_Intersection(
-                        ST_GeometryFromText(d1.polygon),
-                        bing_tile_polygon(t.tile)
-                    ) AS polygon
-                FROM "{os.environ.get('ATHENA_DB')}"."districts" AS d1
-                CROSS JOIN UNNEST(
-                    geometry_to_bing_tiles(
-                        ST_GeometryFromText(d1.polygon),
-                        CASE
-                            WHEN ST_Area(d1.polygon) < .1 THEN 11
-                            WHEN ST_Area(d1.polygon) < 1. THEN 10
-                            WHEN ST_Area(d1.polygon) < 10 THEN 9
-                            ELSE 8
-                        END
-                    )
-                ) AS t (tile)
-                WHERE d1.upload = '{upload.id}'
-            )
-            SELECT
-                d.number AS district_number,
-                {indent.join(columns)}
-            FROM
-                "{os.environ.get('ATHENA_DB')}"."blocks" as b,
-                d
-            WHERE
-                ST_Within(ST_GeometryFromText(b.point), d.polygon)
-                AND b.prefix = '{upload.model.key_prefix}'
-            GROUP BY d.number
-            ORDER BY d.number
-        '''
+        where_clause = 'ST_Within(ST_GeometryFromText(b.point), ST_GeometryFromText(d.polygon))'
     else:
-        query = f'''
-            SELECT
-                d.number AS district_number,
-                {indent.join(columns)}
-            FROM
-                "{os.environ.get('ATHENA_DB')}"."blocks" as b,
-                "{os.environ.get('ATHENA_DB')}"."districts" AS d
-            WHERE
-                b.geoid20 = d.geoid20
-                AND b.prefix = '{upload.model.key_prefix}'
-                AND d.upload = '{upload.id}'
-            GROUP BY d.number
-            ORDER BY d.number
-        '''
+        where_clause = 'b.geoid20 = d.geoid20'
+
+    query = f'''
+        -- Join {upload.model.key_prefix} and {upload.id}
+        SELECT
+            d.number AS district_number,
+            {indent.join(columns)}
+        FROM
+            "{os.environ.get('ATHENA_DB')}"."blocks" as b,
+            "{os.environ.get('ATHENA_DB')}"."districts" AS d
+        WHERE
+            {where_clause}
+            AND b.prefix = '{upload.model.key_prefix}'
+            AND d.upload = '{upload.id}'
+        GROUP BY d.number
+        ORDER BY d.number
+    '''
     
     print(query)
 
     state, results = util.athena_exec_and_wait(athena, query)
     print(json.dumps(state))
     print(json.dumps(results))
+
+def partition_large_geometries(geom):
+    '''
+    '''
+    if geom.WkbSize() < 0x4000:
+        if geom.IsValid():
+            return [geom]
+
+        return [geom.Buffer(1e-6, 4)]
+    
+    xmin, xmax, ymin, ymax = geom.GetEnvelope()
+    
+    if xmax - xmin > ymax - ymin:
+        # split horizontally
+        xmid = xmin/2 + xmax/2
+        bbox1 = osgeo.ogr.CreateGeometryFromWkt(
+            f'polygon(({xmin-1} {ymin-1},{xmid} {ymin-1},{xmid} {ymax+1},{xmin-1} {ymax+1},{xmin-1} {ymin-1}))'
+        )
+        bbox2 = osgeo.ogr.CreateGeometryFromWkt(
+            f'polygon(({xmid} {ymin-1},{xmax+1} {ymin-1},{xmax+1} {ymax+1},{xmid} {ymax+1},{xmid} {ymin-1}))'
+        )
+    else:
+        # split vertically
+        ymid = ymin/2 + ymax/2
+        bbox1 = osgeo.ogr.CreateGeometryFromWkt(
+            f'polygon(({xmin-1} {ymin-1},{xmin-1} {ymid},{xmax+1} {ymid},{xmax+1} {ymin-1},{xmin-1} {ymin-1}))'
+        )
+        bbox2 = osgeo.ogr.CreateGeometryFromWkt(
+            f'polygon(({xmin-1} {ymid},{xmin-1} {ymax+1},{xmax+1} {ymax+1},{xmax+1} {ymid},{xmin-1} {ymid}))'
+        )
+    
+    return partition_large_geometries(bbox1.Intersection(geom)) \
+         + partition_large_geometries(bbox2.Intersection(geom))
 
 def put_district_geometries(s3, bucket, upload, path):
     '''
@@ -162,7 +160,9 @@ def put_district_geometries(s3, bucket, upload, path):
         
         keys.append(key)
         bboxes.append((key, geometry.GetEnvelope()))
-        partition_csv.writerow((index, geometry.ExportToWkt(), None))
+
+        for subgeom in partition_large_geometries(geometry):
+            partition_csv.writerow((index, subgeom.ExportToWkt(), None))
     
     bboxes_geojson = {
         'type': 'FeatureCollection',
