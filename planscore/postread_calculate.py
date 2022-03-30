@@ -421,7 +421,7 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3')
-    athena = boto3.client('s3')
+    athena = boto3.client('athena', region_name='us-east-1')
     storage = data.Storage(s3, event['bucket'], None)
     upload = data.Upload.from_dict(event)
     
