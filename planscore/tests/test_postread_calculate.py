@@ -23,9 +23,9 @@ class TestPostreadCalculate (unittest.TestCase):
 
         postread_calculate.lambda_handler(event, None)
         
-        self.assertEqual(commence_upload_scoring.mock_calls[0][1][1], event['bucket'])
+        self.assertEqual(commence_upload_scoring.mock_calls[0][1][2], event['bucket'])
         
-        upload = commence_upload_scoring.mock_calls[0][1][2]
+        upload = commence_upload_scoring.mock_calls[0][1][3]
         self.assertEqual(upload.id, event['id'])
         self.assertEqual(upload.key, event['key'])
     
@@ -327,12 +327,12 @@ class TestPostreadCalculate (unittest.TestCase):
 
         temporary_buffer_file.side_effect = nullplan_file
 
-        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key, model=data.MODELS[0])
-        info = postread_calculate.commence_upload_scoring(s3, bucket, upload)
-        commence_geometry_upload_scoring.assert_called_once_with(s3, bucket, upload, nullplan_path)
+        info = postread_calculate.commence_upload_scoring(s3, athena, bucket, upload)
+        commence_geometry_upload_scoring.assert_called_once_with(s3, athena, bucket, upload, nullplan_path)
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.postread_calculate.commence_blockassign_upload_scoring')
@@ -349,12 +349,12 @@ class TestPostreadCalculate (unittest.TestCase):
 
         temporary_buffer_file.side_effect = nullplan_file
 
-        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key, model=data.MODELS[0])
-        postread_calculate.commence_upload_scoring(s3, bucket, upload)
-        commence_blockassign_upload_scoring.assert_called_once_with(s3, bucket, upload, nullplan_path)
+        postread_calculate.commence_upload_scoring(s3, athena, bucket, upload)
+        commence_blockassign_upload_scoring.assert_called_once_with(s3, athena, bucket, upload, nullplan_path)
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.postread_calculate.commence_blockassign_upload_scoring')
@@ -371,12 +371,12 @@ class TestPostreadCalculate (unittest.TestCase):
 
         temporary_buffer_file.side_effect = nullplan_file
 
-        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key, model=data.MODELS[0])
-        postread_calculate.commence_upload_scoring(s3, bucket, upload)
-        commence_blockassign_upload_scoring.assert_called_once_with(s3, bucket, upload, nullplan_path)
+        postread_calculate.commence_upload_scoring(s3, athena, bucket, upload)
+        commence_blockassign_upload_scoring.assert_called_once_with(s3, athena, bucket, upload, nullplan_path)
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.postread_calculate.commence_geometry_upload_scoring')
@@ -393,32 +393,33 @@ class TestPostreadCalculate (unittest.TestCase):
 
         temporary_buffer_file.side_effect = nullplan_file
 
-        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key, model=data.MODELS[0])
-        info = postread_calculate.commence_upload_scoring(s3, bucket, upload)
+        info = postread_calculate.commence_upload_scoring(s3, athena, bucket, upload)
         nullplan_datasource = '/vsizip/{}/null-plan.shp'.format(os.path.abspath(nullplan_path))
-        commence_geometry_upload_scoring.assert_called_once_with(s3, bucket, upload, nullplan_datasource)
+        commence_geometry_upload_scoring.assert_called_once_with(s3, athena, bucket, upload, nullplan_datasource)
     
     def test_commence_upload_scoring_bad_file(self):
         ''' An invalid district file fails in an expected way
         '''
-        s3, bucket = unittest.mock.Mock(), unittest.mock.Mock()
+        s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
         s3.get_object.return_value = {'Body': io.BytesIO(b'Bad data')}
 
         with self.assertRaises(RuntimeError) as error:
-            postread_calculate.commence_upload_scoring(s3, bucket,
+            postread_calculate.commence_upload_scoring(s3, athena, bucket,
                 data.Upload('id', 'uploads/id/null-plan.geojson', model=data.MODELS[0]))
 
         self.assertEqual(str(error.exception), 'Could not open file to fan out district invocations')
     
     @unittest.mock.patch('planscore.observe.put_upload_index')
+    @unittest.mock.patch('planscore.postread_calculate.accumulate_district_totals')
     @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
     @unittest.mock.patch('planscore.postread_calculate.start_tile_observer_lambda')
     @unittest.mock.patch('planscore.postread_calculate.fan_out_tile_lambdas')
     @unittest.mock.patch('planscore.postread_calculate.load_model_tiles')
-    def test_commence_geometry_upload_scoring_good_ogr_file(self, load_model_tiles, fan_out_tile_lambdas, start_tile_observer_lambda, put_district_geometries, put_upload_index):
+    def test_commence_geometry_upload_scoring_good_ogr_file(self, load_model_tiles, fan_out_tile_lambdas, start_tile_observer_lambda, put_district_geometries, accumulate_district_totals, put_upload_index):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
@@ -427,11 +428,11 @@ class TestPostreadCalculate (unittest.TestCase):
         
         put_district_geometries.return_value = [unittest.mock.Mock()] * 2
 
-        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key, model=data.MODELS[0])
-        info = postread_calculate.commence_geometry_upload_scoring(s3, bucket, upload, nullplan_path)
+        info = postread_calculate.commence_geometry_upload_scoring(s3, athena, bucket, upload, nullplan_path)
 
         self.assertIsNone(info)
     
@@ -453,11 +454,12 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertIs(start_tile_observer_lambda.mock_calls[0][1][2], load_model_tiles.return_value)
     
     @unittest.mock.patch('planscore.observe.put_upload_index')
+    @unittest.mock.patch('planscore.postread_calculate.accumulate_district_totals')
     @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
     @unittest.mock.patch('planscore.postread_calculate.start_tile_observer_lambda')
     @unittest.mock.patch('planscore.postread_calculate.fan_out_tile_lambdas')
     @unittest.mock.patch('planscore.postread_calculate.load_model_tiles')
-    def test_commence_geometry_upload_scoring_zipped_ogr_file(self, load_model_tiles, fan_out_tile_lambdas, start_tile_observer_lambda, put_district_geometries, put_upload_index):
+    def test_commence_geometry_upload_scoring_zipped_ogr_file(self, load_model_tiles, fan_out_tile_lambdas, start_tile_observer_lambda, put_district_geometries, accumulate_district_totals, put_upload_index):
         ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'
@@ -466,12 +468,12 @@ class TestPostreadCalculate (unittest.TestCase):
         
         put_district_geometries.return_value = [unittest.mock.Mock()] * 2
 
-        s3, bucket = unittest.mock.Mock(), 'fake-bucket-name'
+        s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key, model=data.MODELS[0])
         nullplan_datasource = '/vsizip/{}/null-plan.shp'.format(os.path.abspath(nullplan_path))
-        info = postread_calculate.commence_geometry_upload_scoring(s3, bucket, upload, nullplan_datasource)
+        info = postread_calculate.commence_geometry_upload_scoring(s3, athena, bucket, upload, nullplan_datasource)
 
         self.assertIsNone(info)
     
@@ -491,3 +493,54 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(len(start_tile_observer_lambda.mock_calls), 1)
         self.assertEqual(start_tile_observer_lambda.mock_calls[0][1][1].id, upload.id)
         self.assertIs(start_tile_observer_lambda.mock_calls[0][1][2], load_model_tiles.return_value)
+    
+    def test_partition_large_geometries(self):
+        '''
+        '''
+        geom1 = unittest.mock.Mock()
+        geom1.WkbSize.return_value = 0x3fff
+        geom1.IsValid.return_value = True
+        (geom2, ) = postread_calculate.partition_large_geometries(geom1)
+        self.assertIs(geom2, geom1, 'Should see same geometry back')
+
+        geom3 = unittest.mock.Mock()
+        geom3.WkbSize.return_value = 0x3fff
+        geom3.IsValid.return_value = False
+        (geom4, ) = postread_calculate.partition_large_geometries(geom3)
+        self.assertIs(geom4, geom3.Buffer.return_value, 'Should see one buffered geometry')
+
+        geom5 = unittest.mock.Mock()
+        geom5.WkbSize.return_value = 0x4001
+        geom5.IsValid.return_value = True
+        geom5.GetEnvelope.return_value = (0, 1, 0, 1)
+        geom5.Intersection.return_value.WkbSize.return_value = 0x2000
+        geom5.Intersection.return_value.IsValid.return_value = True
+        geom6, geom7 = postread_calculate.partition_large_geometries(geom5)
+        self.assertIs(geom6, geom5.Intersection.return_value, 'Should see first intersected geometry')
+        self.assertIs(geom7, geom5.Intersection.return_value, 'Should see second intersected geometry')
+        self.assertEqual(
+            geom5.Intersection.mock_calls[0][1][0].GetEnvelope(),
+            (-1, 2, -1, .5),
+            'Should see top half passed to first intersection call',
+        )
+    
+    @unittest.mock.patch('planscore.util.athena_exec_and_wait')
+    def test_accumulate_district_totals(self, athena_exec_and_wait):
+        '''
+        '''
+        athena, upload = unittest.mock.Mock(), unittest.mock.Mock()
+        upload.id, upload.model.key_prefix = 'ID', 'data/XX'
+        
+        athena_exec_and_wait.return_value = True, {}
+
+        postread_calculate.accumulate_district_totals(athena, upload, True)
+        query1 = athena_exec_and_wait.mock_calls[-1][1][1]
+        self.assertIn('ST_Within(', query1)
+        self.assertIn(f"b.prefix = '{upload.model.key_prefix}'", query1)
+        self.assertIn(f"d.upload = '{upload.id}'", query1)
+
+        postread_calculate.accumulate_district_totals(athena, upload, False)
+        query2 = athena_exec_and_wait.mock_calls[-1][1][1]
+        self.assertIn('b.geoid20 = d.geoid20', query2)
+        self.assertIn(f"b.prefix = '{upload.model.key_prefix}'", query2)
+        self.assertIn(f"d.upload = '{upload.id}'", query2)

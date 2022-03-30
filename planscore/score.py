@@ -3,7 +3,7 @@
 When all districts are added up and present on S3, performs complete scoring
 of district plan and uploads summary JSON file.
 '''
-import io, os, gzip, csv, posixpath, json, statistics, copy, time, itertools
+import io, os, gzip, csv, posixpath, json, statistics, copy, time, itertools, enum
 import math
 import argparse
 import urllib.request
@@ -16,7 +16,59 @@ COLUMN_D2 = 'dec2_avg'
 COLUMN_PB = 'bias_avg'
 COLUMN_MMD = 'mmd_avg'
 
-FIELD_NAMES = (
+class Aggregator (enum.Enum):
+    Sum = 1
+    Median = 2
+
+BLOCK_TABLE_FIELDS = [
+    ("US President 2020 - DEM", float, Aggregator.Sum),
+    ("US President 2020 - REP", float, Aggregator.Sum),
+    ("US President 2020 - Other", float, Aggregator.Sum),
+    ("US Senate 2020 - DEM", float, Aggregator.Sum),
+    ("US Senate 2020 - REP", float, Aggregator.Sum),
+    ("US Senate 2020 - Other", float, Aggregator.Sum),
+    ("Population 2020", int, Aggregator.Sum),
+    ("Population 2019", float, Aggregator.Sum),
+    ("Population 2019, Margin", float, Aggregator.Sum),
+    #("Black Population 2019", float, Aggregator.Sum),
+    #("Black Population 2019, Margin", float, Aggregator.Sum),
+    #("Black Population 2020", int, Aggregator.Sum),
+    #("Hispanic Population 2019", float, Aggregator.Sum),
+    #("Hispanic Population 2019, Margin", float, Aggregator.Sum),
+    #("Hispanic Population 2020", int, Aggregator.Sum),
+    #("Asian Population 2020", int, Aggregator.Sum),
+    ("Population 25+ 2019", float, Aggregator.Sum),
+    ("Population 25+ 2019, Margin", float, Aggregator.Sum),
+    ("High School or GED (25+) 2019", float, Aggregator.Sum),
+    ("High School or GED (25+) 2019, Margin", float, Aggregator.Sum),
+    ("Some College or AA (25+) 2019", float, Aggregator.Sum),
+    ("Some College or AA (25+) 2019, Margin", float, Aggregator.Sum),
+    ("Bachelor's or Higher (25+) 2019", float, Aggregator.Sum),
+    ("Bachelor's or Higher (25+) 2019, Margin", float, Aggregator.Sum),
+    ("Foreign-born Population 2019", float, Aggregator.Sum),
+    ("Foreign-born Population 2019, Margin", float, Aggregator.Sum),
+    ("Naturalized Population 2019", float, Aggregator.Sum),
+    ("Naturalized Population 2019, Margin", float, Aggregator.Sum),
+    ("Households 2019", float, Aggregator.Sum),
+    ("Households 2019, Margin", float, Aggregator.Sum),
+    ("Household Income 2019", float, Aggregator.Median),
+    ("Household Income 2019, Margin", float, Aggregator.Median),
+    ("Citizen Voting-Age Population 2019", float, Aggregator.Sum),
+    ("Citizen Voting-Age Population 2019, Margin", float, Aggregator.Sum),
+    ("Black Citizen Voting-Age Population 2019", float, Aggregator.Sum),
+    ("Black Citizen Voting-Age Population 2019, Margin", float, Aggregator.Sum),
+    ("Asian Citizen Voting-Age Population 2019", float, Aggregator.Sum),
+    ("Asian Citizen Voting-Age Population 2019, Margin", float, Aggregator.Sum),
+    ("American Indian or Alaska Native Citizen Voting-Age Population 2019", float, Aggregator.Sum),
+    ("American Indian or Alaska Native Citizen Voting-Age Population 2019, Margin", float, Aggregator.Sum),
+    ("Hispanic Citizen Voting-Age Population 2019", float, Aggregator.Sum),
+    ("Hispanic Citizen Voting-Age Population 2019, Margin", float, Aggregator.Sum),
+    #("Voting-Age Population 2020", int, Aggregator.Sum),
+]
+
+FIELD_NAMES = tuple([name for (name, _, _) in BLOCK_TABLE_FIELDS])
+
+FIELD_NAMES += (
     # Toy fields
     'Voters', 'Blue Votes', 'Red Votes',
     'Population', 'Voting-Age Population', 'Black Voting-Age Population',
@@ -54,21 +106,21 @@ FIELD_NAMES = (
     'Citizen Voting-Age Population 2018', 'Citizen Voting-Age Population 2018, Margin',
     
     # ACS 2019 fields
-    #'Black Population 2019', 'Black Population 2019, Margin',
-    #'Hispanic Population 2019', 'Hispanic Population 2019, Margin',
+    #^^##'Black Population 2019', 'Black Population 2019, Margin',
+    #^^##'Hispanic Population 2019', 'Hispanic Population 2019, Margin',
     #'Asian Population 2019', 'Asian Population 2019, Margin',
-    'Population 2019', 'Population 2019, Margin',
+    #^^#'Population 2019', 'Population 2019, Margin',
     'Voting-Age Population 2019', 'Voting-Age Population 2019, Margin',
     #'Education Population 2019', 'Education Population 2019, Margin',
     'Foreign-born Population 2019', 'Foreign-born Population 2019, Margin',
     'Naturalized Population 2019', 'Naturalized Population 2019, Margin',
-    'Population 25+ 2019', 'Population 25+ 2019, Margin',
-    'High School or GED (25+) 2019', 'High School or GED (25+) 2019, Margin',
-    'Some College or AA (25+) 2019', 'Some College or AA (25+) 2019, Margin',
-    "Bachelor's or Higher (25+) 2019", "Bachelor's or Higher (25+) 2019, Margin",
-    'Households 2019', 'Households 2019, Margin',
-    'Household Income 2019', 'Household Income 2019, Margin',
-    'Citizen Voting-Age Population 2019', 'Citizen Voting-Age Population 2019, Margin',
+    #^^#'Population 25+ 2019', 'Population 25+ 2019, Margin',
+    #^^#'High School or GED (25+) 2019', 'High School or GED (25+) 2019, Margin',
+    #^^#'Some College or AA (25+) 2019', 'Some College or AA (25+) 2019, Margin',
+    #^^#"Bachelor's or Higher (25+) 2019", "Bachelor's or Higher (25+) 2019, Margin",
+    #^^#'Households 2019', 'Households 2019, Margin',
+    #^^#'Household Income 2019', 'Household Income 2019, Margin',
+    #^^#'Citizen Voting-Age Population 2019', 'Citizen Voting-Age Population 2019, Margin',
     
     # CVAP 2015 fields
     'Citizen Voting-Age Population 2015',
@@ -79,34 +131,34 @@ FIELD_NAMES = (
     'Hispanic Citizen Voting-Age Population 2015, Error',
     
     # CVAP 2019 fields
-    'Citizen Voting-Age Population 2019',
-    'Citizen Voting-Age Population 2019, Margin',
-    'Black Citizen Voting-Age Population 2019',
-    'Black Citizen Voting-Age Population 2019, Margin',
-    'Hispanic Citizen Voting-Age Population 2019',
-    'Hispanic Citizen Voting-Age Population 2019, Margin',
-    'Asian Citizen Voting-Age Population 2019',
-    'Asian Citizen Voting-Age Population 2019, Margin',
-    'American Indian or Alaska Native Citizen Voting-Age Population 2019',
-    'American Indian or Alaska Native Citizen Voting-Age Population 2019, Margin',
+    #^^#'Citizen Voting-Age Population 2019',
+    #^^#'Citizen Voting-Age Population 2019, Margin',
+    #^^#'Black Citizen Voting-Age Population 2019',
+    #^^#'Black Citizen Voting-Age Population 2019, Margin',
+    #^^#'Hispanic Citizen Voting-Age Population 2019',
+    #^^#'Hispanic Citizen Voting-Age Population 2019, Margin',
+    #^^#'Asian Citizen Voting-Age Population 2019',
+    #^^#'Asian Citizen Voting-Age Population 2019, Margin',
+    #^^#'American Indian or Alaska Native Citizen Voting-Age Population 2019',
+    #^^#'American Indian or Alaska Native Citizen Voting-Age Population 2019, Margin',
     
     # Census 2010 fields
     'Population 2010',
     
     # Census 2020 fields
-    'Population 2020',
-    #'Black Population 2020',
-    #'Hispanic Population 2020',
-    #'Asian Population 2020',
+    #^^#'Population 2020',
+    #^^##'Black Population 2020',
+    #^^##'Hispanic Population 2020',
+    #^^##'Asian Population 2020',
     
     # Fields for new unified, district-level plans
     'US President 2016 - DEM', 'US President 2016 - REP', 'US President 2016 - Other',
-    'US President 2020 - DEM', 'US President 2020 - REP', 'US President 2020 - Other',
+    #^^#'US President 2020 - DEM', 'US President 2020 - REP', 'US President 2020 - Other',
     
     # Fields for FVA votes
     'US Senate 2016 - DEM', 'US Senate 2016 - REP', 'US Senate 2016 - Other',
     'US Senate 2018 - DEM', 'US Senate 2018 - REP', 'US Senate 2018 - Other',
-    'US Senate 2020 - DEM', 'US Senate 2020 - REP', 'US Senate 2020 - Other',
+    #^^#'US Senate 2020 - DEM', 'US Senate 2020 - REP', 'US Senate 2020 - Other',
     )
 
 # Fields for "DEM000"-style simulated election vote totals from 2018 and 2019 PlanScore models.

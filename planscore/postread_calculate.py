@@ -14,7 +14,7 @@ osgeo.ogr.UseExceptions()
 
 states_path = os.path.join(os.path.dirname(__file__), 'geodata', 'cb_2013_us_state_20m.geojson')
 
-def commence_upload_scoring(s3, bucket, upload):
+def commence_upload_scoring(s3, athena, bucket, upload):
     '''
     '''
     object = s3.get_object(Bucket=bucket, Key=upload.key)
@@ -23,17 +23,17 @@ def commence_upload_scoring(s3, bucket, upload):
         upload_type = util.guess_upload_type(ul_path)
 
         if upload_type == util.UploadType.OGR_DATASOURCE:
-            return commence_geometry_upload_scoring(s3, bucket, upload, ul_path)
+            return commence_geometry_upload_scoring(s3, athena, bucket, upload, ul_path)
         
         if upload_type == util.UploadType.ZIPPED_OGR_DATASOURCE:
             return commence_geometry_upload_scoring(
-                s3, bucket, upload, util.vsizip_shapefile(ul_path),
+                s3, athena, bucket, upload, util.vsizip_shapefile(ul_path),
             )
 
         if upload_type in (util.UploadType.BLOCK_ASSIGNMENT, util.UploadType.ZIPPED_BLOCK_ASSIGNMENT):
-            return commence_blockassign_upload_scoring(s3, bucket, upload, ul_path)
+            return commence_blockassign_upload_scoring(s3, athena, bucket, upload, ul_path)
 
-def commence_geometry_upload_scoring(s3, bucket, upload, ds_path):
+def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
     observe.put_upload_index(storage, upload)
     upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
@@ -42,8 +42,10 @@ def commence_geometry_upload_scoring(s3, bucket, upload, ds_path):
     tile_keys = load_model_tiles(storage, upload2.model)
     start_tile_observer_lambda(storage, upload2, tile_keys)
     fan_out_tile_lambdas(storage, upload2, tile_keys)
+    
+    accumulate_district_totals(athena, upload, True)
 
-def commence_blockassign_upload_scoring(s3, bucket, upload, file_path):
+def commence_blockassign_upload_scoring(s3, athena, bucket, upload, file_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
     observe.put_upload_index(storage, upload)
     upload2 = upload.clone()
@@ -52,6 +54,83 @@ def commence_blockassign_upload_scoring(s3, bucket, upload, file_path):
     slice_keys = load_model_slices(storage, upload2.model)
     start_slice_observer_lambda(storage, upload2, slice_keys)
     fan_out_slice_lambdas(storage, upload2, slice_keys)
+    
+    accumulate_district_totals(athena, upload, False)
+
+def accumulate_district_totals(athena, upload, is_spatial):
+    '''
+    '''
+    aggregators = {
+        score.Aggregator.Sum: 'SUM("{}")',
+        score.Aggregator.Median: 'APPROX_PERCENTILE("{}", 0.5)',
+    }
+    
+    columns = [
+        f'{aggregators[agg].format(name)} AS "{name}"'
+        for (name, _, agg) in score.BLOCK_TABLE_FIELDS
+    ]
+    
+    indent = ',\n            '
+    
+    if is_spatial:
+        where_clause = 'ST_Within(ST_GeometryFromText(b.point), ST_GeometryFromText(d.polygon))'
+    else:
+        where_clause = 'b.geoid20 = d.geoid20'
+
+    query = f'''
+        -- {os.environ.get('ATHENA_DB')} {upload.model.key_prefix} and {upload.id[:2]}…{upload.id[-4:]}
+        SELECT
+            d.number AS district_number,
+            {indent.join(columns)}
+        FROM
+            "{os.environ.get('ATHENA_DB')}"."blocks" as b,
+            "{os.environ.get('ATHENA_DB')}"."districts" AS d
+        WHERE
+            {where_clause}
+            AND b.prefix = '{upload.model.key_prefix}'
+            AND d.upload = '{upload.id}'
+        GROUP BY d.number
+        ORDER BY d.number
+    '''
+    
+    print(query)
+
+    state, results = util.athena_exec_and_wait(athena, query)
+    print(json.dumps(state))
+    print(json.dumps(results))
+
+def partition_large_geometries(geom):
+    '''
+    '''
+    if geom.WkbSize() < 0x4000:
+        if geom.IsValid():
+            return [geom]
+
+        return [geom.Buffer(1e-6, 4)]
+    
+    xmin, xmax, ymin, ymax = geom.GetEnvelope()
+    
+    if xmax - xmin > ymax - ymin:
+        # split horizontally
+        xmid = xmin/2 + xmax/2
+        bbox1 = osgeo.ogr.CreateGeometryFromWkt(
+            f'polygon(({xmin-1} {ymin-1},{xmid} {ymin-1},{xmid} {ymax+1},{xmin-1} {ymax+1},{xmin-1} {ymin-1}))'
+        )
+        bbox2 = osgeo.ogr.CreateGeometryFromWkt(
+            f'polygon(({xmid} {ymin-1},{xmax+1} {ymin-1},{xmax+1} {ymax+1},{xmid} {ymax+1},{xmid} {ymin-1}))'
+        )
+    else:
+        # split vertically
+        ymid = ymin/2 + ymax/2
+        bbox1 = osgeo.ogr.CreateGeometryFromWkt(
+            f'polygon(({xmin-1} {ymin-1},{xmin-1} {ymid},{xmax+1} {ymid},{xmax+1} {ymin-1},{xmin-1} {ymin-1}))'
+        )
+        bbox2 = osgeo.ogr.CreateGeometryFromWkt(
+            f'polygon(({xmin-1} {ymid},{xmin-1} {ymax+1},{xmax+1} {ymax+1},{xmax+1} {ymid},{xmin-1} {ymid}))'
+        )
+    
+    return partition_large_geometries(geom.Intersection(bbox1)) \
+         + partition_large_geometries(geom.Intersection(bbox2))
 
 def put_district_geometries(s3, bucket, upload, path):
     '''
@@ -81,7 +160,9 @@ def put_district_geometries(s3, bucket, upload, path):
         
         keys.append(key)
         bboxes.append((key, geometry.GetEnvelope()))
-        partition_csv.writerow((index, geometry.ExportToWkt(), None))
+
+        for subgeom in partition_large_geometries(geometry):
+            partition_csv.writerow((index, subgeom.ExportToWkt(), None))
     
     bboxes_geojson = {
         'type': 'FeatureCollection',
@@ -340,11 +421,12 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3')
+    athena = boto3.client('s3')
     storage = data.Storage(s3, event['bucket'], None)
     upload = data.Upload.from_dict(event)
     
     try:
-        commence_upload_scoring(s3, event['bucket'], upload)
+        commence_upload_scoring(s3, athena, event['bucket'], upload)
     except RuntimeError as err:
         error_upload = upload.clone(status=False, message="Can't score this plan: {}".format(err))
         observe.put_upload_index(storage, error_upload)
