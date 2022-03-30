@@ -35,6 +35,7 @@ setup(
         'ModestMaps == 1.4.7',
         'networkx == 2.5.1',
         'Shapely == 1.7.1',
+        'Werkzeug == 2.0.1',
         ],
     extras_require = {
         'compiled': [
