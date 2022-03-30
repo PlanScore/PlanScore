@@ -14,7 +14,7 @@ osgeo.ogr.UseExceptions()
 
 states_path = os.path.join(os.path.dirname(__file__), 'geodata', 'cb_2013_us_state_20m.geojson')
 
-def commence_upload_scoring(s3, bucket, upload):
+def commence_upload_scoring(s3, athena, bucket, upload):
     '''
     '''
     object = s3.get_object(Bucket=bucket, Key=upload.key)
@@ -23,17 +23,17 @@ def commence_upload_scoring(s3, bucket, upload):
         upload_type = util.guess_upload_type(ul_path)
 
         if upload_type == util.UploadType.OGR_DATASOURCE:
-            return commence_geometry_upload_scoring(s3, bucket, upload, ul_path)
+            return commence_geometry_upload_scoring(s3, athena, bucket, upload, ul_path)
         
         if upload_type == util.UploadType.ZIPPED_OGR_DATASOURCE:
             return commence_geometry_upload_scoring(
-                s3, bucket, upload, util.vsizip_shapefile(ul_path),
+                s3, athena, bucket, upload, util.vsizip_shapefile(ul_path),
             )
 
         if upload_type in (util.UploadType.BLOCK_ASSIGNMENT, util.UploadType.ZIPPED_BLOCK_ASSIGNMENT):
-            return commence_blockassign_upload_scoring(s3, bucket, upload, ul_path)
+            return commence_blockassign_upload_scoring(s3, athena, bucket, upload, ul_path)
 
-def commence_geometry_upload_scoring(s3, bucket, upload, ds_path):
+def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
     observe.put_upload_index(storage, upload)
     upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
@@ -43,9 +43,9 @@ def commence_geometry_upload_scoring(s3, bucket, upload, ds_path):
     start_tile_observer_lambda(storage, upload2, tile_keys)
     fan_out_tile_lambdas(storage, upload2, tile_keys)
     
-    accumulate_district_totals(boto3.client('athena'), upload, True)
+    accumulate_district_totals(athena, upload, True)
 
-def commence_blockassign_upload_scoring(s3, bucket, upload, file_path):
+def commence_blockassign_upload_scoring(s3, athena, bucket, upload, file_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
     observe.put_upload_index(storage, upload)
     upload2 = upload.clone()
@@ -55,7 +55,7 @@ def commence_blockassign_upload_scoring(s3, bucket, upload, file_path):
     start_slice_observer_lambda(storage, upload2, slice_keys)
     fan_out_slice_lambdas(storage, upload2, slice_keys)
     
-    accumulate_district_totals(boto3.client('athena'), upload, False)
+    accumulate_district_totals(athena, upload, False)
 
 def accumulate_district_totals(athena, upload, is_spatial):
     '''
@@ -421,11 +421,12 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3')
+    athena = boto3.client('s3')
     storage = data.Storage(s3, event['bucket'], None)
     upload = data.Upload.from_dict(event)
     
     try:
-        commence_upload_scoring(s3, event['bucket'], upload)
+        commence_upload_scoring(s3, athena, event['bucket'], upload)
     except RuntimeError as err:
         error_upload = upload.clone(status=False, message="Can't score this plan: {}".format(err))
         observe.put_upload_index(storage, error_upload)
