@@ -438,13 +438,13 @@ class TestPostreadCalculate (unittest.TestCase):
 
         self.assertIsNone(info)
     
-        self.assertEqual(len(put_upload_index.mock_calls), 4)
+        self.assertEqual(len(put_upload_index.mock_calls), 5)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
         
         self.assertEqual(len(load_upload_geometries.mock_calls), 1)
         populate_compactness.assert_called_once_with(load_upload_geometries.return_value)
 
-        self.assertEqual(len(calculate_everything.mock_calls), 1)
+        self.assertEqual(len(calculate_everything.mock_calls), 2, 'Should expect one call and one clone()')
         self.assertEqual(calculate_everything.mock_calls[0][1][0].id, upload.id)
 
         self.assertEqual(len(put_district_geometries.mock_calls), 1)
@@ -475,13 +475,13 @@ class TestPostreadCalculate (unittest.TestCase):
 
         self.assertIsNone(info)
     
-        self.assertEqual(len(put_upload_index.mock_calls), 4)
+        self.assertEqual(len(put_upload_index.mock_calls), 5)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
         
         self.assertEqual(len(load_upload_geometries.mock_calls), 1)
         populate_compactness.assert_called_once_with(load_upload_geometries.return_value)
 
-        self.assertEqual(len(calculate_everything.mock_calls), 1)
+        self.assertEqual(len(calculate_everything.mock_calls), 2, 'Should expect one call and one clone()')
         self.assertEqual(calculate_everything.mock_calls[0][1][0].id, upload.id)
 
         self.assertEqual(len(put_district_geometries.mock_calls), 1)

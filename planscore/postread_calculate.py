@@ -45,12 +45,13 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     
     response = accumulate_district_totals(athena, upload, True)
     
-    observe.put_upload_index(storage, upload.clone(message='Calculating district compactness'))
+    observe.put_upload_index(storage, upload.clone(message='Calculating district shapes'))
 
     geometries = observe.load_upload_geometries(storage, upload)
     districts = observe.populate_compactness(geometries)
     upload2 = upload.clone(districts=districts)
-    observe.put_upload_index(storage, upload2.clone(message='Calculated district compactness'))
+
+    observe.put_upload_index(storage, upload2.clone(message='Counting votes and people in each district'))
 
     for (state, results) in response:
         pass
@@ -63,6 +64,8 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
         for (district, totals) in zip(districts, results)
     ])
     
+    observe.put_upload_index(storage, upload3.clone(message='Predicting future votes for each district'))
+
     try:
         upload4 = score.calculate_everything(upload3)
     except Exception as err:
@@ -150,7 +153,7 @@ def resultset_to_district_totals(results):
             col['Name']: (
                 types[col['Type']](cell['VarCharValue'])
                 if 'VarCharValue' in cell
-                else None
+                else 0
             )
             for (col, cell) in zip(
                 results['ResultSet']['ResultSetMetadata']['ColumnInfo'],
