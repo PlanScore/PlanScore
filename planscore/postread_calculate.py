@@ -44,6 +44,14 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     #fan_out_tile_lambdas(storage, upload2, tile_keys)
     
     response = accumulate_district_totals(athena, upload, True)
+    
+    upload2 = upload.clone(message='Calculating district compactness')
+    observe.put_upload_index(storage, upload2)
+
+    geometries = observe.load_upload_geometries(storage, upload2)
+    districts = observe.populate_compactness(geometries)
+    upload3 = upload2.clone(message='Calculated district compactness', districts=districts)
+    observe.put_upload_index(storage, upload3)
 
     for (state, results) in response:
         pass
@@ -51,8 +59,8 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     print(json.dumps(state))
     print(json.dumps(results))
 
-    abort_upload = upload.clone(status=False, message='Stopped scoring this geometry plan')
-    observe.put_upload_index(storage, abort_upload)
+    upload4 = upload3.clone(status=False, message='Stopped scoring this geometry plan')
+    observe.put_upload_index(storage, upload4)
 
 def commence_blockassign_upload_scoring(s3, athena, bucket, upload, file_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
