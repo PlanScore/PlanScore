@@ -24,6 +24,9 @@ BLOCK_TABLE_FIELDS = [
     ("US President 2020 - DEM", float, Aggregator.Sum),
     ("US President 2020 - REP", float, Aggregator.Sum),
     ("US President 2020 - Other", float, Aggregator.Sum),
+    ("US President 2016 - DEM", float, Aggregator.Sum),
+    ("US President 2016 - REP", float, Aggregator.Sum),
+    ("US President 2016 - Other", float, Aggregator.Sum),
     ("US Senate 2020 - DEM", float, Aggregator.Sum),
     ("US Senate 2020 - REP", float, Aggregator.Sum),
     ("US Senate 2020 - Other", float, Aggregator.Sum),
@@ -152,7 +155,7 @@ FIELD_NAMES += (
     #^^##'Asian Population 2020',
     
     # Fields for new unified, district-level plans
-    'US President 2016 - DEM', 'US President 2016 - REP', 'US President 2016 - Other',
+    #^^#'US President 2016 - DEM', 'US President 2016 - REP', 'US President 2016 - Other',
     #^^#'US President 2020 - DEM', 'US President 2020 - REP', 'US President 2020 - Other',
     
     # Fields for FVA votes

@@ -427,7 +427,7 @@ class TestPostreadCalculate (unittest.TestCase):
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
         
         put_district_geometries.return_value = [unittest.mock.Mock()] * 2
-        accumulate_district_totals.return_value = [(None, None)]
+        accumulate_district_totals.return_value = [(None, [])]
 
         s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
@@ -459,7 +459,7 @@ class TestPostreadCalculate (unittest.TestCase):
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.shp.zip'
         
         put_district_geometries.return_value = [unittest.mock.Mock()] * 2
-        accumulate_district_totals.return_value = [(None, None)]
+        accumulate_district_totals.return_value = [(None, [])]
 
         s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
@@ -518,16 +518,42 @@ class TestPostreadCalculate (unittest.TestCase):
         
         iter_athena_exec.return_value = [(True, {})]
 
-        response1 = postread_calculate.accumulate_district_totals(athena, upload, True)
+        response1 = next(postread_calculate.accumulate_district_totals(athena, upload, True))
         query1 = iter_athena_exec.mock_calls[-1][1][1]
         self.assertIn('ST_Within(', query1)
         self.assertIn(f"b.prefix = '{upload.model.key_prefix}'", query1)
         self.assertIn(f"d.upload = '{upload.id}'", query1)
-        self.assertIs(response1, iter_athena_exec.return_value)
+        self.assertEqual(response1, iter_athena_exec.return_value[0])
 
-        response2 = postread_calculate.accumulate_district_totals(athena, upload, False)
+        response2 = next(postread_calculate.accumulate_district_totals(athena, upload, False))
         query2 = iter_athena_exec.mock_calls[-1][1][1]
         self.assertIn('b.geoid20 = d.geoid20', query2)
         self.assertIn(f"b.prefix = '{upload.model.key_prefix}'", query2)
         self.assertIn(f"d.upload = '{upload.id}'", query2)
-        self.assertIs(response2, iter_athena_exec.return_value)
+        self.assertEqual(response2, iter_athena_exec.return_value[0])
+    
+    def test_resultset_to_district_totals(self):
+        result = { "UpdateCount": 0, "ResultSet": { "Rows": [ { "Data": [ { "VarCharValue": "district_number" }, { "VarCharValue": "US President 2020 - DEM" }, { "VarCharValue": "US President 2020 - REP" }, ] }, { "Data": [ { "VarCharValue": "0" }, { "VarCharValue": "100.1" }, { "VarCharValue": "200.2" }, ] }, { "Data": [ { "VarCharValue": "0" }, { "VarCharValue": "200.2" }, { "VarCharValue": "100.1" }, ] } ], "ResultSetMetadata": { "ColumnInfo": [ { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "district_number", "Label": "district_number", "Type": "integer", "Precision": 10, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "US President 2020 - DEM", "Label": "US President 2020 - DEM", "Type": "double", "Precision": 17, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "US President 2020 - REP", "Label": "US President 2020 - REP", "Type": "double", "Precision": 17, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, ] } }, }
+        totals = postread_calculate.resultset_to_district_totals(result)
+        
+        self.assertEqual(
+            totals,
+            [
+                {
+                    result['ResultSet']['ResultSetMetadata']['ColumnInfo'][0]['Name']:\
+                        int(result['ResultSet']['Rows'][1]['Data'][0]['VarCharValue']),
+                    result['ResultSet']['ResultSetMetadata']['ColumnInfo'][1]['Name']:\
+                        float(result['ResultSet']['Rows'][1]['Data'][1]['VarCharValue']),
+                    result['ResultSet']['ResultSetMetadata']['ColumnInfo'][2]['Name']:\
+                        float(result['ResultSet']['Rows'][1]['Data'][2]['VarCharValue']),
+                },
+                {
+                    result['ResultSet']['ResultSetMetadata']['ColumnInfo'][0]['Name']:\
+                        int(result['ResultSet']['Rows'][2]['Data'][0]['VarCharValue']),
+                    result['ResultSet']['ResultSetMetadata']['ColumnInfo'][1]['Name']:\
+                        float(result['ResultSet']['Rows'][2]['Data'][1]['VarCharValue']),
+                    result['ResultSet']['ResultSetMetadata']['ColumnInfo'][2]['Name']:\
+                        float(result['ResultSet']['Rows'][2]['Data'][2]['VarCharValue']),
+                },
+            ],
+        )

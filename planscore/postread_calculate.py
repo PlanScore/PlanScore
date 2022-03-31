@@ -59,8 +59,13 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     print(json.dumps(state))
     print(json.dumps(results))
 
-    upload4 = upload3.clone(status=False, message='Stopped scoring this geometry plan')
-    observe.put_upload_index(storage, upload4)
+    upload4 = upload3.clone(districts=[
+        dict(totals=totals, **district)
+        for (district, totals) in zip(districts, results)
+    ])
+
+    upload5 = upload4.clone(status=False, message='Stopped scoring this geometry plan')
+    observe.put_upload_index(storage, upload5)
 
 def commence_blockassign_upload_scoring(s3, athena, bucket, upload, file_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
@@ -118,7 +123,31 @@ def accumulate_district_totals(athena, upload, is_spatial):
     
     print(query)
     
-    return util.iter_athena_exec(athena, query)
+    for (status, dict) in util.iter_athena_exec(athena, query):
+        if 'ResultSet' in dict:
+            dict = resultset_to_district_totals(dict)
+    
+        yield (status, dict)
+
+def resultset_to_district_totals(results):
+    '''
+    '''
+    types = {'integer': int, 'double': float}
+    
+    return [
+        {
+            col['Name']: (
+                types[col['Type']](cell['VarCharValue'])
+                if 'VarCharValue' in cell
+                else None
+            )
+            for (col, cell) in zip(
+                results['ResultSet']['ResultSetMetadata']['ColumnInfo'],
+                row['Data'],
+            )
+        }
+        for row in results['ResultSet']['Rows'][1:]
+    ]
 
 def partition_large_geometries(geom):
     '''
