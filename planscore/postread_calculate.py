@@ -39,11 +39,47 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
     put_district_geometries(s3, bucket, upload2, ds_path)
     
-    tile_keys = load_model_tiles(storage, upload2.model)
-    start_tile_observer_lambda(storage, upload2, tile_keys)
-    fan_out_tile_lambdas(storage, upload2, tile_keys)
+    #tile_keys = load_model_tiles(storage, upload2.model)
+    #start_tile_observer_lambda(storage, upload2, tile_keys)
+    #fan_out_tile_lambdas(storage, upload2, tile_keys)
     
-    accumulate_district_totals(athena, upload, True)
+    response = accumulate_district_totals(athena, upload, True)
+    
+    observe.put_upload_index(storage, upload.clone(message='Calculating district shapes'))
+
+    geometries = observe.load_upload_geometries(storage, upload)
+    districts = observe.populate_compactness(geometries)
+    upload2 = upload.clone(districts=districts)
+
+    observe.put_upload_index(storage, upload2.clone(message='Counting votes and people in each district'))
+
+    for (state, results) in response:
+        pass
+
+    print(json.dumps(state))
+    print(json.dumps(results))
+
+    upload3 = upload2.clone(districts=[
+        dict(totals=totals, **district)
+        for (district, totals) in zip(districts, results)
+    ])
+    
+    observe.put_upload_index(storage, upload3.clone(message='Predicting future votes for each district'))
+
+    try:
+        upload4 = score.calculate_everything(upload3)
+    except Exception as err:
+        upload5 = upload3.clone(
+            status=False,
+            message=f'Something went wrong: {err}',
+        )
+    else:
+        upload5 = upload4.clone(
+            status=True,
+            message='Finished scoring this plan.',
+        )
+
+    observe.put_upload_index(storage, upload5)
 
 def commence_blockassign_upload_scoring(s3, athena, bucket, upload, file_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
@@ -55,7 +91,13 @@ def commence_blockassign_upload_scoring(s3, athena, bucket, upload, file_path):
     start_slice_observer_lambda(storage, upload2, slice_keys)
     fan_out_slice_lambdas(storage, upload2, slice_keys)
     
-    accumulate_district_totals(athena, upload, False)
+    response = accumulate_district_totals(athena, upload, False)
+
+    for (state, results) in response:
+        pass
+
+    print(json.dumps(state))
+    print(json.dumps(results))
 
 def accumulate_district_totals(athena, upload, is_spatial):
     '''
@@ -94,10 +136,29 @@ def accumulate_district_totals(athena, upload, is_spatial):
     '''
     
     print(query)
+    
+    for (status, dict) in util.iter_athena_exec(athena, query):
+        if 'ResultSet' in dict:
+            dict = resultset_to_district_totals(dict)
+    
+        yield (status, dict)
 
-    state, results = util.athena_exec_and_wait(athena, query)
-    print(json.dumps(state))
-    print(json.dumps(results))
+def resultset_to_district_totals(results):
+    '''
+    '''
+    types = {'integer': int, 'bigint': int, 'double': float}
+    
+    return [
+        {
+            col['Name']: types[col['Type']](cell['VarCharValue'])
+            for (col, cell) in zip(
+                results['ResultSet']['ResultSetMetadata']['ColumnInfo'],
+                row['Data'],
+            )
+            if 'VarCharValue' in cell
+        }
+        for row in results['ResultSet']['Rows'][1:]
+    ]
 
 def partition_large_geometries(geom):
     '''

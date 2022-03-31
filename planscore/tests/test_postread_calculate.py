@@ -413,13 +413,14 @@ class TestPostreadCalculate (unittest.TestCase):
 
         self.assertEqual(str(error.exception), 'Could not open file to fan out district invocations')
     
+
+    @unittest.mock.patch('planscore.score.calculate_everything')
+    @unittest.mock.patch('planscore.observe.populate_compactness')
+    @unittest.mock.patch('planscore.observe.load_upload_geometries')
     @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.postread_calculate.accumulate_district_totals')
     @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
-    @unittest.mock.patch('planscore.postread_calculate.start_tile_observer_lambda')
-    @unittest.mock.patch('planscore.postread_calculate.fan_out_tile_lambdas')
-    @unittest.mock.patch('planscore.postread_calculate.load_model_tiles')
-    def test_commence_geometry_upload_scoring_good_ogr_file(self, load_model_tiles, fan_out_tile_lambdas, start_tile_observer_lambda, put_district_geometries, accumulate_district_totals, put_upload_index):
+    def test_commence_geometry_upload_scoring_good_ogr_file(self, put_district_geometries, accumulate_district_totals, put_upload_index, load_upload_geometries, populate_compactness, calculate_everything):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
@@ -427,6 +428,7 @@ class TestPostreadCalculate (unittest.TestCase):
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
         
         put_district_geometries.return_value = [unittest.mock.Mock()] * 2
+        accumulate_district_totals.return_value = [(None, [])]
 
         s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
@@ -436,30 +438,25 @@ class TestPostreadCalculate (unittest.TestCase):
 
         self.assertIsNone(info)
     
-        self.assertEqual(len(put_upload_index.mock_calls), 1)
+        self.assertEqual(len(put_upload_index.mock_calls), 5)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
+        
+        self.assertEqual(len(load_upload_geometries.mock_calls), 1)
+        populate_compactness.assert_called_once_with(load_upload_geometries.return_value)
+
+        self.assertEqual(len(calculate_everything.mock_calls), 2, 'Should expect one call and one clone()')
+        self.assertEqual(calculate_everything.mock_calls[0][1][0].id, upload.id)
 
         self.assertEqual(len(put_district_geometries.mock_calls), 1)
         self.assertEqual(put_district_geometries.mock_calls[0][1][3], nullplan_path)
-
-        self.assertEqual(len(load_model_tiles.mock_calls), 1)
-        
-        self.assertEqual(len(fan_out_tile_lambdas.mock_calls), 1)
-        self.assertIs(fan_out_tile_lambdas.mock_calls[0][1][0].s3, s3)
-        self.assertIs(fan_out_tile_lambdas.mock_calls[0][1][1].id, upload.id)
-        self.assertIs(fan_out_tile_lambdas.mock_calls[0][1][2], load_model_tiles.return_value)
-
-        self.assertEqual(len(start_tile_observer_lambda.mock_calls), 1)
-        self.assertEqual(start_tile_observer_lambda.mock_calls[0][1][1].id, upload.id)
-        self.assertIs(start_tile_observer_lambda.mock_calls[0][1][2], load_model_tiles.return_value)
     
+    @unittest.mock.patch('planscore.score.calculate_everything')
+    @unittest.mock.patch('planscore.observe.populate_compactness')
+    @unittest.mock.patch('planscore.observe.load_upload_geometries')
     @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.postread_calculate.accumulate_district_totals')
     @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
-    @unittest.mock.patch('planscore.postread_calculate.start_tile_observer_lambda')
-    @unittest.mock.patch('planscore.postread_calculate.fan_out_tile_lambdas')
-    @unittest.mock.patch('planscore.postread_calculate.load_model_tiles')
-    def test_commence_geometry_upload_scoring_zipped_ogr_file(self, load_model_tiles, fan_out_tile_lambdas, start_tile_observer_lambda, put_district_geometries, accumulate_district_totals, put_upload_index):
+    def test_commence_geometry_upload_scoring_zipped_ogr_file(self, put_district_geometries, accumulate_district_totals, put_upload_index, load_upload_geometries, populate_compactness, calculate_everything):
         ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'
@@ -467,6 +464,7 @@ class TestPostreadCalculate (unittest.TestCase):
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.shp.zip'
         
         put_district_geometries.return_value = [unittest.mock.Mock()] * 2
+        accumulate_district_totals.return_value = [(None, [])]
 
         s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
@@ -477,22 +475,17 @@ class TestPostreadCalculate (unittest.TestCase):
 
         self.assertIsNone(info)
     
-        self.assertEqual(len(put_upload_index.mock_calls), 1)
-        self.assertEqual(put_upload_index.mock_calls[0][1][1], upload)
+        self.assertEqual(len(put_upload_index.mock_calls), 5)
+        self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
         
+        self.assertEqual(len(load_upload_geometries.mock_calls), 1)
+        populate_compactness.assert_called_once_with(load_upload_geometries.return_value)
+
+        self.assertEqual(len(calculate_everything.mock_calls), 2, 'Should expect one call and one clone()')
+        self.assertEqual(calculate_everything.mock_calls[0][1][0].id, upload.id)
+
         self.assertEqual(len(put_district_geometries.mock_calls), 1)
         self.assertEqual(put_district_geometries.mock_calls[0][1][3], nullplan_datasource)
-
-        self.assertEqual(len(load_model_tiles.mock_calls), 1)
-        
-        self.assertEqual(len(fan_out_tile_lambdas.mock_calls), 1)
-        self.assertIs(fan_out_tile_lambdas.mock_calls[0][1][0].s3, s3)
-        self.assertIs(fan_out_tile_lambdas.mock_calls[0][1][1].id, upload.id)
-        self.assertIs(fan_out_tile_lambdas.mock_calls[0][1][2], load_model_tiles.return_value)
-        
-        self.assertEqual(len(start_tile_observer_lambda.mock_calls), 1)
-        self.assertEqual(start_tile_observer_lambda.mock_calls[0][1][1].id, upload.id)
-        self.assertIs(start_tile_observer_lambda.mock_calls[0][1][2], load_model_tiles.return_value)
     
     def test_partition_large_geometries(self):
         '''
@@ -524,23 +517,51 @@ class TestPostreadCalculate (unittest.TestCase):
             'Should see top half passed to first intersection call',
         )
     
-    @unittest.mock.patch('planscore.util.athena_exec_and_wait')
-    def test_accumulate_district_totals(self, athena_exec_and_wait):
+    @unittest.mock.patch('planscore.util.iter_athena_exec')
+    def test_accumulate_district_totals(self, iter_athena_exec):
         '''
         '''
         athena, upload = unittest.mock.Mock(), unittest.mock.Mock()
         upload.id, upload.model.key_prefix = 'ID', 'data/XX'
         
-        athena_exec_and_wait.return_value = True, {}
+        iter_athena_exec.return_value = [(True, {})]
 
-        postread_calculate.accumulate_district_totals(athena, upload, True)
-        query1 = athena_exec_and_wait.mock_calls[-1][1][1]
+        response1 = next(postread_calculate.accumulate_district_totals(athena, upload, True))
+        query1 = iter_athena_exec.mock_calls[-1][1][1]
         self.assertIn('ST_Within(', query1)
         self.assertIn(f"b.prefix = '{upload.model.key_prefix}'", query1)
         self.assertIn(f"d.upload = '{upload.id}'", query1)
+        self.assertEqual(response1, iter_athena_exec.return_value[0])
 
-        postread_calculate.accumulate_district_totals(athena, upload, False)
-        query2 = athena_exec_and_wait.mock_calls[-1][1][1]
+        response2 = next(postread_calculate.accumulate_district_totals(athena, upload, False))
+        query2 = iter_athena_exec.mock_calls[-1][1][1]
         self.assertIn('b.geoid20 = d.geoid20', query2)
         self.assertIn(f"b.prefix = '{upload.model.key_prefix}'", query2)
         self.assertIn(f"d.upload = '{upload.id}'", query2)
+        self.assertEqual(response2, iter_athena_exec.return_value[0])
+    
+    def test_resultset_to_district_totals(self):
+        result = { "UpdateCount": 0, "ResultSet": { "Rows": [ { "Data": [ { "VarCharValue": "district_number" }, { "VarCharValue": "US President 2020 - DEM" }, { "VarCharValue": "US President 2020 - REP" }, { "VarCharValue": "US President 3000 - Other" }, ] }, { "Data": [ { "VarCharValue": "0" }, { "VarCharValue": "100" }, { "VarCharValue": "200.2" }, { }, ] }, { "Data": [ { "VarCharValue": "0" }, { "VarCharValue": "200" }, { "VarCharValue": "100.1" }, { }, ] } ], "ResultSetMetadata": { "ColumnInfo": [ { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "district_number", "Label": "district_number", "Type": "integer", "Precision": 10, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "US President 2020 - DEM", "Label": "US President 2020 - DEM", "Type": "bigint", "Precision": 17, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "US President 2020 - REP", "Label": "US President 2020 - REP", "Type": "double", "Precision": 17, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "US President 3000 - Other", "Label": "US President 3000 - Other", "Type": "double", "Precision": 17, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, ] } }, }
+        totals = postread_calculate.resultset_to_district_totals(result)
+        
+        self.assertEqual(
+            totals,
+            [
+                {
+                    result['ResultSet']['ResultSetMetadata']['ColumnInfo'][0]['Name']:\
+                        int(result['ResultSet']['Rows'][1]['Data'][0]['VarCharValue']),
+                    result['ResultSet']['ResultSetMetadata']['ColumnInfo'][1]['Name']:\
+                        int(result['ResultSet']['Rows'][1]['Data'][1]['VarCharValue']),
+                    result['ResultSet']['ResultSetMetadata']['ColumnInfo'][2]['Name']:\
+                        float(result['ResultSet']['Rows'][1]['Data'][2]['VarCharValue']),
+                },
+                {
+                    result['ResultSet']['ResultSetMetadata']['ColumnInfo'][0]['Name']:\
+                        int(result['ResultSet']['Rows'][2]['Data'][0]['VarCharValue']),
+                    result['ResultSet']['ResultSetMetadata']['ColumnInfo'][1]['Name']:\
+                        int(result['ResultSet']['Rows'][2]['Data'][1]['VarCharValue']),
+                    result['ResultSet']['ResultSetMetadata']['ColumnInfo'][2]['Name']:\
+                        float(result['ResultSet']['Rows'][2]['Data'][2]['VarCharValue']),
+                },
+            ],
+        )

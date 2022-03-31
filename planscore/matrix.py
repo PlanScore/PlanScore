@@ -160,7 +160,7 @@ def prepare_district_data(upload):
     out_data = []
     
     for (district, incumbency) in zip(upload.districts, upload.incumbents):
-        if 'US President 2020 - DEM' in district['totals']:
+        if district['totals'].get('US President 2020 - DEM') is not None:
             total = district['totals']['US President 2020 - DEM'] \
                   + district['totals']['US President 2020 - REP']
             try:
@@ -170,7 +170,7 @@ def prepare_district_data(upload):
             else:
                 pvote = params.pvote2020_scale * pvote_2020 + params.pvote2020_offset
         
-        elif 'US President 2016 - DEM' in district['totals']:
+        elif district['totals'].get('US President 2016 - DEM') is not None:
             total = district['totals']['US President 2016 - DEM'] \
                   + district['totals']['US President 2016 - REP']
             try:

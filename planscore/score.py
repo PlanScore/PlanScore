@@ -24,9 +24,18 @@ BLOCK_TABLE_FIELDS = [
     ("US President 2020 - DEM", float, Aggregator.Sum),
     ("US President 2020 - REP", float, Aggregator.Sum),
     ("US President 2020 - Other", float, Aggregator.Sum),
+    ("US President 2016 - DEM", float, Aggregator.Sum),
+    ("US President 2016 - REP", float, Aggregator.Sum),
+    ("US President 2016 - Other", float, Aggregator.Sum),
     ("US Senate 2020 - DEM", float, Aggregator.Sum),
     ("US Senate 2020 - REP", float, Aggregator.Sum),
     ("US Senate 2020 - Other", float, Aggregator.Sum),
+    ("US Senate 2018 - DEM", float, Aggregator.Sum),
+    ("US Senate 2018 - REP", float, Aggregator.Sum),
+    ("US Senate 2018 - Other", float, Aggregator.Sum),
+    ("US Senate 2016 - DEM", float, Aggregator.Sum),
+    ("US Senate 2016 - REP", float, Aggregator.Sum),
+    ("US Senate 2016 - Other", float, Aggregator.Sum),
     ("Population 2020", int, Aggregator.Sum),
     ("Population 2019", float, Aggregator.Sum),
     ("Population 2019, Margin", float, Aggregator.Sum),
@@ -152,12 +161,12 @@ FIELD_NAMES += (
     #^^##'Asian Population 2020',
     
     # Fields for new unified, district-level plans
-    'US President 2016 - DEM', 'US President 2016 - REP', 'US President 2016 - Other',
+    #^^#'US President 2016 - DEM', 'US President 2016 - REP', 'US President 2016 - Other',
     #^^#'US President 2020 - DEM', 'US President 2020 - REP', 'US President 2020 - Other',
     
     # Fields for FVA votes
-    'US Senate 2016 - DEM', 'US Senate 2016 - REP', 'US Senate 2016 - Other',
-    'US Senate 2018 - DEM', 'US Senate 2018 - REP', 'US Senate 2018 - Other',
+    #^^#'US Senate 2016 - DEM', 'US Senate 2016 - REP', 'US Senate 2016 - Other',
+    #^^#'US Senate 2018 - DEM', 'US Senate 2018 - REP', 'US Senate 2018 - Other',
     #^^#'US Senate 2020 - DEM', 'US Senate 2020 - REP', 'US Senate 2020 - Other',
     )
 
@@ -629,11 +638,11 @@ def calculate_district_biases(upload):
     
     has_president_votes = (
         (
-            'US President 2016 - DEM' in upload.districts[0]['totals']
-            and 'US President 2016 - REP' in upload.districts[0]['totals']
+            upload.districts[0]['totals'].get('US President 2016 - DEM') is not None
+            and upload.districts[0]['totals'].get('US President 2016 - REP') is not None
         ) or (
-            'US President 2020 - DEM' in upload.districts[0]['totals']
-            and 'US President 2020 - REP' in upload.districts[0]['totals']
+            upload.districts[0]['totals'].get('US President 2020 - DEM') is not None
+            and upload.districts[0]['totals'].get('US President 2020 - REP') is not None
         )
     )
     
@@ -751,7 +760,7 @@ def calculate_fva_biases(upload):
     ]
     
     for race in races:
-        if (f'{race} - DEM' in totals0 and f'{race} - REP' in totals0):
+        if (totals0.get(f'{race} - DEM') is not None and totals0.get(f'{race} - REP') is not None):
             summary[f'{race} Efficiency Gap'] = calculate_EG(
                 [d['totals'][f'{race} - REP'] for d in upload.districts],
                 [d['totals'][f'{race} - DEM'] for d in upload.districts],

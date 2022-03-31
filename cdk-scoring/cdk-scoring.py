@@ -354,9 +354,18 @@ class PlanScoreScoring(cdk.Stack):
                     (aws_glue.Schema.DOUBLE, "US President 2020 - DEM"),
                     (aws_glue.Schema.DOUBLE, "US President 2020 - REP"),
                     (aws_glue.Schema.DOUBLE, "US President 2020 - Other"),
+                    (aws_glue.Schema.DOUBLE, "US President 2016 - DEM"),
+                    (aws_glue.Schema.DOUBLE, "US President 2016 - REP"),
+                    (aws_glue.Schema.DOUBLE, "US President 2016 - Other"),
                     (aws_glue.Schema.DOUBLE, "US Senate 2020 - DEM"),
                     (aws_glue.Schema.DOUBLE, "US Senate 2020 - REP"),
                     (aws_glue.Schema.DOUBLE, "US Senate 2020 - Other"),
+                    (aws_glue.Schema.DOUBLE, "US Senate 2018 - DEM"),
+                    (aws_glue.Schema.DOUBLE, "US Senate 2018 - REP"),
+                    (aws_glue.Schema.DOUBLE, "US Senate 2018 - Other"),
+                    (aws_glue.Schema.DOUBLE, "US Senate 2016 - DEM"),
+                    (aws_glue.Schema.DOUBLE, "US Senate 2016 - REP"),
+                    (aws_glue.Schema.DOUBLE, "US Senate 2016 - Other"),
                     (aws_glue.Schema.BIG_INT, "Population 2020"),
                     (aws_glue.Schema.DOUBLE, "Population 2019"),
                     (aws_glue.Schema.DOUBLE, "Population 2019, Margin"),
@@ -578,7 +587,7 @@ class PlanScoreScoring(cdk.Stack):
             self,
             "PostreadCalculate",
             handler="lambda.postread_calculate",
-            memory_size=1024,
+            memory_size=2048,
             **function_kwargs
         )
 
