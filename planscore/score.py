@@ -30,6 +30,12 @@ BLOCK_TABLE_FIELDS = [
     ("US Senate 2020 - DEM", float, Aggregator.Sum),
     ("US Senate 2020 - REP", float, Aggregator.Sum),
     ("US Senate 2020 - Other", float, Aggregator.Sum),
+    ("US Senate 2018 - DEM", float, Aggregator.Sum),
+    ("US Senate 2018 - REP", float, Aggregator.Sum),
+    ("US Senate 2018 - Other", float, Aggregator.Sum),
+    ("US Senate 2016 - DEM", float, Aggregator.Sum),
+    ("US Senate 2016 - REP", float, Aggregator.Sum),
+    ("US Senate 2016 - Other", float, Aggregator.Sum),
     ("Population 2020", int, Aggregator.Sum),
     ("Population 2019", float, Aggregator.Sum),
     ("Population 2019, Margin", float, Aggregator.Sum),
@@ -159,8 +165,8 @@ FIELD_NAMES += (
     #^^#'US President 2020 - DEM', 'US President 2020 - REP', 'US President 2020 - Other',
     
     # Fields for FVA votes
-    'US Senate 2016 - DEM', 'US Senate 2016 - REP', 'US Senate 2016 - Other',
-    'US Senate 2018 - DEM', 'US Senate 2018 - REP', 'US Senate 2018 - Other',
+    #^^#'US Senate 2016 - DEM', 'US Senate 2016 - REP', 'US Senate 2016 - Other',
+    #^^#'US Senate 2018 - DEM', 'US Senate 2018 - REP', 'US Senate 2018 - Other',
     #^^#'US Senate 2020 - DEM', 'US Senate 2020 - REP', 'US Senate 2020 - Other',
     )
 
