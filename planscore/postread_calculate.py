@@ -150,15 +150,12 @@ def resultset_to_district_totals(results):
     
     return [
         {
-            col['Name']: (
-                types[col['Type']](cell['VarCharValue'])
-                if 'VarCharValue' in cell
-                else 0
-            )
+            col['Name']: types[col['Type']](cell['VarCharValue'])
             for (col, cell) in zip(
                 results['ResultSet']['ResultSetMetadata']['ColumnInfo'],
                 row['Data'],
             )
+            if 'VarCharValue' in cell
         }
         for row in results['ResultSet']['Rows'][1:]
     ]

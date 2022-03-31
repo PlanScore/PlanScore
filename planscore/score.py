@@ -632,11 +632,11 @@ def calculate_district_biases(upload):
     
     has_president_votes = (
         (
-            'US President 2016 - DEM' in upload.districts[0]['totals']
-            and 'US President 2016 - REP' in upload.districts[0]['totals']
+            upload.districts[0]['totals'].get('US President 2016 - DEM') is not None
+            and upload.districts[0]['totals'].get('US President 2016 - REP') is not None
         ) or (
-            'US President 2020 - DEM' in upload.districts[0]['totals']
-            and 'US President 2020 - REP' in upload.districts[0]['totals']
+            upload.districts[0]['totals'].get('US President 2020 - DEM') is not None
+            and upload.districts[0]['totals'].get('US President 2020 - REP') is not None
         )
     )
     
@@ -754,7 +754,7 @@ def calculate_fva_biases(upload):
     ]
     
     for race in races:
-        if (f'{race} - DEM' in totals0 and f'{race} - REP' in totals0):
+        if (totals0.get(f'{race} - DEM') is not None and totals0.get(f'{race} - REP') is not None):
             summary[f'{race} Efficiency Gap'] = calculate_EG(
                 [d['totals'][f'{race} - REP'] for d in upload.districts],
                 [d['totals'][f'{race} - DEM'] for d in upload.districts],
