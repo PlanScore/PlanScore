@@ -143,7 +143,7 @@ def accumulate_district_totals(athena, upload, is_spatial):
 def resultset_to_district_totals(results):
     '''
     '''
-    types = {'integer': int, 'double': float}
+    types = {'integer': int, 'bigint': int, 'double': float}
     
     return [
         {
