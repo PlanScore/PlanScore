@@ -87,17 +87,41 @@ def commence_blockassign_upload_scoring(s3, athena, bucket, upload, file_path):
     upload2 = upload.clone()
     district_keys = put_district_assignments(s3, bucket, upload2, file_path)
 
-    slice_keys = load_model_slices(storage, upload2.model)
-    start_slice_observer_lambda(storage, upload2, slice_keys)
-    fan_out_slice_lambdas(storage, upload2, slice_keys)
+    #slice_keys = load_model_slices(storage, upload2.model)
+    #start_slice_observer_lambda(storage, upload2, slice_keys)
+    #fan_out_slice_lambdas(storage, upload2, slice_keys)
     
-    response = accumulate_district_totals(athena, upload, False)
+    response = accumulate_district_totals(athena, upload2, False)
+
+    observe.put_upload_index(storage, upload2.clone(message='Counting votes and people in each district'))
 
     for (state, results) in response:
         pass
 
     print(json.dumps(state))
     print(json.dumps(results))
+
+    upload3 = upload2.clone(districts=[
+        dict(totals=totals, **district)
+        for (district, totals) in zip(districts, results)
+    ])
+    
+    observe.put_upload_index(storage, upload3.clone(message='Predicting future votes for each district'))
+
+    try:
+        upload4 = score.calculate_everything(upload3)
+    except Exception as err:
+        upload5 = upload3.clone(
+            status=False,
+            message=f'Something went wrong: {err}',
+        )
+    else:
+        upload5 = upload4.clone(
+            status=False,
+            message='Stopped scoring this plan.',
+        )
+
+    observe.put_upload_index(storage, upload5)
 
 def accumulate_district_totals(athena, upload, is_spatial):
     '''
