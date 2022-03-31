@@ -581,7 +581,7 @@ class PlanScoreScoring(cdk.Stack):
             self,
             "PostreadCalculate",
             handler="lambda.postread_calculate",
-            memory_size=1024,
+            memory_size=2048,
             **function_kwargs
         )
 

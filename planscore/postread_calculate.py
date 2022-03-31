@@ -75,8 +75,8 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
         )
     else:
         upload5 = upload4.clone(
-            status=False,
-            message='Stopped scoring this geometry plan',
+            status=True,
+            message='Finished scoring this plan.',
         )
 
     observe.put_upload_index(storage, upload5)
