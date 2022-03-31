@@ -45,13 +45,12 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     
     response = accumulate_district_totals(athena, upload, True)
     
-    upload2 = upload.clone(message='Calculating district compactness')
-    observe.put_upload_index(storage, upload2)
+    observe.put_upload_index(storage, upload.clone(message='Calculating district compactness'))
 
-    geometries = observe.load_upload_geometries(storage, upload2)
+    geometries = observe.load_upload_geometries(storage, upload)
     districts = observe.populate_compactness(geometries)
-    upload3 = upload2.clone(message='Calculated district compactness', districts=districts)
-    observe.put_upload_index(storage, upload3)
+    upload2 = upload.clone(districts=districts)
+    observe.put_upload_index(storage, upload2.clone(message='Calculated district compactness'))
 
     for (state, results) in response:
         pass
@@ -59,12 +58,24 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     print(json.dumps(state))
     print(json.dumps(results))
 
-    upload4 = upload3.clone(districts=[
+    upload3 = upload2.clone(districts=[
         dict(totals=totals, **district)
         for (district, totals) in zip(districts, results)
     ])
+    
+    try:
+        upload4 = score.calculate_everything(upload3)
+    except Exception as err:
+        upload5 = upload3.clone(
+            status=False,
+            message=f'Something went wrong: {err}',
+        )
+    else:
+        upload5 = upload4.clone(
+            status=False,
+            message='Stopped scoring this geometry plan',
+        )
 
-    upload5 = upload4.clone(status=False, message='Stopped scoring this geometry plan')
     observe.put_upload_index(storage, upload5)
 
 def commence_blockassign_upload_scoring(s3, athena, bucket, upload, file_path):

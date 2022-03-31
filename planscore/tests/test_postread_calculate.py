@@ -414,12 +414,13 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(str(error.exception), 'Could not open file to fan out district invocations')
     
 
+    @unittest.mock.patch('planscore.score.calculate_everything')
     @unittest.mock.patch('planscore.observe.populate_compactness')
     @unittest.mock.patch('planscore.observe.load_upload_geometries')
     @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.postread_calculate.accumulate_district_totals')
     @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
-    def test_commence_geometry_upload_scoring_good_ogr_file(self, put_district_geometries, accumulate_district_totals, put_upload_index, load_upload_geometries, populate_compactness):
+    def test_commence_geometry_upload_scoring_good_ogr_file(self, put_district_geometries, accumulate_district_totals, put_upload_index, load_upload_geometries, populate_compactness, calculate_everything):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
@@ -438,20 +439,24 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertIsNone(info)
     
         self.assertEqual(len(put_upload_index.mock_calls), 4)
-        self.assertEqual(put_upload_index.mock_calls[-1][1][1].id, upload.id)
+        self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
         
         self.assertEqual(len(load_upload_geometries.mock_calls), 1)
         populate_compactness.assert_called_once_with(load_upload_geometries.return_value)
 
+        self.assertEqual(len(calculate_everything.mock_calls), 1)
+        self.assertEqual(calculate_everything.mock_calls[0][1][0].id, upload.id)
+
         self.assertEqual(len(put_district_geometries.mock_calls), 1)
         self.assertEqual(put_district_geometries.mock_calls[0][1][3], nullplan_path)
     
+    @unittest.mock.patch('planscore.score.calculate_everything')
     @unittest.mock.patch('planscore.observe.populate_compactness')
     @unittest.mock.patch('planscore.observe.load_upload_geometries')
     @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.postread_calculate.accumulate_district_totals')
     @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
-    def test_commence_geometry_upload_scoring_zipped_ogr_file(self, put_district_geometries, accumulate_district_totals, put_upload_index, load_upload_geometries, populate_compactness):
+    def test_commence_geometry_upload_scoring_zipped_ogr_file(self, put_district_geometries, accumulate_district_totals, put_upload_index, load_upload_geometries, populate_compactness, calculate_everything):
         ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'
@@ -471,10 +476,13 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertIsNone(info)
     
         self.assertEqual(len(put_upload_index.mock_calls), 4)
-        self.assertEqual(put_upload_index.mock_calls[-1][1][1].id, upload.id)
+        self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
         
         self.assertEqual(len(load_upload_geometries.mock_calls), 1)
         populate_compactness.assert_called_once_with(load_upload_geometries.return_value)
+
+        self.assertEqual(len(calculate_everything.mock_calls), 1)
+        self.assertEqual(calculate_everything.mock_calls[0][1][0].id, upload.id)
 
         self.assertEqual(len(put_district_geometries.mock_calls), 1)
         self.assertEqual(put_district_geometries.mock_calls[0][1][3], nullplan_datasource)
