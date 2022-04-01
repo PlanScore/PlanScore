@@ -522,7 +522,8 @@ def lambda_handler(event, context):
     storage = data.Storage(s3, event['bucket'], None)
     upload = data.Upload.from_dict(event)
     
-    use_athena = bool(upload.model and upload.model.state in (data.State.CA, ))
+    athena_states = data.State.AK, data.State.AL, data.State.AR, data.State.AZ, data.State.CA, data.State.CO, data.State.CT, data.State.DE
+    use_athena = bool(upload.model and upload.model.state in athena_states)
     athena = boto3.client('athena', region_name='us-east-1') if use_athena else None
     
     try:
