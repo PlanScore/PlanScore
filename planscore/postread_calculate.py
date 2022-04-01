@@ -520,11 +520,8 @@ def lambda_handler(event, context):
     '''
     s3 = boto3.client('s3')
     storage = data.Storage(s3, event['bucket'], None)
+    athena = boto3.client('athena', region_name='us-east-1')
     upload = data.Upload.from_dict(event)
-    
-    athena_states = data.State.AK, data.State.AL, data.State.AR, data.State.AZ, data.State.CA, data.State.CO, data.State.CT, data.State.DE
-    use_athena = bool(upload.model and upload.model.state in athena_states)
-    athena = boto3.client('athena', region_name='us-east-1') if use_athena else None
     
     try:
         commence_upload_scoring(context, s3, athena, event['bucket'], upload)
