@@ -39,9 +39,11 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
     put_district_geometries(s3, bucket, upload2, ds_path)
     
-    #tile_keys = load_model_tiles(storage, upload2.model)
-    #start_tile_observer_lambda(storage, upload2, tile_keys)
-    #fan_out_tile_lambdas(storage, upload2, tile_keys)
+    if athena is None:
+        tile_keys = load_model_tiles(storage, upload2.model)
+        start_tile_observer_lambda(storage, upload2, tile_keys)
+        fan_out_tile_lambdas(storage, upload2, tile_keys)
+        return
     
     response = accumulate_district_totals(athena, upload2, True)
     
@@ -87,9 +89,11 @@ def commence_blockassign_upload_scoring(context, s3, athena, bucket, upload, fil
     upload2 = upload.clone()
     district_keys = put_district_assignments(s3, bucket, upload2, file_path)
 
-    #slice_keys = load_model_slices(storage, upload2.model)
-    #start_slice_observer_lambda(storage, upload2, slice_keys)
-    #fan_out_slice_lambdas(storage, upload2, slice_keys)
+    if athena is None:
+        slice_keys = load_model_slices(storage, upload2.model)
+        start_slice_observer_lambda(storage, upload2, slice_keys)
+        fan_out_slice_lambdas(storage, upload2, slice_keys)
+        return
     
     response = accumulate_district_totals(athena, upload2, False)
     
@@ -515,9 +519,11 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3')
-    athena = boto3.client('athena', region_name='us-east-1')
     storage = data.Storage(s3, event['bucket'], None)
     upload = data.Upload.from_dict(event)
+    
+    use_athena = bool(upload.model and upload.model.state in (data.State.CA, ))
+    athena = boto3.client('athena', region_name='us-east-1') if use_athena else None
     
     try:
         commence_upload_scoring(context, s3, athena, event['bucket'], upload)
