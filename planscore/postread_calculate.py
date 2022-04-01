@@ -93,11 +93,15 @@ def commence_blockassign_upload_scoring(context, s3, lam, athena, bucket, upload
     
     response = accumulate_district_totals(athena, upload2, False)
     
-    observe.put_upload_index(storage, upload2.clone(message='Calculating district shapes'))
-
     upload3 = observe.add_blockassign_upload_geometry(context, lam, storage, upload2)
 
-    observe.put_upload_index(storage, upload3.clone(message='Counting votes and people in each district'))
+    observe.put_upload_index(storage, upload3.clone(message='Calculating district shapes'))
+
+    geometries = observe.load_upload_geometries(storage, upload3)
+    districts = observe.populate_compactness(geometries)
+    upload4 = upload3.clone(districts=districts)
+
+    observe.put_upload_index(storage, upload4.clone(message='Counting votes and people in each district'))
 
     for (state, results) in response:
         pass
@@ -105,27 +109,27 @@ def commence_blockassign_upload_scoring(context, s3, lam, athena, bucket, upload
     print(json.dumps(state))
     print(json.dumps(results))
 
-    upload4 = upload3.clone(districts=[
+    upload5 = upload4.clone(districts=[
         dict(totals=totals, **district)
         for (district, totals) in zip(districts, results)
     ])
     
-    observe.put_upload_index(storage, upload4.clone(message='Predicting future votes for each district'))
+    observe.put_upload_index(storage, upload5.clone(message='Predicting future votes for each district'))
 
     try:
-        upload5 = score.calculate_everything(upload3)
+        upload6 = score.calculate_everything(upload5)
     except Exception as err:
-        upload6 = upload4.clone(
+        upload7 = upload5.clone(
             status=False,
             message=f'Something went wrong: {err}',
         )
     else:
-        upload6 = upload5.clone(
-            status=False,
-            message='Stopped scoring this plan.',
+        upload7 = upload6.clone(
+            status=True,
+            message='Finished scoring this plan.',
         )
 
-    observe.put_upload_index(storage, upload6)
+    observe.put_upload_index(storage, upload7)
 
 def accumulate_district_totals(athena, upload, is_spatial):
     '''
