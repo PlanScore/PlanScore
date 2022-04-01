@@ -23,9 +23,9 @@ class TestPostreadCalculate (unittest.TestCase):
 
         postread_calculate.lambda_handler(event, None)
         
-        self.assertEqual(commence_upload_scoring.mock_calls[0][1][2], event['bucket'])
+        self.assertEqual(commence_upload_scoring.mock_calls[0][1][3], event['bucket'])
         
-        upload = commence_upload_scoring.mock_calls[0][1][3]
+        upload = commence_upload_scoring.mock_calls[0][1][4]
         self.assertEqual(upload.id, event['id'])
         self.assertEqual(upload.key, event['key'])
     
@@ -327,12 +327,17 @@ class TestPostreadCalculate (unittest.TestCase):
 
         temporary_buffer_file.side_effect = nullplan_file
 
-        s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
+        (context, s3, athena), bucket = [unittest.mock.Mock() for i in 'iii'], 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key, model=data.MODELS[0])
-        info = postread_calculate.commence_upload_scoring(s3, athena, bucket, upload)
-        commence_geometry_upload_scoring.assert_called_once_with(s3, athena, bucket, upload, nullplan_path)
+        info = postread_calculate.commence_upload_scoring(context, s3, athena, bucket, upload)
+        self.assertEqual(len(commence_geometry_upload_scoring.mock_calls), 1)
+        self.assertIs(commence_geometry_upload_scoring.mock_calls[0][1][0], s3)
+        self.assertIs(commence_geometry_upload_scoring.mock_calls[0][1][1], athena)
+        self.assertIs(commence_geometry_upload_scoring.mock_calls[0][1][2], bucket)
+        self.assertEqual(commence_geometry_upload_scoring.mock_calls[0][1][3].id, upload.id)
+        self.assertEqual(commence_geometry_upload_scoring.mock_calls[0][1][4], nullplan_path)
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.postread_calculate.commence_blockassign_upload_scoring')
@@ -349,12 +354,18 @@ class TestPostreadCalculate (unittest.TestCase):
 
         temporary_buffer_file.side_effect = nullplan_file
 
-        s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
+        (context, s3, athena), bucket = [unittest.mock.Mock() for i in 'iii'], 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key, model=data.MODELS[0])
-        postread_calculate.commence_upload_scoring(s3, athena, bucket, upload)
-        commence_blockassign_upload_scoring.assert_called_once_with(s3, athena, bucket, upload, nullplan_path)
+        postread_calculate.commence_upload_scoring(context, s3, athena, bucket, upload)
+        self.assertEqual(len(commence_blockassign_upload_scoring.mock_calls), 1)
+        self.assertIs(commence_blockassign_upload_scoring.mock_calls[0][1][0], context)
+        self.assertIs(commence_blockassign_upload_scoring.mock_calls[0][1][1], s3)
+        self.assertIs(commence_blockassign_upload_scoring.mock_calls[0][1][2], athena)
+        self.assertIs(commence_blockassign_upload_scoring.mock_calls[0][1][3], bucket)
+        self.assertEqual(commence_blockassign_upload_scoring.mock_calls[0][1][4].id, upload.id)
+        self.assertIs(commence_blockassign_upload_scoring.mock_calls[0][1][5], nullplan_path)
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.postread_calculate.commence_blockassign_upload_scoring')
@@ -371,12 +382,18 @@ class TestPostreadCalculate (unittest.TestCase):
 
         temporary_buffer_file.side_effect = nullplan_file
 
-        s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
+        (context, s3, athena), bucket = [unittest.mock.Mock() for i in 'iii'], 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key, model=data.MODELS[0])
-        postread_calculate.commence_upload_scoring(s3, athena, bucket, upload)
-        commence_blockassign_upload_scoring.assert_called_once_with(s3, athena, bucket, upload, nullplan_path)
+        postread_calculate.commence_upload_scoring(context, s3, athena, bucket, upload)
+        self.assertEqual(len(commence_blockassign_upload_scoring.mock_calls), 1)
+        self.assertIs(commence_blockassign_upload_scoring.mock_calls[0][1][0], context)
+        self.assertIs(commence_blockassign_upload_scoring.mock_calls[0][1][1], s3)
+        self.assertIs(commence_blockassign_upload_scoring.mock_calls[0][1][2], athena)
+        self.assertIs(commence_blockassign_upload_scoring.mock_calls[0][1][3], bucket)
+        self.assertEqual(commence_blockassign_upload_scoring.mock_calls[0][1][4].id, upload.id)
+        self.assertIs(commence_blockassign_upload_scoring.mock_calls[0][1][5], nullplan_path)
     
     @unittest.mock.patch('planscore.util.temporary_buffer_file')
     @unittest.mock.patch('planscore.postread_calculate.commence_geometry_upload_scoring')
@@ -393,22 +410,27 @@ class TestPostreadCalculate (unittest.TestCase):
 
         temporary_buffer_file.side_effect = nullplan_file
 
-        s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
+        (context, s3, athena), bucket = [unittest.mock.Mock() for i in 'iii'], 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key, model=data.MODELS[0])
-        info = postread_calculate.commence_upload_scoring(s3, athena, bucket, upload)
+        info = postread_calculate.commence_upload_scoring(context, s3, athena, bucket, upload)
         nullplan_datasource = '/vsizip/{}/null-plan.shp'.format(os.path.abspath(nullplan_path))
-        commence_geometry_upload_scoring.assert_called_once_with(s3, athena, bucket, upload, nullplan_datasource)
+        self.assertEqual(len(commence_geometry_upload_scoring.mock_calls), 1)
+        self.assertIs(commence_geometry_upload_scoring.mock_calls[0][1][0], s3)
+        self.assertIs(commence_geometry_upload_scoring.mock_calls[0][1][1], athena)
+        self.assertIs(commence_geometry_upload_scoring.mock_calls[0][1][2], bucket)
+        self.assertEqual(commence_geometry_upload_scoring.mock_calls[0][1][3].id, upload.id)
+        self.assertEqual(commence_geometry_upload_scoring.mock_calls[0][1][4], nullplan_datasource)
     
     def test_commence_upload_scoring_bad_file(self):
         ''' An invalid district file fails in an expected way
         '''
-        s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
+        (context, s3, athena), bucket = [unittest.mock.Mock() for i in 'iii'], 'fake-bucket-name'
         s3.get_object.return_value = {'Body': io.BytesIO(b'Bad data')}
 
         with self.assertRaises(RuntimeError) as error:
-            postread_calculate.commence_upload_scoring(s3, athena, bucket,
+            postread_calculate.commence_upload_scoring(context, s3, athena, bucket,
                 data.Upload('id', 'uploads/id/null-plan.geojson', model=data.MODELS[0]))
 
         self.assertEqual(str(error.exception), 'Could not open file to fan out district invocations')
