@@ -14,7 +14,7 @@ osgeo.ogr.UseExceptions()
 
 states_path = os.path.join(os.path.dirname(__file__), 'geodata', 'cb_2013_us_state_20m.geojson')
 
-def commence_upload_scoring(s3, athena, bucket, upload):
+def commence_upload_scoring(context, s3, lam, athena, bucket, upload):
     '''
     '''
     object = s3.get_object(Bucket=bucket, Key=upload.key)
@@ -31,7 +31,7 @@ def commence_upload_scoring(s3, athena, bucket, upload):
             )
 
         if upload_type in (util.UploadType.BLOCK_ASSIGNMENT, util.UploadType.ZIPPED_BLOCK_ASSIGNMENT):
-            return commence_blockassign_upload_scoring(s3, athena, bucket, upload, ul_path)
+            return commence_blockassign_upload_scoring(context, s3, lam, athena, bucket, upload, ul_path)
 
 def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
@@ -43,15 +43,15 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     #start_tile_observer_lambda(storage, upload2, tile_keys)
     #fan_out_tile_lambdas(storage, upload2, tile_keys)
     
-    response = accumulate_district_totals(athena, upload, True)
+    response = accumulate_district_totals(athena, upload2, True)
     
-    observe.put_upload_index(storage, upload.clone(message='Calculating district shapes'))
+    observe.put_upload_index(storage, upload2.clone(message='Calculating district shapes'))
 
-    geometries = observe.load_upload_geometries(storage, upload)
+    geometries = observe.load_upload_geometries(storage, upload2)
     districts = observe.populate_compactness(geometries)
-    upload2 = upload.clone(districts=districts)
+    upload3 = upload2.clone(districts=districts)
 
-    observe.put_upload_index(storage, upload2.clone(message='Counting votes and people in each district'))
+    observe.put_upload_index(storage, upload3.clone(message='Counting votes and people in each district'))
 
     for (state, results) in response:
         pass
@@ -59,29 +59,29 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     print(json.dumps(state))
     print(json.dumps(results))
 
-    upload3 = upload2.clone(districts=[
+    upload4 = upload3.clone(districts=[
         dict(totals=totals, **district)
         for (district, totals) in zip(districts, results)
     ])
     
-    observe.put_upload_index(storage, upload3.clone(message='Predicting future votes for each district'))
+    observe.put_upload_index(storage, upload4.clone(message='Predicting future votes for each district'))
 
     try:
-        upload4 = score.calculate_everything(upload3)
+        upload5 = score.calculate_everything(upload4)
     except Exception as err:
-        upload5 = upload3.clone(
+        upload6 = upload5.clone(
             status=False,
             message=f'Something went wrong: {err}',
         )
     else:
-        upload5 = upload4.clone(
+        upload6 = upload5.clone(
             status=True,
             message='Finished scoring this plan.',
         )
 
-    observe.put_upload_index(storage, upload5)
+    observe.put_upload_index(storage, upload6)
 
-def commence_blockassign_upload_scoring(s3, athena, bucket, upload, file_path):
+def commence_blockassign_upload_scoring(context, s3, lam, athena, bucket, upload, file_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
     observe.put_upload_index(storage, upload)
     upload2 = upload.clone()
@@ -92,8 +92,12 @@ def commence_blockassign_upload_scoring(s3, athena, bucket, upload, file_path):
     #fan_out_slice_lambdas(storage, upload2, slice_keys)
     
     response = accumulate_district_totals(athena, upload2, False)
+    
+    observe.put_upload_index(storage, upload2.clone(message='Calculating district shapes'))
 
-    observe.put_upload_index(storage, upload2.clone(message='Counting votes and people in each district'))
+    upload3 = observe.add_blockassign_upload_geometry(context, lam, storage, upload2)
+
+    observe.put_upload_index(storage, upload3.clone(message='Counting votes and people in each district'))
 
     for (state, results) in response:
         pass
@@ -101,27 +105,27 @@ def commence_blockassign_upload_scoring(s3, athena, bucket, upload, file_path):
     print(json.dumps(state))
     print(json.dumps(results))
 
-    upload3 = upload2.clone(districts=[
+    upload4 = upload3.clone(districts=[
         dict(totals=totals, **district)
         for (district, totals) in zip(districts, results)
     ])
     
-    observe.put_upload_index(storage, upload3.clone(message='Predicting future votes for each district'))
+    observe.put_upload_index(storage, upload4.clone(message='Predicting future votes for each district'))
 
     try:
-        upload4 = score.calculate_everything(upload3)
+        upload5 = score.calculate_everything(upload3)
     except Exception as err:
-        upload5 = upload3.clone(
+        upload6 = upload4.clone(
             status=False,
             message=f'Something went wrong: {err}',
         )
     else:
-        upload5 = upload4.clone(
+        upload6 = upload5.clone(
             status=False,
             message='Stopped scoring this plan.',
         )
 
-    observe.put_upload_index(storage, upload5)
+    observe.put_upload_index(storage, upload6)
 
 def accumulate_district_totals(athena, upload, is_spatial):
     '''
@@ -506,12 +510,13 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3')
+    lam = boto3.client('lambda')
     athena = boto3.client('athena', region_name='us-east-1')
     storage = data.Storage(s3, event['bucket'], None)
     upload = data.Upload.from_dict(event)
     
     try:
-        commence_upload_scoring(s3, athena, event['bucket'], upload)
+        commence_upload_scoring(context, s3, lam, athena, event['bucket'], upload)
     except RuntimeError as err:
         error_upload = upload.clone(status=False, message="Can't score this plan: {}".format(err))
         observe.put_upload_index(storage, error_upload)

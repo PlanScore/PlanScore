@@ -583,6 +583,17 @@ class PlanScoreScoring(cdk.Stack):
 
         grant_data_bucket_access(data_bucket, observe_tiles)
 
+        polygonize = aws_lambda.Function(
+            self,
+            "Polygonize",
+            handler="lambda.polygonize",
+            memory_size=10240,
+            **function_kwargs
+        )
+
+        grant_data_bucket_access(data_bucket, polygonize)
+        grant_function_invoke(polygonize, 'FUNC_NAME_POLYGONIZE', observe_tiles)
+
         postread_calculate = aws_lambda.Function(
             self,
             "PostreadCalculate",
@@ -595,6 +606,7 @@ class PlanScoreScoring(cdk.Stack):
         grant_function_invoke(observe_tiles, 'FUNC_NAME_OBSERVE_TILES', postread_calculate)
         grant_function_invoke(run_tile, 'FUNC_NAME_RUN_TILE', postread_calculate)
         grant_function_invoke(run_slice, 'FUNC_NAME_RUN_SLICE', postread_calculate)
+        grant_function_invoke(polygonize, 'FUNC_NAME_POLYGONIZE', postread_calculate)
 
         postread_intermediate = aws_lambda.Function(
             self,
@@ -616,17 +628,6 @@ class PlanScoreScoring(cdk.Stack):
         )
 
         grant_data_bucket_access(data_bucket, preread_followup)
-
-        polygonize = aws_lambda.Function(
-            self,
-            "Polygonize",
-            handler="lambda.polygonize",
-            memory_size=10240,
-            **function_kwargs
-        )
-
-        grant_data_bucket_access(data_bucket, polygonize)
-        grant_function_invoke(polygonize, 'FUNC_NAME_POLYGONIZE', observe_tiles)
 
         # API-accessible functions
 
