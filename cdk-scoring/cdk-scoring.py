@@ -578,12 +578,12 @@ class PlanScoreScoring(cdk.Stack):
             self,
             "PostreadIntermediate",
             handler="lambda.postread_intermediate",
-            memory_size=1024,
+            memory_size=2048,
             **function_kwargs
         )
 
         grant_data_bucket_access(data_bucket, postread_intermediate)
-        grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', postread_intermediate)
+        grant_function_invoke(polygonize, 'FUNC_NAME_POLYGONIZE', postread_intermediate)
 
         preread_followup = aws_lambda.Function(
             self,
