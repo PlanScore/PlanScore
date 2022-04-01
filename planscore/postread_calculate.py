@@ -14,7 +14,7 @@ osgeo.ogr.UseExceptions()
 
 states_path = os.path.join(os.path.dirname(__file__), 'geodata', 'cb_2013_us_state_20m.geojson')
 
-def commence_upload_scoring(context, s3, lam, athena, bucket, upload):
+def commence_upload_scoring(context, s3, athena, bucket, upload):
     '''
     '''
     object = s3.get_object(Bucket=bucket, Key=upload.key)
@@ -31,7 +31,7 @@ def commence_upload_scoring(context, s3, lam, athena, bucket, upload):
             )
 
         if upload_type in (util.UploadType.BLOCK_ASSIGNMENT, util.UploadType.ZIPPED_BLOCK_ASSIGNMENT):
-            return commence_blockassign_upload_scoring(context, s3, lam, athena, bucket, upload, ul_path)
+            return commence_blockassign_upload_scoring(context, s3, athena, bucket, upload, ul_path)
 
 def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
@@ -81,7 +81,7 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
 
     observe.put_upload_index(storage, upload6)
 
-def commence_blockassign_upload_scoring(context, s3, lam, athena, bucket, upload, file_path):
+def commence_blockassign_upload_scoring(context, s3, athena, bucket, upload, file_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
     observe.put_upload_index(storage, upload)
     upload2 = upload.clone()
@@ -93,6 +93,7 @@ def commence_blockassign_upload_scoring(context, s3, lam, athena, bucket, upload
     
     response = accumulate_district_totals(athena, upload2, False)
     
+    lam = boto3.client('lambda')
     upload3 = observe.add_blockassign_upload_geometry(context, lam, storage, upload2)
 
     observe.put_upload_index(storage, upload3.clone(message='Calculating district shapes'))
@@ -514,13 +515,12 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3')
-    lam = boto3.client('lambda')
     athena = boto3.client('athena', region_name='us-east-1')
     storage = data.Storage(s3, event['bucket'], None)
     upload = data.Upload.from_dict(event)
     
     try:
-        commence_upload_scoring(context, s3, lam, athena, event['bucket'], upload)
+        commence_upload_scoring(context, s3, athena, event['bucket'], upload)
     except RuntimeError as err:
         error_upload = upload.clone(status=False, message="Can't score this plan: {}".format(err))
         observe.put_upload_index(storage, error_upload)
