@@ -4,7 +4,7 @@ Fans out asynchronous parallel calls to planscore.district function, then
 starts and observer process with planscore.score function.
 '''
 import os, io, json, urllib.parse, gzip, time, math, threading
-import csv, operator, itertools, zipfile, gzip
+import csv, operator, itertools, zipfile, gzip, datetime
 import boto3, osgeo.ogr
 from . import util, data, score, website, prepare_state, constants, run_tile, run_slice, observe
 
@@ -183,7 +183,15 @@ def accumulate_district_totals(athena, upload, is_spatial):
 def resultset_to_district_totals(results):
     '''
     '''
-    types = {'integer': int, 'bigint': int, 'double': float}
+    types = {
+        'integer': int,
+        'bigint': int,
+        'double': float,
+        'float': float,
+        'varchar': str,
+        'date': lambda s: datetime.datetime.strptime(s, '%Y-%m-%d').date(),
+        'boolean': lambda s: bool(s.lower() in ('t', 'true')),
+    }
     
     return [
         {
