@@ -553,36 +553,6 @@ class PlanScoreScoring(cdk.Stack):
 
         authorizer.add_environment('API_TOKENS', API_TOKENS)
 
-        run_tile = aws_lambda.Function(
-            self,
-            "RunTile",
-            handler="lambda.run_tile",
-            memory_size=2048,
-            **function_kwargs
-        )
-
-        grant_data_bucket_access(data_bucket, run_tile)
-
-        run_slice = aws_lambda.Function(
-            self,
-            "RunSlice",
-            handler="lambda.run_slice",
-            memory_size=2048,
-            **function_kwargs
-        )
-
-        grant_data_bucket_access(data_bucket, run_slice)
-
-        observe_tiles = aws_lambda.Function(
-            self,
-            "ObserveTiles",
-            handler="lambda.observe_tiles",
-            memory_size=512,
-            **function_kwargs
-        )
-
-        grant_data_bucket_access(data_bucket, observe_tiles)
-
         polygonize = aws_lambda.Function(
             self,
             "Polygonize",
@@ -592,7 +562,6 @@ class PlanScoreScoring(cdk.Stack):
         )
 
         grant_data_bucket_access(data_bucket, polygonize)
-        grant_function_invoke(polygonize, 'FUNC_NAME_POLYGONIZE', observe_tiles)
 
         postread_calculate = aws_lambda.Function(
             self,
@@ -603,21 +572,18 @@ class PlanScoreScoring(cdk.Stack):
         )
 
         grant_data_bucket_access(data_bucket, postread_calculate)
-        grant_function_invoke(observe_tiles, 'FUNC_NAME_OBSERVE_TILES', postread_calculate)
-        grant_function_invoke(run_tile, 'FUNC_NAME_RUN_TILE', postread_calculate)
-        grant_function_invoke(run_slice, 'FUNC_NAME_RUN_SLICE', postread_calculate)
         grant_function_invoke(polygonize, 'FUNC_NAME_POLYGONIZE', postread_calculate)
 
         postread_intermediate = aws_lambda.Function(
             self,
             "PostreadIntermediate",
             handler="lambda.postread_intermediate",
-            memory_size=1024,
+            memory_size=2048,
             **function_kwargs
         )
 
         grant_data_bucket_access(data_bucket, postread_intermediate)
-        grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', postread_intermediate)
+        grant_function_invoke(polygonize, 'FUNC_NAME_POLYGONIZE', postread_intermediate)
 
         preread_followup = aws_lambda.Function(
             self,
@@ -704,9 +670,6 @@ class PlanScoreScoring(cdk.Stack):
 
         return (
             authorizer,
-            run_tile,
-            run_slice,
-            observe_tiles,
             postread_calculate,
             preread_followup,
             polygonize,
@@ -722,9 +685,6 @@ class PlanScoreScoring(cdk.Stack):
 
         (
             authorizer,
-            run_tile,
-            run_slice,
-            observe_tiles,
             postread_calculate,
             preread_followup,
             polygonize,

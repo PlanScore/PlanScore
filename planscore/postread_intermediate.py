@@ -61,9 +61,4 @@ def lambda_handler(event, context):
     else:
         next_event = dict(bucket=event['bucket'])
         next_event.update(upload3.to_dict())
-
-        lam.invoke(
-            FunctionName=postread_calculate.FUNCTION_NAME,
-            InvocationType='Event',
-            Payload=json.dumps(next_event).encode('utf8'),
-        )
+        postread_calculate.lambda_handler(next_event, context)
