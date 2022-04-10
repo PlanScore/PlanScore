@@ -81,9 +81,9 @@ ORDER BY status ASC, message ASC, id DESC
                 <td align="right" style="white-space: nowrap">{row['ds']}</td>
                 <td align="right">
                     <a href="{flask.url_for('get_plan_log', ds=str(row['ds']), id=row['id'])}">{row['id']}</a></td>
-                <td align="right">{row['status']}</td>
-                <td align="right">{row['elapsed']:.2f}</td>
-                <td align="right">{row['model_state']}</td>
+                <td align="right">{row.get('status')}</td>
+                <td align="right">{row.get('elapsed', -1):.2f}</td>
+                <td align="right">{row.get('model_state')}</td>
                 <td>{row.get('token', '')}</td>
                 <td>{row.get('message', '')}</td>
             </tr>'''
@@ -118,8 +118,10 @@ ORDER BY time ASC
             time.sleep(1)
     
     return f'''<p>
-            <a href="{flask.url_for('get_index')}">🏠</a>
-            <a href="https://planscore.campaignlegal.org/plan.html?{id}">🗺</a>
+            <a style="text-decoration: none" href="{flask.url_for('get_index')}">🏠</a>
+            <a style="text-decoration: none" href="https://planscore.campaignlegal.org/plan.html?{id}">🗺</a>
+            <a style="text-decoration: none" href="https://s3.console.aws.amazon.com/s3/buckets/planscore?region=us-east-1&prefix=uploads/{id}/upload/&showversions=false">📦</a>
+            <a style="text-decoration: none" href="https://planscore.s3.amazonaws.com/uploads/{id}/index.json">📄</a>
         </p>''' \
         + '''<table style='font-family: sans-serif; font-size: 12px'>''' \
         + '''<tr>
