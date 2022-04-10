@@ -519,8 +519,8 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertIs(geom2, geom1, 'Should see same geometry back')
 
         geom3 = unittest.mock.Mock()
-        geom3.WkbSize.return_value = 0x3fff
         geom3.IsValid.return_value = False
+        geom3.Buffer.return_value.WkbSize.return_value = 0x3fff
         (geom4, ) = postread_calculate.partition_large_geometries(geom3)
         self.assertIs(geom4, geom3.Buffer.return_value, 'Should see one buffered geometry')
 

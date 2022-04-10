@@ -208,11 +208,11 @@ def resultset_to_district_totals(results):
 def partition_large_geometries(geom):
     '''
     '''
+    if not geom.IsValid():
+        geom = geom.Buffer(1e-6, 4)
+    
     if geom.WkbSize() < 0x4000:
-        if geom.IsValid():
-            return [geom]
-
-        return [geom.Buffer(1e-6, 4)]
+        return [geom]
     
     xmin, xmax, ymin, ymax = geom.GetEnvelope()
     
