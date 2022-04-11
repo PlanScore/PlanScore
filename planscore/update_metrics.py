@@ -80,7 +80,14 @@ def update_metrics(cred_data, spreadsheet_id):
         '''
     )
     
-    exec_and_wait(ath, 'MSCK REPAIR TABLE prod_scoring_logs')
+    exec_and_wait(ath, f'''
+        ALTER TABLE `prod_scoring_logs`
+        ADD IF NOT EXISTS
+        PARTITION (ds = '{datetime.date.today() - datetime.timedelta(days=0)}')
+        PARTITION (ds = '{datetime.date.today() - datetime.timedelta(days=1)}')
+        PARTITION (ds = '{datetime.date.today() - datetime.timedelta(days=2)}')
+        '''
+    )
     
     state, result = exec_and_wait(ath, '''
         WITH all_states AS (
