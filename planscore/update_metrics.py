@@ -25,7 +25,10 @@ def make_service(cred_data):
     return apiclient.discovery.build('sheets', 'v4', credentials=creds)
 
 def exec_and_wait(ath, query_string):
-    query_id = ath.start_query_execution(QueryString=query_string)['QueryExecutionId']
+    query_id = ath.start_query_execution(
+        QueryString=query_string,
+        WorkGroup='observe',
+    )['QueryExecutionId']
     
     while True:
         execution = ath.get_query_execution(QueryExecutionId=query_id)

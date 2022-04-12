@@ -3,7 +3,50 @@ import time
 import boto3
 import flask
 import time
+import datetime
+import itertools
 from planscore import util, postread_calculate
+
+
+def iter_nearby_executions(athena, start_time):
+    '''
+    '''
+    kwargs = dict(MaxResults=50)
+    
+    while True:
+        print('athena.list_query_executions')
+        executions = athena.list_query_executions(**kwargs)
+        kwargs = dict(MaxResults=50, NextToken=executions['NextToken'])
+
+        print('athena.batch_get_query_execution')
+        executions = athena.batch_get_query_execution(
+            QueryExecutionIds=executions['QueryExecutionIds'],
+        )['QueryExecutions']
+        
+        newest_time = max([e['Status']['SubmissionDateTime'] for e in executions])
+        oldest_time = min([e['Status']['SubmissionDateTime'] for e in executions])
+        
+        if newest_time < start_time:
+            # Stop, we won't find this plan ID if we keep searching
+            break
+        elif start_time < oldest_time - datetime.timedelta(minutes=15):
+            # Skip this batch, it's too new
+            continue
+
+        # Look at this whole batch, who knows
+        for execution in executions:
+            yield execution
+
+
+def find_plan_query(athena, plan_id):
+    '''
+    '''
+    start_time = datetime.datetime.strptime(f'{plan_id[:15]} +0000', '%Y%m%dT%H%M%S %z')
+    
+    for execution in iter_nearby_executions(athena, start_time):
+        if plan_id in execution['Query'] and execution['Query'].startswith('-- cf_production_database'):
+            return execution
+
 
 app = flask.Flask(__name__)
 
@@ -59,7 +102,7 @@ WHERE plans.ds >= DATE_TRUNC('day', NOW() - INTERVAL '1' DAY)
 ORDER BY status ASC, message ASC, id DESC
 '''
 
-    for (status, dict) in util.iter_athena_exec(athena, query):
+    for (status, dict) in util.iter_athena_exec(athena, query, 'observe'):
         if 'ResultSet' in dict:
             rows = postread_calculate.resultset_to_district_totals(dict)
         else:
@@ -110,9 +153,13 @@ WHERE id = '{id}'
 ORDER BY time ASC
 '''
 
-    for (status, dict) in util.iter_athena_exec(athena, query):
+    athena_exec = util.iter_athena_exec(athena, query, 'observe')
+    execution = find_plan_query(athena, id)
+    
+    for (status, dict) in athena_exec:
         if 'ResultSet' in dict:
             rows = postread_calculate.resultset_to_district_totals(dict)
+            break
         else:
             print(status)
             time.sleep(1)
@@ -147,7 +194,17 @@ ORDER BY time ASC
             </tr>'''
             for row in rows
         ]) \
-        + '''</table>'''
+        + '''</table>''' \
+        + (
+            f'''<dl style='font-family: sans-serif; font-size: 12px'>
+                <dt>Execution time</dt>
+                <dd>{execution['Statistics']['TotalExecutionTimeInMillis']/1000:.1f}sec</dd>
+                <dt>Data scanned</dt>
+                <dd>{execution['Statistics']['DataScannedInBytes']/1024/1024:,.1f}MB</dd>
+            </dl>''' \
+            + f'''<pre>{execution['Query']}</pre>'''
+            if execution else ''
+        )
 
 if __name__ == '__main__':
     app.run(debug=True)

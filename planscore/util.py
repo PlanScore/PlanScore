@@ -215,8 +215,12 @@ def is_multipolygon_feature(feature):
     geometry = feature.GetGeometryRef() or EMPTY_GEOMETRY
     return bool(geometry.GetGeometryType() == osgeo.ogr.wkbMultiPolygon)
 
-def iter_athena_exec(ath, query_string):
-    query_id = ath.start_query_execution(QueryString=query_string)['QueryExecutionId']
+def iter_athena_exec(ath, query_string, workgroup=None):
+    kwargs = dict(QueryString=query_string)
+    if workgroup:
+        kwargs.update(WorkGroup=workgroup)
+
+    query_id = ath.start_query_execution(**kwargs)['QueryExecutionId']
     
     while True:
         execution = ath.get_query_execution(QueryExecutionId=query_id)
