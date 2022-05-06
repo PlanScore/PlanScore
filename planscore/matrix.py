@@ -36,12 +36,16 @@ def load_model(path_suffix, state, year, has_incumbents, is_congress):
     # TODO: accept year = None
 
     matrix_dir = os.path.join(os.path.dirname(__file__), 'model')
-    c_path__ = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}.csv.gz')
-    e_path__ = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}.csv.gz')
-    c_path_o = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}-openseat.csv.gz')
-    e_path_o = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}-openseat.csv.gz')
-    c_path_i = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}-incumbency.csv.gz')
-    e_path_i = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}-incumbency.csv.gz')
+    c_path___ = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}.csv.gz')
+    e_path___ = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}.csv.gz')
+    c_path_oc = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}-openseat-congress.csv.gz')
+    e_path_oc = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}-openseat-congress.csv.gz')
+    c_path_ic = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}-incumbency-congress.csv.gz')
+    e_path_ic = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}-incumbency-congress.csv.gz')
+    c_path_os = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}-openseat-statelege.csv.gz')
+    e_path_os = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}-openseat-statelege.csv.gz')
+    c_path_is = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}-incumbency-statelege.csv.gz')
+    e_path_is = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}-incumbency-statelege.csv.gz')
     
     c_keys = (
         'b_Intercept',
@@ -55,9 +59,18 @@ def load_model(path_suffix, state, year, has_incumbents, is_congress):
         f'r_cycle[{year},incumb]',
     )
     
-    if has_incumbents and os.path.exists(c_path_i) and os.path.exists(e_path_i):
+    if has_incumbents and is_congress and os.path.exists(c_path_ic) and os.path.exists(e_path_ic):
+        c_path, e_path = c_path_ic, e_path_ic
+    elif has_incumbents and os.path.exists(c_path_is) and os.path.exists(e_path_is):
+        c_path, e_path = c_path_is, e_path_is
+    elif is_congress and os.path.exists(c_path_oc) and os.path.exists(e_path_oc):
+        c_path, e_path = c_path_oc, e_path_oc
+    elif os.path.exists(c_path_os) and os.path.exists(e_path_os):
+        c_path, e_path = c_path_os, e_path_os
+    
+    elif False and has_incumbents and os.path.exists(c_path_i) and os.path.exists(e_path_i):
         c_path, e_path = c_path_i, e_path_i
-    elif not has_incumbents and os.path.exists(c_path_o) and os.path.exists(e_path_o):
+    elif False and not has_incumbents and os.path.exists(c_path_o) and os.path.exists(e_path_o):
         c_path, e_path = c_path_o, e_path_o
 
         # Open seat matrix file is missing "incumb" rows
@@ -72,7 +85,7 @@ def load_model(path_suffix, state, year, has_incumbents, is_congress):
             f'r_congress:cycle[{str(is_congress).upper()}_{year},dpres_mn]',
         )
     else:
-        c_path, e_path = c_path__, e_path__
+        c_path, e_path = c_path___, e_path___
 
     with gzip.open(c_path, 'rt') as c_file:
         c_rows = {
@@ -95,7 +108,7 @@ def load_model(path_suffix, state, year, has_incumbents, is_congress):
             for e_row in csv.DictReader(e_file)
         ]
     
-    c_values = [c_rows[c_key] for c_key in c_keys if c_key is not None]
+    c_values = [c_rows[c_key] for c_key in c_keys if c_key in c_rows]
     zeros = [0.] * len(c_values[0])
     
     if len(c_values) == 9:
@@ -107,6 +120,32 @@ def load_model(path_suffix, state, year, has_incumbents, is_congress):
         # If necessary, add all-zero "incumb" series
         c_values.insert(2, zeros)
         c_values.insert(5, zeros)
+        c_values.insert(8, zeros)
+        c_values.insert(11, zeros)
+    elif len(c_values) == 6 and is_congress:
+        # If necessary, add all-zero "incumb" series and missing state series
+        c_values.insert(2, zeros)
+        c_values.insert(5, zeros)
+        c_values.insert(6, zeros)
+        c_values.insert(7, zeros)
+        c_values.insert(8, zeros)
+        c_values.insert(11, zeros)
+    elif len(c_values) == 6:
+        # If necessary, add all-zero congress series and missing state series
+        c_values.insert(3, zeros)
+        c_values.insert(4, zeros)
+        c_values.insert(5, zeros)
+        c_values.insert(6, zeros)
+        c_values.insert(7, zeros)
+        c_values.insert(8, zeros)
+    elif len(c_values) == 4:
+        # If necessary, add all-zero congress series, missing state series, and all-zero "incumb" series
+        c_values.insert(2, zeros)
+        c_values.insert(3, zeros)
+        c_values.insert(4, zeros)
+        c_values.insert(5, zeros)
+        c_values.insert(6, zeros)
+        c_values.insert(7, zeros)
         c_values.insert(8, zeros)
         c_values.insert(11, zeros)
     elif len(c_values) != 12:
