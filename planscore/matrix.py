@@ -20,6 +20,12 @@ INCUMBENCY = {
 # Dictionary of states plus Null Ranch, KS for Null Island
 STATE = dict([(s, s.value.lower()) for s in data.State] + [(data.State.XX, 'ks')])
 
+# C matrix columns 
+INT__, VOT__, INC__ = 0, 1, 2   # intercept, dpres, and incumbency
+INT_S, VOT_S, INC_S = 3, 4, 5   # per-state intercept, dpres, and incumbency
+INT_H, VOT_H, INC_H = 6, 7, 8   # US House intercept, dpres, and incumbency
+INT_C, VOT_C, INC_C = 9, 10, 11 # Per-cycle intercept, dpres, and incumbency
+
 Model = collections.namedtuple('Model', (
     'intercept', 'vote', 'incumbent',
     'state_intercept', 'state_vote', 'state_incumbent',
@@ -112,42 +118,48 @@ def load_model(path_suffix, state, year, has_incumbents, is_congress):
     zeros = [0.] * len(c_values[0])
     
     if len(c_values) == 9:
-        # If necessary, add all-zero congress series
-        c_values.insert(6, zeros)
-        c_values.insert(7, zeros)
-        c_values.insert(8, zeros)
+        # If necessary, add all-zero US House series for
+        # e.g. 2021D matrix lacking US House differentiation
+        # or e.g. any 2022F matrix with incumbency
+        c_values.insert(INT_H, zeros)
+        c_values.insert(VOT_H, zeros)
+        c_values.insert(INC_H, zeros)
     elif len(c_values) == 8:
         # If necessary, add all-zero "incumb" series
         c_values.insert(2, zeros)
         c_values.insert(5, zeros)
         c_values.insert(8, zeros)
         c_values.insert(11, zeros)
-    elif len(c_values) == 6 and (is_congress or not has_incumbents):
-        # If necessary, add all-zero "incumb" series and missing state series
-        c_values.insert(2, zeros)
-        c_values.insert(5, zeros)
-        c_values.insert(6, zeros)
-        c_values.insert(7, zeros)
-        c_values.insert(8, zeros)
-        c_values.insert(11, zeros)
-    elif len(c_values) == 6:
+    elif len(c_values) == 6 and has_incumbents:
         # If necessary, add all-zero congress series and missing state series
-        c_values.insert(3, zeros)
-        c_values.insert(4, zeros)
-        c_values.insert(5, zeros)
-        c_values.insert(6, zeros)
-        c_values.insert(7, zeros)
-        c_values.insert(8, zeros)
+        # for e.g. 2022F state lege matrix with incumbents for omitted Alaska
+        c_values.insert(INT_S, zeros)
+        c_values.insert(VOT_S, zeros)
+        c_values.insert(INC_S, zeros)
+        c_values.insert(INT_H, zeros)
+        c_values.insert(VOT_H, zeros)
+        c_values.insert(INC_H, zeros)
+    elif len(c_values) == 6:
+        # If necessary, add all-zero "incumb" series and
+        # all-zero congress series for e.g. 2022F open seat matrix
+        c_values.insert(INC__, zeros)
+        c_values.insert(INC_S, zeros)
+        c_values.insert(INT_H, zeros)
+        c_values.insert(VOT_H, zeros)
+        c_values.insert(INC_H, zeros)
+        c_values.insert(INC_C, zeros)
     elif len(c_values) == 4:
-        # If necessary, add all-zero congress series, missing state series, and all-zero "incumb" series
-        c_values.insert(2, zeros)
-        c_values.insert(3, zeros)
-        c_values.insert(4, zeros)
-        c_values.insert(5, zeros)
-        c_values.insert(6, zeros)
-        c_values.insert(7, zeros)
-        c_values.insert(8, zeros)
-        c_values.insert(11, zeros)
+        # If necessary, add all-zero congress series, missing state series,
+        # and all-zero "incumb" series for e.g. 2022F openseat state lege
+        # matrix for omitted Alaska
+        c_values.insert(INC__, zeros)
+        c_values.insert(INT_S, zeros)
+        c_values.insert(VOT_S, zeros)
+        c_values.insert(INC_S, zeros)
+        c_values.insert(INT_H, zeros)
+        c_values.insert(VOT_H, zeros)
+        c_values.insert(INC_H, zeros)
+        c_values.insert(INC_C, zeros)
     elif len(c_values) != 12:
         raise RuntimeError(f'Unexpectedly seeing {len(c_values)} c_values')
     
