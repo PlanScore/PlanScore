@@ -122,7 +122,7 @@ def load_model(path_suffix, state, year, has_incumbents, is_congress):
         c_values.insert(5, zeros)
         c_values.insert(8, zeros)
         c_values.insert(11, zeros)
-    elif len(c_values) == 6 and is_congress:
+    elif len(c_values) == 6 and (is_congress or not has_incumbents):
         # If necessary, add all-zero "incumb" series and missing state series
         c_values.insert(2, zeros)
         c_values.insert(5, zeros)
