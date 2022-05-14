@@ -31,7 +31,7 @@ Model = collections.namedtuple('Model', (
     'state_intercept', 'state_vote', 'state_incumbent',
     'congress_intercept', 'congress_vote', 'congress_incumbent',
     'year_intercept', 'year_vote', 'year_incumbent',
-    'c_matrix', 'e_matrix',
+    'c_matrix', 'e_matrix', 'is_congress',
     ))
 
 def dropna(a):
@@ -163,7 +163,7 @@ def load_model(path_suffix, state, year, has_incumbents, is_congress):
     elif len(c_values) != 12:
         raise RuntimeError(f'Unexpectedly seeing {len(c_values)} c_values')
     
-    args = c_values + [numpy.array(c_values), numpy.array(e_rows)]
+    args = c_values + [numpy.array(c_values), numpy.array(e_rows), is_congress]
 
     return Model(*args)
 
@@ -173,9 +173,10 @@ def apply_model(districts, model, params):
         - -1 for Republican, 0 for open seat, and 1 for Democratic incumbents
     '''
     sim_count = model.c_matrix.shape[1]
+    vote_adjust = params.vote_adjust_congress if model.is_congress else params.vote_adjust_statelege
     
     AD = numpy.array([
-        [1, numpy.nan if numpy.isnan(vote) else (vote + params.vote_adjust), incumbency] * 4
+        [1, numpy.nan if numpy.isnan(vote) else (vote + vote_adjust), incumbency] * 4
         for (vote, incumbency)
         in districts
     ])

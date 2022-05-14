@@ -21,6 +21,7 @@ class TestMatrix (unittest.TestCase):
         
         self.assertEqual(model.c_matrix.shape, (12, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
+        self.assertIsNone(model.is_congress)
         
         self.assertEqual(model.intercept[0], model.c_matrix[matrix.INT__,0])
         self.assertEqual(model.vote[0], model.c_matrix[matrix.VOT__,0])
@@ -53,6 +54,7 @@ class TestMatrix (unittest.TestCase):
         
         self.assertEqual(model.c_matrix.shape, (12, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
+        self.assertIsNone(model.is_congress)
         
         self.assertEqual(model.intercept[0], model.c_matrix[matrix.INT__,0])
         self.assertEqual(model.vote[0], model.c_matrix[matrix.VOT__,0])
@@ -85,6 +87,7 @@ class TestMatrix (unittest.TestCase):
         
         self.assertEqual(model.c_matrix.shape, (12, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
+        self.assertTrue(model.is_congress)
         
         self.assertEqual(model.intercept[0], model.c_matrix[matrix.INT__,0])
         self.assertEqual(model.vote[0], model.c_matrix[matrix.VOT__,0])
@@ -117,6 +120,7 @@ class TestMatrix (unittest.TestCase):
         
         self.assertEqual(model.c_matrix.shape, (12, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
+        self.assertFalse(model.is_congress)
         
         self.assertEqual(model.intercept[0], model.c_matrix[matrix.INT__,0])
         self.assertEqual(model.vote[0], model.c_matrix[matrix.VOT__,0])
@@ -149,6 +153,7 @@ class TestMatrix (unittest.TestCase):
         
         self.assertEqual(model.c_matrix.shape, (12, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
+        self.assertFalse(model.is_congress)
         
         self.assertEqual(model.intercept[0], model.c_matrix[matrix.INT__,0])
         self.assertEqual(model.vote[0], model.c_matrix[matrix.VOT__,0])
@@ -181,6 +186,7 @@ class TestMatrix (unittest.TestCase):
         
         self.assertEqual(model.c_matrix.shape, (12, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
+        self.assertTrue(model.is_congress)
         
         self.assertEqual(model.intercept[0], model.c_matrix[matrix.INT__,0])
         self.assertEqual(model.vote[0], model.c_matrix[matrix.VOT__,0])
@@ -213,6 +219,7 @@ class TestMatrix (unittest.TestCase):
         
         self.assertEqual(model.c_matrix.shape, (12, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
+        self.assertFalse(model.is_congress)
         
         self.assertEqual(model.intercept[0], model.c_matrix[matrix.INT__,0])
         self.assertEqual(model.vote[0], model.c_matrix[matrix.VOT__,0])
@@ -245,6 +252,7 @@ class TestMatrix (unittest.TestCase):
         
         self.assertEqual(model.c_matrix.shape, (12, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
+        self.assertFalse(model.is_congress)
         
         self.assertEqual(model.intercept[0], model.c_matrix[matrix.INT__,0])
         self.assertEqual(model.vote[0], model.c_matrix[matrix.VOT__,0])
