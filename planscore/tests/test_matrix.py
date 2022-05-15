@@ -19,7 +19,7 @@ class TestMatrix (unittest.TestCase):
     def test_load_model_2021B(self):
         model = matrix.load_model('-2021B', 'ak', None, None, None)
         
-        self.assertEqual(model.c_matrix.shape, (12, 1000))
+        self.assertEqual(model.c_matrix.shape, (9, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
         self.assertIsNone(model.is_congress)
         
@@ -29,9 +29,6 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(model.state_intercept[0], model.c_matrix[matrix.INT_S,0])
         self.assertEqual(model.state_vote[0], model.c_matrix[matrix.VOT_S,0])
         self.assertEqual(model.state_incumbent[0], model.c_matrix[matrix.INC_S,0])
-        self.assertEqual(model.congress_intercept[0], model.c_matrix[matrix.INT_H,0])
-        self.assertEqual(model.congress_vote[0], model.c_matrix[matrix.VOT_H,0])
-        self.assertEqual(model.congress_incumbent[0], model.c_matrix[matrix.INC_H,0])
         self.assertEqual(model.year_intercept[0], model.c_matrix[matrix.INT_C,0])
         self.assertEqual(model.year_vote[0], model.c_matrix[matrix.VOT_C,0])
         self.assertEqual(model.year_incumbent[0], model.c_matrix[matrix.INC_C,0])
@@ -42,9 +39,6 @@ class TestMatrix (unittest.TestCase):
         self.assertAlmostEqual(model.c_matrix[matrix.INT_S,0], -0.0122)
         self.assertAlmostEqual(model.c_matrix[matrix.VOT_S,0], 0.0286)
         self.assertAlmostEqual(model.c_matrix[matrix.INC_S,0], -0.0042)
-        self.assertAlmostEqual(model.c_matrix[matrix.INT_H,0], ZERO) # US House not specified in 2021B
-        self.assertAlmostEqual(model.c_matrix[matrix.VOT_H,0], ZERO) # US House not specified in 2021B
-        self.assertAlmostEqual(model.c_matrix[matrix.INC_H,0], ZERO) # US House not specified in 2021B
         self.assertAlmostEqual(model.c_matrix[matrix.INT_C,0], 0.0)
         self.assertAlmostEqual(model.c_matrix[matrix.VOT_C,0], 0.0)
         self.assertAlmostEqual(model.c_matrix[matrix.INC_C,0], 0.0)
@@ -52,7 +46,7 @@ class TestMatrix (unittest.TestCase):
     def test_load_model_2021D(self):
         model = matrix.load_model('-2021D', 'ak', 2020, None, None)
         
-        self.assertEqual(model.c_matrix.shape, (12, 1000))
+        self.assertEqual(model.c_matrix.shape, (9, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
         self.assertIsNone(model.is_congress)
         
@@ -62,9 +56,6 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(model.state_intercept[0], model.c_matrix[matrix.INT_S,0])
         self.assertEqual(model.state_vote[0], model.c_matrix[matrix.VOT_S,0])
         self.assertEqual(model.state_incumbent[0], model.c_matrix[matrix.INC_S,0])
-        self.assertEqual(model.congress_intercept[0], model.c_matrix[matrix.INT_H,0])
-        self.assertEqual(model.congress_vote[0], model.c_matrix[matrix.VOT_H,0])
-        self.assertEqual(model.congress_incumbent[0], model.c_matrix[matrix.INC_H,0])
         self.assertEqual(model.year_intercept[0], model.c_matrix[matrix.INT_C,0])
         self.assertEqual(model.year_vote[0], model.c_matrix[matrix.VOT_C,0])
         self.assertEqual(model.year_incumbent[0], model.c_matrix[matrix.INC_C,0])
@@ -75,9 +66,6 @@ class TestMatrix (unittest.TestCase):
         self.assertAlmostEqual(model.c_matrix[matrix.INT_S,0], -0.0024)
         self.assertAlmostEqual(model.c_matrix[matrix.VOT_S,0], -0.0070)
         self.assertAlmostEqual(model.c_matrix[matrix.INC_S,0], -0.0094)
-        self.assertAlmostEqual(model.c_matrix[matrix.INT_H,0], ZERO) # US House not specified in 2021D
-        self.assertAlmostEqual(model.c_matrix[matrix.VOT_H,0], ZERO) # US House not specified in 2021D
-        self.assertAlmostEqual(model.c_matrix[matrix.INC_H,0], ZERO) # US House not specified in 2021D
         self.assertAlmostEqual(model.c_matrix[matrix.INT_C,0], -0.0123)
         self.assertAlmostEqual(model.c_matrix[matrix.VOT_C,0], 0.0582)
         self.assertAlmostEqual(model.c_matrix[matrix.INC_C,0], -0.0118)
@@ -85,7 +73,7 @@ class TestMatrix (unittest.TestCase):
     def test_load_model_2022F_incumbents_congress(self):
         model = matrix.load_model('-2022F', 'ak', 2020, True, True)
         
-        self.assertEqual(model.c_matrix.shape, (12, 1000))
+        self.assertEqual(model.c_matrix.shape, (9, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
         self.assertTrue(model.is_congress)
         
@@ -95,9 +83,6 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(model.state_intercept[0], model.c_matrix[matrix.INT_S,0])
         self.assertEqual(model.state_vote[0], model.c_matrix[matrix.VOT_S,0])
         self.assertEqual(model.state_incumbent[0], model.c_matrix[matrix.INC_S,0])
-        self.assertEqual(model.congress_intercept[0], model.c_matrix[6,0])
-        self.assertEqual(model.congress_vote[0], model.c_matrix[7,0])
-        self.assertEqual(model.congress_incumbent[0], model.c_matrix[8,0])
         self.assertEqual(model.year_intercept[0], model.c_matrix[matrix.INT_C,0])
         self.assertEqual(model.year_vote[0], model.c_matrix[matrix.VOT_C,0])
         self.assertEqual(model.year_incumbent[0], model.c_matrix[matrix.INC_C,0])
@@ -108,9 +93,6 @@ class TestMatrix (unittest.TestCase):
         self.assertAlmostEqual(model.c_matrix[matrix.INT_S,0], 0.0074)
         self.assertAlmostEqual(model.c_matrix[matrix.VOT_S,0], 0.0309)
         self.assertAlmostEqual(model.c_matrix[matrix.INC_S,0], 0.0007)
-        self.assertAlmostEqual(model.c_matrix[matrix.INT_H,0], ZERO) # US House is undifferentiated in 2022F
-        self.assertAlmostEqual(model.c_matrix[matrix.VOT_H,0], ZERO) # US House is undifferentiated in 2022F
-        self.assertAlmostEqual(model.c_matrix[matrix.INC_H,0], ZERO) # US House is undifferentiated in 2022F
         self.assertAlmostEqual(model.c_matrix[matrix.INT_C,0], 0.0104)
         self.assertAlmostEqual(model.c_matrix[matrix.VOT_C,0], 0.0597)
         self.assertAlmostEqual(model.c_matrix[matrix.INC_C,0], -0.0143)
@@ -118,7 +100,7 @@ class TestMatrix (unittest.TestCase):
     def test_load_model_2022F_incumbents_statelege(self):
         model = matrix.load_model('-2022F', 'ca', 2020, True, False)
         
-        self.assertEqual(model.c_matrix.shape, (12, 1000))
+        self.assertEqual(model.c_matrix.shape, (9, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
         self.assertFalse(model.is_congress)
         
@@ -128,9 +110,6 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(model.state_intercept[0], model.c_matrix[matrix.INT_S,0])
         self.assertEqual(model.state_vote[0], model.c_matrix[matrix.VOT_S,0])
         self.assertEqual(model.state_incumbent[0], model.c_matrix[matrix.INC_S,0])
-        self.assertEqual(model.congress_intercept[0], model.c_matrix[6,0])
-        self.assertEqual(model.congress_vote[0], model.c_matrix[7,0])
-        self.assertEqual(model.congress_incumbent[0], model.c_matrix[8,0])
         self.assertEqual(model.year_intercept[0], model.c_matrix[matrix.INT_C,0])
         self.assertEqual(model.year_vote[0], model.c_matrix[matrix.VOT_C,0])
         self.assertEqual(model.year_incumbent[0], model.c_matrix[matrix.INC_C,0])
@@ -141,9 +120,6 @@ class TestMatrix (unittest.TestCase):
         self.assertAlmostEqual(model.c_matrix[matrix.INT_S,0], -0.0386)
         self.assertAlmostEqual(model.c_matrix[matrix.VOT_S,0], 0.1591)
         self.assertAlmostEqual(model.c_matrix[matrix.INC_S,0], -0.0192)
-        self.assertAlmostEqual(model.c_matrix[matrix.INT_H,0], ZERO) # US House is undifferentiated in 2022F
-        self.assertAlmostEqual(model.c_matrix[matrix.VOT_H,0], ZERO) # US House is undifferentiated in 2022F
-        self.assertAlmostEqual(model.c_matrix[matrix.INC_H,0], ZERO) # US House is undifferentiated in 2022F
         self.assertAlmostEqual(model.c_matrix[matrix.INT_C,0], -0.0188)
         self.assertAlmostEqual(model.c_matrix[matrix.VOT_C,0], 0.1336)
         self.assertAlmostEqual(model.c_matrix[matrix.INC_C,0], -0.0031)
@@ -151,7 +127,7 @@ class TestMatrix (unittest.TestCase):
     def test_load_model_2022F_incumbents_statelege_missingstate(self):
         model = matrix.load_model('-2022F', 'ak', 2020, True, False)
         
-        self.assertEqual(model.c_matrix.shape, (12, 1000))
+        self.assertEqual(model.c_matrix.shape, (9, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
         self.assertFalse(model.is_congress)
         
@@ -161,9 +137,6 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(model.state_intercept[0], model.c_matrix[matrix.INT_S,0])
         self.assertEqual(model.state_vote[0], model.c_matrix[matrix.VOT_S,0])
         self.assertEqual(model.state_incumbent[0], model.c_matrix[matrix.INC_S,0])
-        self.assertEqual(model.congress_intercept[0], model.c_matrix[6,0])
-        self.assertEqual(model.congress_vote[0], model.c_matrix[7,0])
-        self.assertEqual(model.congress_incumbent[0], model.c_matrix[8,0])
         self.assertEqual(model.year_intercept[0], model.c_matrix[matrix.INT_C,0])
         self.assertEqual(model.year_vote[0], model.c_matrix[matrix.VOT_C,0])
         self.assertEqual(model.year_incumbent[0], model.c_matrix[matrix.INC_C,0])
@@ -174,9 +147,6 @@ class TestMatrix (unittest.TestCase):
         self.assertAlmostEqual(model.c_matrix[matrix.INT_S,0], ZERO) # Alaska is undefined in 2022F state lege
         self.assertAlmostEqual(model.c_matrix[matrix.VOT_S,0], ZERO) # Alaska is undefined in 2022F state lege
         self.assertAlmostEqual(model.c_matrix[matrix.INC_S,0], ZERO) # Alaska is undefined in 2022F state lege
-        self.assertAlmostEqual(model.c_matrix[matrix.INT_H,0], ZERO) # US House is undifferentiated in 2022F
-        self.assertAlmostEqual(model.c_matrix[matrix.VOT_H,0], ZERO) # US House is undifferentiated in 2022F
-        self.assertAlmostEqual(model.c_matrix[matrix.INC_H,0], ZERO) # US House is undifferentiated in 2022F
         self.assertAlmostEqual(model.c_matrix[matrix.INT_C,0], -0.0188)
         self.assertAlmostEqual(model.c_matrix[matrix.VOT_C,0], 0.1336)
         self.assertAlmostEqual(model.c_matrix[matrix.INC_C,0], -0.0031)
@@ -184,7 +154,7 @@ class TestMatrix (unittest.TestCase):
     def test_load_model_2022F_openseat_congress(self):
         model = matrix.load_model('-2022F', 'ak', 2020, False, True)
         
-        self.assertEqual(model.c_matrix.shape, (12, 1000))
+        self.assertEqual(model.c_matrix.shape, (9, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
         self.assertTrue(model.is_congress)
         
@@ -194,9 +164,6 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(model.state_intercept[0], model.c_matrix[matrix.INT_S,0])
         self.assertEqual(model.state_vote[0], model.c_matrix[matrix.VOT_S,0])
         self.assertEqual(model.state_incumbent[0], model.c_matrix[matrix.INC_S,0])
-        self.assertEqual(model.congress_intercept[0], model.c_matrix[6,0])
-        self.assertEqual(model.congress_vote[0], model.c_matrix[7,0])
-        self.assertEqual(model.congress_incumbent[0], model.c_matrix[8,0])
         self.assertEqual(model.year_intercept[0], model.c_matrix[matrix.INT_C,0])
         self.assertEqual(model.year_vote[0], model.c_matrix[matrix.VOT_C,0])
         self.assertEqual(model.year_incumbent[0], model.c_matrix[matrix.INC_C,0])
@@ -207,9 +174,6 @@ class TestMatrix (unittest.TestCase):
         self.assertAlmostEqual(model.c_matrix[matrix.INT_S,0], -0.0169)
         self.assertAlmostEqual(model.c_matrix[matrix.VOT_S,0], -0.0123)
         self.assertAlmostEqual(model.c_matrix[matrix.INC_S,0], ZERO) # Open seat
-        self.assertAlmostEqual(model.c_matrix[matrix.INT_H,0], ZERO) # US House is undifferentiated in 2022F
-        self.assertAlmostEqual(model.c_matrix[matrix.VOT_H,0], ZERO) # US House is undifferentiated in 2022F
-        self.assertAlmostEqual(model.c_matrix[matrix.INC_H,0], ZERO) # US House is undifferentiated in 2022F
         self.assertAlmostEqual(model.c_matrix[matrix.INT_C,0], -0.0046)
         self.assertAlmostEqual(model.c_matrix[matrix.VOT_C,0], 0.0179)
         self.assertAlmostEqual(model.c_matrix[matrix.INC_C,0], ZERO) # Open seat
@@ -217,7 +181,7 @@ class TestMatrix (unittest.TestCase):
     def test_load_model_2022F_openseat_statelege(self):
         model = matrix.load_model('-2022F', 'ca', 2020, False, False)
         
-        self.assertEqual(model.c_matrix.shape, (12, 1000))
+        self.assertEqual(model.c_matrix.shape, (9, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
         self.assertFalse(model.is_congress)
         
@@ -227,9 +191,6 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(model.state_intercept[0], model.c_matrix[matrix.INT_S,0])
         self.assertEqual(model.state_vote[0], model.c_matrix[matrix.VOT_S,0])
         self.assertEqual(model.state_incumbent[0], model.c_matrix[matrix.INC_S,0])
-        self.assertEqual(model.congress_intercept[0], model.c_matrix[matrix.INT_H,0])
-        self.assertEqual(model.congress_vote[0], model.c_matrix[matrix.VOT_H,0])
-        self.assertEqual(model.congress_incumbent[0], model.c_matrix[matrix.INC_H,0])
         self.assertEqual(model.year_intercept[0], model.c_matrix[matrix.INT_C,0])
         self.assertEqual(model.year_vote[0], model.c_matrix[matrix.VOT_C,0])
         self.assertEqual(model.year_incumbent[0], model.c_matrix[matrix.INC_C,0])
@@ -240,9 +201,6 @@ class TestMatrix (unittest.TestCase):
         self.assertAlmostEqual(model.c_matrix[matrix.INT_S,0], -0.0397)
         self.assertAlmostEqual(model.c_matrix[matrix.VOT_S,0], 0.0815)
         self.assertAlmostEqual(model.c_matrix[matrix.INC_S,0], ZERO) # Open seat
-        self.assertAlmostEqual(model.c_matrix[matrix.INT_H,0], ZERO) # US House is undifferentiated in 2022F
-        self.assertAlmostEqual(model.c_matrix[matrix.VOT_H,0], ZERO) # US House is undifferentiated in 2022F
-        self.assertAlmostEqual(model.c_matrix[matrix.INC_H,0], ZERO) # US House is undifferentiated in 2022F
         self.assertAlmostEqual(model.c_matrix[matrix.INT_C,0], -0.0083)
         self.assertAlmostEqual(model.c_matrix[matrix.VOT_C,0], 0.0769)
         self.assertAlmostEqual(model.c_matrix[matrix.INC_C,0], ZERO) # Open seat
@@ -250,7 +208,7 @@ class TestMatrix (unittest.TestCase):
     def test_load_model_2022F_openseat_statelege_missingstate(self):
         model = matrix.load_model('-2022F', 'ak', 2020, False, False)
         
-        self.assertEqual(model.c_matrix.shape, (12, 1000))
+        self.assertEqual(model.c_matrix.shape, (9, 1000))
         self.assertEqual(model.e_matrix.shape, (500, 1000))
         self.assertFalse(model.is_congress)
         
@@ -260,9 +218,6 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(model.state_intercept[0], model.c_matrix[matrix.INT_S,0])
         self.assertEqual(model.state_vote[0], model.c_matrix[matrix.VOT_S,0])
         self.assertEqual(model.state_incumbent[0], model.c_matrix[matrix.INC_S,0])
-        self.assertEqual(model.congress_intercept[0], model.c_matrix[matrix.INT_H,0])
-        self.assertEqual(model.congress_vote[0], model.c_matrix[matrix.VOT_H,0])
-        self.assertEqual(model.congress_incumbent[0], model.c_matrix[matrix.INC_H,0])
         self.assertEqual(model.year_intercept[0], model.c_matrix[matrix.INT_C,0])
         self.assertEqual(model.year_vote[0], model.c_matrix[matrix.VOT_C,0])
         self.assertEqual(model.year_incumbent[0], model.c_matrix[matrix.INC_C,0])
@@ -273,9 +228,6 @@ class TestMatrix (unittest.TestCase):
         self.assertAlmostEqual(model.c_matrix[matrix.INT_S,0], ZERO) # Alaska is undefined in 2022F state lege
         self.assertAlmostEqual(model.c_matrix[matrix.VOT_S,0], ZERO) # Alaska is undefined in 2022F state lege
         self.assertAlmostEqual(model.c_matrix[matrix.INC_S,0], ZERO) # Alaska is undefined in 2022F state lege
-        self.assertAlmostEqual(model.c_matrix[matrix.INT_H,0], ZERO) # US House is undifferentiated in 2022F
-        self.assertAlmostEqual(model.c_matrix[matrix.VOT_H,0], ZERO) # US House is undifferentiated in 2022F
-        self.assertAlmostEqual(model.c_matrix[matrix.INC_H,0], ZERO) # US House is undifferentiated in 2022F
         self.assertAlmostEqual(model.c_matrix[matrix.INT_C,0], -0.0083)
         self.assertAlmostEqual(model.c_matrix[matrix.VOT_C,0], 0.0769)
         self.assertAlmostEqual(model.c_matrix[matrix.INC_C,0], ZERO) # Open seat
