@@ -163,13 +163,21 @@ function load_plan_preread(url, form, message_section, preread_section, descript
         
         for(var i = 0; i < plan.model.versions.length; i++)
         {
-            var value = plan.model.versions[i],
-                text = window.version_parameters[value][0],
-                state = (i == 0) ? 'checked' : '';
-
-            //model_versions.appendChild(document.createElement('br'));
-            model_versions.appendChild(document.createElement('label'));
-            model_versions.lastChild.innerHTML = `<input type="radio" name="model_version" value="${value}" ${state}> ${text}`;
+            var value = plan.model.versions[i];
+            
+            if(value in window.version_parameters)
+            {
+                var text = window.version_parameters[value][0],
+                    is_public = window.version_parameters[value][9],
+                    state = (i == 0) ? 'checked' : '';
+            
+                if(is_public)
+                {
+                    //model_versions.appendChild(document.createElement('br'));
+                    model_versions.appendChild(document.createElement('label'));
+                    model_versions.lastChild.innerHTML = `<input type="radio" name="model_version" value="${value}" ${state}> ${text}`;
+                }
+            }
         }
         
         var table_body = first_incumbent_row.parentNode,

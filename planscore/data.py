@@ -33,7 +33,8 @@ VersionParameters = collections.namedtuple(
         # subtract this adjustment value from the presidential vote values in
         # each district. Values are given as Democratic vote portion from 0. to
         # 1. and become approximately -0.5 to +0.5.
-        'vote_adjust',
+        'vote_adjust_congress',
+        'vote_adjust_statelege',
 
         # True 2016 and 2020 presidential votes may need to be scaled and
         # offset for compatibility with the C and E matrixes.
@@ -41,6 +42,9 @@ VersionParameters = collections.namedtuple(
         'pvote2016_offset',
         'pvote2020_scale',
         'pvote2020_offset',
+        
+        # Include as option on annotation page?
+        'is_public',
     ),
 )
 
@@ -48,11 +52,18 @@ VersionParameters = collections.namedtuple(
 VERSION_PARAMETERS = {
     '2021D': VersionParameters(
         'New: rerun the 2020 election with more accurate updated data',
-        '-2021D', 2020, -0.4985419, 1., 0., 1., 0.,
+        '-2021D', 2020, -0.4985419, -0.4985419, 1., 0., 1., 0.,
+        True,
+    ),
+    '2022F': VersionParameters(
+        'New (v3): rerun the 2020 election with more accurate updated data',
+        '-2022F', 2020, -0.5208897, -0.492732, 1., 0., 1., 0.,
+        False,
     ),
     '2021B': VersionParameters(
         'Original: rerun an average election from the past 10 years with best available data from before Census release',
-        '-2021B', None, -0.496875, 0.91, 0.05, 0.96, 0.01,
+        '-2021B', None, -0.496875, -0.496875, 0.91, 0.05, 0.96, 0.01,
+        True,
     ),
 }
 

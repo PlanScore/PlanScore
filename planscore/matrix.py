@@ -20,23 +20,36 @@ INCUMBENCY = {
 # Dictionary of states plus Null Ranch, KS for Null Island
 STATE = dict([(s, s.value.lower()) for s in data.State] + [(data.State.XX, 'ks')])
 
+# C matrix columns 
+INT__, VOT__, INC__ = 0, 1, 2   # intercept, dpres, and incumbency
+INT_S, VOT_S, INC_S = 3, 4, 5   # per-state intercept, dpres, and incumbency
+INT_C, VOT_C, INC_C = 6, 7, 8   # Per-cycle intercept, dpres, and incumbency
+
 Model = collections.namedtuple('Model', (
     'intercept', 'vote', 'incumbent',
     'state_intercept', 'state_vote', 'state_incumbent',
     'year_intercept', 'year_vote', 'year_incumbent',
-    'c_matrix', 'e_matrix',
+    'c_matrix', 'e_matrix', 'is_congress',
     ))
 
 def dropna(a):
     return a[~numpy.isnan(a)]
 
-def load_model(path_suffix, state, year):
+def load_model(path_suffix, state, year, has_incumbents, is_congress):
 
     # TODO: accept year = None
 
     matrix_dir = os.path.join(os.path.dirname(__file__), 'model')
-    c_path = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}.csv.gz')
-    e_path = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}.csv.gz')
+    c_path___ = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}.csv.gz')
+    e_path___ = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}.csv.gz')
+    c_path_oc = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}-openseat-congress.csv.gz')
+    e_path_oc = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}-openseat-congress.csv.gz')
+    c_path_ic = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}-incumbency-congress.csv.gz')
+    e_path_ic = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}-incumbency-congress.csv.gz')
+    c_path_os = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}-openseat-statelege.csv.gz')
+    e_path_os = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}-openseat-statelege.csv.gz')
+    c_path_is = os.path.join(matrix_dir, f'C_matrix_full{path_suffix}-incumbency-statelege.csv.gz')
+    e_path_is = os.path.join(matrix_dir, f'E_matrix_full{path_suffix}-incumbency-statelege.csv.gz')
     
     c_keys = (
         'b_Intercept',
@@ -50,6 +63,34 @@ def load_model(path_suffix, state, year):
         f'r_cycle[{year},incumb]',
     )
     
+    if has_incumbents and is_congress and os.path.exists(c_path_ic) and os.path.exists(e_path_ic):
+        c_path, e_path = c_path_ic, e_path_ic
+    elif has_incumbents and os.path.exists(c_path_is) and os.path.exists(e_path_is):
+        c_path, e_path = c_path_is, e_path_is
+    elif is_congress and os.path.exists(c_path_oc) and os.path.exists(e_path_oc):
+        c_path, e_path = c_path_oc, e_path_oc
+    elif os.path.exists(c_path_os) and os.path.exists(e_path_os):
+        c_path, e_path = c_path_os, e_path_os
+    
+    elif False and has_incumbents and os.path.exists(c_path_i) and os.path.exists(e_path_i):
+        c_path, e_path = c_path_i, e_path_i
+    elif False and not has_incumbents and os.path.exists(c_path_o) and os.path.exists(e_path_o):
+        c_path, e_path = c_path_o, e_path_o
+
+        # Open seat matrix file is missing "incumb" rows
+        c_keys = (
+            'b_Intercept',
+            'b_dpres_mn',
+            f'r_stateabrev[{state},Intercept]',
+            f'r_stateabrev[{state},dpres_mn]',
+            f'r_congress[{str(is_congress).upper()},Intercept]',
+            f'r_congress[{str(is_congress).upper()},dpres_mn]',
+            f'r_congress:cycle[{str(is_congress).upper()}_{year},Intercept]',
+            f'r_congress:cycle[{str(is_congress).upper()}_{year},dpres_mn]',
+        )
+    else:
+        c_path, e_path = c_path___, e_path___
+
     with gzip.open(c_path, 'rt') as c_file:
         c_rows = {
             c_row['']: [
@@ -71,9 +112,33 @@ def load_model(path_suffix, state, year):
             for e_row in csv.DictReader(e_file)
         ]
     
-    c_values = [c_rows[c_key] for c_key in c_keys]
-    args = c_values + [numpy.array(c_values), numpy.array(e_rows)]
+    c_values = [c_rows[c_key] for c_key in c_keys if c_key in c_rows]
+    zeros = [0.] * len(c_values[0])
     
+    if len(c_values) == 6 and has_incumbents:
+        # If necessary, add missing state series for e.g. 2022F state lege
+        # matrix with incumbents for omitted Alaska
+        c_values.insert(INT_S, zeros)
+        c_values.insert(VOT_S, zeros)
+        c_values.insert(INC_S, zeros)
+    elif len(c_values) == 6 and not has_incumbents:
+        # If necessary, add all-zero "incumb" series for e.g. 2022F open seat matrix
+        c_values.insert(INC__, zeros)
+        c_values.insert(INC_S, zeros)
+        c_values.insert(INC_C, zeros)
+    elif len(c_values) == 4 and not has_incumbents:
+        # If necessary, add missing state series, and all-zero "incumb" series
+        # for e.g. 2022F openseat state lege matrix for omitted Alaska
+        c_values.insert(INC__, zeros)
+        c_values.insert(INT_S, zeros)
+        c_values.insert(VOT_S, zeros)
+        c_values.insert(INC_S, zeros)
+        c_values.insert(INC_C, zeros)
+    elif len(c_values) != 9:
+        raise RuntimeError(f'Unexpectedly seeing {len(c_values)} c_values')
+    
+    args = c_values + [numpy.array(c_values), numpy.array(e_rows), is_congress]
+
     return Model(*args)
 
 def apply_model(districts, model, params):
@@ -81,8 +146,11 @@ def apply_model(districts, model, params):
         - Democratic vote portion from 0. to 1.
         - -1 for Republican, 0 for open seat, and 1 for Democratic incumbents
     '''
+    sim_count = model.c_matrix.shape[1]
+    vote_adjust = params.vote_adjust_congress if model.is_congress else params.vote_adjust_statelege
+    
     AD = numpy.array([
-        [1, numpy.nan if numpy.isnan(vote) else (vote + params.vote_adjust), incumbency] * 3
+        [1, numpy.nan if numpy.isnan(vote) else (vote + vote_adjust), incumbency] * 3
         for (vote, incumbency)
         in districts
     ])
@@ -103,12 +171,15 @@ def apply_model(districts, model, params):
 
     #print('ADCE:', (ADC + E).shape)
     #numpy.savetxt('ADCE.csv', (ADC + E), fmt='%.9f', delimiter=',')
+    assert (ADC + E).shape == (len(districts), sim_count)
     return ADC + E
 
-def model_votes(model_version, state, districts):
+def model_votes(model_version, state, house, districts):
     ''' Convert presidential votes to range of possible modeled chamber votes.
         
-        state is from data.State enum, year is an integer.
+        model_version is a string like '2021D' from data.VERSION_PARAMETERS.
+        state is from data.State enum.
+        house is from data.House enum.
         districts is an array of three-element tuples:
         - Input Democratic vote count
         - Input Republican vote count
@@ -121,13 +192,16 @@ def model_votes(model_version, state, districts):
     else:
         params = data.VERSION_PARAMETERS[model_version]
     
+    has_incumbents = bool({inc for (_, _, inc) in districts} != {'O'})
+    is_congress = bool(house == data.House.ushouse)
+    
     # Get DxS array from apply_model() with modeled vote fractions
     fractions = apply_model(
         [
             (dem / ((dem + rep) or numpy.nan), INCUMBENCY[inc])
             for (dem, rep, inc) in districts
         ],
-        load_model(params.path_suffix, STATE[state], params.year),
+        load_model(params.path_suffix, STATE[state], params.year, has_incumbents, is_congress),
         params,
     )
     
@@ -223,7 +297,12 @@ def main():
     input_district_data = prepare_district_data(upload)
     
     # Get large number of simulated outputs
-    output_votes = model_votes(upload.model_version, upload.model.state, input_district_data)
+    output_votes = model_votes(
+        upload.model_version,
+        upload.model.state,
+        upload.model.house,
+        input_district_data,
+    )
 
     with open(args.matrix_path, 'w') as file:
         districts, sims, parties = output_votes.shape

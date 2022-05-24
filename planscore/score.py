@@ -654,6 +654,7 @@ def calculate_district_biases(upload):
     output_votes = matrix.model_votes(
         upload.model_version,
         upload.model.state,
+        upload.model.house,
         matrix.filter_district_data(matrix.prepare_district_data(upload)),
     )
     
