@@ -25,7 +25,7 @@ where
 - <var style="font-family:serif">i</var> indexes district level elections
 - <var style="font-family:serif">s</var> indexes states, with <var style="font-family:serif">s(i)</var> denoting the state of district election <var style="font-family:serif">i</var>
 - <var style="font-family:serif">c</var> indexes election cycles, with <var style="font-family:serif">c(i)</var> denoting the election cycle of district election <var style="font-family:serif">i</var>
-- <var style="font-family:serif">k ∈ [0…2]</var> indexes covariates, with 0 identifying intercepts
+- <var style="font-family:serif">k ∈ [1, 2]</var> indexes covariates, with 0 identifying intercepts
 - <var style="font-family:serif">y<sub>i</sub></var> is the Democratic share of the two-party vote in district election <var style="font-family:serif">i</var>
 - <var style="font-family:serif"><b>X</b><sub>i</sub></var> is a matrix of covariate values for district election <var style="font-family:serif">i</var>
 - <var style="font-family:serif">β</var> is a matrix of population-level intercept and slopes corresponding to covariates <var style="font-family:serif"><b>X</b></var>
@@ -36,7 +36,7 @@ The model allows the slope for all our covariates—as well as the corresponding
 
 We run separate models for state legislative and congressional outcomes and with and without incumbency as a covariate. PlanScore identifies a plan as state legislative or congressional based on the number of seats in the plan and the state for which it is submitted.
 
-The number of covariates <var>k</var> ranges between 1 and 2: if a user designates incumbency for any seat in a plan, predictions come from the model that includes both presidential vote and incumbency as covariates; if all seats are left open, predictions come from a model with only presidential vote. Presidential vote is the two-party district-level Democratic presidential vote share, centered around its global mean (Congress = 0.521; State legislatures = 0.494), while incumbency status in district election <var>i</var> is coded -1 for Republican, 0 for open, and 1 for Democratic. We do not have the 2020 presidential vote for estimating new plans in two states—Kentucky and South Dakota—so we used the 2016 presidential vote in the model for those states. In the small number of state-cycle combinations that were missing presidential vote we used the presidential vote for the same district in the next presidential election (or the previous presidential election where the next one was not available).
+<var>k</var> ranges between 1 and 2: if a user designates incumbency for any seat in a plan, predictions come from the model that includes both presidential vote and incumbency as covariates; if all seats are left open, predictions come from a model with only presidential vote. Presidential vote is the two-party district-level Democratic presidential vote share, centered around its global mean (Congress = 0.521; State legislatures = 0.494), while incumbency status in district election <var>i</var> is coded -1 for Republican, 0 for open, and 1 for Democratic. We do not have the 2020 presidential vote for estimating new plans in two states—Kentucky and South Dakota—so we used the 2016 presidential vote in the model for those states. In the small number of state-cycle combinations that were missing presidential vote we used the presidential vote for the same district in the next presidential election (or the previous presidential election where the next one was not available).
 
 When generating predictions, PlanScore draws 1000 samples from the posterior distribution of model parameters, and uses them to calculate means and probabilities. We also add in the offsets for the 2020 presidential election cycle, and then also add in samples from the covariance matrix of cycle random effects to allow the uncertainty of predicting for an unknown election cycle to propagate into our predictions. This has the effect of predicting for an election like 2020 in most respects, but with error bounds that encompass the full range of partisan tides that occurred over the last decade.
 
@@ -375,6 +375,27 @@ Full results for our four separate models can be found below.
         </tr>
     </tbody>
 </table>
+
+Predictions
+---
+
+The charts below show comparisons between this model’s in-sample predictions and observed historical scores for plans with at least 7 districts. The results were broadly similar for cross-validated predictions with 10 percent of the sample set aside for testing. The predictions were also quite strong for 2020 in states where we were able to obtain election results for comparison.
+
+![model_v_historical_cycles_cycles_cong.png](model_v_historical_cycles_cycles_cong.png)
+
+![model_v_historical_states_cycles_cong.png](model_v_historical_states_cycles_cong.png)
+
+![model_v_historical_cycles_cycles_cong_pvote_only.png](model_v_historical_cycles_cycles_cong_pvote_only.png)
+
+![model_v_historical_states_cycles_cong_pvote_only.png](model_v_historical_states_cycles_cong_pvote_only.png)
+
+![model_v_historical_cycles_cycles_leg.png](model_v_historical_cycles_cycles_leg.png)
+
+![model_v_historical_states_cycles_leg.png](model_v_historical_states_cycles_leg.png)
+
+![model_v_historical_cycles_cycles_leg_pvote_only.png](model_v_historical_cycles_cycles_leg_pvote_only.png)
+
+![model_v_historical_states_cycles_leg_pvote_only.png](model_v_historical_states_cycles_leg_pvote_only.png)
 
 Data Sources
 ---
