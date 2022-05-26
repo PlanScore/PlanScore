@@ -50,11 +50,6 @@ VersionParameters = collections.namedtuple(
 
 # Dict order is significant, default is first
 VERSION_PARAMETERS = {
-    '2021D': VersionParameters(
-        'New: rerun the 2020 election with more accurate updated data',
-        '-2021D', 2020, -0.4985419, -0.4985419, 1., 0., 1., 0.,
-        False,
-    ),
     '2022F': VersionParameters(
         'New (v3): rerun the 2020 election with more accurate updated data',
         '-2022F', 2020, -0.5208897, -0.492732, 1., 0., 1., 0.,

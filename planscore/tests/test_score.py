@@ -964,8 +964,8 @@ class TestScore (unittest.TestCase):
         ''' Incumbency values are correctly passedon for presidential vote only
         '''
         input = data.Upload(id=None, key=None,
-            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2021B'], None),
-            model_version = '2021D',
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2022F'], None),
+            model_version = '2022F',
             incumbents = ['R', 'D', 'R', 'D'],
             districts = [
                 dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
@@ -999,7 +999,7 @@ class TestScore (unittest.TestCase):
              [2.6, 5.4]],
         ])
         output = score.calculate_everything(input)
-        self.assertEqual(model_votes.mock_calls[0][1][:2], ('2021D', data.State.XX))
+        self.assertEqual(model_votes.mock_calls[0][1][:2], ('2022F', data.State.XX))
         self.assertEqual(model_votes.mock_calls[0][1][3][0], (6.0, 2.0, 'R'))
         self.assertEqual(model_votes.mock_calls[0][1][3][1], (5.0, 3.0, 'D'))
         self.assertEqual(model_votes.mock_calls[0][1][3][2], (3.0, 5.0, 'R'))
@@ -1095,8 +1095,8 @@ class TestScore (unittest.TestCase):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
-            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2021D'], None),
-            model_version = '2021D',
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2022F'], None),
+            model_version = '2022F',
             districts = [
                 dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
                 dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
@@ -1145,7 +1145,7 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.districts[3]['number'], 4, 'Should count 5th district')
         self.assertIsNone(output.districts[4]['number'], 'Should not count empty 5th district')
         
-        self.assertEqual(model_votes.mock_calls[0][1][:2], ('2021D', data.State.XX))
+        self.assertEqual(model_votes.mock_calls[0][1][:2], ('2022F', data.State.XX))
         self.assertEqual(model_votes.mock_calls[0][1][3][0], (6.0, 2.0, 'O'))
         self.assertEqual(model_votes.mock_calls[0][1][3][1], (5.0, 3.0, 'O'))
         self.assertEqual(model_votes.mock_calls[0][1][3][2], (3.0, 5.0, 'O'))
