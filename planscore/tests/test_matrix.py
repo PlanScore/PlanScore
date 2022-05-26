@@ -43,33 +43,6 @@ class TestMatrix (unittest.TestCase):
         self.assertAlmostEqual(model.c_matrix[matrix.VOT_C,0], 0.0)
         self.assertAlmostEqual(model.c_matrix[matrix.INC_C,0], 0.0)
     
-    def test_load_model_2021D(self):
-        model = matrix.load_model('-2021D', 'ak', 2020, None, None)
-        
-        self.assertEqual(model.c_matrix.shape, (9, 1000))
-        self.assertEqual(model.e_matrix.shape, (500, 1000))
-        self.assertIsNone(model.is_congress)
-        
-        self.assertEqual(model.intercept[0], model.c_matrix[matrix.INT__,0])
-        self.assertEqual(model.vote[0], model.c_matrix[matrix.VOT__,0])
-        self.assertEqual(model.incumbent[0], model.c_matrix[matrix.INC__,0])
-        self.assertEqual(model.state_intercept[0], model.c_matrix[matrix.INT_S,0])
-        self.assertEqual(model.state_vote[0], model.c_matrix[matrix.VOT_S,0])
-        self.assertEqual(model.state_incumbent[0], model.c_matrix[matrix.INC_S,0])
-        self.assertEqual(model.year_intercept[0], model.c_matrix[matrix.INT_C,0])
-        self.assertEqual(model.year_vote[0], model.c_matrix[matrix.VOT_C,0])
-        self.assertEqual(model.year_incumbent[0], model.c_matrix[matrix.INC_C,0])
-
-        self.assertAlmostEqual(model.c_matrix[matrix.INT__,0], 0.4982)
-        self.assertAlmostEqual(model.c_matrix[matrix.VOT__,0], 0.8451)
-        self.assertAlmostEqual(model.c_matrix[matrix.INC__,0], 0.0451)
-        self.assertAlmostEqual(model.c_matrix[matrix.INT_S,0], -0.0024)
-        self.assertAlmostEqual(model.c_matrix[matrix.VOT_S,0], -0.0070)
-        self.assertAlmostEqual(model.c_matrix[matrix.INC_S,0], -0.0094)
-        self.assertAlmostEqual(model.c_matrix[matrix.INT_C,0], -0.0123)
-        self.assertAlmostEqual(model.c_matrix[matrix.VOT_C,0], 0.0582)
-        self.assertAlmostEqual(model.c_matrix[matrix.INC_C,0], -0.0118)
-    
     def test_load_model_2022F_incumbents_congress(self):
         model = matrix.load_model('-2022F', 'ak', 2020, True, True)
         
@@ -361,7 +334,7 @@ class TestMatrix (unittest.TestCase):
                 (numpy.nan, 0),
             ],
             model,
-            data.VERSION_PARAMETERS['2021D'],
+            data.VERSION_PARAMETERS['2021B'],
         )
         
         self.assertTrue(numpy.isnan(R).all(), 'Everything should be NaN')
@@ -458,7 +431,7 @@ class TestMatrix (unittest.TestCase):
         
         default_version = data.VERSION_PARAMETERS[data.DEFAULT_VERSION]
         self.assertIs(apply_model.mock_calls[0][1][-1], default_version)
-        self.assertEqual(load_model.mock_calls[0][1], ('-2021D', 'nc', 2020, True, True))
+        self.assertEqual(load_model.mock_calls[0][1], ('-2022F', 'nc', 2020, True, True))
     
     def test_prepare_district_data(self):
         input = data.Upload(id=None, key=None,
@@ -510,23 +483,6 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(output[1], (4.95, 3.05, 'O'))
         self.assertEqual(output[2], (3.13, 4.87, 'O'))
         self.assertEqual(output[3], (2.22, 5.78, 'O'))
-    
-    def test_prepare_district_data_2021D_version(self):
-        input = data.Upload(id=None, key=None,
-            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2020'], None),
-            model_version = '2021D',
-            districts = [
-                dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
-                dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
-                dict(totals={'US President 2016 - REP': 5, 'US President 2016 - DEM': 3}, tile=None),
-                dict(totals={'US President 2016 - REP': 6, 'US President 2016 - DEM': 2}, tile=None),
-                ])
-        
-        output = matrix.prepare_district_data(input)
-        self.assertEqual(output[0], (6.0, 2.0, 'O'))
-        self.assertEqual(output[1], (5.0, 3.0, 'O'))
-        self.assertEqual(output[2], (3.0, 5.0, 'O'))
-        self.assertEqual(output[3], (2.0, 6.0, 'O'))
     
     def test_prepare_district_data_default_version(self):
         input = data.Upload(id=None, key=None,
