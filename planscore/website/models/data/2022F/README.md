@@ -379,7 +379,8 @@ Full results for our four separate models can be found below.
 Predictions
 ---
 
-The charts below show comparisons between this model’s in-sample predictions and observed historical scores for plans with at least 7 districts. The results were broadly similar for cross-validated predictions with 10 percent of the sample set aside for testing. The predictions were also quite strong for 2020 in states where we were able to obtain election results for comparison.
+The charts below show comparisons between this model’s in-sample predictions
+and observed historical scores for plans with at least 7 districts.
 
 ![model_v_historical_cycles_cycles_cong.png](model_v_historical_cycles_cycles_cong.png)
 
