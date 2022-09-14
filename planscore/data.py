@@ -482,10 +482,10 @@ MODELS = [
     Model(State.KS, House.statesenate,  40,  True, VERSIONS, 'data/KS/008-more-acs'), # a926eb0
     Model(State.KS, House.statehouse,  125,  True, VERSIONS, 'data/KS/008-more-acs'), # a926eb0
     Model(State.KS, House.localplan,  None,  True, VERSIONS, 'data/KS/008-more-acs'), # a926eb0
-    Model(State.KY, House.ushouse,       6,  True, VERSIONS, 'data/KY/005-more-acs'), # a926eb0
-    Model(State.KY, House.statesenate,  38,  True, VERSIONS, 'data/KY/005-more-acs'), # a926eb0
-    Model(State.KY, House.statehouse,  100,  True, VERSIONS, 'data/KY/005-more-acs'), # a926eb0
-    Model(State.KY, House.localplan,  None,  True, VERSIONS, 'data/KY/005-more-acs'), # a926eb0
+    Model(State.KY, House.ushouse,       6,  True, VERSIONS, 'data/KY/006-vest-2020'), # c45aef1
+    Model(State.KY, House.statesenate,  38,  True, VERSIONS, 'data/KY/006-vest-2020'), # c45aef1
+    Model(State.KY, House.statehouse,  100,  True, VERSIONS, 'data/KY/006-vest-2020'), # c45aef1
+    Model(State.KY, House.localplan,  None,  True, VERSIONS, 'data/KY/006-vest-2020'), # c45aef1
     Model(State.LA, House.ushouse,       6,  True, VERSIONS, 'data/LA/006-more-acs'), # a926eb0
     Model(State.LA, House.statesenate,  39,  True, VERSIONS, 'data/LA/006-more-acs'), # a926eb0
     Model(State.LA, House.statehouse,  105,  True, VERSIONS, 'data/LA/006-more-acs'), # a926eb0
