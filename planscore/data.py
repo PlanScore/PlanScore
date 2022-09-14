@@ -609,10 +609,10 @@ MODELS = [
     Model(State.WI, House.statesenate,  33,  True, VERSIONS, 'data/WI/013-more-acs'), # a926eb0
     Model(State.WI, House.statehouse,   99,  True, VERSIONS, 'data/WI/013-more-acs'), # a926eb0
     Model(State.WI, House.localplan,  None,  True, VERSIONS, 'data/WI/013-more-acs'), # a926eb0
-    Model(State.WV, House.ushouse,       3,  True, VERSIONS, 'data/WV/002-more-acs'), # a926eb0
-    Model(State.WV, House.statesenate,  34,  True, VERSIONS, 'data/WV/002-more-acs'), # a926eb0
-    Model(State.WV, House.statehouse,  100,  True, VERSIONS, 'data/WV/002-more-acs'), # a926eb0
-    Model(State.WV, House.localplan,  None,  True, VERSIONS, 'data/WV/002-more-acs'), # a926eb0
+    Model(State.WV, House.ushouse,       3,  True, VERSIONS, 'data/WV/003-vest-2020'), # c45aef1
+    Model(State.WV, House.statesenate,  34,  True, VERSIONS, 'data/WV/003-vest-2020'), # c45aef1
+    Model(State.WV, House.statehouse,  100,  True, VERSIONS, 'data/WV/003-vest-2020'), # c45aef1
+    Model(State.WV, House.localplan,  None,  True, VERSIONS, 'data/WV/003-vest-2020'), # c45aef1
     Model(State.WY, House.ushouse,       1,  True, VERSIONS, 'data/WY/009-more-acs'), # a926eb0
     Model(State.WY, House.statesenate,  30,  True, VERSIONS, 'data/WY/009-more-acs'), # a926eb0
     Model(State.WY, House.statehouse,   60,  True, VERSIONS, 'data/WY/009-more-acs'), # a926eb0
