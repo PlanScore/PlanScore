@@ -12,8 +12,6 @@ UPLOAD_ASSIGNMENTS_KEY = 'uploads/{id}/assignments/{index}.txt'
 UPLOAD_DISTRICTS_PARTITION_KEY = 'uploads/{id}/districts/partition.csv.gz'
 UPLOAD_TILE_INDEX_KEY = 'uploads/{id}/tiles.json'
 UPLOAD_ASSIGNMENT_INDEX_KEY = 'uploads/{id}/assignments.json'
-UPLOAD_TILES_KEY = 'uploads/{id}/tiles/{zxy}.json'
-UPLOAD_SLICES_KEY = 'uploads/{id}/slices/{geoid}.json'
 UPLOAD_TIMING_KEY = 'logs/timing/ds={ds}/{id}.txt'
 UPLOAD_LOGENTRY_KEY = 'logs/scoring/ds={ds}/{guid}.txt'
 

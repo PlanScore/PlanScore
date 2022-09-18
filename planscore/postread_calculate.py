@@ -5,12 +5,17 @@ starts and observer process with planscore.score function.
 '''
 import os, io, json, urllib.parse, gzip, time, math, threading
 import csv, operator, itertools, zipfile, gzip, datetime
-import boto3, osgeo.ogr
-from . import util, data, score, website, prepare_state, constants, run_tile, run_slice, observe
+import boto3, osgeo.ogr, osgeo.osr
+from . import util, data, score, website, constants, observe
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_POSTREAD_CALCULATE') or 'PlanScore-PostreadCalculate'
 
 osgeo.ogr.UseExceptions()
+
+EPSG4326 = osgeo.osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)
+
+# https://github.com/OSGeo/gdal/pull/3311#issuecomment-748728574
+EPSG4326.SetAxisMappingStrategy(osgeo.osr.OAMS_TRADITIONAL_GIS_ORDER)
 
 states_path = os.path.join(os.path.dirname(__file__), 'geodata', 'cb_2013_us_state_20m.geojson')
 
@@ -38,12 +43,6 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     observe.put_upload_index(storage, upload)
     upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
     put_district_geometries(s3, bucket, upload2, ds_path)
-    
-    if athena is None:
-        tile_keys = load_model_tiles(storage, upload2.model)
-        start_tile_observer_lambda(storage, upload2, tile_keys)
-        fan_out_tile_lambdas(storage, upload2, tile_keys)
-        return
     
     response = accumulate_district_totals(athena, upload2, True)
     
@@ -89,12 +88,6 @@ def commence_blockassign_upload_scoring(context, s3, athena, bucket, upload, fil
     upload2 = upload.clone()
     district_keys = put_district_assignments(s3, bucket, upload2, file_path)
 
-    if athena is None:
-        slice_keys = load_model_slices(storage, upload2.model)
-        start_slice_observer_lambda(storage, upload2, slice_keys)
-        fan_out_slice_lambdas(storage, upload2, slice_keys)
-        return
-    
     response = accumulate_district_totals(athena, upload2, False)
     
     lam = boto3.client('lambda')
@@ -257,7 +250,7 @@ def put_district_geometries(s3, bucket, upload, path):
         geometry = feature.GetGeometryRef()
 
         if geometry.GetSpatialReference():
-            geometry.TransformTo(prepare_state.EPSG4326)
+            geometry.TransformTo(EPSG4326)
         
         key = data.UPLOAD_GEOMETRIES_KEY.format(id=upload.id, index=index)
         
@@ -366,154 +359,6 @@ def put_district_assignments(s3, bucket, upload, path):
     )
 
     return keys
-
-def load_model_tiles(storage, model):
-    '''
-    '''
-    prefix = '{}/tiles/'.format(model.key_prefix.rstrip('/'))
-    marker, contents = '', []
-    
-    while True:
-        print('load_model_tiles() starting from', repr(marker))
-        response = storage.s3.list_objects(Bucket=storage.bucket,
-            Prefix=prefix, Marker=marker)
-
-        contents.extend(response['Contents'])
-        is_truncated = response['IsTruncated']
-        
-        if not is_truncated:
-            break
-        
-        marker = contents[-1]['Key']
-    
-    # Sort largest items first
-    contents.sort(key=lambda obj: obj['Size'], reverse=True)
-    return [object['Key'] for object in contents][:constants.MAX_TILES_RUN]
-
-def load_model_slices(storage, model):
-    '''
-    '''
-    prefix = '{}/slices/'.format(model.key_prefix.rstrip('/'))
-    marker, contents = '', []
-    
-    while True:
-        print('load_model_slices() starting from', repr(marker))
-        response = storage.s3.list_objects(Bucket=storage.bucket,
-            Prefix=prefix, Marker=marker)
-
-        contents.extend(response['Contents'])
-        is_truncated = response['IsTruncated']
-        
-        if not is_truncated:
-            break
-        
-        marker = contents[-1]['Key']
-    
-    # Sort largest items first
-    contents.sort(key=lambda obj: obj['Size'], reverse=True)
-    return [object['Key'] for object in contents][:constants.MAX_TILES_RUN]
-
-def fan_out_tile_lambdas(storage, upload, tile_keys):
-    '''
-    '''
-    def invoke_lambda(tile_keys, upload, storage):
-        '''
-        '''
-        lam = boto3.client('lambda')
-        
-        while True:
-            try:
-                tile_key = tile_keys.pop(0)
-            except IndexError:
-                break
-
-            payload = dict(upload=upload.to_dict(), storage=storage.to_event(),
-                tile_key=tile_key)
-            
-            lam.invoke(FunctionName=run_tile.FUNCTION_NAME, InvocationType='Event',
-                Payload=json.dumps(payload).encode('utf8'))
-    
-    threads, start_time = [], time.time()
-    
-    print('fan_out_tile_lambdas: starting threads for',
-        len(tile_keys), 'tile_keys from', upload.model.key_prefix)
-
-    for i in range(8):
-        threads.append(threading.Thread(target=invoke_lambda,
-            args=(tile_keys, upload, storage)))
-        
-        threads[-1].start()
-
-    for thread in threads:
-        thread.join()
-
-    print('fan_out_tile_lambdas: completed threads after',
-        int(time.time() - start_time), 'seconds.')
-
-def fan_out_slice_lambdas(storage, upload, slice_keys):
-    '''
-    '''
-    def invoke_lambda(slice_keys, upload, storage):
-        '''
-        '''
-        lam = boto3.client('lambda')
-        
-        while True:
-            try:
-                slice_key = slice_keys.pop(0)
-            except IndexError:
-                break
-
-            payload = dict(upload=upload.to_dict(), storage=storage.to_event(),
-                slice_key=slice_key)
-            
-            lam.invoke(FunctionName=run_slice.FUNCTION_NAME, InvocationType='Event',
-                Payload=json.dumps(payload).encode('utf8'))
-    
-    threads, start_time = [], time.time()
-    
-    print('fan_out_slice_lambdas: starting threads for',
-        len(slice_keys), 'slice_keys from', upload.model.key_prefix)
-
-    for i in range(8):
-        threads.append(threading.Thread(target=invoke_lambda,
-            args=(slice_keys, upload, storage)))
-        
-        threads[-1].start()
-
-    for thread in threads:
-        thread.join()
-
-    print('fan_out_slice_lambdas: completed threads after',
-        int(time.time() - start_time), 'seconds.')
-
-def start_tile_observer_lambda(storage, upload, tile_keys):
-    '''
-    '''
-    storage.s3.put_object(Bucket=storage.bucket, ACL='bucket-owner-full-control',
-        Key=data.UPLOAD_TILE_INDEX_KEY.format(id=upload.id),
-        Body=json.dumps(tile_keys).encode('utf8'))
-    
-    lam = boto3.client('lambda')
-
-    payload = dict(upload=upload.to_dict(), storage=storage.to_event())
-
-    lam.invoke(FunctionName=observe.FUNCTION_NAME, InvocationType='Event',
-        Payload=json.dumps(payload).encode('utf8'))
-
-def start_slice_observer_lambda(storage, upload, tile_keys):
-    '''
-    '''
-    storage.s3.put_object(Bucket=storage.bucket, ACL='bucket-owner-full-control',
-        Key=data.UPLOAD_ASSIGNMENT_INDEX_KEY.format(id=upload.id),
-        Body=json.dumps(tile_keys).encode('utf8'))
-    
-    lam = boto3.client('lambda')
-
-    payload = dict(upload=upload.to_dict(), storage=storage.to_event())
-
-    lam.invoke(FunctionName=observe.FUNCTION_NAME, InvocationType='Event',
-        Payload=json.dumps(payload).encode('utf8'))
 
 def get_redirect_url(website_base, id):
     '''

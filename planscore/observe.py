@@ -1,9 +1,7 @@
 import os, time, json, posixpath, io, gzip, collections, copy, csv, uuid, datetime, itertools
 import boto3, botocore.exceptions
-from . import data, constants, run_tile, run_slice, score, compactness, polygonize
+from . import data, constants, score, compactness, polygonize
 import osgeo.ogr
-
-FUNCTION_NAME = os.environ.get('FUNC_NAME_OBSERVE_TILES') or 'PlanScore-ObserveTiles'
 
 SubTotal = collections.namedtuple('SubTotal', ('totals', 'timing'))
 
@@ -37,18 +35,6 @@ def put_upload_index(storage, upload):
 
     storage.s3.put_object(Bucket=storage.bucket, Key=key3, Body=body3,
         ContentType='text/plain', ACL='public-read', CacheControl=cache_control)
-
-def get_expected_tile(enqueued_key, upload):
-    ''' Return an expect tile key for an enqueued one.
-    '''
-    return data.UPLOAD_TILES_KEY.format(id=upload.id,
-        zxy=run_tile.get_tile_zxy(upload.model.key_prefix, enqueued_key))
-
-def get_expected_slice(enqueued_key, upload):
-    ''' Return an expect slice key for an enqueued one.
-    '''
-    return data.UPLOAD_SLICES_KEY.format(id=upload.id,
-        geoid=run_slice.get_slice_geoid(upload.model.key_prefix, enqueued_key))
 
 def get_district_index(district_key, upload):
     ''' Return numeric index for a given district geometry or assignment key.
@@ -189,54 +175,6 @@ def wait_for_object(context, storage, key):
         if remain_msec < 5000:
             raise RuntimeError('Out of time')
 
-def iterate_tile_subtotals(expected_tiles, storage, upload, context):
-    '''
-    '''
-    next_update = time.time()
-
-    # Look for each expected tile in turn
-    for (index, expected_tile) in enumerate(expected_tiles):
-        progress = data.Progress(index, len(expected_tiles))
-        upload = upload.clone(progress=progress,
-            message='Scoring: {} complete.'.format(progress.to_percentage()))
-
-        # Update S3, if it's time
-        if time.time() > next_update:
-            print('iterate_tile_subtotals: {}/{} tiles complete'.format(*progress.to_list()))
-            put_upload_index(storage, upload)
-            next_update = time.time() + 1
-
-        # Wait for one expected tile
-        object = wait_for_object(context, storage, expected_tile)
-        content = json.load(object['Body'])
-        yield SubTotal(content.get('totals'), content.get('timing', {}))
-
-    print('iterate_tile_subtotals: all tiles complete')
-
-def iterate_slice_subtotals(expected_slices, storage, upload, context):
-    '''
-    '''
-    next_update = time.time()
-
-    # Look for each expected slice in turn
-    for (index, expected_slice) in enumerate(expected_slices):
-        progress = data.Progress(index, len(expected_slices))
-        upload = upload.clone(progress=progress,
-            message='Scoring: {} complete.'.format(progress.to_percentage()))
-
-        # Update S3, if it's time
-        if time.time() > next_update:
-            print('iterate_slice_subtotals: {}/{} slices complete'.format(*progress.to_list()))
-            put_upload_index(storage, upload)
-            next_update = time.time() + 1
-
-        # Wait for one expected slice
-        object = wait_for_object(context, storage, expected_slice)
-        content = json.load(object['Body'])
-        yield SubTotal(content.get('totals'), content.get('timing', {}))
-
-    print('iterate_slice_subtotals: all slices complete')
-
 def put_part_timings(storage, upload, tiles, part_type):
     ''' Write a CSV report on tile and slice timing
     '''
@@ -272,54 +210,6 @@ def put_part_timings(storage, upload, tiles, part_type):
     storage.s3.put_object(Bucket=storage.bucket, Key=key,
         Body=buffer.getvalue(), ContentType='text/plain', ACL='public-read')
 
-def accumulate_district_subtotals(part_subtotals, upload):
-    ''' Return new district array for an upload, preserving existing values.
-    '''
-    districts = []
-    
-    # Empty dict to use as a template for new totals
-    empty_totals_dict = {
-        subtotal_key: 0. for subtotal_key in
-        itertools.chain(*[
-            subtotal_dict.keys() for subtotal_dict in
-            itertools.chain(*[sub.totals.values() for sub in part_subtotals])
-        ])
-    }
-    
-    # copy districts from the upload
-    for upload_district in upload.districts:
-        if upload_district is None:
-            # initialize a new district
-            new_district = dict(totals=copy.deepcopy(empty_totals_dict))
-        else:
-            # use a copy of existing district to preserve values
-            new_district = copy.deepcopy(upload_district)
-            new_district['totals'] = copy.deepcopy(empty_totals_dict)
-            
-            # copy existing totals, if any exist
-            if 'totals' in upload_district:
-                new_district['totals'].update(upload_district['totals'])
-
-        districts.append(new_district)
-    
-    # update districts with tile totals
-    for part_subtotal in part_subtotals:
-        if type(part_subtotal.totals) is str:
-            # Not unheard-of, this is where errors get stashed for now
-            print('weird tile:', repr(part_subtotal.totals))
-            continue
-            
-        for (district_key, input_values) in part_subtotal.totals.items():
-            district_index = get_district_index(district_key, upload)
-            district = districts[district_index]['totals']
-            for (key, value) in input_values.items():
-                district[key] = round(district[key] + value, constants.ROUND_COUNT)
-    
-    for district in districts:
-        district['totals'] = adjust_household_income(district['totals'])
-    
-    return districts
-
 def adjust_household_income(input_subtotals):
     '''
     '''
@@ -352,72 +242,3 @@ def clean_up_leftover_parts(storage, part_keys):
         to_delete = {'Objects': [{'Key': key} for key in head_keys]}
         storage.s3.delete_objects(Bucket=storage.bucket, Delete=to_delete)
         head_keys, tail_keys = tail_keys[:1000], tail_keys[1000:]
-
-def lambda_handler(event, context):
-    '''
-    '''
-    s3 = boto3.client('s3')
-    lam = boto3.client('lambda')
-    storage = data.Storage.from_event(event['storage'], s3)
-    upload1 = data.Upload.from_dict(event['upload'])
-    
-    try:
-        obj = storage.s3.get_object(Bucket=storage.bucket,
-            Key=data.UPLOAD_TILE_INDEX_KEY.format(id=upload1.id))
-
-    except s3.exceptions.NoSuchKey:
-        obj = storage.s3.get_object(Bucket=storage.bucket,
-            Key=data.UPLOAD_ASSIGNMENT_INDEX_KEY.format(id=upload1.id))
-
-        upload1b = add_blockassign_upload_geometry(context, lam, storage, upload1)
-        
-        enqueued_parts = json.load(obj['Body'])
-        expected_parts = [get_expected_slice(slice_key, upload1b)
-            for slice_key in enqueued_parts]
-    
-        geometries = load_upload_geometries(storage, upload1b)
-        upload2 = upload1b.clone(districts=populate_compactness(geometries))
-        subtotals = list(iterate_slice_subtotals(expected_parts, storage, upload2, context))
-        part_type = 'slice'
-
-    else:
-        enqueued_parts = json.load(obj['Body'])
-        expected_parts = [get_expected_tile(tile_key, upload1)
-            for tile_key in enqueued_parts]
-    
-        geometries = load_upload_geometries(storage, upload1)
-        upload2 = upload1.clone(districts=populate_compactness(geometries))
-        subtotals = list(iterate_tile_subtotals(expected_parts, storage, upload2, context))
-        part_type = 'tile'
-
-    put_upload_index(storage, upload2.clone(
-        message='Scoring: Adding up votes. Almost done.'))
-
-    try:
-        districts = accumulate_district_subtotals(subtotals, upload2)
-        upload3 = upload2.clone(districts=districts)
-    except Exception as err:
-        upload_final = upload2.clone(
-            status=False,
-            message=f'Something went wrong: {err}',
-            progress=data.Progress(len(expected_parts), len(expected_parts)),
-        )
-    else:
-        try:
-            upload4 = score.calculate_everything(upload3)
-        except Exception as err:
-            upload_final = upload3.clone(
-                status=False,
-                message=f'Something went wrong: {err}',
-                progress=data.Progress(len(expected_parts), len(expected_parts)),
-            )
-        else:
-            upload_final = upload4.clone(
-                status=True,
-                message='Finished scoring this plan.',
-                progress=data.Progress(len(expected_parts), len(expected_parts)),
-            )
-
-    put_upload_index(storage, upload_final)
-    put_part_timings(storage, upload2, subtotals, part_type)
-    clean_up_leftover_parts(storage, expected_parts)

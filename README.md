@@ -95,14 +95,8 @@ Behind-the-scenes code sequence when a user scores a plan.
 7.  [λ:`PlanScore-PostreadCallback`](planscore/postread_callback.py) invokes [λ:`PlanScore-PostreadCalculate`](planscore/postread_calculate.py) and redirects user to `/plan.html?{id}` to wait
 8.  [λ:`PlanScore-PostreadCalculate`](planscore/postread_calculate.py) commences scoring:
     1.  Uploads district geometry WKTs or block assignment lists
-    2.  Loads model tiles or slices
-    3.  Invokes [λ:`PlanScore-ObserveTiles`](planscore/observe.py)
-    4.  Fans out [λ:`PlanScore-RunTile`](planscore/run_tile.py) or [λ:`PlanScore-RunSlice`](planscore/run_slice.py)
-9.  [λ:`PlanScore-RunTile`](planscore/run_tile.py) or [λ:`PlanScore-RunSlice`](planscore/run_slice.py) aggregate district statistics in tiles or slices, save results to S3
-10. [λ:`PlanScore-ObserveTiles`](planscore/observe.py) scores plan:
-    1.  Optionally invokes [λ:`PlanScore-Polygonize`](planscore/polygonize.py)
-    2.  Waits for all expected aggregated tile or slice statistics
-    3.  Calculates final scores
+    2.  Optionally invokes [λ:`PlanScore-Polygonize`](planscore/polygonize.py)
+    3.  Runs Athena query to calculate final scores
     4.  Saves index JSON with final data
 
 ### Adding a State
