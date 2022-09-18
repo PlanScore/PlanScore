@@ -19,14 +19,20 @@ import threading
 
 import boto3
 import osgeo.ogr
+import osgeo.osr
 
-from . import util, data, score, website, prepare_state, constants, observe
+from . import util, data, score, website, constants, observe
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_PREREAD_FOLLOWUP') or 'PlanScore-PrereadFollowup'
 
 Assignment = collections.namedtuple('Assignment', ('block_id', 'district_id'))
 
 osgeo.ogr.UseExceptions()
+
+EPSG4326 = osgeo.osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)
+
+# https://github.com/OSGeo/gdal/pull/3311#issuecomment-748728574
+EPSG4326.SetAxisMappingStrategy(osgeo.osr.OAMS_TRADITIONAL_GIS_ORDER)
 
 states_path = os.path.join(os.path.dirname(__file__), 'geodata', 'cb_2013_us_state_20m.geojson')
 
@@ -166,7 +172,7 @@ def guess_geometry_model(path):
     footprint = functools.reduce(_union_safely, geometries)
     
     if footprint.GetSpatialReference():
-        footprint.TransformTo(prepare_state.EPSG4326)
+        footprint.TransformTo(EPSG4326)
     
     if not footprint.IsValid():
         # Buffer by ~3in to inflate away any validity problems
@@ -278,7 +284,7 @@ def put_geojson_file(s3, bucket, upload, path):
             continue
         geometry = feature.GetGeometryRef()
         if geometry.GetSpatialReference():
-            geometry.TransformTo(prepare_state.EPSG4326)
+            geometry.TransformTo(EPSG4326)
         simple30ft = geometry.SimplifyPreserveTopology(.0001)
         geometries.append(simple30ft.ExportToJson(options=['COORDINATE_PRECISION=5']))
 

@@ -5,12 +5,17 @@ starts and observer process with planscore.score function.
 '''
 import os, io, json, urllib.parse, gzip, time, math, threading
 import csv, operator, itertools, zipfile, gzip, datetime
-import boto3, osgeo.ogr
-from . import util, data, score, website, prepare_state, constants, observe
+import boto3, osgeo.ogr, osgeo.osr
+from . import util, data, score, website, constants, observe
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_POSTREAD_CALCULATE') or 'PlanScore-PostreadCalculate'
 
 osgeo.ogr.UseExceptions()
+
+EPSG4326 = osgeo.osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)
+
+# https://github.com/OSGeo/gdal/pull/3311#issuecomment-748728574
+EPSG4326.SetAxisMappingStrategy(osgeo.osr.OAMS_TRADITIONAL_GIS_ORDER)
 
 states_path = os.path.join(os.path.dirname(__file__), 'geodata', 'cb_2013_us_state_20m.geojson')
 
@@ -245,7 +250,7 @@ def put_district_geometries(s3, bucket, upload, path):
         geometry = feature.GetGeometryRef()
 
         if geometry.GetSpatialReference():
-            geometry.TransformTo(prepare_state.EPSG4326)
+            geometry.TransformTo(EPSG4326)
         
         key = data.UPLOAD_GEOMETRIES_KEY.format(id=upload.id, index=index)
         
