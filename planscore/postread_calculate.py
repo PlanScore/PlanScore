@@ -6,7 +6,7 @@ starts and observer process with planscore.score function.
 import os, io, json, urllib.parse, gzip, time, math, threading
 import csv, operator, itertools, zipfile, gzip, datetime
 import boto3, osgeo.ogr
-from . import util, data, score, website, prepare_state, constants, run_tile, run_slice, observe
+from . import util, data, score, website, prepare_state, constants, observe
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_POSTREAD_CALCULATE') or 'PlanScore-PostreadCalculate'
 

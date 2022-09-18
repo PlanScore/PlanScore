@@ -79,35 +79,6 @@ class TestObserveTiles (unittest.TestCase):
             Body='fake-id\tmock\t3\t1.1\t2.2\t\t\t\r\nfake-id\tmock\t6\t4.4\t5.5\t\t\t\r\n',
             ACL='public-read', ContentType='text/plain'))
 
-    def test_expected_tile(self):
-        ''' Expected tile is returned for an enqueued one.
-        '''
-        upload = unittest.mock.Mock()
-        upload.model.key_prefix = 'data/XX'
-        upload.id = 'ID'
-        
-        enqueued_key1 = 'data/XX/12/656/1582.geojson'
-        expected_key1 = 'uploads/ID/tiles/12/656/1582.json'
-        
-        self.assertEqual(observe.get_expected_tile(enqueued_key1, upload), expected_key1)
-        
-        enqueued_key2 = 'data/XX/tiles/12/656/1582.geojson'
-        expected_key2 = 'uploads/ID/tiles/12/656/1582.json'
-        
-        self.assertEqual(observe.get_expected_tile(enqueued_key2, upload), expected_key2)
-    
-    def test_expected_slice(self):
-        ''' Expected slice is returned for an enqueued one.
-        '''
-        upload = unittest.mock.Mock()
-        upload.model.key_prefix = 'data/XX'
-        upload.id = 'ID'
-        
-        enqueued_key = 'data/XX/slices/0000001.json'
-        expected_key = 'uploads/ID/slices/0000001.json'
-        
-        self.assertEqual(observe.get_expected_slice(enqueued_key, upload), expected_key)
-    
     def test_get_district_index(self):
         '''
         '''

@@ -1,9 +1,7 @@
 import os, time, json, posixpath, io, gzip, collections, copy, csv, uuid, datetime, itertools
 import boto3, botocore.exceptions
-from . import data, constants, run_tile, run_slice, score, compactness, polygonize
+from . import data, constants, score, compactness, polygonize
 import osgeo.ogr
-
-FUNCTION_NAME = os.environ.get('FUNC_NAME_OBSERVE_TILES') or 'PlanScore-ObserveTiles'
 
 SubTotal = collections.namedtuple('SubTotal', ('totals', 'timing'))
 
@@ -37,18 +35,6 @@ def put_upload_index(storage, upload):
 
     storage.s3.put_object(Bucket=storage.bucket, Key=key3, Body=body3,
         ContentType='text/plain', ACL='public-read', CacheControl=cache_control)
-
-def get_expected_tile(enqueued_key, upload):
-    ''' Return an expect tile key for an enqueued one.
-    '''
-    return data.UPLOAD_TILES_KEY.format(id=upload.id,
-        zxy=run_tile.get_tile_zxy(upload.model.key_prefix, enqueued_key))
-
-def get_expected_slice(enqueued_key, upload):
-    ''' Return an expect slice key for an enqueued one.
-    '''
-    return data.UPLOAD_SLICES_KEY.format(id=upload.id,
-        geoid=run_slice.get_slice_geoid(upload.model.key_prefix, enqueued_key))
 
 def get_district_index(district_key, upload):
     ''' Return numeric index for a given district geometry or assignment key.
@@ -352,72 +338,3 @@ def clean_up_leftover_parts(storage, part_keys):
         to_delete = {'Objects': [{'Key': key} for key in head_keys]}
         storage.s3.delete_objects(Bucket=storage.bucket, Delete=to_delete)
         head_keys, tail_keys = tail_keys[:1000], tail_keys[1000:]
-
-def lambda_handler(event, context):
-    '''
-    '''
-    s3 = boto3.client('s3')
-    lam = boto3.client('lambda')
-    storage = data.Storage.from_event(event['storage'], s3)
-    upload1 = data.Upload.from_dict(event['upload'])
-    
-    try:
-        obj = storage.s3.get_object(Bucket=storage.bucket,
-            Key=data.UPLOAD_TILE_INDEX_KEY.format(id=upload1.id))
-
-    except s3.exceptions.NoSuchKey:
-        obj = storage.s3.get_object(Bucket=storage.bucket,
-            Key=data.UPLOAD_ASSIGNMENT_INDEX_KEY.format(id=upload1.id))
-
-        upload1b = add_blockassign_upload_geometry(context, lam, storage, upload1)
-        
-        enqueued_parts = json.load(obj['Body'])
-        expected_parts = [get_expected_slice(slice_key, upload1b)
-            for slice_key in enqueued_parts]
-    
-        geometries = load_upload_geometries(storage, upload1b)
-        upload2 = upload1b.clone(districts=populate_compactness(geometries))
-        subtotals = list(iterate_slice_subtotals(expected_parts, storage, upload2, context))
-        part_type = 'slice'
-
-    else:
-        enqueued_parts = json.load(obj['Body'])
-        expected_parts = [get_expected_tile(tile_key, upload1)
-            for tile_key in enqueued_parts]
-    
-        geometries = load_upload_geometries(storage, upload1)
-        upload2 = upload1.clone(districts=populate_compactness(geometries))
-        subtotals = list(iterate_tile_subtotals(expected_parts, storage, upload2, context))
-        part_type = 'tile'
-
-    put_upload_index(storage, upload2.clone(
-        message='Scoring: Adding up votes. Almost done.'))
-
-    try:
-        districts = accumulate_district_subtotals(subtotals, upload2)
-        upload3 = upload2.clone(districts=districts)
-    except Exception as err:
-        upload_final = upload2.clone(
-            status=False,
-            message=f'Something went wrong: {err}',
-            progress=data.Progress(len(expected_parts), len(expected_parts)),
-        )
-    else:
-        try:
-            upload4 = score.calculate_everything(upload3)
-        except Exception as err:
-            upload_final = upload3.clone(
-                status=False,
-                message=f'Something went wrong: {err}',
-                progress=data.Progress(len(expected_parts), len(expected_parts)),
-            )
-        else:
-            upload_final = upload4.clone(
-                status=True,
-                message='Finished scoring this plan.',
-                progress=data.Progress(len(expected_parts), len(expected_parts)),
-            )
-
-    put_upload_index(storage, upload_final)
-    put_part_timings(storage, upload2, subtotals, part_type)
-    clean_up_leftover_parts(storage, expected_parts)
