@@ -175,54 +175,6 @@ def wait_for_object(context, storage, key):
         if remain_msec < 5000:
             raise RuntimeError('Out of time')
 
-def iterate_tile_subtotals(expected_tiles, storage, upload, context):
-    '''
-    '''
-    next_update = time.time()
-
-    # Look for each expected tile in turn
-    for (index, expected_tile) in enumerate(expected_tiles):
-        progress = data.Progress(index, len(expected_tiles))
-        upload = upload.clone(progress=progress,
-            message='Scoring: {} complete.'.format(progress.to_percentage()))
-
-        # Update S3, if it's time
-        if time.time() > next_update:
-            print('iterate_tile_subtotals: {}/{} tiles complete'.format(*progress.to_list()))
-            put_upload_index(storage, upload)
-            next_update = time.time() + 1
-
-        # Wait for one expected tile
-        object = wait_for_object(context, storage, expected_tile)
-        content = json.load(object['Body'])
-        yield SubTotal(content.get('totals'), content.get('timing', {}))
-
-    print('iterate_tile_subtotals: all tiles complete')
-
-def iterate_slice_subtotals(expected_slices, storage, upload, context):
-    '''
-    '''
-    next_update = time.time()
-
-    # Look for each expected slice in turn
-    for (index, expected_slice) in enumerate(expected_slices):
-        progress = data.Progress(index, len(expected_slices))
-        upload = upload.clone(progress=progress,
-            message='Scoring: {} complete.'.format(progress.to_percentage()))
-
-        # Update S3, if it's time
-        if time.time() > next_update:
-            print('iterate_slice_subtotals: {}/{} slices complete'.format(*progress.to_list()))
-            put_upload_index(storage, upload)
-            next_update = time.time() + 1
-
-        # Wait for one expected slice
-        object = wait_for_object(context, storage, expected_slice)
-        content = json.load(object['Body'])
-        yield SubTotal(content.get('totals'), content.get('timing', {}))
-
-    print('iterate_slice_subtotals: all slices complete')
-
 def put_part_timings(storage, upload, tiles, part_type):
     ''' Write a CSV report on tile and slice timing
     '''
@@ -257,54 +209,6 @@ def put_part_timings(storage, upload, tiles, part_type):
 
     storage.s3.put_object(Bucket=storage.bucket, Key=key,
         Body=buffer.getvalue(), ContentType='text/plain', ACL='public-read')
-
-def accumulate_district_subtotals(part_subtotals, upload):
-    ''' Return new district array for an upload, preserving existing values.
-    '''
-    districts = []
-    
-    # Empty dict to use as a template for new totals
-    empty_totals_dict = {
-        subtotal_key: 0. for subtotal_key in
-        itertools.chain(*[
-            subtotal_dict.keys() for subtotal_dict in
-            itertools.chain(*[sub.totals.values() for sub in part_subtotals])
-        ])
-    }
-    
-    # copy districts from the upload
-    for upload_district in upload.districts:
-        if upload_district is None:
-            # initialize a new district
-            new_district = dict(totals=copy.deepcopy(empty_totals_dict))
-        else:
-            # use a copy of existing district to preserve values
-            new_district = copy.deepcopy(upload_district)
-            new_district['totals'] = copy.deepcopy(empty_totals_dict)
-            
-            # copy existing totals, if any exist
-            if 'totals' in upload_district:
-                new_district['totals'].update(upload_district['totals'])
-
-        districts.append(new_district)
-    
-    # update districts with tile totals
-    for part_subtotal in part_subtotals:
-        if type(part_subtotal.totals) is str:
-            # Not unheard-of, this is where errors get stashed for now
-            print('weird tile:', repr(part_subtotal.totals))
-            continue
-            
-        for (district_key, input_values) in part_subtotal.totals.items():
-            district_index = get_district_index(district_key, upload)
-            district = districts[district_index]['totals']
-            for (key, value) in input_values.items():
-                district[key] = round(district[key] + value, constants.ROUND_COUNT)
-    
-    for district in districts:
-        district['totals'] = adjust_household_income(district['totals'])
-    
-    return districts
 
 def adjust_household_income(input_subtotals):
     '''
