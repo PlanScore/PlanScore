@@ -567,10 +567,10 @@ MODELS = [
     Model(State.PA, House.statesenate,  50,  True, VERSIONS, 'data/PA/018-more-acs'), # a926eb0
     Model(State.PA, House.statehouse,  203,  True, VERSIONS, 'data/PA/018-more-acs'), # a926eb0
     Model(State.PA, House.localplan,  None,  True, VERSIONS, 'data/PA/018-more-acs'), # a926eb0
-    Model(State.RI, House.ushouse,       2,  True, VERSIONS, 'data/RI/014-more-acs'), # a926eb0
-    Model(State.RI, House.statesenate,  38,  True, VERSIONS, 'data/RI/014-more-acs'), # a926eb0
-    Model(State.RI, House.statehouse,   75,  True, VERSIONS, 'data/RI/014-more-acs'), # a926eb0
-    Model(State.RI, House.localplan,  None,  True, VERSIONS, 'data/RI/014-more-acs'), # a926eb0
+    Model(State.RI, House.ushouse,       2,  True, VERSIONS, 'data/RI/015-acs-2020'), # xxxxxxx
+    Model(State.RI, House.statesenate,  38,  True, VERSIONS, 'data/RI/015-acs-2020'), # xxxxxxx
+    Model(State.RI, House.statehouse,   75,  True, VERSIONS, 'data/RI/015-acs-2020'), # xxxxxxx
+    Model(State.RI, House.localplan,  None,  True, VERSIONS, 'data/RI/015-acs-2020'), # xxxxxxx
     Model(State.SC, House.ushouse,       7,  True, VERSIONS, 'data/SC/007-more-acs'), # a926eb0
     Model(State.SC, House.statesenate,  46,  True, VERSIONS, 'data/SC/007-more-acs'), # a926eb0
     Model(State.SC, House.statehouse,  124,  True, VERSIONS, 'data/SC/007-more-acs'), # a926eb0
