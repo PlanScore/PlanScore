@@ -6,6 +6,7 @@ var FIELDS = [
     'Population 2016',
     'Population 2018',
     'Population 2019',
+    'Population 2020 ACS',
     'Population 2020',
     'Black Population 2015',
     'Hispanic Population 2015',
@@ -16,6 +17,9 @@ var FIELDS = [
     'Black Population 2019',
     'Hispanic Population 2019',
     'Asian Population 2019',
+    'Black Population 2020 ACS',
+    'Hispanic Population 2020 ACS',
+    'Asian Population 2020 ACS',
     'Black Population 2020',
     'Hispanic Population 2020',
     'Asian Population 2020',
@@ -30,6 +34,11 @@ var FIELDS = [
     'Black Citizen Voting-Age Population 2019',
     'Asian Citizen Voting-Age Population 2019',
     'American Indian or Alaska Native Citizen Voting-Age Population 2019',
+    'Citizen Voting-Age Population 2020 ACS',
+    'Hispanic Citizen Voting-Age Population 2020 ACS',
+    'Black Citizen Voting-Age Population 2020 ACS',
+    'Asian Citizen Voting-Age Population 2020 ACS',
+    'American Indian or Alaska Native Citizen Voting-Age Population 2020 ACS',
     'Democratic Wins',
     'Democratic Votes',
     'Republican Votes',
@@ -69,6 +78,7 @@ const fieldSubstringToDisplayStr = {
     'American Indian or Alaska Native Citizen Voting-Age Population': 'Non-Hisp. Native CVAP',
     'Citizen Voting-Age Population': 'CVAP',
     'Population': 'Pop.',
+    '2020 ACS': '2020',
 };
 
 const months = [
@@ -1007,6 +1017,9 @@ function update_heading_titles(head)
 
         } else if(head[i] == 'CVAP 2019') {
             head[i] = SHY_COLUMN;
+
+        } else if(head[i] == 'CVAP 2020' || head[i] == 'CVAP 2020 ACS') {
+            head[i] = SHY_COLUMN;
         }
     });
 }
@@ -1097,6 +1110,19 @@ function update_acs2019_percentages(head, row)
     }
 }
 
+function update_acs2020_percentages(head, row)
+{
+    var total_index = head.indexOf('Population 2020 ACS'),
+        black_index = head.indexOf('Black Population 2020 ACS'),
+        latin_index = head.indexOf('Hispanic Population 2020 ACS');
+
+    if(total_index >= 0 && black_index >= 0 && latin_index >= 0)
+    {
+        row[black_index] = nice_percent(row[black_index] / row[total_index]);
+        row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
+    }
+}
+
 function update_cvap2015_percentages(head, row)
 {
     var total_index = head.indexOf('Citizen Voting-Age Population 2015'),
@@ -1130,6 +1156,35 @@ function update_cvap2019_percentages(head, row)
         latin_index = head.indexOf('Hispanic Citizen Voting-Age Population 2019'),
         asian_index = head.indexOf('Asian Citizen Voting-Age Population 2019'),
         native_index = head.indexOf('American Indian or Alaska Native Citizen Voting-Age Population 2019');
+
+    if(total_index >= 0 && black_index >= 0)
+    {
+        row[black_index] = nice_percent(row[black_index] / row[total_index]);
+    }
+
+    if(total_index >= 0 && latin_index >= 0)
+    {
+        row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
+    }
+
+    if(total_index >= 0 && asian_index >= 0)
+    {
+        row[asian_index] = nice_percent(row[asian_index] / row[total_index]);
+    }
+
+    if(total_index >= 0 && native_index >= 0)
+    {
+        row[native_index] = nice_percent(row[native_index] / row[total_index]);
+    }
+}
+
+function update_cvap2020_percentages(head, row)
+{
+    var total_index = head.indexOf('Citizen Voting-Age Population 2020 ACS'),
+        black_index = head.indexOf('Black Citizen Voting-Age Population 2020 ACS'),
+        latin_index = head.indexOf('Hispanic Citizen Voting-Age Population 2020 ACS'),
+        asian_index = head.indexOf('Asian Citizen Voting-Age Population 2020 ACS'),
+        native_index = head.indexOf('American Indian or Alaska Native Citizen Voting-Age Population 2020 ACS');
 
     if(total_index >= 0 && black_index >= 0)
     {
@@ -1217,6 +1272,9 @@ function plan_array(plan)
         } else if(field == 'Population 2019' && fields.indexOf('Population 2020') !== -1) {
             // Do not show 2019 ACS population if 2020 Census population is present
             continue;
+        } else if(field == 'Population 2020 ACS' && fields.indexOf('Population 2020') !== -1) {
+            // Do not show 2020 ACS population if 2020 Census population is present
+            continue;
         }
 
         if(field == 'Democratic Wins')
@@ -1253,9 +1311,11 @@ function plan_array(plan)
         update_acs2016_percentages(head_row, all_rows[j]);
         update_acs2018_percentages(head_row, all_rows[j]);
         update_acs2019_percentages(head_row, all_rows[j]);
+        update_acs2020_percentages(head_row, all_rows[j]);
         update_cvap2015_percentages(head_row, all_rows[j]);
         update_cvap2018_percentages(head_row, all_rows[j]);
         update_cvap2019_percentages(head_row, all_rows[j]);
+        update_cvap2020_percentages(head_row, all_rows[j]);
     }
 
     update_heading_titles(head_row);
