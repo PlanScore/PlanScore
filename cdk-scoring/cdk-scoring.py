@@ -32,6 +32,8 @@ FormationInfo = collections.namedtuple(
         'api_cert',
         'forward_domains',
         'forward_cert',
+        'unforward_domains',
+        'unforward_cert',
     ),
 )
 
@@ -46,6 +48,8 @@ FORMATIONS = [
         'arn:aws:acm:us-east-1:466184106004:certificate/eba45e77-e9e6-4773-98bc-b0ab78f5db38',
         None,
         None,
+        None,
+        None,
     ),
     FormationInfo(
         'cf-production',
@@ -57,6 +61,8 @@ FORMATIONS = [
         'arn:aws:acm:us-east-1:466184106004:certificate/0216c55e-76c2-4344-b883-0603c7ee2251',
         ['www.planscore.org', 'planscore.org'],
         'arn:aws:acm:us-east-1:466184106004:certificate/6e7db330-3488-454f-baf1-cc72f5c165ae',
+        None,
+        None,
     ),
 ]
 
@@ -106,6 +112,7 @@ class PlanScoreScoring(cdk.Stack):
 
         self.populate_api(apigateway_role, api, *functions)
         self.make_forward(stack_id, website_base, formation_info)
+        self.make_unforward(stack_id, website_base, formation_info)
     
     def make_forward(self, stack_id, website_base, formation_info):
     
@@ -168,6 +175,68 @@ class PlanScoreScoring(cdk.Stack):
 
         cdk.CfnOutput(self, 'ForwardBase', value=forward_base)
         cdk.CfnOutput(self, 'ForwardDistributionDomain', value=distribution.distribution_domain_name)
+
+    def make_unforward(self, stack_id, website_base, formation_info):
+    
+        if not formation_info.unforward_domains or not formation_info.unforward_cert:
+            return
+    
+        dirpath = tempfile.mkdtemp(dir='/tmp', prefix='unforward-lambda-')
+        
+        with open(os.path.join(os.path.dirname(__file__), 'unforward-lambda.py')) as file1:
+            code = file1.read().replace('https://planscore.org/', website_base)
+        
+        with open(os.path.join(dirpath, 'lambda.py'), 'w') as file2:
+            file2.write(code)
+
+        # Will this make Cloudfront updates less greedy?
+        os.utime(dirpath, (0, 0))
+        os.utime(os.path.join(dirpath, 'lambda.py'), (0, 0))
+        
+        unforward = aws_lambda.Function(
+            self,
+            "Unforward",
+            handler="lambda.handler",
+            timeout=cdk.Duration.seconds(5),
+            runtime=aws_lambda.Runtime.PYTHON_3_8,
+            log_retention=aws_logs.RetentionDays.TWO_WEEKS,
+            code=aws_lambda.Code.from_asset(dirpath),
+        )
+
+        static_origin = aws_cloudfront_origins.HttpOrigin('example.com')
+
+        static_behavior = aws_cloudfront.BehaviorOptions(
+            origin=static_origin,
+            edge_lambdas=[
+                aws_cloudfront.EdgeLambda(
+                    event_type=aws_cloudfront.LambdaEdgeEventType.VIEWER_REQUEST,
+                    function_version=unforward.current_version,
+                ),
+            ],
+            #viewer_protocol_policy=aws_cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
+            #cache_policy=aws_cloudfront.CachePolicy.CACHING_OPTIMIZED,
+            #origin_request_policy=aws_cloudfront.OriginRequestPolicy.CORS_S3_ORIGIN,
+            #allowed_methods=aws_cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
+            #cached_methods=aws_cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
+        )
+
+        distribution = aws_cloudfront.Distribution(
+            self,
+            'Unforwarding Service',
+            certificate=aws_certificatemanager.Certificate.from_certificate_arn(
+                self,
+                'Unforward-SSL-Certificate',
+                formation_info.unforward_cert,
+            ),
+            comment=f'{formation_info.prefix} Unforwarding',
+            domain_names=formation_info.unforward_domains,
+            default_behavior=static_behavior,
+            price_class=aws_cloudfront.PriceClass.PRICE_CLASS_100,
+        )
+        unforward_base = concat_strings('https://', formation_info.unforward_domains[0], '/')
+
+        cdk.CfnOutput(self, 'UnforwardBase', value=unforward_base)
+        cdk.CfnOutput(self, 'UnforwardDistributionDomain', value=distribution.distribution_domain_name)
 
     def make_site_buckets(self, formation_info):
 
@@ -855,7 +924,7 @@ if __name__ == '__main__':
         raise RuntimeError("Don't deploy without API_TOKENS or PLANSCORE_SECRET")
 
     assert formation_prefix.startswith('cf-')
-    formation_info = FormationInfo(formation_prefix, None, None, None, None, None, None, None, None)
+    formation_info = FormationInfo(formation_prefix, None, None, None, None, None, None, None, None, None, None)
 
     for _formation_info in FORMATIONS:
         if _formation_info.prefix == formation_prefix:
