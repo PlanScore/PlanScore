@@ -48,8 +48,8 @@ FORMATIONS = [
         'arn:aws:acm:us-east-1:466184106004:certificate/eba45e77-e9e6-4773-98bc-b0ab78f5db38',
         None,
         None,
-        None,
-        None,
+        ['campaignlegal.planscore.org'],
+        'arn:aws:acm:us-east-1:466184106004:certificate/efaeb9a4-096a-4441-bac2-887c9c01310a',
     ),
     FormationInfo(
         'cf-production',
@@ -183,7 +183,7 @@ class PlanScoreScoring(cdk.Stack):
     
         dirpath = tempfile.mkdtemp(dir='/tmp', prefix='unforward-lambda-')
         
-        with open(os.path.join(os.path.dirname(__file__), 'unforward-lambda.py')) as file1:
+        with open(os.path.join(os.path.dirname(__file__), 'forward-lambda.py')) as file1:
             code = file1.read().replace('https://planscore.org/', website_base)
         
         with open(os.path.join(dirpath, 'lambda.py'), 'w') as file2:
