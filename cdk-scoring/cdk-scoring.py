@@ -53,8 +53,8 @@ FORMATIONS = [
         None,
         None,
         # Unforwarding
-        None,
-        None,
+        ['campaignlegal.planscore.org'],
+        'arn:aws:acm:us-east-1:466184106004:certificate/efaeb9a4-096a-4441-bac2-887c9c01310a',
     ),
     FormationInfo(
         'cf-production',
