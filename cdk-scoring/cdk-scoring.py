@@ -37,17 +37,6 @@ FormationInfo = collections.namedtuple(
     ),
 )
 
-# Certs:
-# arn:aws:acm:us-east-1:466184106004:certificate/9926850f-249e-4f47-b6b2-309428ecc80c - dev.planscore.org
-# arn:aws:acm:us-east-1:466184106004:certificate/9fa0cbb0-53c3-4895-a1ee-d6d4b217002d - dev.campaignlegal.planscore.org
-# arn:aws:acm:us-east-1:466184106004:certificate/eba45e77-e9e6-4773-98bc-b0ab78f5db38 - api.dev.planscore.org
-# arn:aws:acm:us-east-1:466184106004:certificate/efaeb9a4-096a-4441-bac2-887c9c01310a - campaignlegal.planscore.org
-# arn:aws:acm:us-east-1:466184106004:certificate/d16aa1cb-45dd-4e50-970a-48ae686908e5 - planscore.org
-# arn:aws:acm:us-east-1:466184106004:certificate/0216c55e-76c2-4344-b883-0603c7ee2251 - api.planscore.org
-# arn:aws:acm:us-east-1:466184106004:certificate/6e7db330-3488-454f-baf1-cc72f5c165ae - www.planscore.org
-# arn:aws:acm:us-east-1:466184106004:certificate/8d86667e-eb4a-4e0d-9453-fe9c3c9855c0 - planscore.campaignlegal.org
-# arn:aws:acm:us-east-1:466184106004:certificate/9e1aadbf-256b-4d2f-9338-e29fbd1b6ab5 - www.planscore.org + planscore.campaignlegal.org
-
 FORMATIONS = [
     FormationInfo(
         'cf-development',
@@ -82,8 +71,8 @@ FORMATIONS = [
         ['www.planscore.org', 'planscore.campaignlegal.org'],
         'arn:aws:acm:us-east-1:466184106004:certificate/9e1aadbf-256b-4d2f-9338-e29fbd1b6ab5',
         # Unforwarding
-        ['dev.campaignlegal.planscore.org'],
-        'arn:aws:acm:us-east-1:466184106004:certificate/9fa0cbb0-53c3-4895-a1ee-d6d4b217002d',
+        None,
+        None,
     ),
 ]
 
