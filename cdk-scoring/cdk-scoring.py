@@ -72,8 +72,8 @@ FORMATIONS = [
         'planscore',
         'planscore.org-static-site',
         # Main site
-        None # 'planscore.org',
-        None # 'arn:aws:acm:us-east-1:466184106004:certificate/d16aa1cb-45dd-4e50-970a-48ae686908e5',
+        None, # 'planscore.org',
+        None, # 'arn:aws:acm:us-east-1:466184106004:certificate/d16aa1cb-45dd-4e50-970a-48ae686908e5',
         # API access
         'api.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/0216c55e-76c2-4344-b883-0603c7ee2251',
@@ -81,8 +81,8 @@ FORMATIONS = [
         ['www.planscore.org'],
         'arn:aws:acm:us-east-1:466184106004:certificate/6e7db330-3488-454f-baf1-cc72f5c165ae',
         # Unforwarding
-        None # ['planscore.campaignlegal.org'],
-        None # 'arn:aws:acm:us-east-1:466184106004:certificate/8d86667e-eb4a-4e0d-9453-fe9c3c9855c0',
+        None, # ['planscore.campaignlegal.org'],
+        None, # 'arn:aws:acm:us-east-1:466184106004:certificate/8d86667e-eb4a-4e0d-9453-fe9c3c9855c0',
     ),
 ]
 
