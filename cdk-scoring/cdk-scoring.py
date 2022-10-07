@@ -40,29 +40,39 @@ FormationInfo = collections.namedtuple(
 FORMATIONS = [
     FormationInfo(
         'cf-development',
+        # Buckets
         'planscore--dev',
         'planscore.org-dev-website',
+        # Main site
         'dev.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/9926850f-249e-4f47-b6b2-309428ecc80c',
+        # API access
         'api.dev.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/eba45e77-e9e6-4773-98bc-b0ab78f5db38',
+        # Forwarding
         None,
         None,
-        ['campaignlegal.planscore.org'],
-        'arn:aws:acm:us-east-1:466184106004:certificate/efaeb9a4-096a-4441-bac2-887c9c01310a',
+        # Unforwarding
+        None,
+        None,
     ),
     FormationInfo(
         'cf-production',
+        # Buckets
         'planscore',
         'planscore.org-static-site',
-        'planscore.campaignlegal.org',
-        'arn:aws:acm:us-east-1:466184106004:certificate/8d86667e-eb4a-4e0d-9453-fe9c3c9855c0',
+        # Main site
+        'planscore.org',
+        'arn:aws:acm:us-east-1:466184106004:certificate/d16aa1cb-45dd-4e50-970a-48ae686908e5',
+        # API access
         'api.planscore.org',
         'arn:aws:acm:us-east-1:466184106004:certificate/0216c55e-76c2-4344-b883-0603c7ee2251',
-        ['www.planscore.org', 'planscore.org'],
+        # Forwarding
+        ['www.planscore.org'],
         'arn:aws:acm:us-east-1:466184106004:certificate/6e7db330-3488-454f-baf1-cc72f5c165ae',
-        None,
-        None,
+        # Unforwarding
+        ['planscore.campaignlegal.org'],
+        'arn:aws:acm:us-east-1:466184106004:certificate/8d86667e-eb4a-4e0d-9453-fe9c3c9855c0',
     ),
 ]
 
