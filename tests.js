@@ -506,7 +506,7 @@ assert.deepEqual(row20, ['31%', '62% D / 38% R']);
 // Assorted functions
 
 assert(plan.date_age(new Date('1970-01-01')) > 86400 * 365);
-assert(plan.date_age(new Date('2017-10-01')) < 86400 * 365 * 5);
+assert(plan.date_age(new Date('2017-10-01')) < 86400 * 365 * 10);
 assert(plan.date_age(new Date()) < 1);
 assert(annotate_new.date_age(new Date('1970-01-01')) > 86400 * 365);
 assert(annotate_new.date_age(new Date('2017-10-01')) < 86400 * 365 * 5);
