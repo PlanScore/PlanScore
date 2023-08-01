@@ -274,8 +274,8 @@ function load_plan_map(url, div, plan)
         map.fitBounds(geojson.getBounds());
 
         // Add Toner label tiles for base map
-        L.tileLayer('https://stamen-tiles.a.ssl.fastly.net/toner-labels/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy;<a href="http://stamen.com/">Stamen</a>',
+        L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy;<a href="http://stamen.com/">Stamen</a>, &copy;<a href="http://www.stadiamaps.com/">Stadia</a>',
             pane: 'labels',
             maxZoom: 18
         }).addTo(map);
