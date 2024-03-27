@@ -28,7 +28,7 @@ setup(
         },
     install_requires = [
         'boto3 == 1.20.54',
-        'Flask == 2.0.1',
+        'Flask == 2.3.2',
         'itsdangerous == 2.0.1',
         'Jinja2 == 3.0.1',
         'Markdown == 3.3.4',
