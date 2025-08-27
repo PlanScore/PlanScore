@@ -48,9 +48,9 @@ VersionParameters = collections.namedtuple(
 
 # Dict order is significant, default is first
 VERSION_PARAMETERS = {
-    '2022F': VersionParameters(
-        'New: rerun the 2020 election with more accurate updated data (updated May 2022)',
-        '-2022F', 2020, -0.5208897, -0.492732, 1., 0., 1., 0.,
+    '2025A': VersionParameters(
+        'New: rerun the 2020 election with more accurate updated data (updated August 2025)',
+        '-2025A', 2020, -0.523, -0.495, 1., 0., 1., 0.,
         True,
     ),
     '2021B': VersionParameters(
