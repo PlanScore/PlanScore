@@ -8,8 +8,7 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-      - run: pyenv install --list
-      - run: pyenv global 3.9.4
+      - run: pyenv install 3.9.4 && pyenv global 3.9.4
       - restore_cache:
           keys:
             - test-dependencies-py-{{ checksum "setup.py" }}
@@ -33,7 +32,7 @@ jobs:
     steps:
       - checkout
       # Install Python things
-      - run: pyenv global 3.9.4
+      - run: pyenv install 3.9.4 && pyenv global 3.9.4
       - run: pip3 install '.[deploy]'
       # Build PlanScore thing
       - run: make planscore-lambda.zip
@@ -52,7 +51,7 @@ jobs:
     steps:
       - checkout
       # Install Python things
-      - run: pyenv global 3.9.1
+      - run: pyenv install 3.9.1 && pyenv global 3.9.1
       - run: pip3 install '.[deploy]'
       # Install Node things (not slow enough to cache)
       - run: npm install -g aws-cdk
@@ -69,7 +68,7 @@ jobs:
     steps:
       - checkout
       # Install Python things
-      - run: pyenv global 3.9.4
+      - run: pyenv install 3.9.4 && pyenv global 3.9.4
       - run: pip3 install -U pip awscli
       # Push metrics thing
       - run: make live-metrics
