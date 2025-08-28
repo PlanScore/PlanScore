@@ -8,6 +8,7 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
+      - run: pyenv install --list
       - run: pyenv global 3.9.4
       - restore_cache:
           keys:
