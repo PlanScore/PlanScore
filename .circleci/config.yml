@@ -4,7 +4,7 @@ jobs:
   # Run tests.
   Test:
     machine:
-      image: ubuntu-2004:202107-02
+      image: ubuntu-2004:202111-02
     working_directory: ~/repo
     steps:
       - checkout
@@ -27,7 +27,7 @@ jobs:
   # Ensure that packages can be built in deploy step
   Build:
     machine:
-      image: ubuntu-2004:202107-02
+      image: ubuntu-2004:202111-02
     working_directory: ~/repo
     steps:
       - checkout
@@ -46,7 +46,7 @@ jobs:
   # Deploy to live site!
   Deploy:
     machine:
-      image: ubuntu-2004:202101-01
+      image: ubuntu-2004:202111-02
     working_directory: ~/repo
     steps:
       - checkout
@@ -63,7 +63,7 @@ jobs:
   # Update metrics-gathering code
   Metrics:
     machine:
-      image: ubuntu-2004:202107-02
+      image: ubuntu-2004:202111-02
     working_directory: ~/repo
     steps:
       - checkout
