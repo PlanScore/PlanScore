@@ -234,7 +234,17 @@ def prepare_district_data(upload):
     out_data = []
     
     for (district, incumbency) in zip(upload.districts, upload.incumbents):
-        if district['totals'].get('US President 2020 - DEM') is not None:
+        if district['totals'].get('US President 2024 - DEM') is not None:
+            total = district['totals']['US President 2024 - DEM'] \
+                  + district['totals']['US President 2024 - REP']
+            try:
+                pvote_2024 = district['totals']['US President 2024 - DEM'] / total
+            except ZeroDivisionError:
+                pvote = -1
+            else:
+                pvote = params.pvote2024_scale * pvote_2024 + params.pvote2024_offset
+        
+        elif district['totals'].get('US President 2020 - DEM') is not None:
             total = district['totals']['US President 2020 - DEM'] \
                   + district['totals']['US President 2020 - REP']
             try:

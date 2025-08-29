@@ -34,12 +34,14 @@ VersionParameters = collections.namedtuple(
         'vote_adjust_congress',
         'vote_adjust_statelege',
 
-        # True 2016 and 2020 presidential votes may need to be scaled and
-        # offset for compatibility with the C and E matrixes.
+        # True 2016, 2020, and 2024 presidential votes may need to be
+        # scaled and offset for compatibility with the C and E matrixes.
         'pvote2016_scale',
         'pvote2016_offset',
         'pvote2020_scale',
         'pvote2020_offset',
+        'pvote2024_scale',
+        'pvote2024_offset',
         
         # Include as option on annotation page?
         'is_public',
@@ -50,12 +52,12 @@ VersionParameters = collections.namedtuple(
 VERSION_PARAMETERS = {
     '2025A': VersionParameters(
         'New: rerun the 2020 election with more accurate updated data (updated August 2025)',
-        '-2025A', 2024, -0.523, -0.495, 1., 0., 1., 0.,
+        '-2025A', 2024, -0.523, -0.495, 1., 0., 1., 0., 1., 0.,
         True,
     ),
     '2021B': VersionParameters(
         'Original: rerun an average election from the past 10 years with best available data from before Census release',
-        '-2021B', None, -0.496875, -0.496875, 0.91, 0.05, 0.96, 0.01,
+        '-2021B', None, -0.496875, -0.496875, 0.91, 0.05, 0.96, 0.01, 1., 0.,
         True,
     ),
 }
