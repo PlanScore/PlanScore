@@ -52,7 +52,7 @@ VersionParameters = collections.namedtuple(
 VERSION_PARAMETERS = {
     '2025B': VersionParameters(
         'New: rerun the 2024 election with more accurate updated data (updated August 2025)',
-        '-2025A', 2024, -0.523, -0.495, 1., 0., 1., 0., 1., 0.,
+        '-2025B', 2024, -0.523, -0.495, 1., 0., 1., 0., 1., 0.,
         True,
     ),
     '2025A': VersionParameters(
@@ -441,9 +441,9 @@ MODELS = [
     Model(State.AZ, House.statehouse,   60,  True, VERSIONS, 'data/AZ/012-acs-2020'), # c82db89
     Model(State.AZ, House.localplan,  None,  True, VERSIONS, 'data/AZ/012-acs-2020'), # c82db89
     Model(State.CA, House.ushouse,      52,  True, VERSION24, 'data/CA/009-pvote-2024'), # 41cd3c4
-    Model(State.CA, House.statesenate,  40,  True, VERSION24, 'data/CA/009-pvote-2024'), # 41cd3c4
-    Model(State.CA, House.statehouse,   80,  True, VERSION24, 'data/CA/009-pvote-2024'), # 41cd3c4
-    Model(State.CA, House.localplan,  None,  True, VERSION24, 'data/CA/009-pvote-2024'), # 41cd3c4
+    Model(State.CA, House.statesenate,  40,  True, VERSIONS, 'data/CA/008-acs-2020'), # c82db89
+    Model(State.CA, House.statehouse,   80,  True, VERSIONS, 'data/CA/008-acs-2020'), # c82db89
+    Model(State.CA, House.localplan,  None,  True, VERSIONS, 'data/CA/008-acs-2020'), # c82db89
     Model(State.CO, House.ushouse,       8,  True, VERSIONS, 'data/CO/013-acs-2020'), # c82db89
     Model(State.CO, House.statesenate,  35,  True, VERSIONS, 'data/CO/013-acs-2020'), # c82db89
     Model(State.CO, House.statehouse,   65,  True, VERSIONS, 'data/CO/013-acs-2020'), # c82db89
