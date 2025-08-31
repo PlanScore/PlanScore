@@ -161,6 +161,11 @@ function load_plan_preread(url, form, message_section, preread_section, descript
             incumbency_scenarios.style.display = 'none';
         }
         
+        if(plan.model.versions.length <= 1)
+        {
+            model_versions.parentElement.parentElement.style.display = 'none';
+        }
+        
         for(var i = 0; i < plan.model.versions.length; i++)
         {
             var value = plan.model.versions[i];
