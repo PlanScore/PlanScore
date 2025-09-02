@@ -52,7 +52,7 @@ VersionParameters = collections.namedtuple(
 VERSION_PARAMETERS = {
     '2025B': VersionParameters(
         'New: rerun the 2024 election with more accurate updated data (updated August 2025)',
-        '-2025B', 2024, -0.523, -0.495, 1., 0., 1., 0., 1., 0.,
+        '-2025B', 2024, -0.515, -0.495, 1., 0., 1., 0., 1., 0.,
         True,
     ),
     '2025A': VersionParameters(
