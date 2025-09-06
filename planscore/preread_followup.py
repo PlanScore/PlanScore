@@ -124,7 +124,11 @@ def count_district_geometries(path):
     '''
     '''
     print('count_district_geometries:', path)
-    ds = osgeo.ogr.Open(path)
+    try:
+        ds = osgeo.ogr.Open(path)
+    except:
+        # Make our own exception with a tested message below
+        ds = None
 
     if not ds:
         raise RuntimeError('Could not open file to fan out district invocations')
@@ -141,7 +145,11 @@ def count_district_assignments(path):
 def guess_geometry_model(path):
     ''' Guess state model for the given input path.
     '''
-    ds = osgeo.ogr.Open(path)
+    try:
+        ds = osgeo.ogr.Open(path)
+    except:
+        # Make our own exception with a tested message below
+        ds = None
     
     if not ds:
         raise RuntimeError('Could not open file to guess U.S. state')

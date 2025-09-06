@@ -235,7 +235,11 @@ def put_district_geometries(s3, bucket, upload, path):
     '''
     '''
     print('put_district_geometries:', (bucket, path))
-    ds = osgeo.ogr.Open(path)
+    try:
+        ds = osgeo.ogr.Open(path)
+    except:
+        # Make our own exception with a tested message below
+        ds = None
     keys, bboxes = [], []
 
     if not ds:
