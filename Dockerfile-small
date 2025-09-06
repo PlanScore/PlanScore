@@ -1,4 +1,4 @@
-FROM --platform=linux/arm64 ubuntu:20.04
+FROM --platform=linux/arm64 ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -7,6 +7,7 @@ RUN apt update -y \
  && apt clean -y \
  && rm -rf /var/lib/apt/lists/*
 
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
 RUN pip3 install 'awslambdaric==2.2.1'
 
 RUN mkdir /tmp/src
