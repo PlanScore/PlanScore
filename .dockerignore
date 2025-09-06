@@ -2,4 +2,5 @@
 cdk-*
 cdk.out
 data
+metrics-lambda*
 planscore-lambda*

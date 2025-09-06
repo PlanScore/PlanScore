@@ -46,11 +46,7 @@ prefix required for all permissions to function.
         npm install aws-cdk
         export PATH="${PATH}:${PWD}/node_modules/.bin"
     
-2.  Build code package.
-    
-        make cleanish planscore-lambda.zip
-    
-3.  Deploy to AWS using AWS-CDK. Two Cloudformation stacks will be created
+2.  Deploy to AWS using AWS-CDK. Two Cloudformation stacks will be created
     by this command, `cf-my-stack-name-Scoring` and `cf-my-stack-name-Content`.
     
         ./cdk-deploy.sh cf-my-stack-name
