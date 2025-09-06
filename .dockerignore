@@ -1,4 +1,5 @@
-data
-cdk.out
 */cdk.out
+cdk-*
+cdk.out
+data
 planscore-lambda*

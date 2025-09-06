@@ -14,6 +14,3 @@ RUN mkdir /tmp/src
 COPY setup.py /tmp/src/
 COPY planscore /tmp/src/planscore
 RUN pip3 install '/tmp/src'
-
-ENTRYPOINT [ "/usr/bin/python3", "-m", "awslambdaric" ]
-CMD [ "planscore.authorizer.lambda_handler" ]
