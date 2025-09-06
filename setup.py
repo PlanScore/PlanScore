@@ -27,22 +27,22 @@ setup(
             ],
         },
     install_requires = [
-        'boto3 == 1.20.54',
-        'Flask == 2.0.1',
-        'itsdangerous == 2.0.1',
-        'Jinja2 == 3.0.1',
-        'Markdown == 3.3.4',
+        'boto3 == 1.40.25',
+        'Flask == 2.3.3',
+        'itsdangerous == 2.2.0',
+        'Jinja2 == 3.1.6',
+        'Markdown == 3.9',
         'ModestMaps == 1.4.7',
-        'networkx == 2.5.1',
-        'Werkzeug == 2.0.1',
+        'networkx == 2.8.8',
+        'Werkzeug == 2.3.8',
         ],
     extras_require = {
         'large': [
             'Shapely == 1.7.1',
             ],
         'compiled': [
-            'GDAL == 3.2.1',
-            'numpy == 1.21.2',
+            'GDAL == 3.8.4',
+            'numpy == 1.26.4',
             ],
         'deploy': [
             'pip >= 22',
