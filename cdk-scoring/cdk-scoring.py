@@ -563,14 +563,20 @@ class PlanScoreScoring(cdk.Stack):
             entrypoint=["/usr/bin/python3", "-m", "awslambdaric"],
         )
         
+        get_small_code = lambda cmd: aws_lambda.DockerImageCode.from_image_asset(
+            file="Dockerfile-small", cmd=[cmd], **code_kwargs
+        )
+        
+        get_large_code = lambda cmd: aws_lambda.DockerImageCode.from_image_asset(
+            file="Dockerfile-large", cmd=[cmd], **code_kwargs
+        )
+        
         # Behind-the-scenes functions
 
         authorizer = aws_lambda.DockerImageFunction(
             self,
             "AuthorizerD",
-            code=aws_lambda.DockerImageCode.from_image_asset(
-                cmd=["planscore.authorizer.lambda_handler"], **code_kwargs
-            ),
+            code=get_small_code("planscore.authorizer.lambda_handler"),
             **function_kwargs,
         )
 
@@ -580,9 +586,7 @@ class PlanScoreScoring(cdk.Stack):
             self,
             "PolygonizeD",
             memory_size=10240,
-            code=aws_lambda.DockerImageCode.from_image_asset(
-                cmd=["planscore.polygonize.lambda_handler"], **code_kwargs
-            ),
+            code=get_large_code("planscore.polygonize.lambda_handler"),
             **function_kwargs,
         )
 
@@ -592,9 +596,7 @@ class PlanScoreScoring(cdk.Stack):
             self,
             "PostreadCalculateD",
             memory_size=2048,
-            code=aws_lambda.DockerImageCode.from_image_asset(
-                cmd=["planscore.postread_calculate.lambda_handler"], **code_kwargs
-            ),
+            code=get_large_code("planscore.postread_calculate.lambda_handler"),
             **function_kwargs,
         )
 
@@ -605,9 +607,7 @@ class PlanScoreScoring(cdk.Stack):
             self,
             "PostreadIntermediateD",
             memory_size=2048,
-            code=aws_lambda.DockerImageCode.from_image_asset(
-                cmd=["planscore.postread_intermediate.lambda_handler"], **code_kwargs
-            ),
+            code=get_large_code("planscore.postread_intermediate.lambda_handler"),
             **function_kwargs,
         )
 
@@ -618,9 +618,7 @@ class PlanScoreScoring(cdk.Stack):
             self,
             "PrereadFollowupD",
             memory_size=1024,
-            code=aws_lambda.DockerImageCode.from_image_asset(
-                cmd=["planscore.preread_followup.lambda_handler"], **code_kwargs
-            ),
+            code=get_large_code("planscore.preread_followup.lambda_handler"),
             **function_kwargs,
         )
 
@@ -636,9 +634,7 @@ class PlanScoreScoring(cdk.Stack):
             self,
             "APIUploadD",
             memory_size=2048,
-            code=aws_lambda.DockerImageCode.from_image_asset(
-                cmd=["planscore.api_upload.lambda_handler"], **code_kwargs
-            ),
+            code=get_small_code("planscore.api_upload.lambda_handler"),
             **function_kwargs,
         )
 
@@ -647,15 +643,13 @@ class PlanScoreScoring(cdk.Stack):
         api_upload.add_permission('Permission', principal=apigateway_role)
 
         function_kwargs.update(dict(
-            timeout=cdk.Duration.seconds(15),  # This used to be a tight 3sec
+            timeout=cdk.Duration.seconds(10),  # This used to be a tight 3sec
         ))
 
         get_states = aws_lambda.DockerImageFunction(
             self,
             "APIStatesD",
-            code=aws_lambda.DockerImageCode.from_image_asset(
-                cmd=["planscore.get_states.lambda_handler"], **code_kwargs
-            ),
+            code=get_small_code("planscore.get_states.lambda_handler"),
             **function_kwargs,
         )
 
@@ -664,9 +658,7 @@ class PlanScoreScoring(cdk.Stack):
         get_model_versions = aws_lambda.DockerImageFunction(
             self,
             "APIModelVersionsD",
-            code=aws_lambda.DockerImageCode.from_image_asset(
-                cmd=["planscore.get_model_versions.lambda_handler"], **code_kwargs
-            ),
+            code=get_small_code("planscore.get_model_versions.lambda_handler"),
             **function_kwargs,
         )
 
@@ -675,9 +667,7 @@ class PlanScoreScoring(cdk.Stack):
         upload_fields = aws_lambda.DockerImageFunction(
             self,
             "UploadFieldsD",
-            code=aws_lambda.DockerImageCode.from_image_asset(
-                cmd=["planscore.upload_fields.lambda_handler"], **code_kwargs
-            ),
+            code=get_small_code("planscore.upload_fields.lambda_handler"),
             **function_kwargs,
         )
 
@@ -687,9 +677,7 @@ class PlanScoreScoring(cdk.Stack):
         preread = aws_lambda.DockerImageFunction(
             self,
             "PrereadD",
-            code=aws_lambda.DockerImageCode.from_image_asset(
-                cmd=["planscore.preread.lambda_handler"], **code_kwargs
-            ),
+            code=get_large_code("planscore.preread.lambda_handler"),
             **function_kwargs,
         )
 
@@ -700,9 +688,7 @@ class PlanScoreScoring(cdk.Stack):
         postread_callback = aws_lambda.DockerImageFunction(
             self,
             "PostreadCallbackD",
-            code=aws_lambda.DockerImageCode.from_image_asset(
-                cmd=["planscore.postread_callback.lambda_handler"], **code_kwargs
-            ),
+            code=get_large_code("planscore.postread_callback.lambda_handler"),
             **function_kwargs,
         )
 

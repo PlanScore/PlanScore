@@ -6,7 +6,7 @@ More details on "success_action_redirect" in browser-based S3 uploads:
     http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-post-example.html
 '''
 import boto3, itsdangerous, urllib.parse, json
-from . import preread_followup, constants, util, website, data, score, observe
+from . import preread_followup, constants, util, website, data, observe
 
 def create_upload(s3, bucket, key, id):
     '''
