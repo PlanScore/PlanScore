@@ -558,13 +558,18 @@ class PlanScoreScoring(cdk.Stack):
                 ),
             ],
         )
+        
+        code = aws_lambda.DockerImageCode.from_image_asset(
+            directory=".",
+        )
 
         # Behind-the-scenes functions
 
-        authorizer = aws_lambda.Function(
+        authorizer = aws_lambda.DockerImageFunction(
             self,
-            "Authorizer",
-            handler="lambda.authorizer",
+            "AuthorizerD",
+            code=code,
+            architecture=aws_lambda.Architecture.ARM_64,
             **function_kwargs
         )
 

@@ -16,4 +16,4 @@ COPY planscore /tmp/src/planscore
 RUN pip3 install '/tmp/src'
 
 ENTRYPOINT [ "/usr/bin/python3", "-m", "awslambdaric" ]
-CMD [ "planscore.upload_fields.lambda_handler" ]
+CMD [ "planscore.authorizer.lambda_handler" ]
