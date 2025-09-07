@@ -48,6 +48,7 @@ setup(
             'pip >= 22',
             'aws-cdk.core == 1.144.0',
             'aws-cdk.aws-stepfunctions == 1.144.0',
+            'aws-cdk.aws-stepfunctions-tasks == 1.144.0',
             'aws-cdk.aws-s3-deployment == 1.144.0',
             'aws-cdk.aws-s3 == 1.144.0',
             'aws-cdk.aws-logs == 1.144.0',

@@ -18,6 +18,8 @@ from aws_cdk import (
     aws_certificatemanager,
     aws_cloudfront,
     aws_cloudfront_origins,
+    aws_stepfunctions,
+    aws_stepfunctions_tasks,
 )
 
 FormationInfo = collections.namedtuple(
@@ -114,6 +116,7 @@ class PlanScoreScoring(cdk.Stack):
 
         self.populate_api(apigateway_role, api, *functions)
         self.make_forward(stack_id, website_base, formation_info)
+        self.make_state_machine(*functions)
     
     def make_forward(self, stack_id, website_base, formation_info):
     
@@ -868,6 +871,72 @@ class PlanScoreScoring(cdk.Stack):
             uploaded_integration,
             authorizer=token_authorizer,
         )
+
+    def make_state_machine(self, *functions):
+
+        (
+            authorizer,
+            postread_calculate,
+            preread_followup,
+            polygonize,
+            api_upload,
+            get_states,
+            get_model_versions,
+            upload_fields,
+            preread,
+            postread_callback,
+        ) = functions
+        
+        echo_function = aws_lambda.Function(
+            self,
+            "EchoFunction",
+            runtime=aws_lambda.Runtime.PYTHON_3_9,
+            handler="index.lambda_handler",
+            code=aws_lambda.Code.from_inline(
+                """
+def lambda_handler(event, context):
+    print("event:", event)
+    print("context:", context)
+    return {"goodbye":"world"}
+                """
+            )
+        )
+        
+        # https://docs.aws.amazon.com/step-functions/latest/dg/input-output-contextobject.html
+        payload = aws_stepfunctions.TaskInput.from_object(
+            {
+                "ExecutionID.$": "$$.Execution.Id",
+                "StateMachineID.$": "$$.StateMachine.Id",
+                "ExecutionInput.$": "$",  # Duplicate of "$$.Execution.Input",
+                # "TaskToken.$": "$$.Task.Token",  # Task tokn not always present
+            }
+        )
+        
+        echo1 = aws_stepfunctions_tasks.LambdaInvoke(
+            self,
+            "ECHO1",
+            lambda_function=echo_function,
+            payload_response_only=True,
+            payload=payload,
+        )
+        
+        echo2 = aws_stepfunctions_tasks.LambdaInvoke(
+            self,
+            "ECHO2",
+            lambda_function=echo_function,
+            payload_response_only=True,
+            payload=payload,
+        )
+        
+        echo1.next(echo2)
+        
+        statemachine = aws_stepfunctions.StateMachine(
+            self,
+            "ScoreMachine",
+            definition=echo1,
+        )
+        
+        return statemachine
 
 if __name__ == '__main__':
     app = cdk.App()
