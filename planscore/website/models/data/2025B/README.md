@@ -47,13 +47,11 @@ where
 - 𝜎<sub>𝑦</sub> is the residual population-level error term
 
 The model allows the slope for all our covariates—as well as the corresponding intercept—
-to vary across both states and election cycles. Based on exploration of diﬀerent model speci-
-fications, we allow for correlated random eﬀects across cycles but assume no such correlation
+to vary across both states and election cycles. Based on exploration of different model specifications, we allow for correlated random effects across cycles but assume no such correlation
 across states to facilitate convergence.
 
 We run separate models for state legislative and congressional outcomes and with and
-without incumbency as a covariate. PlanScore identifies a plan as state legislative or con-
-gressional based on the number of seats in the plan and the state for which it is submitted.
+without incumbency as a covariate. PlanScore identifies a plan as state legislative or congressional based on the number of seats in the plan and the state for which it is submitted.
 
 𝑘 ranges between 1 and 2: if a user designates incumbency for any seat in a plan,
 predictions come from the model that includes both presidential vote and incumbency as
@@ -67,11 +65,10 @@ the small number of remaining state-cycle combinations that were missing preside
 we used the presidential vote for the same district in the next presidential election (or the
 previous presidential election where the next one was not available).
 
-When generating predictions, PlanScore draws 1000 samples from the posterior distri-
-bution of model parameters, and uses them to calculate means and probabilities. We also
-add in the oﬀsets for the 2024 presidential election cycle, and then also add in samples from
-the covariance matrix of cycle random eﬀects to allow the uncertainty of predicting for an
-unknown election cycle to propagate into our predictions. This has the eﬀect of predicting
+When generating predictions, PlanScore draws 1000 samples from the posterior distribution of model parameters, and uses them to calculate means and probabilities. We also
+add in the offsets for the 2024 presidential election cycle, and then also add in samples from
+the covariance matrix of cycle random effects to allow the uncertainty of predicting for an
+unknown election cycle to propagate into our predictions. This has the effect of predicting
 for an election like 2024 in most respects, but with error bounds that encompass the full
 range of partisan tides that occurred over the last decade.
 
