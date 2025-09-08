@@ -383,13 +383,13 @@ Predictions
 
 The charts below show comparisons between this model’s in-sample predictions and observed historical scores for plans with at least 7 districts.
 
-![model_v_historical_cong_states_open_2025B.png](model_v_historical_cong_states_open_2025B.png)
-
-![model_v_historical_cong_states_inc_2025B.png](model_v_historical_cong_states_inc_2025B.png)
-
 ![model_v_historical_cong_cycles_open_2025B.png](model_v_historical_cong_cycles_open_2025B.png)
 
 ![model_v_historical_cong_cycles_inc_2025B.png](model_v_historical_cong_cycles_inc_2025B.png)
+
+![model_v_historical_cong_states_open_2025B.png](model_v_historical_cong_states_open_2025B.png)
+
+![model_v_historical_cong_states_inc_2025B.png](model_v_historical_cong_states_inc_2025B.png)
 
 Data Sources
 ---
