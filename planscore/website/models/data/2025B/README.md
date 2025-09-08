@@ -12,25 +12,13 @@ Methodology
 
 #### The Big Picture
 
-We use the correlation between the presidential vote on the one hand and state legislative
-or congressional votes on the other to predict how new districts will likely vote and so how
-biased a plan will be. Our correlations come from the last 14 years of elections and are
-estimated separately for state legislatures and Congress. They factor in how much each
-state’s and election year’s results might differ from others and—where appropriate—any
-extra advantage incumbents might have. We also allow our predictions to be imperfect by
-quantifying how much our method missed the actual outcomes of past elections, including
-the degree to which partisan tides have changed party performance from one election to the
-next. This enables us to generate the most accurate, data-driven, and transparent prediction
-we can.
+We use the correlation between the presidential vote on the one hand and state legislative or congressional votes on the other to predict how new districts will likely vote and so how biased a plan will be. Our correlations come from the last 14 years of elections and are estimated separately for state legislatures and Congress. They factor in how much each state’s and election year’s results might differ from others and—where appropriate—any extra advantage incumbents might have. We also allow our predictions to be imperfect by quantifying how much our method missed the actual outcomes of past elections, including the degree to which partisan tides have changed party performance from one election to the next. This enables us to generate the most accurate, data-driven, and transparent prediction we can.
 
-This is the model we use when we have the latest geographic election data for a particular
-state. When we do not have such data, [we use a slightly different model described here](../2025A/).
+This is the model we use when we have the latest geographic election data for a particular state. When we do not have such data, [we use a slightly different model described here](../2025A/).
 
 #### The Details
 
-We use a Bayesian hierarchical model of district-level election returns, run on either state
-legislatures or congressional delegations (depending on the outcome of interest), for the
-elections from 2011 through 2024. Formally, the model is:
+We use a Bayesian hierarchical model of district-level election returns, run on either state legislatures or congressional delegations (depending on the outcome of interest), for the elections from 2011 through 2024. Formally, the model is:
 
 <p style="text-align:center"><img src="matrix.png" style="width:399px;height:348px"></p>
 
@@ -46,31 +34,13 @@ where
 - 𝛽<sub>𝑠(𝑖)</sub> and 𝛽<sub>𝑐(𝑖)</sub> are matrices of coefficients for the state and election cycle, respectively, of district election 𝑖
 - 𝜎<sub>𝑦</sub> is the residual population-level error term
 
-The model allows the slope for all our covariates—as well as the corresponding intercept—
-to vary across both states and election cycles. Based on exploration of different model specifications, we allow for correlated random effects across cycles but assume no such correlation
-across states to facilitate convergence.
+The model allows the slope for all our covariates—as well as the corresponding intercept— to vary across both states and election cycles. Based on exploration of different model specifications, we allow for correlated random effects across cycles but assume no such correlation across states to facilitate convergence.
 
-We run separate models for state legislative and congressional outcomes and with and
-without incumbency as a covariate. PlanScore identifies a plan as state legislative or congressional based on the number of seats in the plan and the state for which it is submitted.
+We run separate models for state legislative and congressional outcomes and with and without incumbency as a covariate. PlanScore identifies a plan as state legislative or congressional based on the number of seats in the plan and the state for which it is submitted.
 
-𝑘 ranges between 1 and 2: if a user designates incumbency for any seat in a plan,
-predictions come from the model that includes both presidential vote and incumbency as
-covariates; if all seats are left open, predictions come from a model with only presidential vote.
-Presidential vote is the two-party district-level Democratic presidential vote share, centered
-around its global mean (Congress = 0.515; State legislatures = 0.495), while incumbency
-status in district election 𝑖 is coded -1 for Republican, 0 for open, and 1 for Democratic. We
-do not have the 2020 presidential vote for estimating new plans in two states—Kentucky
-and South Dakota—so we used the 2016 presidential vote in the model for those states. In
-the small number of remaining state-cycle combinations that were missing presidential vote
-we used the presidential vote for the same district in the next presidential election (or the
-previous presidential election where the next one was not available).
+𝑘 ranges between 1 and 2: if a user designates incumbency for any seat in a plan, predictions come from the model that includes both presidential vote and incumbency as covariates; if all seats are left open, predictions come from a model with only presidential vote. Presidential vote is the two-party district-level Democratic presidential vote share, centered around its global mean (Congress = 0.515; State legislatures = 0.495), while incumbency status in district election 𝑖 is coded -1 for Republican, 0 for open, and 1 for Democratic. We do not have the 2020 presidential vote for estimating new plans in two states—Kentucky and South Dakota—so we used the 2016 presidential vote in the model for those states. In the small number of remaining state-cycle combinations that were missing presidential vote we used the presidential vote for the same district in the next presidential election (or the previous presidential election where the next one was not available).
 
-When generating predictions, PlanScore draws 1000 samples from the posterior distribution of model parameters, and uses them to calculate means and probabilities. We also
-add in the offsets for the 2024 presidential election cycle, and then also add in samples from
-the covariance matrix of cycle random effects to allow the uncertainty of predicting for an
-unknown election cycle to propagate into our predictions. This has the effect of predicting
-for an election like 2024 in most respects, but with error bounds that encompass the full
-range of partisan tides that occurred over the last decade.
+When generating predictions, PlanScore draws 1000 samples from the posterior distribution of model parameters, and uses them to calculate means and probabilities. We also add in the offsets for the 2024 presidential election cycle, and then also add in samples from the covariance matrix of cycle random effects to allow the uncertainty of predicting for an unknown election cycle to propagate into our predictions. This has the effect of predicting for an election like 2024 in most respects, but with error bounds that encompass the full range of partisan tides that occurred over the last decade.
 
 Full results for our four separate models can be found below.
 
@@ -411,8 +381,7 @@ Full results for our four separate models can be found below.
 Predictions
 ---
 
-The charts below show comparisons between this model’s in-sample predictions
-and observed historical scores for plans with at least 7 districts.
+The charts below show comparisons between this model’s in-sample predictions and observed historical scores for plans with at least 7 districts.
 
 ![model_v_historical_cong_states_open_2025B.png](model_v_historical_cong_states_open_2025B.png)
 
