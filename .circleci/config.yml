@@ -54,7 +54,7 @@ jobs:
       - run: pyenv global 3.9.7
       - run: pip3 install '.[deploy]'
       # Install Node things (not slow enough to cache)
-      - run: npm install -g aws-cdk
+      - run: npm install -g aws-cdk@2.17.0
       # Build PlanScore thing
       - attach_workspace:
           at: ~/repo
