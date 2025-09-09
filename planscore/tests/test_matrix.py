@@ -178,37 +178,8 @@ class TestMatrix (unittest.TestCase):
         # self.assertAlmostEqual(model.c_matrix[matrix.VOT_C,0], 0.0769)
         # self.assertAlmostEqual(model.c_matrix[matrix.INC_C,0], ZERO) # Open seat
     
-    def test_apply_model(self):
-        model = matrix.load_model('-2025A', 'ca', None, None, None)
-        
-        R = matrix.apply_model(
-            [
-                (.4, -1),
-                (.5, -1),
-                (.6, -1),
-                (.4, 0),
-                (.5, 0),
-                (.6, 0),
-                (.4, 1),
-                (.5, 1),
-                (.6, 1),
-            ],
-            model,
-            data.VERSION_PARAMETERS['2025A'],
-        )
-    
-        # In identical incumbent scenarios, predicted vote tracks presidential vote
-        self.assertTrue(R[0].sum() < R[1].sum() and R[1].sum() < R[2].sum())
-        self.assertTrue(R[3].sum() < R[4].sum() and R[4].sum() < R[5].sum())
-        self.assertTrue(R[6].sum() < R[7].sum() and R[7].sum() < R[8].sum())
-
-        # In identical vote scenarios, predicted vote tracks party incumbency
-        self.assertTrue(R[0].sum() < R[3].sum() and R[3].sum() < R[6].sum())
-        self.assertTrue(R[1].sum() < R[4].sum() and R[4].sum() < R[7].sum())
-        self.assertTrue(R[2].sum() < R[5].sum() and R[5].sum() < R[8].sum())
-    
     def test_apply_model_2025A_incumbents_congress(self):
-        model = matrix.load_model('-2025A', 'ca', 2024, True, True)
+        model = matrix.load_model('-2025A', 'ca', 2024, has_incumbents=True, is_congress=True)
     
         R = matrix.apply_model(
             [
@@ -237,7 +208,7 @@ class TestMatrix (unittest.TestCase):
         self.assertTrue(R[2].sum() < R[5].sum() and R[5].sum() < R[8].sum())
     
     def test_apply_model_2025A_incumbents_state(self):
-        model = matrix.load_model('-2025A', 'ca', 2024, True, False)
+        model = matrix.load_model('-2025A', 'ca', 2024, has_incumbents=True, is_congress=False)
     
         R = matrix.apply_model(
             [
@@ -266,7 +237,7 @@ class TestMatrix (unittest.TestCase):
         self.assertTrue(R[2].sum() < R[5].sum() and R[5].sum() < R[8].sum())
     
     def test_apply_model_2025A_openseat_congress(self):
-        model = matrix.load_model('-2025A', 'ca', 2024, False, True)
+        model = matrix.load_model('-2025A', 'ca', 2024, has_incumbents=False, is_congress=True)
     
         R = matrix.apply_model(
             [
@@ -282,7 +253,7 @@ class TestMatrix (unittest.TestCase):
         self.assertTrue(R[0].sum() < R[1].sum() and R[1].sum() < R[2].sum())
     
     def test_apply_model_2025A_openseat_state(self):
-        model = matrix.load_model('-2025A', 'ca', 2024, False, False)
+        model = matrix.load_model('-2025A', 'ca', 2024, has_incumbents=False, is_congress=False)
     
         R = matrix.apply_model(
             [
@@ -298,7 +269,7 @@ class TestMatrix (unittest.TestCase):
         self.assertTrue(R[0].sum() < R[1].sum() and R[1].sum() < R[2].sum())
     
     def test_apply_model_with_zeros(self):
-        model = matrix.load_model('-2025A', 'ca', None, None, None)
+        model = matrix.load_model('-2025A', 'ca', None, has_incumbents=False, is_congress=False)
         
         R = matrix.apply_model(
             [
