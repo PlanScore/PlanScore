@@ -12,7 +12,7 @@ Methodology
 
 #### The Big Picture
 
-We use the correlation between the presidential vote on the one hand and state legislative or congressional votes on the other to predict how new districts will likely vote and so how biased a plan will be. Our correlations come from the last 14 years of elections and are estimated separately for state legislatures and Congress. They factor in how much each state’s and election year’s results might differ from others and—where appropriate—any extra advantage incumbents might have. We also allow our predictions to be imperfect by quantifying how much our method missed the actual outcomes of past elections, including the degree to which partisan tides have changed party performance from one election to the next. This enables us to generate the most accurate, data-driven, and transparent prediction we can.
+We use the correlation between the presidential vote on the one hand and state legislative or congressional votes on the other to predict how new districts will likely vote and so how biased a plan will be. Our correlations come from the last 14 years of elections and are estimated separately for state legislatures and Congress. They factor in how much each state's and election year's results might differ from others and—where appropriate—any extra advantage incumbents might have. We also allow our predictions to be imperfect by quantifying how much our method missed the actual outcomes of past elections, including the degree to which partisan tides have changed party performance from one election to the next. This enables us to generate the most accurate, data-driven, and transparent prediction we can.
 
 This is the model we use when we do not have the latest geographic election data for a particular state. When we do have such data, [we use a slightly different model described here](../2025B/).
 
@@ -34,7 +34,7 @@ where
 - 𝛽<sub>𝑠(𝑖)</sub> and 𝛽<sub>𝑐(𝑖)</sub> are matrices of coefficients for the state and election cycle, respectively, of district election 𝑖
 - 𝜎<sub>𝑦</sub> is the residual population-level error term
 
-The model allows the slope for all our covariates—as well as the corresponding intercept— to vary across both states and election cycles. Based on exploration of different model specifications, we allow for correlated random effects across cycles but assume no such correlation across states to facilitate convergence.
+The model allows the slope for all our covariates—as well as the corresponding intercept—to vary across both states and election cycles. Based on exploration of different model specifications, we allow for correlated random effects across cycles but assume no such correlation across states to facilitate convergence.
 
 We run separate models for state legislative and congressional outcomes and with and without incumbency as a covariate. PlanScore identifies a plan as state legislative or congressional based on the number of seats in the plan and the state for which it is submitted.
 
