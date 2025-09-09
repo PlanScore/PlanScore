@@ -141,6 +141,8 @@ assert.deepEqual(plan.which_score_column_names(NC_multisim_index),
         'Democratic Wins',
         'Democratic Votes',
         'Republican Votes',
+        'US President 2024 - DEM',
+        'US President 2024 - REP',
         'US President 2020 - DEM',
         'US President 2020 - REP',
         'US President 2016 - DEM',
@@ -415,6 +417,14 @@ assert.deepEqual(head7, ['Biden (D) 2020', 'Trump (R) 2020']);
 var head8 = ['US President 2016 - DEM', 'US President 2016 - REP', 'US President 2020 - DEM', 'US President 2020 - REP']
 plan.update_heading_titles(head8)
 assert.deepEqual(head8, [plan.SHY_COLUMN, plan.SHY_COLUMN, 'Biden (D) 2020', 'Trump (R) 2020']);
+
+var head9 = ['US President 2024 - DEM', 'US President 2024 - REP']
+plan.update_heading_titles(head9)
+assert.deepEqual(head9, ['Harris (D) 2024', 'Trump (R) 2024']);
+
+var head10 = ['US President 2020 - DEM', 'US President 2020 - REP', 'US President 2024 - DEM', 'US President 2024 - REP']
+plan.update_heading_titles(head10)
+assert.deepEqual(head10, [plan.SHY_COLUMN, plan.SHY_COLUMN, 'Harris (D) 2024', 'Trump (R) 2024']);
 
 var row1 = [4, 6];
 plan.update_vote_percentages(['Democratic Votes', 'Republican Votes'], row1, {});

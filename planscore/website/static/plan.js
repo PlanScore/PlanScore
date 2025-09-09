@@ -42,11 +42,17 @@ var FIELDS = [
     'Democratic Wins',
     'Democratic Votes',
     'Republican Votes',
+    'US President 2024 - DEM',
+    'US President 2024 - REP',
     'US President 2020 - DEM',
     'US President 2020 - REP',
     'US President 2016 - DEM',
     'US President 2016 - REP',
     /*
+    'US Senate 2024 - DEM',
+    'US Senate 2024 - REP',
+    'US Senate 2022 - DEM',
+    'US Senate 2022 - REP',
     'US Senate 2020 - DEM',
     'US Senate 2020 - REP',
     'US Senate 2018 - DEM',
@@ -64,12 +70,18 @@ const votesFieldToDisplayStr = {
     'US President 2016 - REP': 'Trump (R) 2016',
     'US President 2020 - DEM': 'Biden (D) 2020',
     'US President 2020 - REP': 'Trump (R) 2020',
+    'US President 2024 - DEM': 'Harris (D) 2024',
+    'US President 2024 - REP': 'Trump (R) 2024',
     'US Senate 2016 - DEM': 'U.S.&nbsp;Sen. Dem. 2016',
     'US Senate 2016 - REP': 'U.S.&nbsp;Sen. Rep. 2016',
     'US Senate 2018 - DEM': 'U.S.&nbsp;Sen. Dem. 2018',
     'US Senate 2018 - REP': 'U.S.&nbsp;Sen. Rep. 2018',
     'US Senate 2020 - DEM': 'U.S.&nbsp;Sen. Dem. 2020',
     'US Senate 2020 - REP': 'U.S.&nbsp;Sen. Rep. 2020',
+    'US Senate 2022 - DEM': 'U.S.&nbsp;Sen. Dem. 2022',
+    'US Senate 2022 - REP': 'U.S.&nbsp;Sen. Rep. 2022',
+    'US Senate 2024 - DEM': 'U.S.&nbsp;Sen. Dem. 2024',
+    'US Senate 2024 - REP': 'U.S.&nbsp;Sen. Rep. 2024',
 };
 
 const fieldSubstringToDisplayStr = {
@@ -1012,7 +1024,19 @@ function update_heading_titles(head)
         if(head[i] == 'Trump (R) 2016' && head.indexOf('Trump (R) 2020') >= 0) {
             head[i] = SHY_COLUMN;
 
+        } else if(head[i] == 'Trump (R) 2016' && head.indexOf('Trump (R) 2024') >= 0) {
+            head[i] = SHY_COLUMN;
+
+        } else if(head[i] == 'Trump (R) 2020' && head.indexOf('Trump (R) 2024') >= 0) {
+            head[i] = SHY_COLUMN;
+
         } else if(head[i] == 'Clinton (D) 2016' && head.indexOf('Biden (D) 2020') >= 0) {
+            head[i] = SHY_COLUMN;
+
+        } else if(head[i] == 'Clinton (D) 2016' && head.indexOf('Harris (D) 2024') >= 0) {
+            head[i] = SHY_COLUMN;
+
+        } else if(head[i] == 'Biden (D) 2020' && head.indexOf('Harris (D) 2024') >= 0) {
             head[i] = SHY_COLUMN;
 
         } else if(head[i] == 'CVAP 2019') {

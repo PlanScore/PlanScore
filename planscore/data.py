@@ -24,6 +24,9 @@ VersionParameters = collections.namedtuple(
         # Find matrix files in planscore/model/ directory
         'path_suffix',
 
+        # Hard-coded years to accept pvote from
+        'pvotes',
+
         # A hard-coded year to make predictions for
         'year',
 
@@ -34,13 +37,6 @@ VersionParameters = collections.namedtuple(
         'vote_adjust_congress',
         'vote_adjust_statelege',
 
-        # True 2016 and 2020 presidential votes may need to be scaled and
-        # offset for compatibility with the C and E matrixes.
-        'pvote2016_scale',
-        'pvote2016_offset',
-        'pvote2020_scale',
-        'pvote2020_offset',
-        
         # Include as option on annotation page?
         'is_public',
     ),
@@ -48,15 +44,13 @@ VersionParameters = collections.namedtuple(
 
 # Dict order is significant, default is first
 VERSION_PARAMETERS = {
-    '2022F': VersionParameters(
-        'New: rerun the 2020 election with more accurate updated data (updated May 2022)',
-        '-2022F', 2020, -0.5208897, -0.492732, 1., 0., 1., 0.,
-        True,
+    '2025B': VersionParameters(
+        'New: rerun the 2024 election with more accurate updated data (updated August 2025)',
+        '-2025B', {2024}, 2024, -0.515, -0.495, True,
     ),
-    '2021B': VersionParameters(
-        'Original: rerun an average election from the past 10 years with best available data from before Census release',
-        '-2021B', None, -0.496875, -0.496875, 0.91, 0.05, 0.96, 0.01,
-        True,
+    '2025A': VersionParameters(
+        'New: rerun the 2020 election with more accurate updated data (updated August 2025)',
+        '-2025A', {2020}, 2024, -0.523, -0.495, True,
     ),
 }
 
@@ -411,7 +405,8 @@ class Upload:
 
 # Active version of each state model
 
-VERSIONS = list(VERSION_PARAMETERS.keys()) # rely on dict order
+VERSIONS = ['2025A']  # list(VERSION_PARAMETERS.keys()) # rely on dict order
+VERSION24 = ['2025B']
 DEFAULT_VERSION = VERSIONS[0]
 
 MODELS = [
@@ -432,7 +427,7 @@ MODELS = [
     Model(State.AZ, House.statesenate,  30,  True, VERSIONS, 'data/AZ/012-acs-2020'), # c82db89
     Model(State.AZ, House.statehouse,   60,  True, VERSIONS, 'data/AZ/012-acs-2020'), # c82db89
     Model(State.AZ, House.localplan,  None,  True, VERSIONS, 'data/AZ/012-acs-2020'), # c82db89
-    Model(State.CA, House.ushouse,      52,  True, VERSIONS, 'data/CA/008-acs-2020'), # c82db89
+    Model(State.CA, House.ushouse,      52,  True, VERSION24, 'data/CA/009-pvote-2024'), # 7311831
     Model(State.CA, House.statesenate,  40,  True, VERSIONS, 'data/CA/008-acs-2020'), # c82db89
     Model(State.CA, House.statehouse,   80,  True, VERSIONS, 'data/CA/008-acs-2020'), # c82db89
     Model(State.CA, House.localplan,  None,  True, VERSIONS, 'data/CA/008-acs-2020'), # c82db89

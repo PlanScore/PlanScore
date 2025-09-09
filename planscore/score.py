@@ -21,12 +21,21 @@ class Aggregator (enum.Enum):
     Median = 2
 
 BLOCK_TABLE_FIELDS = [
+    ("US President 2024 - DEM", float, Aggregator.Sum),
+    ("US President 2024 - REP", float, Aggregator.Sum),
+    ("US President 2024 - Other", float, Aggregator.Sum),
     ("US President 2020 - DEM", float, Aggregator.Sum),
     ("US President 2020 - REP", float, Aggregator.Sum),
     ("US President 2020 - Other", float, Aggregator.Sum),
     ("US President 2016 - DEM", float, Aggregator.Sum),
     ("US President 2016 - REP", float, Aggregator.Sum),
     ("US President 2016 - Other", float, Aggregator.Sum),
+    ("US Senate 2024 - DEM", float, Aggregator.Sum),
+    ("US Senate 2024 - REP", float, Aggregator.Sum),
+    ("US Senate 2024 - Other", float, Aggregator.Sum),
+    ("US Senate 2022 - DEM", float, Aggregator.Sum),
+    ("US Senate 2022 - REP", float, Aggregator.Sum),
+    ("US Senate 2022 - Other", float, Aggregator.Sum),
     ("US Senate 2020 - DEM", float, Aggregator.Sum),
     ("US Senate 2020 - REP", float, Aggregator.Sum),
     ("US Senate 2020 - Other", float, Aggregator.Sum),
