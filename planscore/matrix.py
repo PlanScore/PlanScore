@@ -238,31 +238,25 @@ def prepare_district_data(upload):
             total = district['totals']['US President 2024 - DEM'] \
                   + district['totals']['US President 2024 - REP']
             try:
-                pvote_2024 = district['totals']['US President 2024 - DEM'] / total
+                pvote = district['totals']['US President 2024 - DEM'] / total
             except ZeroDivisionError:
                 pvote = -1
-            else:
-                pvote = params.pvote2024_scale * pvote_2024 + params.pvote2024_offset
         
         elif 2020 in params.pvotes and district['totals'].get('US President 2020 - DEM') is not None:
             total = district['totals']['US President 2020 - DEM'] \
                   + district['totals']['US President 2020 - REP']
             try:
-                pvote_2020 = district['totals']['US President 2020 - DEM'] / total
+                pvote = district['totals']['US President 2020 - DEM'] / total
             except ZeroDivisionError:
                 pvote = -1
-            else:
-                pvote = params.pvote2020_scale * pvote_2020 + params.pvote2020_offset
         
         elif 2016 in params.pvotes and district['totals'].get('US President 2016 - DEM') is not None:
             total = district['totals']['US President 2016 - DEM'] \
                   + district['totals']['US President 2016 - REP']
             try:
-                pvote_2016 = district['totals']['US President 2016 - DEM'] / total
+                pvote = district['totals']['US President 2016 - DEM'] / total
             except ZeroDivisionError:
                 pvote = -1
-            else:
-                pvote = params.pvote2016_scale * pvote_2016 + params.pvote2016_offset
 
         else:
             raise ValueError(f'Missing presidential vote columns for {params.pvotes}')

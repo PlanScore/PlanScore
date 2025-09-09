@@ -875,13 +875,13 @@ class TestScore (unittest.TestCase):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
-            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2021B'], None),
-            model_version = '2021B',
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2025A'], None),
+            model_version = '2025A',
             districts = [
-                dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
-                dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
-                dict(totals={'US President 2016 - REP': 5, 'US President 2016 - DEM': 3}, tile=None),
-                dict(totals={'US President 2016 - REP': 6, 'US President 2016 - DEM': 2}, tile=None),
+                dict(totals={'US President 2020 - REP': 2, 'US President 2020 - DEM': 6}, tile=None),
+                dict(totals={'US President 2020 - REP': 3, 'US President 2020 - DEM': 5}, tile=None),
+                dict(totals={'US President 2020 - REP': 5, 'US President 2020 - DEM': 3}, tile=None),
+                dict(totals={'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
                 ])
         
         percentrank_rel.return_value = 0
@@ -909,7 +909,7 @@ class TestScore (unittest.TestCase):
              [2.6, 5.4]],
         ])
         output = score.calculate_everything(input)
-        self.assertEqual(model_votes.mock_calls[0][1], ('2021B', data.State.XX, data.House.ushouse, filter_district_data.return_value))
+        self.assertEqual(model_votes.mock_calls[0][1], ('2025A', data.State.XX, data.House.ushouse, filter_district_data.return_value))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median Positives'], 0.0)
