@@ -173,7 +173,7 @@ function load_plan_preread(url, form, message_section, preread_section, descript
             if(value in window.version_parameters)
             {
                 var text = window.version_parameters[value][0],
-                    is_public = window.version_parameters[value][9],
+                    is_public = window.version_parameters[value][6],
                     state = (i == 0) ? 'checked' : '';
             
                 if(is_public)
