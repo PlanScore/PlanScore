@@ -39,6 +39,8 @@ VersionParameters = collections.namedtuple(
 
         # Include as option on annotation page?
         'is_public',
+        
+        # Important: cross-reference this tuple with window.version_parameters in annotate-new.js
     ),
 )
 
