@@ -484,15 +484,49 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(output[2], (3.13, 4.87, 'O'))
         self.assertEqual(output[3], (2.22, 5.78, 'O'))
     
+    def test_prepare_district_data_2025A_version(self):
+        input = data.Upload(id=None, key=None,
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2021B'], None),
+            model_version = '2025A',
+            districts = [
+                dict(totals={'US President 2024 - REP': 3, 'US President 2024 - DEM': 5, 'US President 2020 - REP': 2, 'US President 2020 - DEM': 6}, tile=None),
+                dict(totals={'US President 2024 - REP': 4, 'US President 2024 - DEM': 4, 'US President 2020 - REP': 3, 'US President 2020 - DEM': 5}, tile=None),
+                dict(totals={'US President 2024 - REP': 6, 'US President 2024 - DEM': 2, 'US President 2020 - REP': 5, 'US President 2020 - DEM': 3}, tile=None),
+                dict(totals={'US President 2024 - REP': 7, 'US President 2024 - DEM': 1, 'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
+                ])
+        
+        output = matrix.prepare_district_data(input)
+        self.assertEqual(output[0], (6.0, 2.0, 'O'))
+        self.assertEqual(output[1], (5.0, 3.0, 'O'))
+        self.assertEqual(output[2], (3.0, 5.0, 'O'))
+        self.assertEqual(output[3], (2.0, 6.0, 'O'))
+    
+    def test_prepare_district_data_2025B_version(self):
+        input = data.Upload(id=None, key=None,
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2021B'], None),
+            model_version = '2025B',
+            districts = [
+                dict(totals={'US President 2024 - REP': 3, 'US President 2024 - DEM': 5, 'US President 2020 - REP': 2, 'US President 2020 - DEM': 6}, tile=None),
+                dict(totals={'US President 2024 - REP': 4, 'US President 2024 - DEM': 4, 'US President 2020 - REP': 3, 'US President 2020 - DEM': 5}, tile=None),
+                dict(totals={'US President 2024 - REP': 6, 'US President 2024 - DEM': 2, 'US President 2020 - REP': 5, 'US President 2020 - DEM': 3}, tile=None),
+                dict(totals={'US President 2024 - REP': 7, 'US President 2024 - DEM': 1, 'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
+                ])
+        
+        output = matrix.prepare_district_data(input)
+        self.assertEqual(output[0], (5.0, 3.0, 'O'))
+        self.assertEqual(output[1], (4.0, 4.0, 'O'))
+        self.assertEqual(output[2], (2.0, 6.0, 'O'))
+        self.assertEqual(output[3], (1.0, 7.0, 'O'))
+    
     def test_prepare_district_data_default_version(self):
         input = data.Upload(id=None, key=None,
             model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2020'], None),
             model_version = None,
             districts = [
-                dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
-                dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
-                dict(totals={'US President 2016 - REP': 5, 'US President 2016 - DEM': 3}, tile=None),
-                dict(totals={'US President 2016 - REP': 6, 'US President 2016 - DEM': 2}, tile=None),
+                dict(totals={'US President 2024 - REP': 3, 'US President 2024 - DEM': 5, 'US President 2020 - REP': 2, 'US President 2020 - DEM': 6}, tile=None),
+                dict(totals={'US President 2024 - REP': 4, 'US President 2024 - DEM': 4, 'US President 2020 - REP': 3, 'US President 2020 - DEM': 5}, tile=None),
+                dict(totals={'US President 2024 - REP': 6, 'US President 2024 - DEM': 2, 'US President 2020 - REP': 5, 'US President 2020 - DEM': 3}, tile=None),
+                dict(totals={'US President 2024 - REP': 7, 'US President 2024 - DEM': 1, 'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
                 ])
         
         output = matrix.prepare_district_data(input)

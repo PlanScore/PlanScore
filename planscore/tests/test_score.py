@@ -968,10 +968,10 @@ class TestScore (unittest.TestCase):
             model_version = '2025A',
             incumbents = ['R', 'D', 'R', 'D'],
             districts = [
-                dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
-                dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
-                dict(totals={'US President 2016 - REP': 5, 'US President 2016 - DEM': 3}, tile=None),
-                dict(totals={'US President 2016 - REP': 6, 'US President 2016 - DEM': 2}, tile=None),
+                dict(totals={'US President 2020 - REP': 2, 'US President 2020 - DEM': 6}, tile=None),
+                dict(totals={'US President 2020 - REP': 3, 'US President 2020 - DEM': 5}, tile=None),
+                dict(totals={'US President 2020 - REP': 5, 'US President 2020 - DEM': 3}, tile=None),
+                dict(totals={'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
                 ])
         
         percentrank_rel.return_value = 0
@@ -1098,11 +1098,11 @@ class TestScore (unittest.TestCase):
             model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2025A'], None),
             model_version = '2025A',
             districts = [
-                dict(totals={'US President 2016 - REP': 2, 'US President 2016 - DEM': 6}, tile=None),
-                dict(totals={'US President 2016 - REP': 3, 'US President 2016 - DEM': 5}, tile=None),
-                dict(totals={'US President 2016 - REP': 5, 'US President 2016 - DEM': 3}, tile=None),
-                dict(totals={'US President 2016 - REP': 6, 'US President 2016 - DEM': 2}, tile=None),
-                dict(totals={'US President 2016 - REP': 0, 'US President 2016 - DEM': 0}, tile=None),
+                dict(totals={'US President 2020 - REP': 2, 'US President 2020 - DEM': 6}, tile=None),
+                dict(totals={'US President 2020 - REP': 3, 'US President 2020 - DEM': 5}, tile=None),
+                dict(totals={'US President 2020 - REP': 5, 'US President 2020 - DEM': 3}, tile=None),
+                dict(totals={'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
+                dict(totals={'US President 2020 - REP': 0, 'US President 2020 - DEM': 0}, tile=None),
                 ])
         
         percentrank_rel.return_value = 0

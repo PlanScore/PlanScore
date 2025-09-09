@@ -234,7 +234,7 @@ def prepare_district_data(upload):
     out_data = []
     
     for (district, incumbency) in zip(upload.districts, upload.incumbents):
-        if district['totals'].get('US President 2024 - DEM') is not None:
+        if 2024 in params.pvotes and district['totals'].get('US President 2024 - DEM') is not None:
             total = district['totals']['US President 2024 - DEM'] \
                   + district['totals']['US President 2024 - REP']
             try:
@@ -244,7 +244,7 @@ def prepare_district_data(upload):
             else:
                 pvote = params.pvote2024_scale * pvote_2024 + params.pvote2024_offset
         
-        elif district['totals'].get('US President 2020 - DEM') is not None:
+        elif 2020 in params.pvotes and district['totals'].get('US President 2020 - DEM') is not None:
             total = district['totals']['US President 2020 - DEM'] \
                   + district['totals']['US President 2020 - REP']
             try:
@@ -254,7 +254,7 @@ def prepare_district_data(upload):
             else:
                 pvote = params.pvote2020_scale * pvote_2020 + params.pvote2020_offset
         
-        elif district['totals'].get('US President 2016 - DEM') is not None:
+        elif 2016 in params.pvotes and district['totals'].get('US President 2016 - DEM') is not None:
             total = district['totals']['US President 2016 - DEM'] \
                   + district['totals']['US President 2016 - REP']
             try:
@@ -265,7 +265,7 @@ def prepare_district_data(upload):
                 pvote = params.pvote2016_scale * pvote_2016 + params.pvote2016_offset
 
         else:
-            raise ValueError('Missing presidential vote columns')
+            raise ValueError(f'Missing presidential vote columns for {params.pvotes}')
 
         out_data.append((
             round(total * pvote, 7),

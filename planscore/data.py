@@ -24,6 +24,9 @@ VersionParameters = collections.namedtuple(
         # Find matrix files in planscore/model/ directory
         'path_suffix',
 
+        # Hard-coded years to accept pvote from
+        'pvotes',
+
         # A hard-coded year to make predictions for
         'year',
 
@@ -52,17 +55,17 @@ VersionParameters = collections.namedtuple(
 VERSION_PARAMETERS = {
     '2025B': VersionParameters(
         'New: rerun the 2024 election with more accurate updated data (updated August 2025)',
-        '-2025B', 2024, -0.515, -0.495, 1., 0., 1., 0., 1., 0.,
+        '-2025B', {2024}, 2024, -0.515, -0.495, 1., 0., 1., 0., 1., 0.,
         True,
     ),
     '2025A': VersionParameters(
         'New: rerun the 2020 election with more accurate updated data (updated August 2025)',
-        '-2025A', 2024, -0.523, -0.495, 1., 0., 1., 0., 1., 0.,
+        '-2025A', {2020}, 2024, -0.523, -0.495, 1., 0., 1., 0., 1., 0.,
         True,
     ),
     '2021B': VersionParameters(
         'Original: rerun an average election from the past 10 years with best available data from before Census release',
-        '-2021B', None, -0.496875, -0.496875, 0.91, 0.05, 0.96, 0.01, 1., 0.,
+        '-2021B', {2016, 2020}, None, -0.496875, -0.496875, 0.91, 0.05, 0.96, 0.01, 1., 0.,
         True,
     ),
 }
