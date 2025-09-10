@@ -1,22 +1,11 @@
 all:
 
-live-deploy: planscore-lambda.zip
+live-deploy:
 	./cdk-deploy.sh cf-canary
 	./cdk-deploy.sh cf-production
 
-dev-deploy: planscore-lambda.zip
+dev-deploy:
 	./cdk-deploy.sh cf-development
-
-# Just one Lambda codebase is created, with different entry points and environments.
-planscore-lambda.zip: gdal-geos-numpy-python.tar.gz
-	mkdir -p planscore-lambda
-	pip3 install -q -t planscore-lambda .
-	tar -C planscore-lambda -xzf gdal-geos-numpy-python.tar.gz
-	cp lambda.py planscore-lambda/lambda.py
-	cd planscore-lambda && zip -rq ../planscore-lambda.zip .
-
-gdal-geos-numpy-python.tar.gz:
-	curl https://planscore.s3.amazonaws.com/code/gdal-3.2.1-geos-3.9.0-numpy-1.21.2-python-3.9.6.tar.gz -o $@ -s
 
 live-metrics: metrics-lambda.zip
 	aws lambda update-function-code --region us-east-1 \
@@ -39,13 +28,8 @@ planscore/website/static/supported-states.svg: design/Upload-Map.svg planscore-s
 planscore-svg:
 	cd SVG && docker build -t planscore-svg:latest .
 
-# It's a pain to have to redownload gdal-geos-numpy-python.tar.gz so this sort-of cleans things
-cleanish:
-	rm -rf planscore-lambda planscore-lambda.zip
+clean:
 	rm -rf metrics-lambda metrics-lambda.zip
 
-clean: cleanish
-	rm -f gdal-geos-numpy-python.tar.gz
-
-.PHONY: clean cleanish all live-deploy dev-deploy planscore-svg
+.PHONY: clean all live-deploy dev-deploy planscore-svg
 .SECONDARY:

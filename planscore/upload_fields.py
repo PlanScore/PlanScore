@@ -6,7 +6,7 @@ More details on browser-based S3 uploads using HTTP POST:
 '''
 import json, pprint, urllib.parse, datetime, random, os, uuid
 import boto3, itsdangerous
-from . import util, data, constants, website
+from . import data, constants, website
 
 def build_api_base(requestContext):
     '''
