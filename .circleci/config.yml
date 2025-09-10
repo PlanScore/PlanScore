@@ -19,22 +19,6 @@ jobs:
       - run: python3 setup.py test
       - run: node tests.js
   
-  # Ensure that packages can be built in deploy step
-  Build:
-    docker:
-      - image: ubuntu:24.04
-    environment:
-      DEBIAN_FRONTEND: noninteractive
-      PIP_BREAK_SYSTEM_PACKAGES: 1
-    working_directory: ~/repo
-    steps:
-      - run: apt update -y
-      - run: apt install -y git ssh
-      - run: apt install -y python3 python3-pip
-      - checkout
-      - run: pip3 install '.[deploy]'
-      - run: python3 -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
-
   # Deploy to live site!
   Deploy:
     machine:
@@ -63,15 +47,9 @@ workflows:
   Everything:
     jobs:
       - Test
-      - Build:
-          filters:
-            branches:
-              only:
-                - main
       - Deploy:
           requires:
             - Test
-            - Build
           filters:
             branches:
               only:
