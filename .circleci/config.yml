@@ -33,7 +33,6 @@ jobs:
       - checkout
       - run: apt install -y python3 python3-pip
       - run: pip3 install '.[deploy]'
-      - run: make planscore-lambda.zip
       - run: python3 -c 'import planscore.website as pw, flask_frozen as ff; ff.Freezer(pw.app).freeze()'
 
   # Deploy to live site!
