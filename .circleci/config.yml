@@ -24,6 +24,7 @@ jobs:
     docker:
       - image: ubuntu:24.04
     environment:
+      DEBIAN_FRONTEND: noninteractive
       PIP_BREAK_SYSTEM_PACKAGES: 1
     working_directory: ~/repo
     steps:
@@ -39,6 +40,7 @@ jobs:
     docker:
       - image: ubuntu:24.04
     environment:
+      DEBIAN_FRONTEND: noninteractive
       PIP_BREAK_SYSTEM_PACKAGES: 1
     working_directory: ~/repo
     steps:
@@ -55,6 +57,7 @@ jobs:
     docker:
       - image: ubuntu:24.04
     environment:
+      DEBIAN_FRONTEND: noninteractive
       PIP_BREAK_SYSTEM_PACKAGES: 1
     working_directory: ~/repo
     steps:
