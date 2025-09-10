@@ -57,7 +57,7 @@ setup(
             'aws-cdk.aws-s3 == 1.144.0',
             'aws-cdk.aws-s3-deployment == 1.144.0',
             'aws-cdk.core == 1.144.0',
-            'Frozen-Flask == 0.14',
+            'Frozen-Flask == 1.0.2',
             ],
         'metrics': [
             'google-api-python-client == 2.9.0',
