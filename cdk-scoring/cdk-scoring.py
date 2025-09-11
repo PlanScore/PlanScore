@@ -116,7 +116,7 @@ class PlanScoreScoring(cdk.Stack):
 
         self.populate_api(apigateway_role, api, *functions)
         self.make_forward(stack_id, website_base, formation_info)
-        self.make_state_machine(*functions)
+        # self.make_state_machine(*functions)
     
     def make_forward(self, stack_id, website_base, formation_info):
     
@@ -606,6 +606,30 @@ class PlanScoreScoring(cdk.Stack):
         grant_data_bucket_access(data_bucket, postread_calculate)
         grant_function_invoke(polygonize, 'FUNC_NAME_POLYGONIZE', postread_calculate)
 
+        # https://docs.aws.amazon.com/step-functions/latest/dg/input-output-contextobject.html
+        task_payload = aws_stepfunctions.TaskInput.from_object(
+            {
+                "ExecutionID.$": "$$.Execution.Id",
+                "StateMachineID.$": "$$.StateMachine.Id",
+                "ExecutionInput.$": "$",  # Duplicate of "$$.Execution.Input",
+                # "TaskToken.$": "$$.Task.Token",  # Task tokn not always present
+            }
+        )
+        
+        postread_calculate_task = aws_stepfunctions_tasks.LambdaInvoke(
+            self,
+            "PostreadCalculateT",
+            lambda_function=postread_calculate,
+            payload_response_only=True,
+            payload=task_payload,
+        )
+        
+        statemachine = aws_stepfunctions.StateMachine(
+            self,
+            "ScoreMachine",
+            definition=postread_calculate_task,
+        )
+
         postread_intermediate = aws_lambda.DockerImageFunction(
             self,
             "PostreadIntermediateD",
@@ -699,6 +723,15 @@ class PlanScoreScoring(cdk.Stack):
         grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', postread_callback)
         grant_function_invoke(postread_intermediate, 'FUNC_NAME_POSTREAD_INTERMEDIATE', postread_callback)
         postread_callback.add_permission('Permission', principal=apigateway_role)
+
+        postread_callback.add_environment('STATE_MACHINE_ARN', statemachine.state_machine_arn)
+        # statemachine.grant_start_execution(postread_callback)
+        postread_callback.add_to_role_policy(
+            aws_iam.PolicyStatement(
+                actions=["states:StartExecution"],
+                resources=[statemachine.state_machine_arn],
+            )
+        )
 
         return (
             authorizer,

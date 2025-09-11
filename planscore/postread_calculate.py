@@ -375,13 +375,15 @@ def get_redirect_url(website_base, id):
 def lambda_handler(event, context):
     '''
     '''
+    payload = event['ExecutionInput']
+    
     s3 = boto3.client('s3')
-    storage = data.Storage(s3, event['bucket'], None)
+    storage = data.Storage(s3, payload['bucket'], None)
     athena = boto3.client('athena', region_name='us-east-1')
-    upload = data.Upload.from_dict(event)
+    upload = data.Upload.from_dict(payload)
     
     try:
-        commence_upload_scoring(context, s3, athena, event['bucket'], upload)
+        commence_upload_scoring(context, s3, athena, payload['bucket'], upload)
     except RuntimeError as err:
         error_upload = upload.clone(status=False, message="Can't score this plan: {}".format(err))
         observe.put_upload_index(storage, error_upload)
