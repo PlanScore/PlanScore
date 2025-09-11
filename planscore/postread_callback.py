@@ -5,7 +5,7 @@ More details on "success_action_redirect" in browser-based S3 uploads:
 
     http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-post-example.html
 '''
-import boto3, itsdangerous, urllib.parse, json, re
+import boto3, itsdangerous, urllib.parse, json, re, os
 from . import postread_calculate, constants, util, website, data, score, observe, preread, postread_intermediate
 
 def dummy_upload(key, id):
@@ -105,9 +105,14 @@ def lambda_handler(event, context):
     event = dict(bucket=query['bucket'])
     event.update(upload.to_dict())
 
-    lam = boto3.client('lambda')
-    lam.invoke(FunctionName=postread_calculate.FUNCTION_NAME, InvocationType='Event',
-        Payload=json.dumps(event).encode('utf8'))
+    # lam = boto3.client('lambda')
+    # lam.invoke(FunctionName=postread_calculate.FUNCTION_NAME, InvocationType='Event',
+    #     Payload=json.dumps(event).encode('utf8'))
+    sfn = boto3.client('stepfunctions')
+    sfn.start_execution(
+        stateMachineArn=os.environ.get('STATE_MACHINE_ARN'),
+        input=json.dumps(event),
+    )
     
     return response
 
