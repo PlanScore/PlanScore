@@ -91,6 +91,15 @@ def grant_function_invoke(function, env_var, principal):
     principal.add_environment(env_var, function.function_name)
     function.grant_invoke(principal)
 
+def grant_statemachine_execute(statemachine, principal):
+    principal.add_environment('STATE_MACHINE_ARN', statemachine.state_machine_arn)
+    principal.add_to_role_policy(
+        aws_iam.PolicyStatement(
+            actions=["states:StartExecution"],
+            resources=[statemachine.state_machine_arn],
+        )
+    )
+
 class PlanScoreScoring(cdk.Stack):
 
     def __init__(self, scope, formation_info, **kwargs):
@@ -721,15 +730,8 @@ class PlanScoreScoring(cdk.Stack):
         grant_data_bucket_access(data_bucket, postread_callback)
         grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', postread_callback)
         grant_function_invoke(postread_intermediate, 'FUNC_NAME_POSTREAD_INTERMEDIATE', postread_callback)
+        grant_statemachine_execute(statemachine, postread_callback)
         postread_callback.add_permission('Permission', principal=apigateway_role)
-
-        postread_callback.add_environment('STATE_MACHINE_ARN', statemachine.state_machine_arn)
-        postread_callback.add_to_role_policy(
-            aws_iam.PolicyStatement(
-                actions=["states:StartExecution"],
-                resources=[statemachine.state_machine_arn],
-            )
-        )
 
         return (
             authorizer,
