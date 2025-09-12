@@ -634,7 +634,7 @@ class PlanScoreScoring(cdk.Stack):
             self,
             "APIUploadD",
             memory_size=2048,
-            code=get_small_code("planscore.api_upload.lambda_handler"),
+            code=get_large_code("planscore.api_upload.lambda_handler"),
             **function_kwargs,
         )
 
