@@ -51,14 +51,14 @@ def lambda_handler(event, context):
     event = dict(bucket=query['bucket'])
     event.update(upload.to_dict())
 
-    lam = boto3.client('lambda')
-    lam.invoke(FunctionName=preread_followup.FUNCTION_NAME, InvocationType='Event',
-        Payload=json.dumps(event).encode('utf8'))
+    # lam = boto3.client('lambda')
+    # lam.invoke(FunctionName=preread_followup.FUNCTION_NAME, InvocationType='Event',
+    #     Payload=json.dumps(event).encode('utf8'))
 
     sfn = boto3.client('stepfunctions')
     sfn.start_execution(
         stateMachineArn=os.environ.get('STATE_MACHINE_ARN'),
-        input=upload.to_json(),
+        input=json.dumps(event),
     )
     
     return {
