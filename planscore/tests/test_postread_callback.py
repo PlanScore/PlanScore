@@ -49,7 +49,7 @@ class TestPostreadCallback (unittest.TestCase):
     @unittest.mock.patch('planscore.observe.get_upload_index')
     @unittest.mock.patch('planscore.postread_callback.dummy_upload')
     @unittest.mock.patch('boto3.client')
-    def test_lambda_handler(self, boto3_client, dummy_upload, get_upload_index):
+    def test_lambda_handler_GET(self, boto3_client, dummy_upload, get_upload_index):
         ''' Lambda event triggers the right call to dummy_upload()
         '''
         query = {'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson',
@@ -67,7 +67,7 @@ class TestPostreadCallback (unittest.TestCase):
             'queryStringParameters': query,
             'requestContext': {'authorizer': {}},
         }
-        response = postread_callback.lambda_handler(event, None)
+        response = postread_callback.lambda_handler_GET(event, None)
 
         self.assertEqual(get_upload_index.mock_calls[0][1][0].bucket, query['bucket'])
         self.assertEqual(get_upload_index.mock_calls[0][1][1], data.UPLOAD_INDEX_KEY.format(id=query['id']))
@@ -90,7 +90,7 @@ class TestPostreadCallback (unittest.TestCase):
 
     @unittest.mock.patch('planscore.preread.create_upload')
     @unittest.mock.patch('boto3.client')
-    def test_lambda_handler_authorized(self, boto3_client, create_upload):
+    def test_lambda_handler_POST_authorized(self, boto3_client, create_upload):
         ''' Lambda event triggers the right call to dummy_upload()
         '''
         query = {'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson',
@@ -113,7 +113,7 @@ class TestPostreadCallback (unittest.TestCase):
                 "library_metadata": {"Hello": "World"}
             }''',
         }
-        response = postread_callback.lambda_handler(event, None)
+        response = postread_callback.lambda_handler_POST(event, None)
 
         self.assertEqual(create_upload.mock_calls[0][1][1:], (query['bucket'], query['key'], 'id'))
         
@@ -134,7 +134,7 @@ class TestPostreadCallback (unittest.TestCase):
     
     @unittest.mock.patch('planscore.postread_callback.dummy_upload')
     @unittest.mock.patch('boto3.client')
-    def test_lambda_handler_bad_id(self, boto3_client, dummy_upload):
+    def test_lambda_handler_GET_bad_id(self, boto3_client, dummy_upload):
         ''' Lambda event with an incorrectly-signed ID fails as expected
         '''
         event = {
@@ -142,7 +142,7 @@ class TestPostreadCallback (unittest.TestCase):
             }
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
-        response = postread_callback.lambda_handler(event, None)
+        response = postread_callback.lambda_handler_GET(event, None)
         
         self.assertFalse(dummy_upload.mock_calls)
         self.assertEqual(response['statusCode'], '400')
