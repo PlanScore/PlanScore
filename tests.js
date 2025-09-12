@@ -576,6 +576,15 @@ assert.equal(annotate_new.getUrlParameter('key', search),
 assert.equal(annotate_new.getUrlParameter('id', search),
     '20191229T183809.446949066Z.zapI6N-eiLykEsa1QVj2TrmldZk', 'Should get correct URL id');
 
+assert.equal(annotate_new.missing_execution({}),
+    true, 'Should see that no execution_id or token is set');
+
+assert.equal(annotate_new.missing_execution({execution_id: null, execution_token: null}),
+    true, 'Should see that execution_id and token are null');
+
+assert.equal(annotate_new.missing_execution({execution_id: 'foo', execution_token: 'bar'}),
+    false, 'Should see that execution_id and token are set');
+
 assert.equal(annotate_new.which_plan_districts_count({districts: 'no'}),
     null, 'Should return no defined count');
 

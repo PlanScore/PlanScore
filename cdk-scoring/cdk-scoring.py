@@ -650,6 +650,7 @@ class PlanScoreScoring(cdk.Stack):
             "PrereadFollowupT",
             lambda_function=preread_followup,
             integration_pattern=aws_stepfunctions.IntegrationPattern.WAIT_FOR_TASK_TOKEN,
+            heartbeat=cdk.Duration.days(1),
             # payload_response_only=True,
             payload=task_payload,
         )
