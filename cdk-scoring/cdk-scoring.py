@@ -723,17 +723,29 @@ class PlanScoreScoring(cdk.Stack):
         # grant_function_invoke(preread_followup, 'FUNC_NAME_PREREAD_FOLLOWUP', preread)
         grant_statemachine_execute(statemachine, preread)
 
-        postread_callback = aws_lambda.DockerImageFunction(
+        postread_callback_GET = aws_lambda.DockerImageFunction(
             self,
-            "PostreadCallbackD",
-            code=get_large_code("planscore.postread_callback.lambda_handler"),
+            "PostreadCallbackGetD",
+            code=get_large_code("planscore.postread_callback.lambda_handler_GET"),
             **function_kwargs,
         )
 
-        grant_data_bucket_access(data_bucket, postread_callback)
-        grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', postread_callback)
-        grant_function_invoke(postread_intermediate, 'FUNC_NAME_POSTREAD_INTERMEDIATE', postread_callback)
-        postread_callback.add_permission('Permission', principal=apigateway_role)
+        grant_data_bucket_access(data_bucket, postread_callback_GET)
+        grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', postread_callback_GET)
+        grant_function_invoke(postread_intermediate, 'FUNC_NAME_POSTREAD_INTERMEDIATE', postread_callback_GET)
+        postread_callback_GET.add_permission('Permission', principal=apigateway_role)
+
+        postread_callback_POST = aws_lambda.DockerImageFunction(
+            self,
+            "PostreadCallbackPostD",
+            code=get_large_code("planscore.postread_callback.lambda_handler_POST"),
+            **function_kwargs,
+        )
+
+        grant_data_bucket_access(data_bucket, postread_callback_POST)
+        grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', postread_callback_POST)
+        grant_function_invoke(postread_intermediate, 'FUNC_NAME_POSTREAD_INTERMEDIATE', postread_callback_POST)
+        postread_callback_POST.add_permission('Permission', principal=apigateway_role)
 
         return (
             authorizer,
@@ -745,7 +757,8 @@ class PlanScoreScoring(cdk.Stack):
             get_model_versions,
             upload_fields,
             preread,
-            postread_callback,
+            postread_callback_GET,
+            postread_callback_POST,
         )
 
     def populate_api(self, apigateway_role, api, *functions):
@@ -760,7 +773,8 @@ class PlanScoreScoring(cdk.Stack):
             get_model_versions,
             upload_fields,
             preread,
-            postread_callback,
+            postread_callback_GET,
+            postread_callback_POST,
         ) = functions
 
         integration_kwargs = dict(
@@ -886,8 +900,14 @@ class PlanScoreScoring(cdk.Stack):
         preread_resource = api.root.add_resource('preread')
         preread_resource.add_method("GET", preread_integration)
 
-        uploaded_integration = aws_apigateway.LambdaIntegration(
-            postread_callback,
+        uploaded_integration_GET = aws_apigateway.LambdaIntegration(
+            postread_callback_GET,
+            credentials_role=apigateway_role,
+            **integration_kwargs
+        )
+
+        uploaded_integration_POST = aws_apigateway.LambdaIntegration(
+            postread_callback_POST,
             credentials_role=apigateway_role,
             **integration_kwargs
         )
@@ -899,11 +919,11 @@ class PlanScoreScoring(cdk.Stack):
             ),
         )
 
-        uploaded_resource.add_method("GET", uploaded_integration)
+        uploaded_resource.add_method("GET", uploaded_integration_GET)
 
         uploaded_resource.add_method(
             "POST",
-            uploaded_integration,
+            uploaded_integration_POST,
             authorizer=token_authorizer,
         )
 
