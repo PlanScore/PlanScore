@@ -49,6 +49,11 @@ function date_age(date)
     return (new Date()).getTime() / 1000 - date.getTime() / 1000;
 }
 
+function missing_execution(plan)
+{
+    return (typeof plan.execution_id !== 'string' || typeof plan.execution_token !== 'string')
+}
+
 function which_plan_districts_count(plan)
 {
     if(typeof plan.districts == 'object' && plan.districts.length !== undefined)
@@ -135,7 +140,7 @@ function load_plan_preread(url, form, message_section, preread_section, descript
 
     function on_loaded_preread(plan, modified_at)
     {
-        const is_preread_still_parsing = !which_plan_districts_count(plan);
+        const is_preread_still_parsing = missing_execution(plan) || !which_plan_districts_count(plan);
         if(is_preread_still_parsing) {
             if (plan.message) {
                 // Still processing (Reading/Parsing this newly-uploaded plan)
@@ -147,6 +152,8 @@ function load_plan_preread(url, form, message_section, preread_section, descript
             return;
         } 
 
+        form.elements['execution_id'].value = plan.execution_id;
+        form.elements['execution_token'].value = plan.execution_token;
         hide_message(preread_section, message_section);
 
         // Clear out and repopulate description.
@@ -309,6 +316,7 @@ if(typeof module !== 'undefined' && module.exports)
 {
     module.exports = {
         format_url: format_url, getUrlParameter: getUrlParameter,
+        missing_execution: missing_execution,
         which_plan_districts_count: which_plan_districts_count,
         get_description: get_description, date_age: date_age,
         };
