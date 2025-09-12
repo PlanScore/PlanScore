@@ -47,13 +47,12 @@ class TestPreread (unittest.TestCase):
         self.assertEqual(create_upload.mock_calls[0][1][1:],
             (query['bucket'], query['key'], 'id'))
         
-        lambda_dict = boto3_client.return_value.invoke.mock_calls[0][2]
+        lambda_dict = boto3_client.return_value.start_execution.mock_calls[0][2]
         
-        self.assertEqual(lambda_dict['FunctionName'], preread_followup.FUNCTION_NAME)
-        self.assertEqual(lambda_dict['InvocationType'], 'Event')
-        self.assertIn(b'"id": "id.k0_XwbOLGLUdv241zsPluNc3HYs"', lambda_dict['Payload'])
-        self.assertIn(b'"key": "uploads/id/upload/file.geojson"', lambda_dict['Payload'])
-        self.assertIn(b'"bucket": "planscore-bucket"', lambda_dict['Payload'])
+        self.assertEqual(lambda_dict['stateMachineArn'], os.environ.get('STATE_MACHINE_ARN'))
+        self.assertIn('"id": "id.k0_XwbOLGLUdv241zsPluNc3HYs"', lambda_dict['input'])
+        self.assertIn('"key": "uploads/id/upload/file.geojson"', lambda_dict['input'])
+        self.assertIn('"bucket": "planscore-bucket"', lambda_dict['input'])
     
     @unittest.mock.patch('planscore.preread.create_upload')
     def test_lambda_handler_bad_id(self, create_upload):
