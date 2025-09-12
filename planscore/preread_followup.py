@@ -317,7 +317,10 @@ def lambda_handler(event, context):
     '''
     '''
     print("event:", event)
-    input = event['ExecutionInput']
+    input = {
+        **event['ExecutionInput'],
+        **{"execution_id": event['ExecutionID'], "execution_token": event['TaskToken']},
+    }
     
     s3 = boto3.client('s3')
     lam = boto3.client('lambda')

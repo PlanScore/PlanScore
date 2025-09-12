@@ -205,7 +205,7 @@ class Upload:
     def __init__(self, id, key, model:Model=None, districts=None, incumbents=None,
             summary=None, progress=None, start_time=None, message=None,
             description=None, geometry_key=None, status=None,
-            library_metadata=None, auth_token=None, model_version=None,
+            library_metadata=None, auth_token=None, model_version=None, execution_id=None, execution_token=None,
             **ignored):
         self.id = id
         self.key = key
@@ -223,6 +223,8 @@ class Upload:
         self.library_metadata = library_metadata
         self.auth_token = auth_token
         self.model_version = model_version
+        self.execution_id = execution_id
+        self.execution_token = execution_token
         
         if not incumbents:
             self.incumbents = [Incumbency.Open.value for i in range(len(self.districts))]
@@ -298,6 +300,8 @@ class Upload:
             commit_sha = self.commit_sha,
             library_metadata = self.library_metadata,
             model_version = self.model_version,
+            execution_id = self.execution_id,
+            execution_token = self.execution_token,
             )
     
     def to_json(self):
@@ -361,7 +365,7 @@ class Upload:
     
     def clone(self, model=None, districts=None, incumbents=None, summary=None, progress=None,
         start_time=None, message=None, description=None, geometry_key=None, status=None,
-        library_metadata=None, auth_token=None, model_version=None):
+        library_metadata=None, auth_token=None, model_version=None, execution_id=None, execution_token=None):
         return Upload(self.id, self.key,
             model = model or self.model,
             status = status if (self.status is None) else self.status,
@@ -376,6 +380,8 @@ class Upload:
             library_metadata = library_metadata or self.library_metadata,
             auth_token = auth_token,
             model_version = model_version or self.model_version,
+            execution_id = execution_id or self.execution_id,
+            execution_token = execution_token or self.execution_token,
             )
     
     @staticmethod
@@ -399,6 +405,8 @@ class Upload:
             library_metadata = data.get('library_metadata'),
             auth_token = data.get('auth_token'),
             model_version = data.get('model_version'),
+            execution_id = data.get('execution_id'),
+            execution_token = data.get('execution_token'),
             )
     
     @staticmethod
