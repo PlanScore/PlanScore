@@ -614,30 +614,6 @@ class PlanScoreScoring(cdk.Stack):
         grant_data_bucket_access(data_bucket, postread_calculate)
         grant_function_invoke(polygonize, 'FUNC_NAME_POLYGONIZE', postread_calculate)
 
-        # https://docs.aws.amazon.com/step-functions/latest/dg/input-output-contextobject.html
-        task_payload = aws_stepfunctions.TaskInput.from_object(
-            {
-                "ExecutionID.$": "$$.Execution.Id",
-                "StateMachineID.$": "$$.StateMachine.Id",
-                "ExecutionInput.$": "$",  # Duplicate of "$$.Execution.Input",
-                # "TaskToken.$": "$$.Task.Token",  # Task tokn not always present
-            }
-        )
-        
-        postread_calculate_task = aws_stepfunctions_tasks.LambdaInvoke(
-            self,
-            "PostreadCalculateT",
-            lambda_function=postread_calculate,
-            payload_response_only=True,
-            payload=task_payload,
-        )
-        
-        statemachine = aws_stepfunctions.StateMachine(
-            self,
-            "ScoreMachine",
-            definition=postread_calculate_task,
-        )
-
         postread_intermediate = aws_lambda.DockerImageFunction(
             self,
             "PostreadIntermediateD",
@@ -658,6 +634,31 @@ class PlanScoreScoring(cdk.Stack):
         )
 
         grant_data_bucket_access(data_bucket, preread_followup)
+
+        # # https://docs.aws.amazon.com/step-functions/latest/dg/input-output-contextobject.html
+        # task_payload = aws_stepfunctions.TaskInput.from_object(
+        #     {
+        #         "ExecutionID.$": "$$.Execution.Id",
+        #         "StateMachineID.$": "$$.StateMachine.Id",
+        #         "ExecutionInput.$": "$",  # Duplicate of "$$.Execution.Input",
+        #         # "TaskToken.$": "$$.Task.Token",  # Task tokn not always present
+        #     }
+        # )
+        # 
+        # preread_followup_task = aws_stepfunctions_tasks.LambdaInvoke(
+        #     self,
+        #     "PrereadFollowupT",
+        #     lambda_function=preread_followup,
+        #     payload_response_only=True,
+        #     payload=task_payload,
+        # )
+        
+        statemachine = aws_stepfunctions.StateMachine(
+            self,
+            "ScoreMachine",
+            # definition=preread_followup_task,
+            definition=aws_stepfunctions.Pass(self, "PassT"),
+        )
 
         # API-accessible functions
 
@@ -719,6 +720,7 @@ class PlanScoreScoring(cdk.Stack):
         grant_data_bucket_access(data_bucket, preread)
         preread.add_permission('Permission', principal=apigateway_role)
         grant_function_invoke(preread_followup, 'FUNC_NAME_PREREAD_FOLLOWUP', preread)
+        grant_statemachine_execute(statemachine, preread)
 
         postread_callback = aws_lambda.DockerImageFunction(
             self,
@@ -730,7 +732,6 @@ class PlanScoreScoring(cdk.Stack):
         grant_data_bucket_access(data_bucket, postread_callback)
         grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', postread_callback)
         grant_function_invoke(postread_intermediate, 'FUNC_NAME_POSTREAD_INTERMEDIATE', postread_callback)
-        grant_statemachine_execute(statemachine, postread_callback)
         postread_callback.add_permission('Permission', principal=apigateway_role)
 
         return (
