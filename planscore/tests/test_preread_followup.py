@@ -24,7 +24,7 @@ class TestPrereadFollowup (unittest.TestCase):
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
 
-        preread_followup.lambda_handler(event, None)
+        output = preread_followup.lambda_handler(event, None)
         
         self.assertEqual(commence_upload_parsing.mock_calls[0][1][2], input['bucket'])
         
@@ -33,6 +33,8 @@ class TestPrereadFollowup (unittest.TestCase):
         self.assertEqual(upload.key, input['key'])
         self.assertEqual(upload.execution_id, event['ExecutionID'])
         self.assertEqual(upload.execution_token, event['TaskToken'])
+        
+        self.assertIn("bucket", output)
     
     @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.preread_followup.commence_upload_parsing')

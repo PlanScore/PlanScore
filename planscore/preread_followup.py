@@ -335,7 +335,9 @@ def lambda_handler(event, context):
         observe.put_upload_index(storage, error_upload)
         raise
     else:
-        return upload2.to_dict()
+        next_input = dict(bucket=input['bucket'])
+        next_input.update(upload2.to_dict())
+        return next_input
 
 if __name__ == '__main__':
     pass
