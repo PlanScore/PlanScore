@@ -624,7 +624,6 @@ class PlanScoreScoring(cdk.Stack):
         )
 
         grant_data_bucket_access(data_bucket, postread_intermediate)
-        grant_function_invoke(polygonize, 'FUNC_NAME_POLYGONIZE', postread_intermediate)
 
         preread_followup = aws_lambda.DockerImageFunction(
             self,
