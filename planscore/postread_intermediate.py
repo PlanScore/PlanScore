@@ -7,7 +7,10 @@ from . import data, util, constants, observe
 def lambda_handler(event, context):
     '''
     '''
-    input = event['ExecutionInput']
+    input = {
+        **event['ExecutionInput'],
+        **{"execution_id": event['ExecutionID'], "execution_token": event.get('TaskToken')},
+    }
     
     s3 = boto3.client('s3')
     storage = data.Storage(s3, input['bucket'], None)

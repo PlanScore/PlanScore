@@ -79,6 +79,8 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
         )
 
     observe.put_upload_index(storage, upload6)
+    
+    return upload6
 
 def commence_blockassign_upload_scoring(context, s3, athena, bucket, upload, file_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
@@ -126,6 +128,8 @@ def commence_blockassign_upload_scoring(context, s3, athena, bucket, upload, fil
         )
 
     observe.put_upload_index(storage, upload7)
+    
+    return upload7
 
 def accumulate_district_totals(athena, upload, is_spatial):
     '''
@@ -373,7 +377,10 @@ def get_redirect_url(website_base, id):
 def lambda_handler(event, context):
     '''
     '''
-    input = event['ExecutionInput']
+    input = {
+        **event['ExecutionInput'],
+        **{"execution_id": event['ExecutionID'], "execution_token": None},
+    }
     
     s3 = boto3.client('s3')
     storage = data.Storage(s3, input['bucket'], None)
@@ -381,7 +388,7 @@ def lambda_handler(event, context):
     upload = data.Upload.from_dict(input)
     
     try:
-        commence_upload_scoring(context, s3, athena, input['bucket'], upload)
+        upload2 = commence_upload_scoring(context, s3, athena, input['bucket'], upload)
     except RuntimeError as err:
         error_upload = upload.clone(status=False, message="Can't score this plan: {}".format(err))
         observe.put_upload_index(storage, error_upload)
@@ -389,6 +396,8 @@ def lambda_handler(event, context):
         error_upload = upload.clone(status=False, message="Can't score this plan: something went wrong, giving up.")
         observe.put_upload_index(storage, error_upload)
         raise
+    else:
+        return upload2.to_dict()
 
 if __name__ == '__main__':
     pass

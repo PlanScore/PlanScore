@@ -19,7 +19,7 @@ class TestPostreadCalculate (unittest.TestCase):
         input = {'id': 'id', 'bucket': 'planscore',
             'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson'}
         
-        event = {'ExecutionInput': input}
+        event = {'ExecutionInput': input, 'ExecutionID': 'eee'}
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
 
@@ -39,7 +39,7 @@ class TestPostreadCalculate (unittest.TestCase):
         input = {'id': 'id', 'bucket': 'planscore',
             'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson'}
         
-        event = {'ExecutionInput': input}
+        event = {'ExecutionInput': input, 'ExecutionID': 'eee'}
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
         
