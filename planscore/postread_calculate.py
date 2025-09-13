@@ -8,8 +8,6 @@ import csv, operator, itertools, zipfile, gzip, datetime
 import boto3, osgeo.ogr, osgeo.osr
 from . import util, data, score, website, constants, observe
 
-FUNCTION_NAME = os.environ.get('FUNC_NAME_POSTREAD_CALCULATE') or 'PlanScore-PostreadCalculate'
-
 osgeo.ogr.UseExceptions()
 
 EPSG4326 = osgeo.osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)

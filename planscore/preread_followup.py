@@ -23,8 +23,6 @@ import osgeo.osr
 
 from . import util, data, score, website, constants, observe
 
-FUNCTION_NAME = os.environ.get('FUNC_NAME_PREREAD_FOLLOWUP') or 'PlanScore-PrereadFollowup'
-
 Assignment = collections.namedtuple('Assignment', ('block_id', 'district_id'))
 
 osgeo.ogr.UseExceptions()

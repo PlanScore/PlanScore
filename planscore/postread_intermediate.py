@@ -4,8 +4,6 @@ import json
 
 from . import data, util, constants, observe
 
-FUNCTION_NAME = os.environ.get('FUNC_NAME_POSTREAD_INTERMEDIATE') or 'PlanScore-PostreadIntermediate'
-
 def lambda_handler(event, context):
     '''
     '''

@@ -9,7 +9,6 @@ from . import data
 from . import observe
 from . import preread_followup
 from . import postread_callback
-from . import postread_calculate
 
 def kick_it_off(geojson, temporary, auth_token):
     '''
@@ -64,17 +63,11 @@ def kick_it_off(geojson, temporary, auth_token):
 
     observe.put_upload_index(storage, upload3)
     
-    # hand off to postread_calculate
+    # hand off to step functions
 
     event = dict(bucket=constants.S3_BUCKET)
     event.update(upload3.to_dict())
 
-    # lam.invoke(
-    #     FunctionName=postread_calculate.FUNCTION_NAME,
-    #     InvocationType='Event',
-    #     Payload=json.dumps(event).encode('utf8'),
-    # )
-    
     sfn = boto3.client('stepfunctions')
     sfn.start_execution(
         stateMachineArn=os.environ.get('SINGLESTEP_API_SCORE_MACHINE'),

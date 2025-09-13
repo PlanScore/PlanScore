@@ -1,12 +1,11 @@
 ''' Called via HTTP from S3 redirect, redirects to plan page in turn.
 
-Also asynchronously invokes planscore.postread_calculate function.
 More details on "success_action_redirect" in browser-based S3 uploads:
 
     http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-post-example.html
 '''
 import boto3, itsdangerous, urllib.parse, json, re, os
-from . import postread_calculate, constants, util, website, data, score, observe, preread, postread_intermediate
+from . import constants, util, website, data, score, observe, preread
 
 def dummy_upload(key, id):
     '''
@@ -77,9 +76,6 @@ def lambda_handler_GET(event, context):
     event = dict(bucket=query['bucket'])
     event.update(upload.to_dict())
 
-    # lam = boto3.client('lambda')
-    # lam.invoke(FunctionName=postread_calculate.FUNCTION_NAME, InvocationType='Event',
-    #     Payload=json.dumps(event).encode('utf8'))
     sfn = boto3.client('stepfunctions')
     sfn.send_task_success(
         taskToken=upload.execution_token,
@@ -124,12 +120,6 @@ def lambda_handler_POST(event, context):
 
     event = dict(bucket=query['bucket'], callback_body=event['body'])
     event.update(upload.to_dict())
-
-    # lam.invoke(
-    #     FunctionName=postread_intermediate.FUNCTION_NAME,
-    #     InvocationType='Event',
-    #     Payload=json.dumps(event).encode('utf8'),
-    # )
 
     sfn = boto3.client('stepfunctions')
     sfn.start_execution(
