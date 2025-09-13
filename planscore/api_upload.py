@@ -1,4 +1,5 @@
 import json
+import os
 import boto3
 
 from . import constants
@@ -8,13 +9,13 @@ from . import data
 from . import observe
 from . import preread_followup
 from . import postread_callback
-from . import postread_calculate
 
 def kick_it_off(geojson, temporary, auth_token):
     '''
     '''
     s3 = boto3.client('s3')
     lam = boto3.client('lambda')
+    sfn = boto3.client('stepfunctions')
     
     # check auth header or whatever
 
@@ -63,15 +64,14 @@ def kick_it_off(geojson, temporary, auth_token):
 
     observe.put_upload_index(storage, upload3)
     
-    # hand off to postread_calculate
+    # hand off to step functions
 
     event = dict(bucket=constants.S3_BUCKET)
     event.update(upload3.to_dict())
 
-    lam.invoke(
-        FunctionName=postread_calculate.FUNCTION_NAME,
-        InvocationType='Event',
-        Payload=json.dumps(event).encode('utf8'),
+    sfn.start_execution(
+        stateMachineArn=os.environ.get('SINGLESTEP_API_SCORE_MACHINE'),
+        input=json.dumps(event),
     )
 
     # return links to user-readable page and machine-readable JSON

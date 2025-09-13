@@ -23,8 +23,6 @@ import osgeo.osr
 
 from . import util, data, score, website, constants, observe
 
-FUNCTION_NAME = os.environ.get('FUNC_NAME_PREREAD_FOLLOWUP') or 'PlanScore-PrereadFollowup'
-
 Assignment = collections.namedtuple('Assignment', ('block_id', 'district_id'))
 
 osgeo.ogr.UseExceptions()
@@ -316,20 +314,30 @@ def get_redirect_url(website_base, id):
 def lambda_handler(event, context):
     '''
     '''
+    input = {
+        **event['ExecutionInput'],
+        **{"execution_id": event['ExecutionID'], "execution_token": event.get('TaskToken')},
+    }
+    
     s3 = boto3.client('s3')
     lam = boto3.client('lambda')
-    storage = data.Storage(s3, event['bucket'], None)
-    upload = data.Upload.from_dict(event)
+    storage = data.Storage(s3, input['bucket'], None)
+    upload = data.Upload.from_dict(input)
     
     try:
-        commence_upload_parsing(s3, lam, event['bucket'], upload)
+        upload2 = commence_upload_parsing(s3, lam, input['bucket'], upload)
     except RuntimeError as err:
         error_upload = upload.clone(status=False, message="Can't score this plan: {}".format(err))
         observe.put_upload_index(storage, error_upload)
+        raise
     except Exception:
         error_upload = upload.clone(status=False, message="Can't score this plan: something went wrong, giving up.")
         observe.put_upload_index(storage, error_upload)
         raise
+    else:
+        next_input = dict(bucket=input['bucket'])
+        next_input.update(upload2.to_dict())
+        return next_input
 
 if __name__ == '__main__':
     pass
