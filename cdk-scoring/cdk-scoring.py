@@ -574,15 +574,22 @@ class PlanScoreScoring(cdk.Stack):
             entrypoint=["/usr/bin/python3", "-m", "awslambdaric"],
         )
         
-        def get_small_code(handler):
-            return dict(
+        def get_small_function(stack, name, handler):
+            return aws_lambda.Function(
+                stack,
+                name,
+                **function_kwargs,
                 code=aws_lambda.Code.from_asset("../planscore-lambda.zip"),
                 handler=handler,
                 runtime=aws_lambda.Runtime.PYTHON_3_9,
             )
         
-        def get_large_code(cmd):
-            return dict(
+        def get_large_function(stack, name, memory_size, cmd):
+            return aws_lambda.DockerImageFunction(
+                stack,
+                name,
+                **function_kwargs,
+                memory_size=memory_size,
                 code=aws_lambda.DockerImageCode.from_image_asset(
                     file="Dockerfile", cmd=[cmd], **code_kwargs
                 ),
@@ -591,132 +598,51 @@ class PlanScoreScoring(cdk.Stack):
         
         # Behind-the-scenes functions
 
-        authorizer = aws_lambda.Function(
-            self,
-            "AuthorizerZ",
-            **get_small_code("lambda.authorizer"),
-            **function_kwargs,
-        )
-
+        authorizer = get_small_function(self, "AuthorizerZ", "lambda.authorizer")
         authorizer.add_environment('API_TOKENS', API_TOKENS)
 
-        polygonize = aws_lambda.DockerImageFunction(
-            self,
-            "PolygonizeD",
-            memory_size=10240,
-            **get_large_code("planscore.polygonize.lambda_handler"),
-            **function_kwargs,
-        )
-
+        polygonize = get_large_function(self, "PolygonizeD", 10240, "planscore.polygonize.lambda_handler")
         grant_data_bucket_access(data_bucket, polygonize)
 
-        postread_calculate = aws_lambda.DockerImageFunction(
-            self,
-            "PostreadCalculateD",
-            memory_size=2048,
-            **get_large_code("planscore.postread_calculate.lambda_handler"),
-            **function_kwargs,
-        )
-
+        postread_calculate = get_large_function(self, "PostreadCalculateD", 2048, "planscore.postread_calculate.lambda_handler")
         grant_data_bucket_access(data_bucket, postread_calculate)
         grant_function_invoke(polygonize, 'FUNC_NAME_POLYGONIZE', postread_calculate)
 
-        postread_intermediate = aws_lambda.DockerImageFunction(
-            self,
-            "PostreadIntermediateD",
-            memory_size=2048,
-            **get_large_code("planscore.postread_intermediate.lambda_handler"),
-            **function_kwargs,
-        )
-
+        postread_intermediate = get_large_function(self, "PostreadIntermediateD", 2048, "planscore.postread_intermediate.lambda_handler")
         grant_data_bucket_access(data_bucket, postread_intermediate)
 
-        preread_followup = aws_lambda.DockerImageFunction(
-            self,
-            "PrereadFollowupD",
-            memory_size=1024,
-            **get_large_code("planscore.preread_followup.lambda_handler"),
-            **function_kwargs,
-        )
-
+        preread_followup = get_large_function(self, "PrereadFollowupD", 1024, "planscore.preread_followup.lambda_handler")
         grant_data_bucket_access(data_bucket, preread_followup)
 
         # API-accessible functions
 
-        function_kwargs.update(dict(
-            timeout=cdk.Duration.seconds(30),
-        ))
+        function_kwargs.update(timeout=cdk.Duration.seconds(30))
 
-        api_upload = aws_lambda.DockerImageFunction(
-            self,
-            "APIUploadD",
-            memory_size=2048,
-            **get_large_code("planscore.api_upload.lambda_handler"),
-            **function_kwargs,
-        )
-
+        api_upload = get_large_function(self, "APIUploadD", 2048, "planscore.api_upload.lambda_handler")
         grant_data_bucket_access(data_bucket, api_upload)
         api_upload.add_permission('Permission', principal=apigateway_role)
 
-        function_kwargs.update(dict(
-            timeout=cdk.Duration.seconds(10),  # This used to be a tight 3sec
-        ))
+        function_kwargs.update(timeout=cdk.Duration.seconds(5))
 
-        get_states = aws_lambda.Function(
-            self,
-            "APIStatesZ",
-            **get_small_code("lambda.get_states"),
-            **function_kwargs,
-        )
-
+        get_states = get_small_function(self, "APIStatesZ", "lambda.get_states")
         get_states.add_permission('Permission', principal=apigateway_role)
 
-        get_model_versions = aws_lambda.Function(
-            self,
-            "APIModelVersionsZ",
-            **get_small_code("lambda.get_model_versions"),
-            **function_kwargs,
-        )
-
+        get_model_versions = get_small_function(self, "APIModelVersionsZ", "lambda.get_model_versions")
         get_model_versions.add_permission('Permission', principal=apigateway_role)
 
-        upload_fields = aws_lambda.Function(
-            self,
-            "UploadFieldsZ",
-            **get_small_code("lambda.upload_fields"),
-            **function_kwargs,
-        )
-
+        upload_fields = get_small_function(self, "UploadFieldsZ", "lambda.upload_fields")
         grant_data_bucket_access(data_bucket, upload_fields)
         upload_fields.add_permission('Permission', principal=apigateway_role)
 
-        preread = aws_lambda.Function(
-            self,
-            "PrereadZ",
-            **get_small_code("lambda.preread"),
-            **function_kwargs,
-        )
-
+        preread = get_small_function(self, "PrereadZ", "lambda.preread")
         grant_data_bucket_access(data_bucket, preread)
         preread.add_permission('Permission', principal=apigateway_role)
 
-        postread_callback_GET = aws_lambda.Function(
-            self,
-            "PostreadCallbackGetZ",
-            **get_small_code("lambda.postread_callback_GET"),
-            **function_kwargs,
-        )
-
+        postread_callback_GET = get_small_function(self, "PostreadCallbackGetZ", "lambda.postread_callback_GET")
         grant_data_bucket_access(data_bucket, postread_callback_GET)
         postread_callback_GET.add_permission('Permission', principal=apigateway_role)
 
-        postread_callback_POST = aws_lambda.Function(
-            self,
-            "PostreadCallbackPostZ",
-            **get_small_code("lambda.postread_callback_POST"),
-            **function_kwargs,
-        )
-
+        postread_callback_POST = get_small_function(self, "PostreadCallbackPostZ", "lambda.postread_callback_POST")
         grant_data_bucket_access(data_bucket, postread_callback_POST)
         postread_callback_POST.add_permission('Permission', principal=apigateway_role)
 
