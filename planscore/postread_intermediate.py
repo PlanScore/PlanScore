@@ -7,11 +7,9 @@ from . import data, util, constants, observe
 def lambda_handler(event, context):
     '''
     '''
-    print("event:", event)
     input = event['ExecutionInput']
     
     s3 = boto3.client('s3')
-    lam = boto3.client('lambda')
     storage = data.Storage(s3, input['bucket'], None)
     upload1 = data.Upload.from_dict(input)
 

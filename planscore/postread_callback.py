@@ -35,7 +35,7 @@ def lambda_handler_GET(event, context):
     '''
     '''
     s3 = boto3.client('s3')
-    lam = boto3.client('lambda')
+    sfn = boto3.client('stepfunctions')
     query = util.event_query_args(event)
     website_base = constants.WEBSITE_BASE
 
@@ -76,7 +76,6 @@ def lambda_handler_GET(event, context):
     event = dict(bucket=query['bucket'])
     event.update(upload.to_dict())
 
-    sfn = boto3.client('stepfunctions')
     sfn.send_task_success(
         taskToken=upload.execution_token,
         output=json.dumps(event),
@@ -88,7 +87,7 @@ def lambda_handler_POST(event, context):
     '''
     '''
     s3 = boto3.client('s3')
-    lam = boto3.client('lambda')
+    sfn = boto3.client('stepfunctions')
     query = util.event_query_args(event)
     website_base = constants.WEBSITE_BASE
 
@@ -121,7 +120,6 @@ def lambda_handler_POST(event, context):
     event = dict(bucket=query['bucket'], callback_body=event['body'])
     event.update(upload.to_dict())
 
-    sfn = boto3.client('stepfunctions')
     sfn.start_execution(
         stateMachineArn=os.environ.get('MULTISTEP_API_SCORE_MACHINE'),
         input=json.dumps(event),

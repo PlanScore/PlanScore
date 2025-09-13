@@ -31,6 +31,7 @@ def lambda_handler(event, context):
     '''
     '''
     s3 = boto3.client('s3')
+    sfn = boto3.client('stepfunctions')
     query = util.event_query_args(event)
     website_base = constants.WEBSITE_BASE
 
@@ -50,7 +51,6 @@ def lambda_handler(event, context):
     event = dict(bucket=query['bucket'])
     event.update(upload.to_dict())
 
-    sfn = boto3.client('stepfunctions')
     sfn.start_execution(
         stateMachineArn=os.environ.get('INTERACTIVE_SCORE_MACHINE'),
         input=json.dumps(event),

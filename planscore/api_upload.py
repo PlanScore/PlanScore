@@ -15,6 +15,7 @@ def kick_it_off(geojson, temporary, auth_token):
     '''
     s3 = boto3.client('s3')
     lam = boto3.client('lambda')
+    sfn = boto3.client('stepfunctions')
     
     # check auth header or whatever
 
@@ -68,7 +69,6 @@ def kick_it_off(geojson, temporary, auth_token):
     event = dict(bucket=constants.S3_BUCKET)
     event.update(upload3.to_dict())
 
-    sfn = boto3.client('stepfunctions')
     sfn.start_execution(
         stateMachineArn=os.environ.get('SINGLESTEP_API_SCORE_MACHINE'),
         input=json.dumps(event),

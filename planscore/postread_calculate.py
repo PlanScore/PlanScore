@@ -373,7 +373,6 @@ def get_redirect_url(website_base, id):
 def lambda_handler(event, context):
     '''
     '''
-    print("event:", event)
     input = event['ExecutionInput']
     
     s3 = boto3.client('s3')

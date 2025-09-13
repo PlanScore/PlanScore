@@ -314,7 +314,6 @@ def get_redirect_url(website_base, id):
 def lambda_handler(event, context):
     '''
     '''
-    print("event:", event)
     input = {
         **event['ExecutionInput'],
         **{"execution_id": event['ExecutionID'], "execution_token": event.get('TaskToken')},
