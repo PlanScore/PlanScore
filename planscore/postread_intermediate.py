@@ -2,7 +2,7 @@ import os
 import boto3
 import json
 
-from . import data, util, constants, observe, preread_followup, postread_calculate
+from . import data, util, constants, observe, preread_followup
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_POSTREAD_INTERMEDIATE') or 'PlanScore-PostreadIntermediate'
 
@@ -61,8 +61,8 @@ def lambda_handler(event, context):
             status=False,
             message=f'Something went wrong: {err}',
         ))
-    else:
-        next_input = dict(bucket=input['bucket'])
-        next_input.update(upload3.to_dict())
-        next_event = {"ExecutionInput": next_input}
-        postread_calculate.lambda_handler(next_event, context)
+        raise
+
+    next_input = dict(bucket=input['bucket'])
+    next_input.update(upload3.to_dict())
+    return next_input

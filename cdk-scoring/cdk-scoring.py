@@ -799,14 +799,6 @@ class PlanScoreScoring(cdk.Stack):
             payload=aws_stepfunctions.TaskInput.from_object(task_payload),
         )
         
-        multistepapi_statemachine = aws_stepfunctions.StateMachine(
-            self,
-            f"{formation_info.prefix}-MultistepAPIScoreM",
-            definition=postread_intermediate_task,
-        )
-
-        grant_statemachine_control(multistepapi_statemachine, "MULTISTEP_API_SCORE_MACHINE", postread_callback_POST)
-        
         postread_calculate_task2 = aws_stepfunctions_tasks.LambdaInvoke(
             self,
             "PostreadCalculateT2",
@@ -815,10 +807,28 @@ class PlanScoreScoring(cdk.Stack):
             payload=aws_stepfunctions.TaskInput.from_object(task_payload),
         )
         
+        postread_intermediate_task.next(postread_calculate_task2)
+
+        multistepapi_statemachine = aws_stepfunctions.StateMachine(
+            self,
+            f"{formation_info.prefix}-MultistepAPIScoreM",
+            definition=postread_intermediate_task,
+        )
+
+        grant_statemachine_control(multistepapi_statemachine, "MULTISTEP_API_SCORE_MACHINE", postread_callback_POST)
+        
+        postread_calculate_task3 = aws_stepfunctions_tasks.LambdaInvoke(
+            self,
+            "PostreadCalculateT3",
+            lambda_function=postread_calculate,
+            payload_response_only=True,
+            payload=aws_stepfunctions.TaskInput.from_object(task_payload),
+        )
+        
         singlestepapi_statemachine = aws_stepfunctions.StateMachine(
             self,
             f"{formation_info.prefix}-SinglestepAPIScoreM",
-            definition=postread_calculate_task2,
+            definition=postread_calculate_task3,
         )
 
         grant_statemachine_control(singlestepapi_statemachine, "SINGLESTEP_API_SCORE_MACHINE", api_upload)
