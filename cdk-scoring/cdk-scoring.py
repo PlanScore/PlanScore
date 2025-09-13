@@ -123,6 +123,7 @@ class PlanScoreScoring(cdk.Stack):
             website_base,
         )
 
+        self.make_state_machine(*functions)
         self.populate_api(apigateway_role, api, *functions)
         self.make_forward(stack_id, website_base, formation_info)
     
@@ -635,42 +636,6 @@ class PlanScoreScoring(cdk.Stack):
 
         grant_data_bucket_access(data_bucket, preread_followup)
 
-        # https://docs.aws.amazon.com/step-functions/latest/dg/input-output-contextobject.html
-        task_payload = {
-            "ExecutionID.$": "$$.Execution.Id",
-            "StateMachineID.$": "$$.StateMachine.Id",
-            "ExecutionInput.$": "$",  # Duplicate of "$$.Execution.Input",
-        }
-        
-        preread_followup_task = aws_stepfunctions_tasks.LambdaInvoke(
-            self,
-            "PrereadFollowupT",
-            lambda_function=preread_followup,
-            integration_pattern=aws_stepfunctions.IntegrationPattern.WAIT_FOR_TASK_TOKEN,
-            heartbeat=cdk.Duration.days(1),
-            # payload_response_only=True,
-            payload=aws_stepfunctions.TaskInput.from_object(
-                {**task_payload, "TaskToken": aws_stepfunctions.JsonPath.task_token}
-            ),
-        )
-        
-        postread_calculate_task = aws_stepfunctions_tasks.LambdaInvoke(
-            self,
-            "PostreadCalculateT",
-            lambda_function=postread_calculate,
-            heartbeat=cdk.Duration.days(1),
-            payload_response_only=True,
-            payload=aws_stepfunctions.TaskInput.from_object(task_payload),
-        )
-        
-        preread_followup_task.next(postread_calculate_task)
-        
-        statemachine = aws_stepfunctions.StateMachine(
-            self,
-            "ScoreMachine",
-            definition=preread_followup_task,
-        )
-
         # API-accessible functions
 
         function_kwargs.update(dict(
@@ -731,7 +696,6 @@ class PlanScoreScoring(cdk.Stack):
         grant_data_bucket_access(data_bucket, preread)
         preread.add_permission('Permission', principal=apigateway_role)
         # grant_function_invoke(preread_followup, 'FUNC_NAME_PREREAD_FOLLOWUP', preread)
-        grant_statemachine_control(statemachine, preread)
 
         postread_callback_GET = aws_lambda.DockerImageFunction(
             self,
@@ -743,7 +707,6 @@ class PlanScoreScoring(cdk.Stack):
         grant_data_bucket_access(data_bucket, postread_callback_GET)
         # grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', postread_callback_GET)
         # grant_function_invoke(postread_intermediate, 'FUNC_NAME_POSTREAD_INTERMEDIATE', postread_callback_GET)
-        grant_statemachine_control(statemachine, postread_callback_GET)
         postread_callback_GET.add_permission('Permission', principal=apigateway_role)
 
         postread_callback_POST = aws_lambda.DockerImageFunction(
@@ -771,6 +734,61 @@ class PlanScoreScoring(cdk.Stack):
             postread_callback_GET,
             postread_callback_POST,
         )
+
+    def make_state_machine(self, *functions):
+
+        (
+            authorizer,
+            postread_calculate,
+            preread_followup,
+            polygonize,
+            api_upload,
+            get_states,
+            get_model_versions,
+            upload_fields,
+            preread,
+            postread_callback_GET,
+            postread_callback_POST,
+        ) = functions
+
+        # https://docs.aws.amazon.com/step-functions/latest/dg/input-output-contextobject.html
+        task_payload = {
+            "ExecutionID.$": "$$.Execution.Id",
+            "StateMachineID.$": "$$.StateMachine.Id",
+            "ExecutionInput.$": "$",  # Duplicate of "$$.Execution.Input",
+        }
+        
+        preread_followup_task = aws_stepfunctions_tasks.LambdaInvoke(
+            self,
+            "PrereadFollowupT",
+            lambda_function=preread_followup,
+            integration_pattern=aws_stepfunctions.IntegrationPattern.WAIT_FOR_TASK_TOKEN,
+            heartbeat=cdk.Duration.days(1),
+            # payload_response_only=True,
+            payload=aws_stepfunctions.TaskInput.from_object(
+                {**task_payload, "TaskToken": aws_stepfunctions.JsonPath.task_token}
+            ),
+        )
+        
+        postread_calculate_task = aws_stepfunctions_tasks.LambdaInvoke(
+            self,
+            "PostreadCalculateT",
+            lambda_function=postread_calculate,
+            heartbeat=cdk.Duration.days(1),
+            payload_response_only=True,
+            payload=aws_stepfunctions.TaskInput.from_object(task_payload),
+        )
+        
+        preread_followup_task.next(postread_calculate_task)
+        
+        statemachine = aws_stepfunctions.StateMachine(
+            self,
+            "ScoreMachine",
+            definition=preread_followup_task,
+        )
+
+        grant_statemachine_control(statemachine, preread)
+        grant_statemachine_control(statemachine, postread_callback_GET)
 
     def populate_api(self, apigateway_role, api, *functions):
 
