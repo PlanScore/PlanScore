@@ -17,18 +17,22 @@ class TestPrereadFollowup (unittest.TestCase):
     def test_lambda_handler_success(self, boto3_client, commence_upload_parsing):
         ''' Lambda event triggers the right call to commence_upload_parsing()
         '''
-        event = {'id': 'id', 'bucket': 'planscore',
+        input = {'id': 'id', 'bucket': 'planscore',
             'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson'}
+        
+        event = {'ExecutionInput': input, 'ExecutionID': 'eee', 'TaskToken': 'ttt'}
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
 
         preread_followup.lambda_handler(event, None)
         
-        self.assertEqual(commence_upload_parsing.mock_calls[0][1][2], event['bucket'])
+        self.assertEqual(commence_upload_parsing.mock_calls[0][1][2], input['bucket'])
         
         upload = commence_upload_parsing.mock_calls[0][1][3]
-        self.assertEqual(upload.id, event['id'])
-        self.assertEqual(upload.key, event['key'])
+        self.assertEqual(upload.id, input['id'])
+        self.assertEqual(upload.key, input['key'])
+        self.assertEqual(upload.execution_id, event['ExecutionID'])
+        self.assertEqual(upload.execution_token, event['TaskToken'])
     
     @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.preread_followup.commence_upload_parsing')
@@ -36,8 +40,10 @@ class TestPrereadFollowup (unittest.TestCase):
     def test_lambda_handler_failure(self, boto3_client, commence_upload_parsing, put_upload_index):
         ''' Lambda event triggers the right message after a failure
         '''
-        event = {'id': 'id', 'bucket': 'planscore',
+        input = {'id': 'id', 'bucket': 'planscore',
             'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson'}
+
+        event = {'ExecutionInput': input, 'ExecutionID': 'eee', 'TaskToken': 'ttt'}
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
         

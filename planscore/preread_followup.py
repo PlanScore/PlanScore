@@ -316,13 +316,19 @@ def get_redirect_url(website_base, id):
 def lambda_handler(event, context):
     '''
     '''
+    print("event:", event)
+    input = {
+        **event['ExecutionInput'],
+        **{"execution_id": event['ExecutionID'], "execution_token": event['TaskToken']},
+    }
+    
     s3 = boto3.client('s3')
     lam = boto3.client('lambda')
-    storage = data.Storage(s3, event['bucket'], None)
-    upload = data.Upload.from_dict(event)
+    storage = data.Storage(s3, input['bucket'], None)
+    upload = data.Upload.from_dict(input)
     
     try:
-        commence_upload_parsing(s3, lam, event['bucket'], upload)
+        commence_upload_parsing(s3, lam, input['bucket'], upload)
     except RuntimeError as err:
         error_upload = upload.clone(status=False, message="Can't score this plan: {}".format(err))
         observe.put_upload_index(storage, error_upload)

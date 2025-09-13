@@ -49,7 +49,7 @@ class TestPostreadCallback (unittest.TestCase):
     @unittest.mock.patch('planscore.observe.get_upload_index')
     @unittest.mock.patch('planscore.postread_callback.dummy_upload')
     @unittest.mock.patch('boto3.client')
-    def test_lambda_handler(self, boto3_client, dummy_upload, get_upload_index):
+    def test_lambda_handler_GET(self, boto3_client, dummy_upload, get_upload_index):
         ''' Lambda event triggers the right call to dummy_upload()
         '''
         query = {'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson',
@@ -61,13 +61,13 @@ class TestPostreadCallback (unittest.TestCase):
 
         dummy_upload.return_value = data.Upload(query['id'], query['key'])
         get_upload_index.return_value = data.Upload(
-            query['id'], query['key'], description=query['description'])
+            query['id'], query['key'], description=query['description'], execution_token="ttt")
         
         event = {
             'queryStringParameters': query,
             'requestContext': {'authorizer': {}},
         }
-        response = postread_callback.lambda_handler(event, None)
+        response = postread_callback.lambda_handler_GET(event, None)
 
         self.assertEqual(get_upload_index.mock_calls[0][1][0].bucket, query['bucket'])
         self.assertEqual(get_upload_index.mock_calls[0][1][1], data.UPLOAD_INDEX_KEY.format(id=query['id']))
@@ -77,20 +77,19 @@ class TestPostreadCallback (unittest.TestCase):
         self.assertEqual(response['statusCode'], '302')
         self.assertEqual(response['headers']['Location'], 'https://example.com/plan.html?id')
         
-        lambda_dict = boto3_client.return_value.invoke.mock_calls[0][2]
+        lambda_dict = boto3_client.return_value.send_task_success.mock_calls[0][2]
         
-        self.assertEqual(lambda_dict['FunctionName'], 'PlanScore-PostreadCalculate')
-        self.assertEqual(lambda_dict['InvocationType'], 'Event')
-        self.assertIn(b'"id": "id.k0_XwbOLGLUdv241zsPluNc3HYs"', lambda_dict['Payload'])
-        self.assertIn(b'"key": "uploads/id/upload/file.geojson"', lambda_dict['Payload'])
-        self.assertIn(b'"bucket": "planscore-bucket"', lambda_dict['Payload'])
-        self.assertIn(b'"description": "A fine new plan"', lambda_dict['Payload'])
-        self.assertIn(b'"incumbents": ["D", "R"]', lambda_dict['Payload'])
-        self.assertIn(b'"model_version": "1999"', lambda_dict['Payload'])
+        self.assertEqual(lambda_dict['taskToken'], get_upload_index.return_value.execution_token)
+        self.assertIn('"id": "id.k0_XwbOLGLUdv241zsPluNc3HYs"', lambda_dict['output'])
+        self.assertIn('"key": "uploads/id/upload/file.geojson"', lambda_dict['output'])
+        self.assertIn('"bucket": "planscore-bucket"', lambda_dict['output'])
+        self.assertIn('"description": "A fine new plan"', lambda_dict['output'])
+        self.assertIn('"incumbents": ["D", "R"]', lambda_dict['output'])
+        self.assertIn('"model_version": "1999"', lambda_dict['output'])
 
     @unittest.mock.patch('planscore.preread.create_upload')
     @unittest.mock.patch('boto3.client')
-    def test_lambda_handler_authorized(self, boto3_client, create_upload):
+    def test_lambda_handler_POST_authorized(self, boto3_client, create_upload):
         ''' Lambda event triggers the right call to dummy_upload()
         '''
         query = {'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson',
@@ -113,7 +112,7 @@ class TestPostreadCallback (unittest.TestCase):
                 "library_metadata": {"Hello": "World"}
             }''',
         }
-        response = postread_callback.lambda_handler(event, None)
+        response = postread_callback.lambda_handler_POST(event, None)
 
         self.assertEqual(create_upload.mock_calls[0][1][1:], (query['bucket'], query['key'], 'id'))
         
@@ -134,7 +133,7 @@ class TestPostreadCallback (unittest.TestCase):
     
     @unittest.mock.patch('planscore.postread_callback.dummy_upload')
     @unittest.mock.patch('boto3.client')
-    def test_lambda_handler_bad_id(self, boto3_client, dummy_upload):
+    def test_lambda_handler_GET_bad_id(self, boto3_client, dummy_upload):
         ''' Lambda event with an incorrectly-signed ID fails as expected
         '''
         event = {
@@ -142,7 +141,7 @@ class TestPostreadCallback (unittest.TestCase):
             }
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
-        response = postread_callback.lambda_handler(event, None)
+        response = postread_callback.lambda_handler_GET(event, None)
         
         self.assertFalse(dummy_upload.mock_calls)
         self.assertEqual(response['statusCode'], '400')

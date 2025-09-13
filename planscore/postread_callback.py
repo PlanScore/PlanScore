@@ -5,7 +5,7 @@ More details on "success_action_redirect" in browser-based S3 uploads:
 
     http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-post-example.html
 '''
-import boto3, itsdangerous, urllib.parse, json, re
+import boto3, itsdangerous, urllib.parse, json, re, os
 from . import postread_calculate, constants, util, website, data, score, observe, preread, postread_intermediate
 
 def dummy_upload(key, id):
@@ -32,7 +32,7 @@ def get_redirect_url(website_base, id):
 
     return '{}?{}'.format(redirect_url, id)
 
-def lambda_handler(event, context):
+def lambda_handler_GET(event, context):
     '''
     '''
     s3 = boto3.client('s3')
@@ -50,35 +50,7 @@ def lambda_handler(event, context):
             }
     
     storage = data.Storage(s3, query['bucket'], None)
-    authorizer = event['requestContext'].get('authorizer', {})
     
-    if 'planscoreApiToken' in authorizer:
-        # POST request arrived via API request, no index yet exists
-        response = {
-            'statusCode': '200',
-            'body': json.dumps({
-                'index_url': constants.S3_URL_PATTERN.format(
-                    b=query['bucket'],
-                    k=data.UPLOAD_INDEX_KEY.format(id=id),
-                ),
-                'plan_url': get_redirect_url(website_base, id),
-            }, indent=2),
-        }
-    
-        upload = preread.create_upload(s3, query['bucket'], query['key'], id)
-        observe.put_upload_index(storage, upload)
-
-        event = dict(bucket=query['bucket'], callback_body=event['body'])
-        event.update(upload.to_dict())
-
-        lam.invoke(
-            FunctionName=postread_intermediate.FUNCTION_NAME,
-            InvocationType='Event',
-            Payload=json.dumps(event).encode('utf8'),
-        )
-    
-        return response
-
     # GET request came unauthenticated from a browser after annotation step
     temp_upload = dummy_upload(query['key'], id)
     prior_upload = observe.get_upload_index(storage, temp_upload.index_key())
@@ -105,10 +77,60 @@ def lambda_handler(event, context):
     event = dict(bucket=query['bucket'])
     event.update(upload.to_dict())
 
-    lam = boto3.client('lambda')
-    lam.invoke(FunctionName=postread_calculate.FUNCTION_NAME, InvocationType='Event',
-        Payload=json.dumps(event).encode('utf8'))
+    # lam = boto3.client('lambda')
+    # lam.invoke(FunctionName=postread_calculate.FUNCTION_NAME, InvocationType='Event',
+    #     Payload=json.dumps(event).encode('utf8'))
+    sfn = boto3.client('stepfunctions')
+    sfn.send_task_success(
+        taskToken=upload.execution_token,
+        output=json.dumps(event),
+    )
     
+    return response
+
+def lambda_handler_POST(event, context):
+    '''
+    '''
+    s3 = boto3.client('s3')
+    lam = boto3.client('lambda')
+    query = util.event_query_args(event)
+    website_base = constants.WEBSITE_BASE
+
+    try:
+        id = itsdangerous.Signer(constants.SECRET).unsign(query['id']).decode('utf8')
+    except itsdangerous.BadSignature:
+        return {
+            'statusCode': '400',
+            'headers': {'Access-Control-Allow-Origin': '*'},
+            'body': 'Bad ID'
+            }
+    
+    storage = data.Storage(s3, query['bucket'], None)
+
+    # POST request arrived via API request, no index yet exists
+    response = {
+        'statusCode': '200',
+        'body': json.dumps({
+            'index_url': constants.S3_URL_PATTERN.format(
+                b=query['bucket'],
+                k=data.UPLOAD_INDEX_KEY.format(id=id),
+            ),
+            'plan_url': get_redirect_url(website_base, id),
+        }, indent=2),
+    }
+
+    upload = preread.create_upload(s3, query['bucket'], query['key'], id)
+    observe.put_upload_index(storage, upload)
+
+    event = dict(bucket=query['bucket'], callback_body=event['body'])
+    event.update(upload.to_dict())
+
+    lam.invoke(
+        FunctionName=postread_intermediate.FUNCTION_NAME,
+        InvocationType='Event',
+        Payload=json.dumps(event).encode('utf8'),
+    )
+
     return response
 
 if __name__ == '__main__':
