@@ -319,7 +319,7 @@ class TestPostreadCalculate (unittest.TestCase):
         upload = data.Upload(id, upload_key, model=data.MODELS[0])
         info = postread_calculate.commence_geometry_upload_scoring(s3, athena, bucket, upload, nullplan_path)
 
-        self.assertIsNone(info)
+        self.assertIsNotNone(info)
     
         self.assertEqual(len(put_upload_index.mock_calls), 5)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
@@ -356,7 +356,7 @@ class TestPostreadCalculate (unittest.TestCase):
         nullplan_datasource = '/vsizip/{}/null-plan.shp'.format(os.path.abspath(nullplan_path))
         info = postread_calculate.commence_geometry_upload_scoring(s3, athena, bucket, upload, nullplan_datasource)
 
-        self.assertIsNone(info)
+        self.assertIsNotNone(info)
     
         self.assertEqual(len(put_upload_index.mock_calls), 5)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
