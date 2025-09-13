@@ -5,10 +5,17 @@ starts and observer process with planscore.score function.
 '''
 import os, io, json, urllib.parse, gzip, time, math, threading
 import csv, operator, itertools, zipfile, gzip, datetime
-import boto3, osgeo.ogr, osgeo.osr
+import boto3
 from . import util, data, score, website, constants, observe
 
-osgeo.ogr.UseExceptions()
+try:
+    import osgeo.ogr
+    import osgeo.osr
+except ImportError:
+    # Small functions don't get all packages
+    pass
+else:
+    osgeo.ogr.UseExceptions()
 
 EPSG4326 = osgeo.osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)
 

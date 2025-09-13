@@ -1,9 +1,15 @@
 import urllib.parse, tempfile, shutil, os, contextlib, logging, zipfile, itertools, functools, enum, csv, re, time, json
 from . import constants
-import osgeo.ogr
 
-EMPTY_GEOMETRY = osgeo.ogr.Geometry(osgeo.ogr.wkbGeometryCollection)
-POLYGONAL_TYPES = {osgeo.ogr.wkbPolygon, osgeo.ogr.wkbMultiPolygon}
+try:
+    import osgeo.ogr
+except ImportError:
+    # Small functions don't get all packages
+    pass
+else:
+    osgeo.ogr.UseExceptions()
+    EMPTY_GEOMETRY = osgeo.ogr.Geometry(osgeo.ogr.wkbGeometryCollection)
+    POLYGONAL_TYPES = {osgeo.ogr.wkbPolygon, osgeo.ogr.wkbMultiPolygon}
 
 class UploadType (enum.Enum):
     OGR_DATASOURCE = 1

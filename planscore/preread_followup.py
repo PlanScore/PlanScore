@@ -18,14 +18,19 @@ import multiprocessing.dummy
 import threading
 
 import boto3
-import osgeo.ogr
-import osgeo.osr
+
+try:
+    import osgeo.ogr
+    import osgeo.osr
+except ImportError:
+    # Small functions don't get all packages
+    pass
+else:
+    osgeo.ogr.UseExceptions()
 
 from . import util, data, score, website, constants, observe
 
 Assignment = collections.namedtuple('Assignment', ('block_id', 'district_id'))
-
-osgeo.ogr.UseExceptions()
 
 EPSG4326 = osgeo.osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)
 

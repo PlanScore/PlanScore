@@ -7,7 +7,11 @@ import argparse
 import statistics
 import urllib.request
 
-import numpy
+try:
+    import numpy
+except ImportError:
+    # Small functions don't get all packages
+    pass
 
 from . import data
 

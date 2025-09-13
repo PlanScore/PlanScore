@@ -1,7 +1,14 @@
 import os, time, json, posixpath, io, gzip, collections, copy, csv, uuid, datetime, itertools
 import boto3, botocore.exceptions
 from . import data, constants, score, compactness, polygonize
-import osgeo.ogr
+
+try:
+    import osgeo.ogr
+except ImportError:
+    # Small functions don't get all packages
+    pass
+else:
+    osgeo.ogr.UseExceptions()
 
 SubTotal = collections.namedtuple('SubTotal', ('totals', 'timing'))
 
