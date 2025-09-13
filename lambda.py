@@ -1,5 +1,6 @@
 # Small zipfile functions
 from planscore.preread import lambda_handler as preread
+from planscore.postread_callback import lambda_handler_GET as postread_callback_GET
 from planscore.upload_fields import lambda_handler as upload_fields
 from planscore.authorizer import lambda_handler as authorizer
 from planscore.get_states import lambda_handler as get_states
@@ -7,7 +8,6 @@ from planscore.get_model_versions import lambda_handler as get_model_versions
 
 # Large docker functions
 # from planscore.preread_followup import lambda_handler as preread_followup
-# from planscore.postread_callback import lambda_handler_GET as postread_callback_GET
 # from planscore.postread_callback import lambda_handler_POST as postread_callback_POST
 # from planscore.postread_calculate import lambda_handler as postread_calculate
 # from planscore.postread_intermediate import lambda_handler as postread_intermediate

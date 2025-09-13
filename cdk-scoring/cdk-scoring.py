@@ -700,10 +700,10 @@ class PlanScoreScoring(cdk.Stack):
         grant_data_bucket_access(data_bucket, preread)
         preread.add_permission('Permission', principal=apigateway_role)
 
-        postread_callback_GET = aws_lambda.DockerImageFunction(
+        postread_callback_GET = aws_lambda.Function(
             self,
-            "PostreadCallbackGetD",
-            **get_large_code("planscore.postread_callback.lambda_handler_GET"),
+            "PostreadCallbackGetZ",
+            **get_small_code("lambda.postread_callback_GET"),
             **function_kwargs,
         )
 
