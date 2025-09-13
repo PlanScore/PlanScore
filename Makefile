@@ -12,6 +12,8 @@ planscore-lambda.zip:
 	mkdir -p planscore-lambda
 	pip3 install -q -t planscore-lambda .
 	cp lambda.py planscore-lambda/lambda.py
+	rm -r planscore-lambda/planscore/tests
+	rm planscore-lambda/planscore/model/*.gz
 	cd planscore-lambda && zip -rq ../planscore-lambda.zip .
 
 live-metrics: metrics-lambda.zip
