@@ -55,7 +55,8 @@ class TestPreread (unittest.TestCase):
         self.assertIn('"bucket": "planscore-bucket"', lambda_dict['input'])
     
     @unittest.mock.patch('planscore.preread.create_upload')
-    def test_lambda_handler_bad_id(self, create_upload):
+    @unittest.mock.patch('boto3.client')
+    def test_lambda_handler_bad_id(self, boto3_client, create_upload):
         ''' Lambda event with an incorrectly-signed ID fails as expected
         '''
         event = {
