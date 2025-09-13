@@ -120,11 +120,10 @@ class TestPostreadCallback (unittest.TestCase):
         self.assertIn('"index_url"', response['body'])
         self.assertIn('"plan_url"', response['body'])
         
-        lambda_dict = boto3_client.return_value.invoke.mock_calls[0][2]
-        payload = json.loads(lambda_dict['Payload'])
-        
-        self.assertEqual(lambda_dict['FunctionName'], 'PlanScore-PostreadIntermediate')
-        self.assertEqual(lambda_dict['InvocationType'], 'Event')
+        lambda_dict = boto3_client.return_value.start_execution.mock_calls[0][2]
+        payload = json.loads(lambda_dict['input'])
+
+        self.assertEqual(lambda_dict['stateMachineArn'], os.environ.get('MULTISTEP_API_SCORE_MACHINE'))
         self.assertEqual(payload['id'], "id.k0_XwbOLGLUdv241zsPluNc3HYs")
         self.assertEqual(payload['bucket'], "planscore-bucket")
         self.assertIn('"description": "A fine new plan"', payload['callback_body'])

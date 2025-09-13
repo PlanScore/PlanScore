@@ -49,7 +49,7 @@ class TestPreread (unittest.TestCase):
         
         lambda_dict = boto3_client.return_value.start_execution.mock_calls[0][2]
         
-        self.assertEqual(lambda_dict['stateMachineArn'], os.environ.get('STATE_MACHINE_ARN'))
+        self.assertEqual(lambda_dict['stateMachineArn'], os.environ.get('INTERACTIVE_SCORE_MACHINE'))
         self.assertIn('"id": "id.k0_XwbOLGLUdv241zsPluNc3HYs"', lambda_dict['input'])
         self.assertIn('"key": "uploads/id/upload/file.geojson"', lambda_dict['input'])
         self.assertIn('"bucket": "planscore-bucket"', lambda_dict['input'])

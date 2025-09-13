@@ -91,8 +91,8 @@ def grant_function_invoke(function, env_var, principal):
     principal.add_environment(env_var, function.function_name)
     function.grant_invoke(principal)
 
-def grant_statemachine_control(statemachine, principal):
-    principal.add_environment('STATE_MACHINE_ARN', statemachine.state_machine_arn)
+def grant_statemachine_control(statemachine, env_var, principal):
+    principal.add_environment(env_var, statemachine.state_machine_arn)
     principal.add_to_role_policy(
         aws_iam.PolicyStatement(
             actions=["states:StartExecution", "states:SendTaskSuccess"],
@@ -123,7 +123,7 @@ class PlanScoreScoring(cdk.Stack):
             website_base,
         )
 
-        self.make_state_machine(*functions)
+        self.make_state_machines(formation_info, *functions)
         self.populate_api(apigateway_role, api, *functions)
         self.make_forward(stack_id, website_base, formation_info)
     
@@ -651,7 +651,7 @@ class PlanScoreScoring(cdk.Stack):
         )
 
         grant_data_bucket_access(data_bucket, api_upload)
-        grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', api_upload)
+        # grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', api_upload)
         api_upload.add_permission('Permission', principal=apigateway_role)
 
         function_kwargs.update(dict(
@@ -717,8 +717,8 @@ class PlanScoreScoring(cdk.Stack):
         )
 
         grant_data_bucket_access(data_bucket, postread_callback_POST)
-        grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', postread_callback_POST)
-        grant_function_invoke(postread_intermediate, 'FUNC_NAME_POSTREAD_INTERMEDIATE', postread_callback_POST)
+        # grant_function_invoke(postread_calculate, 'FUNC_NAME_POSTREAD_CALCULATE', postread_callback_POST)
+        # grant_function_invoke(postread_intermediate, 'FUNC_NAME_POSTREAD_INTERMEDIATE', postread_callback_POST)
         postread_callback_POST.add_permission('Permission', principal=apigateway_role)
 
         return (
@@ -733,9 +733,10 @@ class PlanScoreScoring(cdk.Stack):
             preread,
             postread_callback_GET,
             postread_callback_POST,
+            postread_intermediate,
         )
 
-    def make_state_machine(self, *functions):
+    def make_state_machines(self, formation_info, *functions):
 
         (
             authorizer,
@@ -749,6 +750,7 @@ class PlanScoreScoring(cdk.Stack):
             preread,
             postread_callback_GET,
             postread_callback_POST,
+            postread_intermediate,
         ) = functions
 
         # https://docs.aws.amazon.com/step-functions/latest/dg/input-output-contextobject.html
@@ -770,25 +772,56 @@ class PlanScoreScoring(cdk.Stack):
             ),
         )
         
-        postread_calculate_task = aws_stepfunctions_tasks.LambdaInvoke(
+        postread_calculate_task1 = aws_stepfunctions_tasks.LambdaInvoke(
             self,
-            "PostreadCalculateT",
+            "PostreadCalculateT1",
             lambda_function=postread_calculate,
-            heartbeat=cdk.Duration.days(1),
             payload_response_only=True,
             payload=aws_stepfunctions.TaskInput.from_object(task_payload),
         )
         
-        preread_followup_task.next(postread_calculate_task)
+        preread_followup_task.next(postread_calculate_task1)
         
-        statemachine = aws_stepfunctions.StateMachine(
+        interactive_statemachine = aws_stepfunctions.StateMachine(
             self,
-            "ScoreMachine",
+            f"{formation_info.prefix}-InteractiveScoreM",
             definition=preread_followup_task,
         )
 
-        grant_statemachine_control(statemachine, preread)
-        grant_statemachine_control(statemachine, postread_callback_GET)
+        grant_statemachine_control(interactive_statemachine, "INTERACTIVE_SCORE_MACHINE", preread)
+        grant_statemachine_control(interactive_statemachine, "INTERACTIVE_SCORE_MACHINE", postread_callback_GET)
+        
+        postread_intermediate_task = aws_stepfunctions_tasks.LambdaInvoke(
+            self,
+            "PostreadIntermediateT",
+            lambda_function=postread_intermediate,
+            payload_response_only=True,
+            payload=aws_stepfunctions.TaskInput.from_object(task_payload),
+        )
+        
+        multistepapi_statemachine = aws_stepfunctions.StateMachine(
+            self,
+            f"{formation_info.prefix}-MultistepAPIScoreM",
+            definition=postread_intermediate_task,
+        )
+
+        grant_statemachine_control(multistepapi_statemachine, "MULTISTEP_API_SCORE_MACHINE", postread_callback_POST)
+        
+        postread_calculate_task2 = aws_stepfunctions_tasks.LambdaInvoke(
+            self,
+            "PostreadCalculateT2",
+            lambda_function=postread_calculate,
+            payload_response_only=True,
+            payload=aws_stepfunctions.TaskInput.from_object(task_payload),
+        )
+        
+        singlestepapi_statemachine = aws_stepfunctions.StateMachine(
+            self,
+            f"{formation_info.prefix}-SinglestepAPIScoreM",
+            definition=postread_calculate_task2,
+        )
+
+        grant_statemachine_control(singlestepapi_statemachine, "SINGLESTEP_API_SCORE_MACHINE", api_upload)
 
     def populate_api(self, apigateway_role, api, *functions):
 
@@ -804,6 +837,7 @@ class PlanScoreScoring(cdk.Stack):
             preread,
             postread_callback_GET,
             postread_callback_POST,
+            postread_intermediate,
         ) = functions
 
         integration_kwargs = dict(

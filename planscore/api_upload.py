@@ -1,4 +1,5 @@
 import json
+import os
 import boto3
 
 from . import constants
@@ -68,10 +69,16 @@ def kick_it_off(geojson, temporary, auth_token):
     event = dict(bucket=constants.S3_BUCKET)
     event.update(upload3.to_dict())
 
-    lam.invoke(
-        FunctionName=postread_calculate.FUNCTION_NAME,
-        InvocationType='Event',
-        Payload=json.dumps(event).encode('utf8'),
+    # lam.invoke(
+    #     FunctionName=postread_calculate.FUNCTION_NAME,
+    #     InvocationType='Event',
+    #     Payload=json.dumps(event).encode('utf8'),
+    # )
+    
+    sfn = boto3.client('stepfunctions')
+    sfn.start_execution(
+        stateMachineArn=os.environ.get('SINGLESTEP_API_SCORE_MACHINE'),
+        input=json.dumps(event),
     )
 
     # return links to user-readable page and machine-readable JSON

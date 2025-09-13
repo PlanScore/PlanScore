@@ -57,7 +57,7 @@ def lambda_handler(event, context):
 
     sfn = boto3.client('stepfunctions')
     sfn.start_execution(
-        stateMachineArn=os.environ.get('STATE_MACHINE_ARN'),
+        stateMachineArn=os.environ.get('INTERACTIVE_SCORE_MACHINE'),
         input=json.dumps(event),
     )
     
