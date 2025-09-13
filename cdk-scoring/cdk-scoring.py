@@ -584,7 +584,7 @@ class PlanScoreScoring(cdk.Stack):
         def get_large_code(cmd):
             return dict(
                 code=aws_lambda.DockerImageCode.from_image_asset(
-                    file="Dockerfile-large", cmd=[cmd], **code_kwargs
+                    file="Dockerfile", cmd=[cmd], **code_kwargs
                 ),
                 architecture=aws_lambda.Architecture.ARM_64,
             )
