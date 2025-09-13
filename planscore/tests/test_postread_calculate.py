@@ -16,26 +16,30 @@ class TestPostreadCalculate (unittest.TestCase):
     def test_lambda_handler_success(self, commence_upload_scoring):
         ''' Lambda event triggers the right call to commence_upload_scoring()
         '''
-        event = {'id': 'id', 'bucket': 'planscore',
+        input = {'id': 'id', 'bucket': 'planscore',
             'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson'}
+        
+        event = {'ExecutionInput': input}
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
 
         postread_calculate.lambda_handler(event, None)
         
-        self.assertEqual(commence_upload_scoring.mock_calls[0][1][3], event['bucket'])
+        self.assertEqual(commence_upload_scoring.mock_calls[0][1][3], input['bucket'])
         
         upload = commence_upload_scoring.mock_calls[0][1][4]
-        self.assertEqual(upload.id, event['id'])
-        self.assertEqual(upload.key, event['key'])
+        self.assertEqual(upload.id, input['id'])
+        self.assertEqual(upload.key, input['key'])
     
     @unittest.mock.patch('planscore.observe.put_upload_index')
     @unittest.mock.patch('planscore.postread_calculate.commence_upload_scoring')
     def test_lambda_handler_failure(self, commence_upload_scoring, put_upload_index):
         ''' Lambda event triggers the right message after a failure
         '''
-        event = {'id': 'id', 'bucket': 'planscore',
+        input = {'id': 'id', 'bucket': 'planscore',
             'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson'}
+        
+        event = {'ExecutionInput': input}
 
         os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
         

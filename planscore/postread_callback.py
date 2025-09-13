@@ -77,14 +77,14 @@ def lambda_handler_GET(event, context):
     event = dict(bucket=query['bucket'])
     event.update(upload.to_dict())
 
-    lam = boto3.client('lambda')
-    lam.invoke(FunctionName=postread_calculate.FUNCTION_NAME, InvocationType='Event',
-        Payload=json.dumps(event).encode('utf8'))
-    # sfn = boto3.client('stepfunctions')
-    # sfn.start_execution(
-    #     stateMachineArn=os.environ.get('STATE_MACHINE_ARN'),
-    #     input=json.dumps(event),
-    # )
+    # lam = boto3.client('lambda')
+    # lam.invoke(FunctionName=postread_calculate.FUNCTION_NAME, InvocationType='Event',
+    #     Payload=json.dumps(event).encode('utf8'))
+    sfn = boto3.client('stepfunctions')
+    sfn.send_task_success(
+        taskToken=upload.execution_token,
+        output=json.dumps(event),
+    )
     
     return response
 

@@ -61,7 +61,7 @@ class TestPostreadCallback (unittest.TestCase):
 
         dummy_upload.return_value = data.Upload(query['id'], query['key'])
         get_upload_index.return_value = data.Upload(
-            query['id'], query['key'], description=query['description'])
+            query['id'], query['key'], description=query['description'], execution_token="ttt")
         
         event = {
             'queryStringParameters': query,
@@ -77,16 +77,15 @@ class TestPostreadCallback (unittest.TestCase):
         self.assertEqual(response['statusCode'], '302')
         self.assertEqual(response['headers']['Location'], 'https://example.com/plan.html?id')
         
-        lambda_dict = boto3_client.return_value.invoke.mock_calls[0][2]
+        lambda_dict = boto3_client.return_value.send_task_success.mock_calls[0][2]
         
-        self.assertEqual(lambda_dict['FunctionName'], 'PlanScore-PostreadCalculate')
-        self.assertEqual(lambda_dict['InvocationType'], 'Event')
-        self.assertIn(b'"id": "id.k0_XwbOLGLUdv241zsPluNc3HYs"', lambda_dict['Payload'])
-        self.assertIn(b'"key": "uploads/id/upload/file.geojson"', lambda_dict['Payload'])
-        self.assertIn(b'"bucket": "planscore-bucket"', lambda_dict['Payload'])
-        self.assertIn(b'"description": "A fine new plan"', lambda_dict['Payload'])
-        self.assertIn(b'"incumbents": ["D", "R"]', lambda_dict['Payload'])
-        self.assertIn(b'"model_version": "1999"', lambda_dict['Payload'])
+        self.assertEqual(lambda_dict['taskToken'], get_upload_index.return_value.execution_token)
+        self.assertIn('"id": "id.k0_XwbOLGLUdv241zsPluNc3HYs"', lambda_dict['output'])
+        self.assertIn('"key": "uploads/id/upload/file.geojson"', lambda_dict['output'])
+        self.assertIn('"bucket": "planscore-bucket"', lambda_dict['output'])
+        self.assertIn('"description": "A fine new plan"', lambda_dict['output'])
+        self.assertIn('"incumbents": ["D", "R"]', lambda_dict['output'])
+        self.assertIn('"model_version": "1999"', lambda_dict['output'])
 
     @unittest.mock.patch('planscore.preread.create_upload')
     @unittest.mock.patch('boto3.client')
