@@ -690,10 +690,10 @@ class PlanScoreScoring(cdk.Stack):
         grant_data_bucket_access(data_bucket, upload_fields)
         upload_fields.add_permission('Permission', principal=apigateway_role)
 
-        preread = aws_lambda.DockerImageFunction(
+        preread = aws_lambda.Function(
             self,
-            "PrereadD",
-            **get_large_code("planscore.preread.lambda_handler"),
+            "PrereadZ",
+            **get_small_code("lambda.preread"),
             **function_kwargs,
         )
 

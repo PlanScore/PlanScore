@@ -5,7 +5,7 @@ More details on "success_action_redirect" in browser-based S3 uploads:
     http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-post-example.html
 '''
 import boto3, itsdangerous, urllib.parse, json, os
-from . import constants, util, website, data, observe
+from . import constants, website, data, observe
 
 def create_upload(s3, bucket, key, id):
     '''
@@ -32,7 +32,7 @@ def lambda_handler(event, context):
     '''
     s3 = boto3.client('s3')
     sfn = boto3.client('stepfunctions')
-    query = util.event_query_args(event)
+    query = event.get('queryStringParameters') or {}
     website_base = constants.WEBSITE_BASE
 
     try:
