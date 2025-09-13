@@ -319,7 +319,7 @@ def lambda_handler(event, context):
     print("event:", event)
     input = {
         **event['ExecutionInput'],
-        **{"execution_id": event['ExecutionID'], "execution_token": event['TaskToken']},
+        **{"execution_id": event['ExecutionID'], "execution_token": event.get('TaskToken')},
     }
     
     s3 = boto3.client('s3')
@@ -328,14 +328,17 @@ def lambda_handler(event, context):
     upload = data.Upload.from_dict(input)
     
     try:
-        commence_upload_parsing(s3, lam, input['bucket'], upload)
+        upload2 = commence_upload_parsing(s3, lam, input['bucket'], upload)
     except RuntimeError as err:
         error_upload = upload.clone(status=False, message="Can't score this plan: {}".format(err))
         observe.put_upload_index(storage, error_upload)
+        raise
     except Exception:
         error_upload = upload.clone(status=False, message="Can't score this plan: something went wrong, giving up.")
         observe.put_upload_index(storage, error_upload)
         raise
+    else:
+        return upload2.to_dict()
 
 if __name__ == '__main__':
     pass

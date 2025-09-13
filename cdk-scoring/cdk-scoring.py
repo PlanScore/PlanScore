@@ -760,9 +760,9 @@ class PlanScoreScoring(cdk.Stack):
             "ExecutionInput.$": "$",  # Duplicate of "$$.Execution.Input",
         }
         
-        preread_followup_task = aws_stepfunctions_tasks.LambdaInvoke(
+        preread_followup_task1 = aws_stepfunctions_tasks.LambdaInvoke(
             self,
-            "PrereadFollowupT",
+            "PrereadFollowupT1",
             lambda_function=preread_followup,
             integration_pattern=aws_stepfunctions.IntegrationPattern.WAIT_FOR_TASK_TOKEN,
             heartbeat=cdk.Duration.days(1),
@@ -780,12 +780,12 @@ class PlanScoreScoring(cdk.Stack):
             payload=aws_stepfunctions.TaskInput.from_object(task_payload),
         )
         
-        preread_followup_task.next(postread_calculate_task1)
+        preread_followup_task1.next(postread_calculate_task1)
         
         interactive_statemachine = aws_stepfunctions.StateMachine(
             self,
             f"{formation_info.prefix}-InteractiveScoreM",
-            definition=preread_followup_task,
+            definition=preread_followup_task1,
         )
 
         grant_statemachine_control(interactive_statemachine, "INTERACTIVE_SCORE_MACHINE", preread)
@@ -799,6 +799,14 @@ class PlanScoreScoring(cdk.Stack):
             payload=aws_stepfunctions.TaskInput.from_object(task_payload),
         )
         
+        preread_followup_task2 = aws_stepfunctions_tasks.LambdaInvoke(
+            self,
+            "PrereadFollowupT2",
+            lambda_function=preread_followup,
+            payload_response_only=True,
+            payload=aws_stepfunctions.TaskInput.from_object(task_payload),
+        )
+        
         postread_calculate_task2 = aws_stepfunctions_tasks.LambdaInvoke(
             self,
             "PostreadCalculateT2",
@@ -807,7 +815,7 @@ class PlanScoreScoring(cdk.Stack):
             payload=aws_stepfunctions.TaskInput.from_object(task_payload),
         )
         
-        postread_intermediate_task.next(postread_calculate_task2)
+        postread_intermediate_task.next(preread_followup_task2).next(postread_calculate_task2)
 
         multistepapi_statemachine = aws_stepfunctions.StateMachine(
             self,

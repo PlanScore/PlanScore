@@ -52,7 +52,8 @@ class TestPrereadFollowup (unittest.TestCase):
         
         commence_upload_parsing.side_effect = raises_runtimeerror
 
-        preread_followup.lambda_handler(event, None)
+        with self.assertRaises(RuntimeError):
+            preread_followup.lambda_handler(event, None)
         
         self.assertEqual(len(put_upload_index.mock_calls), 1)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].message,

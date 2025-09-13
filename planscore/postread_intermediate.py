@@ -2,7 +2,7 @@ import os
 import boto3
 import json
 
-from . import data, util, constants, observe, preread_followup
+from . import data, util, constants, observe
 
 FUNCTION_NAME = os.environ.get('FUNC_NAME_POSTREAD_INTERMEDIATE') or 'PlanScore-PostreadIntermediate'
 
@@ -55,7 +55,6 @@ def lambda_handler(event, context):
 
     try:
         observe.put_upload_index(storage, upload2)
-        upload3 = preread_followup.commence_upload_parsing(s3, lam, input['bucket'], upload2)
     except Exception as err:
         observe.put_upload_index(storage, upload2.clone(
             status=False,
@@ -64,5 +63,5 @@ def lambda_handler(event, context):
         raise
 
     next_input = dict(bucket=input['bucket'])
-    next_input.update(upload3.to_dict())
+    next_input.update(upload2.to_dict())
     return next_input
