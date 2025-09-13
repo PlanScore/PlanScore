@@ -417,10 +417,10 @@ class Upload:
 
 VERSIONS = ['2025A']  # list(VERSION_PARAMETERS.keys()) # rely on dict order
 VERSION24 = ['2025B']
-DEFAULT_VERSION = VERSIONS[0]
+DEFAULT_VERSION = VERSIONS[0]  # Used in api_upload
 
 MODELS = [
-    Model(State.XX, House.statehouse,    2,  True, VERSIONS, 'data/XX/006-tilesdir'), # b8e19879
+    Model(State.XX, House.statehouse,    2,  True, VERSIONS + VERSION24, 'data/XX/007-pvote-2024'), # b8e19879 and more
     Model(State.AK, House.ushouse,       1,  True, VERSIONS, 'data/AK/008-acs-2020'), # c82db89
     Model(State.AK, House.statesenate,  20,  True, VERSIONS, 'data/AK/008-acs-2020'), # c82db89
     Model(State.AK, House.statehouse,   40,  True, VERSIONS, 'data/AK/008-acs-2020'), # c82db89
