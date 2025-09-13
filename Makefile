@@ -1,11 +1,18 @@
 all:
 
-live-deploy:
+live-deploy: planscore-lambda.zip
 	./cdk-deploy.sh cf-canary
 	./cdk-deploy.sh cf-production
 
-dev-deploy:
+dev-deploy: planscore-lambda.zip
 	./cdk-deploy.sh cf-development
+
+# Just one Lambda codebase is created, with different entry points and environments.
+planscore-lambda.zip:
+	mkdir -p planscore-lambda
+	pip3 install -q -t planscore-lambda .
+	cp lambda.py planscore-lambda/lambda.py
+	cd planscore-lambda && zip -rq ../planscore-lambda.zip .
 
 live-metrics: metrics-lambda.zip
 	aws lambda update-function-code --region us-east-1 \
@@ -29,6 +36,7 @@ planscore-svg:
 	cd SVG && docker build -t planscore-svg:latest .
 
 clean:
+	rm -rf planscore-lambda planscore-lambda.zip
 	rm -rf metrics-lambda metrics-lambda.zip
 
 .PHONY: clean all live-deploy dev-deploy planscore-svg
