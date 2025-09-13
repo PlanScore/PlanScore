@@ -11,9 +11,9 @@ import functools
 import itertools
 
 import boto3
-import networkx
 
 try:
+    import networkx
     import shapely.ops
     import shapely.wkt
     import shapely.geometry
