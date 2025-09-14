@@ -11,10 +11,15 @@ import functools
 import itertools
 
 import boto3
-import networkx
-import shapely.ops
-import shapely.wkt
-import shapely.geometry
+
+try:
+    import networkx
+    import shapely.ops
+    import shapely.wkt
+    import shapely.geometry
+except ImportError:
+    # Small functions don't get all packages
+    pass
 
 from . import constants, data
 
