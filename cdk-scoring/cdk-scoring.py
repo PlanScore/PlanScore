@@ -569,12 +569,7 @@ class PlanScoreScoring(cdk.Stack):
             ],
         )
         
-        code_kwargs = dict(
-            directory=os.path.join(os.path.dirname(__file__), ".."),
-            entrypoint=["/usr/bin/python3", "-m", "awslambdaric"],
-        )
-        
-        def get_small_function(stack, name, handler):
+        def make_small_function(stack, name, handler):
             return aws_lambda.Function(
                 stack,
                 name,
@@ -584,65 +579,68 @@ class PlanScoreScoring(cdk.Stack):
                 runtime=aws_lambda.Runtime.PYTHON_3_9,
             )
         
-        def get_large_function(stack, name, memory_size, cmd):
+        def make_large_function(stack, name, memory_size, cmd):
             return aws_lambda.DockerImageFunction(
                 stack,
                 name,
                 **function_kwargs,
                 memory_size=memory_size,
                 code=aws_lambda.DockerImageCode.from_image_asset(
-                    file="Dockerfile", cmd=[cmd], **code_kwargs
+                    file="Dockerfile",
+                    cmd=[cmd],
+                    directory=os.path.join(os.path.dirname(__file__), ".."),
+                    entrypoint=["/usr/bin/python3", "-m", "awslambdaric"],
                 ),
                 architecture=aws_lambda.Architecture.ARM_64,
             )
         
         # Behind-the-scenes functions
 
-        authorizer = get_small_function(self, "AuthorizerZ", "lambda.authorizer")
+        authorizer = make_small_function(self, "AuthorizerZ", "lambda.authorizer")
         authorizer.add_environment('API_TOKENS', API_TOKENS)
 
-        polygonize = get_large_function(self, "PolygonizeD", 10240, "planscore.polygonize.lambda_handler")
+        polygonize = make_large_function(self, "PolygonizeD", 10240, "planscore.polygonize.lambda_handler")
         grant_data_bucket_access(data_bucket, polygonize)
 
-        postread_calculate = get_large_function(self, "PostreadCalculateD", 2048, "planscore.postread_calculate.lambda_handler")
+        postread_calculate = make_large_function(self, "PostreadCalculateD", 2048, "planscore.postread_calculate.lambda_handler")
         grant_data_bucket_access(data_bucket, postread_calculate)
         grant_function_invoke(polygonize, 'FUNC_NAME_POLYGONIZE', postread_calculate)
 
-        postread_intermediate = get_large_function(self, "PostreadIntermediateD", 2048, "planscore.postread_intermediate.lambda_handler")
+        postread_intermediate = make_large_function(self, "PostreadIntermediateD", 2048, "planscore.postread_intermediate.lambda_handler")
         grant_data_bucket_access(data_bucket, postread_intermediate)
 
-        preread_followup = get_large_function(self, "PrereadFollowupD", 1024, "planscore.preread_followup.lambda_handler")
+        preread_followup = make_large_function(self, "PrereadFollowupD", 1024, "planscore.preread_followup.lambda_handler")
         grant_data_bucket_access(data_bucket, preread_followup)
 
         # API-accessible functions
 
         function_kwargs.update(timeout=cdk.Duration.seconds(30))
 
-        api_upload = get_large_function(self, "APIUploadD", 2048, "planscore.api_upload.lambda_handler")
+        api_upload = make_large_function(self, "APIUploadD", 2048, "planscore.api_upload.lambda_handler")
         grant_data_bucket_access(data_bucket, api_upload)
         api_upload.add_permission('Permission', principal=apigateway_role)
 
         function_kwargs.update(timeout=cdk.Duration.seconds(5))
 
-        get_states = get_small_function(self, "APIStatesZ", "lambda.get_states")
+        get_states = make_small_function(self, "APIStatesZ", "lambda.get_states")
         get_states.add_permission('Permission', principal=apigateway_role)
 
-        get_model_versions = get_small_function(self, "APIModelVersionsZ", "lambda.get_model_versions")
+        get_model_versions = make_small_function(self, "APIModelVersionsZ", "lambda.get_model_versions")
         get_model_versions.add_permission('Permission', principal=apigateway_role)
 
-        upload_fields = get_small_function(self, "UploadFieldsZ", "lambda.upload_fields")
+        upload_fields = make_small_function(self, "UploadFieldsZ", "lambda.upload_fields")
         grant_data_bucket_access(data_bucket, upload_fields)
         upload_fields.add_permission('Permission', principal=apigateway_role)
 
-        preread = get_small_function(self, "PrereadZ", "lambda.preread")
+        preread = make_small_function(self, "PrereadZ", "lambda.preread")
         grant_data_bucket_access(data_bucket, preread)
         preread.add_permission('Permission', principal=apigateway_role)
 
-        postread_callback_GET = get_small_function(self, "PostreadCallbackGetZ", "lambda.postread_callback_GET")
+        postread_callback_GET = make_small_function(self, "PostreadCallbackGetZ", "lambda.postread_callback_GET")
         grant_data_bucket_access(data_bucket, postread_callback_GET)
         postread_callback_GET.add_permission('Permission', principal=apigateway_role)
 
-        postread_callback_POST = get_small_function(self, "PostreadCallbackPostZ", "lambda.postread_callback_POST")
+        postread_callback_POST = make_small_function(self, "PostreadCallbackPostZ", "lambda.postread_callback_POST")
         grant_data_bucket_access(data_bucket, postread_callback_POST)
         postread_callback_POST.add_permission('Permission', principal=apigateway_role)
 
@@ -678,33 +676,34 @@ class PlanScoreScoring(cdk.Stack):
             postread_intermediate,
         ) = functions
 
-        # https://docs.aws.amazon.com/step-functions/latest/dg/input-output-contextobject.html
-        task_payload = {
-            "ExecutionID.$": "$$.Execution.Id",
-            "StateMachineID.$": "$$.StateMachine.Id",
-            "ExecutionInput.$": "$",  # Duplicate of "$$.Execution.Input",
-        }
+        def make_task(stack, name, function, wait_for_token):
+            # https://docs.aws.amazon.com/step-functions/latest/dg/input-output-contextobject.html
+            task_payload = {
+                "ExecutionID.$": "$$.Execution.Id",
+                "StateMachineID.$": "$$.StateMachine.Id",
+                "ExecutionInput.$": "$",  # Duplicate of "$$.Execution.Input",
+            }
+            
+            if wait_for_token:
+                task_kwargs = dict(
+                    integration_pattern=aws_stepfunctions.IntegrationPattern.WAIT_FOR_TASK_TOKEN,
+                    heartbeat=cdk.Duration.days(1),
+                    payload=aws_stepfunctions.TaskInput.from_object(
+                        {**task_payload, "TaskToken": aws_stepfunctions.JsonPath.task_token}
+                    ),
+                )
+            else:
+                task_kwargs = dict(
+                    payload_response_only=True,
+                    payload=aws_stepfunctions.TaskInput.from_object(task_payload),
+                )
+
+            return aws_stepfunctions_tasks.LambdaInvoke(
+                stack, name, lambda_function=function, **task_kwargs
+            )
         
-        preread_followup_task1 = aws_stepfunctions_tasks.LambdaInvoke(
-            self,
-            "PrereadFollowupT1",
-            lambda_function=preread_followup,
-            integration_pattern=aws_stepfunctions.IntegrationPattern.WAIT_FOR_TASK_TOKEN,
-            heartbeat=cdk.Duration.days(1),
-            # payload_response_only=True,
-            payload=aws_stepfunctions.TaskInput.from_object(
-                {**task_payload, "TaskToken": aws_stepfunctions.JsonPath.task_token}
-            ),
-        )
-        
-        postread_calculate_task1 = aws_stepfunctions_tasks.LambdaInvoke(
-            self,
-            "PostreadCalculateT1",
-            lambda_function=postread_calculate,
-            payload_response_only=True,
-            payload=aws_stepfunctions.TaskInput.from_object(task_payload),
-        )
-        
+        preread_followup_task1 = make_task(self, "PrereadFollowupT1", preread_followup, True)
+        postread_calculate_task1 = make_task(self, "PostreadCalculateT1", postread_calculate, False)
         preread_followup_task1.next(postread_calculate_task1)
         
         interactive_statemachine = aws_stepfunctions.StateMachine(
@@ -716,30 +715,9 @@ class PlanScoreScoring(cdk.Stack):
         grant_statemachine_control(interactive_statemachine, "INTERACTIVE_SCORE_MACHINE", preread)
         grant_statemachine_control(interactive_statemachine, "INTERACTIVE_SCORE_MACHINE", postread_callback_GET)
         
-        postread_intermediate_task = aws_stepfunctions_tasks.LambdaInvoke(
-            self,
-            "PostreadIntermediateT",
-            lambda_function=postread_intermediate,
-            payload_response_only=True,
-            payload=aws_stepfunctions.TaskInput.from_object(task_payload),
-        )
-        
-        preread_followup_task2 = aws_stepfunctions_tasks.LambdaInvoke(
-            self,
-            "PrereadFollowupT2",
-            lambda_function=preread_followup,
-            payload_response_only=True,
-            payload=aws_stepfunctions.TaskInput.from_object(task_payload),
-        )
-        
-        postread_calculate_task2 = aws_stepfunctions_tasks.LambdaInvoke(
-            self,
-            "PostreadCalculateT2",
-            lambda_function=postread_calculate,
-            payload_response_only=True,
-            payload=aws_stepfunctions.TaskInput.from_object(task_payload),
-        )
-        
+        postread_intermediate_task = make_task(self, "PostreadIntermediateT", postread_intermediate, False)
+        preread_followup_task2 = make_task(self, "PrereadFollowupT2", preread_followup, False)
+        postread_calculate_task2 = make_task(self, "PostreadCalculateT2", postread_calculate, False)
         postread_intermediate_task.next(preread_followup_task2).next(postread_calculate_task2)
 
         multistepapi_statemachine = aws_stepfunctions.StateMachine(
@@ -750,13 +728,7 @@ class PlanScoreScoring(cdk.Stack):
 
         grant_statemachine_control(multistepapi_statemachine, "MULTISTEP_API_SCORE_MACHINE", postread_callback_POST)
         
-        postread_calculate_task3 = aws_stepfunctions_tasks.LambdaInvoke(
-            self,
-            "PostreadCalculateT3",
-            lambda_function=postread_calculate,
-            payload_response_only=True,
-            payload=aws_stepfunctions.TaskInput.from_object(task_payload),
-        )
+        postread_calculate_task3 = make_task(self, "PostreadCalculateT3", postread_calculate, False)
         
         singlestepapi_statemachine = aws_stepfunctions.StateMachine(
             self,
