@@ -513,7 +513,7 @@ MODELS = [
     Model(State.MN, House.statesenate,  67,  True, VERSIONS, 'data/MN/010-acs-2020'), # c82db89
     Model(State.MN, House.statehouse,  134,  True, VERSIONS, 'data/MN/010-acs-2020'), # c82db89
     Model(State.MN, House.localplan,  None,  True, VERSIONS, 'data/MN/010-acs-2020'), # c82db89
-    Model(State.MO, House.ushouse,       8,  True, VERSIONS, 'data/MO/009-acs-2020'), # c82db89
+    Model(State.MO, House.ushouse,       8,  True, VERSION24, 'data/MO/010-pvote-2024'), # 5286000
     Model(State.MO, House.statesenate,  34,  True, VERSIONS, 'data/MO/009-acs-2020'), # c82db89
     Model(State.MO, House.statehouse,  163,  True, VERSIONS, 'data/MO/009-acs-2020'), # c82db89
     Model(State.MO, House.localplan,  None,  True, VERSIONS, 'data/MO/009-acs-2020'), # c82db89
@@ -588,7 +588,7 @@ MODELS = [
     Model(State.TN, House.statesenate,  33,  True, VERSIONS, 'data/TN/009-acs-2020'), # c82db89
     Model(State.TN, House.statehouse,   99,  True, VERSIONS, 'data/TN/009-acs-2020'), # c82db89
     Model(State.TN, House.localplan,  None,  True, VERSIONS, 'data/TN/009-acs-2020'), # c82db89
-    Model(State.TX, House.ushouse,      38,  True, VERSIONS, 'data/TX/010-acs-2020'), # c82db89
+    Model(State.TX, House.ushouse,      38,  True, VERSION24, 'data/TX/011-pvote-2024'), # 24aa35a
     Model(State.TX, House.statesenate,  31,  True, VERSIONS, 'data/TX/010-acs-2020'), # c82db89
     Model(State.TX, House.statehouse,  150,  True, VERSIONS, 'data/TX/010-acs-2020'), # c82db89
     Model(State.TX, House.localplan,  None,  True, VERSIONS, 'data/TX/010-acs-2020'), # c82db89
