@@ -561,6 +561,7 @@ def calculate_district_biases(upload):
         upload.model.state,
         upload.model.house,
         matrix.filter_district_data(matrix.prepare_district_data(upload)),
+        upload.model.versions,
     )
     
     # Record per-district vote totals and confidence intervals

@@ -301,6 +301,7 @@ class TestMatrix (unittest.TestCase):
                 (5, 5, 'O'),
                 (6, 4, 'D'),
             ],
+            ['2025B'],
         )
         
         self.assertEqual(apply_model.mock_calls[0][1], (
@@ -337,6 +338,7 @@ class TestMatrix (unittest.TestCase):
                 (4, 6, 'R'),
                 (0, 0, 'O'),
             ],
+            ['2025B'],
         )
 
         # Can't just check NaN == NaN
@@ -371,10 +373,10 @@ class TestMatrix (unittest.TestCase):
                 (4, 6, 'R'),
                 (0, 0, 'O'),
             ],
+            ['2025A'],
         )
         
-        default_version = data.VERSION_PARAMETERS[data.DEFAULT_VERSION]
-        self.assertIs(apply_model.mock_calls[0][1][-1], default_version)
+        self.assertIs(apply_model.mock_calls[0][1][-1], data.VERSION_PARAMETERS['2025A'])
         self.assertEqual(load_model.mock_calls[0][1], ('-2025A', 'nc', 2024, True, True))
     
     def test_prepare_district_data_2025A_version(self):
@@ -413,7 +415,7 @@ class TestMatrix (unittest.TestCase):
     
     def test_prepare_district_data_default_version(self):
         input = data.Upload(id=None, key=None,
-            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2025B'], None),
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2025A', '2025B'], None),
             model_version = None,
             districts = [
                 dict(totals={'US President 2024 - REP': 3, 'US President 2024 - DEM': 5, 'US President 2020 - REP': 2, 'US President 2020 - DEM': 6}, tile=None),

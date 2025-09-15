@@ -43,9 +43,9 @@ def kick_it_off(geojson, temporary, auth_token):
     
     # Check for a valid model_version
     
-    model_version = geojson.get('model_version', data.DEFAULT_VERSION)
+    model_version = geojson.get('model_version')
     
-    if model_version and model_version not in data.VERSION_PARAMETERS:
+    if model_version and model_version not in upload2.model.versions:
         raise ValueError(f'Bad model_version {repr(model_version)}')
     
     # assign description and incumbents as in postread_callback.py

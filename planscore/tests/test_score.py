@@ -909,7 +909,7 @@ class TestScore (unittest.TestCase):
              [2.6, 5.4]],
         ])
         output = score.calculate_everything(input)
-        self.assertEqual(model_votes.mock_calls[0][1], ('2025A', data.State.XX, data.House.ushouse, filter_district_data.return_value))
+        self.assertEqual(model_votes.mock_calls[0][1], ('2025A', data.State.XX, data.House.ushouse, filter_district_data.return_value, ['2025A']))
         
         self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
         self.assertEqual(output.summary['Mean-Median Positives'], 0.0)
@@ -1017,7 +1017,7 @@ class TestScore (unittest.TestCase):
         ''' Relevant FVA races are correctly identified
         '''
         input = data.Upload(id=None, key=None,
-            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2017'], None),
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2025A'], None),
             districts = [
                 dict(totals={
                     'US President 2016 - REP': 2, 'US President 2016 - DEM': 6,
