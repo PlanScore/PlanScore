@@ -178,7 +178,7 @@ def apply_model(districts, model, params):
     assert (ADC + E).shape == (len(districts), sim_count)
     return ADC + E
 
-def model_votes(model_version, state, house, districts, versions):
+def model_votes(model_version, state, house, districts):
     ''' Convert presidential votes to range of possible modeled chamber votes.
         
         model_version is a string like '2021D' from data.VERSION_PARAMETERS.
@@ -188,11 +188,10 @@ def model_votes(model_version, state, house, districts, versions):
         - Input Democratic vote count
         - Input Republican vote count
         - Incumbency: "O" for open, "R", or "D"
-        versions is a list of valid model versions
         
         Return is a DxSx2 matrix for D districts, S simulations, and Dem/Rep parties.
     '''
-    params = data.VERSION_PARAMETERS[model_version or versions[0]]
+    params = data.VERSION_PARAMETERS[model_version]
     
     has_incumbents = bool({inc for (_, _, inc) in districts} != {'O'})
     is_congress = bool(house == data.House.ushouse)
@@ -301,11 +300,10 @@ def main():
     
     # Get large number of simulated outputs
     output_votes = model_votes(
-        upload.model_version,
+        upload.model_version or upload.model.versions[0],
         upload.model.state,
         upload.model.house,
         input_district_data,
-        upload.model.versions,
     )
 
     with open(args.matrix_path, 'w') as file:
