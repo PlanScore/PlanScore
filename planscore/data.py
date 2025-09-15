@@ -417,7 +417,6 @@ class Upload:
 
 VERSIONS = ['2025A']  # list(VERSION_PARAMETERS.keys()) # rely on dict order
 VERSION24 = ['2025B']
-DEFAULT_VERSION = VERSIONS[0]  # Used in api_upload
 
 MODELS = [
     Model(State.XX, House.statehouse,    2,  True, VERSIONS + VERSION24, 'data/XX/007-pvote-2024'), # b8e19879 and more
@@ -513,7 +512,7 @@ MODELS = [
     Model(State.MN, House.statesenate,  67,  True, VERSIONS, 'data/MN/010-acs-2020'), # c82db89
     Model(State.MN, House.statehouse,  134,  True, VERSIONS, 'data/MN/010-acs-2020'), # c82db89
     Model(State.MN, House.localplan,  None,  True, VERSIONS, 'data/MN/010-acs-2020'), # c82db89
-    Model(State.MO, House.ushouse,       8,  True, VERSIONS, 'data/MO/009-acs-2020'), # c82db89
+    Model(State.MO, House.ushouse,       8,  True, VERSION24, 'data/MO/010-pvote-2024'), # 9a30fd0
     Model(State.MO, House.statesenate,  34,  True, VERSIONS, 'data/MO/009-acs-2020'), # c82db89
     Model(State.MO, House.statehouse,  163,  True, VERSIONS, 'data/MO/009-acs-2020'), # c82db89
     Model(State.MO, House.localplan,  None,  True, VERSIONS, 'data/MO/009-acs-2020'), # c82db89
@@ -588,7 +587,7 @@ MODELS = [
     Model(State.TN, House.statesenate,  33,  True, VERSIONS, 'data/TN/009-acs-2020'), # c82db89
     Model(State.TN, House.statehouse,   99,  True, VERSIONS, 'data/TN/009-acs-2020'), # c82db89
     Model(State.TN, House.localplan,  None,  True, VERSIONS, 'data/TN/009-acs-2020'), # c82db89
-    Model(State.TX, House.ushouse,      38,  True, VERSIONS, 'data/TX/010-acs-2020'), # c82db89
+    Model(State.TX, House.ushouse,      38,  True, VERSION24, 'data/TX/011-pvote-2024'), # 9a30fd0
     Model(State.TX, House.statesenate,  31,  True, VERSIONS, 'data/TX/010-acs-2020'), # c82db89
     Model(State.TX, House.statehouse,  150,  True, VERSIONS, 'data/TX/010-acs-2020'), # c82db89
     Model(State.TX, House.localplan,  None,  True, VERSIONS, 'data/TX/010-acs-2020'), # c82db89

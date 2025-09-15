@@ -29,6 +29,9 @@ def commence_upload_scoring(context, s3, athena, bucket, upload):
     '''
     object = s3.get_object(Bucket=bucket, Key=upload.key)
     
+    if upload.model_version is None:
+        upload.model_version = upload.model.versions[0]
+
     with util.temporary_buffer_file(os.path.basename(upload.key), object['Body']) as ul_path:
         upload_type = util.guess_upload_type(ul_path)
 
@@ -75,7 +78,7 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     try:
         upload5 = score.calculate_everything(upload4)
     except Exception as err:
-        upload6 = upload5.clone(
+        upload6 = upload4.clone(
             status=False,
             message=f'Something went wrong: {err}',
         )

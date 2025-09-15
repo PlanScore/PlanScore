@@ -23,13 +23,13 @@ def lambda_handler(event, context):
         description = None
         incumbents = None
         library_metadata = None
-        model_version = data.DEFAULT_VERSION
+        model_version = None
     else:
         print(f"Read description and incumbents from {input['callback_body']}...")
         description = body.get('description', None)
         incumbents = body.get('incumbents', None)
         library_metadata = body.get('library_metadata', None)
-        model_version = body.get('model_version', data.DEFAULT_VERSION)
+        model_version = body.get('model_version')
 
     # Check for a valid model_version
     

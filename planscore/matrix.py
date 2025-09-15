@@ -191,10 +191,7 @@ def model_votes(model_version, state, house, districts):
         
         Return is a DxSx2 matrix for D districts, S simulations, and Dem/Rep parties.
     '''
-    if model_version is None:
-        params = data.VERSION_PARAMETERS[data.DEFAULT_VERSION]
-    else:
-        params = data.VERSION_PARAMETERS[model_version]
+    params = data.VERSION_PARAMETERS[model_version]
     
     has_incumbents = bool({inc for (_, _, inc) in districts} != {'O'})
     is_congress = bool(house == data.House.ushouse)
@@ -230,10 +227,7 @@ def model_votes(model_version, state, house, districts):
 def prepare_district_data(upload):
     ''' Simple presidential vote input for model_votes()
     '''
-    if upload.model_version is None:
-        params = data.VERSION_PARAMETERS[data.DEFAULT_VERSION]
-    else:
-        params = data.VERSION_PARAMETERS[upload.model_version]
+    params = data.VERSION_PARAMETERS[upload.model_version or upload.model.versions[0]]
     
     out_data = []
     
@@ -306,7 +300,7 @@ def main():
     
     # Get large number of simulated outputs
     output_votes = model_votes(
-        upload.model_version,
+        upload.model_version or upload.model.versions[0],
         upload.model.state,
         upload.model.house,
         input_district_data,

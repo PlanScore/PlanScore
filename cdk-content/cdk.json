@@ -1,5 +1,6 @@
 {
   "app": "python3 cdk-content.py",
+  "output": "/tmp/cdk-content.out",
   "context": {
     "@aws-cdk/core:enableStackNameDuplicates": "true",
     "aws-cdk:enableDiffNoFail": "true",

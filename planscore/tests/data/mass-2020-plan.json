@@ -1,5 +1,5 @@
 {
-  "commit_sha": "082f6bfcac91a05e68fc0e284ae51b77135a45a3",
+  "commit_sha": "19646b3721b902eba9c804f8d41a7ff730d60fd3",
   "description": "ma_2010_congress_2011-11-21_2021-12-31.zip",
   "districts": [
     {
@@ -7,6 +7,8 @@
         "Polsby-Popper": 0.311,
         "Reock": 0.3889
       },
+      "is_counted": true,
+      "number": 1,
       "totals": {
         "Asian Citizen Voting-Age Population 2019": 9962.96,
         "Asian Citizen Voting-Age Population 2019, Margin": 35757.67,
@@ -33,6 +35,8 @@
         "Polsby-Popper": 0.2726,
         "Reock": 0.3981
       },
+      "is_counted": true,
+      "number": 2,
       "totals": {
         "Asian Citizen Voting-Age Population 2019": 22620.83,
         "Asian Citizen Voting-Age Population 2019, Margin": 31258.73,
@@ -59,6 +63,8 @@
         "Polsby-Popper": 0.2274,
         "Reock": 0.3156
       },
+      "is_counted": true,
+      "number": 3,
       "totals": {
         "Asian Citizen Voting-Age Population 2019": 35079.17,
         "Asian Citizen Voting-Age Population 2019, Margin": 26582.36,
@@ -85,6 +91,8 @@
         "Polsby-Popper": 0.1663,
         "Reock": 0.3726
       },
+      "is_counted": true,
+      "number": 4,
       "totals": {
         "Asian Citizen Voting-Age Population 2019": 27497.72,
         "Asian Citizen Voting-Age Population 2019, Margin": 25513.31,
@@ -111,6 +119,8 @@
         "Polsby-Popper": 0.166,
         "Reock": 0.3072
       },
+      "is_counted": true,
+      "number": 5,
       "totals": {
         "Asian Citizen Voting-Age Population 2019": 45849.32,
         "Asian Citizen Voting-Age Population 2019, Margin": 37190.23,
@@ -137,6 +147,8 @@
         "Polsby-Popper": 0.3841,
         "Reock": 0.5819
       },
+      "is_counted": true,
+      "number": 6,
       "totals": {
         "Asian Citizen Voting-Age Population 2019": 19837.16,
         "Asian Citizen Voting-Age Population 2019, Margin": 27081.52,
@@ -163,6 +175,8 @@
         "Polsby-Popper": 0.076,
         "Reock": 0.2102
       },
+      "is_counted": true,
+      "number": 7,
       "totals": {
         "Asian Citizen Voting-Age Population 2019": 46788.67,
         "Asian Citizen Voting-Age Population 2019, Margin": 78329.1,
@@ -189,6 +203,8 @@
         "Polsby-Popper": 0.1344,
         "Reock": 0.3882
       },
+      "is_counted": true,
+      "number": 8,
       "totals": {
         "Asian Citizen Voting-Age Population 2019": 35186.87,
         "Asian Citizen Voting-Age Population 2019, Margin": 49261.58,
@@ -215,6 +231,8 @@
         "Polsby-Popper": 0.291,
         "Reock": 0.5858
       },
+      "is_counted": true,
+      "number": 9,
       "totals": {
         "Asian Citizen Voting-Age Population 2019": 7317.47,
         "Asian Citizen Voting-Age Population 2019, Margin": 28574.08,
@@ -237,8 +255,10 @@
       }
     }
   ],
-  "geometry_key": "uploads/20210826T012505.526729913Z/geometry.json",
-  "id": "20210826T012505.526729913Z",
+  "execution_id": "arn:aws:states:us-east-1:466184106004:execution:cfdevelopmentInteractiveScoreM9795C4E1-5s5S77UkbbkM:e1a4485c-76e5-4d48-bb6a-ba262edf3f74",
+  "execution_token": null,
+  "geometry_key": "uploads/20250915T034515.223406435Z/geometry.json",
+  "id": "20250915T034515.223406435Z",
   "incumbents": [
     "O",
     "O",
@@ -250,21 +270,22 @@
     "O",
     "O"
   ],
-  "key": "uploads/20210826T012505.526729913Z/upload/ma_2010_congress_2011-11-21_2021-12-31.zip",
+  "key": "uploads/20250915T034515.223406435Z/upload/ma_2010_congress_2011-11-21_2021-12-31.zip",
+  "library_metadata": null,
   "message": "Finished scoring this plan.",
   "model": {
     "house": "ushouse",
     "incumbency": true,
-    "key_prefix": "data/MA/005-2020vote",
+    "key_prefix": "data/MA/010-acs-2020",
     "seats": 9,
     "state": "MA",
-    "version": "2021B"
+    "versions": [
+      "2025A"
+    ]
   },
-  "progress": [
-    58,
-    58
-  ],
-  "start_time": 1629941109.7944827,
+  "model_version": "2025A",
+  "progress": null,
+  "start_time": 1757907926.22,
   "status": true,
   "summary": {
     "Declination": 0.0389,

@@ -355,28 +355,6 @@ class TestMatrix (unittest.TestCase):
         
         self.assertTrue(numpy.isnan(R[1]).all())
     
-    @unittest.mock.patch('planscore.matrix.load_model')
-    @unittest.mock.patch('planscore.matrix.apply_model')
-    def test_model_votes_without_model_version(self, apply_model, load_model):
-        apply_model.return_value = numpy.array([
-            [0.3, 0.4],
-            [numpy.nan, numpy.nan]
-        ])
-
-        R = matrix.model_votes(
-            None,
-            data.State.NC,
-            data.House.ushouse,
-            [
-                (4, 6, 'R'),
-                (0, 0, 'O'),
-            ],
-        )
-        
-        default_version = data.VERSION_PARAMETERS[data.DEFAULT_VERSION]
-        self.assertIs(apply_model.mock_calls[0][1][-1], default_version)
-        self.assertEqual(load_model.mock_calls[0][1], ('-2025A', 'nc', 2024, True, True))
-    
     def test_prepare_district_data_2025A_version(self):
         input = data.Upload(id=None, key=None,
             model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2025A'], None),
@@ -413,7 +391,7 @@ class TestMatrix (unittest.TestCase):
     
     def test_prepare_district_data_default_version(self):
         input = data.Upload(id=None, key=None,
-            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2025B'], None),
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2025A', '2025B'], None),
             model_version = None,
             districts = [
                 dict(totals={'US President 2024 - REP': 3, 'US President 2024 - DEM': 5, 'US President 2020 - REP': 2, 'US President 2020 - DEM': 6}, tile=None),
