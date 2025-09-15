@@ -702,8 +702,22 @@ class PlanScoreScoring(cdk.Stack):
                 stack, name, lambda_function=function, **task_kwargs
             )
         
-        preread_followup_task1 = make_task(self, "PrereadFollowupT1", preread_followup, True)
-        postread_calculate_task1 = make_task(self, "PostreadCalculateT1", postread_calculate, False)
+        def make_postread_calculate_task(stack, i):
+            postread_calculate_task = make_task(stack, f"PostreadCalculate ({i})", postread_calculate, False)
+            
+            postread_calculate_task.next(
+                aws_stepfunctions.Choice(stack, f"Status? ({i})").when(
+                    aws_stepfunctions.Condition.boolean_equals("$.status", True),
+                    aws_stepfunctions.Succeed(stack, f"Pass ({i})")
+                )
+            )
+            
+            return postread_calculate_task
+        
+        # InteractiveScoreM
+        
+        preread_followup_task1 = make_task(self, "PrereadFollowup (1)", preread_followup, True)
+        postread_calculate_task1 = make_postread_calculate_task(self, 1)
         preread_followup_task1.next(postread_calculate_task1)
         
         interactive_statemachine = aws_stepfunctions.StateMachine(
@@ -715,9 +729,11 @@ class PlanScoreScoring(cdk.Stack):
         grant_statemachine_control(interactive_statemachine, "INTERACTIVE_SCORE_MACHINE", preread)
         grant_statemachine_control(interactive_statemachine, "INTERACTIVE_SCORE_MACHINE", postread_callback_GET)
         
-        postread_intermediate_task = make_task(self, "PostreadIntermediateT", postread_intermediate, False)
-        preread_followup_task2 = make_task(self, "PrereadFollowupT2", preread_followup, False)
-        postread_calculate_task2 = make_task(self, "PostreadCalculateT2", postread_calculate, False)
+        # MultistepAPIScoreM
+        
+        postread_intermediate_task = make_task(self, "PostreadIntermediate", postread_intermediate, False)
+        preread_followup_task2 = make_task(self, "PrereadFollowup (2)", preread_followup, False)
+        postread_calculate_task2 = make_postread_calculate_task(self, 2)
         postread_intermediate_task.next(preread_followup_task2).next(postread_calculate_task2)
 
         multistepapi_statemachine = aws_stepfunctions.StateMachine(
@@ -728,14 +744,16 @@ class PlanScoreScoring(cdk.Stack):
 
         grant_statemachine_control(multistepapi_statemachine, "MULTISTEP_API_SCORE_MACHINE", postread_callback_POST)
         
-        postread_calculate_task3 = make_task(self, "PostreadCalculateT3", postread_calculate, False)
+        # SinglestepAPIScoreM
         
+        postread_calculate_task3 = make_postread_calculate_task(self, 3)
+
         singlestepapi_statemachine = aws_stepfunctions.StateMachine(
             self,
             f"{formation_info.prefix}-SinglestepAPIScoreM",
             definition=postread_calculate_task3,
         )
-
+        
         grant_statemachine_control(singlestepapi_statemachine, "SINGLESTEP_API_SCORE_MACHINE", api_upload)
 
     def populate_api(self, apigateway_role, api, *functions):
