@@ -407,6 +407,8 @@ def lambda_handler(event, context):
         observe.put_upload_index(storage, error_upload)
         raise
     else:
+        # Remove districts from output to stay inside Step Functions limits
+        upload2.districts = None
         return upload2.to_dict()
 
 if __name__ == '__main__':
