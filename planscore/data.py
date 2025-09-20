@@ -583,7 +583,7 @@ MODELS = [
     Model(State.SD, House.statesenate,  35,  True, VERSIONS, 'data/SD/008-acs-2020'), # c82db89
     Model(State.SD, House.statehouse,   70,  True, VERSIONS, 'data/SD/008-acs-2020'), # c82db89
     Model(State.SD, House.localplan,  None,  True, VERSIONS, 'data/SD/008-acs-2020'), # c82db89
-    Model(State.TN, House.ushouse,       9,  True, VERSIONS, 'data/TN/009-acs-2020'), # c82db89
+    Model(State.TN, House.ushouse,       9,  True, VERSION24, 'data/TN/010-pvote-2024'), # nnnnnnnnn
     Model(State.TN, House.statesenate,  33,  True, VERSIONS, 'data/TN/009-acs-2020'), # c82db89
     Model(State.TN, House.statehouse,   99,  True, VERSIONS, 'data/TN/009-acs-2020'), # c82db89
     Model(State.TN, House.localplan,  None,  True, VERSIONS, 'data/TN/009-acs-2020'), # c82db89
