@@ -496,7 +496,7 @@ MODELS = [
     Model(State.MA, House.statesenate,  40,  True, VERSIONS, 'data/MA/010-acs-2020'), # c82db89
     Model(State.MA, House.statehouse,  160,  True, VERSIONS, 'data/MA/010-acs-2020'), # c82db89
     Model(State.MA, House.localplan,  None,  True, VERSIONS, 'data/MA/010-acs-2020'), # c82db89
-    Model(State.MD, House.ushouse,       8,  True, VERSIONS, 'data/MD/012-acs-2020'), # c82db89
+    Model(State.MD, House.ushouse,       8,  True, VERSION24, 'data/MD/013-pvote-2024'), # f4e572d
     Model(State.MD, House.statesenate,  47,  True, VERSIONS, 'data/MD/012-acs-2020'), # c82db89
     Model(State.MD, House.statehouse,   68,  True, VERSIONS, 'data/MD/012-acs-2020'), # c82db89
     Model(State.MD, House.localplan,  None,  True, VERSIONS, 'data/MD/012-acs-2020'), # c82db89
