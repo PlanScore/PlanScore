@@ -456,7 +456,7 @@ MODELS = [
     Model(State.FL, House.statesenate,  40,  True, VERSIONS, 'data/FL/010-acs-2020'), # c82db89
     Model(State.FL, House.statehouse,  120,  True, VERSIONS, 'data/FL/010-acs-2020'), # c82db89
     Model(State.FL, House.localplan,  None,  True, VERSIONS, 'data/FL/010-acs-2020'), # c82db89
-    Model(State.GA, House.ushouse,      14,  True, VERSIONS, 'data/GA/012-acs-2020'), # c82db89
+    Model(State.GA, House.ushouse,      14,  True, VERSION24, 'data/GA/013-pvote-2024'), # 66552ee
     Model(State.GA, House.statesenate,  56,  True, VERSIONS, 'data/GA/012-acs-2020'), # c82db89
     Model(State.GA, House.statehouse,  180,  True, VERSIONS, 'data/GA/012-acs-2020'), # c82db89
     Model(State.GA, House.localplan,  None,  True, VERSIONS, 'data/GA/012-acs-2020'), # c82db89
