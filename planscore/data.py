@@ -607,7 +607,7 @@ MODELS = [
     Model(State.WA, House.statesenate,  49,  True, VERSIONS, 'data/WA/009-acs-2020'), # c82db89
     Model(State.WA, House.statehouse,   98,  True, VERSIONS, 'data/WA/009-acs-2020'), # c82db89
     Model(State.WA, House.localplan,  None,  True, VERSIONS, 'data/WA/009-acs-2020'), # c82db89
-    Model(State.WI, House.ushouse,       8,  True, VERSIONS, 'data/WI/014-acs-2020'), # c82db89
+    Model(State.WI, House.ushouse,       8,  True, VERSION24, 'data/WI/015-pvote-2024'), # nnnnnnnnnn
     Model(State.WI, House.statesenate,  33,  True, VERSIONS, 'data/WI/014-acs-2020'), # c82db89
     Model(State.WI, House.statehouse,   99,  True, VERSIONS, 'data/WI/014-acs-2020'), # c82db89
     Model(State.WI, House.localplan,  None,  True, VERSIONS, 'data/WI/014-acs-2020'), # c82db89
