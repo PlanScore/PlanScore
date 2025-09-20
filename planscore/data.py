@@ -432,7 +432,7 @@ MODELS = [
     Model(State.AR, House.statesenate,  35,  True, VERSIONS, 'data/AR/008-acs-2020'), # c82db89
     Model(State.AR, House.statehouse,  100,  True, VERSIONS, 'data/AR/008-acs-2020'), # c82db89
     Model(State.AR, House.localplan,  None,  True, VERSIONS, 'data/AR/008-acs-2020'), # c82db89
-    Model(State.AZ, House.ushouse,       9,  True, VERSIONS, 'data/AZ/012-acs-2020'), # c82db89
+    Model(State.AZ, House.ushouse,       9,  True, VERSION24, 'data/AZ/013-pvote-2024'), # nnnnnnnnnn
     Model(State.AZ, House.statesenate,  30,  True, VERSIONS, 'data/AZ/012-acs-2020'), # c82db89
     Model(State.AZ, House.statehouse,   60,  True, VERSIONS, 'data/AZ/012-acs-2020'), # c82db89
     Model(State.AZ, House.localplan,  None,  True, VERSIONS, 'data/AZ/012-acs-2020'), # c82db89
