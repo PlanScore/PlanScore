@@ -424,7 +424,7 @@ MODELS = [
     Model(State.AK, House.statesenate,  20,  True, VERSIONS, 'data/AK/008-acs-2020'), # c82db89
     Model(State.AK, House.statehouse,   40,  True, VERSIONS, 'data/AK/008-acs-2020'), # c82db89
     Model(State.AK, House.localplan,  None,  True, VERSIONS, 'data/AK/008-acs-2020'), # c82db89
-    Model(State.AL, House.ushouse,       7,  True, VERSION24, 'data/AL/009-pvote-2024'), # nnnnnnnnnn
+    Model(State.AL, House.ushouse,       7,  True, VERSION24, 'data/AL/009-pvote-2024'), # 15be1c4
     Model(State.AL, House.statesenate,  35,  True, VERSIONS, 'data/AL/008-acs-2020'), # c82db89
     Model(State.AL, House.statehouse,  105,  True, VERSIONS, 'data/AL/008-acs-2020'), # c82db89
     Model(State.AL, House.localplan,  None,  True, VERSIONS, 'data/AL/008-acs-2020'), # c82db89
@@ -432,7 +432,7 @@ MODELS = [
     Model(State.AR, House.statesenate,  35,  True, VERSIONS, 'data/AR/008-acs-2020'), # c82db89
     Model(State.AR, House.statehouse,  100,  True, VERSIONS, 'data/AR/008-acs-2020'), # c82db89
     Model(State.AR, House.localplan,  None,  True, VERSIONS, 'data/AR/008-acs-2020'), # c82db89
-    Model(State.AZ, House.ushouse,       9,  True, VERSION24, 'data/AZ/013-pvote-2024'), # nnnnnnnnnn
+    Model(State.AZ, House.ushouse,       9,  True, VERSION24, 'data/AZ/013-pvote-2024'), # 15be1c4
     Model(State.AZ, House.statesenate,  30,  True, VERSIONS, 'data/AZ/012-acs-2020'), # c82db89
     Model(State.AZ, House.statehouse,   60,  True, VERSIONS, 'data/AZ/012-acs-2020'), # c82db89
     Model(State.AZ, House.localplan,  None,  True, VERSIONS, 'data/AZ/012-acs-2020'), # c82db89
@@ -488,7 +488,7 @@ MODELS = [
     Model(State.KY, House.statesenate,  38,  True, VERSIONS, 'data/KY/007-acs-2020'), # c82db89
     Model(State.KY, House.statehouse,  100,  True, VERSIONS, 'data/KY/007-acs-2020'), # c82db89
     Model(State.KY, House.localplan,  None,  True, VERSIONS, 'data/KY/007-acs-2020'), # c82db89
-    Model(State.LA, House.ushouse,       6,  True, VERSIONS, 'data/LA/007-acs-2020'), # c82db89
+    Model(State.LA, House.ushouse,       6,  True, VERSION24, 'data/LA/008-pvote-2024'), # 15be1c4
     Model(State.LA, House.statesenate,  39,  True, VERSIONS, 'data/LA/007-acs-2020'), # c82db89
     Model(State.LA, House.statehouse,  105,  True, VERSIONS, 'data/LA/007-acs-2020'), # c82db89
     Model(State.LA, House.localplan,  None,  True, VERSIONS, 'data/LA/007-acs-2020'), # c82db89
@@ -516,7 +516,7 @@ MODELS = [
     Model(State.MO, House.statesenate,  34,  True, VERSIONS, 'data/MO/009-acs-2020'), # c82db89
     Model(State.MO, House.statehouse,  163,  True, VERSIONS, 'data/MO/009-acs-2020'), # c82db89
     Model(State.MO, House.localplan,  None,  True, VERSIONS, 'data/MO/009-acs-2020'), # c82db89
-    Model(State.MS, House.ushouse,       4,  True, VERSIONS, 'data/MS/004-acs-2020'), # c82db89
+    Model(State.MS, House.ushouse,       4,  True, VERSION24, 'data/MS/005-pvote-2024'), # 15be1c4
     Model(State.MS, House.statesenate,  52,  True, VERSIONS, 'data/MS/004-acs-2020'), # c82db89
     Model(State.MS, House.statehouse,  122,  True, VERSIONS, 'data/MS/004-acs-2020'), # c82db89
     Model(State.MS, House.localplan,  None,  True, VERSIONS, 'data/MS/004-acs-2020'), # c82db89
@@ -535,7 +535,7 @@ MODELS = [
     Model(State.NE, House.ushouse,       3,  True, VERSIONS, 'data/NE/008-acs-2020'), # c82db89
     Model(State.NE, House.statesenate,  49,  True, VERSIONS, 'data/NE/008-acs-2020'), # c82db89
     Model(State.NE, House.localplan,  None,  True, VERSIONS, 'data/NE/008-acs-2020'), # c82db89
-    Model(State.NH, House.ushouse,       2,  True, VERSIONS, 'data/NH/010-acs-2020'), # c82db89
+    Model(State.NH, House.ushouse,       2,  True, VERSION24, 'data/NH/011-pvote-2024'), # 15be1c4
     Model(State.NH, House.statesenate,  24,  True, VERSIONS, 'data/NH/010-acs-2020'), # c82db89
     Model(State.NH, House.statehouse,  400,  True, VERSIONS, 'data/NH/010-acs-2020'), # c82db89
     Model(State.NH, House.localplan,  None,  True, VERSIONS, 'data/NH/010-acs-2020'), # c82db89
@@ -555,7 +555,7 @@ MODELS = [
     Model(State.NY, House.statesenate,  63,  True, VERSIONS, 'data/NY/003-acs-2020'), # c82db89
     Model(State.NY, House.statehouse,  150,  True, VERSIONS, 'data/NY/003-acs-2020'), # c82db89
     Model(State.NY, House.localplan,  None,  True, VERSIONS, 'data/NY/003-acs-2020'), # c82db89
-    Model(State.OH, House.ushouse,      15,  True, VERSIONS, 'data/OH/009-acs-2020'), # c82db89
+    Model(State.OH, House.ushouse,      15,  True, VERSION24, 'data/OH/010-pvote-2024'), # 15be1c4
     Model(State.OH, House.statesenate,  33,  True, VERSIONS, 'data/OH/009-acs-2020'), # c82db89
     Model(State.OH, House.statehouse,   99,  True, VERSIONS, 'data/OH/009-acs-2020'), # c82db89
     Model(State.OH, House.localplan,  None,  True, VERSIONS, 'data/OH/009-acs-2020'), # c82db89
@@ -575,7 +575,7 @@ MODELS = [
     Model(State.RI, House.statesenate,  38,  True, VERSIONS, 'data/RI/015-acs-2020'), # c82db89
     Model(State.RI, House.statehouse,   75,  True, VERSIONS, 'data/RI/015-acs-2020'), # c82db89
     Model(State.RI, House.localplan,  None,  True, VERSIONS, 'data/RI/015-acs-2020'), # c82db89
-    Model(State.SC, House.ushouse,       7,  True, VERSIONS, 'data/SC/008-acs-2020'), # c82db89
+    Model(State.SC, House.ushouse,       7,  True, VERSION24, 'data/SC/009-pvote-2024'), # 15be1c4
     Model(State.SC, House.statesenate,  46,  True, VERSIONS, 'data/SC/008-acs-2020'), # c82db89
     Model(State.SC, House.statehouse,  124,  True, VERSIONS, 'data/SC/008-acs-2020'), # c82db89
     Model(State.SC, House.localplan,  None,  True, VERSIONS, 'data/SC/008-acs-2020'), # c82db89
@@ -603,7 +603,7 @@ MODELS = [
     Model(State.VT, House.statesenate,  30,  True, VERSIONS, 'data/VT/010-acs-2020'), # c82db89
     Model(State.VT, House.statehouse,  150,  True, VERSIONS, 'data/VT/010-acs-2020'), # c82db89
     Model(State.VT, House.localplan,  None,  True, VERSIONS, 'data/VT/010-acs-2020'), # c82db89
-    Model(State.WA, House.ushouse,      10,  True, VERSIONS, 'data/WA/009-acs-2020'), # c82db89
+    Model(State.WA, House.ushouse,      10,  True, VERSION24, 'data/WA/010-pvote-2024'), # 15be1c4
     Model(State.WA, House.statesenate,  49,  True, VERSIONS, 'data/WA/009-acs-2020'), # c82db89
     Model(State.WA, House.statehouse,   98,  True, VERSIONS, 'data/WA/009-acs-2020'), # c82db89
     Model(State.WA, House.localplan,  None,  True, VERSIONS, 'data/WA/009-acs-2020'), # c82db89
