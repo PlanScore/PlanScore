@@ -424,7 +424,7 @@ MODELS = [
     Model(State.AK, House.statesenate,  20,  True, VERSIONS, 'data/AK/008-acs-2020'), # c82db89
     Model(State.AK, House.statehouse,   40,  True, VERSIONS, 'data/AK/008-acs-2020'), # c82db89
     Model(State.AK, House.localplan,  None,  True, VERSIONS, 'data/AK/008-acs-2020'), # c82db89
-    Model(State.AL, House.ushouse,       7,  True, VERSIONS, 'data/AL/008-acs-2020'), # c82db89
+    Model(State.AL, House.ushouse,       7,  True, VERSION24, 'data/AL/009-pvote-2024'), # nnnnnnnnnn
     Model(State.AL, House.statesenate,  35,  True, VERSIONS, 'data/AL/008-acs-2020'), # c82db89
     Model(State.AL, House.statehouse,  105,  True, VERSIONS, 'data/AL/008-acs-2020'), # c82db89
     Model(State.AL, House.localplan,  None,  True, VERSIONS, 'data/AL/008-acs-2020'), # c82db89
