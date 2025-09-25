@@ -87,6 +87,39 @@ class TestPostreadCallback (unittest.TestCase):
         self.assertIn('"incumbents": ["D", "R"]', lambda_dict['output'])
         self.assertIn('"model_version": "1999"', lambda_dict['output'])
 
+    @unittest.mock.patch('planscore.observe.get_upload_index')
+    @unittest.mock.patch('planscore.postread_callback.dummy_upload')
+    @unittest.mock.patch('boto3.client')
+    def test_lambda_handler_GET_no_token(self, boto3_client, dummy_upload, get_upload_index):
+        ''' Lambda event returns a redirect even when the tasktoken is bad
+        '''
+        query = {'key': data.UPLOAD_PREFIX.format(id='id') + 'file.geojson',
+            'id': 'id.k0_XwbOLGLUdv241zsPluNc3HYs', 'bucket': 'planscore-bucket',
+            'description': 'A fine new plan', 'incumbent-1': 'D', 'incumbent-2': 'R',
+            'model_version': '1999'}
+
+        os.environ.update(AWS_ACCESS_KEY_ID='fake-key', AWS_SECRET_ACCESS_KEY='fake-secret')
+
+        dummy_upload.return_value = data.Upload(query['id'], query['key'])
+        get_upload_index.return_value = data.Upload(
+            query['id'], query['key'], description=query['description'])
+        
+        boto3_client.return_value.send_task_success.side_effect = Exception('Provided task does not exist anymore')
+        
+        event = {
+            'queryStringParameters': query,
+            'requestContext': {'authorizer': {}},
+        }
+        response = postread_callback.lambda_handler_GET(event, None)
+
+        self.assertEqual(get_upload_index.mock_calls[0][1][0].bucket, query['bucket'])
+        self.assertEqual(get_upload_index.mock_calls[0][1][1], data.UPLOAD_INDEX_KEY.format(id=query['id']))
+        
+        self.assertEqual(dummy_upload.mock_calls[0][1], (query['key'], 'id'))
+        
+        self.assertEqual(response['statusCode'], '302')
+        self.assertEqual(response['headers']['Location'], 'https://example.com/plan.html?id')
+
     @unittest.mock.patch('planscore.preread.create_upload')
     @unittest.mock.patch('boto3.client')
     def test_lambda_handler_POST_authorized(self, boto3_client, create_upload):
