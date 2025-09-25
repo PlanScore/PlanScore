@@ -76,10 +76,12 @@ def lambda_handler_GET(event, context):
     event = dict(bucket=query['bucket'])
     event.update(upload.to_dict())
 
-    sfn.send_task_success(
-        taskToken=upload.execution_token,
-        output=json.dumps(event),
-    )
+    try:
+        sfn.send_task_success(
+            taskToken=upload.execution_token, output=json.dumps(event)
+        )
+    except Exception:
+        pass
     
     return response
 
