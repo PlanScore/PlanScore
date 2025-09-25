@@ -133,7 +133,7 @@ def baf_stream_to_pairs(stream):
     rows = csv.DictReader(lines, delimiter=delimiter)
     
     if len(rows.fieldnames) != 2:
-        raise ValuError(f'Bad column count in {stream}')
+        raise ValueError(f'Bad column count in {stream}')
 
     if 'GEOID10' in rows.fieldnames:
         block_column = 'GEOID10'
