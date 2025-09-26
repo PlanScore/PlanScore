@@ -1,4 +1,8 @@
-import flask, os, urllib.parse, markdown, hashlib
+import flask
+import os
+import urllib.parse
+import markdown
+import hashlib
 from .. import data, constants
 
 MODELS_BASEDIR = os.path.join(os.path.dirname(__file__), 'models')

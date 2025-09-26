@@ -1,4 +1,5 @@
 # Small zipfile functions
+# ruff: noqa F401 (unused imports)
 from planscore.preread import lambda_handler as preread
 from planscore.postread_callback import lambda_handler_GET as postread_callback_GET
 from planscore.postread_callback import lambda_handler_POST as postread_callback_POST

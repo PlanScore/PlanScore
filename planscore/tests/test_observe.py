@@ -1,4 +1,9 @@
-import unittest, unittest.mock, os, io, itertools, gzip, json
+import unittest
+import unittest.mock
+import os
+import io
+import itertools
+import gzip
 import botocore.exceptions
 from .. import observe, data
 

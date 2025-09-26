@@ -1,4 +1,5 @@
-import unittest, unittest.mock, os
+import unittest
+import unittest.mock
 from .. import website, constants, data
 import flask
 

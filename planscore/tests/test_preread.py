@@ -1,5 +1,7 @@
-import unittest, unittest.mock, os, urllib.parse
-from .. import preread, preread_followup, data, constants
+import unittest
+import unittest.mock
+import os
+from .. import preread, data, constants
 
 class TestPreread (unittest.TestCase):
 

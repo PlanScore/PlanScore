@@ -3,10 +3,18 @@
 Fans out asynchronous parallel calls to planscore.district function, then
 starts and observer process with planscore.score function.
 '''
-import os, io, json, urllib.parse, gzip, time, math, threading
-import csv, operator, itertools, zipfile, gzip, datetime
+import os
+import io
+import json
+import urllib.parse
+import gzip
+import csv
+import operator
+import itertools
+import zipfile
+import datetime
 import boto3
-from . import util, data, score, website, constants, observe
+from . import util, data, score, website, observe
 
 try:
     import osgeo.ogr
@@ -17,7 +25,7 @@ except ImportError:
 else:
     osgeo.ogr.UseExceptions()
 
-EPSG4326 = osgeo.osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)
+EPSG4326 = osgeo.osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)  # noqa: E702
 
 # https://github.com/OSGeo/gdal/pull/3311#issuecomment-748728574
 EPSG4326.SetAxisMappingStrategy(osgeo.osr.OAMS_TRADITIONAL_GIS_ORDER)
@@ -96,7 +104,7 @@ def commence_blockassign_upload_scoring(context, s3, athena, bucket, upload, fil
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
     observe.put_upload_index(storage, upload)
     upload2 = upload.clone()
-    district_keys = put_district_assignments(s3, bucket, upload2, file_path)
+    put_district_assignments(s3, bucket, upload2, file_path)
 
     response = accumulate_district_totals(athena, upload2, False)
     
@@ -249,7 +257,7 @@ def put_district_geometries(s3, bucket, upload, path):
     print('put_district_geometries:', (bucket, path))
     try:
         ds = osgeo.ogr.Open(path)
-    except:
+    except Exception:
         # Make our own exception with a tested message below
         ds = None
     keys, bboxes = [], []

@@ -1,5 +1,16 @@
-import urllib.parse, tempfile, shutil, os, contextlib, logging, zipfile, itertools, functools, enum, csv, re, time, json
-from . import constants
+import urllib.parse
+import tempfile
+import shutil
+import os
+import contextlib
+import zipfile
+import itertools
+import functools
+import enum
+import csv
+import re
+import time
+import json
 
 try:
     import osgeo.ogr
@@ -172,7 +183,7 @@ def ordered_districts(layer):
         try:
             int_values = {int(raw) for raw in raw_values}
             float_values = {float(raw) for raw in raw_values}
-        except:
+        except Exception:
             continue
         
         if (int_values != float_values):
@@ -191,7 +202,8 @@ def ordered_districts(layer):
         return None, polygon_features
     
     field_name, has_no_repeats = sorted(fields)[-1][1:]
-    district_number = lambda f: int(f.GetField(field_name))
+    def district_number(f):
+        return int(f.GetField(field_name))
     
     if has_multipolygons or has_no_repeats:
         # Don't try to merge when a multipolygon is present or no repeats exist

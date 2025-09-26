@@ -1,4 +1,8 @@
-import os, uuid, unittest, unittest.mock, json
+import os
+import uuid
+import unittest
+import unittest.mock
+import json
 from .. import data
 
 class TestData (unittest.TestCase):
@@ -38,11 +42,11 @@ class TestData (unittest.TestCase):
         self.assertEqual(model1.key_prefix, 'data/NC/001')
         self.assertEqual(model1.incumbency, False)
         
-        with self.assertRaises(KeyError) as e:
-            model2 = data.Model.from_json('{}')
+        with self.assertRaises(KeyError):
+            data.Model.from_json('{}')
         
-        with self.assertRaises(KeyError) as e:
-            model3 = data.Model.from_json('{"state": "-1", "house": "ushouse", "seats": 13, "key_prefix": "data/NC/001"}')
+        with self.assertRaises(KeyError):
+            data.Model.from_json('{"state": "-1", "house": "ushouse", "seats": 13, "key_prefix": "data/NC/001"}')
 
         model4 = data.Model.from_json('{"state": "NC", "house": "ushouse", "seats": 13, "key_prefix": "data/NC/001", "incumbency": true}')
         self.assertEqual(model4.state, data.State.NC)

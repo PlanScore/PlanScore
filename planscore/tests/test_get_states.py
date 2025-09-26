@@ -1,4 +1,5 @@
-import unittest, unittest.mock
+import unittest
+import unittest.mock
 import json
 from .. import get_states, data
 

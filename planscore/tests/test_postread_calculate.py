@@ -1,6 +1,10 @@
-import unittest, unittest.mock, io, os, contextlib, gzip
+import unittest
+import unittest.mock
+import io
+import os
+import contextlib
+import gzip
 from .. import postread_calculate, data, constants
-from osgeo import ogr
 
 class TestPostreadCalculate (unittest.TestCase):
 
@@ -192,7 +196,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key, model=data.MODELS[0])
-        info = postread_calculate.commence_upload_scoring(context, s3, athena, bucket, upload)
+        postread_calculate.commence_upload_scoring(context, s3, athena, bucket, upload)
         self.assertEqual(len(commence_geometry_upload_scoring.mock_calls), 1)
         self.assertIs(commence_geometry_upload_scoring.mock_calls[0][1][0], s3)
         self.assertIs(commence_geometry_upload_scoring.mock_calls[0][1][1], athena)
@@ -275,7 +279,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key, model=data.MODELS[0])
-        info = postread_calculate.commence_upload_scoring(context, s3, athena, bucket, upload)
+        postread_calculate.commence_upload_scoring(context, s3, athena, bucket, upload)
         nullplan_datasource = '/vsizip/{}/null-plan.shp'.format(os.path.abspath(nullplan_path))
         self.assertEqual(len(commence_geometry_upload_scoring.mock_calls), 1)
         self.assertIs(commence_geometry_upload_scoring.mock_calls[0][1][0], s3)

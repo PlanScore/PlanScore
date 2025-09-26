@@ -1,4 +1,7 @@
-import unittest, unittest.mock, itsdangerous, os, urllib.parse
+import unittest
+import unittest.mock
+import itsdangerous
+import os
 from .. import upload_fields, constants
 
 class TestUploadFields (unittest.TestCase):

@@ -75,23 +75,6 @@ def load_model(path_suffix, state, year, has_incumbents, is_congress):
         c_path, e_path = c_path_oc, e_path_oc
     elif os.path.exists(c_path_os) and os.path.exists(e_path_os):
         c_path, e_path = c_path_os, e_path_os
-    
-    elif False and has_incumbents and os.path.exists(c_path_i) and os.path.exists(e_path_i):
-        c_path, e_path = c_path_i, e_path_i
-    elif False and not has_incumbents and os.path.exists(c_path_o) and os.path.exists(e_path_o):
-        c_path, e_path = c_path_o, e_path_o
-
-        # Open seat matrix file is missing "incumb" rows
-        c_keys = (
-            'b_Intercept',
-            'b_dpres_mn',
-            f'r_stateabrev[{state},Intercept]',
-            f'r_stateabrev[{state},dpres_mn]',
-            f'r_congress[{str(is_congress).upper()},Intercept]',
-            f'r_congress[{str(is_congress).upper()},dpres_mn]',
-            f'r_congress:cycle[{str(is_congress).upper()}_{year},Intercept]',
-            f'r_congress:cycle[{str(is_congress).upper()}_{year},dpres_mn]',
-        )
     else:
         c_path, e_path = c_path___, e_path___
 

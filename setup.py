@@ -35,6 +35,9 @@ setup(
         'Werkzeug == 2.3.8',
         ],
     extras_require = {
+        'test': [
+            'ruff == 0.13.2',
+            ],
         'large': [
             'boto3 == 1.40.25',
             'networkx == 2.8.8',

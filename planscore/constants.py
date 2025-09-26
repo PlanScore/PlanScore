@@ -1,4 +1,4 @@
-import os, socket, urllib.parse, functools, boto3
+import os
 
 # Signing secret for securing redirects between front-end and back-end.
 SECRET = os.environ.get('PLANSCORE_SECRET', 'fake')

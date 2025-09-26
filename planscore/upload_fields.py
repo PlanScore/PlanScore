@@ -4,8 +4,13 @@ More details on browser-based S3 uploads using HTTP POST:
 
     http://docs.aws.amazon.com/AmazonS3/latest/API/sigv4-post-example.html
 '''
-import json, pprint, urllib.parse, datetime, random, os, uuid
-import boto3, itsdangerous
+import json
+import urllib.parse
+import datetime
+import random
+import uuid
+import boto3
+import itsdangerous
 from . import data, constants, website
 
 def build_api_base(requestContext):
@@ -30,7 +35,7 @@ def get_assumed_role(arn):
     try:
         sts = boto3.client('sts')
         resp = sts.assume_role(RoleArn=arn, RoleSessionName='S3POST')
-    except:
+    except Exception:
         creds = boto3.session.Session().get_credentials()
         return dict(
             aws_access_key_id=creds.access_key,
@@ -47,8 +52,7 @@ def get_assumed_role(arn):
 def get_upload_fields(s3, creds, api_base, redirect_relpath, secret):
     '''
     '''
-    rules = {rule.endpoint: str(rule) for rule in website.app.url_map.iter_rules()}
-    website_base = constants.WEBSITE_BASE
+    {rule.endpoint: str(rule) for rule in website.app.url_map.iter_rules()}
     acl = 'bucket-owner-full-control'
 
     unsigned_id, signed_id = generate_signed_id(secret)

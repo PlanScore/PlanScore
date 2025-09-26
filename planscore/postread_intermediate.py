@@ -1,8 +1,7 @@
-import os
 import boto3
 import json
 
-from . import data, util, constants, observe
+from . import data, observe
 
 def lambda_handler(event, context):
     '''
@@ -18,7 +17,7 @@ def lambda_handler(event, context):
 
     try:
         body = json.loads(input['callback_body'])
-    except:
+    except Exception:
         print(f"Could not read description and incumbents from {input['callback_body']}.")
         description = None
         incumbents = None
