@@ -1,4 +1,5 @@
-import math, itertools
+import math
+import itertools
 from . import smallestenclosingcircle
 from .. import constants
 

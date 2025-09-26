@@ -19,7 +19,9 @@
 # If not, see <http://www.gnu.org/licenses/>.
 # 
 
-import random, unittest, os
+import random
+import unittest
+import os
 from ..compactness import smallestenclosingcircle
 
 # Only run lots of time-consuming trials in CI

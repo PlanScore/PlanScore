@@ -1,7 +1,14 @@
-import unittest, unittest.mock, io, os, contextlib, json, gzip, itertools, statistics, random
+import unittest
+import unittest.mock
+import io
+import os
+import gzip
+import itertools
+import statistics
+import random
 from .. import score, data
 import botocore.exceptions
-from osgeo import ogr, gdal
+from osgeo import gdal
 import numpy
 
 should_gzip = itertools.cycle([True, False])
@@ -998,7 +1005,7 @@ class TestScore (unittest.TestCase):
              [2.7, 5.3],
              [2.6, 5.4]],
         ])
-        output = score.calculate_everything(input)
+        score.calculate_everything(input)
         self.assertEqual(model_votes.mock_calls[0][1][:2], ('2025A', data.State.XX))
         self.assertEqual(model_votes.mock_calls[0][1][3][0], (6.0, 2.0, 'R'))
         self.assertEqual(model_votes.mock_calls[0][1][3][1], (5.0, 3.0, 'D'))

@@ -19,7 +19,8 @@
 # If not, see <http://www.gnu.org/licenses/>.
 # 
 
-import math, random
+import math
+import random
 
 
 # Data conventions: A point is a pair of floats (x, y). A circle is a triple of floats (center x, center y, radius).

@@ -3,12 +3,16 @@
 When all districts are added up and present on S3, performs complete scoring
 of district plan and uploads summary JSON file.
 '''
-import io, os, gzip, csv, posixpath, json, statistics, copy, time, itertools, enum
+import os
+import gzip
+import csv
+import statistics
+import copy
+import itertools
+import enum
 import math
 import argparse
 import urllib.request
-import pprint
-import boto3, botocore.exceptions
 from . import data, constants, matrix
 
 COLUMN_EG = 'eg_adj_avg'
@@ -374,7 +378,7 @@ def calculate_open_biases(upload):
 
         Look for "DEM000"-style vote properties from 2018 and 2019 PlanScore models.
     '''
-    if f'DEM000' not in upload.districts[0]['totals']:
+    if 'DEM000' not in upload.districts[0]['totals']:
         # Skip everything if we don't see a "DEM000"-style vote property
         return upload.clone()
     

@@ -1,6 +1,16 @@
-import os, time, json, posixpath, io, gzip, collections, copy, csv, uuid, datetime, itertools
-import boto3, botocore.exceptions
-from . import data, constants, score, compactness, polygonize
+import os
+import time
+import json
+import posixpath
+import io
+import gzip
+import collections
+import copy
+import csv
+import uuid
+import datetime
+import botocore.exceptions
+from . import data, constants, compactness, polygonize
 
 try:
     import osgeo.ogr

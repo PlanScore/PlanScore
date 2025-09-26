@@ -1,8 +1,7 @@
-import os
 import boto3
 import json
 
-from . import data, util, constants, observe
+from . import data, observe
 
 def lambda_handler(event, context):
     '''

@@ -1,6 +1,10 @@
-import unittest, unittest.mock, io, os, contextlib, json
+import unittest
+import unittest.mock
+import io
+import os
+import contextlib
+import json
 from .. import preread_followup, data, constants
-from osgeo import ogr
 
 class TestPrereadFollowup (unittest.TestCase):
 
@@ -384,7 +388,7 @@ class TestPrereadFollowup (unittest.TestCase):
         
         count_district_geometries.return_value = 2
 
-        s3, lam, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
+        s3, _lam, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key)
@@ -415,7 +419,7 @@ class TestPrereadFollowup (unittest.TestCase):
         
         count_district_geometries.return_value = 2
 
-        s3, lam, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
+        s3, _lam, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
 
         upload = data.Upload(id, upload_key)

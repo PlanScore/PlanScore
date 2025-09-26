@@ -2,20 +2,12 @@
 '''
 import os
 import io
-import csv
-import json
 import gzip
-import time
 import math
 import zipfile
-import tempfile
-import operator
 import collections
 import functools
-import itertools
 import urllib.parse
-import multiprocessing.dummy
-import threading
 
 import boto3
 
@@ -28,7 +20,7 @@ except ImportError:
 else:
     osgeo.ogr.UseExceptions()
 
-from . import util, data, score, website, constants, observe
+from . import util, data, website, observe
 
 Assignment = collections.namedtuple('Assignment', ('block_id', 'district_id'))
 

@@ -2,9 +2,7 @@
 import time
 import boto3
 import flask
-import time
 import datetime
-import itertools
 from planscore import util, postread_calculate
 
 

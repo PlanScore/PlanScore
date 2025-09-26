@@ -1,5 +1,5 @@
-import unittest, unittest.mock
-import itertools
+import unittest
+import unittest.mock
 from .. import matrix, data
 import numpy
 

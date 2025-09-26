@@ -1,5 +1,10 @@
-import unittest, unittest.mock, io, os, logging, tempfile, shutil
-from .. import util, constants
+import unittest
+import unittest.mock
+import io
+import os
+import tempfile
+import shutil
+from .. import util
 from osgeo import ogr
 
 class TestUtil (unittest.TestCase):
@@ -49,10 +54,10 @@ class TestUtil (unittest.TestCase):
         type7 = util.guess_upload_type(path7)
         self.assertEqual(type7, util.UploadType.OGR_DATASOURCE)
     
-        with self.assertRaises(ValueError) as err:
+        with self.assertRaises(ValueError):
             util.guess_upload_type('bad.jpg')
     
-        with self.assertRaises(ValueError) as err:
+        with self.assertRaises(ValueError):
             util.guess_upload_type('bad.pdf')
     
     @unittest.mock.patch('sys.stdout')

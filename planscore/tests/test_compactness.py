@@ -1,4 +1,6 @@
-import unittest, unittest.mock, math
+import unittest
+import unittest.mock
+import math
 from osgeo import ogr
 from .. import compactness
 

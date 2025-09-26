@@ -1,4 +1,7 @@
-import unittest, unittest.mock, os, urllib.parse, json
+import unittest
+import unittest.mock
+import os
+import json
 from .. import postread_callback, data, constants
 
 class TestPostreadCallback (unittest.TestCase):
@@ -14,7 +17,7 @@ class TestPostreadCallback (unittest.TestCase):
     def test_dummy_upload(self):
         ''' dummy_upload() makes the right kind of data.Upload instance.
         '''
-        s3, bucket = unittest.mock.Mock(), unittest.mock.Mock()
+        _s3, _bucket = unittest.mock.Mock(), unittest.mock.Mock()
         upload = postread_callback.dummy_upload('example-key', 'example-id')
         
         self.assertEqual(upload.key, 'example-key')

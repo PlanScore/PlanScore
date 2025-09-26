@@ -1,4 +1,6 @@
-import unittest, unittest.mock, os
+import unittest
+import unittest.mock
+import os
 import networkx
 from .. import polygonize
 
