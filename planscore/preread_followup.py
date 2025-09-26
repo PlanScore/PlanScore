@@ -24,7 +24,7 @@ from . import util, data, website, observe
 
 Assignment = collections.namedtuple('Assignment', ('block_id', 'district_id'))
 
-EPSG4326 = osgeo.osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)
+EPSG4326 = osgeo.osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)  # noqa: E702
 
 # https://github.com/OSGeo/gdal/pull/3311#issuecomment-748728574
 EPSG4326.SetAxisMappingStrategy(osgeo.osr.OAMS_TRADITIONAL_GIS_ORDER)
@@ -121,7 +121,7 @@ def count_district_geometries(path):
     print('count_district_geometries:', path)
     try:
         ds = osgeo.ogr.Open(path)
-    except:
+    except Exception:
         # Make our own exception with a tested message below
         ds = None
 
@@ -142,7 +142,7 @@ def guess_geometry_model(path):
     '''
     try:
         ds = osgeo.ogr.Open(path)
-    except:
+    except Exception:
         # Make our own exception with a tested message below
         ds = None
     

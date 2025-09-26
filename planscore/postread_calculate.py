@@ -25,7 +25,7 @@ except ImportError:
 else:
     osgeo.ogr.UseExceptions()
 
-EPSG4326 = osgeo.osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)
+EPSG4326 = osgeo.osr.SpatialReference(); EPSG4326.ImportFromEPSG(4326)  # noqa: E702
 
 # https://github.com/OSGeo/gdal/pull/3311#issuecomment-748728574
 EPSG4326.SetAxisMappingStrategy(osgeo.osr.OAMS_TRADITIONAL_GIS_ORDER)
@@ -257,7 +257,7 @@ def put_district_geometries(s3, bucket, upload, path):
     print('put_district_geometries:', (bucket, path))
     try:
         ds = osgeo.ogr.Open(path)
-    except:
+    except Exception:
         # Make our own exception with a tested message below
         ds = None
     keys, bboxes = [], []

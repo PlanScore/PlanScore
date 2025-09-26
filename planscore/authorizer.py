@@ -23,7 +23,7 @@ def lambda_handler(event, context):
             else:
                 # Incorrectly formatted or unmatched token
                 allowed = False
-        except:
+        except Exception:
             # Something went wrong, deny by default
             allowed = False
     

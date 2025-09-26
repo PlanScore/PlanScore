@@ -29,6 +29,8 @@ def mock_s3_get_object(Bucket, Key):
         else:
             return {'Body': io.BytesIO(file.read())}
 
+# ruff: noqa E741 (ambiguous variable names)
+
 class TestScore (unittest.TestCase):
 
     def test_swing_vote(self):

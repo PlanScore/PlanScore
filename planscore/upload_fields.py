@@ -35,7 +35,7 @@ def get_assumed_role(arn):
     try:
         sts = boto3.client('sts')
         resp = sts.assume_role(RoleArn=arn, RoleSessionName='S3POST')
-    except:
+    except Exception:
         creds = boto3.session.Session().get_credentials()
         return dict(
             aws_access_key_id=creds.access_key,

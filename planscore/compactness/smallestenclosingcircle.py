@@ -97,9 +97,12 @@ def make_circumcircle(p0, p1, p2):
 	cx, cy = p2
 	ox = (min(ax, bx, cx) + max(ax, bx, cx)) / 2.0
 	oy = (min(ay, by, cy) + max(ay, by, cy)) / 2.0
-	ax -= ox; ay -= oy
-	bx -= ox; by -= oy
-	cx -= ox; cy -= oy
+	ax -= ox
+	ay -= oy
+	bx -= ox
+	by -= oy
+	cx -= ox
+	cy -= oy
 	d = (ax * (by - cy) + bx * (cy - ay) + cx * (ay - by)) * 2.0
 	if d == 0.0:
 		return None

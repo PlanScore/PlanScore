@@ -183,7 +183,7 @@ def ordered_districts(layer):
         try:
             int_values = {int(raw) for raw in raw_values}
             float_values = {float(raw) for raw in raw_values}
-        except:
+        except Exception:
             continue
         
         if (int_values != float_values):
