@@ -15,7 +15,7 @@ jobs:
       - run: apt install -y python3 python3-pip python3-gdal python3-numpy nodejs
       - checkout
       - run: pip3 install '.[test,large]'
-      - run: ruff check *.py planscore/*.py planscore/*/*.py
+      - run: ruff check *.py planscore cdk-scoring cdk-content
       - run: python3 lambda.py
       - run: python3 setup.py test
       - run: node tests.js

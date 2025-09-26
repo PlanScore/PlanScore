@@ -1,4 +1,3 @@
-import os
 import json
 
 # This is re-written in cdk-deploy
