@@ -32,7 +32,7 @@ setup(
         'Jinja2 == 3.1.6',
         'Markdown == 3.9',
         'ModestMaps == 1.4.7',
-        'Werkzeug == 2.3.8',
+        'Werkzeug == 3.0.6',
         ],
     extras_require = {
         'test': [
