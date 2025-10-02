@@ -435,7 +435,7 @@ MODELS = [
     Model(State.AL, House.statesenate,  35,  True, VERSIONS, 'data/AL/008-acs-2020'), # c82db89
     Model(State.AL, House.statehouse,  105,  True, VERSIONS, 'data/AL/008-acs-2020'), # c82db89
     Model(State.AL, House.localplan,  None,  True, VERSIONS, 'data/AL/008-acs-2020'), # c82db89
-    Model(State.AR, House.ushouse,       4,  True, VERSIONS, 'data/AR/008-acs-2020'), # c82db89
+    Model(State.AR, House.ushouse,       4,  True, VERSION24, 'data/AR/009-pvote-2024'), # ee75d19
     Model(State.AR, House.statesenate,  35,  True, VERSIONS, 'data/AR/008-acs-2020'), # c82db89
     Model(State.AR, House.statehouse,  100,  True, VERSIONS, 'data/AR/008-acs-2020'), # c82db89
     Model(State.AR, House.localplan,  None,  True, VERSIONS, 'data/AR/008-acs-2020'), # c82db89
@@ -451,7 +451,7 @@ MODELS = [
     Model(State.CO, House.statesenate,  35,  True, VERSIONS, 'data/CO/013-acs-2020'), # c82db89
     Model(State.CO, House.statehouse,   65,  True, VERSIONS, 'data/CO/013-acs-2020'), # c82db89
     Model(State.CO, House.localplan,  None,  True, VERSIONS, 'data/CO/013-acs-2020'), # c82db89
-    Model(State.CT, House.ushouse,       5,  True, VERSIONS, 'data/CT/006-acs-2020'), # c82db89
+    Model(State.CT, House.ushouse,       5,  True, VERSION24, 'data/CT/007-pvote-2024'), # ee75d19
     Model(State.CT, House.statesenate,  36,  True, VERSIONS, 'data/CT/006-acs-2020'), # c82db89
     Model(State.CT, House.statehouse,  151,  True, VERSIONS, 'data/CT/006-acs-2020'), # c82db89
     Model(State.CT, House.localplan,  None,  True, VERSIONS, 'data/CT/006-acs-2020'), # c82db89
@@ -487,7 +487,7 @@ MODELS = [
     Model(State.IN, House.statesenate,  50,  True, VERSIONS, 'data/IN/009-acs-2020'), # c82db89
     Model(State.IN, House.statehouse,  100,  True, VERSIONS, 'data/IN/009-acs-2020'), # c82db89
     Model(State.IN, House.localplan,  None,  True, VERSIONS, 'data/IN/009-acs-2020'), # c82db89
-    Model(State.KS, House.ushouse,       5,  True, VERSIONS, 'data/KS/009-acs-2020'), # c82db89
+    Model(State.KS, House.ushouse,       5,  True, VERSION24, 'data/KS/010-pvote-2024'), # ee75d19
     Model(State.KS, House.statesenate,  40,  True, VERSIONS, 'data/KS/009-acs-2020'), # c82db89
     Model(State.KS, House.statehouse,  125,  True, VERSIONS, 'data/KS/009-acs-2020'), # c82db89
     Model(State.KS, House.localplan,  None,  True, VERSIONS, 'data/KS/009-acs-2020'), # c82db89
@@ -578,7 +578,7 @@ MODELS = [
     Model(State.PA, House.statesenate,  50,  True, VERSIONS, 'data/PA/019-acs-2020'), # c82db89
     Model(State.PA, House.statehouse,  203,  True, VERSIONS, 'data/PA/019-acs-2020'), # c82db89
     Model(State.PA, House.localplan,  None,  True, VERSIONS, 'data/PA/019-acs-2020'), # c82db89
-    Model(State.RI, House.ushouse,       2,  True, VERSIONS, 'data/RI/015-acs-2020'), # c82db89
+    Model(State.RI, House.ushouse,       2,  True, VERSION24, 'data/RI/016-pvote-2024'), # ee75d19
     Model(State.RI, House.statesenate,  38,  True, VERSIONS, 'data/RI/015-acs-2020'), # c82db89
     Model(State.RI, House.statehouse,   75,  True, VERSIONS, 'data/RI/015-acs-2020'), # c82db89
     Model(State.RI, House.localplan,  None,  True, VERSIONS, 'data/RI/015-acs-2020'), # c82db89
