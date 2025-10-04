@@ -252,6 +252,18 @@ class Upload:
         ds = datetime.date.fromtimestamp(self.start_time).strftime('%Y-%m-%d')
         return UPLOAD_LOGENTRY_KEY.format(ds=ds, guid=guid)
     
+    def obscured_token(self):
+        '''An obscured version of the token safe for logs, etc.
+        '''
+        if not self.auth_token:
+            return None
+
+        if self.auth_token.endswith('********'):
+            # Already obscured, bravo
+            return self.auth_token
+
+        return self.auth_token[:len(self.auth_token)//2] + '********'
+
     def to_plaintext(self):
         ''' Export district totals to a tab-delimited plaintext file
         '''
@@ -306,6 +318,7 @@ class Upload:
             geometry_key = self.geometry_key,
             commit_sha = self.commit_sha,
             library_metadata = self.library_metadata,
+            auth_token = self.obscured_token(),
             model_version = self.model_version,
             execution_id = self.execution_id,
             execution_token = self.execution_token,
@@ -317,11 +330,6 @@ class Upload:
     def to_logentry(self):
         ''' Export current plan information to a tab-delimited plaintext file
         '''
-        if self.auth_token:
-            obscured_token = self.auth_token[:len(self.auth_token)//2] + '********'
-        else:
-            obscured_token = None
-        
         # Important: only append to this list to maintain 
         # backward-compatibility with older entries for PrestoDB
         logentry = [
@@ -353,10 +361,13 @@ class Upload:
             {True: 't', False: 'f', None: ''}.get(self.status),
             
             # Auth token
-            obscured_token,
+            self.obscured_token(),
             
             # User-selected model version
             self.model_version,
+
+            # State machine execution
+            self.execution_id,
         ]
         
         try:
@@ -385,7 +396,7 @@ class Upload:
             description = description or self.description,
             geometry_key = geometry_key or self.geometry_key,
             library_metadata = library_metadata or self.library_metadata,
-            auth_token = auth_token,
+            auth_token = auth_token or self.obscured_token(),
             model_version = model_version or self.model_version,
             execution_id = execution_id or self.execution_id,
             execution_token = execution_token or self.execution_token,
