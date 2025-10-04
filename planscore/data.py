@@ -357,6 +357,9 @@ class Upload:
             
             # User-selected model version
             self.model_version,
+
+            # State machine execution
+            self.execution_id,
         ]
         
         try:
