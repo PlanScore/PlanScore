@@ -69,10 +69,12 @@ def get_upload_fields(s3, creds, api_base, redirect_relpath, secret):
         Conditions=[
             {"acl": acl},
             {"success_action_redirect": redirect_url},
+            {"x-amz-storage-class": 'INTELLIGENT_TIERING'},
             ["starts-with", '$key', data.UPLOAD_PREFIX.format(id=unsigned_id)],
             ])
     
     presigned['fields'].update(acl=acl, success_action_redirect=redirect_url)
+    presigned['fields']['x-amz-storage-class'] = 'INTELLIGENT_TIERING'
     
     if creds.token:
         presigned['fields']['x-amz-security-token'] = creds.token
