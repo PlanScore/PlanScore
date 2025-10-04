@@ -52,19 +52,22 @@ class TestObserveTiles (unittest.TestCase):
             Key=upload.index_key.return_value,
             Body=upload.to_json.return_value.encode.return_value,
             CacheControl='public, no-cache, no-store',
-            ACL='public-read', ContentType='text/json'))
+            ACL='public-read', ContentType='text/json',
+            StorageClass='INTELLIGENT_TIERING'))
         
         self.assertEqual(put_call2[2], dict(Bucket=storage.bucket,
             Key=upload.plaintext_key.return_value,
             Body=upload.to_plaintext.return_value.encode.return_value,
             CacheControl='public, no-cache, no-store',
-            ACL='public-read', ContentType='text/plain'))
+            ACL='public-read', ContentType='text/plain',
+            StorageClass='INTELLIGENT_TIERING'))
         
         self.assertEqual(put_call3[2], dict(Bucket=storage.bucket,
             Key=upload.logentry_key.return_value,
             Body=upload.to_logentry.return_value.encode.return_value,
             CacheControl='public, no-cache, no-store',
-            ACL='public-read', ContentType='text/plain'))
+            ACL='public-read', ContentType='text/plain',
+            StorageClass='INTELLIGENT_TIERING'))
 
     def test_put_part_timings(self):
         ''' Upload timing file is posted to S3
@@ -82,7 +85,8 @@ class TestObserveTiles (unittest.TestCase):
         self.assertEqual(put_call[2], dict(Bucket=storage.bucket,
             Key=data.UPLOAD_TIMING_KEY.format(id=upload.id, ds='2021-05-15'),
             Body='fake-id\tmock\t3\t1.1\t2.2\t\t\t\r\nfake-id\tmock\t6\t4.4\t5.5\t\t\t\r\n',
-            ACL='public-read', ContentType='text/plain'))
+            ACL='public-read', ContentType='text/plain',
+            StorageClass='INTELLIGENT_TIERING'))
 
     def test_get_district_index(self):
         '''

@@ -279,7 +279,8 @@ def put_district_geometries(s3, bucket, upload, path):
         key = data.UPLOAD_GEOMETRIES_KEY.format(id=upload.id, index=index)
         
         s3.put_object(Bucket=bucket, Key=key, ACL='bucket-owner-full-control',
-            Body=geometry.ExportToWkt(), ContentType='text/plain')
+            Body=geometry.ExportToWkt(), ContentType='text/plain',
+            StorageClass='INTELLIGENT_TIERING')
         
         keys.append(key)
         bboxes.append((key, geometry.GetEnvelope()))
@@ -305,7 +306,8 @@ def put_district_geometries(s3, bucket, upload, path):
     key = data.UPLOAD_GEOMETRY_BBOXES_KEY.format(id=upload.id)
 
     s3.put_object(Bucket=bucket, Key=key, ACL='bucket-owner-full-control',
-        Body=json.dumps(bboxes_geojson), ContentType='application/json')
+        Body=json.dumps(bboxes_geojson), ContentType='application/json',
+        StorageClass='INTELLIGENT_TIERING')
     
     keys.append(key)
     
@@ -316,6 +318,7 @@ def put_district_geometries(s3, bucket, upload, path):
         Body=gzip.compress(partition_buffer.getvalue().encode('utf8')),
         ContentType='text/plain',
         ContentEncoding='gzip',
+        StorageClass='INTELLIGENT_TIERING',
     )
     
     return keys
@@ -369,7 +372,8 @@ def put_district_assignments(s3, bucket, upload, path):
         key = data.UPLOAD_ASSIGNMENTS_KEY.format(id=upload.id, index=index)
     
         s3.put_object(Bucket=bucket, Key=key, ACL='bucket-owner-full-control',
-            Body=out.getvalue(), ContentType='text/plain')
+            Body=out.getvalue(), ContentType='text/plain',
+            StorageClass='INTELLIGENT_TIERING')
     
         keys.append(key)
 
@@ -380,6 +384,7 @@ def put_district_assignments(s3, bucket, upload, path):
         Body=gzip.compress(partition_buffer.getvalue().encode('utf8')),
         ContentType='text/plain',
         ContentEncoding='gzip',
+        StorageClass='INTELLIGENT_TIERING',
     )
 
     return keys
