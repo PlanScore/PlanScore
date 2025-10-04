@@ -121,11 +121,13 @@ def lambda_handler_POST(event, context):
         }, indent=2),
     }
 
-    upload = preread.create_upload(s3, query['bucket'], query['key'], id)
-    observe.put_upload_index(storage, upload)
+    auth_token = event['requestContext'].get('authorizer', {}).get('planscoreApiToken')
+    upload1 = preread.create_upload(s3, query['bucket'], query['key'], id)
+    upload2 = upload1.clone(auth_token=auth_token)
+    observe.put_upload_index(storage, upload2)
 
     event = dict(bucket=query['bucket'], callback_body=event['body'])
-    event.update(upload.to_dict())
+    event.update(upload2.to_dict())
 
     sfn.start_execution(
         stateMachineArn=os.environ.get('MULTISTEP_API_SCORE_MACHINE'),

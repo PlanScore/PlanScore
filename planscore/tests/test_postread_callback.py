@@ -165,6 +165,9 @@ class TestPostreadCallback (unittest.TestCase):
         self.assertIn('"description": "A fine new plan"', payload['callback_body'])
         self.assertIn('"incumbents": ["R", "D"]', payload['callback_body'])
         self.assertIn('"library_metadata": {"Hello": "World"}', payload['callback_body'])
+
+        logentry_body = boto3_client.return_value.put_object.mock_calls[-1][2]['Body']
+        self.assertIn(b'\ty********\t', logentry_body, 'Should see *obscured* "yup" token')
     
     @unittest.mock.patch('planscore.postread_callback.dummy_upload')
     @unittest.mock.patch('boto3.client')
