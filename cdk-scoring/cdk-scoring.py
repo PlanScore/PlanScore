@@ -612,6 +612,8 @@ class PlanScoreScoring(cdk.Stack):
         preread_followup = make_large_function(self, "PrereadFollowupD", 1024, "planscore.preread_followup.lambda_handler")
         grant_data_bucket_access(data_bucket, preread_followup)
 
+        update_metrics = make_large_function(self, "UpdateMetricsD", 1024, "planscore.update_metrics.lambda_handler")
+
         # API-accessible functions
 
         function_kwargs.update(timeout=cdk.Duration.seconds(30))
@@ -657,6 +659,7 @@ class PlanScoreScoring(cdk.Stack):
             postread_callback_GET,
             postread_callback_POST,
             postread_intermediate,
+            update_metrics,
         )
 
     def make_state_machines(self, formation_info, *functions):
@@ -674,6 +677,7 @@ class PlanScoreScoring(cdk.Stack):
             postread_callback_GET,
             postread_callback_POST,
             postread_intermediate,
+            update_metrics,
         ) = functions
 
         def make_task(stack, name, function, wait_for_token):
@@ -771,6 +775,7 @@ class PlanScoreScoring(cdk.Stack):
             postread_callback_GET,
             postread_callback_POST,
             postread_intermediate,
+            update_metrics,
         ) = functions
 
         integration_kwargs = dict(
