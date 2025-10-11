@@ -128,26 +128,9 @@ class PlanScoreScoring(cdk.Stack):
 
         self.make_state_machines(formation_info, **functions)
         self.populate_api(apigateway_role, api, **functions)
+        self.make_metrics_rule(formation_info, **functions)
         self.make_forward(stack_id, website_base, formation_info)
 
-        aws_events.Rule(
-            self,
-            'UpdateMetricsRule',
-            enabled=False,
-            schedule=aws_events.Schedule.rate(cdk.Duration.days(1)),
-            targets=[
-                aws_events_targets.LambdaFunction(
-                    handler=functions['update_metrics'],
-                    event=aws_events.RuleTargetInput.from_object(
-                        {
-                            "Logs-Table": aws_ssm.StringParameter.value_for_string_parameter(self, f'{formation_info.prefix}-logs-table'),
-                            "Spreadsheet-ID": aws_ssm.StringParameter.value_for_string_parameter(self, f'{formation_info.prefix}-spreadsheet-id'),
-                            "Google-Key": cdk.Fn.base64(aws_ssm.StringParameter.value_for_string_parameter(self, 'update-metrics-gdocs-service-account-creds')),
-                        }
-                    ),
-                )
-            ],
-        )
     
     def make_forward(self, stack_id, website_base, formation_info):
     
@@ -941,6 +924,26 @@ class PlanScoreScoring(cdk.Stack):
             "POST",
             uploaded_integration_POST,
             authorizer=token_authorizer,
+        )
+
+    def make_metrics_rule(self, formation_info, update_metrics, **_unused):
+        return aws_events.Rule(
+            self,
+            'UpdateMetricsRule',
+            enabled=False,
+            schedule=aws_events.Schedule.rate(cdk.Duration.days(1)),
+            targets=[
+                aws_events_targets.LambdaFunction(
+                    handler=update_metrics,
+                    event=aws_events.RuleTargetInput.from_object(
+                        {
+                            "Logs-Table": aws_ssm.StringParameter.value_for_string_parameter(self, f'{formation_info.prefix}-logs-table'),
+                            "Spreadsheet-ID": aws_ssm.StringParameter.value_for_string_parameter(self, f'{formation_info.prefix}-spreadsheet-id'),
+                            "Google-Key": cdk.Fn.base64(aws_ssm.StringParameter.value_for_string_parameter(self, 'update-metrics-gdocs-service-account-creds')),
+                        }
+                    ),
+                )
+            ],
         )
 
 if __name__ == '__main__':
