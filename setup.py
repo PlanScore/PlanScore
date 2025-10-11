@@ -63,6 +63,7 @@ setup(
             'aws-cdk.aws-certificatemanager == 1.144.0',
             'aws-cdk.aws-apigateway == 1.144.0',
             'aws-cdk-aws-s3-notifications == 1.144.0',
+            'aws-cdk.aws-events-targets == 1.144.0',
             'boto3 == 1.40.25',
             'Frozen-Flask == 1.0.2',
             ],

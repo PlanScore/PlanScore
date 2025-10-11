@@ -20,6 +20,9 @@ from aws_cdk import (
     aws_cloudfront_origins,
     aws_stepfunctions,
     aws_stepfunctions_tasks,
+    aws_events,
+    aws_events_targets,
+    aws_ssm,
 )
 
 FormationInfo = collections.namedtuple(
@@ -123,9 +126,11 @@ class PlanScoreScoring(cdk.Stack):
             website_base,
         )
 
-        self.make_state_machines(formation_info, *functions)
-        self.populate_api(apigateway_role, api, *functions)
+        self.make_state_machines(formation_info, **functions)
+        self.populate_api(apigateway_role, api, **functions)
+        self.make_metrics_rule(formation_info, **functions)
         self.make_forward(stack_id, website_base, formation_info)
+
     
     def make_forward(self, stack_id, website_base, formation_info):
     
@@ -488,7 +493,7 @@ class PlanScoreScoring(cdk.Stack):
 
         apigateway_role = aws_iam.Role(
             self,
-            f'API-Gateway-Execution',
+            'API-Gateway-Execution',
             assumed_by=aws_iam.ServicePrincipal('apigateway.amazonaws.com'),
         )
 
@@ -549,6 +554,7 @@ class PlanScoreScoring(cdk.Stack):
                         'glue:GetPartition',
                         'glue:GetDatabases',
                         'glue:GetDatabase',
+                        'glue:BatchCreatePartition',
                     ],
                     resources=['*'],
                 ),
@@ -612,6 +618,9 @@ class PlanScoreScoring(cdk.Stack):
         preread_followup = make_large_function(self, "PrereadFollowupD", 1024, "planscore.preread_followup.lambda_handler")
         grant_data_bucket_access(data_bucket, preread_followup)
 
+        update_metrics = make_large_function(self, "UpdateMetricsD", 1024, "planscore.update_metrics.lambda_handler")
+        grant_data_bucket_access(data_bucket, update_metrics)
+
         # API-accessible functions
 
         function_kwargs.update(timeout=cdk.Duration.seconds(30))
@@ -644,38 +653,34 @@ class PlanScoreScoring(cdk.Stack):
         grant_data_bucket_access(data_bucket, postread_callback_POST)
         postread_callback_POST.add_permission('Permission', principal=apigateway_role)
 
-        return (
-            authorizer,
-            postread_calculate,
-            preread_followup,
-            polygonize,
-            api_upload,
-            get_states,
-            get_model_versions,
-            upload_fields,
-            preread,
-            postread_callback_GET,
-            postread_callback_POST,
-            postread_intermediate,
+        return dict(
+            authorizer=authorizer,
+            postread_calculate=postread_calculate,
+            preread_followup=preread_followup,
+            polygonize=polygonize,
+            api_upload=api_upload,
+            get_states=get_states,
+            get_model_versions=get_model_versions,
+            upload_fields=upload_fields,
+            preread=preread,
+            postread_callback_GET=postread_callback_GET,
+            postread_callback_POST=postread_callback_POST,
+            postread_intermediate=postread_intermediate,
+            update_metrics=update_metrics,
         )
 
-    def make_state_machines(self, formation_info, *functions):
-
-        (
-            authorizer,
-            postread_calculate,
-            preread_followup,
-            polygonize,
-            api_upload,
-            get_states,
-            get_model_versions,
-            upload_fields,
-            preread,
-            postread_callback_GET,
-            postread_callback_POST,
-            postread_intermediate,
-        ) = functions
-
+    def make_state_machines(
+        self,
+        formation_info,
+        postread_calculate,
+        preread_followup,
+        api_upload,
+        preread,
+        postread_callback_GET,
+        postread_callback_POST,
+        postread_intermediate,
+        **_unused,
+    ):
         def make_task(stack, name, function, wait_for_token):
             # https://docs.aws.amazon.com/step-functions/latest/dg/input-output-contextobject.html
             task_payload = {
@@ -756,22 +761,20 @@ class PlanScoreScoring(cdk.Stack):
         
         grant_statemachine_control(singlestepapi_statemachine, "SINGLESTEP_API_SCORE_MACHINE", api_upload)
 
-    def populate_api(self, apigateway_role, api, *functions):
-
-        (
-            authorizer,
-            postread_calculate,
-            preread_followup,
-            polygonize,
-            api_upload,
-            get_states,
-            get_model_versions,
-            upload_fields,
-            preread,
-            postread_callback_GET,
-            postread_callback_POST,
-            postread_intermediate,
-        ) = functions
+    def populate_api(
+        self,
+        apigateway_role,
+        api,
+        authorizer,
+        api_upload,
+        get_states,
+        get_model_versions,
+        upload_fields,
+        preread,
+        postread_callback_GET,
+        postread_callback_POST,
+        **_unused,
+    ):
 
         integration_kwargs = dict(
             request_templates={
@@ -921,6 +924,28 @@ class PlanScoreScoring(cdk.Stack):
             "POST",
             uploaded_integration_POST,
             authorizer=token_authorizer,
+        )
+
+    def make_metrics_rule(self, formation_info, update_metrics, **_unused):
+        ssm_str = aws_ssm.StringParameter.value_for_string_parameter
+
+        return aws_events.Rule(
+            self,
+            'UpdateMetricsRule',
+            enabled=bool(formation_info.prefix != 'cf-canary'),
+            schedule=aws_events.Schedule.rate(cdk.Duration.days(1)),
+            targets=[
+                aws_events_targets.LambdaFunction(
+                    handler=update_metrics,
+                    event=aws_events.RuleTargetInput.from_object(
+                        {
+                            "Logs-Table": ssm_str(self, f'{formation_info.prefix}-logs-table'),
+                            "Spreadsheet-ID": ssm_str(self, f'{formation_info.prefix}-spreadsheet-id'),
+                            "Google-Key": cdk.Fn.base64(ssm_str(self, 'update-metrics-gdocs-service-account-creds')),
+                        }
+                    ),
+                )
+            ],
         )
 
 if __name__ == '__main__':

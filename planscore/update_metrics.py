@@ -1,8 +1,14 @@
+import base64
 import time
 import csv
 import sys
 import json
 import datetime
+import os
+import itertools
+import io
+
+from . import constants
 
 import boto3
 import oauth2client.service_account
@@ -42,7 +48,19 @@ def exec_and_wait(ath, query_string):
     
     return state, ath.get_query_results(QueryExecutionId=query_id)
 
-def update_metrics(cred_data, spreadsheet_id):
+def read_rows(s3, key):
+    resp = s3.get_object(Bucket=constants.S3_BUCKET, Key=key)
+    rows = csv.reader(io.TextIOWrapper(resp["Body"]), dialect="excel-tab")
+    return rows
+
+def delete_object(s3, key):
+    resp = s3.delete_object(Bucket=constants.S3_BUCKET, Key=key)
+    if resp["ResponseMetadata"]["HTTPStatusCode"] not in range(200, 299):
+        print(resp, file=sys.stderr)
+        raise Exception(resp["ResponseMetadata"]["HTTPStatusCode"])
+
+def update_metrics(cred_data, spreadsheet_id, logs_table):
+    s3 = boto3.client('s3')
     ath = boto3.client('athena')
     
     service = make_service(cred_data)
@@ -53,8 +71,71 @@ def update_metrics(cred_data, spreadsheet_id):
     print(resp1)
     print(sheet_id)
 
-    exec_and_wait(ath, '''
-        CREATE EXTERNAL TABLE IF NOT EXISTS `prod_scoring_logs`
+    logs_dir = 'logs/scoring'
+    marker = f'{logs_dir}/ds={datetime.date.today() - datetime.timedelta(days=3)}'
+    end_marker = f'{logs_dir}/ds={datetime.date.today() - datetime.timedelta(days=0)}'
+
+    print("==>", "Marker", marker, file=sys.stderr)
+    resp1 = s3.list_objects(
+        Bucket=constants.S3_BUCKET,
+        Prefix=f"{logs_dir}/",
+        Delimiter="/",
+        Marker=marker,
+    )
+    inprefixes = [os.path.dirname(obj["Prefix"]) for obj in resp1["CommonPrefixes"]]
+
+    for prefix in sorted(set(inprefixes)):
+        if prefix.startswith(end_marker):
+            print("==>", prefix, "halt", file=sys.stderr)
+            break
+
+        print("-->", "Starting on", prefix, file=sys.stderr)
+
+        while True:
+            start_time = time.time()
+            resp2 = s3.list_objects(Bucket=constants.S3_BUCKET, Prefix=prefix)
+            inkeys = [obj["Key"] for obj in resp2["Contents"]]
+
+            if len(inkeys) == 1:
+                break
+
+            inrows = list(itertools.chain(*[read_rows(s3, inkey) for inkey in inkeys]))
+            outbuffer = io.BytesIO()
+            outrows = csv.writer(
+                io.TextIOWrapper(outbuffer, write_through=True), dialect="excel-tab"
+            )
+
+            for i, row in enumerate(sorted(inrows)):
+                outrows.writerow(row)
+
+            outkey = f"{prefix}/z{time.time()}.txt"
+            outbuffer.seek(0)
+
+            s3.put_object(
+                Bucket=constants.S3_BUCKET,
+                Key=outkey,
+                Body=outbuffer,
+                ContentType="text/plain",
+                ACL="public-read",
+            )
+
+            for inkey in inkeys:
+                delete_object(s3, inkey)
+
+            print(
+                "   ",
+                len(inkeys),
+                "keys and",
+                len(outbuffer.getvalue()),
+                "bytes to",
+                outkey,
+                "at",
+                f"{len(inkeys) / (time.time() - start_time):.1f}/sec",
+                file=sys.stderr,
+            )
+
+    exec_and_wait(ath, f'''
+        CREATE EXTERNAL TABLE IF NOT EXISTS `{logs_table}`
         (
           `id` string, 
           `time` double, 
@@ -66,7 +147,8 @@ def update_metrics(cred_data, spreadsheet_id):
           `key` string,
           `status` string,
           `token` string,
-          `model_version` string
+          `model_version` string,
+          `execution_id` string
         )
         PARTITIONED BY ( 
           `ds` date)
@@ -84,7 +166,7 @@ def update_metrics(cred_data, spreadsheet_id):
     )
     
     exec_and_wait(ath, f'''
-        ALTER TABLE `prod_scoring_logs`
+        ALTER TABLE `{logs_table}`
         ADD IF NOT EXISTS
         PARTITION (ds = '{datetime.date.today() - datetime.timedelta(days=0)}')
         PARTITION (ds = '{datetime.date.today() - datetime.timedelta(days=1)}')
@@ -92,7 +174,7 @@ def update_metrics(cred_data, spreadsheet_id):
         '''
     )
     
-    state, result = exec_and_wait(ath, '''
+    state, result = exec_and_wait(ath, f'''
         WITH all_states AS (
             SELECT model_state FROM UNNEST(array[
                 'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
@@ -104,13 +186,13 @@ def update_metrics(cred_data, spreadsheet_id):
         ), all_time AS (
             SELECT count(distinct id) AS plans,
                  model_state
-            FROM prod_scoring_logs
+            FROM {logs_table}
             GROUP BY  model_state
             ORDER BY  model_state
         ), last_7days AS (
             SELECT count(distinct id) AS plans,
                  model_state
-            FROM prod_scoring_logs
+            FROM {logs_table}
             WHERE ds
                 BETWEEN date_add('day', -7, now())
                     AND date_add('day', 0, now())
@@ -119,7 +201,7 @@ def update_metrics(cred_data, spreadsheet_id):
         ), last_30days AS (
             SELECT count(distinct id) AS plans,
                  model_state
-            FROM prod_scoring_logs
+            FROM {logs_table}
             WHERE ds
                 BETWEEN date_add('day', -30, now())
                     AND date_add('day', 0, now())
@@ -128,7 +210,7 @@ def update_metrics(cred_data, spreadsheet_id):
         ), prior_30days AS (
             SELECT count(distinct id) AS plans,
                  model_state
-            FROM prod_scoring_logs
+            FROM {logs_table}
             WHERE ds
                 BETWEEN date_add('day', -60, now())
                     AND date_add('day', -31, now())
@@ -301,8 +383,9 @@ def update_metrics(cred_data, spreadsheet_id):
         out.writerow([d.get('VarCharValue') for d in row['Data']])
 
 def lambda_handler(event, context):
-    return update_metrics(event['Google-Key'], event['Spreadsheet-ID'])
+    cred_data = json.loads(base64.b64decode(event['Google-Key']))
+    return update_metrics(cred_data, event['Spreadsheet-ID'], event['Logs-Table'])
 
 def main():
     event = json.load(sys.stdin)
-    return update_metrics(event['Google-Key'], event['Spreadsheet-ID'])
+    return update_metrics(event['Google-Key'], event['Spreadsheet-ID'], event['Logs-Table'])
