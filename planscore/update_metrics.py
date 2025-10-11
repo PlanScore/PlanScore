@@ -3,6 +3,11 @@ import csv
 import sys
 import json
 import datetime
+import os
+import itertools
+import io
+
+from . import constants
 
 import boto3
 import oauth2client.service_account
@@ -42,7 +47,19 @@ def exec_and_wait(ath, query_string):
     
     return state, ath.get_query_results(QueryExecutionId=query_id)
 
+def read_rows(s3, key):
+    resp = s3.get_object(Bucket=constants.S3_BUCKET, Key=key)
+    rows = csv.reader(io.TextIOWrapper(resp["Body"]), dialect="excel-tab")
+    return rows
+
+def delete_object(s3, key):
+    resp = s3.delete_object(Bucket=constants.S3_BUCKET, Key=key)
+    if resp["ResponseMetadata"]["HTTPStatusCode"] not in range(200, 299):
+        print(resp, file=sys.stderr)
+        raise Exception(resp["ResponseMetadata"]["HTTPStatusCode"])
+
 def update_metrics(cred_data, spreadsheet_id, logs_table):
+    s3 = boto3.client('s3')
     ath = boto3.client('athena')
     
     service = make_service(cred_data)
@@ -52,6 +69,71 @@ def update_metrics(cred_data, spreadsheet_id, logs_table):
     sheet_id = resp1['sheets'][0]['properties']['sheetId']
     print(resp1)
     print(sheet_id)
+
+    logs_dir = 'logs/scoring'
+    marker = f'{logs_dir}/ds={datetime.date.today() - datetime.timedelta(days=3)}'
+    end_marker = f'{logs_dir}/ds={datetime.date.today() - datetime.timedelta(days=0)}'
+
+    print("==>", "Marker", marker, file=sys.stderr)
+    resp1 = s3.list_objects(
+        Bucket=constants.S3_BUCKET,
+        Prefix=f"{logs_dir}/",
+        Delimiter="/",
+        Marker=marker,
+    )
+    inprefixes = [os.path.dirname(obj["Prefix"]) for obj in resp1["CommonPrefixes"]]
+
+    for prefix in sorted(set(inprefixes)):
+        if prefix.startswith(end_marker):
+            print("==>", prefix, "halt", file=sys.stderr)
+            break
+
+        print("-->", "Starting on", prefix, file=sys.stderr)
+
+        while True:
+            start_time = time.time()
+            resp2 = s3.list_objects(Bucket=constants.S3_BUCKET, Prefix=prefix)
+            inkeys = [obj["Key"] for obj in resp2["Contents"]]
+
+            if len(inkeys) == 1:
+                break
+
+            inrows = list(itertools.chain(*[read_rows(s3, inkey) for inkey in inkeys]))
+            outbuffer = io.BytesIO()
+            outrows = csv.writer(
+                io.TextIOWrapper(outbuffer, write_through=True), dialect="excel-tab"
+            )
+
+            for i, row in enumerate(sorted(inrows)):
+                outrows.writerow(row)
+
+            outkey = f"{prefix}/z{time.time()}.txt"
+            outbuffer.seek(0)
+
+            s3.put_object(
+                Bucket=constants.S3_BUCKET,
+                Key=outkey,
+                Body=outbuffer,
+                ContentType="text/plain",
+                ACL="public-read",
+            )
+
+            for inkey in inkeys:
+                delete_object(s3, inkey)
+
+            print(
+                "   ",
+                len(inkeys),
+                "keys and",
+                len(outbuffer.getvalue()),
+                "bytes to",
+                outkey,
+                "at",
+                f"{len(inkeys) / (time.time() - start_time):.1f}/sec",
+                file=sys.stderr,
+            )
+
+    return
 
     exec_and_wait(ath, f'''
         CREATE EXTERNAL TABLE IF NOT EXISTS `{logs_table}`
