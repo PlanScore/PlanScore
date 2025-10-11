@@ -1,3 +1,4 @@
+import base64
 import time
 import csv
 import sys
@@ -382,7 +383,8 @@ def update_metrics(cred_data, spreadsheet_id, logs_table):
         out.writerow([d.get('VarCharValue') for d in row['Data']])
 
 def lambda_handler(event, context):
-    return update_metrics(event['Google-Key'], event['Spreadsheet-ID'], event['Logs-Table'])
+    cred_data = json.loads(base64.b64decode(event['Google-Key']))
+    return update_metrics(cred_data, event['Spreadsheet-ID'], event['Logs-Table'])
 
 def main():
     event = json.load(sys.stdin)

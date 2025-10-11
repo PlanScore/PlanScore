@@ -930,8 +930,8 @@ class PlanScoreScoring(cdk.Stack):
         return aws_events.Rule(
             self,
             'UpdateMetricsRule',
-            enabled=False,
-            schedule=aws_events.Schedule.rate(cdk.Duration.days(1)),
+            enabled=True,
+            schedule=aws_events.Schedule.rate(cdk.Duration.hours(8)),
             targets=[
                 aws_events_targets.LambdaFunction(
                     handler=update_metrics,
