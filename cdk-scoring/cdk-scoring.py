@@ -927,19 +927,21 @@ class PlanScoreScoring(cdk.Stack):
         )
 
     def make_metrics_rule(self, formation_info, update_metrics, **_unused):
+        ssm_str = aws_ssm.StringParameter.value_for_string_parameter
+
         return aws_events.Rule(
             self,
             'UpdateMetricsRule',
-            enabled=True,
-            schedule=aws_events.Schedule.rate(cdk.Duration.hours(8)),
+            enabled=bool(formation_info.prefix != 'cf-canary'),
+            schedule=aws_events.Schedule.rate(cdk.Duration.days(1)),
             targets=[
                 aws_events_targets.LambdaFunction(
                     handler=update_metrics,
                     event=aws_events.RuleTargetInput.from_object(
                         {
-                            "Logs-Table": aws_ssm.StringParameter.value_for_string_parameter(self, f'{formation_info.prefix}-logs-table'),
-                            "Spreadsheet-ID": aws_ssm.StringParameter.value_for_string_parameter(self, f'{formation_info.prefix}-spreadsheet-id'),
-                            "Google-Key": cdk.Fn.base64(aws_ssm.StringParameter.value_for_string_parameter(self, 'update-metrics-gdocs-service-account-creds')),
+                            "Logs-Table": ssm_str(self, f'{formation_info.prefix}-logs-table'),
+                            "Spreadsheet-ID": ssm_str(self, f'{formation_info.prefix}-spreadsheet-id'),
+                            "Google-Key": cdk.Fn.base64(ssm_str(self, 'update-metrics-gdocs-service-account-creds')),
                         }
                     ),
                 )
