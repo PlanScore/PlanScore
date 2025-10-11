@@ -549,6 +549,7 @@ class PlanScoreScoring(cdk.Stack):
                         'glue:GetPartition',
                         'glue:GetDatabases',
                         'glue:GetDatabase',
+                        'glue:BatchCreatePartition',
                     ],
                     resources=['*'],
                 ),
@@ -613,6 +614,7 @@ class PlanScoreScoring(cdk.Stack):
         grant_data_bucket_access(data_bucket, preread_followup)
 
         update_metrics = make_large_function(self, "UpdateMetricsD", 1024, "planscore.update_metrics.lambda_handler")
+        grant_data_bucket_access(data_bucket, update_metrics)
 
         # API-accessible functions
 

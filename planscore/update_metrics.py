@@ -133,8 +133,6 @@ def update_metrics(cred_data, spreadsheet_id, logs_table):
                 file=sys.stderr,
             )
 
-    return
-
     exec_and_wait(ath, f'''
         CREATE EXTERNAL TABLE IF NOT EXISTS `{logs_table}`
         (
