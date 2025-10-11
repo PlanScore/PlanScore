@@ -42,7 +42,7 @@ def exec_and_wait(ath, query_string):
     
     return state, ath.get_query_results(QueryExecutionId=query_id)
 
-def update_metrics(cred_data, spreadsheet_id):
+def update_metrics(cred_data, spreadsheet_id, logs_table):
     ath = boto3.client('athena')
     
     service = make_service(cred_data)
@@ -53,8 +53,8 @@ def update_metrics(cred_data, spreadsheet_id):
     print(resp1)
     print(sheet_id)
 
-    exec_and_wait(ath, '''
-        CREATE EXTERNAL TABLE IF NOT EXISTS `prod_scoring_logs`
+    exec_and_wait(ath, f'''
+        CREATE EXTERNAL TABLE IF NOT EXISTS `{logs_table}`
         (
           `id` string, 
           `time` double, 
@@ -66,7 +66,8 @@ def update_metrics(cred_data, spreadsheet_id):
           `key` string,
           `status` string,
           `token` string,
-          `model_version` string
+          `model_version` string,
+          `execution_id` string
         )
         PARTITIONED BY ( 
           `ds` date)
@@ -84,7 +85,7 @@ def update_metrics(cred_data, spreadsheet_id):
     )
     
     exec_and_wait(ath, f'''
-        ALTER TABLE `prod_scoring_logs`
+        ALTER TABLE `{logs_table}`
         ADD IF NOT EXISTS
         PARTITION (ds = '{datetime.date.today() - datetime.timedelta(days=0)}')
         PARTITION (ds = '{datetime.date.today() - datetime.timedelta(days=1)}')
@@ -92,7 +93,7 @@ def update_metrics(cred_data, spreadsheet_id):
         '''
     )
     
-    state, result = exec_and_wait(ath, '''
+    state, result = exec_and_wait(ath, f'''
         WITH all_states AS (
             SELECT model_state FROM UNNEST(array[
                 'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
@@ -104,13 +105,13 @@ def update_metrics(cred_data, spreadsheet_id):
         ), all_time AS (
             SELECT count(distinct id) AS plans,
                  model_state
-            FROM prod_scoring_logs
+            FROM {logs_table}
             GROUP BY  model_state
             ORDER BY  model_state
         ), last_7days AS (
             SELECT count(distinct id) AS plans,
                  model_state
-            FROM prod_scoring_logs
+            FROM {logs_table}
             WHERE ds
                 BETWEEN date_add('day', -7, now())
                     AND date_add('day', 0, now())
@@ -119,7 +120,7 @@ def update_metrics(cred_data, spreadsheet_id):
         ), last_30days AS (
             SELECT count(distinct id) AS plans,
                  model_state
-            FROM prod_scoring_logs
+            FROM {logs_table}
             WHERE ds
                 BETWEEN date_add('day', -30, now())
                     AND date_add('day', 0, now())
@@ -128,7 +129,7 @@ def update_metrics(cred_data, spreadsheet_id):
         ), prior_30days AS (
             SELECT count(distinct id) AS plans,
                  model_state
-            FROM prod_scoring_logs
+            FROM {logs_table}
             WHERE ds
                 BETWEEN date_add('day', -60, now())
                     AND date_add('day', -31, now())
@@ -301,8 +302,8 @@ def update_metrics(cred_data, spreadsheet_id):
         out.writerow([d.get('VarCharValue') for d in row['Data']])
 
 def lambda_handler(event, context):
-    return update_metrics(event['Google-Key'], event['Spreadsheet-ID'])
+    return update_metrics(event['Google-Key'], event['Spreadsheet-ID'], event['Logs-Table'])
 
 def main():
     event = json.load(sys.stdin)
-    return update_metrics(event['Google-Key'], event['Spreadsheet-ID'])
+    return update_metrics(event['Google-Key'], event['Spreadsheet-ID'], event['Logs-Table'])
