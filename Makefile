@@ -16,21 +16,6 @@ planscore-lambda.zip:
 	rm planscore-lambda/planscore/model/*.gz
 	cd planscore-lambda && zip -rq ../planscore-lambda.zip .
 
-live-metrics: metrics-lambda.zip
-	aws lambda update-function-code --region us-east-1 \
-		--function-name PlanScore-Update-Metrics \
-		--zip-file fileb://metrics-lambda.zip
-	sleep 10
-	aws lambda update-function-configuration --region us-east-1 \
-		--function-name PlanScore-Update-Metrics \
-		--handler planscore.update_metrics.lambda_handler \
-		--timeout 300
-
-metrics-lambda.zip:
-	mkdir -p metrics-lambda
-	pip3 install -q -t metrics-lambda '.[metrics]'
-	cd metrics-lambda && zip -rq ../metrics-lambda.zip .
-
 planscore/website/static/supported-states.svg: design/Upload-Map.svg planscore-svg
 	docker run --rm -it -v `pwd`:/vol -w /vol planscore-svg:latest
 
@@ -39,7 +24,6 @@ planscore-svg:
 
 clean:
 	rm -rf planscore-lambda planscore-lambda.zip
-	rm -rf metrics-lambda metrics-lambda.zip
 
 .PHONY: clean all live-deploy dev-deploy planscore-svg
 .SECONDARY:

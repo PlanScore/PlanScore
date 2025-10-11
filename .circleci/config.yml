@@ -32,17 +32,6 @@ jobs:
       - run: pip3 install '.[deploy]'
       - run: make live-deploy
 
-  # Update metrics-gathering code
-  Metrics:
-    machine:
-      - image: ubuntu-2404:current
-    resource_class: arm.medium
-    working_directory: ~/repo
-    steps:
-      - checkout
-      - run: pip3 install -U pip awscli
-      - run: make live-metrics
-
 workflows:
   version: 2
   Everything:
@@ -51,13 +40,6 @@ workflows:
       - Deploy:
           requires:
             - Test
-          filters:
-            branches:
-              only:
-                - main
-      - Metrics:
-          requires:
-            - Deploy
           filters:
             branches:
               only:
