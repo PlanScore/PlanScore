@@ -126,8 +126,8 @@ class PlanScoreScoring(cdk.Stack):
             website_base,
         )
 
-        self.make_state_machines(formation_info, *functions)
-        self.populate_api(apigateway_role, api, *functions)
+        self.make_state_machines(formation_info, **functions)
+        self.populate_api(apigateway_role, api, **functions)
         self.make_forward(stack_id, website_base, formation_info)
 
         aws_events.Rule(
@@ -137,7 +137,7 @@ class PlanScoreScoring(cdk.Stack):
             schedule=aws_events.Schedule.rate(cdk.Duration.days(1)),
             targets=[
                 aws_events_targets.LambdaFunction(
-                    handler=functions[-1],
+                    handler=functions['update_metrics'],
                     event=aws_events.RuleTargetInput.from_object(
                         {
                             "Logs-Table": aws_ssm.StringParameter.value_for_string_parameter(self, f'{formation_info.prefix}-logs-table'),
@@ -510,7 +510,7 @@ class PlanScoreScoring(cdk.Stack):
 
         apigateway_role = aws_iam.Role(
             self,
-            f'API-Gateway-Execution',
+            'API-Gateway-Execution',
             assumed_by=aws_iam.ServicePrincipal('apigateway.amazonaws.com'),
         )
 
@@ -670,40 +670,34 @@ class PlanScoreScoring(cdk.Stack):
         grant_data_bucket_access(data_bucket, postread_callback_POST)
         postread_callback_POST.add_permission('Permission', principal=apigateway_role)
 
-        return (
-            authorizer,
-            postread_calculate,
-            preread_followup,
-            polygonize,
-            api_upload,
-            get_states,
-            get_model_versions,
-            upload_fields,
-            preread,
-            postread_callback_GET,
-            postread_callback_POST,
-            postread_intermediate,
-            update_metrics,
+        return dict(
+            authorizer=authorizer,
+            postread_calculate=postread_calculate,
+            preread_followup=preread_followup,
+            polygonize=polygonize,
+            api_upload=api_upload,
+            get_states=get_states,
+            get_model_versions=get_model_versions,
+            upload_fields=upload_fields,
+            preread=preread,
+            postread_callback_GET=postread_callback_GET,
+            postread_callback_POST=postread_callback_POST,
+            postread_intermediate=postread_intermediate,
+            update_metrics=update_metrics,
         )
 
-    def make_state_machines(self, formation_info, *functions):
-
-        (
-            authorizer,
-            postread_calculate,
-            preread_followup,
-            polygonize,
-            api_upload,
-            get_states,
-            get_model_versions,
-            upload_fields,
-            preread,
-            postread_callback_GET,
-            postread_callback_POST,
-            postread_intermediate,
-            update_metrics,
-        ) = functions
-
+    def make_state_machines(
+        self,
+        formation_info,
+        postread_calculate,
+        preread_followup,
+        api_upload,
+        preread,
+        postread_callback_GET,
+        postread_callback_POST,
+        postread_intermediate,
+        **_unused,
+    ):
         def make_task(stack, name, function, wait_for_token):
             # https://docs.aws.amazon.com/step-functions/latest/dg/input-output-contextobject.html
             task_payload = {
@@ -784,23 +778,20 @@ class PlanScoreScoring(cdk.Stack):
         
         grant_statemachine_control(singlestepapi_statemachine, "SINGLESTEP_API_SCORE_MACHINE", api_upload)
 
-    def populate_api(self, apigateway_role, api, *functions):
-
-        (
-            authorizer,
-            postread_calculate,
-            preread_followup,
-            polygonize,
-            api_upload,
-            get_states,
-            get_model_versions,
-            upload_fields,
-            preread,
-            postread_callback_GET,
-            postread_callback_POST,
-            postread_intermediate,
-            update_metrics,
-        ) = functions
+    def populate_api(
+        self,
+        apigateway_role,
+        api,
+        authorizer,
+        api_upload,
+        get_states,
+        get_model_versions,
+        upload_fields,
+        preread,
+        postread_callback_GET,
+        postread_callback_POST,
+        **_unused,
+    ):
 
         integration_kwargs = dict(
             request_templates={
