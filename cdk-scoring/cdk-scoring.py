@@ -20,6 +20,9 @@ from aws_cdk import (
     aws_cloudfront_origins,
     aws_stepfunctions,
     aws_stepfunctions_tasks,
+    aws_events,
+    aws_events_targets,
+    aws_ssm,
 )
 
 FormationInfo = collections.namedtuple(
@@ -126,6 +129,25 @@ class PlanScoreScoring(cdk.Stack):
         self.make_state_machines(formation_info, *functions)
         self.populate_api(apigateway_role, api, *functions)
         self.make_forward(stack_id, website_base, formation_info)
+
+        aws_events.Rule(
+            self,
+            'UpdateMetricsRule',
+            enabled=False,
+            schedule=aws_events.Schedule.rate(cdk.Duration.days(1)),
+            targets=[
+                aws_events_targets.LambdaFunction(
+                    handler=functions[-1],
+                    event=aws_events.RuleTargetInput.from_object(
+                        {
+                            "Logs-Table": aws_ssm.StringParameter.value_for_string_parameter(self, f'{formation_info.prefix}-logs-table'),
+                            "Spreadsheet-ID": aws_ssm.StringParameter.value_for_string_parameter(self, f'{formation_info.prefix}-spreadsheet-id'),
+                            "Google-Key": cdk.Fn.base64(aws_ssm.StringParameter.value_for_string_parameter(self, 'update-metrics-gdocs-service-account-creds')),
+                        }
+                    ),
+                )
+            ],
+        )
     
     def make_forward(self, stack_id, website_base, formation_info):
     
