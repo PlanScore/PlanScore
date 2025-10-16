@@ -490,11 +490,11 @@ MODELS = [
     Model(State.ID, House.statesenate,  35,  True, VERSIONS, 'data/ID/008-acs-2020'), # c82db89
     Model(State.ID, House.statehouse,   70,  True, VERSIONS, 'data/ID/008-acs-2020'), # c82db89
     Model(State.ID, House.localplan,  None,  True, VERSIONS, 'data/ID/008-acs-2020'), # c82db89
-    Model(State.IL, House.ushouse,      17,  True, VERSIONS, 'data/IL/010-acs-2020'), # c82db89
+    Model(State.IL, House.ushouse,      17,  True, VERSION24, 'data/IL/011-pvote-2024'), # f5d83f4
     Model(State.IL, House.statesenate,  59,  True, VERSIONS, 'data/IL/010-acs-2020'), # c82db89
     Model(State.IL, House.statehouse,  118,  True, VERSIONS, 'data/IL/010-acs-2020'), # c82db89
     Model(State.IL, House.localplan,  None,  True, VERSIONS, 'data/IL/010-acs-2020'), # c82db89
-    Model(State.IN, House.ushouse,       9,  True, VERSIONS, 'data/IN/009-acs-2020'), # c82db89
+    Model(State.IN, House.ushouse,       9,  True, VERSION24, 'data/IN/010-pvote-2024'), # f5d83f4
     Model(State.IN, House.statesenate,  50,  True, VERSIONS, 'data/IN/009-acs-2020'), # c82db89
     Model(State.IN, House.statehouse,  100,  True, VERSIONS, 'data/IN/009-acs-2020'), # c82db89
     Model(State.IN, House.localplan,  None,  True, VERSIONS, 'data/IN/009-acs-2020'), # c82db89
