@@ -39,19 +39,22 @@ def put_upload_index(storage, upload):
     body1 = upload.to_json().encode('utf8')
 
     storage.s3.put_object(Bucket=storage.bucket, Key=key1, Body=body1,
-        ContentType='text/json', ACL='public-read', CacheControl=cache_control)
+        ContentType='text/json', ACL='public-read', CacheControl=cache_control,
+        StorageClass='INTELLIGENT_TIERING')
 
     key2 = upload.plaintext_key()
     body2 = upload.to_plaintext().encode('utf8')
 
     storage.s3.put_object(Bucket=storage.bucket, Key=key2, Body=body2,
-        ContentType='text/plain', ACL='public-read', CacheControl=cache_control)
+        ContentType='text/plain', ACL='public-read', CacheControl=cache_control,
+        StorageClass='INTELLIGENT_TIERING')
 
     key3 = upload.logentry_key(str(uuid.uuid4()))
     body3 = upload.to_logentry().encode('utf8')
 
     storage.s3.put_object(Bucket=storage.bucket, Key=key3, Body=body3,
-        ContentType='text/plain', ACL='public-read', CacheControl=cache_control)
+        ContentType='text/plain', ACL='public-read', CacheControl=cache_control,
+        StorageClass='INTELLIGENT_TIERING')
 
 def get_district_index(district_key, upload):
     ''' Return numeric index for a given district geometry or assignment key.
@@ -165,7 +168,8 @@ def add_blockassign_upload_geometry(context, lam, storage, upload):
 
     storage.s3.put_object(Bucket=storage.bucket, Key=upload2.geometry_key,
         Body=gzip.compress(geojson.encode('utf8')),
-        ContentType='text/json', ACL='public-read', ContentEncoding='gzip')
+        ContentType='text/json', ACL='public-read', ContentEncoding='gzip',
+        StorageClass='INTELLIGENT_TIERING')
 
     return upload2
 
@@ -225,7 +229,8 @@ def put_part_timings(storage, upload, tiles, part_type):
         ))
 
     storage.s3.put_object(Bucket=storage.bucket, Key=key,
-        Body=buffer.getvalue(), ContentType='text/plain', ACL='public-read')
+        Body=buffer.getvalue(), ContentType='text/plain', ACL='public-read',
+        StorageClass='INTELLIGENT_TIERING')
 
 def adjust_household_income(input_subtotals):
     '''

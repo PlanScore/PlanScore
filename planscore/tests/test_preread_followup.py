@@ -76,7 +76,8 @@ class TestPrereadFollowup (unittest.TestCase):
         s3.put_object.assert_called_once_with(Bucket=bucket,
             Key=upload.geometry_key,
             Body=compress.return_value, ContentEncoding='gzip',
-            ACL='public-read', ContentType='text/json')
+            ACL='public-read', ContentType='text/json',
+            StorageClass='INTELLIGENT_TIERING')
     
     @unittest.mock.patch('gzip.compress')
     def test_put_geojson_file_missing_geometries(self, compress):
@@ -89,7 +90,8 @@ class TestPrereadFollowup (unittest.TestCase):
         s3.put_object.assert_called_once_with(Bucket=bucket,
             Key=upload.geometry_key,
             Body=compress.return_value, ContentEncoding='gzip',
-            ACL='public-read', ContentType='text/json')
+            ACL='public-read', ContentType='text/json',
+            StorageClass='INTELLIGENT_TIERING')
     
     @unittest.mock.patch('gzip.compress')
     def test_put_geojson_file_mixed_geometries(self, compress):

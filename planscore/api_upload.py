@@ -31,6 +31,7 @@ def kick_it_off(geojson, temporary, auth_token):
         Body=json.dumps(geojson, indent=2),
         ContentType='text/json',
         ACL='bucket-owner-full-control',
+        StorageClass='INTELLIGENT_TIERING',
         )
 
     upload1 = preread.create_upload(s3, constants.S3_BUCKET, upload_key, unsigned_id)

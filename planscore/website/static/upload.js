@@ -6,7 +6,9 @@ function fetch_upload_tokens(url, form, signal)
         const upload_fields = data[1];
 
         for(var key in upload_fields) {
-            form.elements[key].value = upload_fields[key];
+            if(key in form.elements) {
+                form.elements[key].value = upload_fields[key];
+            }
         }
         form.action = form_action_url;
         console.log('Upload tokens populated.');

@@ -298,7 +298,8 @@ def put_geojson_file(s3, bucket, upload, path):
     args = dict(ContentEncoding='gzip')
     
     s3.put_object(Bucket=bucket, Key=upload.geometry_key, Body=body,
-        ContentType='text/json', ACL='public-read', **args)
+        ContentType='text/json', ACL='public-read', StorageClass='INTELLIGENT_TIERING',
+        **args)
 
 def get_redirect_url(website_base, id):
     '''

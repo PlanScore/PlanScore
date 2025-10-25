@@ -92,6 +92,7 @@ a dictionary of additional form fields for a pre-signed POST request:
             "key": {key},
             "AWSAccessKeyId": {AWSAccessKeyId},
             "x-amz-security-token": {x-amz-security-token},
+            "x-amz-storage-class": {x-amz-storage-class},
             "policy": {policy},
             "signature": {signature},
             "acl": {acl},
@@ -108,6 +109,7 @@ in a `multipart/form-data` HTTP POST request:
         --form key={key} \
         --form AWSAccessKeyId={AWSAccessKeyId} \
         --form x-amz-security-token={x-amz-security-token} \
+        --form x-amz-storage-class={x-amz-storage-class} \
         --form policy={policy} \
         --form signature={signature} \
         --form acl={acl} \

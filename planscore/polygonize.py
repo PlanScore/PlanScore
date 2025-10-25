@@ -166,6 +166,7 @@ def lambda_handler(event, context):
         Key=geometry_key, ACL='bucket-owner-full-control',
         Body=shapely.wkt.dumps(polygon, rounding_precision=7),
         ContentType='text/plain',
+        StorageClass='INTELLIGENT_TIERING',
     )
 
     return shapely.geometry.mapping(polygon.centroid)

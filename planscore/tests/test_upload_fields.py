@@ -100,6 +100,7 @@ class TestUploadFields (unittest.TestCase):
         s3.generate_presigned_post.assert_called_once_with('the-bucket',
             'uploads/id/upload/${filename}', Conditions=[{'acl': 'bucket-owner-full-control'},
             {'success_action_redirect': 'https://api.example.org/preread?id=id.sig'},
+            {'x-amz-storage-class': 'INTELLIGENT_TIERING'},
             ['starts-with', '$key', 'uploads/id/upload/']], ExpiresIn=300)
 
         generate_signed_id.assert_called_once_with('sec')
@@ -121,6 +122,7 @@ class TestUploadFields (unittest.TestCase):
         s3.generate_presigned_post.assert_called_once_with('the-bucket',
             'uploads/id/upload/${filename}', Conditions=[{'acl': 'bucket-owner-full-control'},
             {'success_action_redirect': 'https://api.example.org/preread?id=id.sig'},
+            {'x-amz-storage-class': 'INTELLIGENT_TIERING'},
             ['starts-with', '$key', 'uploads/id/upload/']], ExpiresIn=300)
 
         generate_signed_id.assert_called_once_with('sec')
