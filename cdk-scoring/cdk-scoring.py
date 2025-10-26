@@ -437,6 +437,11 @@ class PlanScoreScoring(cdk.Stack):
                     (aws_glue.Schema.DOUBLE, "Hispanic Citizen Voting-Age Population 2020 ACS"),
                     (aws_glue.Schema.DOUBLE, "Hispanic Citizen Voting-Age Population 2020 ACS, Margin"),
                     (aws_glue.Schema.BIG_INT, "Voting-Age Population 2020"),
+                    (aws_glue.Schema.DOUBLE, "Expected White 2020 Democratic Vote Share (RPV)"),
+                    (aws_glue.Schema.DOUBLE, "Expected Black 2020 Democratic Vote Share (RPV)"),
+                    (aws_glue.Schema.DOUBLE, "Expected Hispanic 2020 Democratic Vote Share (RPV)"),
+                    (aws_glue.Schema.DOUBLE, "Expected Asian 2020 Democratic Vote Share (RPV)"),
+                    (aws_glue.Schema.DOUBLE, "Expected American Indian or Alaska Native 2020 Democratic Vote Share (RPV)"),
                     (aws_glue.Schema.STRING, "Point"),
                 ]
             ],
