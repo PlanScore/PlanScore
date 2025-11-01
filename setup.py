@@ -40,7 +40,7 @@ setup(
             ],
         'large': [
             'boto3 == 1.40.25',
-            'networkx == 2.8.8',
+            'networkx == 2.5.1',
             'Shapely == 1.7.1',
             ],
         'compiled': [
