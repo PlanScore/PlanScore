@@ -26,6 +26,29 @@ class TestPolygonize (unittest.TestCase):
         self.assertEqual(graph3.edges[('A', 'B')]['line'], 'yes')
         self.assertEqual(graph3.edges[('B', 'A')]['line'], 'yup')
     
+    def test_combine_digraphs_outside(self):
+        ''' DiGraphs are combined correctly even when a node ID is None
+        '''
+        graph1, graph2 = networkx.DiGraph(), networkx.DiGraph()
+
+        graph1.add_node('A', pos='yes')
+        graph1.add_node('B', pos='nope') # to be overriden by graph2[B]
+        graph2.add_node('B', pos='yup')
+        graph2.add_node(None)
+        graph1.add_edge('A', 'B', line='yes')
+        graph1.add_edge('B', 'A', line='nope') # to be overriden by graph2[B,A]
+        graph2.add_edge('B', 'A', line='yup')
+        graph2.add_edge('B', None, line='yessir')
+
+        graph3 = polygonize.combine_digraphs(graph1, graph2)
+        self.assertEqual(len(graph3.nodes), 2)
+        self.assertEqual(len(graph3.edges), 2)
+        self.assertEqual(graph3.nodes['A']['pos'], 'yes')
+        self.assertEqual(graph3.nodes['B']['pos'], 'yup')
+        self.assertEqual(graph3.edges[('A', 'B')]['line'], 'yes')
+        self.assertEqual(graph3.edges[('B', 'A')]['line'], 'yup')
+        self.assertEqual(graph3.edges[('B', None)]['line'], 'yessir')
+    
     def test_polygonize_district(self):
         '''
         '''
