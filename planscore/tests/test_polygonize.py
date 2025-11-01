@@ -41,8 +41,24 @@ class TestPolygonize (unittest.TestCase):
         graph2.add_edge('B', None, line='yessir')
 
         graph3 = polygonize.combine_digraphs(graph1, graph2)
-        self.assertEqual(len(graph3.nodes), 2)
-        self.assertEqual(len(graph3.edges), 2)
+        self.assertEqual(len(graph3.nodes), 3)
+        self.assertEqual(len(graph3.edges), 3)
+        self.assertEqual(graph3.nodes['A']['pos'], 'yes')
+        self.assertEqual(graph3.nodes['B']['pos'], 'yup')
+        self.assertEqual(graph3.edges[('A', 'B')]['line'], 'yes')
+        self.assertEqual(graph3.edges[('B', 'A')]['line'], 'yup')
+        self.assertEqual(graph3.edges[('B', None)]['line'], 'yessir')
+
+    def test_combine_digraphs_outside_gpickle(self):
+        ''' DiGraphs are combined correctly even when a node ID is None from pickle files
+        '''
+        datadir = os.path.join(os.path.dirname(__file__), 'data')
+        graph1 = networkx.read_gpickle(os.path.join(datadir, 'graph-without-none.pickle'))
+        graph2 = networkx.read_gpickle(os.path.join(datadir, 'graph-with-none.pickle'))
+
+        graph3 = polygonize.combine_digraphs(graph1, graph2)
+        self.assertEqual(len(graph3.nodes), 3)
+        self.assertEqual(len(graph3.edges), 3)
         self.assertEqual(graph3.nodes['A']['pos'], 'yes')
         self.assertEqual(graph3.nodes['B']['pos'], 'yup')
         self.assertEqual(graph3.edges[('A', 'B')]['line'], 'yes')
