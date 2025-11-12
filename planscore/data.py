@@ -569,7 +569,7 @@ MODELS = [
     Model(State.NV, House.statesenate,  21,  True, VERSIONS, 'data/NV/008-acs-2020'), # c82db89
     Model(State.NV, House.statehouse,   42,  True, VERSIONS, 'data/NV/008-acs-2020'), # c82db89
     Model(State.NV, House.localplan,  None,  True, VERSIONS, 'data/NV/008-acs-2020'), # c82db89
-    Model(State.NY, House.ushouse,      19,  True, VERSIONS, 'data/NY/003-acs-2020'), # c82db89
+    Model(State.NY, House.ushouse,      19,  True, VERSIONS, 'data/NY/004-pvote-2024'), # 8413e0f
     Model(State.NY, House.statesenate,  63,  True, VERSIONS, 'data/NY/003-acs-2020'), # c82db89
     Model(State.NY, House.statehouse,  150,  True, VERSIONS, 'data/NY/003-acs-2020'), # c82db89
     Model(State.NY, House.localplan,  None,  True, VERSIONS, 'data/NY/003-acs-2020'), # c82db89
