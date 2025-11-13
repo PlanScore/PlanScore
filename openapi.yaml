@@ -1,0 +1,474 @@
+openapi: 3.0.3
+info:
+  title: PlanScore API
+  description: |
+    PlanScore's API allows you to upload electoral district plans for scoring and analysis.
+
+    🚧 **This API is under development.** 🚧
+
+    Plans can be uploaded either directly as GeoJSON (simple interaction) or through a
+    multi-step process for larger files or alternative formats like shapefiles.
+
+    Authentication is required via bearer token. Contact info@planscore.org to request a token.
+  version: 1.0.0
+  contact:
+    email: info@planscore.org
+  license:
+    name: Open Source
+    url: https://github.com/PlanScore/PlanScore
+
+servers:
+  - url: https://api.planscore.org
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: Bearer token required for authenticated endpoints. Contact info@planscore.org to request a token.
+
+  schemas:
+    GeoJSONPlan:
+      type: object
+      required:
+        - type
+        - features
+      properties:
+        type:
+          type: string
+          enum: [FeatureCollection]
+          description: Must be "FeatureCollection"
+        description:
+          type: string
+          description: Short description of the plan that will appear as the top-most header on the plan page
+          example: "Congressional Redistricting Plan 2024"
+        model_version:
+          type: string
+          description: Predictive model version to use. If omitted, the first available version is used.
+        library_metadata:
+          type: object
+          description: Additional metadata to be passed through for possible later use
+          additionalProperties: true
+        features:
+          type: array
+          description: Array of district polygons
+          items:
+            $ref: '#/components/schemas/DistrictFeature'
+
+    DistrictFeature:
+      type: object
+      required:
+        - type
+        - geometry
+        - properties
+      properties:
+        type:
+          type: string
+          enum: [Feature]
+        geometry:
+          oneOf:
+            - $ref: '#/components/schemas/Polygon'
+            - $ref: '#/components/schemas/MultiPolygon'
+        properties:
+          type: object
+          properties:
+            Incumbent:
+              type: string
+              enum: [R, D, O]
+              default: O
+              description: |
+                Incumbent party affiliation for more accurate predictions:
+                - R: Republican incumbent
+                - D: Democratic incumbent
+                - O: Open seat (default)
+          additionalProperties: true
+
+    Polygon:
+      type: object
+      required:
+        - type
+        - coordinates
+      properties:
+        type:
+          type: string
+          enum: [Polygon]
+        coordinates:
+          type: array
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: number
+              minItems: 2
+              maxItems: 2
+
+    MultiPolygon:
+      type: object
+      required:
+        - type
+        - coordinates
+      properties:
+        type:
+          type: string
+          enum: [MultiPolygon]
+        coordinates:
+          type: array
+          items:
+            type: array
+            items:
+              type: array
+              items:
+                type: array
+                items:
+                  type: number
+                minItems: 2
+                maxItems: 2
+
+    UploadResponse:
+      type: object
+      required:
+        - index_url
+        - plan_url
+      properties:
+        index_url:
+          type: string
+          format: uri
+          description: Machine-readable JSON representation of the plan being scored
+          example: "https://planscore.s3.amazonaws.com/uploads/20210307T032912.752515089Z/index.json"
+        plan_url:
+          type: string
+          format: uri
+          description: Human-readable web page with graphs and maps for the plan
+          example: "https://planscore.org/plan.html?20210307T032912.752515089Z"
+
+    S3UploadFields:
+      type: array
+      description: S3 URL and form fields for pre-signed POST upload
+      minItems: 2
+      maxItems: 2
+      items:
+        oneOf:
+          - type: string
+            format: uri
+            description: S3 upload URL
+          - type: object
+            description: Form fields to include in multipart/form-data upload
+            properties:
+              key:
+                type: string
+                description: S3 object key pattern
+              AWSAccessKeyId:
+                type: string
+                description: AWS access key ID
+              x-amz-security-token:
+                type: string
+                description: AWS security token
+              x-amz-storage-class:
+                type: string
+                description: S3 storage class
+              policy:
+                type: string
+                description: Base64-encoded upload policy
+              signature:
+                type: string
+                description: Upload signature
+              acl:
+                type: string
+                description: Access control list setting
+              success_action_redirect:
+                type: string
+                format: uri
+                description: Redirect URL after successful upload
+            additionalProperties: true
+
+    MultistepUploadRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          description: Short description of the plan
+          example: "A Plan"
+        incumbents:
+          type: array
+          items:
+            type: string
+            enum: [R, D, O]
+          description: Ordered list of incumbency scenario strings for each district
+          example: ["R", "D", "O"]
+        model_version:
+          type: string
+          description: Predictive model version. If omitted, the first one is used.
+        library_metadata:
+          type: object
+          description: Additional data to be passed through for possible later use
+          additionalProperties: true
+
+    StatesResponse:
+      type: array
+      description: List of supported states and legislative bodies
+      items:
+        type: array
+        items:
+          type: string
+        minItems: 2
+        maxItems: 2
+        example: ["XX", "congress"]
+
+    ModelVersionsResponse:
+      type: array
+      description: List of available predictive model versions
+      items:
+        type: array
+        items:
+          type: string
+        minItems: 2
+        maxItems: 2
+        example: ["2024-01", "2024 Model Version"]
+
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Error message
+          example: "Bad GeoJSON input"
+
+paths:
+  /upload:
+    get:
+      summary: Get S3 upload fields
+      description: |
+        Request S3 upload fields for multistep upload process. Returns a pre-signed S3 URL
+        and form fields that can be used to upload files directly to S3.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: S3 upload fields returned successfully
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+                example: "*"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/S3UploadFields'
+              example: [
+                "https://planscore.s3.amazonaws.com/",
+                {
+                  "key": "uploads/20210307T032912.752515089Z/${filename}",
+                  "AWSAccessKeyId": "AKIAIOSFODNN7EXAMPLE",
+                  "x-amz-security-token": "token123",
+                  "x-amz-storage-class": "INTELLIGENT_TIERING",
+                  "policy": "eyJjb25kaXRpb25zIjpbXX0=",
+                  "signature": "signature123",
+                  "acl": "bucket-owner-full-control",
+                  "success_action_redirect": "https://api.planscore.org/uploaded?id=signed_id"
+                }
+              ]
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Upload district plan directly
+      description: |
+        Upload a GeoJSON district plan directly for scoring. Plans must be under 5MB.
+        For larger files or other formats, use the multistep upload process.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GeoJSONPlan'
+            example:
+              type: "FeatureCollection"
+              description: "Sample Congressional Plan"
+              features: [
+                {
+                  "type": "Feature",
+                  "properties": {
+                    "Incumbent": "R"
+                  },
+                  "geometry": {
+                    "type": "Polygon",
+                    "coordinates": [[
+                      [-74.0, 40.7],
+                      [-74.0, 40.8],
+                      [-73.9, 40.8],
+                      [-73.9, 40.7],
+                      [-74.0, 40.7]
+                    ]]
+                  }
+                }
+              ]
+      responses:
+        '200':
+          description: Plan uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '400':
+          description: Bad request - invalid GeoJSON or plan data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /upload/temporary:
+    post:
+      summary: Upload temporary district plan
+      description: |
+        Upload a GeoJSON district plan for temporary scoring. Results will automatically
+        disappear within a week. Same format as regular upload endpoint.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GeoJSONPlan'
+      responses:
+        '200':
+          description: Temporary plan uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '400':
+          description: Bad request - invalid GeoJSON or plan data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /upload/interactive:
+    get:
+      summary: Get upload fields for browser-based uploads
+      description: |
+        Get S3 upload fields for browser-based interactive uploads. Similar to GET /upload
+        but designed for direct browser usage without authentication.
+      responses:
+        '200':
+          description: Upload fields returned successfully
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+                example: "*"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/S3UploadFields'
+
+  /uploaded:
+    post:
+      summary: Complete multistep upload
+      description: |
+        Final step in the multistep upload process. Called with the redirect URL from S3
+        after successful file upload to provide additional plan metadata and trigger scoring.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MultistepUploadRequest'
+            example:
+              description: "Congressional Redistricting Plan 2024"
+              incumbents: ["R", "D", "O"]
+              model_version: "2024-01"
+      responses:
+        '200':
+          description: Upload completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '400':
+          description: Bad request - invalid upload data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /states:
+    get:
+      summary: Get supported states
+      description: |
+        Returns a list of all currently supported states and legislative bodies
+        available for district plan scoring.
+      responses:
+        '200':
+          description: List of supported states returned successfully
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+                example: "*"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatesResponse'
+              example: [
+                ["XX", "congress"],
+                ["CA", "congress"],
+                ["TX", "congress"]
+              ]
+
+  /model_versions:
+    get:
+      summary: Get available model versions
+      description: |
+        Returns a list of IDs and descriptions for all currently supported
+        predictive model versions.
+      responses:
+        '200':
+          description: List of model versions returned successfully
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+                example: "*"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelVersionsResponse'
+              example: [
+                ["2024-01", "2024 Model Version"],
+                ["2022-01", "2022 Model Version"]
+              ]
