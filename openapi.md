@@ -30,47 +30,6 @@ Authentication is required via bearer token. Contact info@planscore.org to reque
 
 # APIs
 
-## GET /upload
-
-Get S3 upload fields
-
-Request S3 upload fields for multistep upload process. Returns a pre-signed S3 URL
-and form fields that can be used to upload files directly to S3.
-
-
-
-
-
-### Responses
-
-#### 200
-
-
-S3 upload fields returned successfully
-
-
-[S3UploadFields](#s3uploadfields)
-
-
-
-
-
-
-
-#### 401
-
-
-Authentication required
-
-
-[ErrorResponse](#errorresponse)
-
-
-
-
-
-
-
 ## POST /upload
 
 Upload district plan directly
@@ -115,6 +74,47 @@ Bad request - invalid GeoJSON or plan data
 
 
 [ErrorResponse](#errorresponse)
+
+
+
+
+
+
+
+#### 401
+
+
+Authentication required
+
+
+[ErrorResponse](#errorresponse)
+
+
+
+
+
+
+
+## GET /upload
+
+Get S3 upload fields
+
+Request S3 upload fields for multistep upload process. Returns a pre-signed S3 URL
+and form fields that can be used to upload files directly to S3.
+
+
+
+
+
+### Responses
+
+#### 200
+
+
+S3 upload fields returned successfully
+
+
+[S3UploadFields](#s3uploadfields)
 
 
 

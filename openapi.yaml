@@ -242,45 +242,6 @@ components:
 
 paths:
   /upload:
-    get:
-      summary: Get S3 upload fields
-      description: |
-        Request S3 upload fields for multistep upload process. Returns a pre-signed S3 URL
-        and form fields that can be used to upload files directly to S3.
-      security:
-        - BearerAuth: []
-      responses:
-        '200':
-          description: S3 upload fields returned successfully
-          headers:
-            Access-Control-Allow-Origin:
-              schema:
-                type: string
-                example: "*"
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/S3UploadFields'
-              example: [
-                "https://planscore.s3.amazonaws.com/",
-                {
-                  "key": "uploads/20210307T032912.752515089Z/${filename}",
-                  "AWSAccessKeyId": "AKIAIOSFODNN7EXAMPLE",
-                  "x-amz-security-token": "token123",
-                  "x-amz-storage-class": "INTELLIGENT_TIERING",
-                  "policy": "eyJjb25kaXRpb25zIjpbXX0=",
-                  "signature": "signature123",
-                  "acl": "bucket-owner-full-control",
-                  "success_action_redirect": "https://api.planscore.org/uploaded?id=signed_id"
-                }
-              ]
-        '401':
-          description: Authentication required
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
     post:
       summary: Upload district plan directly
       description: |
@@ -328,6 +289,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      summary: Get S3 upload fields
+      description: |
+        Request S3 upload fields for multistep upload process. Returns a pre-signed S3 URL
+        and form fields that can be used to upload files directly to S3.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: S3 upload fields returned successfully
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: string
+                example: "*"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/S3UploadFields'
+              example: [
+                "https://planscore.s3.amazonaws.com/",
+                {
+                  "key": "uploads/20210307T032912.752515089Z/${filename}",
+                  "AWSAccessKeyId": "AKIAIOSFODNN7EXAMPLE",
+                  "x-amz-security-token": "token123",
+                  "x-amz-storage-class": "INTELLIGENT_TIERING",
+                  "policy": "eyJjb25kaXRpb25zIjpbXX0=",
+                  "signature": "signature123",
+                  "acl": "bucket-owner-full-control",
+                  "success_action_redirect": "https://api.planscore.org/uploaded?id=signed_id"
+                }
+              ]
         '401':
           description: Authentication required
           content:
