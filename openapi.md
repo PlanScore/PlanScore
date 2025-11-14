@@ -401,7 +401,9 @@ List of model versions returned successfully
 
 | Field | Type | Description |
 |-------|------|-------------|
-| index_url | string | Machine-readable JSON representation of the plan being scored |
+| index_url | string | Machine-readable JSON representation of the plan being scored.
+The response follows the structure defined in the PlanIndex schema.
+ |
 | plan_url | string | Human-readable web page with graphs and maps for the plan |
 
 
@@ -439,6 +441,30 @@ List of supported states and legislative bodies
 List of available predictive model versions
 
 
+
+
+## PlanIndex
+
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Unique identifier for the plan |
+| auth_token | string | Authentication token used for the upload (redacted) |
+| commit_sha | string | Git commit SHA of the PlanScore version used for analysis |
+| description | string | Plan description provided during upload |
+| districts | array | Array of district analysis data |
+| execution_id | string | AWS Step Functions execution identifier |
+| geometry_key | string | S3 key for the geometry JSON file |
+| incumbents | array | Incumbent party for each district (R=Republican, D=Democratic, O=Open) |
+| key | string | S3 key path for the original uploaded file |
+| library_metadata | object | Additional metadata passed through from upload |
+| message | string | Status message about the scoring process |
+| model | object | Information about the predictive model used |
+| model_version | string | Specific model version used for analysis |
+| start_time | number | Unix timestamp when scoring started |
+| status | boolean | Whether scoring completed successfully |
+| summary | object | Plan-level summary statistics and partisan metrics |
 
 
 ## ErrorResponse

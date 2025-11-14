@@ -65,6 +65,7 @@ setup(
             'aws-cdk-aws-s3-notifications == 1.144.0',
             'aws-cdk.aws-events-targets == 1.144.0',
             'boto3 == 1.40.25',
+            'openapi-markdown == 0.4.3',
             'Frozen-Flask == 1.0.2',
             ],
         'metrics': [
