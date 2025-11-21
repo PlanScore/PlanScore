@@ -452,6 +452,11 @@ class PlanScoreScoring(cdk.Stack):
                     (aws_glue.Schema.DOUBLE, "Expected Hispanic 2020 Democratic Vote Share (RPV)"),
                     (aws_glue.Schema.DOUBLE, "Expected Asian 2020 Democratic Vote Share (RPV)"),
                     (aws_glue.Schema.DOUBLE, "Expected American Indian or Alaska Native 2020 Democratic Vote Share (RPV)"),
+                    (aws_glue.Schema.DOUBLE, "Expected White 2024 Democratic Vote Share (RPV)"),
+                    (aws_glue.Schema.DOUBLE, "Expected Black 2024 Democratic Vote Share (RPV)"),
+                    (aws_glue.Schema.DOUBLE, "Expected Hispanic 2024 Democratic Vote Share (RPV)"),
+                    (aws_glue.Schema.DOUBLE, "Expected Asian 2024 Democratic Vote Share (RPV)"),
+                    (aws_glue.Schema.DOUBLE, "Expected American Indian or Alaska Native 2024 Democratic Vote Share (RPV)"),
                     (aws_glue.Schema.STRING, "Point"),
                 ]
             ],

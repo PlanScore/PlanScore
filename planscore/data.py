@@ -438,7 +438,7 @@ VERSION24 = ['2025B']
 
 MODELS = [
     Model(State.XX, House.statehouse,    2,  True, VERSIONS + VERSION24, 'data/XX/007-pvote-2024'), # b8e19879 and more
-    Model(State.AK, House.ushouse,       1,  True, VERSIONS, 'data/AK/009-cvap-2023'), # fabc7dc
+    Model(State.AK, House.ushouse,       1,  True, VERSIONS, 'data/AK/009-cvap-2023'), # 79b3023
     Model(State.AK, House.statesenate,  20,  True, VERSIONS, 'data/AK/008-acs-2020'), # c82db89
     Model(State.AK, House.statehouse,   40,  True, VERSIONS, 'data/AK/008-acs-2020'), # c82db89
     Model(State.AK, House.localplan,  None,  True, VERSIONS, 'data/AK/008-acs-2020'), # c82db89
@@ -486,7 +486,7 @@ MODELS = [
     Model(State.IA, House.statesenate,  50,  True, VERSIONS, 'data/IA/008-acs-2020'), # c82db89
     Model(State.IA, House.statehouse,  100,  True, VERSIONS, 'data/IA/008-acs-2020'), # c82db89
     Model(State.IA, House.localplan,  None,  True, VERSIONS, 'data/IA/008-acs-2020'), # c82db89
-    Model(State.ID, House.ushouse,       2,  True, VERSIONS, 'data/ID/009-cvap-2023'), # fabc7dc
+    Model(State.ID, House.ushouse,       2,  True, VERSIONS, 'data/ID/009-cvap-2023'), # 79b3023
     Model(State.ID, House.statesenate,  35,  True, VERSIONS, 'data/ID/008-acs-2020'), # c82db89
     Model(State.ID, House.statehouse,   70,  True, VERSIONS, 'data/ID/008-acs-2020'), # c82db89
     Model(State.ID, House.localplan,  None,  True, VERSIONS, 'data/ID/008-acs-2020'), # c82db89
@@ -522,7 +522,7 @@ MODELS = [
     Model(State.ME, House.statesenate,  35,  True, VERSIONS, 'data/ME/011-acs-2020'), # c82db89
     Model(State.ME, House.statehouse,  151,  True, VERSIONS, 'data/ME/011-acs-2020'), # c82db89
     Model(State.ME, House.localplan,  None,  True, VERSIONS, 'data/ME/011-acs-2020'), # c82db89
-    Model(State.MI, House.ushouse,      13,  True, VERSIONS, 'data/MI/012-cvap-2023'), # fabc7dc
+    Model(State.MI, House.ushouse,      13,  True, VERSIONS, 'data/MI/012-cvap-2023'), # 79b3023
     Model(State.MI, House.statesenate,  38,  True, VERSIONS, 'data/MI/011-acs-2020'), # c82db89
     Model(State.MI, House.statehouse,  110,  True, VERSIONS, 'data/MI/011-acs-2020'), # c82db89
     Model(State.MI, House.localplan,  None,  True, VERSIONS, 'data/MI/011-acs-2020'), # c82db89
@@ -546,7 +546,7 @@ MODELS = [
     Model(State.NC, House.statesenate,  50,  True, VERSIONS, 'data/NC/022-acs-2020'), # c82db89
     Model(State.NC, House.statehouse,  120,  True, VERSIONS, 'data/NC/022-acs-2020'), # c82db89
     Model(State.NC, House.localplan,  None,  True, VERSIONS, 'data/NC/022-acs-2020'), # c82db89
-    Model(State.ND, House.ushouse,       1,  True, VERSIONS, 'data/ND/012-cvap-2023'), # fabc7dc
+    Model(State.ND, House.ushouse,       1,  True, VERSIONS, 'data/ND/012-cvap-2023'), # 79b3023
     Model(State.ND, House.statesenate,  47,  True, VERSIONS, 'data/ND/011-acs-2020'), # c82db89
     Model(State.ND, House.statehouse,   94,  True, VERSIONS, 'data/ND/011-acs-2020'), # c82db89
     Model(State.ND, House.localplan,  None,  True, VERSIONS, 'data/ND/011-acs-2020'), # c82db89
@@ -557,7 +557,7 @@ MODELS = [
     Model(State.NH, House.statesenate,  24,  True, VERSIONS, 'data/NH/010-acs-2020'), # c82db89
     Model(State.NH, House.statehouse,  400,  True, VERSIONS, 'data/NH/010-acs-2020'), # c82db89
     Model(State.NH, House.localplan,  None,  True, VERSIONS, 'data/NH/010-acs-2020'), # c82db89
-    Model(State.NJ, House.ushouse,      12,  True, VERSIONS, 'data/NJ/008-cvap-2023'), # fabc7dc
+    Model(State.NJ, House.ushouse,      12,  True, VERSIONS, 'data/NJ/008-cvap-2023'), # 79b3023
     Model(State.NJ, House.statesenate,  40,  True, VERSIONS, 'data/NJ/007-acs-2020'), # c82db89
     Model(State.NJ, House.statehouse,   80,  True, VERSIONS, 'data/NJ/007-acs-2020'), # c82db89
     Model(State.NJ, House.localplan,  None,  True, VERSIONS, 'data/NJ/007-acs-2020'), # c82db89
@@ -569,7 +569,7 @@ MODELS = [
     Model(State.NV, House.statesenate,  21,  True, VERSIONS, 'data/NV/008-acs-2020'), # c82db89
     Model(State.NV, House.statehouse,   42,  True, VERSIONS, 'data/NV/008-acs-2020'), # c82db89
     Model(State.NV, House.localplan,  None,  True, VERSIONS, 'data/NV/008-acs-2020'), # c82db89
-    Model(State.NY, House.ushouse,      19,  True, VERSION24, 'data/NY/005-cvap-2023'), # fabc7dc
+    Model(State.NY, House.ushouse,      19,  True, VERSION24, 'data/NY/005-cvap-2023'), # 79b3023
     Model(State.NY, House.statesenate,  63,  True, VERSIONS, 'data/NY/003-acs-2020'), # c82db89
     Model(State.NY, House.statehouse,  150,  True, VERSIONS, 'data/NY/003-acs-2020'), # c82db89
     Model(State.NY, House.localplan,  None,  True, VERSIONS, 'data/NY/003-acs-2020'), # c82db89
@@ -577,11 +577,11 @@ MODELS = [
     Model(State.OH, House.statesenate,  33,  True, VERSIONS, 'data/OH/009-acs-2020'), # c82db89
     Model(State.OH, House.statehouse,   99,  True, VERSIONS, 'data/OH/009-acs-2020'), # c82db89
     Model(State.OH, House.localplan,  None,  True, VERSIONS, 'data/OH/009-acs-2020'), # c82db89
-    Model(State.OK, House.ushouse,       5,  True, VERSIONS, 'data/OK/009-cvap-2023'), # fabc7dc
+    Model(State.OK, House.ushouse,       5,  True, VERSIONS, 'data/OK/009-cvap-2023'), # 79b3023
     Model(State.OK, House.statesenate,  48,  True, VERSIONS, 'data/OK/008-acs-2020'), # c82db89
     Model(State.OK, House.statehouse,  101,  True, VERSIONS, 'data/OK/008-acs-2020'), # c82db89
     Model(State.OK, House.localplan,  None,  True, VERSIONS, 'data/OK/008-acs-2020'), # c82db89
-    Model(State.OR, House.ushouse,       6,  True, VERSIONS, 'data/OR/009-cvap-2023'), # 3e4bcbf
+    Model(State.OR, House.ushouse,       6,  True, VERSIONS, 'data/OR/009-cvap-2023'), # 79b3023
     Model(State.OR, House.statesenate,  30,  True, VERSIONS, 'data/OR/008-acs-2020'), # c82db89
     Model(State.OR, House.statehouse,   60,  True, VERSIONS, 'data/OR/008-acs-2020'), # c82db89
     Model(State.OR, House.localplan,  None,  True, VERSIONS, 'data/OR/008-acs-2020'), # c82db89
@@ -597,7 +597,7 @@ MODELS = [
     Model(State.SC, House.statesenate,  46,  True, VERSIONS, 'data/SC/008-acs-2020'), # c82db89
     Model(State.SC, House.statehouse,  124,  True, VERSIONS, 'data/SC/008-acs-2020'), # c82db89
     Model(State.SC, House.localplan,  None,  True, VERSIONS, 'data/SC/008-acs-2020'), # c82db89
-    Model(State.SD, House.ushouse,       1,  True, VERSIONS, 'data/SD/009-cvap-2023'), # fabc7dc
+    Model(State.SD, House.ushouse,       1,  True, VERSIONS, 'data/SD/009-cvap-2023'), # 79b3023
     Model(State.SD, House.statesenate,  35,  True, VERSIONS, 'data/SD/008-acs-2020'), # c82db89
     Model(State.SD, House.statehouse,   70,  True, VERSIONS, 'data/SD/008-acs-2020'), # c82db89
     Model(State.SD, House.localplan,  None,  True, VERSIONS, 'data/SD/008-acs-2020'), # c82db89
@@ -617,7 +617,7 @@ MODELS = [
     Model(State.VA, House.statesenate,  40,  True, VERSIONS, 'data/VA/010-acs-2020'), # c82db89
     Model(State.VA, House.statehouse,  100,  True, VERSIONS, 'data/VA/010-acs-2020'), # c82db89
     Model(State.VA, House.localplan,  None,  True, VERSIONS, 'data/VA/010-acs-2020'), # c82db89
-    Model(State.VT, House.ushouse,       1,  True, VERSIONS, 'data/VT/011-cvap-2023'), # fabc7dc
+    Model(State.VT, House.ushouse,       1,  True, VERSIONS, 'data/VT/011-cvap-2023'), # 79b3023
     Model(State.VT, House.statesenate,  30,  True, VERSIONS, 'data/VT/010-acs-2020'), # c82db89
     Model(State.VT, House.statehouse,  150,  True, VERSIONS, 'data/VT/010-acs-2020'), # c82db89
     Model(State.VT, House.localplan,  None,  True, VERSIONS, 'data/VT/010-acs-2020'), # c82db89

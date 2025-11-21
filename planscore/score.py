@@ -102,6 +102,11 @@ BLOCK_TABLE_FIELDS = [
     ("Expected Hispanic 2020 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
     ("Expected Asian 2020 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
     ("Expected American Indian or Alaska Native 2020 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
+    ("Expected White 2024 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
+    ("Expected Black 2024 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
+    ("Expected Hispanic 2024 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
+    ("Expected Asian 2024 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
+    ("Expected American Indian or Alaska Native 2024 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
 ]
 
 # Template for simulated election vote totals with incumbency
