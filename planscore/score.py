@@ -23,6 +23,7 @@ COLUMN_MMD = 'mmd_avg'
 class Aggregator (enum.Enum):
     Sum = 1
     Median = 2
+    WeightedMean = 3
 
 BLOCK_TABLE_FIELDS = [
     ("US President 2024 - DEM", float, Aggregator.Sum),
@@ -85,7 +86,27 @@ BLOCK_TABLE_FIELDS = [
     ("American Indian or Alaska Native Citizen Voting-Age Population 2020 ACS, Margin", float, Aggregator.Sum),
     ("Hispanic Citizen Voting-Age Population 2020 ACS", float, Aggregator.Sum),
     ("Hispanic Citizen Voting-Age Population 2020 ACS, Margin", float, Aggregator.Sum),
+    ("Citizen Voting-Age Population 2023 ACS", float, Aggregator.Sum),
+    ("Citizen Voting-Age Population 2023 ACS, Margin", float, Aggregator.Sum),
+    ("Black Citizen Voting-Age Population 2023 ACS", float, Aggregator.Sum),
+    ("Black Citizen Voting-Age Population 2023 ACS, Margin", float, Aggregator.Sum),
+    ("Asian Citizen Voting-Age Population 2023 ACS", float, Aggregator.Sum),
+    ("Asian Citizen Voting-Age Population 2023 ACS, Margin", float, Aggregator.Sum),
+    ("American Indian or Alaska Native Citizen Voting-Age Population 2023 ACS", float, Aggregator.Sum),
+    ("American Indian or Alaska Native Citizen Voting-Age Population 2023 ACS, Margin", float, Aggregator.Sum),
+    ("Hispanic Citizen Voting-Age Population 2023 ACS", float, Aggregator.Sum),
+    ("Hispanic Citizen Voting-Age Population 2023 ACS, Margin", float, Aggregator.Sum),
     #("Voting-Age Population 2020", int, Aggregator.Sum),
+    ("Expected White 2020 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
+    ("Expected Black 2020 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
+    ("Expected Hispanic 2020 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
+    ("Expected Asian 2020 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
+    ("Expected American Indian or Alaska Native 2020 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
+    ("Expected White 2024 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
+    ("Expected Black 2024 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
+    ("Expected Hispanic 2024 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
+    ("Expected Asian 2024 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
+    ("Expected American Indian or Alaska Native 2024 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
 ]
 
 # Template for simulated election vote totals with incumbency

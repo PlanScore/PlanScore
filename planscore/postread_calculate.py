@@ -155,6 +155,7 @@ def accumulate_district_totals(athena, upload, is_spatial):
     aggregators = {
         score.Aggregator.Sum: 'SUM("{}")',
         score.Aggregator.Median: 'APPROX_PERCENTILE("{}", 0.5)',
+        score.Aggregator.WeightedMean: 'IF(SUM("Population 2020") > 0, SUM("{}" * "Population 2020") / SUM("Population 2020"))',
     }
     
     columns = [

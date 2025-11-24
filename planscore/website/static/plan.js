@@ -39,6 +39,11 @@ var FIELDS = [
     'Black Citizen Voting-Age Population 2020 ACS',
     'Asian Citizen Voting-Age Population 2020 ACS',
     'American Indian or Alaska Native Citizen Voting-Age Population 2020 ACS',
+    'Citizen Voting-Age Population 2023 ACS',
+    'Hispanic Citizen Voting-Age Population 2023 ACS',
+    'Black Citizen Voting-Age Population 2023 ACS',
+    'Asian Citizen Voting-Age Population 2023 ACS',
+    'American Indian or Alaska Native Citizen Voting-Age Population 2023 ACS',
     'Democratic Wins',
     'Democratic Votes',
     'Republican Votes',
@@ -91,6 +96,7 @@ const fieldSubstringToDisplayStr = {
     'Citizen Voting-Age Population': 'CVAP',
     'Population': 'Pop.',
     '2020 ACS': '2020',
+    '2023 ACS': '2023',
 };
 
 const months = [
@@ -1044,6 +1050,9 @@ function update_heading_titles(head)
 
         } else if(head[i] == 'CVAP 2020' || head[i] == 'CVAP 2020 ACS') {
             head[i] = SHY_COLUMN;
+
+        } else if(head[i] == 'CVAP 2023' || head[i] == 'CVAP 2023 ACS') {
+            head[i] = SHY_COLUMN;
         }
     });
 }
@@ -1231,6 +1240,35 @@ function update_cvap2020_percentages(head, row)
     }
 }
 
+function update_cvap2023_percentages(head, row)
+{
+    var total_index = head.indexOf('Citizen Voting-Age Population 2023 ACS'),
+        black_index = head.indexOf('Black Citizen Voting-Age Population 2023 ACS'),
+        latin_index = head.indexOf('Hispanic Citizen Voting-Age Population 2023 ACS'),
+        asian_index = head.indexOf('Asian Citizen Voting-Age Population 2023 ACS'),
+        native_index = head.indexOf('American Indian or Alaska Native Citizen Voting-Age Population 2023 ACS');
+
+    if(total_index >= 0 && black_index >= 0)
+    {
+        row[black_index] = nice_percent(row[black_index] / row[total_index]);
+    }
+
+    if(total_index >= 0 && latin_index >= 0)
+    {
+        row[latin_index] = nice_percent(row[latin_index] / row[total_index]);
+    }
+
+    if(total_index >= 0 && asian_index >= 0)
+    {
+        row[asian_index] = nice_percent(row[asian_index] / row[total_index]);
+    }
+
+    if(total_index >= 0 && native_index >= 0)
+    {
+        row[native_index] = nice_percent(row[native_index] / row[total_index]);
+    }
+}
+
 /*
  * Return a rows * columns matrix representing a scored plan table
  */
@@ -1340,6 +1378,7 @@ function plan_array(plan)
         update_cvap2018_percentages(head_row, all_rows[j]);
         update_cvap2019_percentages(head_row, all_rows[j]);
         update_cvap2020_percentages(head_row, all_rows[j]);
+        update_cvap2023_percentages(head_row, all_rows[j]);
     }
 
     update_heading_titles(head_row);
