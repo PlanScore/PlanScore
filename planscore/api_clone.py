@@ -6,6 +6,7 @@ import boto3
 from . import constants
 from . import data
 from . import observe
+from . import postread_callback
 from . import upload_fields
 
 def kick_it_off(input_json, temporary, auth_token):
@@ -57,7 +58,26 @@ def kick_it_off(input_json, temporary, auth_token):
     )
     observe.put_upload_index(storage, upload)
 
-    return upload.to_dict()
+    # hand off to step functions
+
+    event = dict(bucket=constants.S3_BUCKET)
+    event.update(upload.to_dict())
+
+    sfn.start_execution(
+        stateMachineArn=os.environ.get('SINGLESTEP_API_SCORE_MACHINE'),
+        input=json.dumps(event),
+    )
+
+    # return links to user-readable page and machine-readable JSON
+
+    index_key = data.UPLOAD_INDEX_KEY.format(id=upload.id)
+    index_url = constants.S3_URL_PATTERN.format(b=constants.S3_BUCKET, k=index_key)
+    plan_url = postread_callback.get_redirect_url(constants.WEBSITE_BASE, upload.id)
+
+    return {
+        'index_url': index_url,
+        'plan_url': plan_url,
+    }
 
 def lambda_handler(event, context):
     '''

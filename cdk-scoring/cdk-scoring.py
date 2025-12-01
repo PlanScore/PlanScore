@@ -786,6 +786,7 @@ class PlanScoreScoring(cdk.Stack):
         )
         
         grant_statemachine_control(singlestepapi_statemachine, "SINGLESTEP_API_SCORE_MACHINE", api_upload)
+        grant_statemachine_control(singlestepapi_statemachine, "SINGLESTEP_API_SCORE_MACHINE", api_clone)
 
     def populate_api(
         self,
