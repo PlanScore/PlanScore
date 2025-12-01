@@ -13,4 +13,5 @@ from planscore.get_model_versions import lambda_handler as get_model_versions
 # from planscore.postread_calculate import lambda_handler as postread_calculate
 # from planscore.postread_intermediate import lambda_handler as postread_intermediate
 # from planscore.api_upload import lambda_handler as api_upload
+# from planscore.api_clone import lambda_handler as api_clone
 # from planscore.polygonize import lambda_handler as polygonize
