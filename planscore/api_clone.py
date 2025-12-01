@@ -6,8 +6,6 @@ import boto3
 from . import constants
 from . import data
 from . import observe
-from . import postread_callback
-from . import preread
 from . import upload_fields
 
 def kick_it_off(input_json, temporary, auth_token):
@@ -19,25 +17,46 @@ def kick_it_off(input_json, temporary, auth_token):
     storage = data.Storage(s3, constants.S3_BUCKET, None)
 
     src_index_key = data.UPLOAD_INDEX_KEY.format(id=input_json['id'])
-    # src_index_url = constants.S3_URL_PATTERN.format(b=constants.S3_BUCKET, k=src_index_key)
     src_upload = observe.get_upload_index(storage, src_index_key)
+    src_upload_dir = data.UPLOAD_DIRECTORY.format(id=src_upload.id)
+    src_objects = s3.list_objects(Bucket=constants.S3_BUCKET, Prefix=src_upload_dir)
 
     unsigned_id, _ = upload_fields.generate_signed_id('no sig, no secret', temporary)
+    upload_dir = data.UPLOAD_DIRECTORY.format(id=unsigned_id)
     upload_key = data.UPLOAD_PREFIX.format(id=unsigned_id) + os.path.basename(src_upload.key)
-    index_key = data.UPLOAD_INDEX_KEY.format(id=unsigned_id)
-    index_url = constants.S3_URL_PATTERN.format(b=constants.S3_BUCKET, k=index_key)
-    plan_url = postread_callback.get_redirect_url(constants.WEBSITE_BASE, unsigned_id)
+    public_keys = {
+        data.UPLOAD_INDEX_KEY.format(id=unsigned_id),
+        data.UPLOAD_PLAINTEXT_KEY.format(id=unsigned_id),
+        data.UPLOAD_GEOMETRY_KEY.format(id=unsigned_id),
+    }
 
-    s3.copy_object(
-        Bucket=constants.S3_BUCKET,
-        Key=upload_key,
-        CopySource=f"{constants.S3_BUCKET}/{src_upload.key}",
-        # ContentType='text/json',
-        ACL='bucket-owner-full-control',
-        StorageClass='INTELLIGENT_TIERING',
-        )
+    for src_object in src_objects.get('Contents', []):
+        key = os.path.join(upload_dir, os.path.relpath(src_object['Key'], src_upload_dir))
+        s3.copy_object(
+            Bucket=constants.S3_BUCKET,
+            Key=key,
+            CopySource=f"{constants.S3_BUCKET}/{src_object['Key']}",
+            # ContentType='text/json',
+            ACL='public-read' if key in public_keys else 'bucket-owner-full-control',
+            StorageClass='INTELLIGENT_TIERING',
+            )
 
-    upload = preread.create_upload(s3, constants.S3_BUCKET, upload_key, unsigned_id)
+    # Used so that the length of the upload districts array is correct
+    district_blanks = [None] * len(src_upload.districts)
+
+    upload = data.Upload(
+        unsigned_id,
+        upload_key,
+        message='Copied {} from {}.'.format(unsigned_id, src_upload.id),
+        auth_token=auth_token,
+        description=src_upload.description,
+        districts=district_blanks,
+        model=src_upload.model,
+        incumbents=src_upload.incumbents,
+        library_metadata=src_upload.library_metadata,
+    )
+    observe.put_upload_index(storage, upload)
+
     return upload.to_dict()
 
 def lambda_handler(event, context):
