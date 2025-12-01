@@ -649,7 +649,7 @@ class PlanScoreScoring(cdk.Stack):
         grant_data_bucket_access(data_bucket, api_upload)
         api_upload.add_permission('Permission', principal=apigateway_role)
 
-        api_clone = make_large_function(self, "APICloneD", 2048, "planscore.api_clone.lambda_handler")
+        api_clone = make_small_function(self, "APICloneZ", "lambda.api_clone")
         grant_data_bucket_access(data_bucket, api_clone)
         api_clone.add_permission('Permission', principal=apigateway_role)
 
