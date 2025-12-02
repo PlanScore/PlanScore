@@ -9,7 +9,7 @@ We require a [bearer token authorization header](https://tools.ietf.org/html/rfc
 to use the API. While it is under development, please contact
 [info@planscore.org](mailto:info@planscore.org) to request a token.
 
-Simple Interaction
+Simple Upload
 ---
 
 Plans represented as under-5MB GeoJSON files can be uploaded to the API in one
@@ -66,7 +66,7 @@ scored. Initially it will show ongoing progress updates, and upon completion
 will include complete scores for the uploaded plan. For an example, see
 [plan.html?20210307T032912.752515089Z](https://planscore.org/plan.html?20210307T032912.752515089Z).
 
-Multistep Interaction
+Multistep Upload
 ---
 
 Plans represented as zipped shapefiles, geopackage, experimental block
@@ -148,6 +148,57 @@ On success, two URLs will be returned in a JSON response identical to _Simple In
       "index_url": "https://planscore.s3.amazonaws.com/uploads/20210307T032912.752515089Z/index.json",
       "plan_url": "https://planscore.org/plan.html?20210307T032912.752515089Z"
     }
+
+Re-Score (Clone)
+---
+
+Existing plans can be re-scored via the API to update to the most recent versions of
+our model or to change parts of the description and other configuration details.
+
+### Sample Request
+
+JSON referencing an existing district plan by ID can be posted directly to `/clone`:
+
+    curl --request POST \
+        --header 'Authorization: Bearer {TOKEN}' \
+        --data '{"id":"20210307T032912.752515089Z"}' \
+        https://api.planscore.org/clone
+
+Data should be provided in JSON format with at least the ID specified.
+
+Other optional allowed properties are the same as described above:
+
+- `description` (string): Short description of the plan will appear as the top-most header on the plan page.
+- `incumbents` (list): Ordered list of incumbency scenario strings for each district. See above for possible values.
+- `model_version` (string): Predictive model version. See _Additional Methods_ below for valid inputs. When omitted, the first one is used.
+- `library_metadata` (dictionary): Any additional data to be passed through for possible later use.
+
+District plans shared with PlanScore are kept indefinitely. For score results
+that automatically disappear within a week, use the `/clone/temporary` endpoint:
+
+    curl --request POST \
+        --header 'Authorization: Bearer {TOKEN}' \
+        --data '{"id":"20210307T032912.752515089Z"}' \
+        https://api.planscore.org/clone/temporary
+
+### Sample Response
+
+On success, two URLs will be returned in a JSON response:
+
+    {
+      "index_url": "https://planscore.s3.amazonaws.com/uploads/20210307T032912.752515089Z/index.json",
+      "plan_url": "https://planscore.org/plan.html?20210307T032912.752515089Z"
+    }
+
+`index_url` is a machine-readable JSON representation of the plan being scored.
+Initially it will show ongoing progress updates, and upon completion will
+include complete scores for the uploaded plan. For an example, see
+[index.json](https://planscore.s3.amazonaws.com/uploads/20210307T032912.752515089Z/index.json).
+
+`plan_url` is a human-readable web page with graphs and maps for the plan being
+scored. Initially it will show ongoing progress updates, and upon completion
+will include complete scores for the uploaded plan. For an example, see
+[plan.html?20210307T032912.752515089Z](https://planscore.org/plan.html?20210307T032912.752515089Z).
 
 Additional Methods
 ---
