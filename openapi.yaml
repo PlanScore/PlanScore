@@ -210,6 +210,34 @@ components:
           description: Additional data to be passed through for possible later use
           additionalProperties: true
 
+    CloneRequest:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the existing plan to re-score
+          example: "20210307T032912.752515089Z"
+        description:
+          type: string
+          description: Short description of the plan (optional, will override original if provided)
+          example: "Congressional Redistricting Plan 2024"
+        incumbents:
+          type: array
+          items:
+            type: string
+            enum: [R, D, O]
+          description: Ordered list of incumbency scenario strings for each district
+          example: ["R", "D", "O"]
+        model_version:
+          type: string
+          description: Predictive model version. If omitted, the first one is used.
+        library_metadata:
+          type: object
+          description: Additional data to be passed through for possible later use
+          additionalProperties: true
+
     StatesResponse:
       type: array
       description: List of supported states and legislative bodies
@@ -585,6 +613,94 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /clone:
+    post:
+      summary: Re-score an existing plan
+      description: |
+        Re-score an existing district plan to update to the most recent versions of the model
+        or to change parts of the description and other configuration details.
+
+        District plans shared with PlanScore are kept indefinitely.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CloneRequest'
+            example:
+              id: "20210307T032912.752515089Z"
+              description: "Updated Congressional Plan"
+              model_version: "2024-01"
+      responses:
+        '200':
+          description: Plan cloned and re-scoring started successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '400':
+          description: Bad request - invalid plan ID or parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Plan not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /clone/temporary:
+    post:
+      summary: Re-score an existing plan (temporary)
+      description: |
+        Re-score an existing district plan with results that will automatically disappear
+        within a week. Same format as the regular clone endpoint.
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CloneRequest'
+            example:
+              id: "20210307T032912.752515089Z"
+      responses:
+        '200':
+          description: Temporary clone created and re-scoring started successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '400':
+          description: Bad request - invalid plan ID or parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Plan not found
           content:
             application/json:
               schema:

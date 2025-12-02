@@ -293,6 +293,166 @@ Authentication required
 
 
 
+## POST /clone
+
+Re-score an existing plan
+
+Re-score an existing district plan to update to the most recent versions of the model
+or to change parts of the description and other configuration details.
+
+District plans shared with PlanScore are kept indefinitely.
+
+
+
+
+
+### Request Body
+
+[CloneRequest](#clonerequest)
+
+
+
+
+
+
+
+### Responses
+
+#### 200
+
+
+Plan cloned and re-scoring started successfully
+
+
+[UploadResponse](#uploadresponse)
+
+
+
+
+
+
+
+#### 400
+
+
+Bad request - invalid plan ID or parameters
+
+
+[ErrorResponse](#errorresponse)
+
+
+
+
+
+
+
+#### 401
+
+
+Authentication required
+
+
+[ErrorResponse](#errorresponse)
+
+
+
+
+
+
+
+#### 404
+
+
+Plan not found
+
+
+[ErrorResponse](#errorresponse)
+
+
+
+
+
+
+
+## POST /clone/temporary
+
+Re-score an existing plan (temporary)
+
+Re-score an existing district plan with results that will automatically disappear
+within a week. Same format as the regular clone endpoint.
+
+
+
+
+
+### Request Body
+
+[CloneRequest](#clonerequest)
+
+
+
+
+
+
+
+### Responses
+
+#### 200
+
+
+Temporary clone created and re-scoring started successfully
+
+
+[UploadResponse](#uploadresponse)
+
+
+
+
+
+
+
+#### 400
+
+
+Bad request - invalid plan ID or parameters
+
+
+[ErrorResponse](#errorresponse)
+
+
+
+
+
+
+
+#### 401
+
+
+Authentication required
+
+
+[ErrorResponse](#errorresponse)
+
+
+
+
+
+
+
+#### 404
+
+
+Plan not found
+
+
+[ErrorResponse](#errorresponse)
+
+
+
+
+
+
+
 ## GET /states
 
 Get supported states
@@ -422,6 +582,19 @@ S3 URL and form fields for pre-signed POST upload
 | Field | Type | Description |
 |-------|------|-------------|
 | description | string | Short description of the plan |
+| incumbents | array | Ordered list of incumbency scenario strings for each district |
+| model_version | string | Predictive model version. If omitted, the first one is used. |
+| library_metadata | object | Additional data to be passed through for possible later use |
+
+
+## CloneRequest
+
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| id | string | Unique identifier of the existing plan to re-score |
+| description | string | Short description of the plan (optional, will override original if provided) |
 | incumbents | array | Ordered list of incumbency scenario strings for each district |
 | model_version | string | Predictive model version. If omitted, the first one is used. |
 | library_metadata | object | Additional data to be passed through for possible later use |
