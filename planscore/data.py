@@ -8,6 +8,7 @@ import datetime
 import collections
 from . import constants
 
+UPLOAD_DIRECTORY = 'uploads/{id}/'
 UPLOAD_PREFIX = 'uploads/{id}/upload/'
 UPLOAD_INDEX_KEY = 'uploads/{id}/index.json'
 UPLOAD_PLAINTEXT_KEY = 'uploads/{id}/index.txt'

@@ -649,6 +649,10 @@ class PlanScoreScoring(cdk.Stack):
         grant_data_bucket_access(data_bucket, api_upload)
         api_upload.add_permission('Permission', principal=apigateway_role)
 
+        api_clone = make_small_function(self, "APICloneZ", "lambda.api_clone")
+        grant_data_bucket_access(data_bucket, api_clone)
+        api_clone.add_permission('Permission', principal=apigateway_role)
+
         function_kwargs.update(timeout=cdk.Duration.seconds(5))
 
         get_states = make_small_function(self, "APIStatesZ", "lambda.get_states")
@@ -679,6 +683,7 @@ class PlanScoreScoring(cdk.Stack):
             preread_followup=preread_followup,
             polygonize=polygonize,
             api_upload=api_upload,
+            api_clone=api_clone,
             get_states=get_states,
             get_model_versions=get_model_versions,
             upload_fields=upload_fields,
@@ -695,6 +700,7 @@ class PlanScoreScoring(cdk.Stack):
         postread_calculate,
         preread_followup,
         api_upload,
+        api_clone,
         preread,
         postread_callback_GET,
         postread_callback_POST,
@@ -780,6 +786,7 @@ class PlanScoreScoring(cdk.Stack):
         )
         
         grant_statemachine_control(singlestepapi_statemachine, "SINGLESTEP_API_SCORE_MACHINE", api_upload)
+        grant_statemachine_control(singlestepapi_statemachine, "SINGLESTEP_API_SCORE_MACHINE", api_clone)
 
     def populate_api(
         self,
@@ -787,6 +794,7 @@ class PlanScoreScoring(cdk.Stack):
         api,
         authorizer,
         api_upload,
+        api_clone,
         get_states,
         get_model_versions,
         upload_fields,
@@ -909,6 +917,38 @@ class PlanScoreScoring(cdk.Stack):
         )
 
         upload_interactive_resource.add_method("GET", upload_fields_integration)
+
+        api_clone_integration = aws_apigateway.LambdaIntegration(
+            api_clone,
+            credentials_role=apigateway_role,
+            **integration_kwargs
+        )
+
+        clone_resource = api.root.add_resource(
+            'clone',
+            default_cors_preflight_options=aws_apigateway.CorsOptions(
+                allow_origins=aws_apigateway.Cors.ALL_ORIGINS,
+            ),
+        )
+
+        clone_resource.add_method(
+            "POST",
+            api_clone_integration,
+            authorizer=token_authorizer,
+        )
+
+        clone_temporary_resource = clone_resource.add_resource(
+            'temporary',
+            default_cors_preflight_options=aws_apigateway.CorsOptions(
+                allow_origins=aws_apigateway.Cors.ALL_ORIGINS,
+            ),
+        )
+
+        clone_temporary_resource.add_method(
+            "POST",
+            api_clone_integration,
+            authorizer=token_authorizer,
+        )
 
         preread_integration = aws_apigateway.LambdaIntegration(
             preread,

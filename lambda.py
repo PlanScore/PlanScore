@@ -7,6 +7,7 @@ from planscore.upload_fields import lambda_handler as upload_fields
 from planscore.authorizer import lambda_handler as authorizer
 from planscore.get_states import lambda_handler as get_states
 from planscore.get_model_versions import lambda_handler as get_model_versions
+from planscore.api_clone import lambda_handler as api_clone
 
 # Large docker functions
 # from planscore.preread_followup import lambda_handler as preread_followup
