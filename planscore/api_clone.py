@@ -15,12 +15,33 @@ def kick_it_off(input_json, temporary, auth_token):
     s3 = boto3.client('s3')
     sfn = boto3.client('stepfunctions')
 
+    src_id = input_json['id']
+    dest_description = input_json.get("description")
+    dest_incumbents = input_json.get("incumbents")
+    dest_library_metadata = input_json.get("library_metadata")
+    dest_model_version = input_json.get('model_version')
+
     storage = data.Storage(s3, constants.S3_BUCKET, None)
 
-    src_index_key = data.UPLOAD_INDEX_KEY.format(id=input_json['id'])
+    src_index_key = data.UPLOAD_INDEX_KEY.format(id=src_id)
     src_upload = observe.get_upload_index(storage, src_index_key)
-    src_upload_dir = data.UPLOAD_DIRECTORY.format(id=src_upload.id)
-    src_objects = s3.list_objects(Bucket=constants.S3_BUCKET, Prefix=src_upload_dir)
+    src_model = src_upload.model
+
+    # Use a current model for the state/house combination when we clone
+
+    src_current_models = [
+        m for m in data.MODELS if (m.state, m.house) == (src_model.state, src_model.house)
+    ]
+
+    if not src_current_models:
+        raise ValueError(f'No model for {repr(src_model.state.value)}, {repr(src_model.house.value)}')
+
+    dest_current_models = [
+        m for m in src_current_models if dest_model_version in [*m.versions, None]
+    ]
+
+    if not dest_current_models:
+        raise ValueError(f'No model for {repr(dest_model_version)}')
 
     unsigned_id, _ = upload_fields.generate_signed_id('no sig, no secret', temporary)
     upload_dir = data.UPLOAD_DIRECTORY.format(id=unsigned_id)
@@ -30,6 +51,9 @@ def kick_it_off(input_json, temporary, auth_token):
         data.UPLOAD_PLAINTEXT_KEY.format(id=unsigned_id),
         data.UPLOAD_GEOMETRY_KEY.format(id=unsigned_id),
     }
+
+    src_upload_dir = data.UPLOAD_DIRECTORY.format(id=src_upload.id)
+    src_objects = s3.list_objects(Bucket=constants.S3_BUCKET, Prefix=src_upload_dir)
 
     for src_object in src_objects.get('Contents', []):
         key = os.path.join(upload_dir, os.path.relpath(src_object['Key'], src_upload_dir))
@@ -50,11 +74,12 @@ def kick_it_off(input_json, temporary, auth_token):
         upload_key,
         message='Copied {} from {}.'.format(unsigned_id, src_upload.id),
         auth_token=auth_token,
-        description=src_upload.description,
         districts=district_blanks,
-        model=src_upload.model,
-        incumbents=src_upload.incumbents,
-        library_metadata=src_upload.library_metadata,
+        description=dest_description or src_upload.description,
+        model_version=dest_model_version or src_current_models[0].versions[0],
+        model=dest_current_models[0],
+        incumbents=dest_incumbents or src_upload.incumbents,
+        library_metadata=dest_library_metadata or src_upload.library_metadata,
     )
     observe.put_upload_index(storage, upload)
 
