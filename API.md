@@ -168,10 +168,10 @@ Data should be provided in JSON format with at least the ID specified.
 
 Other optional allowed properties are the same as described above:
 
-- `description` (string): Short description of the plan will appear as the top-most header on the plan page.
-- `incumbents` (list): Ordered list of incumbency scenario strings for each district. See above for possible values.
-- `model_version` (string): Predictive model version. See _Additional Methods_ below for valid inputs. When omitted, the first one is used.
-- `library_metadata` (dictionary): Any additional data to be passed through for possible later use.
+- `description` (string): Short description of the plan.
+- `incumbents` (list): Ordered list of incumbency scenario strings.
+- `model_version` (string): Predictive model version.
+- `library_metadata` (dictionary): Any additional data.
 
 District plans shared with PlanScore are kept indefinitely. For score results
 that automatically disappear within a week, use the `/clone/temporary` endpoint:
