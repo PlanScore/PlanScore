@@ -25,23 +25,9 @@ def kick_it_off(input_json, temporary, auth_token):
 
     src_index_key = data.UPLOAD_INDEX_KEY.format(id=src_id)
     src_upload = observe.get_upload_index(storage, src_index_key)
-    src_model = src_upload.model
 
     # Use a current model for the state/house combination when we clone
-
-    src_current_models = [
-        m for m in data.MODELS if (m.state, m.house) == (src_model.state, src_model.house)
-    ]
-
-    if not src_current_models:
-        raise ValueError(f'No model for {repr(src_model.state.value)}, {repr(src_model.house.value)}')
-
-    dest_current_models = [
-        m for m in src_current_models if dest_model_version in [*m.versions, None]
-    ]
-
-    if not dest_current_models:
-        raise ValueError(f'No model for {repr(dest_model_version)}')
+    dest_model = get_current_model(dest_model_version, src_upload.model)
 
     unsigned_id, _ = upload_fields.generate_signed_id('no sig, no secret', temporary)
     upload_dir = data.UPLOAD_DIRECTORY.format(id=unsigned_id)
@@ -76,8 +62,8 @@ def kick_it_off(input_json, temporary, auth_token):
         auth_token=auth_token,
         districts=district_blanks,
         description=dest_description or src_upload.description,
-        model_version=dest_model_version or src_current_models[0].versions[0],
-        model=dest_current_models[0],
+        model_version=dest_model.versions[0],
+        model=dest_model,
         incumbents=dest_incumbents or src_upload.incumbents,
         library_metadata=dest_library_metadata or src_upload.library_metadata,
     )
@@ -103,6 +89,27 @@ def kick_it_off(input_json, temporary, auth_token):
         'index_url': index_url,
         'plan_url': plan_url,
     }
+
+def get_current_model(dest_model_version: str, src_model: data.Model) -> data.Model:
+    '''
+    '''
+    src_current_models = [
+        model for model in data.MODELS
+        if (model.state, model.house) == (src_model.state, src_model.house)
+    ]
+
+    if not src_current_models:
+        raise ValueError(f'No model for {repr(src_model.state.value)}, {repr(src_model.house.value)}')
+
+    dest_current_models = [
+        model for model in src_current_models
+        if dest_model_version in [*model.versions, None]
+    ]
+
+    if not dest_current_models:
+        raise ValueError(f'No model for {repr(dest_model_version)}')
+
+    return dest_current_models[0]
 
 def lambda_handler(event, context):
     '''
