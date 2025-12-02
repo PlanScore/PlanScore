@@ -27,30 +27,10 @@ def kick_it_off(input_json, temporary, auth_token):
     src_upload = observe.get_upload_index(storage, src_index_key)
 
     # Use a current model for the state/house combination when we clone
-    dest_model = get_current_model(dest_model_version, src_upload.model)
+    dest_model_version, dest_model = get_current_model(dest_model_version, src_upload.model)
 
     unsigned_id, _ = upload_fields.generate_signed_id('no sig, no secret', temporary)
-    upload_dir = data.UPLOAD_DIRECTORY.format(id=unsigned_id)
     upload_key = data.UPLOAD_PREFIX.format(id=unsigned_id) + os.path.basename(src_upload.key)
-    public_keys = {
-        data.UPLOAD_INDEX_KEY.format(id=unsigned_id),
-        data.UPLOAD_PLAINTEXT_KEY.format(id=unsigned_id),
-        data.UPLOAD_GEOMETRY_KEY.format(id=unsigned_id),
-    }
-
-    src_upload_dir = data.UPLOAD_DIRECTORY.format(id=src_upload.id)
-    src_objects = s3.list_objects(Bucket=constants.S3_BUCKET, Prefix=src_upload_dir)
-
-    for src_object in src_objects.get('Contents', []):
-        key = os.path.join(upload_dir, os.path.relpath(src_object['Key'], src_upload_dir))
-        s3.copy_object(
-            Bucket=constants.S3_BUCKET,
-            Key=key,
-            CopySource=f"{constants.S3_BUCKET}/{src_object['Key']}",
-            # ContentType='text/json',
-            ACL='public-read' if key in public_keys else 'bucket-owner-full-control',
-            StorageClass='INTELLIGENT_TIERING',
-            )
 
     # Used so that the length of the upload districts array is correct
     district_blanks = [None] * len(src_upload.districts)
@@ -62,11 +42,13 @@ def kick_it_off(input_json, temporary, auth_token):
         auth_token=auth_token,
         districts=district_blanks,
         description=dest_description or src_upload.description,
-        model_version=dest_model.versions[0],
+        model_version=dest_model_version,
         model=dest_model,
         incumbents=dest_incumbents or src_upload.incumbents,
         library_metadata=dest_library_metadata or src_upload.library_metadata,
     )
+
+    copy_s3_directory(storage, upload, src_upload)
     observe.put_upload_index(storage, upload)
 
     # hand off to step functions
@@ -90,7 +72,7 @@ def kick_it_off(input_json, temporary, auth_token):
         'plan_url': plan_url,
     }
 
-def get_current_model(dest_model_version: str, src_model: data.Model) -> data.Model:
+def get_current_model(dest_model_version: str, src_model: data.Model) -> tuple[str, data.Model]:
     '''
     '''
     src_current_models = [
@@ -101,6 +83,9 @@ def get_current_model(dest_model_version: str, src_model: data.Model) -> data.Mo
     if not src_current_models:
         raise ValueError(f'No model for {repr(src_model.state.value)}, {repr(src_model.house.value)}')
 
+    if dest_model_version is None:
+        return src_current_models[0].versions[0], src_current_models[0]
+
     dest_current_models = [
         model for model in src_current_models
         if dest_model_version in [*model.versions, None]
@@ -109,7 +94,31 @@ def get_current_model(dest_model_version: str, src_model: data.Model) -> data.Mo
     if not dest_current_models:
         raise ValueError(f'No model for {repr(dest_model_version)}')
 
-    return dest_current_models[0]
+    return dest_model_version, dest_current_models[0]
+
+def copy_s3_directory(storage: data.Storage, dest_upload: data.Upload, src_upload: data.Upload):
+    '''
+    '''
+    public_keys = {
+        data.UPLOAD_INDEX_KEY.format(id=dest_upload.id),
+        data.UPLOAD_PLAINTEXT_KEY.format(id=dest_upload.id),
+        data.UPLOAD_GEOMETRY_KEY.format(id=dest_upload.id),
+    }
+
+    dest_upload_dir = data.UPLOAD_DIRECTORY.format(id=dest_upload.id)
+    src_upload_dir = data.UPLOAD_DIRECTORY.format(id=src_upload.id)
+    src_objects = storage.s3.list_objects(Bucket=storage.bucket, Prefix=src_upload_dir)
+
+    for src_object in src_objects.get('Contents', []):
+        key = os.path.join(dest_upload_dir, os.path.relpath(src_object['Key'], src_upload_dir))
+        storage.s3.copy_object(
+            Bucket=storage.bucket,
+            Key=key,
+            CopySource=f"{storage.bucket}/{src_object['Key']}",
+            # ContentType='text/json',
+            ACL='public-read' if key in public_keys else 'bucket-owner-full-control',
+            StorageClass='INTELLIGENT_TIERING',
+            )
 
 def lambda_handler(event, context):
     '''
