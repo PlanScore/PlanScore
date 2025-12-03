@@ -22,9 +22,6 @@ planscore/website/static/supported-states.svg: design/Upload-Map.svg planscore-s
 planscore-svg:
 	cd SVG && docker build -t planscore-svg:latest .
 
-openapi.md: openapi.yaml
-	openapi2markdown openapi.yaml openapi.md
-
 clean:
 	rm -rf planscore-lambda planscore-lambda.zip
 
