@@ -2,6 +2,7 @@ import json
 import os
 
 import boto3
+import botocore
 
 from . import constants
 from . import data
@@ -111,14 +112,20 @@ def copy_s3_directory(storage: data.Storage, dest_upload: data.Upload, src_uploa
 
     for src_object in src_objects.get('Contents', []):
         key = os.path.join(dest_upload_dir, os.path.relpath(src_object['Key'], src_upload_dir))
-        storage.s3.copy_object(
-            Bucket=storage.bucket,
-            Key=key,
-            CopySource=f"{storage.bucket}/{src_object['Key']}",
-            # ContentType='text/json',
-            ACL='public-read' if key in public_keys else 'bucket-owner-full-control',
-            StorageClass='INTELLIGENT_TIERING',
-            )
+        try:
+            storage.s3.copy_object(
+                Bucket=storage.bucket,
+                Key=key,
+                CopySource=f"{storage.bucket}/{src_object['Key']}",
+                # ContentType='text/json',
+                ACL='public-read' if key in public_keys else 'bucket-owner-full-control',
+                StorageClass='INTELLIGENT_TIERING',
+                )
+        except botocore.exceptions.ClientError as exc:
+            err = exc.response['Error']
+            if err['Code'] != 'InvalidObjectState' or err['StorageClass'] != 'DEEP_ARCHIVE':
+                # Only raise if we're not trying to copy a deep glacier object
+                raise
 
 def lambda_handler(event, context):
     '''
