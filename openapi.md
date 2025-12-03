@@ -511,6 +511,23 @@ List of model versions returned successfully
 
 
 
+## LibraryMetadata
+
+
+Additional metadata about the plan, particularly for library/historical plans.
+The following properties are displayed specially in the plan UI, but other properties are also allowed.
+
+
+
+| Field | Type | Description |
+|-------|------|-------------|
+| authoritative_link | string | URL to the authoritative source for this plan (e.g., state legislature website) |
+| predecessor_link | string | URL to the preceding enacted plan that this plan replaces or succeeds |
+| shapefile_file | string | URL to download the plan as a shapefile |
+| blockassign_file | string | URL to download the block assignment file for this plan |
+| notes | string | Explanatory notes about the plan, its history, or other relevant context |
+
+
 ## GeoJSONPlan
 
 
@@ -520,7 +537,7 @@ List of model versions returned successfully
 | type | string | Must be "FeatureCollection" |
 | description | string | Short description of the plan that will appear as the top-most header on the plan page |
 | model_version | string | Predictive model version to use. If omitted, the first available version is used. |
-| library_metadata | object | Additional metadata to be passed through for possible later use |
+| library_metadata |  |  |
 | features | array | Array of district polygons |
 
 
@@ -584,7 +601,7 @@ S3 URL and form fields for pre-signed POST upload
 | description | string | Short description of the plan |
 | incumbents | array | Ordered list of incumbency scenario strings for each district |
 | model_version | string | Predictive model version. If omitted, the first one is used. |
-| library_metadata | object | Additional data to be passed through for possible later use |
+| library_metadata |  |  |
 
 
 ## CloneRequest
@@ -597,7 +614,7 @@ S3 URL and form fields for pre-signed POST upload
 | description | string | Short description of the plan (optional, will override original if provided) |
 | incumbents | array | Ordered list of incumbency scenario strings for each district |
 | model_version | string | Predictive model version. If omitted, the first one is used. |
-| library_metadata | object | Additional data to be passed through for possible later use |
+| library_metadata |  |  |
 
 
 ## StatesResponse
@@ -631,7 +648,7 @@ List of available predictive model versions
 | geometry_key | string | S3 key for the geometry JSON file |
 | incumbents | array | Incumbent party for each district (R=Republican, D=Democratic, O=Open) |
 | key | string | S3 key path for the original uploaded file |
-| library_metadata | object | Additional metadata passed through from upload |
+| library_metadata |  |  |
 | message | string | Status message about the scoring process |
 | model | object | Information about the predictive model used |
 | model_version | string | Specific model version used for analysis |

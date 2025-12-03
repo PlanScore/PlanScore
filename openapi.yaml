@@ -32,6 +32,33 @@ components:
       description: Bearer token required for authenticated endpoints. Contact info@planscore.org to request a token.
 
   schemas:
+    LibraryMetadata:
+      type: object
+      description: |
+        Additional metadata about the plan, particularly for library/historical plans.
+        The following properties are displayed specially in the plan UI, but other properties are also allowed.
+      additionalProperties: true
+      properties:
+        authoritative_link:
+          type: string
+          format: uri
+          description: URL to the authoritative source for this plan (e.g., state legislature website)
+        predecessor_link:
+          type: string
+          format: uri
+          description: URL to the preceding enacted plan that this plan replaces or succeeds
+        shapefile_file:
+          type: string
+          format: uri
+          description: URL to download the plan as a shapefile
+        blockassign_file:
+          type: string
+          format: uri
+          description: URL to download the block assignment file for this plan
+        notes:
+          type: string
+          description: Explanatory notes about the plan, its history, or other relevant context
+
     GeoJSONPlan:
       type: object
       required:
@@ -50,9 +77,7 @@ components:
           type: string
           description: Predictive model version to use. If omitted, the first available version is used.
         library_metadata:
-          type: object
-          description: Additional metadata to be passed through for possible later use
-          additionalProperties: true
+          $ref: '#/components/schemas/LibraryMetadata'
         features:
           type: array
           description: Array of district polygons
@@ -206,9 +231,7 @@ components:
           type: string
           description: Predictive model version. If omitted, the first one is used.
         library_metadata:
-          type: object
-          description: Additional data to be passed through for possible later use
-          additionalProperties: true
+          $ref: '#/components/schemas/LibraryMetadata'
 
     CloneRequest:
       type: object
@@ -234,9 +257,7 @@ components:
           type: string
           description: Predictive model version. If omitted, the first one is used.
         library_metadata:
-          type: object
-          description: Additional data to be passed through for possible later use
-          additionalProperties: true
+          $ref: '#/components/schemas/LibraryMetadata'
 
     StatesResponse:
       type: array
@@ -354,9 +375,7 @@ components:
           description: S3 key path for the original uploaded file
           example: "uploads/20251111T020938.482589271Z/upload/tl_2025_35_cd119.zip"
         library_metadata:
-          type: object
-          description: Additional metadata passed through from upload
-          additionalProperties: true
+          $ref: '#/components/schemas/LibraryMetadata'
         message:
           type: string
           description: Status message about the scoring process
