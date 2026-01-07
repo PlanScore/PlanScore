@@ -545,7 +545,7 @@ def calculate_biases(upload):
 def calculate_district_biases(upload):
     ''' Calculate partisan metrics using district matrix with presidential vote only.
     
-        Look for 2016 presidential vote totals to use national PlanScore model.
+        Look for current presidential vote totals to use national PlanScore model.
     '''
     ## TODO: remove print output unless running planscore-score-locally
     #
@@ -573,11 +573,14 @@ def calculate_district_biases(upload):
         ) or (
             upload.districts[0]['totals'].get('US President 2020 - DEM') is not None
             and upload.districts[0]['totals'].get('US President 2020 - REP') is not None
+        ) or (
+            upload.districts[0]['totals'].get('US President 2024 - DEM') is not None
+            and upload.districts[0]['totals'].get('US President 2024 - REP') is not None
         )
     )
     
     if not has_president_votes:
-        # Skip everything if we don't see 2016 presidential votes
+        # Skip everything if we don't see current presidential votes
         return upload.clone()
     
     # Get large number of simulated outputs
@@ -685,9 +688,12 @@ def calculate_fva_biases(upload):
     races = [
         'US President 2016',
         'US President 2020',
+        'US President 2024',
         'US Senate 2016',
         'US Senate 2018',
         'US Senate 2020',
+        'US Senate 2022',
+        'US Senate 2024',
     ]
     
     for race in races:
