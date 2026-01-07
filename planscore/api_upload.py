@@ -51,13 +51,14 @@ def kick_it_off(geojson, temporary, auth_token):
     
     # assign description and incumbents as in postread_callback.py
     # and library_metadata which is only used here in api_upload.py
-    
+
     upload3 = upload2.clone(
         description = geojson.get('description', 'plan.geojson'),
         incumbents = [
             feature['properties'].get('Incumbent', 'O')
             for feature in geojson['features']
         ],
+        vote_swings = geojson.get('vote_swings', []),
         library_metadata = geojson.get('library_metadata'),
         model_version = model_version,
         auth_token = auth_token,

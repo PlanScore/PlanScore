@@ -19,6 +19,7 @@ def kick_it_off(input_json, temporary, auth_token):
     src_id = input_json['id']
     dest_description = input_json.get("description")
     dest_incumbents = input_json.get("incumbents")
+    dest_vote_swings = input_json.get("vote_swings")
     dest_library_metadata = input_json.get("library_metadata")
     dest_model_version = input_json.get('model_version')
 
@@ -46,6 +47,7 @@ def kick_it_off(input_json, temporary, auth_token):
         model_version=dest_model_version,
         model=dest_model,
         incumbents=dest_incumbents or src_upload.incumbents,
+        vote_swings=dest_vote_swings or src_upload.vote_swings,
         library_metadata=dest_library_metadata or src_upload.library_metadata,
     )
 

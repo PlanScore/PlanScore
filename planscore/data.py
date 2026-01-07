@@ -213,7 +213,7 @@ class Model:
 
 class Upload:
 
-    def __init__(self, id, key, model:Model=None, districts=None, incumbents=None,
+    def __init__(self, id, key, model:Model=None, districts=None, incumbents=None, vote_swings=None,
             summary=None, progress=None, start_time=None, message=None,
             description=None, geometry_key=None, status=None,
             library_metadata=None, auth_token=None, model_version=None, execution_id=None, execution_token=None,
@@ -224,6 +224,7 @@ class Upload:
         self.status = status
         self.districts = districts or []
         self.incumbents = incumbents or []
+        self.vote_swings = vote_swings or []
         self.summary = summary or {}
         self.progress = progress
         self.start_time = start_time or time.time()
@@ -236,9 +237,12 @@ class Upload:
         self.model_version = model_version
         self.execution_id = execution_id
         self.execution_token = execution_token
-        
+
         if not incumbents:
             self.incumbents = [Incumbency.Open.value for i in range(len(self.districts))]
+
+        if not vote_swings:
+            self.vote_swings = [0.0 for i in range(len(self.districts))]
     
     def is_overdue(self):
         return bool(time.time() > (self.start_time + constants.UPLOAD_TIME_LIMIT))
@@ -314,6 +318,7 @@ class Upload:
             status = self.status,
             districts = self.districts,
             incumbents = self.incumbents,
+            vote_swings = self.vote_swings,
             summary = self.summary,
             progress = progress,
             start_time = self.start_time,
@@ -385,14 +390,15 @@ class Upload:
         else:
             return out.getvalue()
     
-    def clone(self, model=None, districts=None, incumbents=None, summary=None, progress=None,
-        start_time=None, message=None, description=None, geometry_key=None, status=None,
+    def clone(self, model=None, districts=None, incumbents=None, vote_swings=None, summary=None,
+        progress=None, start_time=None, message=None, description=None, geometry_key=None, status=None,
         library_metadata=None, auth_token=None, model_version=None, execution_id=None, execution_token=None):
         return Upload(self.id, self.key,
             model = model or self.model,
             status = status if (self.status is None) else self.status,
             districts = districts or self.districts,
             incumbents = incumbents or self.incumbents,
+            vote_swings = vote_swings or self.vote_swings,
             summary = summary or self.summary,
             progress = progress if (progress is not None) else self.progress,
             start_time = start_time or self.start_time,
@@ -410,14 +416,15 @@ class Upload:
     def from_dict(data):
         progress = Progress(*data['progress']) if data.get('progress') else None
         model = Model.from_dict(data['model']) if data.get('model') else None
-    
+
         return Upload(
-            id = data['id'], 
+            id = data['id'],
             key = data['key'],
             model = model,
             status = data.get('status'),
             districts = data.get('districts'),
             incumbents = data.get('incumbents'),
+            vote_swings = data.get('vote_swings'),
             summary = data.get('summary'),
             progress = progress,
             start_time = data.get('start_time'),
