@@ -64,6 +64,9 @@ VERSION_PARAMETERS = {
     ),
 }
 
+PRESIDENTIAL_YEARS = (2016, 2020, 2024)
+US_SENATE_YEARS = (2016, 2018, 2020, 2022, 2024)
+
 class State (enum.Enum):
     XX = 'XX'
 

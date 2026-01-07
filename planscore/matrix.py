@@ -215,38 +215,23 @@ def prepare_district_data(upload):
     out_data = []
     
     for (district, incumbency) in zip(upload.districts, upload.incumbents):
-        if 2024 in params.pvotes and district['totals'].get('US President 2024 - DEM') is not None:
-            total = district['totals']['US President 2024 - DEM'] \
-                  + district['totals']['US President 2024 - REP']
-            try:
-                pvote = district['totals']['US President 2024 - DEM'] / total
-            except ZeroDivisionError:
-                pvote = -1
-        
-        elif 2020 in params.pvotes and district['totals'].get('US President 2020 - DEM') is not None:
-            total = district['totals']['US President 2020 - DEM'] \
-                  + district['totals']['US President 2020 - REP']
-            try:
-                pvote = district['totals']['US President 2020 - DEM'] / total
-            except ZeroDivisionError:
-                pvote = -1
-        
-        elif 2016 in params.pvotes and district['totals'].get('US President 2016 - DEM') is not None:
-            total = district['totals']['US President 2016 - DEM'] \
-                  + district['totals']['US President 2016 - REP']
-            try:
-                pvote = district['totals']['US President 2016 - DEM'] / total
-            except ZeroDivisionError:
-                pvote = -1
-
+        for year in data.PRESIDENTIAL_YEARS:
+            dem_key = f'US President {year} - DEM'
+            rep_key = f'US President {year} - REP'
+            if year in params.pvotes and district['totals'].get(dem_key) is not None:
+                total = district['totals'][dem_key] + district['totals'][rep_key]
+                try:
+                    pvote = district['totals'][dem_key] / total
+                except ZeroDivisionError:
+                    pvote = -1
+                out_data.append((
+                    round(total * pvote, 7),
+                    round(total * (1 - pvote), 7),
+                    incumbency,
+                ))
+                break
         else:
             raise ValueError(f'Missing presidential vote columns for {params.pvotes}')
-
-        out_data.append((
-            round(total * pvote, 7),
-            round(total * (1 - pvote), 7),
-            incumbency,
-        ))
     
     return out_data
 

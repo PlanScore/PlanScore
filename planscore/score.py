@@ -566,17 +566,12 @@ def calculate_district_biases(upload):
     #        file=file,
     #    )
     
-    has_president_votes = (
+    has_president_votes = any(
         (
-            upload.districts[0]['totals'].get('US President 2016 - DEM') is not None
-            and upload.districts[0]['totals'].get('US President 2016 - REP') is not None
-        ) or (
-            upload.districts[0]['totals'].get('US President 2020 - DEM') is not None
-            and upload.districts[0]['totals'].get('US President 2020 - REP') is not None
-        ) or (
-            upload.districts[0]['totals'].get('US President 2024 - DEM') is not None
-            and upload.districts[0]['totals'].get('US President 2024 - REP') is not None
+            upload.districts[0]['totals'].get(f'US President {year} - DEM') is not None
+            and upload.districts[0]['totals'].get(f'US President {year} - REP') is not None
         )
+        for year in data.PRESIDENTIAL_YEARS
     )
     
     if not has_president_votes:
@@ -685,16 +680,8 @@ def calculate_fva_biases(upload):
     totals0 = upload.districts[0]['totals']
     summary = copy.deepcopy(upload.summary)
     
-    races = [
-        'US President 2016',
-        'US President 2020',
-        'US President 2024',
-        'US Senate 2016',
-        'US Senate 2018',
-        'US Senate 2020',
-        'US Senate 2022',
-        'US Senate 2024',
-    ]
+    races = [f'US President {year}' for year in data.PRESIDENTIAL_YEARS] \
+          + [f'US Senate {year}' for year in data.US_SENATE_YEARS]
     
     for race in races:
         if (totals0.get(f'{race} - DEM') is not None and totals0.get(f'{race} - REP') is not None):
