@@ -227,6 +227,12 @@ components:
             enum: [R, D, O]
           description: Ordered list of incumbency scenario strings for each district
           example: ["R", "D", "O"]
+        vote_swings:
+          type: array
+          items:
+            type: number
+          description: Ordered list of vote swings to model for each district
+          example: [0.04, 0.05, 0.06]
         model_version:
           type: string
           description: Predictive model version. If omitted, the first one is used.
@@ -253,6 +259,12 @@ components:
             enum: [R, D, O]
           description: Ordered list of incumbency scenario strings for each district
           example: ["R", "D", "O"]
+        vote_swings:
+          type: array
+          items:
+            type: number
+          description: Ordered list of vote swings to model for each district
+          example: [0.04, 0.05, 0.06]
         model_version:
           type: string
           description: Predictive model version. If omitted, the first one is used.
@@ -370,6 +382,12 @@ components:
             enum: [R, D, O]
           description: Incumbent party for each district (R=Republican, D=Democratic, O=Open)
           example: ["D", "D", "D"]
+        vote_swings:
+          type: array
+          items:
+            type: number
+          description: Ordered list of vote swings to model for each district
+          example: [0.04, 0.05, 0.06]
         key:
           type: string
           description: S3 key path for the original uploaded file
