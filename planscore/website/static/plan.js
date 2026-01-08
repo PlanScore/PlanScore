@@ -1342,7 +1342,7 @@ function plan_array(plan)
     {
         field = fields[i];
         field_missing = false;
-        nonzero_vote_swings = false;
+        has_nonzero_vote_swings = false;
 
         for(var j in plan.districts)
         {
@@ -1352,7 +1352,7 @@ function plan_array(plan)
                 continue;
             } else if('vote_swing' in plan.districts[j] && field == 'Vote Swing') {
                 if (plan.districts[j].vote_swing != 0.0) {
-                    nonzero_vote_swings = true;
+                    has_nonzero_vote_swings = true;
                 }
                 continue;
             } else {
@@ -1380,7 +1380,7 @@ function plan_array(plan)
                 flip_chance = flippy_colors.indexOf(which_district_color(plan.districts[j], plan)) != -1;
                 current_row.push(flip_chance);
             }
-        } else if(field == 'Vote Swing' && !nonzero_vote_swings) {
+        } else if(field == 'Vote Swing' && !has_nonzero_vote_swings) {
             continue;
         }
 
@@ -1396,7 +1396,7 @@ function plan_array(plan)
             } else if('compactness' in plan.districts[j] && field in plan.districts[j].compactness) {
                 current_row.push(plan.districts[j].compactness[field]);
 
-            } else if('vote_swing' in plan.districts[j] && field == 'Vote Swing' && nonzero_vote_swings) {
+            } else if('vote_swing' in plan.districts[j] && field == 'Vote Swing' && has_nonzero_vote_swings) {
                 current_row.push(plan.districts[j].vote_swing);
             }
         }
