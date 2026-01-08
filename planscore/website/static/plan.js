@@ -47,6 +47,7 @@ var FIELDS = [
     'Democratic Wins',
     'Democratic Votes',
     'Republican Votes',
+    'Vote Swing',
     'US President 2024 - DEM',
     'US President 2024 - REP',
     'US President 2020 - DEM',
@@ -199,6 +200,20 @@ function nice_gap(value)
 function nice_string(value)
 {
     return value.replace(/./gm, function(c) { return "&#" + c.charCodeAt(0) + ";" });
+}
+
+function nice_vote_swing(value)
+{
+    if (value < -0.0955) {
+        return `R+${(value * -100).toFixed(0)}`;
+    } else if (value > 0.0955) {
+        return `D+${(value * 100).toFixed(0)}`;
+    } else if (value < 0) {
+        return `R+${(value * -100).toFixed(1)}`;
+    } else if (value > 0) {
+        return `D+${(value * 100).toFixed(1)}`;
+    }
+    return '–';
 }
 
 function clear_element(el)
@@ -1091,6 +1106,16 @@ function update_vote_percentages(head, row, source_row)
     }
 }
 
+function update_vote_swings(head, row)
+{
+    var swing_index = head.indexOf('Vote Swing');
+
+    if(swing_index >= 0)
+    {
+        row[swing_index] = nice_vote_swing(row[swing_index]);
+    }
+}
+
 function update_acs2015_percentages(head, row)
 {
     var total_index = head.indexOf('Population 2015'),
@@ -1317,12 +1342,18 @@ function plan_array(plan)
     {
         field = fields[i];
         field_missing = false;
+        nonzero_vote_swings = false;
 
         for(var j in plan.districts)
         {
             if(field in plan.districts[j].totals) {
                 continue;
             } else if('compactness' in plan.districts[j] && field in plan.districts[j].compactness) {
+                continue;
+            } else if('vote_swing' in plan.districts[j] && field == 'Vote Swing') {
+                if (plan.districts[j].vote_swing != 0.0) {
+                    nonzero_vote_swings = true;
+                }
                 continue;
             } else {
                 field_missing = true;
@@ -1349,6 +1380,8 @@ function plan_array(plan)
                 flip_chance = flippy_colors.indexOf(which_district_color(plan.districts[j], plan)) != -1;
                 current_row.push(flip_chance);
             }
+        } else if(field == 'Vote Swing' && !nonzero_vote_swings) {
+            continue;
         }
 
         head_row.push(field);
@@ -1362,12 +1395,16 @@ function plan_array(plan)
 
             } else if('compactness' in plan.districts[j] && field in plan.districts[j].compactness) {
                 current_row.push(plan.districts[j].compactness[field]);
+
+            } else if('vote_swing' in plan.districts[j] && field == 'Vote Swing' && nonzero_vote_swings) {
+                current_row.push(plan.districts[j].vote_swing);
             }
         }
     }
 
     for(var j = 1; j < all_rows.length; j++)
     {
+        update_vote_swings(head_row, all_rows[j]);
         update_vote_percentages(head_row, all_rows[j], plan.districts[j - 1].totals);
         update_acs2015_percentages(head_row, all_rows[j]);
         update_acs2016_percentages(head_row, all_rows[j]);
@@ -2074,6 +2111,7 @@ if(typeof module !== 'undefined' && module.exports)
         nice_string,
         nice_percent,
         nice_round_percent,
+        nice_vote_swing,
         partisan_suffix,
         get_plan_headings,
         nice_gap,
@@ -2085,6 +2123,7 @@ if(typeof module !== 'undefined' && module.exports)
         plan_array,
         plan_has_incumbency,
         update_vote_percentages,
+        update_vote_swings,
         update_acs2015_percentages,
         update_acs2016_percentages,
         update_cvap2015_percentages,

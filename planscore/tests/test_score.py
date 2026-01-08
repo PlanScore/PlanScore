@@ -1055,6 +1055,11 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['Efficiency Gap +1 Rep'], calculate_EG.return_value)
         self.assertEqual(calculate_EG.mock_calls[SIMS*2][1], ([3.5, 4.1, 4.4, 4.5], [4.5, 3.9, 3.6, 3.5], -.01))
 
+        self.assertAlmostEqual(output.districts[0]['vote_swing'], -0.1)
+        self.assertAlmostEqual(output.districts[1]['vote_swing'], 0.0)
+        self.assertAlmostEqual(output.districts[2]['vote_swing'], 0.1)
+        self.assertAlmostEqual(output.districts[3]['vote_swing'], 0.2)
+
         self.assertAlmostEqual(output.districts[0]['totals']['Republican Votes'], 3.07)
         self.assertAlmostEqual(output.districts[0]['totals']['Democratic Votes'], 4.93)
         self.assertAlmostEqual(output.districts[1]['totals']['Republican Votes'], 3.1)

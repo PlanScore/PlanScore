@@ -623,13 +623,14 @@ def calculate_district_biases(upload):
         ),
         upload.vote_swings,
     )
-    _, sim_count, _ = output_votes.shape
+    district_count, sim_count, _ = output_votes.shape
     
     # Record per-district vote totals and confidence intervals
     copied_districts = copy.deepcopy(upload.districts)
     district_number = itertools.count(1)
+    vote_swings = upload.vote_swings or [0.0] * district_count
     
-    for (i, district) in enumerate(copied_districts):
+    for (i, (district, vote_swing)) in enumerate(zip(copied_districts, vote_swings)):
         red_votes = matrix.dropna(output_votes[i,:,1])
         blue_votes = matrix.dropna(output_votes[i,:,0])
         try:
@@ -642,6 +643,7 @@ def calculate_district_biases(upload):
                 })
             district['is_counted'] = True
             district['number'] = next(district_number)
+            district['vote_swing'] = vote_swing
         except statistics.StatisticsError:
             district['totals'].update({
                 'Democratic Wins': None,
@@ -652,6 +654,7 @@ def calculate_district_biases(upload):
                 })
             district['is_counted'] = False
             district['number'] = None
+            district['vote_swing'] = None
     
     # For each sim, a list of red votes and a list of blue votes in districts
     red_votes_blue_votes = [
