@@ -27,8 +27,8 @@ var NC_index = require('./data/sample-NC-1-992/index.json'),
     NC_2020_unified = require('./data/sample-NC-unified/index.json'),
     FL_2020_declination = require('./data/sample-FL-declination/index.json'),
     CT_2021_water_district = require('./data/sample-CT-mostly-water-district/index.json'),
-    MO_zero_vote_swings = require('./data/sample-MO-zero-vote-swings/index.json'),
-    MO_vote_swings = require('./data/sample-MO-vote-swings/index.json');
+    MS_zero_vote_swings = require('./data/sample-MS-zero-vote-swings/index.json'),
+    MS_vote_swings = require('./data/sample-MS-vote-swings/index.json');
 
 // Old-style red vs. blue plan
 
@@ -394,7 +394,7 @@ assert.equal(Math.round(NC_2020_unified_seatshare.seat_share*1000)/1000, 0.421, 
 
 // Plan with defined all-zero vote swings
 
-var plan_array10 = plan.plan_array(MO_zero_vote_swings);
+var plan_array10 = plan.plan_array(MS_zero_vote_swings);
 assert.equal(plan_array10.length, 5, 'Should have a header with 4 districts');
 
 assert.deepEqual(plan_array10[0],
@@ -409,7 +409,7 @@ assert.equal(plan_array10[1].length, plan_array10[0].length);
 
 // Plan with defined non-zero vote swings
 
-var plan_array11 = plan.plan_array(MO_vote_swings);
+var plan_array11 = plan.plan_array(MS_vote_swings);
 assert.equal(plan_array11.length, 5, 'Should have a header with 4 districts');
 
 assert.deepEqual(plan_array11[0],
