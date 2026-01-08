@@ -1405,7 +1405,6 @@ function plan_array(plan)
     for(var j = 1; j < all_rows.length; j++)
     {
         update_vote_swings(head_row, all_rows[j]);
-        update_vote_percentages(head_row, all_rows[j], plan.districts[j - 1].totals);
         update_acs2015_percentages(head_row, all_rows[j]);
         update_acs2016_percentages(head_row, all_rows[j]);
         update_acs2018_percentages(head_row, all_rows[j]);
@@ -1416,8 +1415,12 @@ function plan_array(plan)
         update_cvap2019_percentages(head_row, all_rows[j]);
         update_cvap2020_percentages(head_row, all_rows[j]);
         update_cvap2023_percentages(head_row, all_rows[j]);
+
+        // Do this last! It leaves head out of synch with rows, needs update_heading_titles()
+        update_vote_percentages(head_row, all_rows[j], plan.districts[j - 1].totals);
     }
 
+    // Fix the synch problem introduced in update_vote_percentages()
     update_heading_titles(head_row);
     return all_rows;
 }
