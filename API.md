@@ -139,6 +139,7 @@ POST data should be a JSON dictionary with these optional keys:
 
 - `description` (string): Short description of the plan will appear as the top-most header on the plan page.
 - `incumbents` (list): Ordered list of incumbency scenario strings for each district. See above for possible values.
+- `vote_swings` (list): Ordered list of vote swings to model for each district, positive for pro-Democratic shifts.
 - `model_version` (string): Predictive model version. See _Additional Methods_ below for valid inputs. When omitted, the first one is used.
 - `library_metadata` (dictionary): Any additional data to be passed through for possible later use.
 

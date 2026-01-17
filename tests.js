@@ -26,7 +26,9 @@ var NC_index = require('./data/sample-NC-1-992/index.json'),
     NC_2020 = require('./data/sample-NC2020/index.json'),
     NC_2020_unified = require('./data/sample-NC-unified/index.json'),
     FL_2020_declination = require('./data/sample-FL-declination/index.json'),
-    CT_2021_water_district = require('./data/sample-CT-mostly-water-district/index.json');
+    CT_2021_water_district = require('./data/sample-CT-mostly-water-district/index.json'),
+    MS_zero_vote_swings = require('./data/sample-MS-zero-vote-swings/index.json'),
+    MS_vote_swings = require('./data/sample-MS-vote-swings/index.json');
 
 // Old-style red vs. blue plan
 
@@ -146,6 +148,7 @@ assert.deepEqual(plan.which_score_column_names(NC_multisim_index),
         'Democratic Wins',
         'Democratic Votes',
         'Republican Votes',
+        'Vote Swing',
         'US President 2024 - DEM',
         'US President 2024 - REP',
         'US President 2020 - DEM',
@@ -329,6 +332,8 @@ assert.equal(plan.which_district_color(NC_2020.districts[12], NC_2020),
 
 assert.equal(plan.get_seatshare_array(NC_2020), undefined, 'Should omit seat shares');
 
+// Plan based on unified district model
+
 var plan_array9 = plan.plan_array(NC_2020_unified);
 assert.equal(plan_array9.length, 14, 'Should have a header with 13 districts');
 
@@ -386,6 +391,50 @@ assert.equal(NC_2020_unified_seatshare.colors.length, 13, 'Should see the correc
 assert.equal(Math.round(NC_2020_unified_seatshare.red_votes), 2273424, 'Should see the correct number of red votes');
 assert.equal(Math.round(NC_2020_unified_seatshare.blue_votes), 2181551, 'Should see the correct number of blue votes');
 assert.equal(Math.round(NC_2020_unified_seatshare.seat_share*1000)/1000, 0.421, 'Should see the correct share of blue seats');
+
+// Plan with defined all-zero vote swings
+
+var plan_array10 = plan.plan_array(MS_zero_vote_swings);
+assert.equal(plan_array10.length, 5, 'Should have a header with 4 districts');
+
+assert.deepEqual(plan_array10[0],
+    ['District', 'Candidate Scenario', 'Pop. 2020', 'PlanScore:ShyColumn',
+    'Hispanic CVAP 2023', 'Non-Hisp. Black CVAP 2023', 'Non-Hisp. Asian CVAP 2023',
+    'Non-Hisp. Native CVAP 2023', 'Chance of 1+ Flips<sup>†</sup>', 'Chance of Democratic Win',
+    'Predicted Vote Shares', 'Harris (D) 2024', 'Trump (R) 2024', 'PlanScore:ShyColumn',
+    'PlanScore:ShyColumn', 'PlanScore:ShyColumn', 'PlanScore:ShyColumn'],
+    'Should pick out the right column names');
+
+assert.equal(plan_array10[1].length, plan_array10[0].length);
+
+// Plan with defined non-zero vote swings
+
+var plan_array11 = plan.plan_array(MS_vote_swings);
+assert.equal(plan_array11.length, 5, 'Should have a header with 4 districts');
+
+assert.deepEqual(plan_array11[0],
+    ['District', 'Candidate Scenario', 'Pop. 2020', 'PlanScore:ShyColumn',
+    'Hispanic CVAP 2023', 'Non-Hisp. Black CVAP 2023', 'Non-Hisp. Asian CVAP 2023',
+    'Non-Hisp. Native CVAP 2023', 'Chance of 1+ Flips<sup>†</sup>', 'Chance of Democratic Win',
+    'Predicted Vote Shares', 'Vote Swing', 'Harris (D) 2024', 'Trump (R) 2024',
+    'PlanScore:ShyColumn', 'PlanScore:ShyColumn', 'PlanScore:ShyColumn', 'PlanScore:ShyColumn'],
+    'Should pick out the right column names');
+
+assert.equal(plan_array11[1].length, plan_array11[0].length);
+assert.equal(plan_array11[1][10], '36% D / 64% R');
+assert.equal(plan_array11[1][11], 'D+8.0');
+
+assert.equal(plan_array11[2].length, plan_array11[0].length);
+assert.equal(plan_array11[2][10], '68% D / 32% R');
+assert.equal(plan_array11[2][11], 'D+5.0');
+
+assert.equal(plan_array11[3].length, plan_array11[0].length);
+assert.equal(plan_array11[3][10], '40% D / 60% R');
+assert.equal(plan_array11[3][11], 'D+7.0');
+
+assert.equal(plan_array11[4].length, plan_array11[0].length);
+assert.equal(plan_array11[4][10], '33% D / 67% R');
+assert.equal(plan_array11[4][11], 'D+8.0');
 
 // Display preparation functions
 
@@ -551,6 +600,16 @@ assert.equal(plan.nice_gap(.1), '+10.0% for Democrats', 'Positive gaps should be
 assert.equal(plan.nice_gap(-.1), '+10.0% for Republicans', 'Negative gaps should be red');
 
 assert.equal(plan.nice_string('yo'), '&#121;&#111;');
+
+assert.equal(plan.nice_vote_swing(-0.101), 'R+10');
+assert.equal(plan.nice_vote_swing(-0.1), 'R+10');
+assert.equal(plan.nice_vote_swing(-0.095), 'R+9.5');
+assert.equal(plan.nice_vote_swing(-0.015), 'R+1.5');
+assert.equal(plan.nice_vote_swing(0.0), '–');
+assert.equal(plan.nice_vote_swing(0.101), 'D+10');
+assert.equal(plan.nice_vote_swing(0.1), 'D+10');
+assert.equal(plan.nice_vote_swing(0.095), 'D+9.5');
+assert.equal(plan.nice_vote_swing(0.015), 'D+1.5');
 
 assert.equal(plan.partisan_suffix(0), '');
 assert.equal(plan.partisan_suffix(1), '&nbsp;D');

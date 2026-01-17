@@ -3,6 +3,8 @@
 When all districts are added up and present on S3, performs complete scoring
 of district plan and uploads summary JSON file.
 '''
+from __future__ import annotations
+
 import os
 import gzip
 import csv
@@ -14,6 +16,9 @@ import math
 import argparse
 import urllib.request
 from . import data, constants, matrix
+
+import numpy
+import numpy.typing
 
 COLUMN_EG = 'eg_adj_avg'
 COLUMN_D2 = 'dec2_avg'
@@ -112,7 +117,7 @@ BLOCK_TABLE_FIELDS = [
 # Template for simulated election vote totals with incumbency
 FIELD_TMPL = '{incumbent}:{party}{sim:03d}'
 
-def swing_vote(red_districts, blue_districts, amount):
+def swing_vote(red_districts:list[float], blue_districts:list[float], amount:float) -> tuple(list[float], list[float]):
     ''' Swing the vote by a percentage, positive toward blue.
     '''
     if amount == 0:
@@ -123,6 +128,36 @@ def swing_vote(red_districts, blue_districts, amount):
     swung_blues = [((B/T + amount) * T) for (R, B, T) in districts if T > 0]
     
     return swung_reds, swung_blues
+
+def swing_vote_matrix(votes:numpy.typing.NDArray, vote_swings:list[float]) -> numpy.typing.NDArray:
+    ''' Swing the vote by a percentage, positive toward blue.
+
+        Input array shape is (districts, sims, dem/rep votes) like output of matrix.model_votes()
+    '''
+    district_count, sim_count, _ = votes.shape
+
+    if not any(s != 0 for s in vote_swings):
+        return votes.copy()
+
+    if not vote_swings:
+        vote_swings = [0.0] * district_count
+
+    if len(vote_swings) != district_count:
+        raise ValueError('Wrong number of vote swings')
+
+    new_votes: list[numpy.typing.NDArray] = []
+
+    for (i, district_votes, vote_swing) in zip(itertools.count(), votes, vote_swings):
+        red_votes = district_votes[:,1]
+        blue_votes = district_votes[:,0]
+        new_red_votes, new_blue_votes = [
+            numpy.array(new_votes).reshape((sim_count, 1))
+            for new_votes in swing_vote(red_votes, blue_votes, vote_swing)
+        ]
+        new_district_votes = numpy.concatenate((new_blue_votes, new_red_votes), axis=1)
+        new_votes.append(new_district_votes.reshape((1, sim_count, 2)))
+
+    return numpy.concatenate(new_votes, axis=0).round(6)
 
 def safe_mean(values):
     '''
@@ -200,7 +235,7 @@ def percentrank_rel(column, house, value):
     
     return sum(values) / len(values)
 
-def calculate_EG(red_districts, blue_districts, vote_swing=0):
+def calculate_EG(red_districts:list[float], blue_districts:list[float], vote_swing=0) -> float:
     ''' Convert two lists of district vote counts into an EG score.
     
         By convention, result is positive for blue and negative for red.
@@ -232,7 +267,7 @@ def calculate_EG(red_districts, blue_districts, vote_swing=0):
     
     return statewide_seat_share - 0.5 - 2 * (statewide_vote_share - 0.5)
 
-def calculate_MMD(red_districts, blue_districts):
+def calculate_MMD(red_districts:list[float], blue_districts:list[float]) -> float:
     ''' Convert two lists of district vote counts into a Mean-Median score.
     
         By convention, result is positive for blue and negative for red.
@@ -253,7 +288,7 @@ def calculate_MMD(red_districts, blue_districts):
     
     return median - mean
 
-def calculate_PB(red_districts, blue_districts):
+def calculate_PB(red_districts:list[float], blue_districts:list[float]) -> float:
     ''' Convert two lists of district vote counts into a Partisan Bias score.
     
         By convention, result is positive for blue and negative for red.
@@ -279,7 +314,7 @@ def calculate_PB(red_districts, blue_districts):
     
     return blue_seatshare - blue_voteshare
 
-def calculate_D2(red_districts, blue_districts):
+def calculate_D2(red_districts:list[float], blue_districts:list[float]) -> float:
     ''' Convert two lists of district vote counts into a Declination score.
     
         By convention, result is positive for blue and negative for red.
@@ -328,7 +363,7 @@ def calculate_D2(red_districts, blue_districts):
 
     return -declination2
 
-def calculate_D2_diff(red_districts, blue_districts):
+def calculate_D2_diff(red_districts:list[float], blue_districts:list[float]) -> float | None:
     ''' Convert two lists of district vote counts into vote share difference.
     
         Relevant for the textual description of Declination.
@@ -545,7 +580,7 @@ def calculate_biases(upload):
 def calculate_district_biases(upload):
     ''' Calculate partisan metrics using district matrix with presidential vote only.
     
-        Look for 2016 presidential vote totals to use national PlanScore model.
+        Look for current presidential vote totals to use national PlanScore model.
     '''
     ## TODO: remove print output unless running planscore-score-locally
     #
@@ -566,38 +601,41 @@ def calculate_district_biases(upload):
     #        file=file,
     #    )
     
-    has_president_votes = (
+    has_president_votes = any(
         (
-            upload.districts[0]['totals'].get('US President 2016 - DEM') is not None
-            and upload.districts[0]['totals'].get('US President 2016 - REP') is not None
-        ) or (
-            upload.districts[0]['totals'].get('US President 2020 - DEM') is not None
-            and upload.districts[0]['totals'].get('US President 2020 - REP') is not None
+            upload.districts[0]['totals'].get(f'US President {year} - DEM') is not None
+            and upload.districts[0]['totals'].get(f'US President {year} - REP') is not None
         )
+        for year in data.PRESIDENTIAL_YEARS
     )
     
     if not has_president_votes:
-        # Skip everything if we don't see 2016 presidential votes
+        # Skip everything if we don't see current presidential votes
         return upload.clone()
     
     # Get large number of simulated outputs
-    output_votes = matrix.model_votes(
-        upload.model_version or upload.model.versions[0],
-        upload.model.state,
-        upload.model.house,
-        matrix.filter_district_data(matrix.prepare_district_data(upload)),
+    output_votes = swing_vote_matrix(
+        matrix.model_votes(
+            upload.model_version or upload.model.versions[0],
+            upload.model.state,
+            upload.model.house,
+            matrix.filter_district_data(matrix.prepare_district_data(upload)),
+        ),
+        upload.vote_swings,
     )
+    district_count, sim_count, _ = output_votes.shape
     
     # Record per-district vote totals and confidence intervals
     copied_districts = copy.deepcopy(upload.districts)
     district_number = itertools.count(1)
+    vote_swings = upload.vote_swings or [0.0] * district_count
     
-    for (i, district) in enumerate(copied_districts):
+    for (i, (district, vote_swing)) in enumerate(zip(copied_districts, vote_swings)):
         red_votes = matrix.dropna(output_votes[i,:,1])
         blue_votes = matrix.dropna(output_votes[i,:,0])
         try:
             district['totals'].update({
-                'Democratic Wins': (blue_votes > red_votes).astype(int).sum() / output_votes.shape[1],
+                'Democratic Wins': (blue_votes > red_votes).astype(int).sum() / sim_count,
                 'Democratic Votes': round(statistics.mean(blue_votes), constants.ROUND_COUNT),
                 'Republican Votes': round(statistics.mean(red_votes), constants.ROUND_COUNT),
                 'Democratic Votes SD': round(statistics.stdev(blue_votes), constants.ROUND_COUNT),
@@ -605,6 +643,7 @@ def calculate_district_biases(upload):
                 })
             district['is_counted'] = True
             district['number'] = next(district_number)
+            district['vote_swing'] = vote_swing
         except statistics.StatisticsError:
             district['totals'].update({
                 'Democratic Wins': None,
@@ -615,6 +654,7 @@ def calculate_district_biases(upload):
                 })
             district['is_counted'] = False
             district['number'] = None
+            district['vote_swing'] = None
     
     # For each sim, a list of red votes and a list of blue votes in districts
     red_votes_blue_votes = [
@@ -622,7 +662,7 @@ def calculate_district_biases(upload):
             matrix.dropna(output_votes[:,sim,1]).tolist(),
             matrix.dropna(output_votes[:,sim,0]).tolist(),
         )
-        for sim in range(output_votes.shape[1])
+        for sim in range(sim_count)
     ]
     
     # Calculate partisanship metrics for all simulations
@@ -682,13 +722,8 @@ def calculate_fva_biases(upload):
     totals0 = upload.districts[0]['totals']
     summary = copy.deepcopy(upload.summary)
     
-    races = [
-        'US President 2016',
-        'US President 2020',
-        'US Senate 2016',
-        'US Senate 2018',
-        'US Senate 2020',
-    ]
+    races = [f'US President {year}' for year in data.PRESIDENTIAL_YEARS] \
+          + [f'US Senate {year}' for year in data.US_SENATE_YEARS]
     
     for race in races:
         if (totals0.get(f'{race} - DEM') is not None and totals0.get(f'{race} - REP') is not None):

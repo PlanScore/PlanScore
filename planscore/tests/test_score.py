@@ -47,6 +47,23 @@ class TestScore (unittest.TestCase):
         reds3, blues3 = score.swing_vote((1, 2, 3), (3, 2, 1), -.1)
         self.assertEqual(reds3, [1.4, 2.4, 3.4])
         self.assertEqual(blues3, [2.6, 1.6, .6])
+
+    def test_swing_vote_matrix(self):
+        ''' Vote swing is correctly calculated for multi-sim numpy arrays
+        '''
+        votes1 = numpy.array([
+            [[1, 3], [1, 3]],
+            [[2, 2], [2, 2]],
+            [[3, 1], [3, 1]],
+        ])
+        votes2 = numpy.array([
+            [[1.4, 2.6], [1.4, 2.6]],
+            [[2.4, 1.6], [2.4, 1.6]],
+            [[3.4, 0.6], [3.4, 0.6]]
+        ])
+        votes3 = score.swing_vote_matrix(votes1, [0.1] * 3)
+        self.assertTrue((votes1.sum(axis=2) == votes2.sum(axis=2)).all())
+        self.assertTrue((votes2 == votes3).all())
     
     def test_safe_mean(self):
         ''' Means are correctly calculated
@@ -960,6 +977,102 @@ class TestScore (unittest.TestCase):
         self.assertAlmostEqual(output.districts[1]['totals']['Democratic Wins'], 0.6666667)
         self.assertAlmostEqual(output.districts[2]['totals']['Democratic Wins'], 0.3333333)
         self.assertAlmostEqual(output.districts[3]['totals']['Democratic Wins'], 0.)
+
+    @unittest.mock.patch('planscore.score.percentrank_rel')
+    @unittest.mock.patch('planscore.score.percentrank_abs')
+    @unittest.mock.patch('planscore.score.calculate_D2_diff')
+    @unittest.mock.patch('planscore.score.calculate_D2')
+    @unittest.mock.patch('planscore.score.calculate_MMD')
+    @unittest.mock.patch('planscore.score.calculate_PB')
+    @unittest.mock.patch('planscore.score.calculate_EG')
+    @unittest.mock.patch('planscore.matrix.model_votes')
+    @unittest.mock.patch('planscore.matrix.filter_district_data')
+    def test_calculate_gap_unified_vote_swing(self, filter_district_data, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
+        ''' Efficiency gap can be correctly calculated from presidential vote only
+        '''
+        input = data.Upload(id=None, key=None,
+            model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2025A'], None),
+            model_version = '2025A',
+            vote_swings=[-0.1, 0.0, 0.1, 0.2],
+            districts = [
+                dict(totals={'US President 2020 - REP': 2, 'US President 2020 - DEM': 6}, tile=None),
+                dict(totals={'US President 2020 - REP': 3, 'US President 2020 - DEM': 5}, tile=None),
+                dict(totals={'US President 2020 - REP': 5, 'US President 2020 - DEM': 3}, tile=None),
+                dict(totals={'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
+                ])
+        
+        percentrank_rel.return_value = 0
+        percentrank_abs.return_value = 0
+        calculate_D2.return_value = 0
+        calculate_D2_diff.return_value = 0
+        calculate_MMD.return_value = 0
+        calculate_PB.return_value = 0
+        calculate_EG.return_value = 0
+        model_votes.return_value = numpy.array([
+            [[5.3, 2.7],
+             [6.0, 2.0],
+             [5.9, 2.1]],
+
+            [[3.9, 4.1],
+             [5.7, 2.3],
+             [5.1, 2.9]],
+
+            [[2.8, 5.2],
+             [4.1, 3.9],
+             [2.8, 5.2]],
+
+            [[1.9, 6.1],
+             [2.7, 5.3],
+             [2.6, 5.4]],
+        ])
+        output = score.calculate_everything(input)
+        self.assertEqual(model_votes.mock_calls[0][1], ('2025A', data.State.XX, data.House.ushouse, filter_district_data.return_value))
+        
+        self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
+        self.assertEqual(output.summary['Mean-Median Positives'], 0.0)
+        self.assertEqual(calculate_MMD.mock_calls[0][1], ([3.5, 4.1, 4.4, 4.5], [4.5, 3.9, 3.6, 3.5]))
+
+        self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
+        self.assertEqual(output.summary['Partisan Bias Positives'], 0.0)
+        self.assertEqual(calculate_PB.mock_calls[0][1], ([3.5, 4.1, 4.4, 4.5], [4.5, 3.9, 3.6, 3.5]))
+        
+        self.assertEqual(output.summary['Declination'], calculate_D2.return_value)
+        self.assertEqual(output.summary['Declination Positives'], 0.0)
+        self.assertEqual(calculate_D2.mock_calls[0][1], ([3.5, 4.1, 4.4, 4.5], [4.5, 3.9, 3.6, 3.5]))
+        
+        SIMS = model_votes.return_value.shape[1]
+
+        # First round of sims
+        self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
+        self.assertEqual(output.summary['Efficiency Gap Positives'], 0.0)
+        self.assertEqual(calculate_EG.mock_calls[SIMS*0][1], ([3.5, 4.1, 4.4, 4.5], [4.5, 3.9, 3.6, 3.5], 0.))
+
+        # Second round of sims
+        self.assertEqual(output.summary['Efficiency Gap +1 Dem'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[SIMS*1][1], ([3.5, 4.1, 4.4, 4.5], [4.5, 3.9, 3.6, 3.5], .01))
+
+        # Third round of sims
+        self.assertEqual(output.summary['Efficiency Gap +1 Rep'], calculate_EG.return_value)
+        self.assertEqual(calculate_EG.mock_calls[SIMS*2][1], ([3.5, 4.1, 4.4, 4.5], [4.5, 3.9, 3.6, 3.5], -.01))
+
+        self.assertAlmostEqual(output.districts[0]['vote_swing'], -0.1)
+        self.assertAlmostEqual(output.districts[1]['vote_swing'], 0.0)
+        self.assertAlmostEqual(output.districts[2]['vote_swing'], 0.1)
+        self.assertAlmostEqual(output.districts[3]['vote_swing'], 0.2)
+
+        self.assertAlmostEqual(output.districts[0]['totals']['Republican Votes'], 3.07)
+        self.assertAlmostEqual(output.districts[0]['totals']['Democratic Votes'], 4.93)
+        self.assertAlmostEqual(output.districts[1]['totals']['Republican Votes'], 3.1)
+        self.assertAlmostEqual(output.districts[1]['totals']['Democratic Votes'], 4.9)
+        self.assertAlmostEqual(output.districts[2]['totals']['Republican Votes'], 3.97)
+        self.assertAlmostEqual(output.districts[2]['totals']['Democratic Votes'], 4.03)
+        self.assertAlmostEqual(output.districts[3]['totals']['Republican Votes'], 4.0)
+        self.assertAlmostEqual(output.districts[3]['totals']['Democratic Votes'], 4.0)
+
+        self.assertAlmostEqual(output.districts[0]['totals']['Democratic Wins'], 1.)
+        self.assertAlmostEqual(output.districts[1]['totals']['Democratic Wins'], 0.6666667)
+        self.assertAlmostEqual(output.districts[2]['totals']['Democratic Wins'], 0.3333333)
+        self.assertAlmostEqual(output.districts[3]['totals']['Democratic Wins'], 0.6666667)
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')

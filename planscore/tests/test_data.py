@@ -158,6 +158,12 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload12.id, 'ID')
         self.assertEqual(upload12.key, 'KEY')
         self.assertEqual(upload12.library_metadata['key'], 'value')
+
+        upload13 = data.Upload.from_json('{"id": "ID", "key": "KEY", '
+            '"vote_swings": [0.05, -0.03, 0.0]}')
+        self.assertEqual(upload13.id, 'ID')
+        self.assertEqual(upload13.key, 'KEY')
+        self.assertEqual(upload13.vote_swings, [0.05, -0.03, 0.0])
     
     def test_upload_overdue(self):
         ''' data.Upload self-reports correct overdue state
@@ -284,6 +290,14 @@ class TestData (unittest.TestCase):
         self.assertEqual(upload25.id, upload24.id)
         self.assertEqual(upload25.key, upload24.key)
         self.assertEqual(upload25.model_version, upload24.model_version)
+
+        upload26 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
+            vote_swings=[0.05, -0.03, 0.0])
+        upload27 = data.Upload.from_json(upload26.to_json())
+
+        self.assertEqual(upload27.id, upload26.id)
+        self.assertEqual(upload27.key, upload26.key)
+        self.assertEqual(upload27.vote_swings, upload26.vote_swings)
     
     def test_upload_plaintext(self):
         ''' data.Upload instances can be converted to plaintext
@@ -413,13 +427,15 @@ class TestData (unittest.TestCase):
         model1, model2 = unittest.mock.Mock(), unittest.mock.Mock()
         districts1, districts2 = unittest.mock.Mock(), unittest.mock.Mock()
         incumbents1, incumbents2 = unittest.mock.Mock(), unittest.mock.Mock()
+        vote_swings1, vote_swings2 = unittest.mock.Mock(), unittest.mock.Mock()
         summary1, summary2 = unittest.mock.Mock(), unittest.mock.Mock()
         progress1, progress2 = unittest.mock.Mock(), unittest.mock.Mock()
         start_time1, start_time2 = unittest.mock.Mock(), unittest.mock.Mock()
         geometry1, geometry2 = unittest.mock.Mock(), unittest.mock.Mock()
         input = data.Upload(id='ID', key='whatever.json', districts=districts1,
             model=model1, summary=summary1, progress=progress1, start_time=start_time1,
-            incumbents=incumbents1, geometry_key=geometry1, auth_token='fake')
+            incumbents=incumbents1, vote_swings=vote_swings1, geometry_key=geometry1,
+            auth_token='fake')
 
         self.assertIs(input.districts, districts1)
         self.assertIs(input.incumbents, incumbents1)
@@ -496,3 +512,13 @@ class TestData (unittest.TestCase):
         self.assertEqual(output12.id, input.id)
         self.assertEqual(output12.key, input.key)
         self.assertEqual(output12.library_metadata['key'], 'value')
+
+        output13 = input.clone()
+        self.assertEqual(output13.id, input.id)
+        self.assertEqual(output13.key, input.key)
+        self.assertIs(output13.vote_swings, input.vote_swings)
+
+        output14 = input.clone(vote_swings=vote_swings2)
+        self.assertEqual(output14.id, input.id)
+        self.assertEqual(output14.key, input.key)
+        self.assertIs(output14.vote_swings, vote_swings2)
