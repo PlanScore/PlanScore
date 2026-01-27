@@ -468,46 +468,50 @@ assert.equal(plan_array11[4][11], 'D+16');
 // Display preparation functions
 
 var head1 = ['Democratic Votes', 'Republican Votes'];
-plan.update_heading_titles(head1)
+plan.update_heading_titles(head1, undefined)
 assert.deepEqual(head1, ['Predicted Democratic Vote Share', 'Predicted Republican Vote Share']);
 
 var head2 = ['Citizen Voting-Age Population 2015', 'Asian Citizen Voting-Age Population 2015',
     'Black Citizen Voting-Age Population 2015', 'Hispanic Citizen Voting-Age Population 2015'];
-plan.update_heading_titles(head2)
+plan.update_heading_titles(head2, undefined)
 assert.deepEqual(head2, ['CVAP 2015', 'Non-Hisp. Asian CVAP 2015',
     'Non-Hisp. Black CVAP 2015', 'Hispanic CVAP 2015']);
 
 var head3 = ['US President 2016 - DEM', 'US President 2016 - REP'];
-plan.update_heading_titles(head3)
+plan.update_heading_titles(head3, undefined)
 assert.deepEqual(head3, ['Clinton (D) 2016', 'Trump (R) 2016']);
 
 var head4 = ['Democratic Wins'];
-plan.update_heading_titles(head4)
+plan.update_heading_titles(head4, undefined)
 assert.deepEqual(head4, ['Chance of Democratic Win']);
 
 var head5 = ['Democratic Wins', 'Democratic Votes', 'Republican Votes'];
-plan.update_heading_titles(head5)
+plan.update_heading_titles(head5, undefined)
 assert.deepEqual(head5, ['Chance of Democratic Win', 'Predicted Vote Shares']);
 
 var head6 = ['Population 2016', 'Black Population 2016', 'Hispanic Population 2016']
-plan.update_heading_titles(head6)
+plan.update_heading_titles(head6, undefined)
 assert.deepEqual(head6, ['Pop. 2016', 'Black Pop. 2016', 'Hispanic Pop. 2016']);
 
 var head7 = ['US President 2020 - DEM', 'US President 2020 - REP']
-plan.update_heading_titles(head7)
+plan.update_heading_titles(head7, undefined)
 assert.deepEqual(head7, ['Biden (D) 2020', 'Trump (R) 2020']);
 
 var head8 = ['US President 2016 - DEM', 'US President 2016 - REP', 'US President 2020 - DEM', 'US President 2020 - REP']
-plan.update_heading_titles(head8)
+plan.update_heading_titles(head8, undefined)
 assert.deepEqual(head8, [plan.SHY_COLUMN, plan.SHY_COLUMN, 'Biden (D) 2020', 'Trump (R) 2020']);
 
 var head9 = ['US President 2024 - DEM', 'US President 2024 - REP']
-plan.update_heading_titles(head9)
+plan.update_heading_titles(head9, undefined)
 assert.deepEqual(head9, ['Harris (D) 2024', 'Trump (R) 2024']);
 
 var head10 = ['US President 2020 - DEM', 'US President 2020 - REP', 'US President 2024 - DEM', 'US President 2024 - REP']
-plan.update_heading_titles(head10)
+plan.update_heading_titles(head10, undefined)
 assert.deepEqual(head10, [plan.SHY_COLUMN, plan.SHY_COLUMN, 'Harris (D) 2024', 'Trump (R) 2024']);
+
+var head11 = ['US President 2016 - DEM', 'US President 2016 - REP', 'US President 2020 - DEM', 'US President 2020 - REP', 'US President 2024 - DEM', 'US President 2024 - REP']
+plan.update_heading_titles(head11, 2020)
+assert.deepEqual(head11, [plan.SHY_COLUMN, plan.SHY_COLUMN, 'Biden (D) 2020', 'Trump (R) 2020', plan.SHY_COLUMN, plan.SHY_COLUMN]);
 
 var row1 = [4, 6];
 plan.update_vote_percentages(['Democratic Votes', 'Republican Votes'], row1, {});

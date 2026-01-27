@@ -2544,7 +2544,7 @@ function populate_plan_map(plan, div)
     });
 }
 
-function update_heading_titles(head)
+function update_heading_titles(head, pvote_year)
 {
     var dem_index = head.indexOf('Democratic Votes'),
         rep_index = head.indexOf('Republican Votes'),
@@ -2582,25 +2582,31 @@ function update_heading_titles(head)
     
     // Hide selected shy columns by renaming them to a signal value
     head.forEach((dataTitle, i) => {
-        if(head[i] == 'Trump (R) 2016' && head.indexOf('Trump (R) 2020') >= 0) {
-            head[i] = SHY_COLUMN;
+        if (pvote_year == undefined) {
+            // No PVote year defined so assume the newest one should be shown
+            switch (true) {
+                case (head[i] == 'Trump (R) 2016' && head.indexOf('Trump (R) 2020') >= 0):
+                case (head[i] == 'Trump (R) 2016' && head.indexOf('Trump (R) 2024') >= 0):
+                case (head[i] == 'Trump (R) 2020' && head.indexOf('Trump (R) 2024') >= 0):
+                case (head[i] == 'Clinton (D) 2016' && head.indexOf('Biden (D) 2020') >= 0):
+                case (head[i] == 'Clinton (D) 2016' && head.indexOf('Harris (D) 2024') >= 0):
+                case (head[i] == 'Biden (D) 2020' && head.indexOf('Harris (D) 2024') >= 0):
+                    head[i] = SHY_COLUMN;
+            }
+        } else {
+            // Show the used PVote year
+            switch (true) {
+                case (head[i] == 'Clinton (D) 2016' && pvote_year != 2016):
+                case (head[i] == 'Trump (R) 2016' && pvote_year != 2016):
+                case (head[i] == 'Biden (D) 2020' && pvote_year != 2020):
+                case (head[i] == 'Trump (R) 2020' && pvote_year != 2020):
+                case (head[i] == 'Harris (D) 2024' && pvote_year != 2024):
+                case (head[i] == 'Trump (R) 2024' && pvote_year != 2024):
+                    head[i] = SHY_COLUMN;
+            }
+        }
 
-        } else if(head[i] == 'Trump (R) 2016' && head.indexOf('Trump (R) 2024') >= 0) {
-            head[i] = SHY_COLUMN;
-
-        } else if(head[i] == 'Trump (R) 2020' && head.indexOf('Trump (R) 2024') >= 0) {
-            head[i] = SHY_COLUMN;
-
-        } else if(head[i] == 'Clinton (D) 2016' && head.indexOf('Biden (D) 2020') >= 0) {
-            head[i] = SHY_COLUMN;
-
-        } else if(head[i] == 'Clinton (D) 2016' && head.indexOf('Harris (D) 2024') >= 0) {
-            head[i] = SHY_COLUMN;
-
-        } else if(head[i] == 'Biden (D) 2020' && head.indexOf('Harris (D) 2024') >= 0) {
-            head[i] = SHY_COLUMN;
-
-        } else if(head[i] == 'CVAP 2019') {
+        if(head[i] == 'CVAP 2019') {
             head[i] = SHY_COLUMN;
 
         } else if(head[i] == 'CVAP 2020' || head[i] == 'CVAP 2020 ACS') {
@@ -2960,7 +2966,7 @@ function plan_array(plan)
     }
 
     // Fix the synch problem introduced in update_vote_percentages()
-    update_heading_titles(head_row);
+    update_heading_titles(head_row, plan.pvote_year);
     return all_rows;
 }
 
