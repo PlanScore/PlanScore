@@ -224,9 +224,10 @@ class Model:
 class Upload:
 
     def __init__(self, id, key, model:Model=None, districts=None, scenarios=None,
-            incumbents=None, vote_swings=None, summary=None, progress=None, start_time=None,
-            message=None, description=None, geometry_key=None, status=None, library_metadata=None,
-            auth_token=None, model_version=None, execution_id=None, execution_token=None,
+            incumbents=None, vote_swings=None, summary=None, progress=None,
+            start_time=None, message=None, description=None, geometry_key=None,
+            status=None, library_metadata=None, auth_token=None, model_version=None,
+            pvote_year=None, execution_id=None, execution_token=None,
             **ignored):
         self.id = id
         self.key = key
@@ -246,6 +247,7 @@ class Upload:
         self.library_metadata = library_metadata
         self.auth_token = auth_token
         self.model_version = model_version
+        self.pvote_year = pvote_year
         self.execution_id = execution_id
         self.execution_token = execution_token
 
@@ -344,6 +346,7 @@ class Upload:
             library_metadata = self.library_metadata,
             auth_token = self.obscured_token(),
             model_version = self.model_version,
+            pvote_year = self.pvote_year,
             execution_id = self.execution_id,
             execution_token = self.execution_token,
             )
@@ -407,7 +410,7 @@ class Upload:
     
     def clone(self, model=None, districts=None, scenarios=None, incumbents=None, vote_swings=None, summary=None,
         progress=None, start_time=None, message=None, description=None, geometry_key=None, status=None,
-        library_metadata=None, auth_token=None, model_version=None, execution_id=None, execution_token=None):
+        library_metadata=None, auth_token=None, model_version=None, pvote_year=None, execution_id=None, execution_token=None):
         return Upload(self.id, self.key,
             model = model or self.model,
             status = status if (self.status is None) else self.status,
@@ -424,6 +427,7 @@ class Upload:
             library_metadata = library_metadata or self.library_metadata,
             auth_token = auth_token or self.obscured_token(),
             model_version = model_version or self.model_version,
+            pvote_year = pvote_year or self.pvote_year,
             execution_id = execution_id or self.execution_id,
             execution_token = execution_token or self.execution_token,
             )
@@ -451,6 +455,7 @@ class Upload:
             library_metadata = data.get('library_metadata'),
             auth_token = data.get('auth_token'),
             model_version = data.get('model_version'),
+            pvote_year = data.get('pvote_year'),
             execution_id = data.get('execution_id'),
             execution_token = data.get('execution_token'),
             )

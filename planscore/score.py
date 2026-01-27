@@ -1249,7 +1249,12 @@ def calculate_district_biases(upload):
             f'Efficiency Gap +{swing:.0f} Rep SD': np_safe_stdev(EGs[-swing]),
         })
 
-    return upload.clone(districts=copied_districts, summary=summary_dict, scenarios=scenarios)
+    return upload.clone(
+        districts=copied_districts,
+        summary=summary_dict,
+        scenarios=scenarios,
+        pvote_year=pvote_year,
+    )
 
 def calculate_fva_biases(upload):
     ''' Calculate partisan metrics relevant to Freedom To Vote Act
@@ -1301,6 +1306,7 @@ def main():
     complete_upload = upload2.clone(message='Finished scoring this plan.')
     
     print('''Scores for {id} ({state}, {house}):
+PVote: {pvote_year}
 EG: {EG:.1f}%; {EG_wins:.0f}% favor D
 GK Bias: {PB:.1f}%; {PB_wins:.0f}% favor D
 Mean-Med: {MMD:.1f}%; {MMD_wins:.0f}% favor D
@@ -1311,6 +1317,7 @@ R votes: {votes_R}'''.format(
         id=complete_upload.id,
         state=complete_upload.model.state,
         house=complete_upload.model.house,
+        pvote_year=complete_upload.pvote_year,
         EG=complete_upload.summary['Efficiency Gap'] * 100,
         EG_wins=complete_upload.summary['Efficiency Gap Positives'] * 100,
         PB=complete_upload.summary['Partisan Bias'] * 100,
