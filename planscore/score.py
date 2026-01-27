@@ -1103,11 +1103,12 @@ def calculate_district_biases(upload):
         return upload.clone()
 
     # Get large number of simulated outputs from model_votes
+    prepared_district_data, pvote_year = matrix.prepare_district_data(upload)
     model_output = matrix.model_votes(
         upload.model_version or upload.model.versions[0],
         upload.model.state,
         upload.model.house,
-        matrix.filter_district_data(matrix.prepare_district_data(upload)),
+        matrix.filter_district_data(prepared_district_data),
     )
     print("model_output.shape:", model_output.shape, "=", model_output.size, "cells")
     # model_output shape is (incumbency=4, sims, districts, 2)

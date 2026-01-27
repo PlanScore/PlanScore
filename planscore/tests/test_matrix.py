@@ -409,7 +409,8 @@ class TestMatrix (unittest.TestCase):
                 dict(totals={'US President 2024 - REP': 7, 'US President 2024 - DEM': 1, 'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
                 ])
         
-        output = matrix.prepare_district_data(input)
+        output, pvote_year = matrix.prepare_district_data(input)
+        self.assertEqual(pvote_year, 2020)
         self.assertEqual(output[0], (6.0, 2.0))
         self.assertEqual(output[1], (5.0, 3.0))
         self.assertEqual(output[2], (3.0, 5.0))
@@ -426,7 +427,8 @@ class TestMatrix (unittest.TestCase):
                 dict(totals={'US President 2024 - REP': 7, 'US President 2024 - DEM': 1, 'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
                 ])
         
-        output = matrix.prepare_district_data(input)
+        output, pvote_year = matrix.prepare_district_data(input)
+        self.assertEqual(pvote_year, 2024)
         self.assertEqual(output[0], (5.0, 3.0))
         self.assertEqual(output[1], (4.0, 4.0))
         self.assertEqual(output[2], (2.0, 6.0))
@@ -443,7 +445,8 @@ class TestMatrix (unittest.TestCase):
                 dict(totals={'US President 2024 - REP': 7, 'US President 2024 - DEM': 1, 'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
                 ])
         
-        output = matrix.prepare_district_data(input)
+        output, pvote_year = matrix.prepare_district_data(input)
+        self.assertEqual(pvote_year, 2020)
         self.assertEqual(output[0], (6.0, 2.0))
         self.assertEqual(output[1], (5.0, 3.0))
         self.assertEqual(output[2], (3.0, 5.0))
