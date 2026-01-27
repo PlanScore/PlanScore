@@ -55,6 +55,14 @@ VersionParameters = collections.namedtuple(
 
 # Dict order is significant, default is first
 VERSION_PARAMETERS = {
+    '2019Z': VersionParameters(
+        'Old: rerun the 2016 election, originally published 2020 (sha:43fde227)',
+        '-2019Z', [2016], 2016, -0.496875, -0.496875, True,
+    ),
+    '2022F': VersionParameters(
+        'Old: rerun the 2020 election, originally published 2022 (sha:bc75da6e)',
+        '-2022F', [2020], 2020, -0.5208897, -0.492732, True,
+    ),
     '2025B': VersionParameters(
         'New: rerun the 2024 election with more accurate updated data (updated August 2025)',
         '-2025B', [2024], 2024, -0.515, -0.495, True,
@@ -453,8 +461,8 @@ class Upload:
 
 # Active version of each state model
 
-VERSIONS = ['2025A']  # list(VERSION_PARAMETERS.keys()) # rely on dict order
-VERSION24 = ['2025B']
+VERSIONS = ['2019Z', '2022F', '2025A']  # list(VERSION_PARAMETERS.keys()) # rely on dict order
+VERSION24 = ['2019Z', '2022F', '2025B']
 
 MODELS = [
     Model(State.XX, House.statehouse,    2,  True, VERSIONS + VERSION24, 'data/XX/007-pvote-2024'), # b8e19879 and more
