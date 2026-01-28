@@ -1015,22 +1015,9 @@ def calculate_district_biases(upload):
     D2_is_valid = len(list(filter(None, D2ds))) > len(red_votes_blue_votes) * .75
     
     # EG alone also gets a sensitivity test for vote swing scenarios
-    red_votes_blue_votes2 = [
-        (
-            swing,
-            [
-                (
-                    matrix.dropna(output_votes[i,:,sim,1]).tolist(),
-                    matrix.dropna(output_votes[i,:,sim,0]).tolist(),
-                )
-                for sim in range(sim_count)
-            ]
-        )
-        for (i, swing) in enumerate(swing_range)
-    ]
     EGs = {
-        swing: [calculate_EG(r, b) for (r, b) in red_votes_blue_votes3]
-        for (swing, red_votes_blue_votes3) in red_votes_blue_votes2
+        swing: vectorized_EG(output_votes[i,:,:,:]).tolist()
+        for (i, swing) in enumerate(swing_range)
     }
 
     summary_dict = {

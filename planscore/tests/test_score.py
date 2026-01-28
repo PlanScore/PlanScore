@@ -1357,10 +1357,10 @@ class TestScore (unittest.TestCase):
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
-    @unittest.mock.patch('planscore.score.calculate_EG')
+    @unittest.mock.patch('planscore.score.vectorized_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
     @unittest.mock.patch('planscore.matrix.filter_district_data')
-    def test_calculate_gap_unified(self, filter_district_data, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
+    def test_calculate_gap_unified(self, filter_district_data, model_votes, vectorized_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
@@ -1372,14 +1372,14 @@ class TestScore (unittest.TestCase):
                 dict(totals={'US President 2020 - REP': 5, 'US President 2020 - DEM': 3}, tile=None),
                 dict(totals={'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
                 ])
-        
+
         percentrank_rel.return_value = 0
         percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
         calculate_D2_diff.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
-        calculate_EG.return_value = 0
+        vectorized_EG.return_value = numpy.array([0, 0, 0])
         model_votes.return_value = numpy.array([
             [[5.3, 2.7],
              [6.0, 2.0],
@@ -1414,18 +1414,33 @@ class TestScore (unittest.TestCase):
         
         SIMS = model_votes.return_value.shape[1]
 
-        # First round of sims
-        self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
+        # First round of sims - swing 0
+        self.assertEqual(output.summary['Efficiency Gap'], 0)
         self.assertEqual(output.summary['Efficiency Gap Positives'], 0.0)
-        # TODO: repair self.assertEqual(calculate_EG.mock_calls[SIMS*0][1], ([2.7, 4.1, 5.2, 6.1], [5.3, 3.9, 2.8, 1.9], 0.))
+        # Verify vectorized_EG was called with correct array for swing 0 (call index 5)
+        call_args = vectorized_EG.mock_calls[5][1][0]
+        self.assertEqual(call_args.shape, (4, 3, 2))  # 4 districts, 3 sims, 2 parties
+        # Check first simulation values match expected: red=[2.7, 4.1, 5.2, 6.1], blue=[5.3, 3.9, 2.8, 1.9]
+        self.assertAlmostEqual(call_args[0, 0, 0], 5.3)  # District 0, sim 0, blue
+        self.assertAlmostEqual(call_args[0, 0, 1], 2.7)  # District 0, sim 0, red
+        self.assertAlmostEqual(call_args[1, 0, 0], 3.9)  # District 1, sim 0, blue
+        self.assertAlmostEqual(call_args[1, 0, 1], 4.1)  # District 1, sim 0, red
+        self.assertAlmostEqual(call_args[2, 0, 0], 2.8)  # District 2, sim 0, blue
+        self.assertAlmostEqual(call_args[2, 0, 1], 5.2)  # District 2, sim 0, red
+        self.assertAlmostEqual(call_args[3, 0, 0], 1.9)  # District 3, sim 0, blue
+        self.assertAlmostEqual(call_args[3, 0, 1], 6.1)  # District 3, sim 0, red
 
-        # Second round of sims
-        self.assertEqual(output.summary['Efficiency Gap +1 Dem'], calculate_EG.return_value)
-        # TODO: repair self.assertEqual(calculate_EG.mock_calls[SIMS*1][1], ([2.7, 4.1, 5.2, 6.1], [5.3, 3.9, 2.8, 1.9], .01))
+        # Second round of sims - swing +1
+        self.assertEqual(output.summary['Efficiency Gap +1 Dem'], 0)
+        # Verify vectorized_EG was called with correct array for swing +1 (call index 6)
+        call_args = vectorized_EG.mock_calls[6][1][0]
+        self.assertEqual(call_args.shape, (4, 3, 2))
 
-        # Third round of sims
-        self.assertEqual(output.summary['Efficiency Gap +1 Rep'], calculate_EG.return_value)
-        # TODO: repair self.assertEqual(calculate_EG.mock_calls[SIMS*2][1], ([2.7, 4.1, 5.2, 6.1], [5.3, 3.9, 2.8, 1.9], -.01))
+        # Third round of sims - swing -1
+        self.assertEqual(output.summary['Efficiency Gap +1 Rep'], 0)
+        # Verify vectorized_EG was called with correct array for swing -1 (call index 4)
+        call_args = vectorized_EG.mock_calls[4][1][0]
+        self.assertEqual(call_args.shape, (4, 3, 2))
 
         self.assertEqual(output.districts[0]['totals']['Republican Votes'], 2.27)
         self.assertEqual(output.districts[0]['totals']['Democratic Votes'], 5.73)
@@ -1447,10 +1462,10 @@ class TestScore (unittest.TestCase):
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
-    @unittest.mock.patch('planscore.score.calculate_EG')
+    @unittest.mock.patch('planscore.score.vectorized_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
     @unittest.mock.patch('planscore.matrix.filter_district_data')
-    def test_calculate_gap_unified_vote_swing(self, filter_district_data, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
+    def test_calculate_gap_unified_vote_swing(self, filter_district_data, model_votes, vectorized_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
@@ -1463,14 +1478,14 @@ class TestScore (unittest.TestCase):
                 dict(totals={'US President 2020 - REP': 5, 'US President 2020 - DEM': 3}, tile=None),
                 dict(totals={'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
                 ])
-        
+
         percentrank_rel.return_value = 0
         percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
         calculate_D2_diff.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
-        calculate_EG.return_value = 0
+        vectorized_EG.return_value = numpy.array([0, 0, 0])
         model_votes.return_value = numpy.array([
             [[5.3, 2.7],
              [6.0, 2.0],
@@ -1505,18 +1520,34 @@ class TestScore (unittest.TestCase):
         
         SIMS = model_votes.return_value.shape[1]
 
-        # First round of sims
-        self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
+        # First round of sims - swing 0
+        self.assertEqual(output.summary['Efficiency Gap'], 0)
         self.assertEqual(output.summary['Efficiency Gap Positives'], 0.0)
-        # TODO: repair self.assertEqual(calculate_EG.mock_calls[SIMS*0][1], ([3.5, 4.1, 4.4, 4.5], [4.5, 3.9, 3.6, 3.5], 0.))
+        # Verify vectorized_EG was called with correct array for swing 0 (call index 5)
+        call_args = vectorized_EG.mock_calls[5][1][0]
+        self.assertEqual(call_args.shape, (4, 3, 2))  # 4 districts, 3 sims, 2 parties
+        # Check first simulation values match expected: red=[3.5, 4.1, 4.4, 4.5], blue=[4.5, 3.9, 3.6, 3.5]
+        # These are averages after applying per-district vote_swings
+        self.assertAlmostEqual(call_args[0, 0, 0], 4.5, places=1)  # District 0, sim 0, blue
+        self.assertAlmostEqual(call_args[0, 0, 1], 3.5, places=1)  # District 0, sim 0, red
+        self.assertAlmostEqual(call_args[1, 0, 0], 3.9, places=1)  # District 1, sim 0, blue
+        self.assertAlmostEqual(call_args[1, 0, 1], 4.1, places=1)  # District 1, sim 0, red
+        self.assertAlmostEqual(call_args[2, 0, 0], 3.6, places=1)  # District 2, sim 0, blue
+        self.assertAlmostEqual(call_args[2, 0, 1], 4.4, places=1)  # District 2, sim 0, red
+        self.assertAlmostEqual(call_args[3, 0, 0], 3.5, places=1)  # District 3, sim 0, blue
+        self.assertAlmostEqual(call_args[3, 0, 1], 4.5, places=1)  # District 3, sim 0, red
 
-        # Second round of sims
-        self.assertEqual(output.summary['Efficiency Gap +1 Dem'], calculate_EG.return_value)
-        # TODO: repair self.assertEqual(calculate_EG.mock_calls[SIMS*1][1], ([3.5, 4.1, 4.4, 4.5], [4.5, 3.9, 3.6, 3.5], .01))
+        # Second round of sims - swing +1
+        self.assertEqual(output.summary['Efficiency Gap +1 Dem'], 0)
+        # Verify vectorized_EG was called with correct array for swing +1 (call index 6)
+        call_args = vectorized_EG.mock_calls[6][1][0]
+        self.assertEqual(call_args.shape, (4, 3, 2))
 
-        # Third round of sims
-        self.assertEqual(output.summary['Efficiency Gap +1 Rep'], calculate_EG.return_value)
-        # TODO: repair self.assertEqual(calculate_EG.mock_calls[SIMS*2][1], ([3.5, 4.1, 4.4, 4.5], [4.5, 3.9, 3.6, 3.5], -.01))
+        # Third round of sims - swing -1
+        self.assertEqual(output.summary['Efficiency Gap +1 Rep'], 0)
+        # Verify vectorized_EG was called with correct array for swing -1 (call index 4)
+        call_args = vectorized_EG.mock_calls[4][1][0]
+        self.assertEqual(call_args.shape, (4, 3, 2))
 
         self.assertAlmostEqual(output.districts[0]['vote_swing'], -0.1)
         self.assertAlmostEqual(output.districts[1]['vote_swing'], 0.0)
@@ -1674,9 +1705,9 @@ class TestScore (unittest.TestCase):
     @unittest.mock.patch('planscore.score.calculate_D2')
     @unittest.mock.patch('planscore.score.calculate_MMD')
     @unittest.mock.patch('planscore.score.calculate_PB')
-    @unittest.mock.patch('planscore.score.calculate_EG')
+    @unittest.mock.patch('planscore.score.vectorized_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
-    def test_calculate_gap_with_zeros(self, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
+    def test_calculate_gap_with_zeros(self, model_votes, vectorized_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
@@ -1689,14 +1720,14 @@ class TestScore (unittest.TestCase):
                 dict(totals={'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
                 dict(totals={'US President 2020 - REP': 0, 'US President 2020 - DEM': 0}, tile=None),
                 ])
-        
+
         percentrank_rel.return_value = 0
         percentrank_abs.return_value = 0
         calculate_D2.return_value = 0
         calculate_D2_diff.return_value = 0
         calculate_MMD.return_value = 0
         calculate_PB.return_value = 0
-        calculate_EG.return_value = 0
+        vectorized_EG.return_value = numpy.array([0, 0, 0])
         model_votes.return_value = numpy.array([
             [[5.3, 2.7],
              [6.0, 2.0],
@@ -1750,23 +1781,36 @@ class TestScore (unittest.TestCase):
         
         SIMS = model_votes.return_value.shape[1]
 
-        # First round of sims
-        self.assertEqual(output.summary['Efficiency Gap'], calculate_EG.return_value)
-        self.assertEqual(len(calculate_EG.mock_calls[SIMS*0][1][0]), 4, 'Should skip empty 5th district')
-        self.assertEqual(len(calculate_EG.mock_calls[SIMS*0][1][1]), 4, 'Should skip empty 5th district')
-        self.assertEqual(calculate_EG.mock_calls[SIMS*0][1][2], 0)
+        # First round of sims - swing 0
+        self.assertEqual(output.summary['Efficiency Gap'], 0)
+        # Verify vectorized_EG was called with correct array for swing 0 (call index 5)
+        call_args = vectorized_EG.mock_calls[5][1][0]
+        self.assertEqual(call_args.shape, (5, 3, 2))  # 5 districts (including NaN), 3 sims, 2 parties
+        # Check first simulation values match expected: red=[2.7, 4.1, 5.2, 6.1], blue=[5.3, 3.9, 2.8, 1.9]
+        # (vectorized_EG internally filters out NaN districts)
+        self.assertAlmostEqual(call_args[0, 0, 0], 5.3)  # District 0, sim 0, blue
+        self.assertAlmostEqual(call_args[0, 0, 1], 2.7)  # District 0, sim 0, red
+        self.assertAlmostEqual(call_args[1, 0, 0], 3.9)  # District 1, sim 0, blue
+        self.assertAlmostEqual(call_args[1, 0, 1], 4.1)  # District 1, sim 0, red
+        self.assertAlmostEqual(call_args[2, 0, 0], 2.8)  # District 2, sim 0, blue
+        self.assertAlmostEqual(call_args[2, 0, 1], 5.2)  # District 2, sim 0, red
+        self.assertAlmostEqual(call_args[3, 0, 0], 1.9)  # District 3, sim 0, blue
+        self.assertAlmostEqual(call_args[3, 0, 1], 6.1)  # District 3, sim 0, red
+        # District 4 should be NaN
+        self.assertTrue(numpy.isnan(call_args[4, 0, 0]))
+        self.assertTrue(numpy.isnan(call_args[4, 0, 1]))
 
-        # Second round of sims
-        self.assertEqual(output.summary['Efficiency Gap +1 Dem'], calculate_EG.return_value)
-        self.assertEqual(len(calculate_EG.mock_calls[SIMS*1][1][0]), 4, 'Should skip empty 5th district')
-        self.assertEqual(len(calculate_EG.mock_calls[SIMS*1][1][1]), 4, 'Should skip empty 5th district')
-        self.assertEqual(calculate_EG.mock_calls[SIMS*1][1][2], .01)
+        # Second round of sims - swing +1
+        self.assertEqual(output.summary['Efficiency Gap +1 Dem'], 0)
+        # Verify vectorized_EG was called with correct array for swing +1 (call index 6)
+        call_args = vectorized_EG.mock_calls[6][1][0]
+        self.assertEqual(call_args.shape, (5, 3, 2))
 
-        # Third round of sims
-        self.assertEqual(output.summary['Efficiency Gap +1 Rep'], calculate_EG.return_value)
-        self.assertEqual(len(calculate_EG.mock_calls[SIMS*2][1][0]), 4, 'Should skip empty 5th district')
-        self.assertEqual(len(calculate_EG.mock_calls[SIMS*2][1][1]), 4, 'Should skip empty 5th district')
-        self.assertEqual(calculate_EG.mock_calls[SIMS*2][1][2], -.01)
+        # Third round of sims - swing -1
+        self.assertEqual(output.summary['Efficiency Gap +1 Rep'], 0)
+        # Verify vectorized_EG was called with correct array for swing -1 (call index 4)
+        call_args = vectorized_EG.mock_calls[4][1][0]
+        self.assertEqual(call_args.shape, (5, 3, 2))
 
         self.assertIsNone(output.districts[-1]['totals']['Republican Votes'])
         self.assertIsNone(output.districts[-1]['totals']['Democratic Votes'])
