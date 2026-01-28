@@ -159,11 +159,12 @@ def apply_model(districts, model, params):
     #print('ADCE:', (ADC + E).shape)
     #numpy.savetxt('ADCE.csv', (ADC + E), fmt='%.9f', delimiter=',')
     assert (ADC + E).shape == (len(districts), sim_count)
-    return ADC + E
+    # Transpose to return (sims, districts) for downstream processing
+    return (ADC + E).T
 
 def model_votes(model_version, state, house, districts):
     ''' Convert presidential votes to range of possible modeled chamber votes.
-        
+
         model_version is a string like '2021D' from data.VERSION_PARAMETERS.
         state is from data.State enum.
         house is from data.House enum.
@@ -171,15 +172,15 @@ def model_votes(model_version, state, house, districts):
         - Input Democratic vote count
         - Input Republican vote count
         - Incumbency: "O" for open, "R", or "D"
-        
-        Return is a DxSx2 matrix for D districts, S simulations, and Dem/Rep parties.
+
+        Return is a SxDx2 matrix for S simulations, D districts, and Dem/Rep parties.
     '''
     params = data.VERSION_PARAMETERS[model_version]
     
     has_incumbents = bool({inc for (_, _, inc) in districts} != {'O'})
     is_congress = bool(house == data.House.ushouse)
-    
-    # Get DxS array from apply_model() with modeled vote fractions
+
+    # Get SxD array from apply_model() with modeled vote fractions
     fractions = apply_model(
         [
             (dem / ((dem + rep) or numpy.nan), INCUMBENCY[inc])
@@ -188,23 +189,17 @@ def model_votes(model_version, state, house, districts):
         load_model(params.path_suffix, STATE[state], params.year, has_incumbents, is_congress),
         params,
     )
-    
-    # Make DxS array with total vote counts for each district and simulation
+
+    # Create SxD scale array with total vote counts for each simulation and district
     total_votes = sum([dem + rep for (dem, rep, _) in districts])
     one_district_votes = total_votes / len(districts)
-    per_district_votes = [[one_district_votes]] * len(districts)
-    #per_district_votes = [[dem + rep] for (dem, rep, _) in districts]
-    
-    scale = numpy.repeat(per_district_votes, fractions.shape[1], axis=1)
-    
-    # Build DxSx2 array with per-party vote totals for each district and simulation
-    votes_dem = (fractions * scale).round(1)
-    votes_rep = ((1 - fractions) * scale).round(1)
-    votes = numpy.concatenate(
-        (numpy.expand_dims(votes_dem, 2), numpy.expand_dims(votes_rep, 2)),
-        axis=2,
-    )
-    
+    scale = numpy.full(fractions.shape, one_district_votes)
+
+    # Build SxDx2 array with per-party vote totals for each simulation, district, and party
+    votes_dem = (fractions * scale).round(1)  # (sims, districts)
+    votes_rep = ((1 - fractions) * scale).round(1)  # (sims, districts)
+    votes = numpy.stack([votes_dem, votes_rep], axis=2)  # (sims, districts, 2)
+
     return votes
 
 def prepare_district_data(upload) -> list[tuple[float, float, str]]:
@@ -275,9 +270,10 @@ def main():
     )
 
     with open(args.matrix_path, 'w') as file:
-        districts, sims, parties = output_votes.shape
-        votes_matrix = output_votes.reshape((districts, sims * parties))
-    
+        sims, districts, parties = output_votes.shape
+        # Transpose to get districts as rows for CSV output
+        votes_matrix = output_votes.transpose(1, 0, 2).reshape((districts, sims * parties))
+
         out = csv.writer(file, dialect='excel')
         head = itertools.chain(*[[f'DEM{n:03d}', f'REP{n:03d}'] for n in range(sims)])
         out.writerow(['District'] + list(head))
