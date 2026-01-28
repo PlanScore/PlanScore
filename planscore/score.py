@@ -365,26 +365,15 @@ def vectorized_MMD(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
     safe_totals = numpy.where(nonzero_mask, district_totals, 1.0)
     blue_shares = votes[:, :, 0] / safe_totals
 
-    # For each simulation, filter nonzero districts and compute MMD
-    mmd_scores = numpy.zeros(sims)
-    for sim_idx in range(sims):
-        # Get nonzero districts for this sim
-        sim_mask = nonzero_mask[:, sim_idx]
-        sim_shares = blue_shares[sim_mask, sim_idx]
+    # Set zero-vote districts to NaN so they're ignored by nanmedian/nanmean
+    blue_shares = numpy.where(nonzero_mask, blue_shares, numpy.nan)
 
-        if len(sim_shares) == 0:
-            mmd_scores[sim_idx] = 0.0
-            continue
+    # Calculate median and mean per simulation, ignoring NaN values - shape (sims,)
+    medians = numpy.nanmedian(blue_shares, axis=0)  # median across districts for each sim
+    means = numpy.nanmean(blue_shares, axis=0)      # mean across districts for each sim
 
-        # Sort shares for median calculation
-        sorted_shares = numpy.sort(sim_shares)
-
-        # Calculate median and mean
-        median = numpy.median(sorted_shares)
-        mean = numpy.mean(sorted_shares)
-
-        # MMD = median - mean
-        mmd_scores[sim_idx] = median - mean
+    # MMD = median - mean - shape (sims,)
+    mmd_scores = medians - means
 
     return mmd_scores
 
