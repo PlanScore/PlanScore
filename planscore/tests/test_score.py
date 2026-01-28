@@ -328,6 +328,86 @@ class TestScore (unittest.TestCase):
         self.assertAlmostEqual(pb5, pb1, places=2,
             msg='Should see zero PB even when one district is missing votes')
 
+    def test_vectorized_PB(self):
+        ''' Partisan Bias is correctly calculated for vectorized multi-sim numpy arrays
+        '''
+        # Convention: [:,:,0] = blue (Dem), [:,:,1] = red (Rep)
+
+        # Test case 1: Balanced 50/50 election → PB ≈ 0
+        # red=(6,6,4,4), blue=(4,4,6,6)
+        votes1 = numpy.array([
+            [[4, 6], [4, 6]],  # District 1
+            [[4, 6], [4, 6]],  # District 2
+            [[6, 4], [6, 4]],  # District 3
+            [[6, 4], [6, 4]],  # District 4
+        ])
+        pb1 = score.vectorized_PB(votes1)
+        self.assertEqual(pb1.shape, (2,), 'Output should be 1D with length = num simulations')
+        self.assertAlmostEqual(pb1[0], 0, places=2, msg='Should see zero PB with 50/50 election')
+        self.assertAlmostEqual(pb1[1], 0, places=2, msg='Should see zero PB across all sims')
+
+        # Test case 2: Red bias → PB ≈ -0.1
+        # red=(6,6,6,3,3), blue=(2,2,2,5,5)
+        votes2 = numpy.array([
+            [[2, 6]],
+            [[2, 6]],
+            [[2, 6]],
+            [[5, 3]],
+            [[5, 3]],
+        ])
+        pb2 = score.vectorized_PB(votes2)
+        self.assertEqual(pb2.shape, (1,))
+        self.assertAlmostEqual(pb2[0], -0.1, places=2, msg='Should see -10% PB with red bias')
+
+        # Test case 3: Another red bias case → PB ≈ -0.1
+        # red=(6,6,6,3,3), blue=(4,4,4,12,12)
+        votes3 = numpy.array([
+            [[4, 6]],
+            [[4, 6]],
+            [[4, 6]],
+            [[12, 3]],
+            [[12, 3]],
+        ])
+        pb3 = score.vectorized_PB(votes3)
+        self.assertAlmostEqual(pb3[0], -0.1, places=2, msg='Should see +red PB')
+
+        # Test case 4: Blue bias → PB ≈ 0.1
+        # red=(4,4,4,12,12), blue=(6,6,6,3,3)
+        votes4 = numpy.array([
+            [[6, 4]],
+            [[6, 4]],
+            [[6, 4]],
+            [[3, 12]],
+            [[3, 12]],
+        ])
+        pb4 = score.vectorized_PB(votes4)
+        self.assertAlmostEqual(pb4[0], 0.1, places=2, msg='Should see +blue PB')
+
+        # Test case 5: Zero-vote districts should be filtered out
+        # red=(6,6,4,4,0), blue=(4,4,6,6,0)
+        votes5 = numpy.array([
+            [[4, 6]],
+            [[4, 6]],
+            [[6, 4]],
+            [[6, 4]],
+            [[0, 0]],  # Zero-vote district
+        ])
+        pb5 = score.vectorized_PB(votes5)
+        self.assertAlmostEqual(pb5[0], 0, places=2,
+            msg='Should see zero PB even with zero-vote district')
+
+        # Test case 6: Multiple different simulations
+        votes6 = numpy.array([
+            [[4, 6], [6, 4]],  # Sim 0 balanced, Sim 1 balanced
+            [[4, 6], [6, 4]],
+            [[6, 4], [4, 6]],
+            [[6, 4], [4, 6]],
+        ])
+        pb6 = score.vectorized_PB(votes6)
+        self.assertEqual(pb6.shape, (2,))
+        self.assertAlmostEqual(pb6[0], 0, places=2)
+        self.assertAlmostEqual(pb6[1], 0, places=2)
+
     def test_calculate_D2(self):
         ''' Declination can be correctly calculated for various elections
 
