@@ -551,12 +551,136 @@ class TestScore (unittest.TestCase):
         d2g = score.calculate_D2((2, 1, 0), (3, 4, 5))
         self.assertAlmostEqual(d2g, 0.54930614,
             msg='Should see high Dec2 when blue party wins all districts in small state')
-    
+
+    def test_vectorized_D2(self):
+        ''' Declination is correctly calculated for vectorized multi-sim numpy arrays
+        '''
+        # Convention: [:,:,0] = blue (Dem), [:,:,1] = red (Rep)
+
+        # Test case 1: Georgia 1972 - high D2
+        # 9 districts blue wins, 1 district red win
+        votes1 = numpy.array(
+            [[0.584617612075026, 1 - 0.584617612075026]] * 9 +
+            [[0.240871024240908, 1 - 0.240871024240908]] * 1
+        ).reshape(-1, 1, 2)
+        d2_1 = score.vectorized_D2(votes1)
+        self.assertEqual(d2_1.shape, (1,), 'Output should be 1D with length = num simulations')
+        self.assertAlmostEqual(d2_1[0], 0.875356731786882, places=3,
+            msg='Should see high Dec2 in Georgia, 1972')
+
+        # Test case 2: Louisiana 2020 - low D2
+        # 1 district blue win, 5 districts red wins
+        votes2 = numpy.array(
+            [[0.809097511747074, 1 - 0.809097511747074]] * 1 +
+            [[0.27072066577579, 1 - 0.27072066577579]] * 5
+        ).reshape(-1, 1, 2)
+        d2_2 = score.vectorized_D2(votes2)
+        self.assertAlmostEqual(d2_2[0], -0.458779909309412, places=3,
+            msg='Should see low Dec2 in Louisiana, 2020')
+
+        # Test case 3: North Carolina 1998 - near zero D2
+        # 5 districts blue wins, 7 districts red wins
+        votes3 = numpy.array(
+            [[0.598085862963535, 1 - 0.598085862963535]] * 5 +
+            [[0.357068466446836, 1 - 0.357068466446836]] * 7
+        ).reshape(-1, 1, 2)
+        d2_3 = score.vectorized_D2(votes3)
+        self.assertAlmostEqual(d2_3[0], 0.012363560105669, places=3,
+            msg='Should see ~zero Dec2 in North Carolina, 1998')
+
+        # Test case 4: Balanced case with zero-vote district
+        votes4 = numpy.array([
+            [[4, 1]],
+            [[3, 2]],
+            [[2, 3]],
+            [[1, 4]],
+            [[0, 0]],  # Zero-vote district
+        ])
+        d2_4 = score.vectorized_D2(votes4)
+        self.assertAlmostEqual(d2_4[0], 0, places=3,
+            msg='Should see zero Dec2')
+
+        # Test case 5: Same as 4, verify zero-vote resilience
+        d2_5 = score.vectorized_D2(votes4)
+        self.assertAlmostEqual(d2_5[0], d2_4[0], places=3,
+            msg='Should see zero Dec2 even when one district is missing votes')
+
+        # Test case 6: All red wins
+        votes6 = numpy.array([
+            [[2, 3]],
+            [[1, 4]],
+            [[0, 5]],
+        ])
+        d2_6 = score.vectorized_D2(votes6)
+        self.assertAlmostEqual(d2_6[0], -0.54930614,
+            msg='Should see low Dec2 when red party wins all districts in small state')
+
+        # Test case 7: All blue wins
+        votes7 = numpy.array([
+            [[3, 2]],
+            [[4, 1]],
+            [[5, 0]],
+        ])
+        d2_7 = score.vectorized_D2(votes7)
+        self.assertAlmostEqual(d2_7[0], 0.54930614,
+            msg='Should see high Dec2 when blue party wins all districts in small state')
+
+        # Test case 8: Multiple simulations
+        votes8 = numpy.array([
+            [[4, 1], [2, 3]],  # Sim 0: balanced, Sim 1: all red
+            [[3, 2], [1, 4]],
+            [[2, 3], [0, 5]],
+            [[1, 4], [0, 0]],
+        ])
+        d2_8 = score.vectorized_D2(votes8)
+        self.assertEqual(d2_8.shape, (2,))
+        self.assertAlmostEqual(d2_8[0], 0, places=3)
+        self.assertAlmostEqual(d2_8[1], -0.54930614)
+
     def test_calculate_D2_diff(self):
         '''
         '''
         self.assertIsNone(score.calculate_D2_diff((1, 2, 3), (4, 5, 6)))
         self.assertEqual(score.calculate_D2_diff((1, 2, 3, 4), (4, 3, 2, 1)), 0)
+
+    def test_vectorized_D2_diff(self):
+        ''' D2 diff is correctly calculated for vectorized multi-sim numpy arrays
+        '''
+        # Convention: [:,:,0] = blue (Dem), [:,:,1] = red (Rep)
+
+        # Test case 1: All blue wins → NaN (originally returned None)
+        votes1 = numpy.array([
+            [[4, 1]],
+            [[5, 2]],
+            [[6, 3]],
+        ])
+        diff1 = score.vectorized_D2_diff(votes1)
+        self.assertEqual(diff1.shape, (1,))
+        self.assertTrue(numpy.isnan(diff1[0]), msg='Should be NaN when only blue wins')
+
+        # Test case 2: Mixed wins → 0
+        # Blue: 80% and 60%; Red: 60% and 80%
+        # Mean blue wins: 0.7, Mean red wins: 0.7 → diff = 0
+        votes2 = numpy.array([
+            [[4, 1]],
+            [[3, 2]],
+            [[2, 3]],
+            [[1, 4]],
+        ])
+        diff2 = score.vectorized_D2_diff(votes2)
+        self.assertAlmostEqual(diff2[0], 0)
+
+        # Test case 3: Multiple simulations
+        votes3 = numpy.array([
+            [[4, 1], [4, 1]],  # Sim 0: all blue, Sim 1: mixed
+            [[5, 2], [3, 2]],
+            [[6, 3], [2, 3]],
+            [[0, 0], [1, 4]],
+        ])
+        diff3 = score.vectorized_D2_diff(votes3)
+        self.assertEqual(diff3.shape, (2,))
+        self.assertTrue(numpy.isnan(diff3[0]), msg='Sim 0: all blue → NaN')
+        self.assertAlmostEqual(diff3[1], 0, msg='Sim 1: mixed → 0')
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')

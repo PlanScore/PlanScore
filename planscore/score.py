@@ -529,6 +529,76 @@ def calculate_D2(red_districts:list[float], blue_districts:list[float]) -> float
 
     return -declination2
 
+def vectorized_D2(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
+    ''' Calculate Declination (D2) for vectorized multi-sim numpy arrays.
+
+        Input array shape is (districts, sims, dem/rep votes)
+        Convention: votes[:,:,0] = blue (Democratic), votes[:,:,1] = red (Republican)
+        Returns 1D array of shape (sims,) with D2 score for each simulation.
+
+        By convention, result is positive for blue and negative for red.
+        Adapt Python sample code from Warrington, 2018.
+    '''
+    districts, sims, _ = votes.shape
+
+    # Calculate district totals - shape (districts, sims)
+    district_totals = votes.sum(axis=2)
+
+    # Create mask for nonzero districts - shape (districts, sims)
+    nonzero_mask = district_totals > 0
+
+    # Calculate blue shares for all districts and sims - shape (districts, sims)
+    safe_totals = numpy.where(nonzero_mask, district_totals, 1.0)
+    blue_shares = votes[:, :, 0] / safe_totals
+
+    # Set zero-vote districts to NaN
+    blue_shares = numpy.where(nonzero_mask, blue_shares, numpy.nan)
+
+    # Count seats (nonzero districts) per sim - shape (sims,)
+    seats = nonzero_mask.sum(axis=0)
+
+    # Create masks for red wins (share <= 0.5) and blue wins (share > 0.5)
+    red_wins_mask = (blue_shares <= 0.5) & nonzero_mask  # shape (districts, sims)
+    blue_wins_mask = (blue_shares > 0.5) & nonzero_mask  # shape (districts, sims)
+
+    # Count wins per sim
+    num_red_wins = red_wins_mask.sum(axis=0)  # shape (sims,)
+    num_blue_wins = blue_wins_mask.sum(axis=0)  # shape (sims,)
+
+    # Prepare arrays for red and blue win shares (set non-wins to NaN)
+    red_win_shares = numpy.where(red_wins_mask, blue_shares, numpy.nan)
+    blue_win_shares = numpy.where(blue_wins_mask, blue_shares, numpy.nan)
+
+    # Calculate means of winning shares per sim
+    mean_red_wins = numpy.nanmean(red_win_shares, axis=0)  # shape (sims,)
+    mean_blue_wins = numpy.nanmean(blue_win_shares, axis=0)  # shape (sims,)
+
+    # Calculate theta and gamma using vectorized operations
+    # theta = atan((1 - 2 * mean(red_wins)) * seats / num_red_wins)
+    # gamma = atan((2 * mean(blue_wins) - 1) * seats / num_blue_wins)
+    theta = numpy.arctan(
+        numpy.where(num_red_wins > 0,
+                    (1 - 2 * mean_red_wins) * seats / num_red_wins,
+                    0.0)
+    )
+    gamma = numpy.arctan(
+        numpy.where(num_blue_wins > 0,
+                    (2 * mean_blue_wins - 1) * seats / num_blue_wins,
+                    0.0)
+    )
+
+    # Calculate declination - shape (sims,)
+    declination = 2.0 * (gamma - theta) / numpy.pi
+
+    # Handle edge cases: all red wins or all blue wins
+    declination = numpy.where(num_red_wins == 0, -1.0, declination)  # All blue
+    declination = numpy.where(num_blue_wins == 0, 1.0, declination)  # All red
+
+    # Calculate declination2 - shape (sims,)
+    declination2 = numpy.where(seats > 0, declination * numpy.log(seats) / 2, 0.0)
+
+    return -declination2
+
 def calculate_D2_diff(red_districts:list[float], blue_districts:list[float]) -> float | None:
     ''' Convert two lists of district vote counts into vote share difference.
     
@@ -546,8 +616,49 @@ def calculate_D2_diff(red_districts:list[float], blue_districts:list[float]) -> 
     
     if red_shares and blue_shares:
         return statistics.mean(blue_shares) - statistics.mean(red_shares)
-    
+
     return None
+
+def vectorized_D2_diff(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
+    ''' Calculate vote share difference for vectorized multi-sim numpy arrays.
+
+        Input array shape is (districts, sims, dem/rep votes)
+        Convention: votes[:,:,0] = blue (Democratic), votes[:,:,1] = red (Republican)
+        Returns 1D array of shape (sims,) with diff for each simulation.
+        Returns NaN when only one party wins all seats.
+
+        Relevant for the textual description of Declination.
+    '''
+    districts, sims, _ = votes.shape
+
+    # Calculate district totals - shape (districts, sims)
+    district_totals = votes.sum(axis=2)
+
+    # Create mask for nonzero districts - shape (districts, sims)
+    nonzero_mask = district_totals > 0
+
+    # Calculate blue and red shares - shape (districts, sims)
+    safe_totals = numpy.where(nonzero_mask, district_totals, 1.0)
+    blue_shares_all = votes[:, :, 0] / safe_totals
+    red_shares_all = votes[:, :, 1] / safe_totals
+
+    # Create masks for blue wins (blue >= red) and red wins (blue < red)
+    blue_wins_mask = (votes[:, :, 0] >= votes[:, :, 1]) & nonzero_mask
+    red_wins_mask = (votes[:, :, 0] < votes[:, :, 1]) & nonzero_mask
+
+    # Get winning shares (set non-wins to NaN)
+    blue_win_shares = numpy.where(blue_wins_mask, blue_shares_all, numpy.nan)
+    red_win_shares = numpy.where(red_wins_mask, red_shares_all, numpy.nan)
+
+    # Calculate means of winning shares per sim
+    mean_blue_wins = numpy.nanmean(blue_win_shares, axis=0)  # shape (sims,)
+    mean_red_wins = numpy.nanmean(red_win_shares, axis=0)    # shape (sims,)
+
+    # Calculate difference: mean(blue_wins) - mean(red_wins)
+    # Will be NaN if either mean is NaN (i.e., no wins for that party)
+    diff = mean_blue_wins - mean_red_wins
+
+    return diff
 
 def calculate_bias(upload):
     ''' Calculate partisan metrics for districts with plain vote counts.
