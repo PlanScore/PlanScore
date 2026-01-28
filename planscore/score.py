@@ -343,6 +343,51 @@ def calculate_MMD(red_districts:list[float], blue_districts:list[float]) -> floa
     
     return median - mean
 
+def vectorized_MMD(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
+    ''' Calculate Mean-Median for vectorized multi-sim numpy arrays.
+
+        Input array shape is (districts, sims, dem/rep votes)
+        Convention: votes[:,:,0] = blue (Democratic), votes[:,:,1] = red (Republican)
+        Returns 1D array of shape (sims,) with MMD score for each simulation.
+
+        By convention, result is positive for blue and negative for red.
+    '''
+    districts, sims, _ = votes.shape
+
+    # Calculate district totals - shape (districts, sims)
+    district_totals = votes.sum(axis=2)
+
+    # Create mask for nonzero districts - shape (districts, sims)
+    nonzero_mask = district_totals > 0
+
+    # Calculate blue shares for all districts and sims - shape (districts, sims)
+    # Protect against division by zero
+    safe_totals = numpy.where(nonzero_mask, district_totals, 1.0)
+    blue_shares = votes[:, :, 0] / safe_totals
+
+    # For each simulation, filter nonzero districts and compute MMD
+    mmd_scores = numpy.zeros(sims)
+    for sim_idx in range(sims):
+        # Get nonzero districts for this sim
+        sim_mask = nonzero_mask[:, sim_idx]
+        sim_shares = blue_shares[sim_mask, sim_idx]
+
+        if len(sim_shares) == 0:
+            mmd_scores[sim_idx] = 0.0
+            continue
+
+        # Sort shares for median calculation
+        sorted_shares = numpy.sort(sim_shares)
+
+        # Calculate median and mean
+        median = numpy.median(sorted_shares)
+        mean = numpy.mean(sorted_shares)
+
+        # MMD = median - mean
+        mmd_scores[sim_idx] = median - mean
+
+    return mmd_scores
+
 def calculate_PB(red_districts:list[float], blue_districts:list[float]) -> float:
     ''' Convert two lists of district vote counts into a Partisan Bias score.
     

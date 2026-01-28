@@ -305,6 +305,105 @@ class TestScore (unittest.TestCase):
         self.assertAlmostEqual(mmd6, mmd1, places=2,
             msg='Should see defined MMD even when one district is missing votes')
 
+    def test_vectorized_MMD(self):
+        ''' Mean-Median is correctly calculated for vectorized multi-sim numpy arrays
+        '''
+        # Convention: [:,:,0] = blue (Dem), [:,:,1] = red (Rep)
+
+        # Test case 1: Zero MMD with 44% mean and median → MMD ≈ 0
+        # red=(6,6,4,4,4), blue=(5,5,5,8,8)
+        votes1 = numpy.array([
+            [[5, 6], [5, 6]],  # District 1
+            [[5, 6], [5, 6]],  # District 2
+            [[5, 4], [5, 4]],  # District 3
+            [[8, 4], [8, 4]],  # District 4
+            [[8, 4], [8, 4]],  # District 5
+        ])
+        mmd1 = score.vectorized_MMD(votes1)
+        self.assertEqual(mmd1.shape, (2,), 'Output should be 1D with length = num simulations')
+        self.assertAlmostEqual(mmd1[0], 0, places=2, msg='Should see zero MMD')
+        self.assertAlmostEqual(mmd1[1], 0, places=2, msg='Should see zero MMD across all sims')
+
+        # Test case 2: Zero MMD with 60% mean and median → MMD ≈ 0
+        # red=(6,6,6,6,6), blue=(4,4,4,4,4)
+        votes2 = numpy.array([
+            [[4, 6]],
+            [[4, 6]],
+            [[4, 6]],
+            [[4, 6]],
+            [[4, 6]],
+        ])
+        mmd2 = score.vectorized_MMD(votes2)
+        self.assertEqual(mmd2.shape, (1,))
+        self.assertAlmostEqual(mmd2[0], 0, places=2,
+            msg='Should see zero MMD with 60% mean and median')
+
+        # Test case 3: Red bias → MMD ≈ -0.18
+        # red=(6,6,6,1,1), blue=(5,5,5,10,10)
+        votes3 = numpy.array([
+            [[5, 6]],
+            [[5, 6]],
+            [[5, 6]],
+            [[10, 1]],
+            [[10, 1]],
+        ])
+        mmd3 = score.vectorized_MMD(votes3)
+        self.assertAlmostEqual(mmd3[0], -0.18, places=2,
+            msg='Should see +red MMD with 36% mean and 54% median')
+
+        # Test case 4: Another red bias → MMD ≈ -0.09
+        # red=(6,6,6,6,1), blue=(5,5,5,5,10)
+        votes4 = numpy.array([
+            [[5, 6]],
+            [[5, 6]],
+            [[5, 6]],
+            [[5, 6]],
+            [[10, 1]],
+        ])
+        mmd4 = score.vectorized_MMD(votes4)
+        self.assertAlmostEqual(mmd4[0], -0.09, places=2,
+            msg='Should see +red MMD with 45% mean and 54% median')
+
+        # Test case 5: Blue bias → MMD ≈ 0.15
+        # red=(6,6,1,1,1), blue=(5,5,7,10,10)
+        votes5 = numpy.array([
+            [[5, 6]],
+            [[5, 6]],
+            [[7, 1]],
+            [[10, 1]],
+            [[10, 1]],
+        ])
+        mmd5 = score.vectorized_MMD(votes5)
+        self.assertAlmostEqual(mmd5[0], 0.15, places=2,
+            msg='Should see +blue MMD with 28% mean and 13% median')
+
+        # Test case 6: Zero-vote districts should be filtered out
+        # red=(6,6,4,4,4,0), blue=(5,5,5,8,8,0)
+        votes6 = numpy.array([
+            [[5, 6]],
+            [[5, 6]],
+            [[5, 4]],
+            [[8, 4]],
+            [[8, 4]],
+            [[0, 0]],  # Zero-vote district
+        ])
+        mmd6 = score.vectorized_MMD(votes6)
+        self.assertAlmostEqual(mmd6[0], 0, places=2,
+            msg='Should see defined MMD even with zero-vote district')
+
+        # Test case 7: Multiple different simulations
+        votes7 = numpy.array([
+            [[5, 6], [4, 6]],  # Different values per sim
+            [[5, 6], [4, 6]],
+            [[5, 4], [4, 6]],
+            [[8, 4], [4, 6]],
+            [[8, 4], [4, 6]],
+        ])
+        mmd7 = score.vectorized_MMD(votes7)
+        self.assertEqual(mmd7.shape, (2,))
+        self.assertAlmostEqual(mmd7[0], 0, places=2)
+        self.assertAlmostEqual(mmd7[1], 0, places=2)
+
     def test_calculate_PB(self):
         ''' Partisan Bias can be correctly calculated for various elections
         '''
