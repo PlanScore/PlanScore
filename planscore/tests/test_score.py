@@ -1448,12 +1448,18 @@ class TestScore (unittest.TestCase):
         # Verify vectorized_EG was called with correct array for swing +1 (call index 6)
         call_args = vectorized_EG.mock_calls[6][1][0]
         self.assertEqual(call_args.shape, (4, 3, 2))
+        # Verify swing amount is correctly converted from percentage points to decimal
+        self.assertAlmostEqual(call_args[0, 0, 0], 5.38, places=2)
+        self.assertAlmostEqual(call_args[0, 0, 1], 2.62, places=2)
 
         # Third round of sims - swing -1
         self.assertEqual(output.summary['Efficiency Gap +1 Rep'], 0)
         # Verify vectorized_EG was called with correct array for swing -1 (call index 4)
         call_args = vectorized_EG.mock_calls[4][1][0]
         self.assertEqual(call_args.shape, (4, 3, 2))
+        # Verify swing amount is correctly converted from percentage points to decimal
+        self.assertAlmostEqual(call_args[0, 0, 0], 5.22, places=2)
+        self.assertAlmostEqual(call_args[0, 0, 1], 2.78, places=2)
 
         self.assertEqual(output.districts[0]['totals']['Republican Votes'], 2.27)
         self.assertEqual(output.districts[0]['totals']['Democratic Votes'], 5.73)

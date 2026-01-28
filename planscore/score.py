@@ -968,7 +968,7 @@ def calculate_district_biases(upload):
     swing_count = 11
     swing_range = range(-(swing_count // 2), 1 + swing_count // 2)
     output_votes = numpy.concatenate(
-        [vectorized_swing(output_votes, a).reshape((1, *output_votes.shape)) for a in swing_range],
+        [vectorized_swing(output_votes, a/100).reshape((1, *output_votes.shape)) for a in swing_range],
         axis=0,
     )
     
