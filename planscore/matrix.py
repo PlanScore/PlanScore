@@ -207,8 +207,8 @@ def model_votes(model_version, state, house, districts):
     
     return votes
 
-def prepare_district_data(upload):
-    ''' Simple presidential vote input for model_votes()
+def prepare_district_data(upload) -> list[tuple[float, float, str]]:
+    ''' Simple presidential vote input for model_votes() plus the pvote year used
     '''
     params = data.VERSION_PARAMETERS[upload.model_version or upload.model.versions[0]]
     
@@ -235,7 +235,7 @@ def prepare_district_data(upload):
     
     return out_data
 
-def filter_district_data(prepared_data):
+def filter_district_data(prepared_data: list[tuple[float, float, str]]) -> list[tuple[float, float, str]]:
     ''' Set to zero any district with votes 90% below mean()
     '''
     district_sums = numpy.array(prepared_data)[:,:2].astype(float).sum(axis=1)

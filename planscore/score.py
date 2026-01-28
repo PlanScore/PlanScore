@@ -624,6 +624,9 @@ def calculate_district_biases(upload):
         upload.vote_swings,
     )
     district_count, sim_count, _ = output_votes.shape
+
+    # Reshape so first axis can be swing amount
+    output_votes = output_votes.reshape((1, *output_votes.shape))
     
     # Record per-district vote totals and confidence intervals
     copied_districts = copy.deepcopy(upload.districts)
@@ -631,8 +634,8 @@ def calculate_district_biases(upload):
     vote_swings = upload.vote_swings or [0.0] * district_count
     
     for (i, (district, vote_swing)) in enumerate(zip(copied_districts, vote_swings)):
-        red_votes = matrix.dropna(output_votes[i,:,1])
-        blue_votes = matrix.dropna(output_votes[i,:,0])
+        red_votes = matrix.dropna(output_votes[0,i,:,1])
+        blue_votes = matrix.dropna(output_votes[0,i,:,0])
         try:
             district['totals'].update({
                 'Democratic Wins': (blue_votes > red_votes).astype(int).sum() / sim_count,
@@ -659,8 +662,8 @@ def calculate_district_biases(upload):
     # For each sim, a list of red votes and a list of blue votes in districts
     red_votes_blue_votes = [
         (
-            matrix.dropna(output_votes[:,sim,1]).tolist(),
-            matrix.dropna(output_votes[:,sim,0]).tolist(),
+            matrix.dropna(output_votes[0,:,sim,1]).tolist(),
+            matrix.dropna(output_votes[0,:,sim,0]).tolist(),
         )
         for sim in range(sim_count)
     ]
