@@ -1353,14 +1353,14 @@ class TestScore (unittest.TestCase):
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
-    @unittest.mock.patch('planscore.score.calculate_D2_diff')
-    @unittest.mock.patch('planscore.score.calculate_D2')
-    @unittest.mock.patch('planscore.score.calculate_MMD')
-    @unittest.mock.patch('planscore.score.calculate_PB')
+    @unittest.mock.patch('planscore.score.vectorized_D2_diff')
+    @unittest.mock.patch('planscore.score.vectorized_D2')
+    @unittest.mock.patch('planscore.score.vectorized_MMD')
+    @unittest.mock.patch('planscore.score.vectorized_PB')
     @unittest.mock.patch('planscore.score.vectorized_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
     @unittest.mock.patch('planscore.matrix.filter_district_data')
-    def test_calculate_gap_unified(self, filter_district_data, model_votes, vectorized_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
+    def test_calculate_gap_unified(self, filter_district_data, model_votes, vectorized_EG, vectorized_PB, vectorized_MMD, vectorized_D2, vectorized_D2_diff, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
@@ -1375,10 +1375,10 @@ class TestScore (unittest.TestCase):
 
         percentrank_rel.return_value = 0
         percentrank_abs.return_value = 0
-        calculate_D2.return_value = 0
-        calculate_D2_diff.return_value = 0
-        calculate_MMD.return_value = 0
-        calculate_PB.return_value = 0
+        vectorized_D2.return_value = numpy.array([0, 0, 0])
+        vectorized_D2_diff.return_value = numpy.array([0, 0, 0])
+        vectorized_MMD.return_value = numpy.array([0, 0, 0])
+        vectorized_PB.return_value = numpy.array([0, 0, 0])
         vectorized_EG.return_value = numpy.array([0, 0, 0])
         model_votes.return_value = numpy.array([
             [[5.3, 2.7],
@@ -1399,18 +1399,31 @@ class TestScore (unittest.TestCase):
         ])
         output = score.calculate_everything(input)
         self.assertEqual(model_votes.mock_calls[0][1], ('2025A', data.State.XX, data.House.ushouse, filter_district_data.return_value))
-        
-        self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
-        self.assertEqual(output.summary['Mean-Median Positives'], 0.0)
-        self.assertEqual(calculate_MMD.mock_calls[0][1], ([2.7, 4.1, 5.2, 6.1], [5.3, 3.9, 2.8, 1.9]))
 
-        self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
+        self.assertEqual(output.summary['Mean-Median'], 0)
+        self.assertEqual(output.summary['Mean-Median Positives'], 0.0)
+        # Verify vectorized_MMD was called with correct array shape
+        call_args = vectorized_MMD.mock_calls[0][1][0]
+        self.assertEqual(call_args.shape, (4, 3, 2))  # 4 districts, 3 sims, 2 parties
+        # Check first simulation values: red=[2.7, 4.1, 5.2, 6.1], blue=[5.3, 3.9, 2.8, 1.9]
+        self.assertAlmostEqual(call_args[0, 0, 0], 5.3)
+        self.assertAlmostEqual(call_args[0, 0, 1], 2.7)
+
+        self.assertEqual(output.summary['Partisan Bias'], 0)
         self.assertEqual(output.summary['Partisan Bias Positives'], 0.0)
-        self.assertEqual(calculate_PB.mock_calls[0][1], ([2.7, 4.1, 5.2, 6.1], [5.3, 3.9, 2.8, 1.9]))
-        
-        self.assertEqual(output.summary['Declination'], calculate_D2.return_value)
+        # Verify vectorized_PB was called with correct array shape
+        call_args = vectorized_PB.mock_calls[0][1][0]
+        self.assertEqual(call_args.shape, (4, 3, 2))
+        self.assertAlmostEqual(call_args[0, 0, 0], 5.3)
+        self.assertAlmostEqual(call_args[0, 0, 1], 2.7)
+
+        self.assertEqual(output.summary['Declination'], 0)
         self.assertEqual(output.summary['Declination Positives'], 0.0)
-        self.assertEqual(calculate_D2.mock_calls[0][1], ([2.7, 4.1, 5.2, 6.1], [5.3, 3.9, 2.8, 1.9]))
+        # Verify vectorized_D2 was called with correct array shape
+        call_args = vectorized_D2.mock_calls[0][1][0]
+        self.assertEqual(call_args.shape, (4, 3, 2))
+        self.assertAlmostEqual(call_args[0, 0, 0], 5.3)
+        self.assertAlmostEqual(call_args[0, 0, 1], 2.7)
         
         SIMS = model_votes.return_value.shape[1]
 
@@ -1458,14 +1471,14 @@ class TestScore (unittest.TestCase):
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
-    @unittest.mock.patch('planscore.score.calculate_D2_diff')
-    @unittest.mock.patch('planscore.score.calculate_D2')
-    @unittest.mock.patch('planscore.score.calculate_MMD')
-    @unittest.mock.patch('planscore.score.calculate_PB')
+    @unittest.mock.patch('planscore.score.vectorized_D2_diff')
+    @unittest.mock.patch('planscore.score.vectorized_D2')
+    @unittest.mock.patch('planscore.score.vectorized_MMD')
+    @unittest.mock.patch('planscore.score.vectorized_PB')
     @unittest.mock.patch('planscore.score.vectorized_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
     @unittest.mock.patch('planscore.matrix.filter_district_data')
-    def test_calculate_gap_unified_vote_swing(self, filter_district_data, model_votes, vectorized_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
+    def test_calculate_gap_unified_vote_swing(self, filter_district_data, model_votes, vectorized_EG, vectorized_PB, vectorized_MMD, vectorized_D2, vectorized_D2_diff, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
@@ -1481,10 +1494,10 @@ class TestScore (unittest.TestCase):
 
         percentrank_rel.return_value = 0
         percentrank_abs.return_value = 0
-        calculate_D2.return_value = 0
-        calculate_D2_diff.return_value = 0
-        calculate_MMD.return_value = 0
-        calculate_PB.return_value = 0
+        vectorized_D2.return_value = numpy.array([0, 0, 0])
+        vectorized_D2_diff.return_value = numpy.array([0, 0, 0])
+        vectorized_MMD.return_value = numpy.array([0, 0, 0])
+        vectorized_PB.return_value = numpy.array([0, 0, 0])
         vectorized_EG.return_value = numpy.array([0, 0, 0])
         model_votes.return_value = numpy.array([
             [[5.3, 2.7],
@@ -1505,18 +1518,31 @@ class TestScore (unittest.TestCase):
         ])
         output = score.calculate_everything(input)
         self.assertEqual(model_votes.mock_calls[0][1], ('2025A', data.State.XX, data.House.ushouse, filter_district_data.return_value))
-        
-        self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
-        self.assertEqual(output.summary['Mean-Median Positives'], 0.0)
-        self.assertEqual(calculate_MMD.mock_calls[0][1], ([3.5, 4.1, 4.4, 4.5], [4.5, 3.9, 3.6, 3.5]))
 
-        self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
+        self.assertEqual(output.summary['Mean-Median'], 0)
+        self.assertEqual(output.summary['Mean-Median Positives'], 0.0)
+        # Verify vectorized_MMD was called with correct array shape
+        call_args = vectorized_MMD.mock_calls[0][1][0]
+        self.assertEqual(call_args.shape, (4, 3, 2))
+        # Check first simulation values: red=[3.5, 4.1, 4.4, 4.5], blue=[4.5, 3.9, 3.6, 3.5]
+        self.assertAlmostEqual(call_args[0, 0, 0], 4.5, places=1)
+        self.assertAlmostEqual(call_args[0, 0, 1], 3.5, places=1)
+
+        self.assertEqual(output.summary['Partisan Bias'], 0)
         self.assertEqual(output.summary['Partisan Bias Positives'], 0.0)
-        self.assertEqual(calculate_PB.mock_calls[0][1], ([3.5, 4.1, 4.4, 4.5], [4.5, 3.9, 3.6, 3.5]))
-        
-        self.assertEqual(output.summary['Declination'], calculate_D2.return_value)
+        # Verify vectorized_PB was called with correct array shape
+        call_args = vectorized_PB.mock_calls[0][1][0]
+        self.assertEqual(call_args.shape, (4, 3, 2))
+        self.assertAlmostEqual(call_args[0, 0, 0], 4.5, places=1)
+        self.assertAlmostEqual(call_args[0, 0, 1], 3.5, places=1)
+
+        self.assertEqual(output.summary['Declination'], 0)
         self.assertEqual(output.summary['Declination Positives'], 0.0)
-        self.assertEqual(calculate_D2.mock_calls[0][1], ([3.5, 4.1, 4.4, 4.5], [4.5, 3.9, 3.6, 3.5]))
+        # Verify vectorized_D2 was called with correct array shape
+        call_args = vectorized_D2.mock_calls[0][1][0]
+        self.assertEqual(call_args.shape, (4, 3, 2))
+        self.assertAlmostEqual(call_args[0, 0, 0], 4.5, places=1)
+        self.assertAlmostEqual(call_args[0, 0, 1], 3.5, places=1)
         
         SIMS = model_votes.return_value.shape[1]
 
@@ -1570,13 +1596,13 @@ class TestScore (unittest.TestCase):
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
-    @unittest.mock.patch('planscore.score.calculate_D2_diff')
-    @unittest.mock.patch('planscore.score.calculate_D2')
-    @unittest.mock.patch('planscore.score.calculate_MMD')
-    @unittest.mock.patch('planscore.score.calculate_PB')
-    @unittest.mock.patch('planscore.score.calculate_EG')
+    @unittest.mock.patch('planscore.score.vectorized_D2_diff')
+    @unittest.mock.patch('planscore.score.vectorized_D2')
+    @unittest.mock.patch('planscore.score.vectorized_MMD')
+    @unittest.mock.patch('planscore.score.vectorized_PB')
+    @unittest.mock.patch('planscore.score.vectorized_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
-    def test_calculate_gap_unified_incumbents(self, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
+    def test_calculate_gap_unified_incumbents(self, model_votes, vectorized_EG, vectorized_PB, vectorized_MMD, vectorized_D2, vectorized_D2_diff, percentrank_abs, percentrank_rel):
         ''' Incumbency values are correctly passedon for presidential vote only
         '''
         input = data.Upload(id=None, key=None,
@@ -1589,14 +1615,14 @@ class TestScore (unittest.TestCase):
                 dict(totals={'US President 2020 - REP': 5, 'US President 2020 - DEM': 3}, tile=None),
                 dict(totals={'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
                 ])
-        
+
         percentrank_rel.return_value = 0
         percentrank_abs.return_value = 0
-        calculate_D2.return_value = 0
-        calculate_D2_diff.return_value = 0
-        calculate_MMD.return_value = 0
-        calculate_PB.return_value = 0
-        calculate_EG.return_value = 0
+        vectorized_D2.return_value = numpy.array([0, 0, 0])
+        vectorized_D2_diff.return_value = numpy.array([0, 0, 0])
+        vectorized_MMD.return_value = numpy.array([0, 0, 0])
+        vectorized_PB.return_value = numpy.array([0, 0, 0])
+        vectorized_EG.return_value = numpy.array([0, 0, 0])
         model_votes.return_value = numpy.array([
             [[5.3, 2.7],
              [6.0, 2.0],
@@ -1623,13 +1649,14 @@ class TestScore (unittest.TestCase):
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
-    @unittest.mock.patch('planscore.score.calculate_D2_diff')
-    @unittest.mock.patch('planscore.score.calculate_D2')
-    @unittest.mock.patch('planscore.score.calculate_MMD')
-    @unittest.mock.patch('planscore.score.calculate_PB')
+    @unittest.mock.patch('planscore.score.vectorized_D2_diff')
+    @unittest.mock.patch('planscore.score.vectorized_D2')
+    @unittest.mock.patch('planscore.score.vectorized_MMD')
+    @unittest.mock.patch('planscore.score.vectorized_PB')
+    @unittest.mock.patch('planscore.score.vectorized_EG')
     @unittest.mock.patch('planscore.score.calculate_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
-    def test_calculate_fva_votes(self, model_votes, calculate_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
+    def test_calculate_fva_votes(self, model_votes, calculate_EG, vectorized_EG, vectorized_PB, vectorized_MMD, vectorized_D2, vectorized_D2_diff, percentrank_abs, percentrank_rel):
         ''' Relevant FVA races are correctly identified
         '''
         input = data.Upload(id=None, key=None,
@@ -1660,13 +1687,14 @@ class TestScore (unittest.TestCase):
                     'US Senate 2020 - REP': 6, 'US Senate 2020 - DEM': 2,
                 }, tile=None),
             ])
-        
+
         percentrank_rel.return_value = 0
         percentrank_abs.return_value = 0
-        calculate_D2.return_value = 0
-        calculate_D2_diff.return_value = 0
-        calculate_MMD.return_value = 0
-        calculate_PB.return_value = 0
+        vectorized_D2.return_value = numpy.array([0, 0, 0])
+        vectorized_D2_diff.return_value = numpy.array([0, 0, 0])
+        vectorized_MMD.return_value = numpy.array([0, 0, 0])
+        vectorized_PB.return_value = numpy.array([0, 0, 0])
+        vectorized_EG.return_value = numpy.array([0, 0, 0])
         calculate_EG.return_value = 0
         model_votes.return_value = numpy.array([
             [[5.3, 2.7],
@@ -1686,7 +1714,7 @@ class TestScore (unittest.TestCase):
              [2.6, 5.4]],
         ])
         output = score.calculate_everything(input)
-        
+
         last4_EGs = calculate_EG.mock_calls[-4:]
         self.assertEqual(last4_EGs[0][1], ([2, 3, 5, 6], [6, 5, 3, 2]))
         self.assertEqual(last4_EGs[1][1], ([3, 4, 6, 7], [7, 6, 4, 3]))
@@ -1701,13 +1729,13 @@ class TestScore (unittest.TestCase):
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
-    @unittest.mock.patch('planscore.score.calculate_D2_diff')
-    @unittest.mock.patch('planscore.score.calculate_D2')
-    @unittest.mock.patch('planscore.score.calculate_MMD')
-    @unittest.mock.patch('planscore.score.calculate_PB')
+    @unittest.mock.patch('planscore.score.vectorized_D2_diff')
+    @unittest.mock.patch('planscore.score.vectorized_D2')
+    @unittest.mock.patch('planscore.score.vectorized_MMD')
+    @unittest.mock.patch('planscore.score.vectorized_PB')
     @unittest.mock.patch('planscore.score.vectorized_EG')
     @unittest.mock.patch('planscore.matrix.model_votes')
-    def test_calculate_gap_with_zeros(self, model_votes, vectorized_EG, calculate_PB, calculate_MMD, calculate_D2, calculate_D2_diff, percentrank_abs, percentrank_rel):
+    def test_calculate_gap_with_zeros(self, model_votes, vectorized_EG, vectorized_PB, vectorized_MMD, vectorized_D2, vectorized_D2_diff, percentrank_abs, percentrank_rel):
         ''' Efficiency gap can be correctly calculated from presidential vote only
         '''
         input = data.Upload(id=None, key=None,
@@ -1723,10 +1751,10 @@ class TestScore (unittest.TestCase):
 
         percentrank_rel.return_value = 0
         percentrank_abs.return_value = 0
-        calculate_D2.return_value = 0
-        calculate_D2_diff.return_value = 0
-        calculate_MMD.return_value = 0
-        calculate_PB.return_value = 0
+        vectorized_D2.return_value = numpy.array([0, 0, 0])
+        vectorized_D2_diff.return_value = numpy.array([0, 0, 0])
+        vectorized_MMD.return_value = numpy.array([0, 0, 0])
+        vectorized_PB.return_value = numpy.array([0, 0, 0])
         vectorized_EG.return_value = numpy.array([0, 0, 0])
         model_votes.return_value = numpy.array([
             [[5.3, 2.7],
@@ -1766,18 +1794,21 @@ class TestScore (unittest.TestCase):
         self.assertEqual(model_votes.mock_calls[0][1][3][1], (5.0, 3.0, 'O'))
         self.assertEqual(model_votes.mock_calls[0][1][3][2], (3.0, 5.0, 'O'))
         self.assertEqual(model_votes.mock_calls[0][1][3][3], (2.0, 6.0, 'O'))
-        
-        self.assertEqual(output.summary['Mean-Median'], calculate_MMD.return_value)
-        self.assertEqual(len(calculate_MMD.mock_calls[0][1][0]), 4, 'Should skip empty 5th district')
-        self.assertEqual(len(calculate_MMD.mock_calls[0][1][1]), 4, 'Should skip empty 5th district')
 
-        self.assertEqual(output.summary['Partisan Bias'], calculate_PB.return_value)
-        self.assertEqual(len(calculate_PB.mock_calls[0][1][0]), 4, 'Should skip empty 5th district')
-        self.assertEqual(len(calculate_PB.mock_calls[0][1][1]), 4, 'Should skip empty 5th district')
+        self.assertEqual(output.summary['Mean-Median'], 0)
+        # Verify vectorized_MMD was called with correct array shape (including NaN district)
+        call_args = vectorized_MMD.mock_calls[0][1][0]
+        self.assertEqual(call_args.shape, (5, 3, 2))  # 5 districts (including NaN), 3 sims, 2 parties
 
-        self.assertEqual(output.summary['Declination'], calculate_D2.return_value)
-        self.assertEqual(len(calculate_D2.mock_calls[0][1][0]), 4, 'Should skip empty 5th district')
-        self.assertEqual(len(calculate_D2.mock_calls[0][1][1]), 4, 'Should skip empty 5th district')
+        self.assertEqual(output.summary['Partisan Bias'], 0)
+        # Verify vectorized_PB was called with correct array shape
+        call_args = vectorized_PB.mock_calls[0][1][0]
+        self.assertEqual(call_args.shape, (5, 3, 2))
+
+        self.assertEqual(output.summary['Declination'], 0)
+        # Verify vectorized_D2 was called with correct array shape
+        call_args = vectorized_D2.mock_calls[0][1][0]
+        self.assertEqual(call_args.shape, (5, 3, 2))
         
         SIMS = model_votes.return_value.shape[1]
 

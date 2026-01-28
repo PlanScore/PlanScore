@@ -996,23 +996,17 @@ def calculate_district_biases(upload):
             district['number'] = None
             district['vote_swing'] = None
     
-    # For each sim, a list of red votes and a list of blue votes in districts
-    red_votes_blue_votes = [
-        (
-            matrix.dropna(output_votes[swing_count // 2,:,sim,1]).tolist(),
-            matrix.dropna(output_votes[swing_count // 2,:,sim,0]).tolist(),
-        )
-        for sim in range(sim_count)
-    ]
-    
-    # Calculate partisanship metrics for all simulations
-    MMDs = [calculate_MMD(r, b) for (r, b) in red_votes_blue_votes]
-    PBs = [calculate_PB(r, b) for (r, b) in red_votes_blue_votes]
-    D2s = [calculate_D2(r, b) for (r, b) in red_votes_blue_votes]
-    D2ds = [calculate_D2_diff(r, b) for (r, b) in red_votes_blue_votes]
-    
+    # Calculate partisanship metrics for all simulations using vectorized functions
+    # Pass (districts, sims, 2) slice at zero swing directly to vectorized functions
+    zero_swing_votes = output_votes[swing_count // 2, :, :, :]
+
+    MMDs = vectorized_MMD(zero_swing_votes).tolist()
+    PBs = vectorized_PB(zero_swing_votes).tolist()
+    D2s = vectorized_D2(zero_swing_votes).tolist()
+    D2ds = vectorized_D2_diff(zero_swing_votes).tolist()
+
     # Need <50% simulations with single-party outcomes for valid declination
-    D2_is_valid = len(list(filter(None, D2ds))) > len(red_votes_blue_votes) * .75
+    D2_is_valid = len(list(filter(None, D2ds))) > sim_count * .75
     
     # EG alone also gets a sensitivity test for vote swing scenarios
     EGs = {
