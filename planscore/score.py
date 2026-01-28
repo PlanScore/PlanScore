@@ -159,6 +159,27 @@ def swing_vote_matrix(votes:numpy.typing.NDArray, vote_swings:list[float]) -> nu
 
     return numpy.concatenate(new_votes, axis=0).round(6)
 
+def swing_vote_matrix2(output_votes, swing_count: int):
+    ''' TODO: make this alternative function identical to the other, or replace it
+    '''
+    _, district_count, sim_count, _ = output_votes.shape
+
+    swing_range = range(-(swing_count // 2), 1 + swing_count // 2)
+    swung_votes = output_votes.repeat(swing_count, axis=0)
+
+    flat_shape = (district_count * sim_count, 1)
+    original_shape = district_count, sim_count
+
+    for i, swing in enumerate(swing_range):
+        red_votes = swung_votes[i,:,:,1].reshape(flat_shape)
+        blue_votes = swung_votes[i,:,:,0].reshape(flat_shape)
+
+        new_red_votes, new_blue_votes = swing_vote(red_votes, blue_votes, swing)
+        swung_votes[i,:,:,1] = numpy.array(new_red_votes).reshape(original_shape)
+        swung_votes[i,:,:,0] = numpy.array(new_blue_votes).reshape(original_shape)
+
+    return swung_votes
+
 def safe_mean(values):
     '''
     '''
@@ -625,8 +646,10 @@ def calculate_district_biases(upload):
     )
     district_count, sim_count, _ = output_votes.shape
 
-    # Reshape so first axis can be swing amount
+    # Reshape so first axis can be swing amount, then expand to 11 swings
+    swing_count = 11
     output_votes = output_votes.reshape((1, *output_votes.shape))
+    output_votes = swing_vote_matrix2(output_votes, swing_count)
     
     # Record per-district vote totals and confidence intervals
     copied_districts = copy.deepcopy(upload.districts)
@@ -634,8 +657,8 @@ def calculate_district_biases(upload):
     vote_swings = upload.vote_swings or [0.0] * district_count
     
     for (i, (district, vote_swing)) in enumerate(zip(copied_districts, vote_swings)):
-        red_votes = matrix.dropna(output_votes[0,i,:,1])
-        blue_votes = matrix.dropna(output_votes[0,i,:,0])
+        red_votes = matrix.dropna(output_votes[swing_count // 2,i,:,1])
+        blue_votes = matrix.dropna(output_votes[swing_count // 2,i,:,0])
         try:
             district['totals'].update({
                 'Democratic Wins': (blue_votes > red_votes).astype(int).sum() / sim_count,
@@ -662,8 +685,8 @@ def calculate_district_biases(upload):
     # For each sim, a list of red votes and a list of blue votes in districts
     red_votes_blue_votes = [
         (
-            matrix.dropna(output_votes[0,:,sim,1]).tolist(),
-            matrix.dropna(output_votes[0,:,sim,0]).tolist(),
+            matrix.dropna(output_votes[swing_count // 2,:,sim,1]).tolist(),
+            matrix.dropna(output_votes[swing_count // 2,:,sim,0]).tolist(),
         )
         for sim in range(sim_count)
     ]
@@ -678,9 +701,23 @@ def calculate_district_biases(upload):
     D2_is_valid = len(list(filter(None, D2ds))) > len(red_votes_blue_votes) * .75
     
     # EG alone also gets a sensitivity test for vote swing scenarios
+    swing_range = range(-(swing_count // 2), 1 + swing_count // 2)
+    red_votes_blue_votes2 = [
+        (
+            swing,
+            [
+                (
+                    matrix.dropna(output_votes[i,:,sim,1]).tolist(),
+                    matrix.dropna(output_votes[i,:,sim,0]).tolist(),
+                )
+                for sim in range(sim_count)
+            ]
+        )
+        for (i, swing) in enumerate(swing_range)
+    ]
     EGs = {
-        swing: [calculate_EG(r, b, swing/100) for (r, b) in red_votes_blue_votes]
-        for swing in (0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5)
+        swing: [calculate_EG(r, b) for (r, b) in red_votes_blue_votes3]
+        for (swing, red_votes_blue_votes3) in red_votes_blue_votes2
     }
 
     summary_dict = {
