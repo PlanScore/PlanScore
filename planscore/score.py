@@ -122,12 +122,46 @@ def swing_vote(red_districts:list[float], blue_districts:list[float], amount:flo
     '''
     if amount == 0:
         return list(red_districts), list(blue_districts)
-    
+
     districts = [(R, B, R + B) for (R, B) in zip(red_districts, blue_districts)]
     swung_reds = [((R/T - amount) * T) for (R, B, T) in districts if T > 0]
     swung_blues = [((B/T + amount) * T) for (R, B, T) in districts if T > 0]
-    
+
     return swung_reds, swung_blues
+
+def vectorized_swing(votes:numpy.typing.NDArray, amount:float) -> numpy.typing.NDArray:
+    ''' Swing the vote by a percentage, positive toward blue, using vectorized operations.
+
+        Input array shape is (districts, sims, dem/rep votes)
+        Convention: votes[:,:,0] = blue (Democratic), votes[:,:,1] = red (Republican)
+        Returns array of same shape with swung votes.
+    '''
+    if amount == 0:
+        return votes.copy()
+
+    # Calculate total votes per district-simulation pair
+    totals = votes.sum(axis=2, keepdims=True)
+
+    # Create a mask for non-zero totals to avoid division by zero
+    nonzero_mask = totals > 0
+
+    # Calculate current vote shares, protecting against division by zero
+    # Replace zero totals with 1 to avoid division warnings (result will be masked out anyway)
+    safe_totals = numpy.where(nonzero_mask, totals, 1.0)
+    shares = votes / safe_totals
+
+    # Apply swing: increase blue share by amount, decrease red share by amount
+    swung_shares = shares.copy()
+    swung_shares[:, :, 0] += amount  # Blue (Democratic) gets +amount
+    swung_shares[:, :, 1] -= amount  # Red (Republican) gets -amount
+
+    # Convert shares back to vote counts
+    swung_votes = swung_shares * totals
+
+    # Ensure zero-vote districts remain zero
+    swung_votes = numpy.where(nonzero_mask, swung_votes, 0.0)
+
+    return swung_votes
 
 def swing_vote_matrix(votes:numpy.typing.NDArray, vote_swings:list[float]) -> numpy.typing.NDArray:
     ''' Swing the vote by a percentage, positive toward blue.

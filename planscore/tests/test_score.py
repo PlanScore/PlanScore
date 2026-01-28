@@ -64,7 +64,67 @@ class TestScore (unittest.TestCase):
         votes3 = score.swing_vote_matrix(votes1, [0.1] * 3)
         self.assertTrue((votes1.sum(axis=2) == votes2.sum(axis=2)).all())
         self.assertTrue((votes2 == votes3).all())
-    
+
+    def test_vectorized_swing(self):
+        ''' Vote swing is correctly calculated for vectorized multi-sim numpy arrays
+        '''
+        # Test with 3 districts, 2 simulations
+        # Convention: [:,:,0] = blue (Dem), [:,:,1] = red (Rep)
+        votes1 = numpy.array([
+            [[3, 1], [3, 1]],  # District 1: 75% blue
+            [[2, 2], [2, 2]],  # District 2: 50% blue
+            [[1, 3], [1, 3]],  # District 3: 25% blue
+        ])
+
+        # Test zero swing - should return identical votes
+        votes_zero = score.vectorized_swing(votes1, 0.0)
+        self.assertEqual(votes_zero.shape, votes1.shape)
+        self.assertTrue((votes_zero == votes1).all())
+
+        # Test positive swing (+0.1 toward blue)
+        # District 1: (3/4 + 0.1) * 4 = 3.4, (1/4 - 0.1) * 4 = 0.6
+        # District 2: (2/4 + 0.1) * 4 = 2.4, (2/4 - 0.1) * 4 = 1.6
+        # District 3: (1/4 + 0.1) * 4 = 1.4, (3/4 - 0.1) * 4 = 2.6
+        votes_pos = score.vectorized_swing(votes1, 0.1)
+        self.assertEqual(votes_pos.shape, votes1.shape)
+        self.assertAlmostEqual(votes_pos[0, 0, 0], 3.4)
+        self.assertAlmostEqual(votes_pos[0, 0, 1], 0.6)
+        self.assertAlmostEqual(votes_pos[1, 0, 0], 2.4)
+        self.assertAlmostEqual(votes_pos[1, 0, 1], 1.6)
+        self.assertAlmostEqual(votes_pos[2, 0, 0], 1.4)
+        self.assertAlmostEqual(votes_pos[2, 0, 1], 2.6)
+        # Verify totals are preserved
+        self.assertTrue((votes1.sum(axis=2) == votes_pos.sum(axis=2)).all())
+
+        # Test negative swing (-0.1 toward red)
+        votes_neg = score.vectorized_swing(votes1, -0.1)
+        self.assertEqual(votes_neg.shape, votes1.shape)
+        self.assertAlmostEqual(votes_neg[0, 0, 0], 2.6)
+        self.assertAlmostEqual(votes_neg[0, 0, 1], 1.4)
+        self.assertAlmostEqual(votes_neg[1, 0, 0], 1.6)
+        self.assertAlmostEqual(votes_neg[1, 0, 1], 2.4)
+        self.assertAlmostEqual(votes_neg[2, 0, 0], 0.6)
+        self.assertAlmostEqual(votes_neg[2, 0, 1], 3.4)
+        # Verify totals are preserved
+        self.assertTrue((votes1.sum(axis=2) == votes_neg.sum(axis=2)).all())
+
+        # Test with zero-vote districts (resilience to division by zero)
+        votes_with_zeros = numpy.array([
+            [[3, 1], [3, 1]],  # Normal district
+            [[0, 0], [0, 0]],  # Zero-vote district
+            [[2, 2], [2, 2]],  # Normal district
+        ])
+        votes_zero_dist = score.vectorized_swing(votes_with_zeros, 0.1)
+        self.assertEqual(votes_zero_dist.shape, votes_with_zeros.shape)
+        # Zero-vote district should remain zero
+        self.assertEqual(votes_zero_dist[1, 0, 0], 0)
+        self.assertEqual(votes_zero_dist[1, 0, 1], 0)
+        self.assertEqual(votes_zero_dist[1, 1, 0], 0)
+        self.assertEqual(votes_zero_dist[1, 1, 1], 0)
+        # Non-zero districts should be swung correctly
+        self.assertAlmostEqual(votes_zero_dist[0, 0, 0], 3.4)
+        self.assertAlmostEqual(votes_zero_dist[2, 0, 0], 2.4)
+
     def test_safe_mean(self):
         ''' Means are correctly calculated
         '''
