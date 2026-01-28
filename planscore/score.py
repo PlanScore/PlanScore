@@ -193,35 +193,42 @@ def swing_vote_matrix(votes:numpy.typing.NDArray, vote_swings:list[float]) -> nu
 
     return numpy.concatenate(new_votes, axis=0).round(6)
 
+def _is_valid_number(val):
+    '''Helper to check if a value is a valid number (not None or NaN)'''
+    return val is not None and not (isinstance(val, float) and math.isnan(val))
+
 def safe_mean(values):
     '''
     '''
-    safe_values = [val for val in values if val is not None]
-    
+    safe_values = [val for val in values if _is_valid_number(val)]
+
     if len(safe_values) < 1:
         return None
-    
+
     return statistics.mean(safe_values)
 
 def safe_stdev(values):
     '''
     '''
-    safe_values = [val for val in values if val is not None]
-    
+    safe_values = [val for val in values if _is_valid_number(val)]
+
     if len(safe_values) < 2:
         return None
-    
+
     return statistics.stdev(safe_values)
 
 def safe_positives(values):
     '''
     '''
-    safe_values = [val for val in values if val is not None]
+    safe_values = [val for val in values if _is_valid_number(val)]
 
     if len(safe_values) < 1:
         return None
-    
-    return len([n for n in safe_values if n > 0]) / len(values)
+
+    # Use epsilon threshold to avoid counting floating point errors as positive
+    # Machine epsilon for float64 is ~2.22e-16, so use 1e-10 as safe threshold
+    epsilon = 1e-10
+    return len([n for n in safe_values if n > epsilon]) / len(safe_values)
 
 def percentrank_abs(column, house, value):
     '''
@@ -1001,7 +1008,8 @@ def calculate_district_biases(upload):
     zero_swing_votes = output_votes[swing_count // 2, :, :, :]
 
     MMDs = vectorized_MMD(zero_swing_votes).tolist()
-    PBs = vectorized_PB(zero_swing_votes).tolist()
+    PBs_vec = vectorized_PB(zero_swing_votes)
+    PBs = PBs_vec.tolist()
     D2s = vectorized_D2(zero_swing_votes).tolist()
     D2ds = vectorized_D2_diff(zero_swing_votes).tolist()
 

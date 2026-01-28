@@ -168,7 +168,7 @@ class TestScore (unittest.TestCase):
         self.assertEqual(score.safe_positives(l3), 1.)
 
         l4 = [-1, 1, 1, None]
-        self.assertEqual(score.safe_positives(l4), .5)
+        self.assertAlmostEqual(score.safe_positives(l4), 2/3)
     
     def test_percentrank_abs(self):
         ''' Absolute percent rank is correctly calculated by chamber
