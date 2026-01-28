@@ -322,6 +322,82 @@ def calculate_EG(red_districts:list[float], blue_districts:list[float], vote_swi
     
     return statewide_seat_share - 0.5 - 2 * (statewide_vote_share - 0.5)
 
+def vectorized_EG(votes:numpy.typing.NDArray, vote_swing:float=0) -> numpy.typing.NDArray:
+    ''' Calculate Efficiency Gap for vectorized multi-sim numpy arrays.
+
+        Input array shape is (districts, sims, dem/rep votes)
+        Convention: votes[:,:,0] = blue (Democratic), votes[:,:,1] = red (Republican)
+        Returns 1D array of shape (sims,) with EG score for each simulation.
+
+        By convention, result is positive for blue and negative for red.
+    '''
+    districts, sims, _ = votes.shape
+
+    # Apply initial swing to calculate init_vote_share per sim
+    init_swung = vectorized_swing(votes, vote_swing)
+
+    # Calculate init_vote_share per sim
+    init_blue_total = init_swung[:, :, 0].sum(axis=0)  # shape (sims,)
+    init_red_total = init_swung[:, :, 1].sum(axis=0)   # shape (sims,)
+    init_vote_share = init_blue_total / (init_blue_total + init_red_total)
+
+    # Calculate clamped_swing per sim - shape (sims,)
+    clamped_swing = numpy.where(
+        init_vote_share < 0.25,
+        vote_swing + (0.25 - init_vote_share),
+        numpy.where(
+            init_vote_share > 0.75,
+            vote_swing - (init_vote_share - 0.75),
+            vote_swing
+        )
+    )
+
+    # Apply per-simulation clamped swings using broadcasting
+    # Calculate district totals - shape (districts, sims)
+    district_totals = votes.sum(axis=2)
+    nonzero_mask = district_totals > 0
+
+    # Calculate current vote shares - shape (districts, sims, 2)
+    safe_totals = numpy.where(nonzero_mask[:, :, numpy.newaxis],
+                               district_totals[:, :, numpy.newaxis],
+                               1.0)
+    shares = votes / safe_totals
+
+    # Apply per-simulation swings with broadcasting - shape (1, sims)
+    swing_broadcast = clamped_swing.reshape(1, -1)
+    swung_shares = shares.copy()
+    swung_shares[:, :, 0] += swing_broadcast  # blue gets +swing
+    swung_shares[:, :, 1] -= swing_broadcast  # red gets -swing
+
+    # Convert back to vote counts - shape (districts, sims, 2)
+    swung_votes = swung_shares * district_totals[:, :, numpy.newaxis]
+
+    # Mask out zero-vote districts
+    swung_votes = numpy.where(nonzero_mask[:, :, numpy.newaxis], swung_votes, 0.0)
+
+    # Count blue wins per sim - shape (sims,)
+    blue_wins = ((swung_votes[:, :, 0] > swung_votes[:, :, 1]) & nonzero_mask).sum(axis=0)
+
+    # Count nonzero districts per sim - shape (sims,)
+    nonzero_counts = nonzero_mask.sum(axis=0)
+
+    # Calculate seat share per sim - shape (sims,)
+    statewide_seat_share = numpy.where(nonzero_counts > 0,
+                                        blue_wins / nonzero_counts,
+                                        0.0)
+
+    # Calculate vote share per sim - shape (sims,)
+    statewide_blue_votes = swung_votes[:, :, 0].sum(axis=0)  # shape (sims,)
+    statewide_total_votes = swung_votes.sum(axis=(0, 2))     # shape (sims,)
+    statewide_vote_share = numpy.where(statewide_total_votes > 0,
+                                        statewide_blue_votes / statewide_total_votes,
+                                        0.0)
+
+    # EG formula - shape (sims,)
+    eg_scores = statewide_seat_share - 0.5 - 2 * (statewide_vote_share - 0.5)
+
+    return eg_scores
+
 def calculate_MMD(red_districts:list[float], blue_districts:list[float]) -> float:
     ''' Convert two lists of district vote counts into a Mean-Median score.
     

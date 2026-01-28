@@ -263,6 +263,64 @@ class TestScore (unittest.TestCase):
         gap7 = score.calculate_EG((2, 3, 5, 6), (6, 5, 3, 2), .30)
         self.assertAlmostEqual(gap7, gap6, msg='Should see EG clamped with a huge vote swing')
 
+    def test_vectorized_EG_fair(self):
+        ''' Efficiency gap is correctly calculated for vectorized multi-sim numpy arrays (fair elections)
+        '''
+        # Convention: [:,:,0] = blue (Dem), [:,:,1] = red (Rep)
+
+        # Test case 1: Fair election, no swing → EG ≈ 0
+        # red=(2,3,5,6), blue=(6,5,3,2)
+        votes1 = numpy.array([
+            [[6, 2]],
+            [[5, 3]],
+            [[3, 5]],
+            [[2, 6]],
+        ])
+        gap1 = score.vectorized_EG(votes1)
+        self.assertEqual(gap1.shape, (1,), 'Output should be 1D with length = num simulations')
+        self.assertAlmostEqual(gap1[0], 0)
+
+        # Test case 2: Fair election with red swing → EG ≈ 0.2
+        gap2 = score.vectorized_EG(votes1, vote_swing=-0.1)
+        self.assertAlmostEqual(gap2[0], 0.2, msg='Should see slight +blue EG with a +red vote swing')
+
+        # Test case 3: Fair election with blue swing → EG ≈ -0.2
+        gap3 = score.vectorized_EG(votes1, vote_swing=0.1)
+        self.assertAlmostEqual(gap3[0], -0.2, msg='Should see slight +red EG with a +blue vote swing')
+
+        # Test case 4: Verify zero swing matches case 1
+        gap4 = score.vectorized_EG(votes1, vote_swing=0)
+        self.assertAlmostEqual(gap4[0], gap1[0], msg='Should see identical EG with unchanged vote swing')
+
+        # Test case 5: Zero-vote districts
+        votes5 = numpy.array([
+            [[6, 2]],
+            [[5, 3]],
+            [[3, 5]],
+            [[2, 6]],
+            [[0, 0]],  # Zero-vote district
+        ])
+        gap5 = score.vectorized_EG(votes5)
+        self.assertAlmostEqual(gap5[0], gap1[0], msg='Should see identical EG with one district missing votes')
+
+        # Test case 6 & 7: Clamping test
+        gap6 = score.vectorized_EG(votes1, vote_swing=0.25)
+        gap7 = score.vectorized_EG(votes1, vote_swing=0.30)
+        self.assertAlmostEqual(gap7[0], gap6[0], msg='Should see EG clamped with a huge vote swing')
+
+        # Test case 8: Multiple simulations
+        votes8 = numpy.array([
+            [[6, 2], [5, 3]],  # Sim 0 and Sim 1 with different values
+            [[5, 3], [6, 2]],
+            [[3, 5], [3, 5]],
+            [[2, 6], [2, 6]],
+        ])
+        gap8 = score.vectorized_EG(votes8, vote_swing=0)
+        self.assertEqual(gap8.shape, (2,))
+        # Both should be close to 0 for fair elections
+        self.assertAlmostEqual(gap8[0], 0, places=1)
+        self.assertAlmostEqual(gap8[1], 0, places=1)
+
     def test_calculate_EG_unfair(self):
         ''' Efficiency gap can be correctly calculated for an unfair election
         '''
@@ -277,7 +335,49 @@ class TestScore (unittest.TestCase):
 
         gap4 = score.calculate_EG((1, 5, 5, 5), (7, 3, 3, 3), 0)
         self.assertAlmostEqual(gap4, gap1, msg='Should see identical EG with unchanged vote swing')
-    
+
+    def test_vectorized_EG_unfair(self):
+        ''' Efficiency gap is correctly calculated for vectorized multi-sim numpy arrays (unfair elections)
+        '''
+        # Convention: [:,:,0] = blue (Dem), [:,:,1] = red (Rep)
+
+        # Test case 1: Unfair election, no swing → EG ≈ -0.25
+        # red=(1,5,5,5), blue=(7,3,3,3)
+        votes1 = numpy.array([
+            [[7, 1]],
+            [[3, 5]],
+            [[3, 5]],
+            [[3, 5]],
+        ])
+        gap1 = score.vectorized_EG(votes1)
+        self.assertEqual(gap1.shape, (1,))
+        self.assertAlmostEqual(gap1[0], -0.25)
+
+        # Test case 2: Unfair election with red swing → EG ≈ -0.05
+        gap2 = score.vectorized_EG(votes1, vote_swing=-0.1)
+        self.assertAlmostEqual(gap2[0], -0.05, msg='Should see lesser +red EG with a +red vote swing')
+
+        # Test case 3: Unfair election with blue swing → EG ≈ -0.45
+        gap3 = score.vectorized_EG(votes1, vote_swing=0.1)
+        self.assertAlmostEqual(gap3[0], -0.45, msg='Should see larger +red EG with a +blue vote swing')
+
+        # Test case 4: Verify zero swing matches case 1
+        gap4 = score.vectorized_EG(votes1, vote_swing=0)
+        self.assertAlmostEqual(gap4[0], gap1[0], msg='Should see identical EG with unchanged vote swing')
+
+        # Test case 5: Multiple simulations with different unfairness levels
+        votes5 = numpy.array([
+            [[7, 1], [6, 2]],  # Sim 0: very unfair, Sim 1: less unfair
+            [[3, 5], [5, 3]],
+            [[3, 5], [3, 5]],
+            [[3, 5], [2, 6]],
+        ])
+        gap5 = score.vectorized_EG(votes5, vote_swing=0)
+        self.assertEqual(gap5.shape, (2,))
+        self.assertAlmostEqual(gap5[0], -0.25)
+        # Sim 1 should have different EG (less unfair)
+        self.assertNotAlmostEqual(gap5[1], gap5[0], places=1)
+
     def test_calculate_MMD(self):
         ''' Mean-Median can be correctly calculated for various elections
         '''
