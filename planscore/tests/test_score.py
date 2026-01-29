@@ -51,15 +51,14 @@ class TestScore (unittest.TestCase):
     def test_swing_vote_matrix(self):
         ''' Vote swing is correctly calculated for multi-sim numpy arrays
         '''
+        # Array shape is (sims, districts, parties)
         votes1 = numpy.array([
-            [[1, 3], [1, 3]],
-            [[2, 2], [2, 2]],
-            [[3, 1], [3, 1]],
+            [[1, 3], [2, 2], [3, 1]],  # Sim 1
+            [[1, 3], [2, 2], [3, 1]],  # Sim 2
         ])
         votes2 = numpy.array([
-            [[1.4, 2.6], [1.4, 2.6]],
-            [[2.4, 1.6], [2.4, 1.6]],
-            [[3.4, 0.6], [3.4, 0.6]]
+            [[1.4, 2.6], [2.4, 1.6], [3.4, 0.6]],  # Sim 1 after swing
+            [[1.4, 2.6], [2.4, 1.6], [3.4, 0.6]],  # Sim 2 after swing
         ])
         votes3 = score.swing_vote_matrix(votes1, [0.1] * 3)
         self.assertTrue((votes1.sum(axis=2) == votes2.sum(axis=2)).all())
@@ -68,12 +67,12 @@ class TestScore (unittest.TestCase):
     def test_vectorized_swing(self):
         ''' Vote swing is correctly calculated for vectorized multi-sim numpy arrays
         '''
-        # Test with 3 districts, 2 simulations
+        # Test with 2 simulations, 3 districts
         # Convention: [:,:,0] = blue (Dem), [:,:,1] = red (Rep)
+        # Array shape is (sims, districts, parties)
         votes1 = numpy.array([
-            [[3, 1], [3, 1]],  # District 1: 75% blue
-            [[2, 2], [2, 2]],  # District 2: 50% blue
-            [[1, 3], [1, 3]],  # District 3: 25% blue
+            [[3, 1], [2, 2], [1, 3]],  # Sim 1: District 1 (75% blue), District 2 (50% blue), District 3 (25% blue)
+            [[3, 1], [2, 2], [1, 3]],  # Sim 2: same as Sim 1
         ])
 
         # Test zero swing - should return identical votes
@@ -87,43 +86,42 @@ class TestScore (unittest.TestCase):
         # District 3: (1/4 + 0.1) * 4 = 1.4, (3/4 - 0.1) * 4 = 2.6
         votes_pos = score.vectorized_swing(votes1, 0.1)
         self.assertEqual(votes_pos.shape, votes1.shape)
-        self.assertAlmostEqual(votes_pos[0, 0, 0], 3.4)
-        self.assertAlmostEqual(votes_pos[0, 0, 1], 0.6)
-        self.assertAlmostEqual(votes_pos[1, 0, 0], 2.4)
-        self.assertAlmostEqual(votes_pos[1, 0, 1], 1.6)
-        self.assertAlmostEqual(votes_pos[2, 0, 0], 1.4)
-        self.assertAlmostEqual(votes_pos[2, 0, 1], 2.6)
+        self.assertAlmostEqual(votes_pos[0, 0, 0], 3.4)  # Sim 0, District 0, blue
+        self.assertAlmostEqual(votes_pos[0, 0, 1], 0.6)  # Sim 0, District 0, red
+        self.assertAlmostEqual(votes_pos[0, 1, 0], 2.4)  # Sim 0, District 1, blue
+        self.assertAlmostEqual(votes_pos[0, 1, 1], 1.6)  # Sim 0, District 1, red
+        self.assertAlmostEqual(votes_pos[0, 2, 0], 1.4)  # Sim 0, District 2, blue
+        self.assertAlmostEqual(votes_pos[0, 2, 1], 2.6)  # Sim 0, District 2, red
         # Verify totals are preserved
         self.assertTrue((votes1.sum(axis=2) == votes_pos.sum(axis=2)).all())
 
         # Test negative swing (-0.1 toward red)
         votes_neg = score.vectorized_swing(votes1, -0.1)
         self.assertEqual(votes_neg.shape, votes1.shape)
-        self.assertAlmostEqual(votes_neg[0, 0, 0], 2.6)
-        self.assertAlmostEqual(votes_neg[0, 0, 1], 1.4)
-        self.assertAlmostEqual(votes_neg[1, 0, 0], 1.6)
-        self.assertAlmostEqual(votes_neg[1, 0, 1], 2.4)
-        self.assertAlmostEqual(votes_neg[2, 0, 0], 0.6)
-        self.assertAlmostEqual(votes_neg[2, 0, 1], 3.4)
+        self.assertAlmostEqual(votes_neg[0, 0, 0], 2.6)  # Sim 0, District 0, blue
+        self.assertAlmostEqual(votes_neg[0, 0, 1], 1.4)  # Sim 0, District 0, red
+        self.assertAlmostEqual(votes_neg[0, 1, 0], 1.6)  # Sim 0, District 1, blue
+        self.assertAlmostEqual(votes_neg[0, 1, 1], 2.4)  # Sim 0, District 1, red
+        self.assertAlmostEqual(votes_neg[0, 2, 0], 0.6)  # Sim 0, District 2, blue
+        self.assertAlmostEqual(votes_neg[0, 2, 1], 3.4)  # Sim 0, District 2, red
         # Verify totals are preserved
         self.assertTrue((votes1.sum(axis=2) == votes_neg.sum(axis=2)).all())
 
         # Test with zero-vote districts (resilience to division by zero)
         votes_with_zeros = numpy.array([
-            [[3, 1], [3, 1]],  # Normal district
-            [[0, 0], [0, 0]],  # Zero-vote district
-            [[2, 2], [2, 2]],  # Normal district
+            [[3, 1], [0, 0], [2, 2]],  # Sim 1: Normal, Zero-vote, Normal
+            [[3, 1], [0, 0], [2, 2]],  # Sim 2: same
         ])
         votes_zero_dist = score.vectorized_swing(votes_with_zeros, 0.1)
         self.assertEqual(votes_zero_dist.shape, votes_with_zeros.shape)
         # Zero-vote district should remain zero
-        self.assertEqual(votes_zero_dist[1, 0, 0], 0)
-        self.assertEqual(votes_zero_dist[1, 0, 1], 0)
-        self.assertEqual(votes_zero_dist[1, 1, 0], 0)
-        self.assertEqual(votes_zero_dist[1, 1, 1], 0)
+        self.assertEqual(votes_zero_dist[0, 1, 0], 0)  # Sim 0, District 1 (zero-vote), blue
+        self.assertEqual(votes_zero_dist[0, 1, 1], 0)  # Sim 0, District 1 (zero-vote), red
+        self.assertEqual(votes_zero_dist[1, 1, 0], 0)  # Sim 1, District 1 (zero-vote), blue
+        self.assertEqual(votes_zero_dist[1, 1, 1], 0)  # Sim 1, District 1 (zero-vote), red
         # Non-zero districts should be swung correctly
-        self.assertAlmostEqual(votes_zero_dist[0, 0, 0], 3.4)
-        self.assertAlmostEqual(votes_zero_dist[2, 0, 0], 2.4)
+        self.assertAlmostEqual(votes_zero_dist[0, 0, 0], 3.4)  # Sim 0, District 0, blue
+        self.assertAlmostEqual(votes_zero_dist[0, 2, 0], 2.4)  # Sim 0, District 2, blue
 
     def test_safe_mean(self):
         ''' Means are correctly calculated
@@ -169,7 +167,52 @@ class TestScore (unittest.TestCase):
 
         l4 = [-1, 1, 1, None]
         self.assertAlmostEqual(score.safe_positives(l4), 2/3)
-    
+
+    def test_np_safe_mean(self):
+        ''' Means are correctly calculated for numpy arrays
+        '''
+        a1 = numpy.array([1, 2, 3, 4])
+        self.assertEqual(score.np_safe_mean(a1), statistics.mean([1, 2, 3, 4]))
+
+        a2 = numpy.array([1])
+        self.assertEqual(score.np_safe_mean(a2), statistics.mean([1]))
+
+        a3 = numpy.array([1, 2, 3, 4, numpy.nan])
+        self.assertEqual(score.np_safe_mean(a3), statistics.mean([1, 2, 3, 4]))
+
+        a4 = numpy.array([numpy.nan])
+        self.assertIsNone(score.np_safe_mean(a4))
+
+    def test_np_safe_stdev(self):
+        ''' Standard deviations are correctly calculated for numpy arrays
+        '''
+        a1 = numpy.array([1, 2, 3, 4])
+        self.assertEqual(score.np_safe_stdev(a1), statistics.stdev([1, 2, 3, 4]))
+
+        a2 = numpy.array([1])
+        self.assertIsNone(score.np_safe_stdev(a2))
+
+        a3 = numpy.array([1, 2, 3, 4, numpy.nan])
+        self.assertEqual(score.np_safe_stdev(a3), statistics.stdev([1, 2, 3, 4]))
+
+        a4 = numpy.array([numpy.nan])
+        self.assertIsNone(score.np_safe_stdev(a4))
+
+    def test_np_safe_positives(self):
+        ''' Positive values are correctly counted for numpy arrays
+        '''
+        a1 = numpy.array([-1, 1])
+        self.assertEqual(score.np_safe_positives(a1), .5)
+
+        a2 = numpy.array([-1])
+        self.assertEqual(score.np_safe_positives(a2), 0.)
+
+        a3 = numpy.array([1])
+        self.assertEqual(score.np_safe_positives(a3), 1.)
+
+        a4 = numpy.array([-1, 1, 1, numpy.nan])
+        self.assertAlmostEqual(score.np_safe_positives(a4), 2/3)
+
     def test_percentrank_abs(self):
         ''' Absolute percent rank is correctly calculated by chamber
         '''
@@ -267,14 +310,12 @@ class TestScore (unittest.TestCase):
         ''' Efficiency gap is correctly calculated for vectorized multi-sim numpy arrays (fair elections)
         '''
         # Convention: [:,:,0] = blue (Dem), [:,:,1] = red (Rep)
+        # Array shape is (sims, districts, parties)
 
         # Test case 1: Fair election, no swing → EG ≈ 0
         # red=(2,3,5,6), blue=(6,5,3,2)
         votes1 = numpy.array([
-            [[6, 2]],
-            [[5, 3]],
-            [[3, 5]],
-            [[2, 6]],
+            [[6, 2], [5, 3], [3, 5], [2, 6]],  # Sim 1: 4 districts
         ])
         gap1 = score.vectorized_EG(votes1)
         self.assertEqual(gap1.shape, (1,), 'Output should be 1D with length = num simulations')
@@ -294,11 +335,7 @@ class TestScore (unittest.TestCase):
 
         # Test case 5: Zero-vote districts
         votes5 = numpy.array([
-            [[6, 2]],
-            [[5, 3]],
-            [[3, 5]],
-            [[2, 6]],
-            [[0, 0]],  # Zero-vote district
+            [[6, 2], [5, 3], [3, 5], [2, 6], [0, 0]],  # Sim 1: 4 normal + 1 zero-vote district
         ])
         gap5 = score.vectorized_EG(votes5)
         self.assertAlmostEqual(gap5[0], gap1[0], msg='Should see identical EG with one district missing votes')
@@ -310,10 +347,8 @@ class TestScore (unittest.TestCase):
 
         # Test case 8: Multiple simulations
         votes8 = numpy.array([
-            [[6, 2], [5, 3]],  # Sim 0 and Sim 1 with different values
-            [[5, 3], [6, 2]],
-            [[3, 5], [3, 5]],
-            [[2, 6], [2, 6]],
+            [[6, 2], [5, 3], [3, 5], [2, 6]],  # Sim 1
+            [[5, 3], [6, 2], [3, 5], [2, 6]],  # Sim 2 with different values
         ])
         gap8 = score.vectorized_EG(votes8, vote_swing=0)
         self.assertEqual(gap8.shape, (2,))
@@ -340,14 +375,12 @@ class TestScore (unittest.TestCase):
         ''' Efficiency gap is correctly calculated for vectorized multi-sim numpy arrays (unfair elections)
         '''
         # Convention: [:,:,0] = blue (Dem), [:,:,1] = red (Rep)
+        # Array shape is (sims, districts, parties)
 
         # Test case 1: Unfair election, no swing → EG ≈ -0.25
         # red=(1,5,5,5), blue=(7,3,3,3)
         votes1 = numpy.array([
-            [[7, 1]],
-            [[3, 5]],
-            [[3, 5]],
-            [[3, 5]],
+            [[7, 1], [3, 5], [3, 5], [3, 5]],  # Sim 1: 4 districts
         ])
         gap1 = score.vectorized_EG(votes1)
         self.assertEqual(gap1.shape, (1,))
@@ -367,15 +400,13 @@ class TestScore (unittest.TestCase):
 
         # Test case 5: Multiple simulations with different unfairness levels
         votes5 = numpy.array([
-            [[7, 1], [6, 2]],  # Sim 0: very unfair, Sim 1: less unfair
-            [[3, 5], [5, 3]],
-            [[3, 5], [3, 5]],
-            [[3, 5], [2, 6]],
+            [[7, 1], [3, 5], [3, 5], [3, 5]],  # Sim 1: very unfair
+            [[6, 2], [5, 3], [3, 5], [2, 6]],  # Sim 2: less unfair
         ])
         gap5 = score.vectorized_EG(votes5, vote_swing=0)
         self.assertEqual(gap5.shape, (2,))
         self.assertAlmostEqual(gap5[0], -0.25)
-        # Sim 1 should have different EG (less unfair)
+        # Sim 2 should have different EG (less unfair)
         self.assertNotAlmostEqual(gap5[1], gap5[0], places=1)
 
     def test_calculate_MMD(self):
@@ -409,15 +440,13 @@ class TestScore (unittest.TestCase):
         ''' Mean-Median is correctly calculated for vectorized multi-sim numpy arrays
         '''
         # Convention: [:,:,0] = blue (Dem), [:,:,1] = red (Rep)
+        # Array shape is (sims, districts, parties)
 
         # Test case 1: Zero MMD with 44% mean and median → MMD ≈ 0
         # red=(6,6,4,4,4), blue=(5,5,5,8,8)
         votes1 = numpy.array([
-            [[5, 6], [5, 6]],  # District 1
-            [[5, 6], [5, 6]],  # District 2
-            [[5, 4], [5, 4]],  # District 3
-            [[8, 4], [8, 4]],  # District 4
-            [[8, 4], [8, 4]],  # District 5
+            [[5, 6], [5, 6], [5, 4], [8, 4], [8, 4]],  # Sim 1
+            [[5, 6], [5, 6], [5, 4], [8, 4], [8, 4]],  # Sim 2
         ])
         mmd1 = score.vectorized_MMD(votes1)
         self.assertEqual(mmd1.shape, (2,), 'Output should be 1D with length = num simulations')
@@ -427,11 +456,7 @@ class TestScore (unittest.TestCase):
         # Test case 2: Zero MMD with 60% mean and median → MMD ≈ 0
         # red=(6,6,6,6,6), blue=(4,4,4,4,4)
         votes2 = numpy.array([
-            [[4, 6]],
-            [[4, 6]],
-            [[4, 6]],
-            [[4, 6]],
-            [[4, 6]],
+            [[4, 6], [4, 6], [4, 6], [4, 6], [4, 6]],  # Sim 1
         ])
         mmd2 = score.vectorized_MMD(votes2)
         self.assertEqual(mmd2.shape, (1,))
@@ -441,11 +466,7 @@ class TestScore (unittest.TestCase):
         # Test case 3: Red bias → MMD ≈ -0.18
         # red=(6,6,6,1,1), blue=(5,5,5,10,10)
         votes3 = numpy.array([
-            [[5, 6]],
-            [[5, 6]],
-            [[5, 6]],
-            [[10, 1]],
-            [[10, 1]],
+            [[5, 6], [5, 6], [5, 6], [10, 1], [10, 1]],  # Sim 1
         ])
         mmd3 = score.vectorized_MMD(votes3)
         self.assertAlmostEqual(mmd3[0], -0.18, places=2,
@@ -454,11 +475,7 @@ class TestScore (unittest.TestCase):
         # Test case 4: Another red bias → MMD ≈ -0.09
         # red=(6,6,6,6,1), blue=(5,5,5,5,10)
         votes4 = numpy.array([
-            [[5, 6]],
-            [[5, 6]],
-            [[5, 6]],
-            [[5, 6]],
-            [[10, 1]],
+            [[5, 6], [5, 6], [5, 6], [5, 6], [10, 1]],  # Sim 1
         ])
         mmd4 = score.vectorized_MMD(votes4)
         self.assertAlmostEqual(mmd4[0], -0.09, places=2,
@@ -467,11 +484,7 @@ class TestScore (unittest.TestCase):
         # Test case 5: Blue bias → MMD ≈ 0.15
         # red=(6,6,1,1,1), blue=(5,5,7,10,10)
         votes5 = numpy.array([
-            [[5, 6]],
-            [[5, 6]],
-            [[7, 1]],
-            [[10, 1]],
-            [[10, 1]],
+            [[5, 6], [5, 6], [7, 1], [10, 1], [10, 1]],  # Sim 1
         ])
         mmd5 = score.vectorized_MMD(votes5)
         self.assertAlmostEqual(mmd5[0], 0.15, places=2,
@@ -480,12 +493,7 @@ class TestScore (unittest.TestCase):
         # Test case 6: Zero-vote districts should be filtered out
         # red=(6,6,4,4,4,0), blue=(5,5,5,8,8,0)
         votes6 = numpy.array([
-            [[5, 6]],
-            [[5, 6]],
-            [[5, 4]],
-            [[8, 4]],
-            [[8, 4]],
-            [[0, 0]],  # Zero-vote district
+            [[5, 6], [5, 6], [5, 4], [8, 4], [8, 4], [0, 0]],  # Sim 1 with zero-vote district
         ])
         mmd6 = score.vectorized_MMD(votes6)
         self.assertAlmostEqual(mmd6[0], 0, places=2,
@@ -493,11 +501,8 @@ class TestScore (unittest.TestCase):
 
         # Test case 7: Multiple different simulations
         votes7 = numpy.array([
-            [[5, 6], [4, 6]],  # Different values per sim
-            [[5, 6], [4, 6]],
-            [[5, 4], [4, 6]],
-            [[8, 4], [4, 6]],
-            [[8, 4], [4, 6]],
+            [[5, 6], [5, 6], [5, 4], [8, 4], [8, 4]],  # Sim 1
+            [[4, 6], [4, 6], [4, 6], [4, 6], [4, 6]],  # Sim 2 with different values
         ])
         mmd7 = score.vectorized_MMD(votes7)
         self.assertEqual(mmd7.shape, (2,))
@@ -531,14 +536,13 @@ class TestScore (unittest.TestCase):
         ''' Partisan Bias is correctly calculated for vectorized multi-sim numpy arrays
         '''
         # Convention: [:,:,0] = blue (Dem), [:,:,1] = red (Rep)
+        # Array shape is (sims, districts, parties)
 
         # Test case 1: Balanced 50/50 election → PB ≈ 0
         # red=(6,6,4,4), blue=(4,4,6,6)
         votes1 = numpy.array([
-            [[4, 6], [4, 6]],  # District 1
-            [[4, 6], [4, 6]],  # District 2
-            [[6, 4], [6, 4]],  # District 3
-            [[6, 4], [6, 4]],  # District 4
+            [[4, 6], [4, 6], [6, 4], [6, 4]],  # Sim 1
+            [[4, 6], [4, 6], [6, 4], [6, 4]],  # Sim 2
         ])
         pb1 = score.vectorized_PB(votes1)
         self.assertEqual(pb1.shape, (2,), 'Output should be 1D with length = num simulations')
@@ -548,11 +552,7 @@ class TestScore (unittest.TestCase):
         # Test case 2: Red bias → PB ≈ -0.1
         # red=(6,6,6,3,3), blue=(2,2,2,5,5)
         votes2 = numpy.array([
-            [[2, 6]],
-            [[2, 6]],
-            [[2, 6]],
-            [[5, 3]],
-            [[5, 3]],
+            [[2, 6], [2, 6], [2, 6], [5, 3], [5, 3]],  # Sim 1
         ])
         pb2 = score.vectorized_PB(votes2)
         self.assertEqual(pb2.shape, (1,))
@@ -561,11 +561,7 @@ class TestScore (unittest.TestCase):
         # Test case 3: Another red bias case → PB ≈ -0.1
         # red=(6,6,6,3,3), blue=(4,4,4,12,12)
         votes3 = numpy.array([
-            [[4, 6]],
-            [[4, 6]],
-            [[4, 6]],
-            [[12, 3]],
-            [[12, 3]],
+            [[4, 6], [4, 6], [4, 6], [12, 3], [12, 3]],  # Sim 1
         ])
         pb3 = score.vectorized_PB(votes3)
         self.assertAlmostEqual(pb3[0], -0.1, places=2, msg='Should see +red PB')
@@ -573,11 +569,7 @@ class TestScore (unittest.TestCase):
         # Test case 4: Blue bias → PB ≈ 0.1
         # red=(4,4,4,12,12), blue=(6,6,6,3,3)
         votes4 = numpy.array([
-            [[6, 4]],
-            [[6, 4]],
-            [[6, 4]],
-            [[3, 12]],
-            [[3, 12]],
+            [[6, 4], [6, 4], [6, 4], [3, 12], [3, 12]],  # Sim 1
         ])
         pb4 = score.vectorized_PB(votes4)
         self.assertAlmostEqual(pb4[0], 0.1, places=2, msg='Should see +blue PB')
@@ -585,11 +577,7 @@ class TestScore (unittest.TestCase):
         # Test case 5: Zero-vote districts should be filtered out
         # red=(6,6,4,4,0), blue=(4,4,6,6,0)
         votes5 = numpy.array([
-            [[4, 6]],
-            [[4, 6]],
-            [[6, 4]],
-            [[6, 4]],
-            [[0, 0]],  # Zero-vote district
+            [[4, 6], [4, 6], [6, 4], [6, 4], [0, 0]],  # Sim 1 with zero-vote district
         ])
         pb5 = score.vectorized_PB(votes5)
         self.assertAlmostEqual(pb5[0], 0, places=2,
@@ -597,10 +585,8 @@ class TestScore (unittest.TestCase):
 
         # Test case 6: Multiple different simulations
         votes6 = numpy.array([
-            [[4, 6], [6, 4]],  # Sim 0 balanced, Sim 1 balanced
-            [[4, 6], [6, 4]],
-            [[6, 4], [4, 6]],
-            [[6, 4], [4, 6]],
+            [[4, 6], [4, 6], [6, 4], [6, 4]],  # Sim 1 balanced
+            [[6, 4], [6, 4], [4, 6], [4, 6]],  # Sim 2 balanced
         ])
         pb6 = score.vectorized_PB(votes6)
         self.assertEqual(pb6.shape, (2,))
@@ -656,13 +642,14 @@ class TestScore (unittest.TestCase):
         ''' Declination is correctly calculated for vectorized multi-sim numpy arrays
         '''
         # Convention: [:,:,0] = blue (Dem), [:,:,1] = red (Rep)
+        # Array shape is (sims, districts, parties)
 
         # Test case 1: Georgia 1972 - high D2
         # 9 districts blue wins, 1 district red win
         votes1 = numpy.array(
             [[0.584617612075026, 1 - 0.584617612075026]] * 9 +
             [[0.240871024240908, 1 - 0.240871024240908]] * 1
-        ).reshape(-1, 1, 2)
+        ).reshape(1, -1, 2)  # (1 sim, 10 districts, 2 parties)
         d2_1 = score.vectorized_D2(votes1)
         self.assertEqual(d2_1.shape, (1,), 'Output should be 1D with length = num simulations')
         self.assertAlmostEqual(d2_1[0], 0.875356731786882, places=3,
@@ -673,7 +660,7 @@ class TestScore (unittest.TestCase):
         votes2 = numpy.array(
             [[0.809097511747074, 1 - 0.809097511747074]] * 1 +
             [[0.27072066577579, 1 - 0.27072066577579]] * 5
-        ).reshape(-1, 1, 2)
+        ).reshape(1, -1, 2)  # (1 sim, 6 districts, 2 parties)
         d2_2 = score.vectorized_D2(votes2)
         self.assertAlmostEqual(d2_2[0], -0.458779909309412, places=3,
             msg='Should see low Dec2 in Louisiana, 2020')
@@ -683,18 +670,14 @@ class TestScore (unittest.TestCase):
         votes3 = numpy.array(
             [[0.598085862963535, 1 - 0.598085862963535]] * 5 +
             [[0.357068466446836, 1 - 0.357068466446836]] * 7
-        ).reshape(-1, 1, 2)
+        ).reshape(1, -1, 2)  # (1 sim, 12 districts, 2 parties)
         d2_3 = score.vectorized_D2(votes3)
         self.assertAlmostEqual(d2_3[0], 0.012363560105669, places=3,
             msg='Should see ~zero Dec2 in North Carolina, 1998')
 
         # Test case 4: Balanced case with zero-vote district
         votes4 = numpy.array([
-            [[4, 1]],
-            [[3, 2]],
-            [[2, 3]],
-            [[1, 4]],
-            [[0, 0]],  # Zero-vote district
+            [[4, 1], [3, 2], [2, 3], [1, 4], [0, 0]],  # Sim 1 with 5 districts (one zero-vote)
         ])
         d2_4 = score.vectorized_D2(votes4)
         self.assertAlmostEqual(d2_4[0], 0, places=3,
@@ -707,9 +690,7 @@ class TestScore (unittest.TestCase):
 
         # Test case 6: All red wins
         votes6 = numpy.array([
-            [[2, 3]],
-            [[1, 4]],
-            [[0, 5]],
+            [[2, 3], [1, 4], [0, 5]],  # Sim 1 with 3 districts
         ])
         d2_6 = score.vectorized_D2(votes6)
         self.assertAlmostEqual(d2_6[0], -0.54930614,
@@ -717,9 +698,7 @@ class TestScore (unittest.TestCase):
 
         # Test case 7: All blue wins
         votes7 = numpy.array([
-            [[3, 2]],
-            [[4, 1]],
-            [[5, 0]],
+            [[3, 2], [4, 1], [5, 0]],  # Sim 1 with 3 districts
         ])
         d2_7 = score.vectorized_D2(votes7)
         self.assertAlmostEqual(d2_7[0], 0.54930614,
@@ -727,10 +706,8 @@ class TestScore (unittest.TestCase):
 
         # Test case 8: Multiple simulations
         votes8 = numpy.array([
-            [[4, 1], [2, 3]],  # Sim 0: balanced, Sim 1: all red
-            [[3, 2], [1, 4]],
-            [[2, 3], [0, 5]],
-            [[1, 4], [0, 0]],
+            [[4, 1], [3, 2], [2, 3], [1, 4]],  # Sim 1: balanced
+            [[2, 3], [1, 4], [0, 5], [0, 0]],  # Sim 2: all red wins
         ])
         d2_8 = score.vectorized_D2(votes8)
         self.assertEqual(d2_8.shape, (2,))
@@ -747,12 +724,11 @@ class TestScore (unittest.TestCase):
         ''' D2 diff is correctly calculated for vectorized multi-sim numpy arrays
         '''
         # Convention: [:,:,0] = blue (Dem), [:,:,1] = red (Rep)
+        # Array shape is (sims, districts, parties)
 
         # Test case 1: All blue wins → NaN (originally returned None)
         votes1 = numpy.array([
-            [[4, 1]],
-            [[5, 2]],
-            [[6, 3]],
+            [[4, 1], [5, 2], [6, 3]],  # Sim 1 with 3 districts
         ])
         diff1 = score.vectorized_D2_diff(votes1)
         self.assertEqual(diff1.shape, (1,))
@@ -762,25 +738,20 @@ class TestScore (unittest.TestCase):
         # Blue: 80% and 60%; Red: 60% and 80%
         # Mean blue wins: 0.7, Mean red wins: 0.7 → diff = 0
         votes2 = numpy.array([
-            [[4, 1]],
-            [[3, 2]],
-            [[2, 3]],
-            [[1, 4]],
+            [[4, 1], [3, 2], [2, 3], [1, 4]],  # Sim 1 with 4 districts
         ])
         diff2 = score.vectorized_D2_diff(votes2)
         self.assertAlmostEqual(diff2[0], 0)
 
         # Test case 3: Multiple simulations
         votes3 = numpy.array([
-            [[4, 1], [4, 1]],  # Sim 0: all blue, Sim 1: mixed
-            [[5, 2], [3, 2]],
-            [[6, 3], [2, 3]],
-            [[0, 0], [1, 4]],
+            [[4, 1], [5, 2], [6, 3], [0, 0]],  # Sim 1: all blue wins
+            [[4, 1], [3, 2], [2, 3], [1, 4]],  # Sim 2: mixed wins
         ])
         diff3 = score.vectorized_D2_diff(votes3)
         self.assertEqual(diff3.shape, (2,))
-        self.assertTrue(numpy.isnan(diff3[0]), msg='Sim 0: all blue → NaN')
-        self.assertAlmostEqual(diff3[1], 0, msg='Sim 1: mixed → 0')
+        self.assertTrue(numpy.isnan(diff3[0]), msg='Sim 1: all blue → NaN')
+        self.assertAlmostEqual(diff3[1], 0, msg='Sim 2: mixed → 0')
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
@@ -1380,22 +1351,11 @@ class TestScore (unittest.TestCase):
         vectorized_MMD.return_value = numpy.array([0, 0, 0])
         vectorized_PB.return_value = numpy.array([0, 0, 0])
         vectorized_EG.return_value = numpy.array([0, 0, 0])
+        # Mock return shape is (sims, districts, parties)
         model_votes.return_value = numpy.array([
-            [[5.3, 2.7],
-             [6.0, 2.0],
-             [5.9, 2.1]],
-
-            [[3.9, 4.1],
-             [5.7, 2.3],
-             [5.1, 2.9]],
-
-            [[2.8, 5.2],
-             [4.1, 3.9],
-             [2.8, 5.2]],
-
-            [[1.9, 6.1],
-             [2.7, 5.3],
-             [2.6, 5.4]],
+            [[5.3, 2.7], [3.9, 4.1], [2.8, 5.2], [1.9, 6.1]],  # Sim 0
+            [[6.0, 2.0], [5.7, 2.3], [4.1, 3.9], [2.7, 5.3]],  # Sim 1
+            [[5.9, 2.1], [5.1, 2.9], [2.8, 5.2], [2.6, 5.4]],  # Sim 2
         ])
         output = score.calculate_everything(input)
         self.assertEqual(model_votes.mock_calls[0][1], ('2025A', data.State.XX, data.House.ushouse, filter_district_data.return_value))
@@ -1404,16 +1364,16 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['Mean-Median Positives'], 0.0)
         # Verify vectorized_MMD was called with correct array shape
         call_args = vectorized_MMD.mock_calls[0][1][0]
-        self.assertEqual(call_args.shape, (4, 3, 2))  # 4 districts, 3 sims, 2 parties
+        self.assertEqual(call_args.shape, (3, 4, 2))  # 3 sims, 4 districts, 2 parties
         # Check first simulation values: red=[2.7, 4.1, 5.2, 6.1], blue=[5.3, 3.9, 2.8, 1.9]
-        self.assertAlmostEqual(call_args[0, 0, 0], 5.3)
-        self.assertAlmostEqual(call_args[0, 0, 1], 2.7)
+        self.assertAlmostEqual(call_args[0, 0, 0], 5.3)  # Sim 0, District 0, blue
+        self.assertAlmostEqual(call_args[0, 0, 1], 2.7)  # Sim 0, District 0, red
 
         self.assertEqual(output.summary['Partisan Bias'], 0)
         self.assertEqual(output.summary['Partisan Bias Positives'], 0.0)
         # Verify vectorized_PB was called with correct array shape
         call_args = vectorized_PB.mock_calls[0][1][0]
-        self.assertEqual(call_args.shape, (4, 3, 2))
+        self.assertEqual(call_args.shape, (3, 4, 2))
         self.assertAlmostEqual(call_args[0, 0, 0], 5.3)
         self.assertAlmostEqual(call_args[0, 0, 1], 2.7)
 
@@ -1421,45 +1381,45 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['Declination Positives'], 0.0)
         # Verify vectorized_D2 was called with correct array shape
         call_args = vectorized_D2.mock_calls[0][1][0]
-        self.assertEqual(call_args.shape, (4, 3, 2))
+        self.assertEqual(call_args.shape, (3, 4, 2))
         self.assertAlmostEqual(call_args[0, 0, 0], 5.3)
         self.assertAlmostEqual(call_args[0, 0, 1], 2.7)
-        
-        SIMS = model_votes.return_value.shape[1]
+
+        SIMS = model_votes.return_value.shape[0]  # Now first axis is sims
 
         # First round of sims - swing 0
         self.assertEqual(output.summary['Efficiency Gap'], 0)
         self.assertEqual(output.summary['Efficiency Gap Positives'], 0.0)
         # Verify vectorized_EG was called with correct array for swing 0 (call index 5)
         call_args = vectorized_EG.mock_calls[5][1][0]
-        self.assertEqual(call_args.shape, (4, 3, 2))  # 4 districts, 3 sims, 2 parties
+        self.assertEqual(call_args.shape, (3, 4, 2))  # 3 sims, 4 districts, 2 parties
         # Check first simulation values match expected: red=[2.7, 4.1, 5.2, 6.1], blue=[5.3, 3.9, 2.8, 1.9]
-        self.assertAlmostEqual(call_args[0, 0, 0], 5.3)  # District 0, sim 0, blue
-        self.assertAlmostEqual(call_args[0, 0, 1], 2.7)  # District 0, sim 0, red
-        self.assertAlmostEqual(call_args[1, 0, 0], 3.9)  # District 1, sim 0, blue
-        self.assertAlmostEqual(call_args[1, 0, 1], 4.1)  # District 1, sim 0, red
-        self.assertAlmostEqual(call_args[2, 0, 0], 2.8)  # District 2, sim 0, blue
-        self.assertAlmostEqual(call_args[2, 0, 1], 5.2)  # District 2, sim 0, red
-        self.assertAlmostEqual(call_args[3, 0, 0], 1.9)  # District 3, sim 0, blue
-        self.assertAlmostEqual(call_args[3, 0, 1], 6.1)  # District 3, sim 0, red
+        self.assertAlmostEqual(call_args[0, 0, 0], 5.3)  # Sim 0, District 0, blue
+        self.assertAlmostEqual(call_args[0, 0, 1], 2.7)  # Sim 0, District 0, red
+        self.assertAlmostEqual(call_args[0, 1, 0], 3.9)  # Sim 0, District 1, blue
+        self.assertAlmostEqual(call_args[0, 1, 1], 4.1)  # Sim 0, District 1, red
+        self.assertAlmostEqual(call_args[0, 2, 0], 2.8)  # Sim 0, District 2, blue
+        self.assertAlmostEqual(call_args[0, 2, 1], 5.2)  # Sim 0, District 2, red
+        self.assertAlmostEqual(call_args[0, 3, 0], 1.9)  # Sim 0, District 3, blue
+        self.assertAlmostEqual(call_args[0, 3, 1], 6.1)  # Sim 0, District 3, red
 
         # Second round of sims - swing +1
         self.assertEqual(output.summary['Efficiency Gap +1 Dem'], 0)
         # Verify vectorized_EG was called with correct array for swing +1 (call index 6)
         call_args = vectorized_EG.mock_calls[6][1][0]
-        self.assertEqual(call_args.shape, (4, 3, 2))
+        self.assertEqual(call_args.shape, (3, 4, 2))
         # Verify swing amount is correctly converted from percentage points to decimal
-        self.assertAlmostEqual(call_args[0, 0, 0], 5.38, places=2)
-        self.assertAlmostEqual(call_args[0, 0, 1], 2.62, places=2)
+        self.assertAlmostEqual(call_args[0, 0, 0], 5.38, places=2)  # Sim 0, District 0, blue
+        self.assertAlmostEqual(call_args[0, 0, 1], 2.62, places=2)  # Sim 0, District 0, red
 
         # Third round of sims - swing -1
         self.assertEqual(output.summary['Efficiency Gap +1 Rep'], 0)
         # Verify vectorized_EG was called with correct array for swing -1 (call index 4)
         call_args = vectorized_EG.mock_calls[4][1][0]
-        self.assertEqual(call_args.shape, (4, 3, 2))
+        self.assertEqual(call_args.shape, (3, 4, 2))
         # Verify swing amount is correctly converted from percentage points to decimal
-        self.assertAlmostEqual(call_args[0, 0, 0], 5.22, places=2)
-        self.assertAlmostEqual(call_args[0, 0, 1], 2.78, places=2)
+        self.assertAlmostEqual(call_args[0, 0, 0], 5.22, places=2)  # Sim 0, District 0, blue
+        self.assertAlmostEqual(call_args[0, 0, 1], 2.78, places=2)  # Sim 0, District 0, red
 
         self.assertEqual(output.districts[0]['totals']['Republican Votes'], 2.27)
         self.assertEqual(output.districts[0]['totals']['Democratic Votes'], 5.73)
@@ -1505,22 +1465,11 @@ class TestScore (unittest.TestCase):
         vectorized_MMD.return_value = numpy.array([0, 0, 0])
         vectorized_PB.return_value = numpy.array([0, 0, 0])
         vectorized_EG.return_value = numpy.array([0, 0, 0])
+        # Mock return shape is (sims, districts, parties)
         model_votes.return_value = numpy.array([
-            [[5.3, 2.7],
-             [6.0, 2.0],
-             [5.9, 2.1]],
-
-            [[3.9, 4.1],
-             [5.7, 2.3],
-             [5.1, 2.9]],
-
-            [[2.8, 5.2],
-             [4.1, 3.9],
-             [2.8, 5.2]],
-
-            [[1.9, 6.1],
-             [2.7, 5.3],
-             [2.6, 5.4]],
+            [[5.3, 2.7], [3.9, 4.1], [2.8, 5.2], [1.9, 6.1]],  # Sim 0
+            [[6.0, 2.0], [5.7, 2.3], [4.1, 3.9], [2.7, 5.3]],  # Sim 1
+            [[5.9, 2.1], [5.1, 2.9], [2.8, 5.2], [2.6, 5.4]],  # Sim 2
         ])
         output = score.calculate_everything(input)
         self.assertEqual(model_votes.mock_calls[0][1], ('2025A', data.State.XX, data.House.ushouse, filter_district_data.return_value))
@@ -1529,8 +1478,8 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['Mean-Median Positives'], 0.0)
         # Verify vectorized_MMD was called with correct array shape
         call_args = vectorized_MMD.mock_calls[0][1][0]
-        self.assertEqual(call_args.shape, (4, 3, 2))
-        # Check first simulation values: red=[3.5, 4.1, 4.4, 4.5], blue=[4.5, 3.9, 3.6, 3.5]
+        self.assertEqual(call_args.shape, (3, 4, 2))  # 3 sims, 4 districts, 2 parties
+        # Check first simulation values after per-district vote_swings: red=[3.5, 4.1, 4.4, 4.5], blue=[4.5, 3.9, 3.6, 3.5]
         self.assertAlmostEqual(call_args[0, 0, 0], 4.5, places=1)
         self.assertAlmostEqual(call_args[0, 0, 1], 3.5, places=1)
 
@@ -1538,7 +1487,7 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['Partisan Bias Positives'], 0.0)
         # Verify vectorized_PB was called with correct array shape
         call_args = vectorized_PB.mock_calls[0][1][0]
-        self.assertEqual(call_args.shape, (4, 3, 2))
+        self.assertEqual(call_args.shape, (3, 4, 2))
         self.assertAlmostEqual(call_args[0, 0, 0], 4.5, places=1)
         self.assertAlmostEqual(call_args[0, 0, 1], 3.5, places=1)
 
@@ -1546,40 +1495,39 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['Declination Positives'], 0.0)
         # Verify vectorized_D2 was called with correct array shape
         call_args = vectorized_D2.mock_calls[0][1][0]
-        self.assertEqual(call_args.shape, (4, 3, 2))
+        self.assertEqual(call_args.shape, (3, 4, 2))
         self.assertAlmostEqual(call_args[0, 0, 0], 4.5, places=1)
         self.assertAlmostEqual(call_args[0, 0, 1], 3.5, places=1)
-        
-        SIMS = model_votes.return_value.shape[1]
+
+        SIMS = model_votes.return_value.shape[0]  # Now first axis is sims
 
         # First round of sims - swing 0
         self.assertEqual(output.summary['Efficiency Gap'], 0)
         self.assertEqual(output.summary['Efficiency Gap Positives'], 0.0)
         # Verify vectorized_EG was called with correct array for swing 0 (call index 5)
         call_args = vectorized_EG.mock_calls[5][1][0]
-        self.assertEqual(call_args.shape, (4, 3, 2))  # 4 districts, 3 sims, 2 parties
-        # Check first simulation values match expected: red=[3.5, 4.1, 4.4, 4.5], blue=[4.5, 3.9, 3.6, 3.5]
-        # These are averages after applying per-district vote_swings
-        self.assertAlmostEqual(call_args[0, 0, 0], 4.5, places=1)  # District 0, sim 0, blue
-        self.assertAlmostEqual(call_args[0, 0, 1], 3.5, places=1)  # District 0, sim 0, red
-        self.assertAlmostEqual(call_args[1, 0, 0], 3.9, places=1)  # District 1, sim 0, blue
-        self.assertAlmostEqual(call_args[1, 0, 1], 4.1, places=1)  # District 1, sim 0, red
-        self.assertAlmostEqual(call_args[2, 0, 0], 3.6, places=1)  # District 2, sim 0, blue
-        self.assertAlmostEqual(call_args[2, 0, 1], 4.4, places=1)  # District 2, sim 0, red
-        self.assertAlmostEqual(call_args[3, 0, 0], 3.5, places=1)  # District 3, sim 0, blue
-        self.assertAlmostEqual(call_args[3, 0, 1], 4.5, places=1)  # District 3, sim 0, red
+        self.assertEqual(call_args.shape, (3, 4, 2))  # 3 sims, 4 districts, 2 parties
+        # Check first simulation values match expected after per-district vote_swings: red=[3.5, 4.1, 4.4, 4.5], blue=[4.5, 3.9, 3.6, 3.5]
+        self.assertAlmostEqual(call_args[0, 0, 0], 4.5, places=1)  # Sim 0, District 0, blue
+        self.assertAlmostEqual(call_args[0, 0, 1], 3.5, places=1)  # Sim 0, District 0, red
+        self.assertAlmostEqual(call_args[0, 1, 0], 3.9, places=1)  # Sim 0, District 1, blue
+        self.assertAlmostEqual(call_args[0, 1, 1], 4.1, places=1)  # Sim 0, District 1, red
+        self.assertAlmostEqual(call_args[0, 2, 0], 3.6, places=1)  # Sim 0, District 2, blue
+        self.assertAlmostEqual(call_args[0, 2, 1], 4.4, places=1)  # Sim 0, District 2, red
+        self.assertAlmostEqual(call_args[0, 3, 0], 3.5, places=1)  # Sim 0, District 3, blue
+        self.assertAlmostEqual(call_args[0, 3, 1], 4.5, places=1)  # Sim 0, District 3, red
 
         # Second round of sims - swing +1
         self.assertEqual(output.summary['Efficiency Gap +1 Dem'], 0)
         # Verify vectorized_EG was called with correct array for swing +1 (call index 6)
         call_args = vectorized_EG.mock_calls[6][1][0]
-        self.assertEqual(call_args.shape, (4, 3, 2))
+        self.assertEqual(call_args.shape, (3, 4, 2))
 
         # Third round of sims - swing -1
         self.assertEqual(output.summary['Efficiency Gap +1 Rep'], 0)
         # Verify vectorized_EG was called with correct array for swing -1 (call index 4)
         call_args = vectorized_EG.mock_calls[4][1][0]
-        self.assertEqual(call_args.shape, (4, 3, 2))
+        self.assertEqual(call_args.shape, (3, 4, 2))
 
         self.assertAlmostEqual(output.districts[0]['vote_swing'], -0.1)
         self.assertAlmostEqual(output.districts[1]['vote_swing'], 0.0)
@@ -1630,21 +1578,9 @@ class TestScore (unittest.TestCase):
         vectorized_PB.return_value = numpy.array([0, 0, 0])
         vectorized_EG.return_value = numpy.array([0, 0, 0])
         model_votes.return_value = numpy.array([
-            [[5.3, 2.7],
-             [6.0, 2.0],
-             [5.9, 2.1]],
-
-            [[4.4, 3.6],
-             [5.2, 2.8],
-             [5.1, 2.9]],
-
-            [[2.8, 5.2],
-             [3.5, 4.5],
-             [3.4, 4.6]],
-
-            [[1.9, 6.1],
-             [2.7, 5.3],
-             [2.6, 5.4]],
+            [[5.3, 2.7], [4.4, 3.6], [2.8, 5.2], [1.9, 6.1]],  # Sim 0
+            [[6.0, 2.0], [5.2, 2.8], [3.5, 4.5], [2.7, 5.3]],  # Sim 1
+            [[5.9, 2.1], [5.1, 2.9], [3.4, 4.6], [2.6, 5.4]],  # Sim 2
         ])
         score.calculate_everything(input)
         self.assertEqual(model_votes.mock_calls[0][1][:2], ('2025A', data.State.XX))
@@ -1703,21 +1639,9 @@ class TestScore (unittest.TestCase):
         vectorized_EG.return_value = numpy.array([0, 0, 0])
         calculate_EG.return_value = 0
         model_votes.return_value = numpy.array([
-            [[5.3, 2.7],
-             [6.0, 2.0],
-             [5.9, 2.1]],
-
-            [[4.4, 3.6],
-             [5.2, 2.8],
-             [5.1, 2.9]],
-
-            [[2.8, 5.2],
-             [3.5, 4.5],
-             [3.4, 4.6]],
-
-            [[1.9, 6.1],
-             [2.7, 5.3],
-             [2.6, 5.4]],
+            [[5.3, 2.7], [4.4, 3.6], [2.8, 5.2], [1.9, 6.1]],  # Sim 0
+            [[6.0, 2.0], [5.2, 2.8], [3.5, 4.5], [2.7, 5.3]],  # Sim 1
+            [[5.9, 2.1], [5.1, 2.9], [3.4, 4.6], [2.6, 5.4]],  # Sim 2
         ])
         output = score.calculate_everything(input)
 
@@ -1763,25 +1687,9 @@ class TestScore (unittest.TestCase):
         vectorized_PB.return_value = numpy.array([0, 0, 0])
         vectorized_EG.return_value = numpy.array([0, 0, 0])
         model_votes.return_value = numpy.array([
-            [[5.3, 2.7],
-             [6.0, 2.0],
-             [5.9, 2.1]],
-
-            [[3.9, 4.1],
-             [5.7, 2.3],
-             [5.1, 2.9]],
-
-            [[2.8, 5.2],
-             [4.1, 3.9],
-             [2.8, 5.2]],
-
-            [[1.9, 6.1],
-             [2.7, 5.3],
-             [2.6, 5.4]],
-
-            [[numpy.nan, numpy.nan],
-             [numpy.nan, numpy.nan],
-             [numpy.nan, numpy.nan]],
+            [[5.3, 2.7], [3.9, 4.1], [2.8, 5.2], [1.9, 6.1], [numpy.nan, numpy.nan]],  # Sim 0
+            [[6.0, 2.0], [5.7, 2.3], [4.1, 3.9], [2.7, 5.3], [numpy.nan, numpy.nan]],  # Sim 1
+            [[5.9, 2.1], [5.1, 2.9], [2.8, 5.2], [2.6, 5.4], [numpy.nan, numpy.nan]],  # Sim 2
         ])
         output = score.calculate_everything(input)
         self.assertEqual(output.districts[0]['is_counted'], True, 'Should count 1st district')
@@ -1804,17 +1712,17 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['Mean-Median'], 0)
         # Verify vectorized_MMD was called with correct array shape (including NaN district)
         call_args = vectorized_MMD.mock_calls[0][1][0]
-        self.assertEqual(call_args.shape, (5, 3, 2))  # 5 districts (including NaN), 3 sims, 2 parties
+        self.assertEqual(call_args.shape, (3, 5, 2))  # 3 sims, 5 districts (including NaN), 2 parties
 
         self.assertEqual(output.summary['Partisan Bias'], 0)
         # Verify vectorized_PB was called with correct array shape
         call_args = vectorized_PB.mock_calls[0][1][0]
-        self.assertEqual(call_args.shape, (5, 3, 2))
+        self.assertEqual(call_args.shape, (3, 5, 2))
 
         self.assertEqual(output.summary['Declination'], 0)
         # Verify vectorized_D2 was called with correct array shape
         call_args = vectorized_D2.mock_calls[0][1][0]
-        self.assertEqual(call_args.shape, (5, 3, 2))
+        self.assertEqual(call_args.shape, (3, 5, 2))
         
         SIMS = model_votes.return_value.shape[1]
 
@@ -1822,32 +1730,32 @@ class TestScore (unittest.TestCase):
         self.assertEqual(output.summary['Efficiency Gap'], 0)
         # Verify vectorized_EG was called with correct array for swing 0 (call index 5)
         call_args = vectorized_EG.mock_calls[5][1][0]
-        self.assertEqual(call_args.shape, (5, 3, 2))  # 5 districts (including NaN), 3 sims, 2 parties
+        self.assertEqual(call_args.shape, (3, 5, 2))  # 3 sims, 5 districts (including NaN), 2 parties
         # Check first simulation values match expected: red=[2.7, 4.1, 5.2, 6.1], blue=[5.3, 3.9, 2.8, 1.9]
         # (vectorized_EG internally filters out NaN districts)
-        self.assertAlmostEqual(call_args[0, 0, 0], 5.3)  # District 0, sim 0, blue
-        self.assertAlmostEqual(call_args[0, 0, 1], 2.7)  # District 0, sim 0, red
-        self.assertAlmostEqual(call_args[1, 0, 0], 3.9)  # District 1, sim 0, blue
-        self.assertAlmostEqual(call_args[1, 0, 1], 4.1)  # District 1, sim 0, red
-        self.assertAlmostEqual(call_args[2, 0, 0], 2.8)  # District 2, sim 0, blue
-        self.assertAlmostEqual(call_args[2, 0, 1], 5.2)  # District 2, sim 0, red
-        self.assertAlmostEqual(call_args[3, 0, 0], 1.9)  # District 3, sim 0, blue
-        self.assertAlmostEqual(call_args[3, 0, 1], 6.1)  # District 3, sim 0, red
+        self.assertAlmostEqual(call_args[0, 0, 0], 5.3)  # Sim 0, District 0, blue
+        self.assertAlmostEqual(call_args[0, 0, 1], 2.7)  # Sim 0, District 0, red
+        self.assertAlmostEqual(call_args[0, 1, 0], 3.9)  # Sim 0, District 1, blue
+        self.assertAlmostEqual(call_args[0, 1, 1], 4.1)  # Sim 0, District 1, red
+        self.assertAlmostEqual(call_args[0, 2, 0], 2.8)  # Sim 0, District 2, blue
+        self.assertAlmostEqual(call_args[0, 2, 1], 5.2)  # Sim 0, District 2, red
+        self.assertAlmostEqual(call_args[0, 3, 0], 1.9)  # Sim 0, District 3, blue
+        self.assertAlmostEqual(call_args[0, 3, 1], 6.1)  # Sim 0, District 3, red
         # District 4 should be NaN
-        self.assertTrue(numpy.isnan(call_args[4, 0, 0]))
-        self.assertTrue(numpy.isnan(call_args[4, 0, 1]))
+        self.assertTrue(numpy.isnan(call_args[0, 4, 0]))
+        self.assertTrue(numpy.isnan(call_args[0, 4, 1]))
 
         # Second round of sims - swing +1
         self.assertEqual(output.summary['Efficiency Gap +1 Dem'], 0)
         # Verify vectorized_EG was called with correct array for swing +1 (call index 6)
         call_args = vectorized_EG.mock_calls[6][1][0]
-        self.assertEqual(call_args.shape, (5, 3, 2))
+        self.assertEqual(call_args.shape, (3, 5, 2))
 
         # Third round of sims - swing -1
         self.assertEqual(output.summary['Efficiency Gap +1 Rep'], 0)
         # Verify vectorized_EG was called with correct array for swing -1 (call index 4)
         call_args = vectorized_EG.mock_calls[4][1][0]
-        self.assertEqual(call_args.shape, (5, 3, 2))
+        self.assertEqual(call_args.shape, (3, 5, 2))
 
         self.assertIsNone(output.districts[-1]['totals']['Republican Votes'])
         self.assertIsNone(output.districts[-1]['totals']['Democratic Votes'])

@@ -198,14 +198,14 @@ class TestMatrix (unittest.TestCase):
         )
     
         # In identical incumbent scenarios, predicted vote tracks presidential vote
-        self.assertTrue(R[0].sum() < R[1].sum() and R[1].sum() < R[2].sum())
-        self.assertTrue(R[3].sum() < R[4].sum() and R[4].sum() < R[5].sum())
-        self.assertTrue(R[6].sum() < R[7].sum() and R[7].sum() < R[8].sum())
+        self.assertTrue(R[:, 0].sum() < R[:, 1].sum() and R[:, 1].sum() < R[:, 2].sum())
+        self.assertTrue(R[:, 3].sum() < R[:, 4].sum() and R[:, 4].sum() < R[:, 5].sum())
+        self.assertTrue(R[:, 6].sum() < R[:, 7].sum() and R[:, 7].sum() < R[:, 8].sum())
 
         # In identical vote scenarios, predicted vote tracks party incumbency
-        self.assertTrue(R[0].sum() < R[3].sum() and R[3].sum() < R[6].sum())
-        self.assertTrue(R[1].sum() < R[4].sum() and R[4].sum() < R[7].sum())
-        self.assertTrue(R[2].sum() < R[5].sum() and R[5].sum() < R[8].sum())
+        self.assertTrue(R[:, 0].sum() < R[:, 3].sum() and R[:, 3].sum() < R[:, 6].sum())
+        self.assertTrue(R[:, 1].sum() < R[:, 4].sum() and R[:, 4].sum() < R[:, 7].sum())
+        self.assertTrue(R[:, 2].sum() < R[:, 5].sum() and R[:, 5].sum() < R[:, 8].sum())
     
     def test_apply_model_2025A_incumbents_state(self):
         model = matrix.load_model('-2025A', 'ca', 2024, has_incumbents=True, is_congress=False)
@@ -227,14 +227,14 @@ class TestMatrix (unittest.TestCase):
         )
     
         # In identical incumbent scenarios, predicted vote tracks presidential vote
-        self.assertTrue(R[0].sum() < R[1].sum() and R[1].sum() < R[2].sum())
-        self.assertTrue(R[3].sum() < R[4].sum() and R[4].sum() < R[5].sum())
-        self.assertTrue(R[6].sum() < R[7].sum() and R[7].sum() < R[8].sum())
+        self.assertTrue(R[:, 0].sum() < R[:, 1].sum() and R[:, 1].sum() < R[:, 2].sum())
+        self.assertTrue(R[:, 3].sum() < R[:, 4].sum() and R[:, 4].sum() < R[:, 5].sum())
+        self.assertTrue(R[:, 6].sum() < R[:, 7].sum() and R[:, 7].sum() < R[:, 8].sum())
 
         # In identical vote scenarios, predicted vote tracks party incumbency
-        self.assertTrue(R[0].sum() < R[3].sum() and R[3].sum() < R[6].sum())
-        self.assertTrue(R[1].sum() < R[4].sum() and R[4].sum() < R[7].sum())
-        self.assertTrue(R[2].sum() < R[5].sum() and R[5].sum() < R[8].sum())
+        self.assertTrue(R[:, 0].sum() < R[:, 3].sum() and R[:, 3].sum() < R[:, 6].sum())
+        self.assertTrue(R[:, 1].sum() < R[:, 4].sum() and R[:, 4].sum() < R[:, 7].sum())
+        self.assertTrue(R[:, 2].sum() < R[:, 5].sum() and R[:, 5].sum() < R[:, 8].sum())
     
     def test_apply_model_2025A_openseat_congress(self):
         model = matrix.load_model('-2025A', 'ca', 2024, has_incumbents=False, is_congress=True)
@@ -250,7 +250,7 @@ class TestMatrix (unittest.TestCase):
         )
     
         # Predicted vote tracks presidential vote
-        self.assertTrue(R[0].sum() < R[1].sum() and R[1].sum() < R[2].sum())
+        self.assertTrue(R[:, 0].sum() < R[:, 1].sum() and R[:, 1].sum() < R[:, 2].sum())
     
     def test_apply_model_2025A_openseat_state(self):
         model = matrix.load_model('-2025A', 'ca', 2024, has_incumbents=False, is_congress=False)
@@ -266,7 +266,7 @@ class TestMatrix (unittest.TestCase):
         )
     
         # Predicted vote tracks presidential vote
-        self.assertTrue(R[0].sum() < R[1].sum() and R[1].sum() < R[2].sum())
+        self.assertTrue(R[:, 0].sum() < R[:, 1].sum() and R[:, 1].sum() < R[:, 2].sum())
     
     def test_apply_model_with_zeros(self):
         model = matrix.load_model('-2025A', 'ca', None, has_incumbents=False, is_congress=False)
@@ -286,10 +286,10 @@ class TestMatrix (unittest.TestCase):
     @unittest.mock.patch('planscore.matrix.load_model')
     @unittest.mock.patch('planscore.matrix.apply_model')
     def test_model_votes(self, apply_model, load_model):
+        # apply_model returns (sims, districts)
         apply_model.return_value = numpy.array([
-            [0.3, 0.4],
-            [0.45, 0.55],
-            [0.6, 0.7]
+            [0.3, 0.45, 0.6],  # Sim 0
+            [0.4, 0.55, 0.7],  # Sim 1
         ])
 
         R = matrix.model_votes(
@@ -302,7 +302,7 @@ class TestMatrix (unittest.TestCase):
                 (6, 4, 'D'),
             ],
         )
-        
+
         self.assertEqual(apply_model.mock_calls[0][1], (
             [(.4, -1), (.5, 0), (.6, 1)],
             load_model.return_value,
@@ -310,23 +310,19 @@ class TestMatrix (unittest.TestCase):
         ))
         self.assertEqual(load_model.mock_calls[0][1], ('-2025B', 'nc', 2024, True, True))
 
+        # Expected shape is (sims, districts, parties)
         self.assertEqual(R.tolist(), [
-            [[3.0, 7.0],
-             [4.0, 6.0]],
-
-            [[4.5, 5.5],
-             [5.5, 4.5]],
-
-            [[6.0, 4.0],
-             [7.0, 3.0]],
+            [[3.0, 7.0], [4.5, 5.5], [6.0, 4.0]],  # Sim 0
+            [[4.0, 6.0], [5.5, 4.5], [7.0, 3.0]],  # Sim 1
         ])
     
     @unittest.mock.patch('planscore.matrix.load_model')
     @unittest.mock.patch('planscore.matrix.apply_model')
     def test_model_votes_with_zeros(self, apply_model, load_model):
+        # apply_model returns (sims, districts)
         apply_model.return_value = numpy.array([
-            [0.3, 0.4],
-            [numpy.nan, numpy.nan]
+            [0.3, 0.4],  # Sim 0: District 0=0.3, District 1=0.4
+            [numpy.nan, numpy.nan],  # Sim 1: all nan
         ])
 
         R = matrix.model_votes(
@@ -344,13 +340,14 @@ class TestMatrix (unittest.TestCase):
         self.assertTrue(numpy.isnan(apply_model.mock_calls[0][1][0][1][0]))
         self.assertEqual(apply_model.mock_calls[0][1][0][1][1], 0)
         self.assertEqual(apply_model.mock_calls[0][1][1], load_model.return_value)
-        
+
         self.assertIs(apply_model.mock_calls[0][1][-1], data.VERSION_PARAMETERS['2025B'])
         self.assertEqual(load_model.mock_calls[0][1], ('-2025B', 'nc', 2024, True, True))
 
+        # R shape is (sims, districts, parties) - check first sim
         self.assertEqual(R[0].tolist(), [
-            [1.5, 3.5],
-            [2.0, 3.0],
+            [1.5, 3.5],  # District 0
+            [2.0, 3.0],  # District 1
         ])
         
         self.assertTrue(numpy.isnan(R[1]).all())
