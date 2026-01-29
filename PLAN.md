@@ -1,11 +1,11 @@
 # Refactoring Plan: Move Incumbency Selection from `model_votes()` to `calculate_district_biases()`
 
 - Our local python virtualenv is in .venv-py39, use it
-- A useful way to test this code is with `planscore-score-locally https://planscore--dev.s3.amazonaws.com/uploads/20260127T042257.547602478Z/index.json` which calls planscore.score:main().
+- A useful way to test this code is with `planscore-score-locally https://planscore--dev.s3.amazonaws.com/uploads/20260129T041903.684277570Z/index.json` which calls planscore.score:main().
 - Test as you go, checking before and after you make changes that behavior is as expected
 - The Recommended sequence of work, repeated below, looks like:
-    1. Add `INCUMBENCY` constant to score.py (after line 26)
-    2. Modify `model_votes()` to generate all 3 incumbency scenarios in order [-1, 0, 1]
+    1. ✅ Add `INCUMBENCY` constant to score.py (after line 26) - COMPLETED
+    2. ✅ Modify `model_votes()` to generate all 3 incumbency scenarios in order [-1, 0, 1] - COMPLETED
     3. Add incumbency selection logic to `calculate_district_biases()` using `INCUMBENCY`
     4. Update all test mocks to use `(incumbency, sims, districts, 2)` shape
     5. Update test assertions in `test_model_votes()` to verify 3 scenarios exist

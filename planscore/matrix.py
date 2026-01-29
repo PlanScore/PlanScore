@@ -171,34 +171,40 @@ def model_votes(model_version, state, house, districts):
         districts is an array of three-element tuples:
         - Input Democratic vote count
         - Input Republican vote count
-        - Incumbency: "O" for open, "R", or "D"
+        - Incumbency: "O" for open, "R", or "D" (ignored, all scenarios generated)
 
-        Return is a SxDx2 matrix for S simulations, D districts, and Dem/Rep parties.
+        Return is an IxSxDx2 matrix where first dimension is incumbency scenario
+        (Republican=-1, Open=0, Democrat=1), S simulations, D districts, and Dem/Rep parties.
     '''
     params = data.VERSION_PARAMETERS[model_version]
-    
+
     has_incumbents = bool({inc for (_, _, inc) in districts} != {'O'})
     is_congress = bool(house == data.House.ushouse)
 
-    # Get SxD array from apply_model() with modeled vote fractions
-    fractions = apply_model(
-        [
-            (dem / ((dem + rep) or numpy.nan), INCUMBENCY[inc])
-            for (dem, rep, inc) in districts
-        ],
-        load_model(params.path_suffix, STATE[state], params.year, has_incumbents, is_congress),
-        params,
-    )
+    # Build votes for all three incumbency scenarios
+    incumbency_scenarios = [-1, 0, 1]  # Republican, Open, Democrat (matches INCUMBENCY order)
+    all_fractions = []
 
-    # Create SxD scale array with total vote counts for each simulation and district
+    for inc_value in incumbency_scenarios:
+        fractions = apply_model(
+            [(dem / ((dem + rep) or numpy.nan), inc_value) for (dem, rep, _) in districts],
+            load_model(params.path_suffix, STATE[state], params.year, has_incumbents, is_congress),
+            params,
+        )
+        all_fractions.append(fractions)
+
+    # Stack: (incumbency, sims, districts)
+    all_fractions = numpy.stack(all_fractions, axis=0)
+
+    # Create SxD scale array (same for all incumbency scenarios)
     total_votes = sum([dem + rep for (dem, rep, _) in districts])
     one_district_votes = total_votes / len(districts)
-    scale = numpy.full(fractions.shape, one_district_votes)
+    scale = numpy.full(all_fractions.shape[1:], one_district_votes)  # (sims, districts)
 
-    # Build SxDx2 array with per-party vote totals for each simulation, district, and party
-    votes_dem = (fractions * scale).round(1)  # (sims, districts)
-    votes_rep = ((1 - fractions) * scale).round(1)  # (sims, districts)
-    votes = numpy.stack([votes_dem, votes_rep], axis=2)  # (sims, districts, 2)
+    # Build IxSxDx2 array with per-party vote totals for each incumbency, simulation, district, and party
+    votes_dem = (all_fractions * scale).round(1)  # (incumbency, sims, districts)
+    votes_rep = ((1 - all_fractions) * scale).round(1)  # (incumbency, sims, districts)
+    votes = numpy.stack([votes_dem, votes_rep], axis=3)  # (incumbency, sims, districts, 2)
 
     return votes
 
