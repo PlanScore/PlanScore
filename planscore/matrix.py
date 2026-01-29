@@ -208,7 +208,7 @@ def model_votes(model_version, state, house, districts):
     return votes
 
 def prepare_district_data(upload) -> list[tuple[float, float, str]]:
-    ''' Simple presidential vote input for model_votes() plus the pvote year used
+    ''' Simple presidential vote input for model_votes()
     '''
     params = data.VERSION_PARAMETERS[upload.model_version or upload.model.versions[0]]
     
