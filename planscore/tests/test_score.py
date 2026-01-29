@@ -167,7 +167,52 @@ class TestScore (unittest.TestCase):
 
         l4 = [-1, 1, 1, None]
         self.assertAlmostEqual(score.safe_positives(l4), 2/3)
-    
+
+    def test_np_safe_mean(self):
+        ''' Means are correctly calculated for numpy arrays
+        '''
+        a1 = numpy.array([1, 2, 3, 4])
+        self.assertEqual(score.np_safe_mean(a1), statistics.mean([1, 2, 3, 4]))
+
+        a2 = numpy.array([1])
+        self.assertEqual(score.np_safe_mean(a2), statistics.mean([1]))
+
+        a3 = numpy.array([1, 2, 3, 4, numpy.nan])
+        self.assertEqual(score.np_safe_mean(a3), statistics.mean([1, 2, 3, 4]))
+
+        a4 = numpy.array([numpy.nan])
+        self.assertIsNone(score.np_safe_mean(a4))
+
+    def test_np_safe_stdev(self):
+        ''' Standard deviations are correctly calculated for numpy arrays
+        '''
+        a1 = numpy.array([1, 2, 3, 4])
+        self.assertEqual(score.np_safe_stdev(a1), statistics.stdev([1, 2, 3, 4]))
+
+        a2 = numpy.array([1])
+        self.assertIsNone(score.np_safe_stdev(a2))
+
+        a3 = numpy.array([1, 2, 3, 4, numpy.nan])
+        self.assertEqual(score.np_safe_stdev(a3), statistics.stdev([1, 2, 3, 4]))
+
+        a4 = numpy.array([numpy.nan])
+        self.assertIsNone(score.np_safe_stdev(a4))
+
+    def test_np_safe_positives(self):
+        ''' Positive values are correctly counted for numpy arrays
+        '''
+        a1 = numpy.array([-1, 1])
+        self.assertEqual(score.np_safe_positives(a1), .5)
+
+        a2 = numpy.array([-1])
+        self.assertEqual(score.np_safe_positives(a2), 0.)
+
+        a3 = numpy.array([1])
+        self.assertEqual(score.np_safe_positives(a3), 1.)
+
+        a4 = numpy.array([-1, 1, 1, numpy.nan])
+        self.assertAlmostEqual(score.np_safe_positives(a4), 2/3)
+
     def test_percentrank_abs(self):
         ''' Absolute percent rank is correctly calculated by chamber
         '''
