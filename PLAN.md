@@ -7,10 +7,10 @@
     1. ✅ Add `INCUMBENCY` constant to score.py (after line 26) - COMPLETED
     2. ✅ Modify `model_votes()` to generate all 3 incumbency scenarios in order [-1, 0, 1] - COMPLETED
     3. ✅ Add incumbency selection logic to `calculate_district_biases()` using `INCUMBENCY` - COMPLETED
-    4. Update all test mocks to use `(incumbency, sims, districts, 2)` shape
-    5. Update test assertions in `test_model_votes()` to verify 3 scenarios exist
-    6. Update test assertions in `test_calculate_gap_unified_incumbents()` to verify correct selection
-    7. Run full test suite: `python setup.py test`
+    4. ✅ Update all test mocks to use `(incumbency, sims, districts, 2)` shape - COMPLETED
+    5. ✅ Update test assertions in `test_model_votes()` to verify 3 scenarios exist - COMPLETED
+    6. ✅ Update test assertions in `test_calculate_gap_unified_incumbents()` to verify correct selection - COMPLETED
+    7. ✅ Run full test suite: `python setup.py test` - COMPLETED (all tests pass)
 
 ## Overview
 Currently, `model_votes()` assigns individual incumbency scenarios to each district and returns `(sims, districts, 2)`. After changes, it will generate votes for ALL three incumbency scenarios and return `(incumbency, sims, districts, 2)`, with `calculate_district_biases()` selecting the appropriate scenario per district.

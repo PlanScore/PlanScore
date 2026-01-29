@@ -303,18 +303,43 @@ class TestMatrix (unittest.TestCase):
             ],
         )
 
+        # Verify apply_model was called 3 times (once per incumbency scenario)
+        self.assertEqual(len(apply_model.mock_calls), 3)
+
+        # First call: Republican incumbency (-1) for all districts
         self.assertEqual(apply_model.mock_calls[0][1], (
-            [(.4, -1), (.5, 0), (.6, 1)],
+            [(.4, -1), (.5, -1), (.6, -1)],
             load_model.return_value,
             data.VERSION_PARAMETERS['2025B'],
         ))
+
+        # Second call: Open seat (0) for all districts
+        self.assertEqual(apply_model.mock_calls[1][1], (
+            [(.4, 0), (.5, 0), (.6, 0)],
+            load_model.return_value,
+            data.VERSION_PARAMETERS['2025B'],
+        ))
+
+        # Third call: Democrat incumbency (1) for all districts
+        self.assertEqual(apply_model.mock_calls[2][1], (
+            [(.4, 1), (.5, 1), (.6, 1)],
+            load_model.return_value,
+            data.VERSION_PARAMETERS['2025B'],
+        ))
+
         self.assertEqual(load_model.mock_calls[0][1], ('-2025B', 'nc', 2024, True, True))
 
-        # Expected shape is (sims, districts, parties)
-        self.assertEqual(R.tolist(), [
+        # Expected shape is (incumbency_scenarios, sims, districts, parties)
+        self.assertEqual(R.shape, (3, 2, 3, 2))
+
+        # All three incumbency scenarios should have the same values (since mocked)
+        expected_values = [
             [[3.0, 7.0], [4.5, 5.5], [6.0, 4.0]],  # Sim 0
             [[4.0, 6.0], [5.5, 4.5], [7.0, 3.0]],  # Sim 1
-        ])
+        ]
+        self.assertEqual(R[0].tolist(), expected_values)  # Republican scenario
+        self.assertEqual(R[1].tolist(), expected_values)  # Open scenario
+        self.assertEqual(R[2].tolist(), expected_values)  # Democrat scenario
     
     @unittest.mock.patch('planscore.matrix.load_model')
     @unittest.mock.patch('planscore.matrix.apply_model')
@@ -335,22 +360,41 @@ class TestMatrix (unittest.TestCase):
             ],
         )
 
-        # Can't just check NaN == NaN
+        # Verify apply_model was called 3 times (once per incumbency scenario)
+        self.assertEqual(len(apply_model.mock_calls), 3)
+
+        # Check first call (Republican incumbency, -1)
         self.assertEqual(apply_model.mock_calls[0][1][0][0], (.4, -1))
         self.assertTrue(numpy.isnan(apply_model.mock_calls[0][1][0][1][0]))
-        self.assertEqual(apply_model.mock_calls[0][1][0][1][1], 0)
+        self.assertEqual(apply_model.mock_calls[0][1][0][1][1], -1)
         self.assertEqual(apply_model.mock_calls[0][1][1], load_model.return_value)
-
         self.assertIs(apply_model.mock_calls[0][1][-1], data.VERSION_PARAMETERS['2025B'])
+
+        # Check second call (Open seat, 0)
+        self.assertEqual(apply_model.mock_calls[1][1][0][0], (.4, 0))
+        self.assertTrue(numpy.isnan(apply_model.mock_calls[1][1][0][1][0]))
+        self.assertEqual(apply_model.mock_calls[1][1][0][1][1], 0)
+
+        # Check third call (Democrat incumbency, 1)
+        self.assertEqual(apply_model.mock_calls[2][1][0][0], (.4, 1))
+        self.assertTrue(numpy.isnan(apply_model.mock_calls[2][1][0][1][0]))
+        self.assertEqual(apply_model.mock_calls[2][1][0][1][1], 1)
+
         self.assertEqual(load_model.mock_calls[0][1], ('-2025B', 'nc', 2024, True, True))
 
-        # R shape is (sims, districts, parties) - check first sim
-        self.assertEqual(R[0].tolist(), [
+        # R shape is (incumbency_scenarios, sims, districts, parties)
+        self.assertEqual(R.shape, (3, 2, 2, 2))
+
+        # Check first incumbency scenario (Republican), first sim
+        self.assertEqual(R[0, 0].tolist(), [
             [1.5, 3.5],  # District 0
             [2.0, 3.0],  # District 1
         ])
-        
-        self.assertTrue(numpy.isnan(R[1]).all())
+
+        # All incumbency scenarios should have NaN for second sim
+        self.assertTrue(numpy.isnan(R[0, 1]).all())  # Republican scenario, sim 1
+        self.assertTrue(numpy.isnan(R[1, 1]).all())  # Open scenario, sim 1
+        self.assertTrue(numpy.isnan(R[2, 1]).all())  # Democrat scenario, sim 1
     
     def test_prepare_district_data_2025A_version(self):
         input = data.Upload(id=None, key=None,

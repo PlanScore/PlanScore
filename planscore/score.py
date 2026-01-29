@@ -975,31 +975,29 @@ def calculate_district_biases(upload):
     if not has_president_votes:
         # Skip everything if we don't see current presidential votes
         return upload.clone()
-    
-    # Get large number of simulated outputs
-    output_votes = swing_vote_matrix(
-        matrix.model_votes(
-            upload.model_version or upload.model.versions[0],
-            upload.model.state,
-            upload.model.house,
-            matrix.filter_district_data(matrix.prepare_district_data(upload)),
-        ),
-        upload.vote_swings,
+
+    # Get large number of simulated outputs from model_votes
+    model_output = matrix.model_votes(
+        upload.model_version or upload.model.versions[0],
+        upload.model.state,
+        upload.model.house,
+        matrix.filter_district_data(matrix.prepare_district_data(upload)),
     )
-    # output_votes shape is now (incumbency, sims, districts, 2)
+    # model_output shape is (incumbency, sims, districts, 2)
 
     # Select appropriate incumbency scenario per district
-    incumbency_count, sim_count, district_count, _ = output_votes.shape
+    incumbency_count, sim_count, district_count, _ = model_output.shape
 
     # Select the correct incumbency scenario for each district using INCUMBENCY
     selected_votes = numpy.zeros((sim_count, district_count, 2))
     for i, incumbency in enumerate(upload.incumbents):
         idx = INCUMBENCY[incumbency]
-        selected_votes[:, i, :] = output_votes[idx, :, i, :]
+        selected_votes[:, i, :] = model_output[idx, :, i, :]
 
-    # Continue with selected votes
-    output_votes = selected_votes
-    # output_votes shape is now back to (sims, districts, 2)
+    # selected_votes shape is now (sims, districts, 2)
+
+    # Apply vote swings
+    output_votes = swing_vote_matrix(selected_votes, upload.vote_swings)
 
     sim_count, district_count, _ = output_votes.shape
 
