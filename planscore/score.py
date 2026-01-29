@@ -122,12 +122,46 @@ def swing_vote(red_districts:list[float], blue_districts:list[float], amount:flo
     '''
     if amount == 0:
         return list(red_districts), list(blue_districts)
-    
+
     districts = [(R, B, R + B) for (R, B) in zip(red_districts, blue_districts)]
     swung_reds = [((R/T - amount) * T) for (R, B, T) in districts if T > 0]
     swung_blues = [((B/T + amount) * T) for (R, B, T) in districts if T > 0]
-    
+
     return swung_reds, swung_blues
+
+def vectorized_swing(votes:numpy.typing.NDArray, amount:float) -> numpy.typing.NDArray:
+    ''' Swing the vote by a percentage, positive toward blue, using vectorized operations.
+
+        Input array shape is (districts, sims, dem/rep votes)
+        Convention: votes[:,:,0] = blue, votes[:,:,1] = red
+        Returns array of same shape with swung votes.
+    '''
+    if amount == 0:
+        return votes.copy()
+
+    # Calculate total votes per district-simulation pair
+    totals = votes.sum(axis=2, keepdims=True)
+
+    # Create a mask for non-zero totals to avoid division by zero
+    nonzero_mask = totals > 0
+
+    # Calculate current vote shares, protecting against division by zero
+    # Replace zero totals with 1 to avoid division warnings (result will be masked out anyway)
+    safe_totals = numpy.where(nonzero_mask, totals, 1.0)
+    shares = votes / safe_totals
+
+    # Apply swing: increase blue share by amount, decrease red share by amount
+    swung_shares = shares.copy()
+    swung_shares[:, :, 0] += amount  # Blue gets +amount
+    swung_shares[:, :, 1] -= amount  # Red gets -amount
+
+    # Convert shares back to vote counts
+    swung_votes = swung_shares * totals
+
+    # Ensure zero-vote districts remain zero
+    swung_votes = numpy.where(nonzero_mask, swung_votes, 0.0)
+
+    return swung_votes
 
 def swing_vote_matrix(votes:numpy.typing.NDArray, vote_swings:list[float]) -> numpy.typing.NDArray:
     ''' Swing the vote by a percentage, positive toward blue.
@@ -159,35 +193,42 @@ def swing_vote_matrix(votes:numpy.typing.NDArray, vote_swings:list[float]) -> nu
 
     return numpy.concatenate(new_votes, axis=0).round(6)
 
+def _is_valid_number(val):
+    '''Helper to check if a value is a valid number (not None or NaN)'''
+    return val is not None and not (isinstance(val, float) and math.isnan(val))
+
 def safe_mean(values):
     '''
     '''
-    safe_values = [val for val in values if val is not None]
-    
+    safe_values = [val for val in values if _is_valid_number(val)]
+
     if len(safe_values) < 1:
         return None
-    
+
     return statistics.mean(safe_values)
 
 def safe_stdev(values):
     '''
     '''
-    safe_values = [val for val in values if val is not None]
-    
+    safe_values = [val for val in values if _is_valid_number(val)]
+
     if len(safe_values) < 2:
         return None
-    
+
     return statistics.stdev(safe_values)
 
 def safe_positives(values):
     '''
     '''
-    safe_values = [val for val in values if val is not None]
+    safe_values = [val for val in values if _is_valid_number(val)]
 
     if len(safe_values) < 1:
         return None
-    
-    return len([n for n in safe_values if n > 0]) / len(values)
+
+    # Use epsilon threshold to avoid counting floating point errors as positive
+    # Machine epsilon for float64 is ~2.22e-16, so use 1e-10 as safe threshold
+    epsilon = 1e-10
+    return len([n for n in safe_values if n > epsilon]) / len(safe_values)
 
 def percentrank_abs(column, house, value):
     '''
@@ -267,6 +308,82 @@ def calculate_EG(red_districts:list[float], blue_districts:list[float], vote_swi
     
     return statewide_seat_share - 0.5 - 2 * (statewide_vote_share - 0.5)
 
+def vectorized_EG(votes:numpy.typing.NDArray, vote_swing:float=0) -> numpy.typing.NDArray:
+    ''' Calculate Efficiency Gap for vectorized multi-sim numpy arrays.
+
+        Input array shape is (districts, sims, dem/rep votes)
+        Convention: votes[:,:,0] = blue, votes[:,:,1] = red
+        Returns 1D array of shape (sims,) with EG score for each simulation.
+
+        By convention, result is positive for blue and negative for red.
+    '''
+    districts, sims, _ = votes.shape
+
+    # Apply initial swing to calculate init_vote_share per sim
+    init_swung = vectorized_swing(votes, vote_swing)
+
+    # Calculate init_vote_share per sim
+    init_blue_total = init_swung[:, :, 0].sum(axis=0)  # shape (sims,)
+    init_red_total = init_swung[:, :, 1].sum(axis=0)   # shape (sims,)
+    init_vote_share = init_blue_total / (init_blue_total + init_red_total)
+
+    # Calculate clamped_swing per sim - shape (sims,)
+    clamped_swing = numpy.where(
+        init_vote_share < 0.25,
+        vote_swing + (0.25 - init_vote_share),
+        numpy.where(
+            init_vote_share > 0.75,
+            vote_swing - (init_vote_share - 0.75),
+            vote_swing
+        )
+    )
+
+    # Apply per-simulation clamped swings using broadcasting
+    # Calculate district totals - shape (districts, sims)
+    district_totals = votes.sum(axis=2)
+    nonzero_mask = district_totals > 0
+
+    # Calculate current vote shares - shape (districts, sims, 2)
+    safe_totals = numpy.where(nonzero_mask[:, :, numpy.newaxis],
+                               district_totals[:, :, numpy.newaxis],
+                               1.0)
+    shares = votes / safe_totals
+
+    # Apply per-simulation swings with broadcasting - shape (1, sims)
+    swing_broadcast = clamped_swing.reshape(1, -1)
+    swung_shares = shares.copy()
+    swung_shares[:, :, 0] += swing_broadcast  # blue gets +swing
+    swung_shares[:, :, 1] -= swing_broadcast  # red gets -swing
+
+    # Convert back to vote counts - shape (districts, sims, 2)
+    swung_votes = swung_shares * district_totals[:, :, numpy.newaxis]
+
+    # Mask out zero-vote districts
+    swung_votes = numpy.where(nonzero_mask[:, :, numpy.newaxis], swung_votes, 0.0)
+
+    # Count blue wins per sim - shape (sims,)
+    blue_wins = ((swung_votes[:, :, 0] > swung_votes[:, :, 1]) & nonzero_mask).sum(axis=0)
+
+    # Count nonzero districts per sim - shape (sims,)
+    nonzero_counts = nonzero_mask.sum(axis=0)
+
+    # Calculate seat share per sim - shape (sims,)
+    statewide_seat_share = numpy.where(nonzero_counts > 0,
+                                        blue_wins / nonzero_counts,
+                                        0.0)
+
+    # Calculate vote share per sim - shape (sims,)
+    statewide_blue_votes = swung_votes[:, :, 0].sum(axis=0)  # shape (sims,)
+    statewide_total_votes = swung_votes.sum(axis=(0, 2))     # shape (sims,)
+    statewide_vote_share = numpy.where(statewide_total_votes > 0,
+                                        statewide_blue_votes / statewide_total_votes,
+                                        0.0)
+
+    # EG formula - shape (sims,)
+    eg_scores = statewide_seat_share - 0.5 - 2 * (statewide_vote_share - 0.5)
+
+    return eg_scores
+
 def calculate_MMD(red_districts:list[float], blue_districts:list[float]) -> float:
     ''' Convert two lists of district vote counts into a Mean-Median score.
     
@@ -287,6 +404,40 @@ def calculate_MMD(red_districts:list[float], blue_districts:list[float]) -> floa
     #    print(f'{mean:.9f},{median:.9f}', file=file)
     
     return median - mean
+
+def vectorized_MMD(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
+    ''' Calculate Mean-Median for vectorized multi-sim numpy arrays.
+
+        Input array shape is (districts, sims, dem/rep votes)
+        Convention: votes[:,:,0] = blue, votes[:,:,1] = red
+        Returns 1D array of shape (sims,) with MMD score for each simulation.
+
+        By convention, result is positive for blue and negative for red.
+    '''
+    districts, sims, _ = votes.shape
+
+    # Calculate district totals - shape (districts, sims)
+    district_totals = votes.sum(axis=2)
+
+    # Create mask for nonzero districts - shape (districts, sims)
+    nonzero_mask = district_totals > 0
+
+    # Calculate blue shares for all districts and sims - shape (districts, sims)
+    # Protect against division by zero
+    safe_totals = numpy.where(nonzero_mask, district_totals, 1.0)
+    blue_shares = votes[:, :, 0] / safe_totals
+
+    # Set zero-vote districts to NaN so they're ignored by nanmedian/nanmean
+    blue_shares = numpy.where(nonzero_mask, blue_shares, numpy.nan)
+
+    # Calculate median and mean per simulation, ignoring NaN values - shape (sims,)
+    medians = numpy.nanmedian(blue_shares, axis=0)  # median across districts for each sim
+    means = numpy.nanmean(blue_shares, axis=0)      # mean across districts for each sim
+
+    # MMD = median - mean - shape (sims,)
+    mmd_scores = medians - means
+
+    return mmd_scores
 
 def calculate_PB(red_districts:list[float], blue_districts:list[float]) -> float:
     ''' Convert two lists of district vote counts into a Partisan Bias score.
@@ -313,6 +464,83 @@ def calculate_PB(red_districts:list[float], blue_districts:list[float]) -> float
     #    print(f'{blue_seatshare:.9f},{blue_voteshare:.3f}', file=file)
     
     return blue_seatshare - blue_voteshare
+
+def vectorized_PB(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
+    ''' Calculate Partisan Bias for vectorized multi-sim numpy arrays.
+
+        Input array shape is (districts, sims, dem/rep votes)
+        Convention: votes[:,:,0] = blue, votes[:,:,1] = red
+        Returns 1D array of shape (sims,) with PB score for each simulation.
+
+        By convention, result is positive for blue and negative for red.
+    '''
+    districts, sims, _ = votes.shape
+
+    # Calculate district totals across all sims - shape (districts, sims)
+    district_totals = votes.sum(axis=2)
+
+    # Create mask for nonzero districts - shape (districts, sims)
+    nonzero_mask = district_totals > 0
+
+    # Calculate statewide blue and red totals per sim - shape (sims,)
+    # Only sum nonzero districts using masked arrays
+    masked_votes = numpy.where(nonzero_mask[:, :, numpy.newaxis], votes, 0)
+    blue_totals = masked_votes[:, :, 0].sum(axis=0)  # shape (sims,)
+    red_totals = masked_votes[:, :, 1].sum(axis=0)   # shape (sims,)
+    statewide_totals = blue_totals + red_totals
+
+    # Calculate blue margins per sim - shape (sims,)
+    blue_margins = numpy.where(statewide_totals > 0,
+                                (blue_totals - red_totals) / statewide_totals,
+                                0.0)
+
+    # Calculate swing amounts per sim - shape (sims,)
+    swing_amounts = -blue_margins / 2  # shape (sims,)
+
+    # Apply swings to all districts and sims at once
+    # Broadcast swing amounts to match votes shape - shape (1, sims, 1)
+    swing_amounts_3d = swing_amounts.reshape(1, sims, 1)
+
+    # Calculate current vote shares - shape (districts, sims, 2)
+    safe_totals = numpy.where(district_totals[:, :, numpy.newaxis] > 0,
+                               district_totals[:, :, numpy.newaxis],
+                               1.0)
+    shares = votes / safe_totals
+
+    # Apply swing: blue gets +swing, red gets -swing - shape (districts, sims, 2)
+    swung_shares = shares.copy()
+    swung_shares[:, :, 0] += swing_amounts_3d.squeeze()  # blue
+    swung_shares[:, :, 1] -= swing_amounts_3d.squeeze()  # red
+
+    # Convert back to vote counts - shape (districts, sims, 2)
+    swung_votes = swung_shares * district_totals[:, :, numpy.newaxis]
+
+    # Mask out zero-vote districts - shape (districts, sims, 2)
+    swung_votes = numpy.where(nonzero_mask[:, :, numpy.newaxis], swung_votes, 0)
+
+    # Count blue seats per sim: where blue > red - shape (districts, sims)
+    blue_wins = swung_votes[:, :, 0] > swung_votes[:, :, 1]
+    blue_seats = (blue_wins & nonzero_mask).sum(axis=0)  # shape (sims,)
+
+    # Count nonzero districts per sim - shape (sims,)
+    nonzero_counts = nonzero_mask.sum(axis=0)
+
+    # Calculate blue seatshare per sim - shape (sims,)
+    blue_seatshare = numpy.where(nonzero_counts > 0,
+                                  blue_seats / nonzero_counts,
+                                  0.0)
+
+    # Calculate blue voteshare per sim - shape (sims,)
+    swung_blue_totals = swung_votes[:, :, 0].sum(axis=0)  # shape (sims,)
+    swung_total_votes = swung_votes.sum(axis=(0, 2))      # shape (sims,)
+    blue_voteshare = numpy.where(swung_total_votes > 0,
+                                  swung_blue_totals / swung_total_votes,
+                                  0.0)
+
+    # PB = seatshare - voteshare - shape (sims,)
+    pb_scores = blue_seatshare - blue_voteshare
+
+    return pb_scores
 
 def calculate_D2(red_districts:list[float], blue_districts:list[float]) -> float:
     ''' Convert two lists of district vote counts into a Declination score.
@@ -363,6 +591,76 @@ def calculate_D2(red_districts:list[float], blue_districts:list[float]) -> float
 
     return -declination2
 
+def vectorized_D2(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
+    ''' Calculate Declination (D2) for vectorized multi-sim numpy arrays.
+
+        Input array shape is (districts, sims, dem/rep votes)
+        Convention: votes[:,:,0] = blue, votes[:,:,1] = red
+        Returns 1D array of shape (sims,) with D2 score for each simulation.
+
+        By convention, result is positive for blue and negative for red.
+        Adapt Python sample code from Warrington, 2018.
+    '''
+    districts, sims, _ = votes.shape
+
+    # Calculate district totals - shape (districts, sims)
+    district_totals = votes.sum(axis=2)
+
+    # Create mask for nonzero districts - shape (districts, sims)
+    nonzero_mask = district_totals > 0
+
+    # Calculate blue shares for all districts and sims - shape (districts, sims)
+    safe_totals = numpy.where(nonzero_mask, district_totals, 1.0)
+    blue_shares = votes[:, :, 0] / safe_totals
+
+    # Set zero-vote districts to NaN
+    blue_shares = numpy.where(nonzero_mask, blue_shares, numpy.nan)
+
+    # Count seats (nonzero districts) per sim - shape (sims,)
+    seats = nonzero_mask.sum(axis=0)
+
+    # Create masks for red wins (share <= 0.5) and blue wins (share > 0.5)
+    red_wins_mask = (blue_shares <= 0.5) & nonzero_mask  # shape (districts, sims)
+    blue_wins_mask = (blue_shares > 0.5) & nonzero_mask  # shape (districts, sims)
+
+    # Count wins per sim
+    num_red_wins = red_wins_mask.sum(axis=0)  # shape (sims,)
+    num_blue_wins = blue_wins_mask.sum(axis=0)  # shape (sims,)
+
+    # Prepare arrays for red and blue win shares (set non-wins to NaN)
+    red_win_shares = numpy.where(red_wins_mask, blue_shares, numpy.nan)
+    blue_win_shares = numpy.where(blue_wins_mask, blue_shares, numpy.nan)
+
+    # Calculate means of winning shares per sim
+    mean_red_wins = numpy.nanmean(red_win_shares, axis=0)  # shape (sims,)
+    mean_blue_wins = numpy.nanmean(blue_win_shares, axis=0)  # shape (sims,)
+
+    # Calculate theta and gamma using vectorized operations
+    # theta = atan((1 - 2 * mean(red_wins)) * seats / num_red_wins)
+    # gamma = atan((2 * mean(blue_wins) - 1) * seats / num_blue_wins)
+    theta = numpy.arctan(
+        numpy.where(num_red_wins > 0,
+                    (1 - 2 * mean_red_wins) * seats / num_red_wins,
+                    0.0)
+    )
+    gamma = numpy.arctan(
+        numpy.where(num_blue_wins > 0,
+                    (2 * mean_blue_wins - 1) * seats / num_blue_wins,
+                    0.0)
+    )
+
+    # Calculate declination - shape (sims,)
+    declination = 2.0 * (gamma - theta) / numpy.pi
+
+    # Handle edge cases: all red wins or all blue wins
+    declination = numpy.where(num_red_wins == 0, -1.0, declination)  # All blue
+    declination = numpy.where(num_blue_wins == 0, 1.0, declination)  # All red
+
+    # Calculate declination2 - shape (sims,)
+    declination2 = numpy.where(seats > 0, declination * numpy.log(seats) / 2, 0.0)
+
+    return -declination2
+
 def calculate_D2_diff(red_districts:list[float], blue_districts:list[float]) -> float | None:
     ''' Convert two lists of district vote counts into vote share difference.
     
@@ -380,8 +678,49 @@ def calculate_D2_diff(red_districts:list[float], blue_districts:list[float]) -> 
     
     if red_shares and blue_shares:
         return statistics.mean(blue_shares) - statistics.mean(red_shares)
-    
+
     return None
+
+def vectorized_D2_diff(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
+    ''' Calculate vote share difference for vectorized multi-sim numpy arrays.
+
+        Input array shape is (districts, sims, dem/rep votes)
+        Convention: votes[:,:,0] = blue, votes[:,:,1] = red
+        Returns 1D array of shape (sims,) with diff for each simulation.
+        Returns NaN when only one party wins all seats.
+
+        Relevant for the textual description of Declination.
+    '''
+    districts, sims, _ = votes.shape
+
+    # Calculate district totals - shape (districts, sims)
+    district_totals = votes.sum(axis=2)
+
+    # Create mask for nonzero districts - shape (districts, sims)
+    nonzero_mask = district_totals > 0
+
+    # Calculate blue and red shares - shape (districts, sims)
+    safe_totals = numpy.where(nonzero_mask, district_totals, 1.0)
+    blue_shares_all = votes[:, :, 0] / safe_totals
+    red_shares_all = votes[:, :, 1] / safe_totals
+
+    # Create masks for blue wins (blue >= red) and red wins (blue < red)
+    blue_wins_mask = (votes[:, :, 0] >= votes[:, :, 1]) & nonzero_mask
+    red_wins_mask = (votes[:, :, 0] < votes[:, :, 1]) & nonzero_mask
+
+    # Get winning shares (set non-wins to NaN)
+    blue_win_shares = numpy.where(blue_wins_mask, blue_shares_all, numpy.nan)
+    red_win_shares = numpy.where(red_wins_mask, red_shares_all, numpy.nan)
+
+    # Calculate means of winning shares per sim
+    mean_blue_wins = numpy.nanmean(blue_win_shares, axis=0)  # shape (sims,)
+    mean_red_wins = numpy.nanmean(red_win_shares, axis=0)    # shape (sims,)
+
+    # Calculate difference: mean(blue_wins) - mean(red_wins)
+    # Will be NaN if either mean is NaN (i.e., no wins for that party)
+    diff = mean_blue_wins - mean_red_wins
+
+    return diff
 
 def calculate_bias(upload):
     ''' Calculate partisan metrics for districts with plain vote counts.
@@ -624,6 +963,14 @@ def calculate_district_biases(upload):
         upload.vote_swings,
     )
     district_count, sim_count, _ = output_votes.shape
+
+    # Reshape so first axis can be swing amount, then expand to 11 swings
+    swing_count = 11
+    swing_range = range(-(swing_count // 2), 1 + swing_count // 2)
+    output_votes = numpy.concatenate(
+        [vectorized_swing(output_votes, a/100).reshape((1, *output_votes.shape)) for a in swing_range],
+        axis=0,
+    )
     
     # Record per-district vote totals and confidence intervals
     copied_districts = copy.deepcopy(upload.districts)
@@ -631,8 +978,8 @@ def calculate_district_biases(upload):
     vote_swings = upload.vote_swings or [0.0] * district_count
     
     for (i, (district, vote_swing)) in enumerate(zip(copied_districts, vote_swings)):
-        red_votes = matrix.dropna(output_votes[i,:,1])
-        blue_votes = matrix.dropna(output_votes[i,:,0])
+        red_votes = matrix.dropna(output_votes[swing_count // 2,i,:,1])
+        blue_votes = matrix.dropna(output_votes[swing_count // 2,i,:,0])
         try:
             district['totals'].update({
                 'Democratic Wins': (blue_votes > red_votes).astype(int).sum() / sim_count,
@@ -656,28 +1003,23 @@ def calculate_district_biases(upload):
             district['number'] = None
             district['vote_swing'] = None
     
-    # For each sim, a list of red votes and a list of blue votes in districts
-    red_votes_blue_votes = [
-        (
-            matrix.dropna(output_votes[:,sim,1]).tolist(),
-            matrix.dropna(output_votes[:,sim,0]).tolist(),
-        )
-        for sim in range(sim_count)
-    ]
-    
-    # Calculate partisanship metrics for all simulations
-    MMDs = [calculate_MMD(r, b) for (r, b) in red_votes_blue_votes]
-    PBs = [calculate_PB(r, b) for (r, b) in red_votes_blue_votes]
-    D2s = [calculate_D2(r, b) for (r, b) in red_votes_blue_votes]
-    D2ds = [calculate_D2_diff(r, b) for (r, b) in red_votes_blue_votes]
-    
+    # Calculate partisanship metrics for all simulations using vectorized functions
+    # Pass (districts, sims, 2) slice at zero swing directly to vectorized functions
+    zero_swing_votes = output_votes[swing_count // 2, :, :, :]
+
+    MMDs = vectorized_MMD(zero_swing_votes).tolist()
+    PBs_vec = vectorized_PB(zero_swing_votes)
+    PBs = PBs_vec.tolist()
+    D2s = vectorized_D2(zero_swing_votes).tolist()
+    D2ds = vectorized_D2_diff(zero_swing_votes).tolist()
+
     # Need <50% simulations with single-party outcomes for valid declination
-    D2_is_valid = len(list(filter(None, D2ds))) > len(red_votes_blue_votes) * .75
+    D2_is_valid = len(list(filter(None, D2ds))) > sim_count * .75
     
     # EG alone also gets a sensitivity test for vote swing scenarios
     EGs = {
-        swing: [calculate_EG(r, b, swing/100) for (r, b) in red_votes_blue_votes]
-        for swing in (0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5)
+        swing: vectorized_EG(output_votes[i,:,:,:]).tolist()
+        for (i, swing) in enumerate(swing_range)
     }
 
     summary_dict = {
