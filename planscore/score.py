@@ -963,28 +963,34 @@ def select_incumbency_scenario(values: numpy.typing.NDArray, incumbents: list[st
     """Select appropriate incumbency scenario per district.
 
     Args:
-        values: Array with incumbency as first dimension, shape (incumbency, ...)
+        values: Array with incumbency as second-last dimension, shape (..., incumbency, districts)
         incumbents: List of incumbency values per district (e.g., ['R', 'D', 'O', ...])
 
     Returns:
         Array with incumbency selected per district.
-        If input shape is (incumbency, ...), output shape is (districts, ...) where
-        districts = len(incumbents).
+        If input shape is (..., incumbency, districts), output shape is (..., districts)
+        where districts = len(incumbents).
 
     Example:
         values shape (3, 4) with incumbents ['R', 'D', 'R', 'D']
         -> output shape (4,) with [values[0, 0], values[2, 1], values[0, 2], values[2, 3]]
     """
     # Validate that first dimension is 3 (for R, O, D incumbency scenarios)
-    assert values.shape[0] == 3, f"Expected 3 incumbency scenarios, got {values.shape[0]}"
+    assert values.shape[-2] == 3, f"Expected 3 incumbency scenarios, got {values.shape[-2]}"
 
     # Validate that second dimension matches number of districts
-    district_count = len(incumbents)
+    district_count = values.shape[-1]
     if len(values.shape) > 1:
-        assert values.shape[1] == district_count, \
-            f"Mismatch: values has {values.shape[1]} districts but {district_count} incumbents provided"
+        assert len(incumbents) == district_count, \
+            f"Mismatch: values has {district_count} districts but {len(incumbents)} incumbents provided"
 
-    return numpy.array([values[INCUMBENCY[inc], i] for i, inc in enumerate(incumbents)])
+    new_values = numpy.zeros((*values.shape[:-2], values.shape[-1]), dtype=values.dtype)
+
+    # Assign incumbents going district-by-district
+    for district, incumbent in enumerate(incumbents):
+        new_values[..., district] = values[..., INCUMBENCY[incumbent], district]
+
+    return new_values
 
 def calculate_district_biases(upload):
     ''' Calculate partisan metrics using district matrix with presidential vote only.
@@ -1063,13 +1069,13 @@ def calculate_district_biases(upload):
     rep_votes = zero_swing_votes[..., 1]
 
     # Vectorized calculations across all incumbency scenarios and districts
-    # Calculate means along sims axis (axis=1): (incumbency, districts)
+    # Calculate means along sims axis (axis=-2): (incumbency, districts)
     # NaN comparisons evaluate to False, so wins only count valid simulation pairs
-    dem_wins = numpy.sum(dem_votes > rep_votes, axis=1) / sim_count
-    dem_votes_mean = numpy.round(numpy.nanmean(dem_votes, axis=1), constants.ROUND_COUNT)
-    rep_votes_mean = numpy.round(numpy.nanmean(rep_votes, axis=1), constants.ROUND_COUNT)
-    dem_votes_std = numpy.round(numpy.nanstd(dem_votes, axis=1, ddof=1), constants.ROUND_COUNT)
-    rep_votes_std = numpy.round(numpy.nanstd(rep_votes, axis=1, ddof=1), constants.ROUND_COUNT)
+    dem_wins = numpy.sum(dem_votes > rep_votes, axis=-2) / sim_count
+    dem_votes_mean = numpy.round(numpy.nanmean(dem_votes, axis=-2), constants.ROUND_COUNT)
+    rep_votes_mean = numpy.round(numpy.nanmean(rep_votes, axis=-2), constants.ROUND_COUNT)
+    dem_votes_std = numpy.round(numpy.nanstd(dem_votes, axis=-2, ddof=1), constants.ROUND_COUNT)
+    rep_votes_std = numpy.round(numpy.nanstd(rep_votes, axis=-2, ddof=1), constants.ROUND_COUNT)
 
     # Select appropriate incumbency scenario per district for JSON output
     # Result arrays have shape (districts,)

@@ -720,6 +720,30 @@ class TestScore (unittest.TestCase):
         self.assertIsNone(score.calculate_D2_diff((1, 2, 3), (4, 5, 6)))
         self.assertEqual(score.calculate_D2_diff((1, 2, 3, 4), (4, 3, 2, 1)), 0)
 
+    def test_select_incumbency_scenario(self):
+        '''
+        '''
+        values1 = numpy.array(range(12)).reshape(3, 4)
+        values2 = score.select_incumbency_scenario(values1, "ORDO")
+        self.assertEqual(values1[1,0].tolist(), values2[0].tolist())
+        self.assertEqual(values1[0,1].tolist(), values2[1].tolist())
+        self.assertEqual(values1[2,2].tolist(), values2[2].tolist())
+        self.assertEqual(values1[1,3].tolist(), values2[3].tolist())
+
+        values3 = numpy.array(range(24)).reshape(2, 3, 4)
+        values4 = score.select_incumbency_scenario(values3, "ORDO")
+        self.assertEqual(values3[:,1,0].tolist(), values4[:,0].tolist())
+        self.assertEqual(values3[:,0,1].tolist(), values4[:,1].tolist())
+        self.assertEqual(values3[:,2,2].tolist(), values4[:,2].tolist())
+        self.assertEqual(values3[:,1,3].tolist(), values4[:,3].tolist())
+
+        values5 = numpy.array(range(24)).reshape(1, 2, 3, 4)
+        values6 = score.select_incumbency_scenario(values5, "ORDO")
+        self.assertEqual(values5[:,:,1,0].tolist(), values6[:,:,0].tolist())
+        self.assertEqual(values5[:,:,0,1].tolist(), values6[:,:,1].tolist())
+        self.assertEqual(values5[:,:,2,2].tolist(), values6[:,:,2].tolist())
+        self.assertEqual(values5[:,:,1,3].tolist(), values6[:,:,3].tolist())
+
     def test_vectorized_D2_diff(self):
         ''' D2 diff is correctly calculated for vectorized multi-sim numpy arrays
         '''
