@@ -974,38 +974,45 @@ def calculate_district_biases(upload):
     copied_districts = copy.deepcopy(upload.districts)
     district_number = itertools.count(1)
     vote_swings = upload.vote_swings or [0.0] * district_count
+    zero_swing = swing_count // 2
+
+    # Extract zero-swing votes for all districts: (sim_count, district_count, 2)
+    zero_swing_votes = output_votes[zero_swing, :, :, :]
+    dem_votes, rep_votes = zero_swing_votes[:, :, 0], zero_swing_votes[:, :, 1]
+
+    # Vectorized calculations across all districts
+    # NaN comparisons evaluate to False, so wins only count valid simulation pairs
+    dem_wins = numpy.sum(dem_votes > rep_votes, axis=0) / sim_count
+    dem_votes_mean = numpy.round(numpy.nanmean(dem_votes, axis=0), constants.ROUND_COUNT)
+    rep_votes_mean = numpy.round(numpy.nanmean(rep_votes, axis=0), constants.ROUND_COUNT)
+    dem_votes_std = numpy.round(numpy.nanstd(dem_votes, axis=0, ddof=1), constants.ROUND_COUNT)
+    rep_votes_std = numpy.round(numpy.nanstd(rep_votes, axis=0, ddof=1), constants.ROUND_COUNT)
+
+    # Identify districts with valid data (nanmean returns nan when all values are nan)
+    valid_mask = ~numpy.isnan(dem_votes_mean)
 
     for (i, (district, vote_swing)) in enumerate(zip(copied_districts, vote_swings)):
-        # Extract district i across all sims: output_votes is (swing_count, sim_count, district_count, 2)
-        red_votes = matrix.dropna(output_votes[swing_count // 2, :, i, 1])
-        blue_votes = matrix.dropna(output_votes[swing_count // 2, :, i, 0])
-        try:
-            district['totals'].update({
-                'Democratic Wins': (blue_votes > red_votes).astype(int).sum() / sim_count,
-                'Democratic Votes': round(statistics.mean(blue_votes), constants.ROUND_COUNT),
-                'Republican Votes': round(statistics.mean(red_votes), constants.ROUND_COUNT),
-                'Democratic Votes SD': round(statistics.stdev(blue_votes), constants.ROUND_COUNT),
-                'Republican Votes SD': round(statistics.stdev(red_votes), constants.ROUND_COUNT)
-                })
+        if valid_mask[i]:
+            district['totals']['Democratic Wins'] = float(dem_wins[i])
+            district['totals']['Democratic Votes'] = float(dem_votes_mean[i])
+            district['totals']['Republican Votes'] = float(rep_votes_mean[i])
+            district['totals']['Democratic Votes SD'] = float(dem_votes_std[i])
+            district['totals']['Republican Votes SD'] = float(rep_votes_std[i])
             district['is_counted'] = True
             district['number'] = next(district_number)
             district['vote_swing'] = vote_swing
-        except statistics.StatisticsError:
-            district['totals'].update({
-                'Democratic Wins': None,
-                'Democratic Votes': None,
-                'Republican Votes': None,
-                'Democratic Votes SD': None,
-                'Republican Votes SD': None,
-                })
+        else:
+            district['totals']['Democratic Wins'] = None
+            district['totals']['Democratic Votes'] = None
+            district['totals']['Republican Votes'] = None
+            district['totals']['Democratic Votes SD'] = None
+            district['totals']['Republican Votes SD'] = None
             district['is_counted'] = False
             district['number'] = None
             district['vote_swing'] = None
-    
-    # Calculate partisanship metrics for all simulations using vectorized functions
-    # Pass (sim_count, district_count, 2) slice at zero swing directly to vectorized functions
-    zero_swing_votes = output_votes[swing_count // 2, :, :, :]
 
+    # Calculate partisanship metrics for all simulations using vectorized functions
+    # Reuse zero_swing_votes extracted above for district statistics
     MMDs = vectorized_MMD(zero_swing_votes).tolist()
     PBs_vec = vectorized_PB(zero_swing_votes)
     PBs = PBs_vec.tolist()
