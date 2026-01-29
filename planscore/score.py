@@ -133,7 +133,7 @@ def vectorized_swing(votes:numpy.typing.NDArray, amount:float) -> numpy.typing.N
     ''' Swing the vote by a percentage, positive toward blue, using vectorized operations.
 
         Input array shape is (districts, sims, dem/rep votes)
-        Convention: votes[:,:,0] = blue (Democratic), votes[:,:,1] = red (Republican)
+        Convention: votes[:,:,0] = blue, votes[:,:,1] = red
         Returns array of same shape with swung votes.
     '''
     if amount == 0:
@@ -152,8 +152,8 @@ def vectorized_swing(votes:numpy.typing.NDArray, amount:float) -> numpy.typing.N
 
     # Apply swing: increase blue share by amount, decrease red share by amount
     swung_shares = shares.copy()
-    swung_shares[:, :, 0] += amount  # Blue (Democratic) gets +amount
-    swung_shares[:, :, 1] -= amount  # Red (Republican) gets -amount
+    swung_shares[:, :, 0] += amount  # Blue gets +amount
+    swung_shares[:, :, 1] -= amount  # Red gets -amount
 
     # Convert shares back to vote counts
     swung_votes = swung_shares * totals
@@ -312,7 +312,7 @@ def vectorized_EG(votes:numpy.typing.NDArray, vote_swing:float=0) -> numpy.typin
     ''' Calculate Efficiency Gap for vectorized multi-sim numpy arrays.
 
         Input array shape is (districts, sims, dem/rep votes)
-        Convention: votes[:,:,0] = blue (Democratic), votes[:,:,1] = red (Republican)
+        Convention: votes[:,:,0] = blue, votes[:,:,1] = red
         Returns 1D array of shape (sims,) with EG score for each simulation.
 
         By convention, result is positive for blue and negative for red.
@@ -409,7 +409,7 @@ def vectorized_MMD(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
     ''' Calculate Mean-Median for vectorized multi-sim numpy arrays.
 
         Input array shape is (districts, sims, dem/rep votes)
-        Convention: votes[:,:,0] = blue (Democratic), votes[:,:,1] = red (Republican)
+        Convention: votes[:,:,0] = blue, votes[:,:,1] = red
         Returns 1D array of shape (sims,) with MMD score for each simulation.
 
         By convention, result is positive for blue and negative for red.
@@ -469,7 +469,7 @@ def vectorized_PB(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
     ''' Calculate Partisan Bias for vectorized multi-sim numpy arrays.
 
         Input array shape is (districts, sims, dem/rep votes)
-        Convention: votes[:,:,0] = blue (Democratic), votes[:,:,1] = red (Republican)
+        Convention: votes[:,:,0] = blue, votes[:,:,1] = red
         Returns 1D array of shape (sims,) with PB score for each simulation.
 
         By convention, result is positive for blue and negative for red.
@@ -595,7 +595,7 @@ def vectorized_D2(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
     ''' Calculate Declination (D2) for vectorized multi-sim numpy arrays.
 
         Input array shape is (districts, sims, dem/rep votes)
-        Convention: votes[:,:,0] = blue (Democratic), votes[:,:,1] = red (Republican)
+        Convention: votes[:,:,0] = blue, votes[:,:,1] = red
         Returns 1D array of shape (sims,) with D2 score for each simulation.
 
         By convention, result is positive for blue and negative for red.
@@ -685,7 +685,7 @@ def vectorized_D2_diff(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
     ''' Calculate vote share difference for vectorized multi-sim numpy arrays.
 
         Input array shape is (districts, sims, dem/rep votes)
-        Convention: votes[:,:,0] = blue (Democratic), votes[:,:,1] = red (Republican)
+        Convention: votes[:,:,0] = blue, votes[:,:,1] = red
         Returns 1D array of shape (sims,) with diff for each simulation.
         Returns NaN when only one party wins all seats.
 
