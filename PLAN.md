@@ -6,7 +6,7 @@
 - The Recommended sequence of work, repeated below, looks like:
     1. ✅ Add `INCUMBENCY` constant to score.py (after line 26) - COMPLETED
     2. ✅ Modify `model_votes()` to generate all 3 incumbency scenarios in order [-1, 0, 1] - COMPLETED
-    3. Add incumbency selection logic to `calculate_district_biases()` using `INCUMBENCY`
+    3. ✅ Add incumbency selection logic to `calculate_district_biases()` using `INCUMBENCY` - COMPLETED
     4. Update all test mocks to use `(incumbency, sims, districts, 2)` shape
     5. Update test assertions in `test_model_votes()` to verify 3 scenarios exist
     6. Update test assertions in `test_calculate_gap_unified_incumbents()` to verify correct selection

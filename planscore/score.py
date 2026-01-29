@@ -986,6 +986,21 @@ def calculate_district_biases(upload):
         ),
         upload.vote_swings,
     )
+    # output_votes shape is now (incumbency, sims, districts, 2)
+
+    # Select appropriate incumbency scenario per district
+    incumbency_count, sim_count, district_count, _ = output_votes.shape
+
+    # Select the correct incumbency scenario for each district using INCUMBENCY
+    selected_votes = numpy.zeros((sim_count, district_count, 2))
+    for i, incumbency in enumerate(upload.incumbents):
+        idx = INCUMBENCY[incumbency]
+        selected_votes[:, i, :] = output_votes[idx, :, i, :]
+
+    # Continue with selected votes
+    output_votes = selected_votes
+    # output_votes shape is now back to (sims, districts, 2)
+
     sim_count, district_count, _ = output_votes.shape
 
     # Reshape so first axis can be swing amount, then expand to 11 swings
