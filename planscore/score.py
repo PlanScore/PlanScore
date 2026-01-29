@@ -235,6 +235,26 @@ def safe_positives(values):
     epsilon = 1e-10
     return len([n for n in safe_values if n > epsilon]) / len(safe_values)
 
+def np_safe_mean(arr):
+    '''Compute mean of numpy array, ignoring NaN values'''
+    if not numpy.any(~numpy.isnan(arr)):
+        return None
+    return numpy.nanmean(arr).item()
+
+def np_safe_stdev(arr):
+    '''Compute standard deviation of numpy array, ignoring NaN values'''
+    if numpy.sum(~numpy.isnan(arr)) < 2:
+        return None
+    return numpy.nanstd(arr, ddof=1).item()
+
+def np_safe_positives(arr):
+    '''Compute proportion of positive values in numpy array, ignoring NaN'''
+    valid_mask = ~numpy.isnan(arr)
+    if not numpy.any(valid_mask):
+        return None
+    epsilon = 1e-10
+    return (numpy.sum(arr[valid_mask] > epsilon) / numpy.sum(valid_mask)).item()
+
 def percentrank_abs(column, house, value):
     '''
     '''
@@ -1012,52 +1032,50 @@ def calculate_district_biases(upload):
             district['vote_swing'] = None
 
     # Calculate partisanship metrics for all simulations using vectorized functions
-    # Reuse zero_swing_votes extracted above for district statistics
-    MMDs = vectorized_MMD(zero_swing_votes).tolist()
-    PBs_vec = vectorized_PB(zero_swing_votes)
-    PBs = PBs_vec.tolist()
-    D2s = vectorized_D2(zero_swing_votes).tolist()
-    D2ds = vectorized_D2_diff(zero_swing_votes).tolist()
+    MMDs = vectorized_MMD(zero_swing_votes)
+    PBs = vectorized_PB(zero_swing_votes)
+    D2s = vectorized_D2(zero_swing_votes)
+    D2ds = vectorized_D2_diff(zero_swing_votes)
 
     # Need <50% simulations with single-party outcomes for valid declination
     D2_is_valid = len(list(filter(None, D2ds))) > sim_count * .75
 
     # EG alone also gets a sensitivity test for vote swing scenarios
     EGs = {
-        swing: vectorized_EG(output_votes[i, :, :, :]).tolist()
+        swing: vectorized_EG(output_votes[i, :, :, :])
         for (i, swing) in enumerate(swing_range)
     }
 
     summary_dict = {
-        'Mean-Median': safe_mean(MMDs),
-        'Mean-Median SD': safe_stdev(MMDs),
-        'Mean-Median Positives': safe_positives(MMDs),
-        'Mean-Median Absolute Percent Rank': percentrank_abs(COLUMN_MMD, upload.model.house, safe_mean(MMDs)),
-        'Mean-Median Relative Percent Rank': percentrank_rel(COLUMN_MMD, upload.model.house, safe_mean(MMDs)),
-        'Partisan Bias': safe_mean(PBs),
-        'Partisan Bias SD': safe_stdev(PBs),
-        'Partisan Bias Positives': safe_positives(PBs),
-        'Partisan Bias Absolute Percent Rank': percentrank_abs(COLUMN_PB, upload.model.house, safe_mean(PBs)),
-        'Partisan Bias Relative Percent Rank': percentrank_rel(COLUMN_PB, upload.model.house, safe_mean(PBs)),
-        'Declination': safe_mean(D2s),
-        'Declination SD': safe_stdev(D2s),
-        'Declination Positives': safe_positives(D2s),
+        'Mean-Median': np_safe_mean(MMDs),
+        'Mean-Median SD': np_safe_stdev(MMDs),
+        'Mean-Median Positives': np_safe_positives(MMDs),
+        'Mean-Median Absolute Percent Rank': percentrank_abs(COLUMN_MMD, upload.model.house, np_safe_mean(MMDs)),
+        'Mean-Median Relative Percent Rank': percentrank_rel(COLUMN_MMD, upload.model.house, np_safe_mean(MMDs)),
+        'Partisan Bias': np_safe_mean(PBs),
+        'Partisan Bias SD': np_safe_stdev(PBs),
+        'Partisan Bias Positives': np_safe_positives(PBs),
+        'Partisan Bias Absolute Percent Rank': percentrank_abs(COLUMN_PB, upload.model.house, np_safe_mean(PBs)),
+        'Partisan Bias Relative Percent Rank': percentrank_rel(COLUMN_PB, upload.model.house, np_safe_mean(PBs)),
+        'Declination': np_safe_mean(D2s),
+        'Declination SD': np_safe_stdev(D2s),
+        'Declination Positives': np_safe_positives(D2s),
         'Declination Is Valid': D2_is_valid,
-        'Declination Absolute Percent Rank': percentrank_abs(COLUMN_D2, upload.model.house, safe_mean(D2s)),
-        'Declination Relative Percent Rank': percentrank_rel(COLUMN_D2, upload.model.house, safe_mean(D2s)),
-        'Efficiency Gap': safe_mean(EGs[0]),
-        'Efficiency Gap SD': safe_stdev(EGs[0]),
-        'Efficiency Gap Positives': safe_positives(EGs[0]),
-        'Efficiency Gap Absolute Percent Rank': percentrank_abs(COLUMN_EG, upload.model.house, safe_mean(EGs[0])),
-        'Efficiency Gap Relative Percent Rank': percentrank_rel(COLUMN_EG, upload.model.house, safe_mean(EGs[0])),
+        'Declination Absolute Percent Rank': percentrank_abs(COLUMN_D2, upload.model.house, np_safe_mean(D2s)),
+        'Declination Relative Percent Rank': percentrank_rel(COLUMN_D2, upload.model.house, np_safe_mean(D2s)),
+        'Efficiency Gap': np_safe_mean(EGs[0]),
+        'Efficiency Gap SD': np_safe_stdev(EGs[0]),
+        'Efficiency Gap Positives': np_safe_positives(EGs[0]),
+        'Efficiency Gap Absolute Percent Rank': percentrank_abs(COLUMN_EG, upload.model.house, np_safe_mean(EGs[0])),
+        'Efficiency Gap Relative Percent Rank': percentrank_rel(COLUMN_EG, upload.model.house, np_safe_mean(EGs[0])),
     }
     
     for swing in (1, 2, 3, 4, 5):
         summary_dict.update({
-            f'Efficiency Gap +{swing} Dem': safe_mean(EGs[swing]),
-            f'Efficiency Gap +{swing} Rep': safe_mean(EGs[-swing]),
-            f'Efficiency Gap +{swing} Dem SD': safe_stdev(EGs[swing]),
-            f'Efficiency Gap +{swing} Rep SD': safe_stdev(EGs[-swing]),
+            f'Efficiency Gap +{swing} Dem': np_safe_mean(EGs[swing]),
+            f'Efficiency Gap +{swing} Rep': np_safe_mean(EGs[-swing]),
+            f'Efficiency Gap +{swing} Dem SD': np_safe_stdev(EGs[swing]),
+            f'Efficiency Gap +{swing} Rep SD': np_safe_stdev(EGs[-swing]),
         })
 
     return upload.clone(districts=copied_districts, summary=summary_dict)
