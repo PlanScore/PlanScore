@@ -1073,6 +1073,7 @@ def calculate_district_biases(upload):
         upload.model.house,
         matrix.filter_district_data(matrix.prepare_district_data(upload)),
     )
+    print("model_output.shape:", model_output.shape, "=", model_output.size, "cells")
     # model_output shape is (incumbency=4, sims, districts, 2)
 
     # Apply per-district vote swings to all incumbency scenarios
