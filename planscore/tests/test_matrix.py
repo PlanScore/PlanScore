@@ -296,11 +296,7 @@ class TestMatrix (unittest.TestCase):
             '2025B',
             data.State.NC,
             data.House.ushouse,
-            [
-                (4, 6, 'R'),
-                (5, 5, 'O'),
-                (6, 4, 'D'),
-            ],
+            [(4, 6), (5, 5), (6, 4)],
         )
 
         # Verify apply_model was called 3 times (once per incumbency scenario)
@@ -354,10 +350,7 @@ class TestMatrix (unittest.TestCase):
             '2025B',
             data.State.NC,
             data.House.ushouse,
-            [
-                (4, 6, 'R'),
-                (0, 0, 'O'),
-            ],
+            [(4, 6), (0, 0)],
         )
 
         # Verify apply_model was called 3 times (once per incumbency scenario)
@@ -408,10 +401,10 @@ class TestMatrix (unittest.TestCase):
                 ])
         
         output = matrix.prepare_district_data(input)
-        self.assertEqual(output[0], (6.0, 2.0, 'O'))
-        self.assertEqual(output[1], (5.0, 3.0, 'O'))
-        self.assertEqual(output[2], (3.0, 5.0, 'O'))
-        self.assertEqual(output[3], (2.0, 6.0, 'O'))
+        self.assertEqual(output[0], (6.0, 2.0))
+        self.assertEqual(output[1], (5.0, 3.0))
+        self.assertEqual(output[2], (3.0, 5.0))
+        self.assertEqual(output[3], (2.0, 6.0))
     
     def test_prepare_district_data_2025B_version(self):
         input = data.Upload(id=None, key=None,
@@ -425,10 +418,10 @@ class TestMatrix (unittest.TestCase):
                 ])
         
         output = matrix.prepare_district_data(input)
-        self.assertEqual(output[0], (5.0, 3.0, 'O'))
-        self.assertEqual(output[1], (4.0, 4.0, 'O'))
-        self.assertEqual(output[2], (2.0, 6.0, 'O'))
-        self.assertEqual(output[3], (1.0, 7.0, 'O'))
+        self.assertEqual(output[0], (5.0, 3.0))
+        self.assertEqual(output[1], (4.0, 4.0))
+        self.assertEqual(output[2], (2.0, 6.0))
+        self.assertEqual(output[3], (1.0, 7.0))
     
     def test_prepare_district_data_default_version(self):
         input = data.Upload(id=None, key=None,
@@ -442,29 +435,29 @@ class TestMatrix (unittest.TestCase):
                 ])
         
         output = matrix.prepare_district_data(input)
-        self.assertEqual(output[0], (6.0, 2.0, 'O'))
-        self.assertEqual(output[1], (5.0, 3.0, 'O'))
-        self.assertEqual(output[2], (3.0, 5.0, 'O'))
-        self.assertEqual(output[3], (2.0, 6.0, 'O'))
+        self.assertEqual(output[0], (6.0, 2.0))
+        self.assertEqual(output[1], (5.0, 3.0))
+        self.assertEqual(output[2], (3.0, 5.0))
+        self.assertEqual(output[3], (2.0, 6.0))
     
     def test_filter_district_data(self):
-        data1 = [(5.86, 2.14, 'O'), (4.95, 3.05, 'O'), (3.13, 4.87, 'O'), (2.22, 5.78, 'O')]
+        data1 = [(5.86, 2.14), (4.95, 3.05), (3.13, 4.87), (2.22, 5.78)]
         data2 = matrix.filter_district_data(data1)
         for (d1, d2) in zip(data1, data2):
             self.assertEqual(d1, d2)
 
-        data3 = [(5.86, 2.14, 'O'), (4.95, 3.05, 'O'), (3.13, 4.87, 'O'), (2.22, 5.78, 'O'), (0, 0, 'O')]
+        data3 = [(5.86, 2.14), (4.95, 3.05), (3.13, 4.87), (2.22, 5.78), (0, 0)]
         data4 = matrix.filter_district_data(data3)
         for (d3, d4) in zip(data3, data4):
             self.assertEqual(d3, d4)
 
-        data5 = [(5.86, 2.14, 'O'), (4.95, 3.05, 'O'), (3.13, 4.87, 'O'), (2.22, 5.78, 'O'), (.1, .1, 'O')]
+        data5 = [(5.86, 2.14), (4.95, 3.05), (3.13, 4.87), (2.22, 5.78), (.1, .1)]
         data6 = matrix.filter_district_data(data5)
         for (d5, d6) in zip(data5, data6[:4]):
             self.assertEqual(d5, d6)
-        self.assertEqual(data6[4], (0, 0, 'O'), 'Should see zeros at the end')
+        self.assertEqual(data6[4], (0, 0), 'Should see zeros at the end')
 
-        data7 = [(10, 10, 'O'), (10, 10, 'O'), (10, 10, 'O'), (10, 10, 'O'), (10, 10, 'O')]
+        data7 = [(10, 10), (10, 10), (10, 10), (10, 10), (10, 10)]
         data8 = matrix.filter_district_data(data7)
         for (d7, d8) in zip(data7, data8):
             self.assertEqual(d7, d8)

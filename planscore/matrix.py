@@ -166,25 +166,23 @@ def model_votes(model_version, state, house, districts):
         model_version is a string like '2021D' from data.VERSION_PARAMETERS.
         state is from data.State enum.
         house is from data.House enum.
-        districts is an array of three-element tuples:
+        districts is an array of two-element tuples:
         - Input Democratic vote count
         - Input Republican vote count
-        - Incumbency: "O" for open, "R", or "D" (ignored, all scenarios generated)
 
         Return is an IxSxDx2 matrix where first dimension is incumbency scenario
         (Republican=-1, Open=0, Democrat=1), S simulations, D districts, and Dem/Rep parties.
     '''
     params = data.VERSION_PARAMETERS[model_version]
 
-    has_incumbents = bool({inc for (_, _, inc) in districts} != {'O'})
     is_congress = bool(house == data.House.ushouse)
 
     all_fractions = []
 
     for _, inc_value in INCUMBENCY:
         fractions = apply_model(
-            [(dem / ((dem + rep) or numpy.nan), inc_value) for (dem, rep, _) in districts],
-            load_model(params.path_suffix, STATE[state], params.year, has_incumbents, is_congress),
+            [(dem / ((dem + rep) or numpy.nan), inc_value) for (dem, rep) in districts],
+            load_model(params.path_suffix, STATE[state], params.year, False, is_congress),
             params,
         )
         all_fractions.append(fractions)
@@ -193,7 +191,7 @@ def model_votes(model_version, state, house, districts):
     all_fractions = numpy.stack(all_fractions, axis=0)
 
     # Create SxD scale array (same for all incumbency scenarios)
-    total_votes = sum([dem + rep for (dem, rep, _) in districts])
+    total_votes = sum([dem + rep for (dem, rep) in districts])
     one_district_votes = total_votes / len(districts)
     scale = numpy.full(all_fractions.shape[1:], one_district_votes)  # (sims, districts)
 
@@ -204,14 +202,14 @@ def model_votes(model_version, state, house, districts):
 
     return votes
 
-def prepare_district_data(upload) -> list[tuple[float, float, str]]:
+def prepare_district_data(upload) -> list[tuple[float, float]]:
     ''' Simple presidential vote input for model_votes()
     '''
     params = data.VERSION_PARAMETERS[upload.model_version or upload.model.versions[0]]
     
     out_data = []
     
-    for (district, incumbency) in zip(upload.districts, upload.incumbents):
+    for district in upload.districts:
         for year in data.PRESIDENTIAL_YEARS:
             dem_key = f'US President {year} - DEM'
             rep_key = f'US President {year} - REP'
@@ -224,7 +222,6 @@ def prepare_district_data(upload) -> list[tuple[float, float, str]]:
                 out_data.append((
                     round(total * pvote, 7),
                     round(total * (1 - pvote), 7),
-                    incumbency,
                 ))
                 break
         else:
@@ -232,7 +229,7 @@ def prepare_district_data(upload) -> list[tuple[float, float, str]]:
     
     return out_data
 
-def filter_district_data(prepared_data: list[tuple[float, float, str]]) -> list[tuple[float, float, str]]:
+def filter_district_data(prepared_data: list[tuple[float, float]]) -> list[tuple[float, float]]:
     ''' Set to zero any district with votes 90% below mean()
     '''
     district_sums = numpy.array(prepared_data)[:,:2].astype(float).sum(axis=1)
@@ -242,9 +239,8 @@ def filter_district_data(prepared_data: list[tuple[float, float, str]]) -> list[
         (
             blue_votes if high_enough else 0,
             red_votes if high_enough else 0,
-            incumbency,
         )
-        for ((blue_votes, red_votes, incumbency), high_enough)
+        for ((blue_votes, red_votes), high_enough)
         in zip(prepared_data, district_sums >= district_cutoff)
     ]
     

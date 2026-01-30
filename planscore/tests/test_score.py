@@ -1647,12 +1647,12 @@ class TestScore (unittest.TestCase):
             ],
         ])
         score.calculate_everything(input)
-        # Verify the call to model_votes still includes incumbency data for proper filtering
+        # Verify the call to model_votes excludes incumbency data
         self.assertEqual(model_votes.mock_calls[0][1][:2], ('2025A', data.State.XX))
-        self.assertEqual(model_votes.mock_calls[0][1][3][0], (6.0, 2.0, 'R'))
-        self.assertEqual(model_votes.mock_calls[0][1][3][1], (5.0, 3.0, 'D'))
-        self.assertEqual(model_votes.mock_calls[0][1][3][2], (3.0, 5.0, 'R'))
-        self.assertEqual(model_votes.mock_calls[0][1][3][3], (2.0, 6.0, 'D'))
+        self.assertEqual(model_votes.mock_calls[0][1][3][0], (6.0, 2.0))
+        self.assertEqual(model_votes.mock_calls[0][1][3][1], (5.0, 3.0))
+        self.assertEqual(model_votes.mock_calls[0][1][3][2], (3.0, 5.0))
+        self.assertEqual(model_votes.mock_calls[0][1][3][3], (2.0, 6.0))
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
@@ -1775,10 +1775,10 @@ class TestScore (unittest.TestCase):
         self.assertIsNone(output.districts[4]['number'], 'Should not count empty 5th district')
         
         self.assertEqual(model_votes.mock_calls[0][1][:2], ('2025A', data.State.XX))
-        self.assertEqual(model_votes.mock_calls[0][1][3][0], (6.0, 2.0, 'O'))
-        self.assertEqual(model_votes.mock_calls[0][1][3][1], (5.0, 3.0, 'O'))
-        self.assertEqual(model_votes.mock_calls[0][1][3][2], (3.0, 5.0, 'O'))
-        self.assertEqual(model_votes.mock_calls[0][1][3][3], (2.0, 6.0, 'O'))
+        self.assertEqual(model_votes.mock_calls[0][1][3][0], (6.0, 2.0))
+        self.assertEqual(model_votes.mock_calls[0][1][3][1], (5.0, 3.0))
+        self.assertEqual(model_votes.mock_calls[0][1][3][2], (3.0, 5.0))
+        self.assertEqual(model_votes.mock_calls[0][1][3][3], (2.0, 6.0))
 
         self.assertEqual(output.summary['Mean-Median'], 0)
         # Verify vectorized_MMD was called with correct array shape (including NaN district)
