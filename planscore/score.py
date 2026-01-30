@@ -1051,10 +1051,6 @@ def vectorized_vote_statistics(all_votes: numpy.typing.NDArray) -> numpy.typing.
         [dem_votes_mean, dem_votes_std, dem_wins, rep_votes_mean, rep_votes_std, 1 - dem_wins],
         axis=3
     ).reshape((*leading_dims, district_count, party_count, 3))
-    print("vote_stats.shape:", vote_stats.shape)
-    print("vote_stats[0,0,0]:", vote_stats[0,0,0])
-    print("vote_stats[0,0,0,0]:", vote_stats[0,0,0,0], "Dem mean/std/wins")
-    print("vote_stats[0,0,0,1]:", vote_stats[0,0,0,1], "Rep mean/std/wins")
 
     return vote_stats
 
@@ -1124,7 +1120,27 @@ def calculate_district_biases(upload):
     )
     # all_votes shape is now (swing_count=11, incumbency=4, sims, districts, 2)
     vote_stats = vectorized_vote_statistics(all_votes)
+    print("vote_stats.shape:", vote_stats.shape, "=", vote_stats.size, "cells")
     # vote_stats shape is now (swing_count=11, incumbency=4, sims, districts, 2, 3)
+
+    vote_stats_base = vote_stats[0, 0, ...]
+    vote_stats_diff = vote_stats - numpy.full(vote_stats.shape, vote_stats_base)
+    vote_stats_diff[0, 0] = vote_stats_base
+
+    print("dimension 0, vote swings:", vote_stats_diff.shape[0], list(swing_range))
+    print("dimension 1, incumbency:", vote_stats_diff.shape[1], list(INCUMBENCY.keys()))
+    print("dimension 2, district:", vote_stats_diff.shape[2])
+    print("dimension 3, party:", vote_stats_diff.shape[3], ("Dem", "Rep"))
+    print("dimension 4, stat:", vote_stats_diff.shape[4])
+
+    vote_stats_diff[..., :2] = vote_stats_diff[..., :2].round(1)
+    vote_stats_diff[..., 2] = vote_stats_diff[..., 2].round(3)
+
+    print("Dem Votes:", vote_stats_diff[:, :, :, 0, 0].tolist())
+    print("Dem Votes SD:", vote_stats_diff[:, :, :, 0, 1].tolist())
+    print("Rep Votes:", vote_stats_diff[:, :, :, 1, 0].tolist())
+    print("Rep Votes SD:", vote_stats_diff[:, :, :, 1, 1].tolist())
+    print("Dem Wins:", vote_stats_diff[:, :, :, 0, 2].tolist())
 
     # -------- Extract main chosen scenario from amongst alternatives --------
 
