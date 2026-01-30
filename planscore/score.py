@@ -956,40 +956,40 @@ def calculate_biases(upload):
     rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
     return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
 
-def select_incumbency_aggregate(values: numpy.typing.NDArray, incumbents: list[str]) -> numpy.typing.NDArray:
-    """Select appropriate incumbency scenario per district aggregate.
+def select_incumbency_stats(values: numpy.typing.NDArray, incumbents: list[str]) -> numpy.typing.NDArray:
+    """Select appropriate incumbency scenario per district stats.
 
     Args:
-        values: Array with incumbency as second-last dimension, shape (..., incumbency, districts)
+        values: Array with incumbency as fourth-last dimension, shape (..., incumbency, districts, parties, stats)
         incumbents: List of incumbency values per district (e.g., ['R', 'D', 'O', ...])
 
     Returns:
-        Array with incumbency selected per district.
-        If input shape is (..., incumbency, districts), output shape is (..., districts)
+        Array with incumbency selected per district and vote scenario.
+        If input shape is (..., incumbency, districts, votes, stats), output shape is (..., districts, parties, stats)
         where districts = len(incumbents).
 
     Example:
-        values shape (3, 4) with incumbents ['R', 'D', 'R', 'D']
-        -> output shape (4,) with [values[0, 0], values[2, 1], values[0, 2], values[2, 3]]
+        values shape (3, 4, 5, 6) with incumbents ['R', 'D', 'R', 'D']
+        -> output shape (4, 5, 6)
     """
-    # Validate that second-last dimension is 4 (for R, O, D incumbency scenarios)
-    assert values.shape[-2] == 4, f"Expected 4 incumbency scenarios, got {values.shape[-2]}"
+    # Validate that fourth-last dimension is 4 (for R, O, D incumbency scenarios)
+    assert values.shape[-4] == 4, f"Expected 4 incumbency scenarios, got {values.shape[-4]}"
 
     # Map Open to Undefined if exclusively open
     if all(c == data.Incumbency.Open.value for c in incumbents):
         incumbents = [data.Incumbency.Undefined.value for c in incumbents]
 
     # Validate that second dimension matches number of districts
-    district_count = values.shape[-1]
+    district_count = values.shape[-3]
     if len(values.shape) > 1:
         assert len(incumbents) == district_count, \
             f"Mismatch: values has {district_count} districts but {len(incumbents)} incumbents provided"
 
-    new_values = numpy.zeros((*values.shape[:-2], values.shape[-1]), dtype=values.dtype)
+    new_values = numpy.zeros((*values.shape[:-4], *values.shape[-3:]), dtype=values.dtype)
 
     # Assign incumbents going district-by-district
     for district, incumbent in enumerate(incumbents):
-        new_values[..., district] = values[..., INCUMBENCY[incumbent], district]
+        new_values[..., district, :, :] = values[..., INCUMBENCY[incumbent], district, :, :]
 
     return new_values
 
@@ -1130,11 +1130,12 @@ def calculate_district_biases(upload):
 
     # Select appropriate incumbency scenario per district for JSON output
     # Result arrays have shape (districts,)
-    chosen_dem_votes_mean = select_incumbency_aggregate(vote_stats[z,...,0,0], upload.incumbents)
-    chosen_rep_votes_mean = select_incumbency_aggregate(vote_stats[z,...,1,0], upload.incumbents)
-    chosen_dem_votes_std = select_incumbency_aggregate(vote_stats[z,...,0,1], upload.incumbents)
-    chosen_rep_votes_std = select_incumbency_aggregate(vote_stats[z,...,1,1], upload.incumbents)
-    chosen_dem_wins = select_incumbency_aggregate(vote_stats[z,...,0,2], upload.incumbents)
+    chosen_stats = select_incumbency_stats(vote_stats[z], upload.incumbents)
+    chosen_dem_votes_mean = chosen_stats[...,0,0]
+    chosen_rep_votes_mean = chosen_stats[...,1,0]
+    chosen_dem_votes_std = chosen_stats[...,0,1]
+    chosen_rep_votes_std = chosen_stats[...,1,1]
+    chosen_dem_wins = chosen_stats[...,0,2]
 
     # Select appropriate incumbency scenario per output vote
     # chosen_votes has shape (sims, districts, 2)

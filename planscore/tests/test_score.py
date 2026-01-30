@@ -720,29 +720,32 @@ class TestScore (unittest.TestCase):
         self.assertIsNone(score.calculate_D2_diff((1, 2, 3), (4, 5, 6)))
         self.assertEqual(score.calculate_D2_diff((1, 2, 3, 4), (4, 3, 2, 1)), 0)
 
-    def test_select_incumbency_aggregate(self):
+    def test_select_incumbency_stats(self):
         '''
         '''
-        values1 = numpy.array(range(16)).reshape(4, 4)
-        values2 = score.select_incumbency_aggregate(values1, "ORDO")
-        self.assertEqual(values1[0,0].tolist(), values2[0].tolist())
-        self.assertEqual(values1[2,1].tolist(), values2[1].tolist())
-        self.assertEqual(values1[1,2].tolist(), values2[2].tolist())
-        self.assertEqual(values1[0,3].tolist(), values2[3].tolist())
+        values1 = numpy.array(range(120)).reshape(4, 5, 2, 3)
+        values2 = score.select_incumbency_stats(values1, "ORDOR")
+        self.assertEqual(values1[0,0,:,:].tolist(), values2[0,:,:].tolist())
+        self.assertEqual(values1[2,1,:,:].tolist(), values2[1,:,:].tolist())
+        self.assertEqual(values1[1,2,:,:].tolist(), values2[2,:,:].tolist())
+        self.assertEqual(values1[0,3,:,:].tolist(), values2[3,:,:].tolist())
+        self.assertEqual(values1[2,4,:,:].tolist(), values2[4,:,:].tolist())
 
-        values3 = numpy.array(range(32)).reshape(2, 4, 4)
-        values4 = score.select_incumbency_aggregate(values3, "ORDO")
-        self.assertEqual(values3[:,0,0].tolist(), values4[:,0].tolist())
-        self.assertEqual(values3[:,2,1].tolist(), values4[:,1].tolist())
-        self.assertEqual(values3[:,1,2].tolist(), values4[:,2].tolist())
-        self.assertEqual(values3[:,0,3].tolist(), values4[:,3].tolist())
+        values3 = numpy.array(range(240)).reshape(2, 4, 5, 2, 3)
+        values4 = score.select_incumbency_stats(values3, "ORDOR")
+        self.assertEqual(values3[:,0,0,:,:].tolist(), values4[:,0,:,:].tolist())
+        self.assertEqual(values3[:,2,1,:,:].tolist(), values4[:,1,:,:].tolist())
+        self.assertEqual(values3[:,1,2,:,:].tolist(), values4[:,2,:,:].tolist())
+        self.assertEqual(values3[:,0,3,:,:].tolist(), values4[:,3,:,:].tolist())
+        self.assertEqual(values3[:,2,4,:,:].tolist(), values4[:,4,:,:].tolist())
 
-        values5 = numpy.array(range(32)).reshape(1, 2, 4, 4)
-        values6 = score.select_incumbency_aggregate(values5, "ORDO")
-        self.assertEqual(values5[:,:,0,0].tolist(), values6[:,:,0].tolist())
-        self.assertEqual(values5[:,:,2,1].tolist(), values6[:,:,1].tolist())
-        self.assertEqual(values5[:,:,1,2].tolist(), values6[:,:,2].tolist())
-        self.assertEqual(values5[:,:,0,3].tolist(), values6[:,:,3].tolist())
+        values5 = numpy.array(range(240)).reshape(1, 2, 4, 5, 2, 3)
+        values6 = score.select_incumbency_stats(values5, "ORDOR")
+        self.assertEqual(values5[:,:,0,0,:,:].tolist(), values6[:,:,0,:,:].tolist())
+        self.assertEqual(values5[:,:,2,1,:,:].tolist(), values6[:,:,1,:,:].tolist())
+        self.assertEqual(values5[:,:,1,2,:,:].tolist(), values6[:,:,2,:,:].tolist())
+        self.assertEqual(values5[:,:,0,3,:,:].tolist(), values6[:,:,3,:,:].tolist())
+        self.assertEqual(values5[:,:,2,4,:,:].tolist(), values6[:,:,4,:,:].tolist())
 
     def test_select_incumbency_votes(self):
         '''
