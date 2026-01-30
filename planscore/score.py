@@ -1089,59 +1089,54 @@ def calculate_district_biases(upload):
     # Reshape so first axis can be swing amount, then expand to 11 swings
     swing_count = 11
     swing_range = range(-(swing_count // 2), 1 + swing_count // 2)
-    output_votes = numpy.concatenate(
+    z = swing_count // 2 # Index of zero-swing swing_range midpoint
+    all_votes = numpy.concatenate(
         [vectorized_swing(model_output, a/100).reshape((1, *model_output.shape)) for a in swing_range],
         axis=0,
     )
-    # output_votes shape is now (swing_count=11, incumbency=4, sims, districts, 2)
-    
-    # Record per-district vote totals and confidence intervals
-    copied_districts = copy.deepcopy(upload.districts)
-    district_number = itertools.count(1)
-    vote_swings = upload.vote_swings or [0.0] * district_count
-    zero_swing = swing_count // 2
+    # all_votes shape is now (swing_count=11, incumbency=4, sims, districts, 2)
 
-    # Extract zero-swing votes for all incumbency scenarios: (incumbency=4, sims, districts, 2)
-    zero_swing_votes = output_votes[zero_swing]
-    # Extract Dem/Rep votes keeping incumbency dimension: (incumbency, sims, districts)
-    dem_votes = zero_swing_votes[..., 0]
-    rep_votes = zero_swing_votes[..., 1]
-
-    # Vectorized calculations across all incumbency scenarios and districts
-    # Calculate means along sims axis (axis=-2): (incumbency, districts)
+    # Calculate votes across all scenarios and districts, along sims axis (axis=-2)
     # NaN comparisons evaluate to False, so wins only count valid simulation pairs
+    dem_votes = all_votes[..., 0]
+    rep_votes = all_votes[..., 1]
     dem_wins = numpy.sum(dem_votes > rep_votes, axis=-2) / sim_count
     dem_votes_mean = numpy.round(numpy.nanmean(dem_votes, axis=-2), constants.ROUND_COUNT)
     rep_votes_mean = numpy.round(numpy.nanmean(rep_votes, axis=-2), constants.ROUND_COUNT)
     dem_votes_std = numpy.round(numpy.nanstd(dem_votes, axis=-2, ddof=1), constants.ROUND_COUNT)
     rep_votes_std = numpy.round(numpy.nanstd(rep_votes, axis=-2, ddof=1), constants.ROUND_COUNT)
 
+    # -------- Extract main chosen scenario from amongst alternatives --------
+
     # Select appropriate incumbency scenario per district for JSON output
     # Result arrays have shape (districts,)
-    incumbent_dem_votes_mean = select_incumbency_aggregate(dem_votes_mean, upload.incumbents)
-    incumbent_rep_votes_mean = select_incumbency_aggregate(rep_votes_mean, upload.incumbents)
-    incumbent_dem_votes_std = select_incumbency_aggregate(dem_votes_std, upload.incumbents)
-    incumbent_rep_votes_std = select_incumbency_aggregate(rep_votes_std, upload.incumbents)
-    incumbent_dem_wins = select_incumbency_aggregate(dem_wins, upload.incumbents)
+    chosen_dem_votes_mean = select_incumbency_aggregate(dem_votes_mean[z], upload.incumbents)
+    chosen_rep_votes_mean = select_incumbency_aggregate(rep_votes_mean[z], upload.incumbents)
+    chosen_dem_votes_std = select_incumbency_aggregate(dem_votes_std[z], upload.incumbents)
+    chosen_rep_votes_std = select_incumbency_aggregate(rep_votes_std[z], upload.incumbents)
+    chosen_dem_wins = select_incumbency_aggregate(dem_wins[z], upload.incumbents)
 
     # Select appropriate incumbency scenario per output vote
-    # zero_swing_votes has shape (incumbency=4, sims, districts, 2)
-    # output_votes has shape (swing_count=11, incumbency=4, sims, districts, 2)
-    incumbent_zero_swing_votes = select_incumbency_votes(zero_swing_votes, upload.incumbents)
-    incumbent_output_votes = select_incumbency_votes(output_votes, upload.incumbents)
+    # chosen_votes has shape (sims, districts, 2)
+    # incumbent_votes has shape (swings, sims, districts, 2)
+    chosen_votes = select_incumbency_votes(all_votes[z], upload.incumbents)
+    incumbent_votes = select_incumbency_votes(all_votes, upload.incumbents)
 
-    # -------- After this point stop using alternative incumbency data --------
+    # -------- After this point stop using alternative scenario data --------
 
     # Identify districts with valid data (nanmean returns nan when all values are nan)
-    valid_mask = ~numpy.isnan(incumbent_dem_votes_mean)
+    valid_mask = ~numpy.isnan(chosen_dem_votes_mean)
+    copied_districts = copy.deepcopy(upload.districts)
+    district_number = itertools.count(1)
+    vote_swings = upload.vote_swings or [0.0] * district_count
 
     for (i, (district, vote_swing)) in enumerate(zip(copied_districts, vote_swings)):
         if valid_mask[i]:
-            district['totals']['Democratic Wins'] = float(incumbent_dem_wins[i])
-            district['totals']['Democratic Votes'] = float(incumbent_dem_votes_mean[i])
-            district['totals']['Republican Votes'] = float(incumbent_rep_votes_mean[i])
-            district['totals']['Democratic Votes SD'] = float(incumbent_dem_votes_std[i])
-            district['totals']['Republican Votes SD'] = float(incumbent_rep_votes_std[i])
+            district['totals']['Democratic Wins'] = float(chosen_dem_wins[i])
+            district['totals']['Democratic Votes'] = float(chosen_dem_votes_mean[i])
+            district['totals']['Republican Votes'] = float(chosen_rep_votes_mean[i])
+            district['totals']['Democratic Votes SD'] = float(chosen_dem_votes_std[i])
+            district['totals']['Republican Votes SD'] = float(chosen_rep_votes_std[i])
             district['is_counted'] = True
             district['number'] = next(district_number)
             district['vote_swing'] = vote_swing
@@ -1156,17 +1151,17 @@ def calculate_district_biases(upload):
             district['vote_swing'] = None
 
     # Calculate partisanship metrics for all simulations using vectorized functions
-    MMDs = vectorized_MMD(incumbent_zero_swing_votes)
-    PBs = vectorized_PB(incumbent_zero_swing_votes)
-    D2s = vectorized_D2(incumbent_zero_swing_votes)
-    D2ds = vectorized_D2_diff(incumbent_zero_swing_votes)
+    MMDs = vectorized_MMD(chosen_votes)
+    PBs = vectorized_PB(chosen_votes)
+    D2s = vectorized_D2(chosen_votes)
+    D2ds = vectorized_D2_diff(chosen_votes)
 
     # Need <50% simulations with single-party outcomes for valid declination
     D2_is_valid = len(list(filter(None, D2ds))) > sim_count * .75
 
     # EG alone also gets a sensitivity test for vote swing scenarios
     EGs = {
-        swing: vectorized_EG(incumbent_output_votes[i, ...])
+        swing: vectorized_EG(incumbent_votes[i, ...])
         for (i, swing) in enumerate(swing_range)
     }
 
