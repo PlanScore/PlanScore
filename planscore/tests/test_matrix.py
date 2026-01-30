@@ -297,28 +297,29 @@ class TestMatrix (unittest.TestCase):
             data.State.NC,
             data.House.ushouse,
             [(4, 6), (5, 5), (6, 4)],
+            True,
         )
 
         # Verify apply_model was called 3 times (once per incumbency scenario)
         self.assertEqual(len(apply_model.mock_calls), 3)
 
-        # First call: Republican incumbency (-1) for all districts
+        # First call: Open seat (0) for all districts
         self.assertEqual(apply_model.mock_calls[0][1], (
-            [(.4, -1), (.5, -1), (.6, -1)],
-            load_model.return_value,
-            data.VERSION_PARAMETERS['2025B'],
-        ))
-
-        # Second call: Open seat (0) for all districts
-        self.assertEqual(apply_model.mock_calls[1][1], (
             [(.4, 0), (.5, 0), (.6, 0)],
             load_model.return_value,
             data.VERSION_PARAMETERS['2025B'],
         ))
 
-        # Third call: Democrat incumbency (1) for all districts
-        self.assertEqual(apply_model.mock_calls[2][1], (
+        # Second call: Democrat incumbency (1) for all districts
+        self.assertEqual(apply_model.mock_calls[1][1], (
             [(.4, 1), (.5, 1), (.6, 1)],
+            load_model.return_value,
+            data.VERSION_PARAMETERS['2025B'],
+        ))
+
+        # Third call: Republican incumbency (-1) for all districts
+        self.assertEqual(apply_model.mock_calls[2][1], (
+            [(.4, -1), (.5, -1), (.6, -1)],
             load_model.return_value,
             data.VERSION_PARAMETERS['2025B'],
         ))
@@ -351,27 +352,28 @@ class TestMatrix (unittest.TestCase):
             data.State.NC,
             data.House.ushouse,
             [(4, 6), (0, 0)],
+            True,
         )
 
         # Verify apply_model was called 3 times (once per incumbency scenario)
         self.assertEqual(len(apply_model.mock_calls), 3)
 
-        # Check first call (Republican incumbency, -1)
-        self.assertEqual(apply_model.mock_calls[0][1][0][0], (.4, -1))
+        # Check first call (Open seat, 0)
+        self.assertEqual(apply_model.mock_calls[0][1][0][0], (.4, 0))
         self.assertTrue(numpy.isnan(apply_model.mock_calls[0][1][0][1][0]))
-        self.assertEqual(apply_model.mock_calls[0][1][0][1][1], -1)
-        self.assertEqual(apply_model.mock_calls[0][1][1], load_model.return_value)
-        self.assertIs(apply_model.mock_calls[0][1][-1], data.VERSION_PARAMETERS['2025B'])
+        self.assertEqual(apply_model.mock_calls[0][1][0][1][1], 0)
 
-        # Check second call (Open seat, 0)
-        self.assertEqual(apply_model.mock_calls[1][1][0][0], (.4, 0))
+        # Check second call (Democrat incumbency, 1)
+        self.assertEqual(apply_model.mock_calls[1][1][0][0], (.4, 1))
         self.assertTrue(numpy.isnan(apply_model.mock_calls[1][1][0][1][0]))
-        self.assertEqual(apply_model.mock_calls[1][1][0][1][1], 0)
+        self.assertEqual(apply_model.mock_calls[1][1][0][1][1], 1)
 
-        # Check third call (Democrat incumbency, 1)
-        self.assertEqual(apply_model.mock_calls[2][1][0][0], (.4, 1))
+        # Check third call (Republican incumbency, -1)
+        self.assertEqual(apply_model.mock_calls[2][1][0][0], (.4, -1))
         self.assertTrue(numpy.isnan(apply_model.mock_calls[2][1][0][1][0]))
-        self.assertEqual(apply_model.mock_calls[2][1][0][1][1], 1)
+        self.assertEqual(apply_model.mock_calls[2][1][0][1][1], -1)
+        self.assertEqual(apply_model.mock_calls[2][1][1], load_model.return_value)
+        self.assertIs(apply_model.mock_calls[2][1][-1], data.VERSION_PARAMETERS['2025B'])
 
         self.assertEqual(load_model.mock_calls[0][1], ('-2025B', 'nc', 2024, True, True))
 

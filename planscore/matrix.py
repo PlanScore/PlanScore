@@ -14,9 +14,9 @@ from . import data
 
 # Incumbency values for model ordered by expected index in multi-dimensional array
 INCUMBENCY = [
-    (data.Incumbency.Republican.value, -1),
     (data.Incumbency.Open.value, 0),
     (data.Incumbency.Democrat.value, 1),
+    (data.Incumbency.Republican.value, -1),
 ]
 
 # Dictionary of states plus Null Ranch, KS for Null Island
@@ -160,7 +160,7 @@ def apply_model(districts, model, params):
     # Transpose to return (sims, districts) for downstream processing
     return (ADC + E).T
 
-def model_votes(model_version, state, house, districts):
+def model_votes(model_version, state, house, districts, has_incumbency: bool):
     ''' Convert presidential votes to range of possible modeled chamber votes.
 
         model_version is a string like '2021D' from data.VERSION_PARAMETERS.
@@ -172,23 +172,27 @@ def model_votes(model_version, state, house, districts):
 
         Return is an IxSxDx2 matrix where first dimension is incumbency scenario
         (Republican=-1, Open=0, Democrat=1), S simulations, D districts, and Dem/Rep parties.
+        When has_incumbency is False there is exactly one open-seat incumbency scenario.
     '''
-    params = data.VERSION_PARAMETERS[model_version]
-
     is_congress = bool(house == data.House.ushouse)
+    params = data.VERSION_PARAMETERS[model_version]
+    model = load_model(params.path_suffix, STATE[state], params.year, has_incumbency, is_congress)
 
-    all_fractions = []
-
-    for _, inc_value in INCUMBENCY:
-        fractions = apply_model(
-            [(dem / ((dem + rep) or numpy.nan), inc_value) for (dem, rep) in districts],
-            load_model(params.path_suffix, STATE[state], params.year, False, is_congress),
-            params,
-        )
-        all_fractions.append(fractions)
+    if has_incumbency:
+        districts_args = [
+            [(d / ((d + r) or numpy.nan), inc_value) for (d, r) in districts]
+            for _, inc_value in INCUMBENCY
+        ]
+    else:
+        districts_args = [
+            [(d / ((d + r) or numpy.nan), INCUMBENCY[0][1]) for (d, r) in districts]
+        ]
 
     # Stack: (incumbency, sims, districts)
-    all_fractions = numpy.stack(all_fractions, axis=0)
+    fraction_stack = [
+        apply_model(districts_arg, model, params) for districts_arg in districts_args
+    ]
+    all_fractions = numpy.stack(fraction_stack, axis=0)
 
     # Create SxD scale array (same for all incumbency scenarios)
     total_votes = sum([dem + rep for (dem, rep) in districts])

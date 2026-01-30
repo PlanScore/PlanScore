@@ -973,7 +973,7 @@ def select_incumbency_aggregate(values: numpy.typing.NDArray, incumbents: list[s
         -> output shape (4,) with [values[0, 0], values[2, 1], values[0, 2], values[2, 3]]
     """
     # Validate that second-last dimension is 3 (for R, O, D incumbency scenarios)
-    assert values.shape[-2] == 3, f"Expected 3 incumbency scenarios, got {values.shape[-2]}"
+    assert values.shape[-2] in (1, 3), f"Expected 1 or 3 incumbency scenarios, got {values.shape[-2]}"
 
     # Validate that second dimension matches number of districts
     district_count = values.shape[-1]
@@ -1006,7 +1006,7 @@ def select_incumbency_votes(values: numpy.typing.NDArray, incumbents: list[str])
         -> output shape (4, 5, 6)
     """
     # Validate that fourth-last dimension is 3 (for R, O, D incumbency scenarios)
-    assert values.shape[-4] == 3, f"Expected 3 incumbency scenarios, got {values.shape[-4]}"
+    assert values.shape[-4] in (1, 3), f"Expected 1 or 3 incumbency scenarios, got {values.shape[-4]}"
 
     # Validate that second dimension matches number of districts
     district_count = values.shape[-2]
@@ -1064,6 +1064,7 @@ def calculate_district_biases(upload):
         upload.model.state,
         upload.model.house,
         matrix.filter_district_data(matrix.prepare_district_data(upload)),
+        any(incumbent != "O" for incumbent in upload.incumbents),
     )
     # model_output shape is (incumbency=3, sims, districts, 2)
 
