@@ -959,8 +959,8 @@ def calculate_biases(upload):
     rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
     return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
 
-def select_incumbency_scenario(values: numpy.typing.NDArray, incumbents: list[str]) -> numpy.typing.NDArray:
-    """Select appropriate incumbency scenario per district.
+def select_incumbency_aggregate(values: numpy.typing.NDArray, incumbents: list[str]) -> numpy.typing.NDArray:
+    """Select appropriate incumbency scenario per district aggregate.
 
     Args:
         values: Array with incumbency as second-last dimension, shape (..., incumbency, districts)
@@ -975,7 +975,7 @@ def select_incumbency_scenario(values: numpy.typing.NDArray, incumbents: list[st
         values shape (3, 4) with incumbents ['R', 'D', 'R', 'D']
         -> output shape (4,) with [values[0, 0], values[2, 1], values[0, 2], values[2, 3]]
     """
-    # Validate that first dimension is 3 (for R, O, D incumbency scenarios)
+    # Validate that second-last dimension is 3 (for R, O, D incumbency scenarios)
     assert values.shape[-2] == 3, f"Expected 3 incumbency scenarios, got {values.shape[-2]}"
 
     # Validate that second dimension matches number of districts
@@ -989,6 +989,39 @@ def select_incumbency_scenario(values: numpy.typing.NDArray, incumbents: list[st
     # Assign incumbents going district-by-district
     for district, incumbent in enumerate(incumbents):
         new_values[..., district] = values[..., INCUMBENCY[incumbent], district]
+
+    return new_values
+
+def select_incumbency_votes(values: numpy.typing.NDArray, incumbents: list[str]) -> numpy.typing.NDArray:
+    """Select appropriate incumbency scenario per district votes.
+
+    Args:
+        values: Array with incumbency as fourth-last dimension, shape (..., incumbency, sims, districts, votes)
+        incumbents: List of incumbency values per district (e.g., ['R', 'D', 'O', ...])
+
+    Returns:
+        Array with incumbency selected per district and vote scenario.
+        If input shape is (..., incumbency, sims, districts, votes), output shape is (..., sims, districts, votes)
+        where districts = len(incumbents).
+
+    Example:
+        values shape (3, 4, 5, 6) with incumbents ['R', 'D', 'R', 'D']
+        -> output shape (4, 5, 6)
+    """
+    # Validate that fourth-last dimension is 3 (for R, O, D incumbency scenarios)
+    assert values.shape[-4] == 3, f"Expected 3 incumbency scenarios, got {values.shape[-4]}"
+
+    # Validate that second dimension matches number of districts
+    district_count = values.shape[-2]
+    if len(values.shape) > 1:
+        assert len(incumbents) == district_count, \
+            f"Mismatch: values has {district_count} districts but {len(incumbents)} incumbents provided"
+
+    new_values = numpy.zeros((*values.shape[:-4], *values.shape[-3:]), dtype=values.dtype)
+
+    # Assign incumbents going district-by-district
+    for district, incumbent in enumerate(incumbents):
+        new_values[..., :, district, :] = values[..., INCUMBENCY[incumbent], :, district, :]
 
     return new_values
 
@@ -1079,22 +1112,30 @@ def calculate_district_biases(upload):
 
     # Select appropriate incumbency scenario per district for JSON output
     # Result arrays have shape (districts,)
-    selected_dem_votes_mean = select_incumbency_scenario(dem_votes_mean, upload.incumbents)
-    selected_rep_votes_mean = select_incumbency_scenario(rep_votes_mean, upload.incumbents)
-    selected_dem_votes_std = select_incumbency_scenario(dem_votes_std, upload.incumbents)
-    selected_rep_votes_std = select_incumbency_scenario(rep_votes_std, upload.incumbents)
-    selected_dem_wins = select_incumbency_scenario(dem_wins, upload.incumbents)
+    incumbent_dem_votes_mean = select_incumbency_aggregate(dem_votes_mean, upload.incumbents)
+    incumbent_rep_votes_mean = select_incumbency_aggregate(rep_votes_mean, upload.incumbents)
+    incumbent_dem_votes_std = select_incumbency_aggregate(dem_votes_std, upload.incumbents)
+    incumbent_rep_votes_std = select_incumbency_aggregate(rep_votes_std, upload.incumbents)
+    incumbent_dem_wins = select_incumbency_aggregate(dem_wins, upload.incumbents)
+
+    # Select appropriate incumbency scenario per output vote
+    # zero_swing_votes has shape (incumbency=3, sims, districts, 2)
+    # output_votes has shape (swing_count=11, incumbency=3, sims, districts, 2)
+    incumbent_zero_swing_votes = select_incumbency_votes(zero_swing_votes, upload.incumbents)
+    incumbent_output_votes = select_incumbency_votes(output_votes, upload.incumbents)
+
+    # -------- After this point stop using alternative incumbency data --------
 
     # Identify districts with valid data (nanmean returns nan when all values are nan)
-    valid_mask = ~numpy.isnan(selected_dem_votes_mean)
+    valid_mask = ~numpy.isnan(incumbent_dem_votes_mean)
 
     for (i, (district, vote_swing)) in enumerate(zip(copied_districts, vote_swings)):
         if valid_mask[i]:
-            district['totals']['Democratic Wins'] = float(selected_dem_wins[i])
-            district['totals']['Democratic Votes'] = float(selected_dem_votes_mean[i])
-            district['totals']['Republican Votes'] = float(selected_rep_votes_mean[i])
-            district['totals']['Democratic Votes SD'] = float(selected_dem_votes_std[i])
-            district['totals']['Republican Votes SD'] = float(selected_rep_votes_std[i])
+            district['totals']['Democratic Wins'] = float(incumbent_dem_wins[i])
+            district['totals']['Democratic Votes'] = float(incumbent_dem_votes_mean[i])
+            district['totals']['Republican Votes'] = float(incumbent_rep_votes_mean[i])
+            district['totals']['Democratic Votes SD'] = float(incumbent_dem_votes_std[i])
+            district['totals']['Republican Votes SD'] = float(incumbent_rep_votes_std[i])
             district['is_counted'] = True
             district['number'] = next(district_number)
             district['vote_swing'] = vote_swing
@@ -1108,34 +1149,20 @@ def calculate_district_biases(upload):
             district['number'] = None
             district['vote_swing'] = None
 
-    # Select appropriate incumbency scenario per district for metrics
-    # zero_swing_votes has shape (incumbency=3, sims, districts, 2)
-    # We need shape (sims, districts, 2) with correct incumbency per district
-    selected_zero_swing_votes = numpy.zeros((sim_count, district_count, 2))
-    for i, incumbency in enumerate(upload.incumbents):
-        idx = INCUMBENCY[incumbency]
-        selected_zero_swing_votes[:, i, :] = zero_swing_votes[idx, :, i, :]
-
     # Calculate partisanship metrics for all simulations using vectorized functions
-    MMDs = vectorized_MMD(selected_zero_swing_votes)
-    PBs = vectorized_PB(selected_zero_swing_votes)
-    D2s = vectorized_D2(selected_zero_swing_votes)
-    D2ds = vectorized_D2_diff(selected_zero_swing_votes)
+    MMDs = vectorized_MMD(incumbent_zero_swing_votes)
+    PBs = vectorized_PB(incumbent_zero_swing_votes)
+    D2s = vectorized_D2(incumbent_zero_swing_votes)
+    D2ds = vectorized_D2_diff(incumbent_zero_swing_votes)
 
     # Need <50% simulations with single-party outcomes for valid declination
     D2_is_valid = len(list(filter(None, D2ds))) > sim_count * .75
 
     # EG alone also gets a sensitivity test for vote swing scenarios
-    # output_votes has shape (swing_count=11, incumbency=3, sims, districts, 2)
-    # For each swing, select appropriate incumbency per district
-    EGs = {}
-    for (i, swing) in enumerate(swing_range):
-        # Select appropriate incumbency per district for this swing
-        swing_votes = numpy.zeros((sim_count, district_count, 2))
-        for j, incumbency in enumerate(upload.incumbents):
-            idx = INCUMBENCY[incumbency]
-            swing_votes[:, j, :] = output_votes[i, idx, :, j, :]
-        EGs[swing] = vectorized_EG(swing_votes)
+    EGs = {
+        swing: vectorized_EG(incumbent_output_votes[i, ...])
+        for (i, swing) in enumerate(swing_range)
+    }
 
     summary_dict = {
         'Mean-Median': np_safe_mean(MMDs),
