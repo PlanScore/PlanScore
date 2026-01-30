@@ -297,14 +297,18 @@ class TestMatrix (unittest.TestCase):
             data.State.NC,
             data.House.ushouse,
             [(4, 6), (5, 5), (6, 4)],
-            True,
         )
 
         # Verify apply_model was called 3 times (once per incumbency scenario)
-        self.assertEqual(len(apply_model.mock_calls), 3)
+        self.assertEqual(len(apply_model.mock_calls), 4)
 
-        # First call: Open seat (0) for all districts
+        # First and last calls: Open seat (0) for all districts
         self.assertEqual(apply_model.mock_calls[0][1], (
+            [(.4, 0), (.5, 0), (.6, 0)],
+            load_model.return_value,
+            data.VERSION_PARAMETERS['2025B'],
+        ))
+        self.assertEqual(apply_model.mock_calls[-1][1], (
             [(.4, 0), (.5, 0), (.6, 0)],
             load_model.return_value,
             data.VERSION_PARAMETERS['2025B'],
@@ -327,7 +331,7 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(load_model.mock_calls[0][1], ('-2025B', 'nc', 2024, True, True))
 
         # Expected shape is (incumbency_scenarios, sims, districts, parties)
-        self.assertEqual(R.shape, (3, 2, 3, 2))
+        self.assertEqual(R.shape, (4, 2, 3, 2))
 
         # All three incumbency scenarios should have the same values (since mocked)
         expected_values = [
@@ -337,6 +341,7 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(R[0].tolist(), expected_values)  # Republican scenario
         self.assertEqual(R[1].tolist(), expected_values)  # Open scenario
         self.assertEqual(R[2].tolist(), expected_values)  # Democrat scenario
+        self.assertEqual(R[3].tolist(), expected_values)  # Undefined scenario
     
     @unittest.mock.patch('planscore.matrix.load_model')
     @unittest.mock.patch('planscore.matrix.apply_model')
@@ -352,16 +357,18 @@ class TestMatrix (unittest.TestCase):
             data.State.NC,
             data.House.ushouse,
             [(4, 6), (0, 0)],
-            True,
         )
 
         # Verify apply_model was called 3 times (once per incumbency scenario)
-        self.assertEqual(len(apply_model.mock_calls), 3)
+        self.assertEqual(len(apply_model.mock_calls), 4)
 
-        # Check first call (Open seat, 0)
+        # Check first and last calls (Open seat, 0)
         self.assertEqual(apply_model.mock_calls[0][1][0][0], (.4, 0))
         self.assertTrue(numpy.isnan(apply_model.mock_calls[0][1][0][1][0]))
         self.assertEqual(apply_model.mock_calls[0][1][0][1][1], 0)
+        self.assertEqual(apply_model.mock_calls[-1][1][0][0], (.4, 0))
+        self.assertTrue(numpy.isnan(apply_model.mock_calls[-1][1][0][1][0]))
+        self.assertEqual(apply_model.mock_calls[-1][1][0][1][1], 0)
 
         # Check second call (Democrat incumbency, 1)
         self.assertEqual(apply_model.mock_calls[1][1][0][0], (.4, 1))
@@ -378,7 +385,7 @@ class TestMatrix (unittest.TestCase):
         self.assertEqual(load_model.mock_calls[0][1], ('-2025B', 'nc', 2024, True, True))
 
         # R shape is (incumbency_scenarios, sims, districts, parties)
-        self.assertEqual(R.shape, (3, 2, 2, 2))
+        self.assertEqual(R.shape, (4, 2, 2, 2))
 
         # Check first incumbency scenario (Republican), first sim
         self.assertEqual(R[0, 0].tolist(), [
