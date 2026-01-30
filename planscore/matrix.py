@@ -12,11 +12,12 @@ except ImportError:
 
 from . import data
 
-INCUMBENCY = {
-    data.Incumbency.Open.value: 0,
-    data.Incumbency.Democrat.value: 1,
-    data.Incumbency.Republican.value: -1,
-}
+# Incumbency values for model ordered by expected index in multi-dimensional array
+INCUMBENCY = [
+    (data.Incumbency.Republican.value, -1),
+    (data.Incumbency.Open.value, 0),
+    (data.Incumbency.Democrat.value, 1),
+]
 
 # Dictionary of states plus Null Ranch, KS for Null Island
 STATE = dict([(s, s.value.lower()) for s in data.State] + [(data.State.XX, 'ks')])
@@ -178,11 +179,9 @@ def model_votes(model_version, state, house, districts):
     has_incumbents = bool({inc for (_, _, inc) in districts} != {'O'})
     is_congress = bool(house == data.House.ushouse)
 
-    # Build votes for all three incumbency scenarios
-    incumbency_scenarios = [-1, 0, 1]  # Republican, Open, Democrat (matches INCUMBENCY order)
     all_fractions = []
 
-    for inc_value in incumbency_scenarios:
+    for _, inc_value in INCUMBENCY:
         fractions = apply_model(
             [(dem / ((dem + rep) or numpy.nan), inc_value) for (dem, rep, _) in districts],
             load_model(params.path_suffix, STATE[state], params.year, has_incumbents, is_congress),

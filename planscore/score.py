@@ -25,11 +25,8 @@ COLUMN_D2 = 'dec2_avg'
 COLUMN_PB = 'bias_avg'
 COLUMN_MMD = 'mmd_avg'
 
-INCUMBENCY = {
-    data.Incumbency.Republican.value: 0,  # 'R' -> index 0 (model value -1)
-    data.Incumbency.Open.value: 1,        # 'O' -> index 1 (model value 0)
-    data.Incumbency.Democrat.value: 2,    # 'D' -> index 2 (model value 1)
-}
+# Incumbency indexes in multi-dimensional array keyed by "R", "O", "D" API strings
+INCUMBENCY = {incumbent: i for i, (incumbent, _) in enumerate(matrix.INCUMBENCY)}
 
 class Aggregator (enum.Enum):
     Sum = 1
