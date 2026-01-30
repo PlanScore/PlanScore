@@ -173,11 +173,11 @@ def model_votes(model_version, state, house, districts):
 
         Return is an IxSxDx2 matrix where first dimension is incumbency scenario
         (Republican=-1, Open=0, Democrat=1, Undefined=0), S simulations, D districts, and 2 parties.
-        When has_incumbency is False there is exactly one open-seat incumbency scenario.
     '''
     is_congress = bool(house == data.House.ushouse)
     params = data.VERSION_PARAMETERS[model_version]
 
+    # Model with incumbents and model without, relevant since 2022
     imodel = load_model(params.path_suffix, STATE[state], params.year, True, is_congress)
     umodel = load_model(params.path_suffix, STATE[state], params.year, False, is_congress)
 
@@ -187,8 +187,10 @@ def model_votes(model_version, state, house, districts):
     ]
 
     # Stack: (incumbency, sims, districts) - 3x defined then 1x undefined incumbency
-    fraction_stack = [apply_model(a, imodel, params) for a in districts_args[:3]]
-    fraction_stack += [apply_model(a, umodel, params) for a in districts_args[3:]]
+    fraction_stack = [
+        *[apply_model(a, imodel, params) for a in districts_args[:3]],
+        apply_model(districts_args[3], umodel, params),
+    ]
     all_fractions = numpy.stack(fraction_stack, axis=0)
 
     # Create SxD scale array (same for all incumbency scenarios)

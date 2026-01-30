@@ -136,7 +136,7 @@ def vectorized_swing(votes:numpy.typing.NDArray, amount:float) -> numpy.typing.N
     ''' Swing the vote by a percentage, positive toward blue, using vectorized operations.
 
         Input array shape is (*leading_dims, districts, 2) where leading_dims can be any number of dimensions.
-        Convention: votes[..., 0] = blue (Dem), votes[..., 1] = red (Rep)
+        Convention: votes[..., 0] = blue, votes[..., 1] = red
         Returns array of same shape with swung votes.
 
         Examples:
@@ -177,7 +177,7 @@ def swing_vote_matrix(votes:numpy.typing.NDArray, vote_swings:list[float]) -> nu
     ''' Swing the vote by a percentage, positive toward blue, for per-district vote swings.
 
         Input array shape is (*leading_dims, districts, 2) where leading_dims can be any number of dimensions.
-        Convention: votes[..., 0] = blue (Dem), votes[..., 1] = red (Rep)
+        Convention: votes[..., 0] = blue, votes[..., 1] = red
         Returns array of same shape with per-district swings applied.
 
         Examples:
@@ -1073,11 +1073,11 @@ def calculate_district_biases(upload):
         upload.model.house,
         matrix.filter_district_data(matrix.prepare_district_data(upload)),
     )
-    # model_output shape is (incumbency=3, sims, districts, 2)
+    # model_output shape is (incumbency=4, sims, districts, 2)
 
     # Apply per-district vote swings to all incumbency scenarios
     model_output = swing_vote_matrix(model_output, upload.vote_swings)
-    # model_output shape remains (incumbency=3, sims, districts, 2)
+    # model_output shape remains (incumbency=4, sims, districts, 2)
 
     # NOTE: Incumbency selection now happens later (at line ~1033 for JSON output and before metrics)
     # Keep the full incumbency dimension through vote calculations
@@ -1092,7 +1092,7 @@ def calculate_district_biases(upload):
         [vectorized_swing(model_output, a/100).reshape((1, *model_output.shape)) for a in swing_range],
         axis=0,
     )
-    # output_votes shape is now (swing_count=11, incumbency=3, sims, districts, 2)
+    # output_votes shape is now (swing_count=11, incumbency=4, sims, districts, 2)
     
     # Record per-district vote totals and confidence intervals
     copied_districts = copy.deepcopy(upload.districts)
@@ -1100,7 +1100,7 @@ def calculate_district_biases(upload):
     vote_swings = upload.vote_swings or [0.0] * district_count
     zero_swing = swing_count // 2
 
-    # Extract zero-swing votes for all incumbency scenarios: (incumbency=3, sims, districts, 2)
+    # Extract zero-swing votes for all incumbency scenarios: (incumbency=4, sims, districts, 2)
     zero_swing_votes = output_votes[zero_swing]
     # Extract Dem/Rep votes keeping incumbency dimension: (incumbency, sims, districts)
     dem_votes = zero_swing_votes[..., 0]
@@ -1124,8 +1124,8 @@ def calculate_district_biases(upload):
     incumbent_dem_wins = select_incumbency_aggregate(dem_wins, upload.incumbents)
 
     # Select appropriate incumbency scenario per output vote
-    # zero_swing_votes has shape (incumbency=3, sims, districts, 2)
-    # output_votes has shape (swing_count=11, incumbency=3, sims, districts, 2)
+    # zero_swing_votes has shape (incumbency=4, sims, districts, 2)
+    # output_votes has shape (swing_count=11, incumbency=4, sims, districts, 2)
     incumbent_zero_swing_votes = select_incumbency_votes(zero_swing_votes, upload.incumbents)
     incumbent_output_votes = select_incumbency_votes(output_votes, upload.incumbents)
 
