@@ -79,7 +79,6 @@ setup(
         },
     entry_points = dict(
         console_scripts = [
-            'planscore-matrix-debug = planscore.matrix:main',
             'planscore-polygonize = planscore.polygonize:main',
             'planscore-prepare-state = planscore.prepare_state:main',
             'planscore-score-locally = planscore.score:main',

@@ -1,11 +1,8 @@
 import os
 import csv
 import gzip
-import itertools
 import collections
-import argparse
 import statistics
-import urllib.request
 
 try:
     import numpy
@@ -253,35 +250,3 @@ def filter_district_data(prepared_data: list[tuple[float, float, str]]) -> list[
     ]
     
     return filtered_data
-
-parser = argparse.ArgumentParser()
-parser.add_argument('upload_url')
-parser.add_argument('matrix_path')
-
-def main():
-    ''' Write all district vote simulations to single CSV file
-    '''
-    args = parser.parse_args()
-
-    got = urllib.request.urlopen(args.upload_url)
-    upload = data.Upload.from_json(got.read())
-    input_district_data = prepare_district_data(upload)
-    
-    # Get large number of simulated outputs
-    output_votes = model_votes(
-        upload.model_version or upload.model.versions[0],
-        upload.model.state,
-        upload.model.house,
-        input_district_data,
-    )
-
-    with open(args.matrix_path, 'w') as file:
-        sims, districts, parties = output_votes.shape
-        # Transpose to get districts as rows for CSV output
-        votes_matrix = output_votes.transpose(1, 0, 2).reshape((districts, sims * parties))
-
-        out = csv.writer(file, dialect='excel')
-        head = itertools.chain(*[[f'DEM{n:03d}', f'REP{n:03d}'] for n in range(sims)])
-        out.writerow(['District'] + list(head))
-        for (index, row) in enumerate(votes_matrix.tolist()):
-            out.writerow([index + 1] + row)
