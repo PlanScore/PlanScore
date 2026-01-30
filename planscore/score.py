@@ -997,12 +997,12 @@ def select_incumbency_votes(values: numpy.typing.NDArray, incumbents: list[str])
     """Select appropriate incumbency scenario per district votes.
 
     Args:
-        values: Array with incumbency as fourth-last dimension, shape (..., incumbency, sims, districts, votes)
+        values: Array with incumbency as fourth-last dimension, shape (..., incumbency, sims, districts, parties)
         incumbents: List of incumbency values per district (e.g., ['R', 'D', 'O', ...])
 
     Returns:
         Array with incumbency selected per district and vote scenario.
-        If input shape is (..., incumbency, sims, districts, votes), output shape is (..., sims, districts, votes)
+        If input shape is (..., incumbency, sims, districts, votes), output shape is (..., sims, districts, parties)
         where districts = len(incumbents).
 
     Example:
@@ -1029,6 +1029,34 @@ def select_incumbency_votes(values: numpy.typing.NDArray, incumbents: list[str])
         new_values[..., :, district, :] = values[..., INCUMBENCY[incumbent], :, district, :]
 
     return new_values
+
+def vectorized_vote_statistics(all_votes: numpy.typing.NDArray) -> numpy.typing.NDArray:
+    '''
+    '''
+    *leading_dims, sim_count, district_count, party_count = all_votes.shape
+    assert party_count == 2
+
+    # Calculate votes across all scenarios and districts, along sims axis (axis=-2)
+    # NaN comparisons evaluate to False, so wins only count valid simulation pairs
+    dem_votes = all_votes[..., 0]
+    rep_votes = all_votes[..., 1]
+    dem_wins = numpy.sum(dem_votes > rep_votes, axis=-2) / sim_count
+    dem_votes_mean = numpy.nanmean(dem_votes, axis=-2).round(constants.ROUND_COUNT)
+    rep_votes_mean = numpy.nanmean(rep_votes, axis=-2).round(constants.ROUND_COUNT)
+    dem_votes_std = numpy.nanstd(dem_votes, axis=-2, ddof=1).round(constants.ROUND_COUNT)
+    rep_votes_std = numpy.nanstd(rep_votes, axis=-2, ddof=1).round(constants.ROUND_COUNT)
+
+    # Stack votes with trailing dimensions as (party, mean/std/wins)
+    vote_stats = numpy.stack(
+        [dem_votes_mean, dem_votes_std, dem_wins, rep_votes_mean, rep_votes_std, 1 - dem_wins],
+        axis=3
+    ).reshape((*leading_dims, district_count, party_count, 3))
+    print("vote_stats.shape:", vote_stats.shape)
+    print("vote_stats[0,0,0]:", vote_stats[0,0,0])
+    print("vote_stats[0,0,0,0]:", vote_stats[0,0,0,0], "Dem mean/std/wins")
+    print("vote_stats[0,0,0,1]:", vote_stats[0,0,0,1], "Rep mean/std/wins")
+
+    return vote_stats
 
 def calculate_district_biases(upload):
     ''' Calculate partisan metrics using district matrix with presidential vote only.
@@ -1095,26 +1123,18 @@ def calculate_district_biases(upload):
         axis=0,
     )
     # all_votes shape is now (swing_count=11, incumbency=4, sims, districts, 2)
-
-    # Calculate votes across all scenarios and districts, along sims axis (axis=-2)
-    # NaN comparisons evaluate to False, so wins only count valid simulation pairs
-    dem_votes = all_votes[..., 0]
-    rep_votes = all_votes[..., 1]
-    dem_wins = numpy.sum(dem_votes > rep_votes, axis=-2) / sim_count
-    dem_votes_mean = numpy.round(numpy.nanmean(dem_votes, axis=-2), constants.ROUND_COUNT)
-    rep_votes_mean = numpy.round(numpy.nanmean(rep_votes, axis=-2), constants.ROUND_COUNT)
-    dem_votes_std = numpy.round(numpy.nanstd(dem_votes, axis=-2, ddof=1), constants.ROUND_COUNT)
-    rep_votes_std = numpy.round(numpy.nanstd(rep_votes, axis=-2, ddof=1), constants.ROUND_COUNT)
+    vote_stats = vectorized_vote_statistics(all_votes)
+    # vote_stats shape is now (swing_count=11, incumbency=4, sims, districts, 2, 3)
 
     # -------- Extract main chosen scenario from amongst alternatives --------
 
     # Select appropriate incumbency scenario per district for JSON output
     # Result arrays have shape (districts,)
-    chosen_dem_votes_mean = select_incumbency_aggregate(dem_votes_mean[z], upload.incumbents)
-    chosen_rep_votes_mean = select_incumbency_aggregate(rep_votes_mean[z], upload.incumbents)
-    chosen_dem_votes_std = select_incumbency_aggregate(dem_votes_std[z], upload.incumbents)
-    chosen_rep_votes_std = select_incumbency_aggregate(rep_votes_std[z], upload.incumbents)
-    chosen_dem_wins = select_incumbency_aggregate(dem_wins[z], upload.incumbents)
+    chosen_dem_votes_mean = select_incumbency_aggregate(vote_stats[z,...,0,0], upload.incumbents)
+    chosen_rep_votes_mean = select_incumbency_aggregate(vote_stats[z,...,1,0], upload.incumbents)
+    chosen_dem_votes_std = select_incumbency_aggregate(vote_stats[z,...,0,1], upload.incumbents)
+    chosen_rep_votes_std = select_incumbency_aggregate(vote_stats[z,...,1,1], upload.incumbents)
+    chosen_dem_wins = select_incumbency_aggregate(vote_stats[z,...,0,2], upload.incumbents)
 
     # Select appropriate incumbency scenario per output vote
     # chosen_votes has shape (sims, districts, 2)
