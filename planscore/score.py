@@ -1128,12 +1128,12 @@ def calculate_district_biases(upload):
     vote_stats_diff[..., 0] = vote_stats_diff[..., 0].round(3)
     vote_stats_diff[..., 1:] = vote_stats_diff[..., 1:].round(1)
 
-    output_statistics = dict(
+    scenarios = dict(
         vote_swings=list(swing_range),
         incumbents=list(INCUMBENCY.keys()),
         districts=list(range(1, 1 + district_count)),
         dimensions=["vote_swings", "incumbents", "districts"],
-        scenarios={
+        statistics={
             "Democratic Wins": vote_stats_diff[:, :, :, 0, 0].tolist(),
             "Democratic Votes": vote_stats_diff[:, :, :, 0, 1].tolist(),
             "Republican Votes": vote_stats_diff[:, :, :, 1, 1].tolist(),
@@ -1234,7 +1234,7 @@ def calculate_district_biases(upload):
             f'Efficiency Gap +{swing} Rep SD': np_safe_stdev(EGs[-swing]),
         })
 
-    return upload.clone(districts=copied_districts, summary=summary_dict, statistics=output_statistics)
+    return upload.clone(districts=copied_districts, summary=summary_dict, scenarios=scenarios)
 
 def calculate_fva_biases(upload):
     ''' Calculate partisan metrics relevant to Freedom To Vote Act
