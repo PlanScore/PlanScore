@@ -35,8 +35,15 @@ def put_upload_index(storage, upload):
     print('put_upload_index: {}'.format(upload.message))
     cache_control = 'public, no-cache, no-store'
 
+    key0 = upload.statistics_key()
+    body0 = json.dumps(upload.statistics, sort_keys=True, indent=None).encode('utf8')
+
+    storage.s3.put_object(Bucket=storage.bucket, Key=key0, Body=body0,
+        ContentType='text/json', ACL='public-read', CacheControl=cache_control,
+        StorageClass='INTELLIGENT_TIERING')
+
     key1 = upload.index_key()
-    body1 = upload.to_json().encode('utf8')
+    body1 = upload.clone(statistics=f"/{key0}").to_json().encode('utf8')
 
     storage.s3.put_object(Bucket=storage.bucket, Key=key1, Body=body1,
         ContentType='text/json', ACL='public-read', CacheControl=cache_control,

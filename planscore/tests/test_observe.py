@@ -44,13 +44,21 @@ class TestObserveTiles (unittest.TestCase):
         ''' Upload index file is posted to S3
         '''
         storage, upload = unittest.mock.Mock(), unittest.mock.Mock()
+        upload.statistics = {"statistics": "yes"}
         observe.put_upload_index(storage, upload)
         
-        put_call1, put_call2, put_call3 = storage.s3.put_object.mock_calls
+        put_call0, put_call1, put_call2, put_call3 = storage.s3.put_object.mock_calls
+
+        self.assertEqual(put_call0[2], dict(Bucket=storage.bucket,
+            Key=upload.statistics_key.return_value,
+            Body=b'{"statistics": "yes"}',
+            CacheControl='public, no-cache, no-store',
+            ACL='public-read', ContentType='text/json',
+            StorageClass='INTELLIGENT_TIERING'))
         
         self.assertEqual(put_call1[2], dict(Bucket=storage.bucket,
             Key=upload.index_key.return_value,
-            Body=upload.to_json.return_value.encode.return_value,
+            Body=upload.clone.return_value.to_json.return_value.encode.return_value,
             CacheControl='public, no-cache, no-store',
             ACL='public-read', ContentType='text/json',
             StorageClass='INTELLIGENT_TIERING'))

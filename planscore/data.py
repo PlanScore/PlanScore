@@ -11,6 +11,7 @@ from . import constants
 UPLOAD_DIRECTORY = 'uploads/{id}/'
 UPLOAD_PREFIX = 'uploads/{id}/upload/'
 UPLOAD_INDEX_KEY = 'uploads/{id}/index.json'
+UPLOAD_STATS_KEY = 'uploads/{id}/statistics.json'
 UPLOAD_PLAINTEXT_KEY = 'uploads/{id}/index.txt'
 UPLOAD_GEOMETRY_KEY = 'uploads/{id}/geometry.json'
 UPLOAD_DISTRICTS_KEY = 'uploads/{id}/districts/{index}.json'
@@ -252,6 +253,9 @@ class Upload:
     def index_key(self):
         return UPLOAD_INDEX_KEY.format(id=self.id)
     
+    def statistics_key(self):
+        return UPLOAD_STATS_KEY.format(id=self.id)
+
     def plaintext_key(self):
         return UPLOAD_PLAINTEXT_KEY.format(id=self.id)
     
