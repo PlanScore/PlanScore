@@ -214,16 +214,17 @@ class Model:
 
 class Upload:
 
-    def __init__(self, id, key, model:Model=None, districts=None, incumbents=None, vote_swings=None,
-            summary=None, progress=None, start_time=None, message=None,
-            description=None, geometry_key=None, status=None,
-            library_metadata=None, auth_token=None, model_version=None, execution_id=None, execution_token=None,
+    def __init__(self, id, key, model:Model=None, districts=None, statistics=None,
+            incumbents=None, vote_swings=None, summary=None, progress=None, start_time=None,
+            message=None, description=None, geometry_key=None, status=None, library_metadata=None,
+            auth_token=None, model_version=None, execution_id=None, execution_token=None,
             **ignored):
         self.id = id
         self.key = key
         self.model = model
         self.status = status
         self.districts = districts or []
+        self.statistics = statistics or {}
         self.incumbents = incumbents or []
         self.vote_swings = vote_swings or []
         self.summary = summary or {}
@@ -318,6 +319,7 @@ class Upload:
             model = (self.model.to_dict() if self.model else None),
             status = self.status,
             districts = self.districts,
+            statistics = self.statistics,
             incumbents = self.incumbents,
             vote_swings = self.vote_swings,
             summary = self.summary,
@@ -391,13 +393,14 @@ class Upload:
         else:
             return out.getvalue()
     
-    def clone(self, model=None, districts=None, incumbents=None, vote_swings=None, summary=None,
+    def clone(self, model=None, districts=None, statistics=None, incumbents=None, vote_swings=None, summary=None,
         progress=None, start_time=None, message=None, description=None, geometry_key=None, status=None,
         library_metadata=None, auth_token=None, model_version=None, execution_id=None, execution_token=None):
         return Upload(self.id, self.key,
             model = model or self.model,
             status = status if (self.status is None) else self.status,
             districts = districts or self.districts,
+            statistics = statistics or self.statistics,
             incumbents = incumbents or self.incumbents,
             vote_swings = vote_swings or self.vote_swings,
             summary = summary or self.summary,
@@ -424,6 +427,7 @@ class Upload:
             model = model,
             status = data.get('status'),
             districts = data.get('districts'),
+            statistics = data.get('statistics'),
             incumbents = data.get('incumbents'),
             vote_swings = data.get('vote_swings'),
             summary = data.get('summary'),
