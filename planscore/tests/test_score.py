@@ -720,6 +720,49 @@ class TestScore (unittest.TestCase):
         self.assertIsNone(score.calculate_D2_diff((1, 2, 3), (4, 5, 6)))
         self.assertEqual(score.calculate_D2_diff((1, 2, 3, 4), (4, 3, 2, 1)), 0)
 
+    def test_select_incumbency_aggregate(self):
+        '''
+        '''
+        values1 = numpy.array(range(16)).reshape(4, 4)
+        values2 = score.select_incumbency_aggregate(values1, "ORDO")
+        self.assertEqual(values1[0,0].tolist(), values2[0].tolist())
+        self.assertEqual(values1[2,1].tolist(), values2[1].tolist())
+        self.assertEqual(values1[1,2].tolist(), values2[2].tolist())
+        self.assertEqual(values1[0,3].tolist(), values2[3].tolist())
+
+        values3 = numpy.array(range(32)).reshape(2, 4, 4)
+        values4 = score.select_incumbency_aggregate(values3, "ORDO")
+        self.assertEqual(values3[:,0,0].tolist(), values4[:,0].tolist())
+        self.assertEqual(values3[:,2,1].tolist(), values4[:,1].tolist())
+        self.assertEqual(values3[:,1,2].tolist(), values4[:,2].tolist())
+        self.assertEqual(values3[:,0,3].tolist(), values4[:,3].tolist())
+
+        values5 = numpy.array(range(32)).reshape(1, 2, 4, 4)
+        values6 = score.select_incumbency_aggregate(values5, "ORDO")
+        self.assertEqual(values5[:,:,0,0].tolist(), values6[:,:,0].tolist())
+        self.assertEqual(values5[:,:,2,1].tolist(), values6[:,:,1].tolist())
+        self.assertEqual(values5[:,:,1,2].tolist(), values6[:,:,2].tolist())
+        self.assertEqual(values5[:,:,0,3].tolist(), values6[:,:,3].tolist())
+
+    def test_select_incumbency_votes(self):
+        '''
+        '''
+        values1 = numpy.array(range(4 * 4 * 5 * 6)).reshape(4, 4, 5, 6)
+        values2 = score.select_incumbency_votes(values1, "ORDOR")
+        self.assertEqual(values1[0,:,0,:].tolist(), values2[:,0,:].tolist())
+        self.assertEqual(values1[2,:,1,:].tolist(), values2[:,1,:].tolist())
+        self.assertEqual(values1[1,:,2,:].tolist(), values2[:,2,:].tolist())
+        self.assertEqual(values1[0,:,3,:].tolist(), values2[:,3,:].tolist())
+        self.assertEqual(values1[2,:,4,:].tolist(), values2[:,4,:].tolist())
+
+        values3 = numpy.array(range(3 * 4 * 4 * 5 * 6)).reshape(3, 4, 4, 5, 6)
+        values4 = score.select_incumbency_votes(values3, "ORDOR")
+        self.assertEqual(values3[:,0,:,0,:].tolist(), values4[:,:,0,:].tolist())
+        self.assertEqual(values3[:,2,:,1,:].tolist(), values4[:,:,1,:].tolist())
+        self.assertEqual(values3[:,1,:,2,:].tolist(), values4[:,:,2,:].tolist())
+        self.assertEqual(values3[:,0,:,3,:].tolist(), values4[:,:,3,:].tolist())
+        self.assertEqual(values3[:,2,:,4,:].tolist(), values4[:,:,4,:].tolist())
+
     def test_vectorized_D2_diff(self):
         ''' D2 diff is correctly calculated for vectorized multi-sim numpy arrays
         '''
@@ -1351,12 +1394,15 @@ class TestScore (unittest.TestCase):
         vectorized_MMD.return_value = numpy.array([0, 0, 0])
         vectorized_PB.return_value = numpy.array([0, 0, 0])
         vectorized_EG.return_value = numpy.array([0, 0, 0])
-        # Mock return shape is (sims, districts, parties)
+        # Mock return shape is (incumbency, sims, districts, parties)
+        # All 3 incumbency scenarios have the same values (test doesn't use different incumbents)
         model_votes.return_value = numpy.array([
-            [[5.3, 2.7], [3.9, 4.1], [2.8, 5.2], [1.9, 6.1]],  # Sim 0
-            [[6.0, 2.0], [5.7, 2.3], [4.1, 3.9], [2.7, 5.3]],  # Sim 1
-            [[5.9, 2.1], [5.1, 2.9], [2.8, 5.2], [2.6, 5.4]],  # Sim 2
-        ])
+            [
+                [[5.3, 2.7], [3.9, 4.1], [2.8, 5.2], [1.9, 6.1]],  # Sim 0
+                [[6.0, 2.0], [5.7, 2.3], [4.1, 3.9], [2.7, 5.3]],  # Sim 1
+                [[5.9, 2.1], [5.1, 2.9], [2.8, 5.2], [2.6, 5.4]],  # Sim 2
+            ],
+        ] * 4)  # Repeat for all 4 incumbency scenarios
         output = score.calculate_everything(input)
         self.assertEqual(model_votes.mock_calls[0][1], ('2025A', data.State.XX, data.House.ushouse, filter_district_data.return_value))
 
@@ -1465,12 +1511,15 @@ class TestScore (unittest.TestCase):
         vectorized_MMD.return_value = numpy.array([0, 0, 0])
         vectorized_PB.return_value = numpy.array([0, 0, 0])
         vectorized_EG.return_value = numpy.array([0, 0, 0])
-        # Mock return shape is (sims, districts, parties)
+        # Mock return shape is (incumbency, sims, districts, parties)
+        # All 3 incumbency scenarios have the same values (test doesn't use different incumbents)
         model_votes.return_value = numpy.array([
-            [[5.3, 2.7], [3.9, 4.1], [2.8, 5.2], [1.9, 6.1]],  # Sim 0
-            [[6.0, 2.0], [5.7, 2.3], [4.1, 3.9], [2.7, 5.3]],  # Sim 1
-            [[5.9, 2.1], [5.1, 2.9], [2.8, 5.2], [2.6, 5.4]],  # Sim 2
-        ])
+            [
+                [[5.3, 2.7], [3.9, 4.1], [2.8, 5.2], [1.9, 6.1]],  # Sim 0
+                [[6.0, 2.0], [5.7, 2.3], [4.1, 3.9], [2.7, 5.3]],  # Sim 1
+                [[5.9, 2.1], [5.1, 2.9], [2.8, 5.2], [2.6, 5.4]],  # Sim 2
+            ],
+        ] * 4)  # Repeat for all 4 incumbency scenarios
         output = score.calculate_everything(input)
         self.assertEqual(model_votes.mock_calls[0][1], ('2025A', data.State.XX, data.House.ushouse, filter_district_data.return_value))
 
@@ -1577,17 +1626,38 @@ class TestScore (unittest.TestCase):
         vectorized_MMD.return_value = numpy.array([0, 0, 0])
         vectorized_PB.return_value = numpy.array([0, 0, 0])
         vectorized_EG.return_value = numpy.array([0, 0, 0])
+        # Mock return shape is (incumbency, sims, districts, parties)
+        # Different values per incumbency scenario to verify correct selection
+        # With incumbents = ['R', 'D', 'R', 'D'], verify each district picks the right scenario
         model_votes.return_value = numpy.array([
-            [[5.3, 2.7], [4.4, 3.6], [2.8, 5.2], [1.9, 6.1]],  # Sim 0
-            [[6.0, 2.0], [5.2, 2.8], [3.5, 4.5], [2.7, 5.3]],  # Sim 1
-            [[5.9, 2.1], [5.1, 2.9], [3.4, 4.6], [2.6, 5.4]],  # Sim 2
+            [  # Open seat scenario (idx 1, model value 0)
+                [[6.0, 2.0], [5.0, 3.0], [4.0, 4.0], [3.0, 5.0]],  # Sim 0
+                [[7.0, 1.0], [6.0, 2.0], [5.0, 3.0], [4.0, 4.0]],  # Sim 1
+                [[6.5, 1.5], [5.5, 2.5], [4.5, 3.5], [3.5, 4.5]],  # Sim 2
+            ],
+            [  # Republican incumbency scenario (idx 0, model value -1)
+                [[5.0, 3.0], [4.0, 4.0], [3.0, 5.0], [2.0, 6.0]],  # Sim 0
+                [[6.0, 2.0], [5.0, 3.0], [4.0, 4.0], [3.0, 5.0]],  # Sim 1
+                [[5.5, 2.5], [4.5, 3.5], [3.5, 4.5], [2.5, 5.5]],  # Sim 2
+            ],
+            [  # Democrat incumbency scenario (idx 2, model value 1)
+                [[7.0, 1.0], [6.0, 2.0], [5.0, 3.0], [4.0, 4.0]],  # Sim 0
+                [[8.0, 0.0], [7.0, 1.0], [6.0, 2.0], [5.0, 3.0]],  # Sim 1
+                [[7.5, 0.5], [6.5, 1.5], [5.5, 2.5], [4.5, 3.5]],  # Sim 2
+            ],
+            [  # Undefined seat scenario (idx 3, model value 0)
+                [[6.0, 2.0], [5.0, 3.0], [4.0, 4.0], [3.0, 5.0]],  # Sim 0
+                [[7.0, 1.0], [6.0, 2.0], [5.0, 3.0], [4.0, 4.0]],  # Sim 1
+                [[6.5, 1.5], [5.5, 2.5], [4.5, 3.5], [3.5, 4.5]],  # Sim 2
+            ],
         ])
         score.calculate_everything(input)
+        # Verify the call to model_votes excludes incumbency data
         self.assertEqual(model_votes.mock_calls[0][1][:2], ('2025A', data.State.XX))
-        self.assertEqual(model_votes.mock_calls[0][1][3][0], (6.0, 2.0, 'R'))
-        self.assertEqual(model_votes.mock_calls[0][1][3][1], (5.0, 3.0, 'D'))
-        self.assertEqual(model_votes.mock_calls[0][1][3][2], (3.0, 5.0, 'R'))
-        self.assertEqual(model_votes.mock_calls[0][1][3][3], (2.0, 6.0, 'D'))
+        self.assertEqual(model_votes.mock_calls[0][1][3][0], (6.0, 2.0))
+        self.assertEqual(model_votes.mock_calls[0][1][3][1], (5.0, 3.0))
+        self.assertEqual(model_votes.mock_calls[0][1][3][2], (3.0, 5.0))
+        self.assertEqual(model_votes.mock_calls[0][1][3][3], (2.0, 6.0))
 
     @unittest.mock.patch('planscore.score.percentrank_rel')
     @unittest.mock.patch('planscore.score.percentrank_abs')
@@ -1638,11 +1708,14 @@ class TestScore (unittest.TestCase):
         vectorized_PB.return_value = numpy.array([0, 0, 0])
         vectorized_EG.return_value = numpy.array([0, 0, 0])
         calculate_EG.return_value = 0
+        # Mock return shape is (incumbency, sims, districts, parties)
         model_votes.return_value = numpy.array([
-            [[5.3, 2.7], [4.4, 3.6], [2.8, 5.2], [1.9, 6.1]],  # Sim 0
-            [[6.0, 2.0], [5.2, 2.8], [3.5, 4.5], [2.7, 5.3]],  # Sim 1
-            [[5.9, 2.1], [5.1, 2.9], [3.4, 4.6], [2.6, 5.4]],  # Sim 2
-        ])
+            [
+                [[5.3, 2.7], [4.4, 3.6], [2.8, 5.2], [1.9, 6.1]],  # Sim 0
+                [[6.0, 2.0], [5.2, 2.8], [3.5, 4.5], [2.7, 5.3]],  # Sim 1
+                [[5.9, 2.1], [5.1, 2.9], [3.4, 4.6], [2.6, 5.4]],  # Sim 2
+            ],
+        ] * 4)  # Repeat for all 4 incumbency scenarios
         output = score.calculate_everything(input)
 
         last4_EGs = calculate_EG.mock_calls[-4:]
@@ -1686,11 +1759,14 @@ class TestScore (unittest.TestCase):
         vectorized_MMD.return_value = numpy.array([0, 0, 0])
         vectorized_PB.return_value = numpy.array([0, 0, 0])
         vectorized_EG.return_value = numpy.array([0, 0, 0])
+        # Mock return shape is (incumbency, sims, districts, parties)
         model_votes.return_value = numpy.array([
-            [[5.3, 2.7], [3.9, 4.1], [2.8, 5.2], [1.9, 6.1], [numpy.nan, numpy.nan]],  # Sim 0
-            [[6.0, 2.0], [5.7, 2.3], [4.1, 3.9], [2.7, 5.3], [numpy.nan, numpy.nan]],  # Sim 1
-            [[5.9, 2.1], [5.1, 2.9], [2.8, 5.2], [2.6, 5.4], [numpy.nan, numpy.nan]],  # Sim 2
-        ])
+            [
+                [[5.3, 2.7], [3.9, 4.1], [2.8, 5.2], [1.9, 6.1], [numpy.nan, numpy.nan]],  # Sim 0
+                [[6.0, 2.0], [5.7, 2.3], [4.1, 3.9], [2.7, 5.3], [numpy.nan, numpy.nan]],  # Sim 1
+                [[5.9, 2.1], [5.1, 2.9], [2.8, 5.2], [2.6, 5.4], [numpy.nan, numpy.nan]],  # Sim 2
+            ],
+        ] * 4)  # Repeat for all 4 incumbency scenarios
         output = score.calculate_everything(input)
         self.assertEqual(output.districts[0]['is_counted'], True, 'Should count 1st district')
         self.assertEqual(output.districts[1]['is_counted'], True, 'Should count 2nd district')
@@ -1704,10 +1780,10 @@ class TestScore (unittest.TestCase):
         self.assertIsNone(output.districts[4]['number'], 'Should not count empty 5th district')
         
         self.assertEqual(model_votes.mock_calls[0][1][:2], ('2025A', data.State.XX))
-        self.assertEqual(model_votes.mock_calls[0][1][3][0], (6.0, 2.0, 'O'))
-        self.assertEqual(model_votes.mock_calls[0][1][3][1], (5.0, 3.0, 'O'))
-        self.assertEqual(model_votes.mock_calls[0][1][3][2], (3.0, 5.0, 'O'))
-        self.assertEqual(model_votes.mock_calls[0][1][3][3], (2.0, 6.0, 'O'))
+        self.assertEqual(model_votes.mock_calls[0][1][3][0], (6.0, 2.0))
+        self.assertEqual(model_votes.mock_calls[0][1][3][1], (5.0, 3.0))
+        self.assertEqual(model_votes.mock_calls[0][1][3][2], (3.0, 5.0))
+        self.assertEqual(model_votes.mock_calls[0][1][3][3], (2.0, 6.0))
 
         self.assertEqual(output.summary['Mean-Median'], 0)
         # Verify vectorized_MMD was called with correct array shape (including NaN district)

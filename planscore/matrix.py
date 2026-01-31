@@ -1,11 +1,8 @@
 import os
 import csv
 import gzip
-import itertools
 import collections
-import argparse
 import statistics
-import urllib.request
 
 try:
     import numpy
@@ -15,11 +12,13 @@ except ImportError:
 
 from . import data
 
-INCUMBENCY = {
-    data.Incumbency.Open.value: 0,
-    data.Incumbency.Democrat.value: 1,
-    data.Incumbency.Republican.value: -1,
-}
+# Incumbency values for model ordered by expected index in multi-dimensional array
+INCUMBENCY = [
+    (data.Incumbency.Open.value, 0),
+    (data.Incumbency.Democrat.value, 1),
+    (data.Incumbency.Republican.value, -1),
+    (data.Incumbency.Undefined.value, 0),
+]
 
 # Dictionary of states plus Null Ranch, KS for Null Island
 STATE = dict([(s, s.value.lower()) for s in data.State] + [(data.State.XX, 'ks')])
@@ -168,48 +167,52 @@ def model_votes(model_version, state, house, districts):
         model_version is a string like '2021D' from data.VERSION_PARAMETERS.
         state is from data.State enum.
         house is from data.House enum.
-        districts is an array of three-element tuples:
+        districts is an array of two-element tuples:
         - Input Democratic vote count
         - Input Republican vote count
-        - Incumbency: "O" for open, "R", or "D"
 
-        Return is a SxDx2 matrix for S simulations, D districts, and Dem/Rep parties.
+        Return is an IxSxDx2 matrix where first dimension is incumbency scenario
+        (Republican=-1, Open=0, Democrat=1, Undefined=0), S simulations, D districts, and 2 parties.
     '''
-    params = data.VERSION_PARAMETERS[model_version]
-    
-    has_incumbents = bool({inc for (_, _, inc) in districts} != {'O'})
     is_congress = bool(house == data.House.ushouse)
+    params = data.VERSION_PARAMETERS[model_version]
 
-    # Get SxD array from apply_model() with modeled vote fractions
-    fractions = apply_model(
-        [
-            (dem / ((dem + rep) or numpy.nan), INCUMBENCY[inc])
-            for (dem, rep, inc) in districts
-        ],
-        load_model(params.path_suffix, STATE[state], params.year, has_incumbents, is_congress),
-        params,
-    )
+    # Model with incumbents and model without, relevant since 2022
+    imodel = load_model(params.path_suffix, STATE[state], params.year, True, is_congress)
+    umodel = load_model(params.path_suffix, STATE[state], params.year, False, is_congress)
 
-    # Create SxD scale array with total vote counts for each simulation and district
-    total_votes = sum([dem + rep for (dem, rep, _) in districts])
+    districts_args = [
+        [(d / ((d + r) or numpy.nan), inc_value) for (d, r) in districts]
+        for _, inc_value in INCUMBENCY
+    ]
+
+    # Stack: (incumbency, sims, districts) - 3x defined then 1x undefined incumbency
+    fraction_stack = [
+        *[apply_model(a, imodel, params) for a in districts_args[:3]],
+        apply_model(districts_args[3], umodel, params),
+    ]
+    all_fractions = numpy.stack(fraction_stack, axis=0)
+
+    # Create SxD scale array (same for all incumbency scenarios)
+    total_votes = sum([dem + rep for (dem, rep) in districts])
     one_district_votes = total_votes / len(districts)
-    scale = numpy.full(fractions.shape, one_district_votes)
+    scale = numpy.full(all_fractions.shape[1:], one_district_votes)  # (sims, districts)
 
-    # Build SxDx2 array with per-party vote totals for each simulation, district, and party
-    votes_dem = (fractions * scale).round(1)  # (sims, districts)
-    votes_rep = ((1 - fractions) * scale).round(1)  # (sims, districts)
-    votes = numpy.stack([votes_dem, votes_rep], axis=2)  # (sims, districts, 2)
+    # Build IxSxDx2 array with per-party vote totals for each incumbency, simulation, district, and party
+    votes_dem = (all_fractions * scale).round(1)  # (incumbency, sims, districts)
+    votes_rep = ((1 - all_fractions) * scale).round(1)  # (incumbency, sims, districts)
+    votes = numpy.stack([votes_dem, votes_rep], axis=3)  # (incumbency, sims, districts, 2)
 
     return votes
 
-def prepare_district_data(upload) -> list[tuple[float, float, str]]:
+def prepare_district_data(upload) -> list[tuple[float, float]]:
     ''' Simple presidential vote input for model_votes()
     '''
     params = data.VERSION_PARAMETERS[upload.model_version or upload.model.versions[0]]
     
     out_data = []
     
-    for (district, incumbency) in zip(upload.districts, upload.incumbents):
+    for district in upload.districts:
         for year in data.PRESIDENTIAL_YEARS:
             dem_key = f'US President {year} - DEM'
             rep_key = f'US President {year} - REP'
@@ -222,7 +225,6 @@ def prepare_district_data(upload) -> list[tuple[float, float, str]]:
                 out_data.append((
                     round(total * pvote, 7),
                     round(total * (1 - pvote), 7),
-                    incumbency,
                 ))
                 break
         else:
@@ -230,7 +232,7 @@ def prepare_district_data(upload) -> list[tuple[float, float, str]]:
     
     return out_data
 
-def filter_district_data(prepared_data: list[tuple[float, float, str]]) -> list[tuple[float, float, str]]:
+def filter_district_data(prepared_data: list[tuple[float, float]]) -> list[tuple[float, float]]:
     ''' Set to zero any district with votes 90% below mean()
     '''
     district_sums = numpy.array(prepared_data)[:,:2].astype(float).sum(axis=1)
@@ -240,42 +242,9 @@ def filter_district_data(prepared_data: list[tuple[float, float, str]]) -> list[
         (
             blue_votes if high_enough else 0,
             red_votes if high_enough else 0,
-            incumbency,
         )
-        for ((blue_votes, red_votes, incumbency), high_enough)
+        for ((blue_votes, red_votes), high_enough)
         in zip(prepared_data, district_sums >= district_cutoff)
     ]
     
     return filtered_data
-
-parser = argparse.ArgumentParser()
-parser.add_argument('upload_url')
-parser.add_argument('matrix_path')
-
-def main():
-    ''' Write all district vote simulations to single CSV file
-    '''
-    args = parser.parse_args()
-
-    got = urllib.request.urlopen(args.upload_url)
-    upload = data.Upload.from_json(got.read())
-    input_district_data = prepare_district_data(upload)
-    
-    # Get large number of simulated outputs
-    output_votes = model_votes(
-        upload.model_version or upload.model.versions[0],
-        upload.model.state,
-        upload.model.house,
-        input_district_data,
-    )
-
-    with open(args.matrix_path, 'w') as file:
-        sims, districts, parties = output_votes.shape
-        # Transpose to get districts as rows for CSV output
-        votes_matrix = output_votes.transpose(1, 0, 2).reshape((districts, sims * parties))
-
-        out = csv.writer(file, dialect='excel')
-        head = itertools.chain(*[[f'DEM{n:03d}', f'REP{n:03d}'] for n in range(sims)])
-        out.writerow(['District'] + list(head))
-        for (index, row) in enumerate(votes_matrix.tolist()):
-            out.writerow([index + 1] + row)

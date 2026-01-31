@@ -131,6 +131,7 @@ class Incumbency (enum.Enum):
     Open = 'O'
     Democrat = 'D'
     Republican = 'R'
+    Undefined = 'U' # Internal special value for all-open plans
 
 class Storage:
     ''' Wrapper for S3-related details.

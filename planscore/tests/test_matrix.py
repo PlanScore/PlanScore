@@ -296,25 +296,52 @@ class TestMatrix (unittest.TestCase):
             '2025B',
             data.State.NC,
             data.House.ushouse,
-            [
-                (4, 6, 'R'),
-                (5, 5, 'O'),
-                (6, 4, 'D'),
-            ],
+            [(4, 6), (5, 5), (6, 4)],
         )
 
+        # Verify apply_model was called 3 times (once per incumbency scenario)
+        self.assertEqual(len(apply_model.mock_calls), 4)
+
+        # First and last calls: Open seat (0) for all districts
         self.assertEqual(apply_model.mock_calls[0][1], (
-            [(.4, -1), (.5, 0), (.6, 1)],
+            [(.4, 0), (.5, 0), (.6, 0)],
             load_model.return_value,
             data.VERSION_PARAMETERS['2025B'],
         ))
+        self.assertEqual(apply_model.mock_calls[-1][1], (
+            [(.4, 0), (.5, 0), (.6, 0)],
+            load_model.return_value,
+            data.VERSION_PARAMETERS['2025B'],
+        ))
+
+        # Second call: Democrat incumbency (1) for all districts
+        self.assertEqual(apply_model.mock_calls[1][1], (
+            [(.4, 1), (.5, 1), (.6, 1)],
+            load_model.return_value,
+            data.VERSION_PARAMETERS['2025B'],
+        ))
+
+        # Third call: Republican incumbency (-1) for all districts
+        self.assertEqual(apply_model.mock_calls[2][1], (
+            [(.4, -1), (.5, -1), (.6, -1)],
+            load_model.return_value,
+            data.VERSION_PARAMETERS['2025B'],
+        ))
+
         self.assertEqual(load_model.mock_calls[0][1], ('-2025B', 'nc', 2024, True, True))
 
-        # Expected shape is (sims, districts, parties)
-        self.assertEqual(R.tolist(), [
+        # Expected shape is (incumbency_scenarios, sims, districts, parties)
+        self.assertEqual(R.shape, (4, 2, 3, 2))
+
+        # All three incumbency scenarios should have the same values (since mocked)
+        expected_values = [
             [[3.0, 7.0], [4.5, 5.5], [6.0, 4.0]],  # Sim 0
             [[4.0, 6.0], [5.5, 4.5], [7.0, 3.0]],  # Sim 1
-        ])
+        ]
+        self.assertEqual(R[0].tolist(), expected_values)  # Republican scenario
+        self.assertEqual(R[1].tolist(), expected_values)  # Open scenario
+        self.assertEqual(R[2].tolist(), expected_values)  # Democrat scenario
+        self.assertEqual(R[3].tolist(), expected_values)  # Undefined scenario
     
     @unittest.mock.patch('planscore.matrix.load_model')
     @unittest.mock.patch('planscore.matrix.apply_model')
@@ -329,28 +356,47 @@ class TestMatrix (unittest.TestCase):
             '2025B',
             data.State.NC,
             data.House.ushouse,
-            [
-                (4, 6, 'R'),
-                (0, 0, 'O'),
-            ],
+            [(4, 6), (0, 0)],
         )
 
-        # Can't just check NaN == NaN
-        self.assertEqual(apply_model.mock_calls[0][1][0][0], (.4, -1))
+        # Verify apply_model was called 3 times (once per incumbency scenario)
+        self.assertEqual(len(apply_model.mock_calls), 4)
+
+        # Check first and last calls (Open seat, 0)
+        self.assertEqual(apply_model.mock_calls[0][1][0][0], (.4, 0))
         self.assertTrue(numpy.isnan(apply_model.mock_calls[0][1][0][1][0]))
         self.assertEqual(apply_model.mock_calls[0][1][0][1][1], 0)
-        self.assertEqual(apply_model.mock_calls[0][1][1], load_model.return_value)
+        self.assertEqual(apply_model.mock_calls[-1][1][0][0], (.4, 0))
+        self.assertTrue(numpy.isnan(apply_model.mock_calls[-1][1][0][1][0]))
+        self.assertEqual(apply_model.mock_calls[-1][1][0][1][1], 0)
 
-        self.assertIs(apply_model.mock_calls[0][1][-1], data.VERSION_PARAMETERS['2025B'])
+        # Check second call (Democrat incumbency, 1)
+        self.assertEqual(apply_model.mock_calls[1][1][0][0], (.4, 1))
+        self.assertTrue(numpy.isnan(apply_model.mock_calls[1][1][0][1][0]))
+        self.assertEqual(apply_model.mock_calls[1][1][0][1][1], 1)
+
+        # Check third call (Republican incumbency, -1)
+        self.assertEqual(apply_model.mock_calls[2][1][0][0], (.4, -1))
+        self.assertTrue(numpy.isnan(apply_model.mock_calls[2][1][0][1][0]))
+        self.assertEqual(apply_model.mock_calls[2][1][0][1][1], -1)
+        self.assertEqual(apply_model.mock_calls[2][1][1], load_model.return_value)
+        self.assertIs(apply_model.mock_calls[2][1][-1], data.VERSION_PARAMETERS['2025B'])
+
         self.assertEqual(load_model.mock_calls[0][1], ('-2025B', 'nc', 2024, True, True))
 
-        # R shape is (sims, districts, parties) - check first sim
-        self.assertEqual(R[0].tolist(), [
+        # R shape is (incumbency_scenarios, sims, districts, parties)
+        self.assertEqual(R.shape, (4, 2, 2, 2))
+
+        # Check first incumbency scenario (Republican), first sim
+        self.assertEqual(R[0, 0].tolist(), [
             [1.5, 3.5],  # District 0
             [2.0, 3.0],  # District 1
         ])
-        
-        self.assertTrue(numpy.isnan(R[1]).all())
+
+        # All incumbency scenarios should have NaN for second sim
+        self.assertTrue(numpy.isnan(R[0, 1]).all())  # Republican scenario, sim 1
+        self.assertTrue(numpy.isnan(R[1, 1]).all())  # Open scenario, sim 1
+        self.assertTrue(numpy.isnan(R[2, 1]).all())  # Democrat scenario, sim 1
     
     def test_prepare_district_data_2025A_version(self):
         input = data.Upload(id=None, key=None,
@@ -364,10 +410,10 @@ class TestMatrix (unittest.TestCase):
                 ])
         
         output = matrix.prepare_district_data(input)
-        self.assertEqual(output[0], (6.0, 2.0, 'O'))
-        self.assertEqual(output[1], (5.0, 3.0, 'O'))
-        self.assertEqual(output[2], (3.0, 5.0, 'O'))
-        self.assertEqual(output[3], (2.0, 6.0, 'O'))
+        self.assertEqual(output[0], (6.0, 2.0))
+        self.assertEqual(output[1], (5.0, 3.0))
+        self.assertEqual(output[2], (3.0, 5.0))
+        self.assertEqual(output[3], (2.0, 6.0))
     
     def test_prepare_district_data_2025B_version(self):
         input = data.Upload(id=None, key=None,
@@ -381,10 +427,10 @@ class TestMatrix (unittest.TestCase):
                 ])
         
         output = matrix.prepare_district_data(input)
-        self.assertEqual(output[0], (5.0, 3.0, 'O'))
-        self.assertEqual(output[1], (4.0, 4.0, 'O'))
-        self.assertEqual(output[2], (2.0, 6.0, 'O'))
-        self.assertEqual(output[3], (1.0, 7.0, 'O'))
+        self.assertEqual(output[0], (5.0, 3.0))
+        self.assertEqual(output[1], (4.0, 4.0))
+        self.assertEqual(output[2], (2.0, 6.0))
+        self.assertEqual(output[3], (1.0, 7.0))
     
     def test_prepare_district_data_default_version(self):
         input = data.Upload(id=None, key=None,
@@ -398,29 +444,29 @@ class TestMatrix (unittest.TestCase):
                 ])
         
         output = matrix.prepare_district_data(input)
-        self.assertEqual(output[0], (6.0, 2.0, 'O'))
-        self.assertEqual(output[1], (5.0, 3.0, 'O'))
-        self.assertEqual(output[2], (3.0, 5.0, 'O'))
-        self.assertEqual(output[3], (2.0, 6.0, 'O'))
+        self.assertEqual(output[0], (6.0, 2.0))
+        self.assertEqual(output[1], (5.0, 3.0))
+        self.assertEqual(output[2], (3.0, 5.0))
+        self.assertEqual(output[3], (2.0, 6.0))
     
     def test_filter_district_data(self):
-        data1 = [(5.86, 2.14, 'O'), (4.95, 3.05, 'O'), (3.13, 4.87, 'O'), (2.22, 5.78, 'O')]
+        data1 = [(5.86, 2.14), (4.95, 3.05), (3.13, 4.87), (2.22, 5.78)]
         data2 = matrix.filter_district_data(data1)
         for (d1, d2) in zip(data1, data2):
             self.assertEqual(d1, d2)
 
-        data3 = [(5.86, 2.14, 'O'), (4.95, 3.05, 'O'), (3.13, 4.87, 'O'), (2.22, 5.78, 'O'), (0, 0, 'O')]
+        data3 = [(5.86, 2.14), (4.95, 3.05), (3.13, 4.87), (2.22, 5.78), (0, 0)]
         data4 = matrix.filter_district_data(data3)
         for (d3, d4) in zip(data3, data4):
             self.assertEqual(d3, d4)
 
-        data5 = [(5.86, 2.14, 'O'), (4.95, 3.05, 'O'), (3.13, 4.87, 'O'), (2.22, 5.78, 'O'), (.1, .1, 'O')]
+        data5 = [(5.86, 2.14), (4.95, 3.05), (3.13, 4.87), (2.22, 5.78), (.1, .1)]
         data6 = matrix.filter_district_data(data5)
         for (d5, d6) in zip(data5, data6[:4]):
             self.assertEqual(d5, d6)
-        self.assertEqual(data6[4], (0, 0, 'O'), 'Should see zeros at the end')
+        self.assertEqual(data6[4], (0, 0), 'Should see zeros at the end')
 
-        data7 = [(10, 10, 'O'), (10, 10, 'O'), (10, 10, 'O'), (10, 10, 'O'), (10, 10, 'O')]
+        data7 = [(10, 10), (10, 10), (10, 10), (10, 10), (10, 10)]
         data8 = matrix.filter_district_data(data7)
         for (d7, d8) in zip(data7, data8):
             self.assertEqual(d7, d8)
