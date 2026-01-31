@@ -1209,10 +1209,8 @@ def calculate_district_biases(upload):
     D2_is_valid = len(list(filter(None, D2ds))) > sim_count * .75
 
     # EG alone also gets a sensitivity test for vote swing scenarios
-    EGs = {
-        swing: vectorized_EG(incumbent_votes[i, ...])
-        for (i, swing) in enumerate(swing_range)
-    }
+    assert incumbent_votes.shape[0] == swing_count
+    EGs = {swing: EG for swing, EG in zip(swing_range, vectorized_EG(incumbent_votes))}
 
     summary_dict = {
         'Mean-Median': np_safe_mean(MMDs),
