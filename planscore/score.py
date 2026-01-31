@@ -1046,9 +1046,9 @@ def vectorized_vote_statistics(all_votes: numpy.typing.NDArray) -> numpy.typing.
     dem_votes_std = numpy.nanstd(dem_votes, axis=-2, ddof=1).round(constants.ROUND_COUNT)
     rep_votes_std = numpy.nanstd(rep_votes, axis=-2, ddof=1).round(constants.ROUND_COUNT)
 
-    # Stack votes with trailing dimensions as (party, mean/std/wins)
+    # Stack votes with trailing dimensions as (party, wins/mean/std)
     vote_stats = numpy.stack(
-        [dem_votes_mean, dem_votes_std, dem_wins, rep_votes_mean, rep_votes_std, 1 - dem_wins],
+        [dem_wins, dem_votes_mean, dem_votes_std, 1 - dem_wins, rep_votes_mean, rep_votes_std],
         axis=3
     ).reshape((*leading_dims, district_count, party_count, 3))
 
@@ -1125,8 +1125,8 @@ def calculate_district_biases(upload):
     vote_stats_base = vote_stats[0, 0, ...]
     vote_stats_diff = vote_stats - numpy.full(vote_stats.shape, vote_stats_base)
     vote_stats_diff[0, 0] = vote_stats_base
-    vote_stats_diff[..., :2] = vote_stats_diff[..., :2].round(1)
-    vote_stats_diff[..., 2] = vote_stats_diff[..., 2].round(3)
+    vote_stats_diff[..., 0] = vote_stats_diff[..., 0].round(3)
+    vote_stats_diff[..., 1:] = vote_stats_diff[..., 1:].round(1)
 
     output_statistics = dict(
         vote_swings=list(swing_range),
@@ -1134,11 +1134,11 @@ def calculate_district_biases(upload):
         districts=list(range(1, 1 + district_count)),
         dimensions=["vote_swings", "incumbents", "districts"],
         scenarios={
-            "Democratic Wins": vote_stats_diff[:, :, :, 0, 2].tolist(),
-            "Democratic Votes": vote_stats_diff[:, :, :, 0, 0].tolist(),
-            "Republican Votes": vote_stats_diff[:, :, :, 1, 0].tolist(),
-            "Democratic Votes SD": vote_stats_diff[:, :, :, 0, 1].tolist(),
-            "Republican Votes SD": vote_stats_diff[:, :, :, 1, 1].tolist(),
+            "Democratic Wins": vote_stats_diff[:, :, :, 0, 0].tolist(),
+            "Democratic Votes": vote_stats_diff[:, :, :, 0, 1].tolist(),
+            "Republican Votes": vote_stats_diff[:, :, :, 1, 1].tolist(),
+            "Democratic Votes SD": vote_stats_diff[:, :, :, 0, 2].tolist(),
+            "Republican Votes SD": vote_stats_diff[:, :, :, 1, 2].tolist(),
         }
     )
 
@@ -1147,11 +1147,11 @@ def calculate_district_biases(upload):
     # Select appropriate incumbency scenario per district for JSON output
     # Result arrays have shape (districts,)
     chosen_stats = select_incumbency_stats(vote_stats[z], upload.incumbents)
-    chosen_dem_votes_mean = chosen_stats[...,0,0]
-    chosen_rep_votes_mean = chosen_stats[...,1,0]
-    chosen_dem_votes_std = chosen_stats[...,0,1]
-    chosen_rep_votes_std = chosen_stats[...,1,1]
-    chosen_dem_wins = chosen_stats[...,0,2]
+    chosen_dem_wins = chosen_stats[...,0,0]
+    chosen_dem_votes_mean = chosen_stats[...,0,1]
+    chosen_rep_votes_mean = chosen_stats[...,1,1]
+    chosen_dem_votes_std = chosen_stats[...,0,2]
+    chosen_rep_votes_std = chosen_stats[...,1,2]
 
     # Select appropriate incumbency scenario per output vote
     # chosen_votes has shape (sims, districts, 2)
