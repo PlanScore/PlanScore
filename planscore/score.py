@@ -355,7 +355,7 @@ def calculate_EG(red_districts:list[float], blue_districts:list[float], vote_swi
     
     return statewide_seat_share - 0.5 - 2 * (statewide_vote_share - 0.5)
 
-def vectorized_EG(votes:numpy.typing.NDArray, vote_swing:float=0) -> numpy.typing.NDArray:
+def vectorized_EG(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
     ''' Calculate Efficiency Gap for vectorized multi-sim numpy arrays.
 
         Input array shape is (*leading_dims, districts, 2) where leading_dims can be any number of dimensions.
@@ -364,34 +364,32 @@ def vectorized_EG(votes:numpy.typing.NDArray, vote_swing:float=0) -> numpy.typin
 
         By convention, result is positive for blue and negative for red.
 
+        Vote shares outside [0.25, 0.75] are clamped to that range before calculating EG.
+        To apply vote swings, use vectorized_swing() before calling this function.
+
         Examples:
         - (sims, districts, 2) - returns shape (sims,)
         - (scenarios, sims, districts, 2) - returns shape (scenarios, sims)
     '''
-    # Apply initial swing to calculate init_vote_share
-    init_swung = vectorized_swing(votes, vote_swing)
-
-    # Calculate init_vote_share - sum over districts
-    # After selecting party, sum over the last dimension (districts)
-    init_blue_total = init_swung[..., 0].sum(axis=-1)  # sum over districts
-    init_red_total = init_swung[..., 1].sum(axis=-1)   # sum over districts
-    init_vote_share = init_blue_total / (init_blue_total + init_red_total)
-
-    # Calculate clamped_swing per leading dimension
-    clamped_swing = numpy.where(
-        init_vote_share < 0.25,
-        vote_swing + (0.25 - init_vote_share),
-        numpy.where(
-            init_vote_share > 0.75,
-            vote_swing - (init_vote_share - 0.75),
-            vote_swing
-        )
-    )
-
-    # Apply per-leading-dimension clamped swings using broadcasting
     # Calculate district totals - shape (*leading_dims, districts)
     district_totals = votes.sum(axis=-1)
     nonzero_mask = district_totals > 0
+
+    # Calculate statewide vote share to determine clamping
+    blue_total = votes[..., 0].sum(axis=-1)  # sum over districts
+    red_total = votes[..., 1].sum(axis=-1)   # sum over districts
+    vote_share = blue_total / (blue_total + red_total)
+
+    # Calculate clamped_swing to bring vote_share into [0.25, 0.75] range
+    clamped_swing = numpy.where(
+        vote_share < 0.25,
+        0.25 - vote_share,  # swing to 25% blue
+        numpy.where(
+            vote_share > 0.75,
+            0.75 - vote_share,  # swing to 75% blue
+            0.0  # no swing needed
+        )
+    )
 
     # Calculate current vote shares - shape (*leading_dims, districts, 2)
     safe_totals = numpy.where(nonzero_mask[..., numpy.newaxis],
@@ -399,8 +397,7 @@ def vectorized_EG(votes:numpy.typing.NDArray, vote_swing:float=0) -> numpy.typin
                                1.0)
     shares = votes / safe_totals
 
-    # Apply per-leading-dimension swings with broadcasting
-    # clamped_swing has shape (*leading_dims,), need to add district dimension
+    # Apply clamping swings
     swing_broadcast = clamped_swing[..., numpy.newaxis]  # shape (*leading_dims, 1)
     swung_shares = shares.copy()
     swung_shares[..., 0] = shares[..., 0] + swing_broadcast  # blue gets +swing
@@ -413,7 +410,7 @@ def vectorized_EG(votes:numpy.typing.NDArray, vote_swing:float=0) -> numpy.typin
     swung_votes = numpy.where(nonzero_mask[..., numpy.newaxis], swung_votes, 0.0)
 
     # Count blue wins per leading dimension
-    blue_wins = ((swung_votes[..., :, 0] > swung_votes[..., :, 1]) & nonzero_mask).sum(axis=-1)
+    blue_wins = ((swung_votes[..., 0] > swung_votes[..., 1]) & nonzero_mask).sum(axis=-1)
 
     # Count nonzero districts per leading dimension
     nonzero_counts = nonzero_mask.sum(axis=-1)
@@ -424,7 +421,7 @@ def vectorized_EG(votes:numpy.typing.NDArray, vote_swing:float=0) -> numpy.typin
                                         0.0)
 
     # Calculate vote share per leading dimension
-    statewide_blue_votes = swung_votes[..., :, 0].sum(axis=-1)
+    statewide_blue_votes = swung_votes[..., 0].sum(axis=-1)
     statewide_total_votes = swung_votes.sum(axis=(-2, -1))  # sum over districts and parties
     statewide_vote_share = numpy.where(statewide_total_votes > 0,
                                         statewide_blue_votes / statewide_total_votes,
