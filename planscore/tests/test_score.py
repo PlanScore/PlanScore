@@ -356,6 +356,19 @@ class TestScore (unittest.TestCase):
         self.assertAlmostEqual(gap8[0], 0, places=1)
         self.assertAlmostEqual(gap8[1], 0, places=1)
 
+        # Test case 9: Multiple dimensions (scenarios, sims, districts, parties)
+        votes9 = numpy.array([
+            [[[6, 2], [5, 3], [3, 5], [2, 6]], [[6, 2], [5, 3], [3, 5], [2, 6]]],  # Scenario 1 sims
+            [[[5, 3], [6, 2], [3, 5], [2, 6]], [[5, 3], [6, 2], [3, 5], [2, 6]]],  # Scenario 2 sims with different values
+        ])
+        gap9 = score.vectorized_EG(votes9, vote_swing=0)
+        self.assertEqual(gap9.shape, (2, 2))
+        # Both should be close to 0 for fair elections
+        self.assertAlmostEqual(gap9[0, 0], 0, places=1)
+        self.assertAlmostEqual(gap9[0, 1], 0, places=1)
+        self.assertAlmostEqual(gap9[1, 0], 0, places=1)
+        self.assertAlmostEqual(gap9[1, 1], 0, places=1)
+
     def test_calculate_EG_unfair(self):
         ''' Efficiency gap can be correctly calculated for an unfair election
         '''
@@ -408,6 +421,20 @@ class TestScore (unittest.TestCase):
         self.assertAlmostEqual(gap5[0], -0.25)
         # Sim 2 should have different EG (less unfair)
         self.assertNotAlmostEqual(gap5[1], gap5[0], places=1)
+
+        # Test case 6: Additional dimensions (scenarios, sims, districts, parties)
+        votes6 = numpy.array([
+            [[[7, 1], [3, 5], [3, 5], [3, 5]], [[7, 1], [3, 5], [3, 5], [3, 5]]],  # Scenario 1 with very unfair sims
+            [[[6, 2], [5, 3], [3, 5], [2, 6]], [[6, 2], [5, 3], [3, 5], [2, 6]]],  # Scenario 2 with less unfair sims
+        ])
+        gap6 = score.vectorized_EG(votes6, vote_swing=0)
+        self.assertEqual(gap6.shape, (2, 2))
+        # Scenario 0 (very unfair) - both sims should have EG ≈ -0.25
+        self.assertAlmostEqual(gap6[0, 0], -0.25)
+        self.assertAlmostEqual(gap6[0, 1], -0.25)
+        # Scenario 1 (less unfair) - both sims should have the same EG but different from scenario 0
+        self.assertNotAlmostEqual(gap6[1, 0], gap6[0, 0], places=1)
+        self.assertAlmostEqual(gap6[1, 0], gap6[1, 1])
 
     def test_calculate_MMD(self):
         ''' Mean-Median can be correctly calculated for various elections
@@ -509,6 +536,20 @@ class TestScore (unittest.TestCase):
         self.assertAlmostEqual(mmd7[0], 0, places=2)
         self.assertAlmostEqual(mmd7[1], 0, places=2)
 
+        # Test case 8: Additional dimensions (scenarios, sims, districts, parties)
+        votes8 = numpy.array([
+            [[[5, 6], [5, 6], [5, 6], [10, 1], [10, 1]], [[5, 6], [5, 6], [5, 6], [10, 1], [10, 1]]],  # Scenario 1: red bias
+            [[[5, 6], [5, 6], [7, 1], [10, 1], [10, 1]], [[5, 6], [5, 6], [7, 1], [10, 1], [10, 1]]],  # Scenario 2: blue bias
+        ])
+        mmd8 = score.vectorized_MMD(votes8)
+        self.assertEqual(mmd8.shape, (2, 2))
+        # Scenario 0 (red bias) - both sims should have MMD ≈ -0.18
+        self.assertAlmostEqual(mmd8[0, 0], -0.18, places=2)
+        self.assertAlmostEqual(mmd8[0, 1], -0.18, places=2)
+        # Scenario 1 (blue bias) - both sims should have MMD ≈ 0.15
+        self.assertAlmostEqual(mmd8[1, 0], 0.15, places=2)
+        self.assertAlmostEqual(mmd8[1, 1], 0.15, places=2)
+
     def test_calculate_PB(self):
         ''' Partisan Bias can be correctly calculated for various elections
         '''
@@ -592,6 +633,20 @@ class TestScore (unittest.TestCase):
         self.assertEqual(pb6.shape, (2,))
         self.assertAlmostEqual(pb6[0], 0, places=2)
         self.assertAlmostEqual(pb6[1], 0, places=2)
+
+        # Test case 7: Additional dimensions (scenarios, sims, districts, parties)
+        votes7 = numpy.array([
+            [[[2, 6], [2, 6], [2, 6], [5, 3], [5, 3]], [[2, 6], [2, 6], [2, 6], [5, 3], [5, 3]]],  # Scenario 1: red bias
+            [[[6, 4], [6, 4], [6, 4], [3, 12], [3, 12]], [[6, 4], [6, 4], [6, 4], [3, 12], [3, 12]]],  # Scenario 2: blue bias
+        ])
+        pb7 = score.vectorized_PB(votes7)
+        self.assertEqual(pb7.shape, (2, 2))
+        # Scenario 0 (red bias) - both sims should have PB ≈ -0.1
+        self.assertAlmostEqual(pb7[0, 0], -0.1, places=2)
+        self.assertAlmostEqual(pb7[0, 1], -0.1, places=2)
+        # Scenario 1 (blue bias) - both sims should have PB ≈ 0.1
+        self.assertAlmostEqual(pb7[1, 0], 0.1, places=2)
+        self.assertAlmostEqual(pb7[1, 1], 0.1, places=2)
 
     def test_calculate_D2(self):
         ''' Declination can be correctly calculated for various elections
@@ -713,6 +768,20 @@ class TestScore (unittest.TestCase):
         self.assertEqual(d2_8.shape, (2,))
         self.assertAlmostEqual(d2_8[0], 0, places=3)
         self.assertAlmostEqual(d2_8[1], -0.54930614)
+
+        # Test case 9: Additional dimensions (scenarios, sims, districts, parties)
+        votes9 = numpy.array([
+            [[[3, 2], [4, 1], [5, 0]], [[3, 2], [4, 1], [5, 0]]],  # Scenario 1: all blue wins
+            [[[2, 3], [1, 4], [0, 5]], [[2, 3], [1, 4], [0, 5]]],  # Scenario 2: all red wins
+        ])
+        d2_9 = score.vectorized_D2(votes9)
+        self.assertEqual(d2_9.shape, (2, 2))
+        # Scenario 0 (all blue wins) - both sims should have D2 ≈ 0.549
+        self.assertAlmostEqual(d2_9[0, 0], 0.54930614, places=3)
+        self.assertAlmostEqual(d2_9[0, 1], 0.54930614, places=3)
+        # Scenario 1 (all red wins) - both sims should have D2 ≈ -0.549
+        self.assertAlmostEqual(d2_9[1, 0], -0.54930614, places=3)
+        self.assertAlmostEqual(d2_9[1, 1], -0.54930614, places=3)
 
     def test_calculate_D2_diff(self):
         '''
