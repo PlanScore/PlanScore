@@ -51,9 +51,10 @@ class TestObserveTiles (unittest.TestCase):
 
         self.assertEqual(put_call0[2], dict(Bucket=storage.bucket,
             Key=upload.scenarios_key.return_value,
-            Body=b'{"statistics": "yes"}',
+            Body=gzip.compress(b'{"statistics": "yes"}'),
             CacheControl='public, no-cache, no-store',
             ACL='public-read', ContentType='text/json',
+            ContentEncoding='gzip',
             StorageClass='INTELLIGENT_TIERING'))
         
         self.assertEqual(put_call1[2], dict(Bucket=storage.bucket,

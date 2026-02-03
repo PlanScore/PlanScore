@@ -38,8 +38,8 @@ def put_upload_index(storage, upload):
     key0 = upload.scenarios_key()
     body0 = json.dumps(upload.scenarios, sort_keys=True, indent=None).encode('utf8')
 
-    storage.s3.put_object(Bucket=storage.bucket, Key=key0, Body=body0,
-        ContentType='text/json', ACL='public-read', CacheControl=cache_control,
+    storage.s3.put_object(Bucket=storage.bucket, Key=key0, Body=gzip.compress(body0),
+        ContentType='text/json', ContentEncoding='gzip', ACL='public-read', CacheControl=cache_control,
         StorageClass='INTELLIGENT_TIERING')
 
     key1 = upload.index_key()
