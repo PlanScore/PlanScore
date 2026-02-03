@@ -1137,8 +1137,8 @@ def calculate_district_biases(upload):
     vote_stats_base = vote_stats[0, 0, ...]
     vote_stats_diff = vote_stats - numpy.full(vote_stats.shape, vote_stats_base)
     vote_stats_diff[0, 0] = vote_stats_base
-    vote_stats_diff[..., 0] = vote_stats_diff[..., 0].round(3)
-    vote_stats_diff[..., 1:] = vote_stats_diff[..., 1:].round(1)
+    vote_stats_diff[..., 0] = vote_stats_diff[..., 0].round(constants.ROUND_FLOAT)
+    vote_stats_diff[..., 1:] = vote_stats_diff[..., 1:].round(constants.ROUND_COUNT)
 
     scenarios = dict(
         vote_swings=list(swing_range),
