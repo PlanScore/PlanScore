@@ -1122,18 +1122,18 @@ def calculate_district_biases(upload):
     # Extract dimensions from the 4D model_output
     incumbency_count, sim_count, district_count, _ = model_output.shape
 
-    # Reshape so first axis can be swing amount, then expand to 11 swings
-    swing_count = 11
-    swing_range = range(-(swing_count // 2), 1 + swing_count // 2)
+    # Reshape so first axis can be swing amount, then expand to all swings
+    swing_count = 25
+    swing_range = [(i - swing_count // 2) / 2 for i in range(swing_count)]
     z = swing_count // 2 # Index of zero-swing swing_range midpoint
     all_votes = numpy.concatenate(
         [vectorized_swing(model_output, a/100).reshape((1, *model_output.shape)) for a in swing_range],
         axis=0,
     )
-    # all_votes shape is now (swing_count=11, incumbency=4, sims, districts, 2)
+    # all_votes shape is now (swing_count, incumbency=4, sims, districts, 2)
     vote_stats = vectorized_vote_statistics(all_votes)
 
-    # vote_stats shape is now (swing_count=11, incumbency=4, sims, districts, 2, 3)
+    # vote_stats shape is now (swing_count, incumbency=4, sims, districts, 2, 3)
     vote_stats_base = vote_stats[0, 0, ...]
     vote_stats_diff = vote_stats - numpy.full(vote_stats.shape, vote_stats_base)
     vote_stats_diff[0, 0] = vote_stats_base
@@ -1229,19 +1229,19 @@ def calculate_district_biases(upload):
         'Declination Is Valid': D2_is_valid,
         'Declination Absolute Percent Rank': percentrank_abs(COLUMN_D2, upload.model.house, np_safe_mean(D2s)),
         'Declination Relative Percent Rank': percentrank_rel(COLUMN_D2, upload.model.house, np_safe_mean(D2s)),
-        'Efficiency Gap': np_safe_mean(EGs[0]),
-        'Efficiency Gap SD': np_safe_stdev(EGs[0]),
-        'Efficiency Gap Positives': np_safe_positives(EGs[0]),
-        'Efficiency Gap Absolute Percent Rank': percentrank_abs(COLUMN_EG, upload.model.house, np_safe_mean(EGs[0])),
-        'Efficiency Gap Relative Percent Rank': percentrank_rel(COLUMN_EG, upload.model.house, np_safe_mean(EGs[0])),
+        'Efficiency Gap': np_safe_mean(EGs[0.0]),
+        'Efficiency Gap SD': np_safe_stdev(EGs[0.0]),
+        'Efficiency Gap Positives': np_safe_positives(EGs[0.0]),
+        'Efficiency Gap Absolute Percent Rank': percentrank_abs(COLUMN_EG, upload.model.house, np_safe_mean(EGs[0.0])),
+        'Efficiency Gap Relative Percent Rank': percentrank_rel(COLUMN_EG, upload.model.house, np_safe_mean(EGs[0.0])),
     }
     
-    for swing in (1, 2, 3, 4, 5):
+    for swing in (1.0, 2.0, 3.0, 4.0, 5.0):
         summary_dict.update({
-            f'Efficiency Gap +{swing} Dem': np_safe_mean(EGs[swing]),
-            f'Efficiency Gap +{swing} Rep': np_safe_mean(EGs[-swing]),
-            f'Efficiency Gap +{swing} Dem SD': np_safe_stdev(EGs[swing]),
-            f'Efficiency Gap +{swing} Rep SD': np_safe_stdev(EGs[-swing]),
+            f'Efficiency Gap +{swing:.0f} Dem': np_safe_mean(EGs[swing]),
+            f'Efficiency Gap +{swing:.0f} Rep': np_safe_mean(EGs[-swing]),
+            f'Efficiency Gap +{swing:.0f} Dem SD': np_safe_stdev(EGs[swing]),
+            f'Efficiency Gap +{swing:.0f} Rep SD': np_safe_stdev(EGs[-swing]),
         })
 
     return upload.clone(districts=copied_districts, summary=summary_dict, scenarios=scenarios)
