@@ -14,7 +14,7 @@ import itertools
 import zipfile
 import datetime
 import boto3
-from . import util, data, score, website, observe
+from . import util, data, score, website, observe, constants
 
 try:
     import osgeo.ogr
@@ -157,9 +157,14 @@ def accumulate_district_totals(athena, upload, is_spatial):
         score.Aggregator.Median: 'APPROX_PERCENTILE("{}", 0.5)',
         score.Aggregator.WeightedMean: 'IF(SUM("Population 2020") > 0, SUM("{}" * "Population 2020") / SUM("Population 2020"))',
     }
+    precision = {
+        score.Aggregator.Sum: constants.ROUND_COUNT,
+        score.Aggregator.Median: constants.ROUND_FLOAT,
+        score.Aggregator.WeightedMean: constants.ROUND_FLOAT,
+    }
     
     columns = [
-        f'{aggregators[agg].format(name)} AS "{name}"'
+        f'ROUND({aggregators[agg].format(name)}, {precision[agg]}) AS "{name}"'
         for (name, _, agg) in score.BLOCK_TABLE_FIELDS
     ]
     
@@ -421,8 +426,9 @@ def lambda_handler(event, context):
         observe.put_upload_index(storage, error_upload)
         raise
     else:
-        # Remove districts from output to stay inside Step Functions limits
+        # Remove districts and statistics from output to stay inside Step Functions limits
         upload2.districts = None
+        upload2.statistics = None
         return upload2.to_dict()
 
 if __name__ == '__main__':

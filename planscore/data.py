@@ -11,6 +11,7 @@ from . import constants
 UPLOAD_DIRECTORY = 'uploads/{id}/'
 UPLOAD_PREFIX = 'uploads/{id}/upload/'
 UPLOAD_INDEX_KEY = 'uploads/{id}/index.json'
+UPLOAD_SCENARIOS_KEY = 'uploads/{id}/scenarios.json'
 UPLOAD_PLAINTEXT_KEY = 'uploads/{id}/index.txt'
 UPLOAD_GEOMETRY_KEY = 'uploads/{id}/geometry.json'
 UPLOAD_DISTRICTS_KEY = 'uploads/{id}/districts/{index}.json'
@@ -214,16 +215,17 @@ class Model:
 
 class Upload:
 
-    def __init__(self, id, key, model:Model=None, districts=None, incumbents=None, vote_swings=None,
-            summary=None, progress=None, start_time=None, message=None,
-            description=None, geometry_key=None, status=None,
-            library_metadata=None, auth_token=None, model_version=None, execution_id=None, execution_token=None,
+    def __init__(self, id, key, model:Model=None, districts=None, scenarios=None,
+            incumbents=None, vote_swings=None, summary=None, progress=None, start_time=None,
+            message=None, description=None, geometry_key=None, status=None, library_metadata=None,
+            auth_token=None, model_version=None, execution_id=None, execution_token=None,
             **ignored):
         self.id = id
         self.key = key
         self.model = model
         self.status = status
         self.districts = districts or []
+        self.scenarios = scenarios or {}
         self.incumbents = incumbents or []
         self.vote_swings = vote_swings or []
         self.summary = summary or {}
@@ -251,6 +253,9 @@ class Upload:
     def index_key(self):
         return UPLOAD_INDEX_KEY.format(id=self.id)
     
+    def scenarios_key(self):
+        return UPLOAD_SCENARIOS_KEY.format(id=self.id)
+
     def plaintext_key(self):
         return UPLOAD_PLAINTEXT_KEY.format(id=self.id)
     
@@ -318,6 +323,7 @@ class Upload:
             model = (self.model.to_dict() if self.model else None),
             status = self.status,
             districts = self.districts,
+            scenarios = self.scenarios,
             incumbents = self.incumbents,
             vote_swings = self.vote_swings,
             summary = self.summary,
@@ -391,13 +397,14 @@ class Upload:
         else:
             return out.getvalue()
     
-    def clone(self, model=None, districts=None, incumbents=None, vote_swings=None, summary=None,
+    def clone(self, model=None, districts=None, scenarios=None, incumbents=None, vote_swings=None, summary=None,
         progress=None, start_time=None, message=None, description=None, geometry_key=None, status=None,
         library_metadata=None, auth_token=None, model_version=None, execution_id=None, execution_token=None):
         return Upload(self.id, self.key,
             model = model or self.model,
             status = status if (self.status is None) else self.status,
             districts = districts or self.districts,
+            scenarios = scenarios or self.scenarios,
             incumbents = incumbents or self.incumbents,
             vote_swings = vote_swings or self.vote_swings,
             summary = summary or self.summary,
@@ -424,6 +431,7 @@ class Upload:
             model = model,
             status = data.get('status'),
             districts = data.get('districts'),
+            scenarios = data.get('scenarios'),
             incumbents = data.get('incumbents'),
             vote_swings = data.get('vote_swings'),
             summary = data.get('summary'),
