@@ -1558,14 +1558,15 @@ function plan_has_incumbency(plan)
 function start_load_plan_polling(url, message_section, score_section,
     description_el, metadata_el, model_link, model_footnote, model_url_pattern,
     districts_table, metrics_table, score_EG, score_PB, score_MM, score_DEC2,
-    score_sense, scores_FTVA, text_url, text_link, geom_prefix, map_div, seat_count)
+    score_sense, scores_FTVA, text_url, text_link, geom_prefix, map_div, seat_count,
+    scenario_adjustments_form)
 {
     const make_xhr = () => {
         load_plan_score(url, message_section, score_section,
             description_el, metadata_el, model_link, model_footnote, model_url_pattern,
             districts_table, metrics_table, score_EG, score_PB, score_MM,
             score_DEC2, score_sense, scores_FTVA, text_url, text_link, geom_prefix, map_div,
-            seat_count, xhr_retry_callback);
+            seat_count, scenario_adjustments_form, xhr_retry_callback);
     };
 
     const xhr_retry_callback = () => {
@@ -1582,7 +1583,7 @@ function load_plan_score(url, message_section, score_section,
     description_el, metadata_el, model_link, model_footnote, model_url_pattern,
     districts_table, metrics_table, score_EG, score_PB, score_MM, score_DEC2,
     score_sense, scores_FTVA, text_url, text_link, geom_prefix, map_div, seat_count,
-    xhr_retry_callback)
+    scenario_adjustments_form, xhr_retry_callback)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
