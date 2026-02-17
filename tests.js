@@ -25,6 +25,7 @@ var NC_index = require('./data/sample-NC-1-992/index.json'),
     NC_2019_incumbency = require('./data/sample-NC2019/index-incumbency.json'),
     NC_2020 = require('./data/sample-NC2020/index.json'),
     NC_2020_unified = require('./data/sample-NC-unified/index.json'),
+    NC_2025_scenarios = require('./data/sample-NC2025/scenarios.json'),
     FL_2020_declination = require('./data/sample-FL-declination/index.json'),
     CT_2021_water_district = require('./data/sample-CT-mostly-water-district/index.json'),
     MS_zero_vote_swings = require('./data/sample-MS-zero-vote-swings/index.json'),
@@ -653,3 +654,19 @@ assert.equal(annotate_new.get_description(NC_2019_preread_end, undefined),
     'North Carolina U.S. House plan uploaded on 12/28/2019');
 
 console.log('Tests pass.', new Date().toLocaleString());
+
+// Adjust scenario statistics
+
+assert.notEqual(NC_2025_scenarios.statistics['Democratic Votes'][1][1][1], 252495.57);
+assert.notEqual(NC_2025_scenarios.statistics['Democratic Votes SD'][1][1][1], 12911.24);
+assert.notEqual(NC_2025_scenarios.statistics['Democratic Wins'][1][1][1], 1);
+assert.notEqual(NC_2025_scenarios.statistics['Republican Votes'][1][1][1], 148173.07);
+assert.notEqual(NC_2025_scenarios.statistics['Republican Votes SD'][1][1][1], 12911.24);
+
+plan.adjust_scenario_stats(NC_2025_scenarios);
+
+assert.equal(NC_2025_scenarios.statistics['Democratic Votes'][1][1][1], 252495.57);
+assert.equal(NC_2025_scenarios.statistics['Democratic Votes SD'][1][1][1], 12911.24);
+assert.equal(NC_2025_scenarios.statistics['Democratic Wins'][1][1][1], 1);
+assert.equal(NC_2025_scenarios.statistics['Republican Votes'][1][1][1], 148173.07);
+assert.equal(NC_2025_scenarios.statistics['Republican Votes SD'][1][1][1], 12911.24);

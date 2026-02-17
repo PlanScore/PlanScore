@@ -216,6 +216,28 @@ function nice_vote_swing(value)
     return '–';
 }
 
+function adjust_scenario_stats(data)
+{
+    if (data.dimensions.length != 3) {
+        throw new Error("Unexpected number of dimensions");
+    }
+
+    // Adjust statistics to represent real values
+    // All scenario stat values past [0][0] are diffs atop [0][0] to save bytes
+    for (var i = 0; i < data[data.dimensions[0]].length; i++) {
+        for (var j = 0; j < data[data.dimensions[1]].length; j++) {
+            if (i > 0 || j > 0) {
+                for (var k = 0; k < data[data.dimensions[2]].length; k++) {
+                    for (var s in data.statistics) {
+                        var stat = data.statistics[s];
+                        stat[i][j][k] = stat[0][0][k] + stat[i][j][k];
+                    }
+                }
+            }
+        }
+    }
+}
+
 function clear_element(el)
 {
     while(el.lastChild)
@@ -1826,25 +1848,7 @@ function load_plan_scenarios(url)
 
     function on_loaded_scenarios(data)
     {
-        if (data.dimensions.length != 3) {
-            throw new Error("Unexpected number of dimensions");
-        }
-
-        // Adjust statistics to represent real values
-        // All scenario stat values past [0][0] are diffs atop [0][0] to save bytes
-        for (var i = 0; i < data[data.dimensions[0]].length; i++) {
-            for (var j = 0; j < data[data.dimensions[1]].length; j++) {
-                if (i > 0 || j > 0) {
-                    for (var k = 0; k < data[data.dimensions[2]].length; k++) {
-                        for (var s in data.statistics) {
-                            var stat = data.statistics[s];
-                            stat[i][j][k] = stat[0][0][k] + stat[i][j][k];
-                        }
-                    }
-                }
-            }
-        }
-
+        adjust_scenario_stats(data);
         console.log('New scenarios:', data);
     }
 
@@ -2181,6 +2185,7 @@ if(typeof module !== 'undefined' && module.exports)
         update_acs2016_percentages,
         update_cvap2015_percentages,
         update_heading_titles,
+        adjust_scenario_stats,
         SHY_COLUMN,
     };
 }
