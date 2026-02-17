@@ -1602,6 +1602,11 @@ function load_plan_score(url, message_section, score_section,
             return;
         }
 
+        // Immediately kick off scenario loading
+        if (plan.scenarios !== undefined) {
+            load_plan_scenarios(geom_prefix + plan.scenarios.replace(/^\//, ''));
+        }
+
         // Plan is done parsing and we can render the page
         hide_message(score_section, message_section);
 
@@ -1808,6 +1813,50 @@ function load_plan_score(url, message_section, score_section,
         }
 
         show_message('The district plan failed to load.', score_section, message_section);
+    };
+
+    request.onerror = function() { /* There was a connection error of some sort */ };
+    request.send();
+}
+
+function load_plan_scenarios(url)
+{
+    var request = new XMLHttpRequest();
+    request.open('GET', url, true);
+
+    function on_loaded_scenarios(data)
+    {
+        if (data.dimensions.length != 3) {
+            throw new Error("Unexpected number of dimensions");
+        }
+
+        // Adjust statistics to represent real values
+        // All scenario stat values past [0][0] are diffs atop [0][0] to save bytes
+        for (var i = 0; i < data[data.dimensions[0]].length; i++) {
+            for (var j = 0; j < data[data.dimensions[1]].length; j++) {
+                if (i > 0 || j > 0) {
+                    for (var k = 0; k < data[data.dimensions[2]].length; k++) {
+                        for (var s in data.statistics) {
+                            var stat = data.statistics[s];
+                            stat[i][j][k] = stat[0][0][k] + stat[i][j][k];
+                        }
+                    }
+                }
+            }
+        }
+
+        console.log('New scenarios:', data);
+    }
+
+    request.onload = function()
+    {
+        if(request.status >= 200 && request.status < 400)
+        {
+            // Returns a GeoJSON dictionary
+            var data = JSON.parse(request.responseText);
+            console.log('Loaded scenarios:', data);
+            on_loaded_scenarios(data);
+        }
     };
 
     request.onerror = function() { /* There was a connection error of some sort */ };
