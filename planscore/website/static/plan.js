@@ -404,42 +404,86 @@ function get_seatshare_array(plan)
     };
 }
 
-function show_seatshare_graphic(plan, districts_table)
+function construct_seatshare_graphic(plan, districts_table)
 {
-    var seatshare_array = get_seatshare_array(plan),
-        tags = [],
-        last_color = false;
-    
-    if(seatshare_array === undefined)
+    if(!('Democratic Wins' in plan.districts[0].totals))
     {
+        return null;
+    }
+
+    // Create container div
+    var container = document.createElement('div');
+    container.className = 'seatshare-graphic';
+
+    // Create span elements for each district (structure only)
+    for(var i = 0; i < plan.districts.filter((d) => (d['is_counted'] !== false)).length; i++)
+    {
+        var span = document.createElement('span');
+        span.className = 'seatshare-box';
+        span.dataset.seatIndex = i;
+        span.textContent = ' ';
+        container.appendChild(span);
+    }
+
+    // Create line break
+    container.appendChild(document.createElement('br'));
+
+    // Create text container for seat share vs vote share
+    var text_span = document.createElement('span');
+    text_span.className = 'seatshare-text';
+    container.appendChild(text_span);
+
+    // Insert after districts table
+    districts_table.parentNode.parentNode.insertBefore(container, districts_table.parentNode.nextSibling);
+
+    return container;
+}
+
+function populate_seatshare_graphic(plan)
+{
+    var container = document.querySelector('.seatshare-graphic');
+    if(!container) {
         return;
     }
 
+    var seatshare_array = get_seatshare_array(plan);
+    if(seatshare_array === undefined) {
+        return;
+    }
+
+    var spans = container.querySelectorAll('.seatshare-box');
+    var last_color = false;
+
+    // Update each seat box with colors and widths
     for(var i = 0; i < seatshare_array.colors.length; i++)
     {
         var color = seatshare_array.colors[i],
             gutter = (last_color && color != last_color) ? '3px' : '1px',
             width = `calc(${100/(seatshare_array.colors.length)}% - ${gutter})`,
-            last_color = color;
-        
+            background = color;
+
         if(color == LEAN_BLUE_COLOR_HEX) {
-            color += ' url(&quot;/static/lean-blue-pattern.png&quot;)';
+            background += ' url("/static/lean-blue-pattern.png")';
         } else if(color == LEAN_RED_COLOR_HEX) {
-            color += ' url(&quot;/static/lean-red-pattern.png&quot;)';
+            background += ' url("/static/lean-red-pattern.png")';
         }
-    
+
         if(seatshare_array.colors.length > 50)
         {
-            color += ' fixed';
+            background += ' fixed';
         }
 
-        tags.push(
-            `<span style="width:${width};margin-left:${gutter};background:${color};" class="seatshare-box"> </span>`
-        );
+        spans[i].style.width = width;
+        spans[i].style.marginLeft = gutter;
+        spans[i].style.background = background;
+
+        last_color = color;
     }
 
-    tags.push(`
-        <br>Predicted
+    // Update text with seat share and vote share percentages
+    var text_span = container.querySelector('.seatshare-text');
+    text_span.innerHTML = `
+        Predicted
         ${nice_round_percent(seatshare_array.seat_share)} D
         / ${nice_round_percent(1 - seatshare_array.seat_share)} R
         seat share across scenarios<sup>*</sup>
@@ -447,16 +491,35 @@ function show_seatshare_graphic(plan, districts_table)
         ${nice_round_percent(seatshare_array.blue_votes / (seatshare_array.total_votes))} D
         / ${nice_round_percent(seatshare_array.red_votes / (seatshare_array.total_votes))} R
         vote share.
-        `);
-
-    svg_div = document.createElement('div');
-    svg_div.innerHTML = tags.join('');
-
-    // TODO: something more elegant than looking up two levels from the table
-    districts_table.parentNode.parentNode.insertBefore(svg_div, districts_table.parentNode.nextSibling);
+    `;
 }
 
-function show_efficiency_gap_score(plan, score_EG)
+function construct_efficiency_gap_score(score_EG)
+{
+    for(node = score_EG.firstChild; node = node.nextSibling; node)
+    {
+        if(node.nodeName == 'H3') {
+            // Add a span for the value
+            var value_span = document.createElement('span');
+            value_span.className = 'score-value';
+            value_span.dataset.metric = 'eg';
+            node.appendChild(document.createTextNode(': '));
+            node.appendChild(value_span);
+
+        } else if(node.nodeName == 'DIV') {
+            // Mark for chart creation
+            node.dataset.metric = 'eg';
+            node.dataset.chartType = 'bellchart';
+
+        } else if(node.nodeName == 'P') {
+            // Mark for description population
+            node.dataset.metric = 'eg';
+            node.dataset.contentType = 'description';
+        }
+    }
+}
+
+function populate_efficiency_gap_score(plan, score_EG)
 {
     var summary_name = which_score_summary_name(plan),
         gap = plan.summary[summary_name],
@@ -465,13 +528,16 @@ function show_efficiency_gap_score(plan, score_EG)
     for(node = score_EG.firstChild; node = node.nextSibling; node)
     {
         if(node.nodeName == 'H3') {
-            node.innerHTML += ': ' + gap_amount;
+            var value_span = node.querySelector('.score-value[data-metric="eg"]');
+            if(value_span) {
+                value_span.innerHTML = gap_amount;
+            }
 
-        } else if(node.nodeName == 'DIV') {
+        } else if(node.nodeName == 'DIV' && node.dataset.metric == 'eg') {
             drawBiasBellChart('eg', gap, node.id,
                 (plan.model ? plan.model.house : 'ushouse'), 'plan');
 
-        } else if(node.nodeName == 'P') {
+        } else if(node.nodeName == 'P' && node.dataset.metric == 'eg') {
             var win_party = (gap < 0 ? 'Republican' : 'Democratic'),
                 win_partisans = (gap < 0 ? 'Republicans' : 'Democrats'),
                 lose_party = (gap < 0 ? 'Democratic' : 'Republican');
@@ -505,7 +571,32 @@ function show_efficiency_gap_score(plan, score_EG)
     }
 }
 
-function show_declination2_score(plan, score_DEC2)
+function construct_declination2_score(score_DEC2)
+{
+    for(node = score_DEC2.firstChild; node = node.nextSibling; node)
+    {
+        if(node.nodeName == 'H3') {
+            // Add a span for the value
+            var value_span = document.createElement('span');
+            value_span.className = 'score-value';
+            value_span.dataset.metric = 'd2';
+            node.appendChild(document.createTextNode(': '));
+            node.appendChild(value_span);
+
+        } else if(node.nodeName == 'DIV') {
+            // Mark for chart creation
+            node.dataset.metric = 'd2';
+            node.dataset.chartType = 'bellchart';
+
+        } else if(node.nodeName == 'P') {
+            // Mark for description population
+            node.dataset.metric = 'd2';
+            node.dataset.contentType = 'description';
+        }
+    }
+}
+
+function populate_declination2_score(plan, score_DEC2)
 {
     var declination = plan.summary['Declination'],
         dec2_amount = (Math.round(Math.abs(declination) * 100) / 100) + partisan_suffix(declination);
@@ -513,13 +604,16 @@ function show_declination2_score(plan, score_DEC2)
     for(node = score_DEC2.firstChild; node = node.nextSibling; node)
     {
         if(node.nodeName == 'H3') {
-            node.innerHTML += ': ' + dec2_amount;
+            var value_span = node.querySelector('.score-value[data-metric="d2"]');
+            if(value_span) {
+                value_span.innerHTML = dec2_amount;
+            }
 
-        } else if(node.nodeName == 'DIV') {
+        } else if(node.nodeName == 'DIV' && node.dataset.metric == 'd2') {
             drawBiasBellChart('d2', declination, node.id,
                 (plan.model ? plan.model.house : 'ushouse'), 'plan');
 
-        } else if(node.nodeName == 'P') {
+        } else if(node.nodeName == 'P' && node.dataset.metric == 'd2') {
             var win_party = (declination < 0 ? 'Republican' : 'Democratic'),
                 win_partisans = (declination < 0 ? 'Republicans' : 'Democrats'),
                 lose_party = (declination < 0 ? 'Democratic' : 'Republican');
@@ -546,7 +640,32 @@ function show_declination2_score(plan, score_DEC2)
     }
 }
 
-function show_partisan_bias_score(plan, score_PB)
+function construct_partisan_bias_score(score_PB)
+{
+    for(node = score_PB.firstChild; node = node.nextSibling; node)
+    {
+        if(node.nodeName == 'H3') {
+            // Add a span for the value
+            var value_span = document.createElement('span');
+            value_span.className = 'score-value';
+            value_span.dataset.metric = 'pb';
+            node.appendChild(document.createTextNode(': '));
+            node.appendChild(value_span);
+
+        } else if(node.nodeName == 'DIV') {
+            // Mark for chart creation
+            node.dataset.metric = 'pb';
+            node.dataset.chartType = 'bellchart';
+
+        } else if(node.nodeName == 'P') {
+            // Mark for description population
+            node.dataset.metric = 'pb';
+            node.dataset.contentType = 'description';
+        }
+    }
+}
+
+function populate_partisan_bias_score(plan, score_PB)
 {
     var bias = plan.summary['Partisan Bias'],
         bias_amount = nice_percent(Math.abs(bias)) + partisan_suffix(bias);
@@ -554,13 +673,16 @@ function show_partisan_bias_score(plan, score_PB)
     for(node = score_PB.firstChild; node = node.nextSibling; node)
     {
         if(node.nodeName == 'H3') {
-            node.innerHTML += ': ' + bias_amount;
+            var value_span = node.querySelector('.score-value[data-metric="pb"]');
+            if(value_span) {
+                value_span.innerHTML = bias_amount;
+            }
 
-        } else if(node.nodeName == 'DIV') {
+        } else if(node.nodeName == 'DIV' && node.dataset.metric == 'pb') {
             drawBiasBellChart('pb', bias, node.id,
                 (plan.model ? plan.model.house : 'ushouse'), 'plan');
 
-        } else if(node.nodeName == 'P') {
+        } else if(node.nodeName == 'P' && node.dataset.metric == 'pb') {
             var win_party = (bias < 0 ? 'Republicans' : 'Democrats'),
                 win_partisans = (bias < 0 ? 'Republicans' : 'Democrats');
 
@@ -608,7 +730,32 @@ function hide_score_with_reason(score_node, reason)
     }
 }
 
-function show_mean_median_score(plan, score_MM)
+function construct_mean_median_score(score_MM)
+{
+    for(node = score_MM.firstChild; node = node.nextSibling; node)
+    {
+        if(node.nodeName == 'H3') {
+            // Add a span for the value
+            var value_span = document.createElement('span');
+            value_span.className = 'score-value';
+            value_span.dataset.metric = 'mm';
+            node.appendChild(document.createTextNode(': '));
+            node.appendChild(value_span);
+
+        } else if(node.nodeName == 'DIV') {
+            // Mark for chart creation
+            node.dataset.metric = 'mm';
+            node.dataset.chartType = 'bellchart';
+
+        } else if(node.nodeName == 'P') {
+            // Mark for description population
+            node.dataset.metric = 'mm';
+            node.dataset.contentType = 'description';
+        }
+    }
+}
+
+function populate_mean_median_score(plan, score_MM)
 {
     var diff = plan.summary['Mean-Median'],
         diff_amount = nice_percent(Math.abs(diff)) + partisan_suffix(diff);
@@ -616,13 +763,16 @@ function show_mean_median_score(plan, score_MM)
     for(node = score_MM.firstChild; node = node.nextSibling; node)
     {
         if(node.nodeName == 'H3') {
-            node.innerHTML += ': ' + diff_amount;
+            var value_span = node.querySelector('.score-value[data-metric="mm"]');
+            if(value_span) {
+                value_span.innerHTML = diff_amount;
+            }
 
-        } else if(node.nodeName == 'DIV') {
+        } else if(node.nodeName == 'DIV' && node.dataset.metric == 'mm') {
             drawBiasBellChart('mm', diff, node.id,
                 (plan.model ? plan.model.house : 'ushouse'), 'plan');
 
-        } else if(node.nodeName == 'P') {
+        } else if(node.nodeName == 'P' && node.dataset.metric == 'mm') {
             var win_party = (diff < 0 ? 'Republican' : 'Democrat'),
                 win_partisans = (diff < 0 ? 'Republicans' : 'Democrats');
 
@@ -655,28 +805,17 @@ function show_mean_median_score(plan, score_MM)
     }
 }
 
-function show_sensitivity_test(plan, score_sense)
+function construct_sensitivity_test(score_sense)
 {
-    Highcharts.chart(score_sense, {
+    // Create chart structure with empty data initially
+    var chart = Highcharts.chart(score_sense, {
         chart: { type: 'line' },
         legend: { enabled: false },
         credits: { enabled: false },
         title: { text: null },
         series: [{
             name: 'Expected Efficiency Gap',
-            data: [
-                100 * plan.summary['Efficiency Gap +5 Dem'],
-                100 * plan.summary['Efficiency Gap +4 Dem'],
-                100 * plan.summary['Efficiency Gap +3 Dem'],
-                100 * plan.summary['Efficiency Gap +2 Dem'],
-                100 * plan.summary['Efficiency Gap +1 Dem'],
-                100 * plan.summary['Efficiency Gap'],
-                100 * plan.summary['Efficiency Gap +1 Rep'],
-                100 * plan.summary['Efficiency Gap +2 Rep'],
-                100 * plan.summary['Efficiency Gap +3 Rep'],
-                100 * plan.summary['Efficiency Gap +4 Rep'],
-                100 * plan.summary['Efficiency Gap +5 Rep']
-                ]
+            data: [] // Empty data initially
         }],
         xAxis: {
             categories: ['+5 D', '+4 D', '+3 D', '+2 D', '+1 D', '0', '+1 R', '+2 R', '+3 R', '+4 R', '+5 R'],
@@ -702,6 +841,34 @@ function show_sensitivity_test(plan, score_sense)
             }
         }
     });
+
+    // Store chart reference for later population
+    score_sense._highchartsChart = chart;
+}
+
+function populate_sensitivity_test(plan, score_sense)
+{
+    var chart = score_sense._highchartsChart;
+    if(!chart) {
+        return;
+    }
+
+    var data = [
+        100 * plan.summary['Efficiency Gap +5 Dem'],
+        100 * plan.summary['Efficiency Gap +4 Dem'],
+        100 * plan.summary['Efficiency Gap +3 Dem'],
+        100 * plan.summary['Efficiency Gap +2 Dem'],
+        100 * plan.summary['Efficiency Gap +1 Dem'],
+        100 * plan.summary['Efficiency Gap'],
+        100 * plan.summary['Efficiency Gap +1 Rep'],
+        100 * plan.summary['Efficiency Gap +2 Rep'],
+        100 * plan.summary['Efficiency Gap +3 Rep'],
+        100 * plan.summary['Efficiency Gap +4 Rep'],
+        100 * plan.summary['Efficiency Gap +5 Rep']
+    ];
+
+    // Update chart data
+    chart.series[0].setData(data, true);
 }
 
 function show_message(text, score_section, message_section)
@@ -728,13 +895,79 @@ function hide_message(score_section, message_section)
     message_section.style.display = 'none';
 }
 
-function show_metrics_table(plan, metrics_table)
+function construct_metrics_table(metrics_table)
+{
+    // Build table structure with all possible columns
+    var thead = document.createElement('thead');
+    var header_row = document.createElement('tr');
+
+    var headers = [
+        'Metric',
+        'Value',
+        'Favors Democrats in this % of Scenarios<sup>*</sup>',
+        'More Skewed than this % of Historical Plans<sup>‡</sup>',
+        'More Pro-Democratic than this % of Historical Plans<sup>‡</sup>'
+    ];
+
+    headers.forEach((header_text, idx) => {
+        var th = document.createElement('th');
+        th.innerHTML = header_text;
+        th.dataset.columnIndex = idx;
+        if(idx >= 3) {
+            th.dataset.percentRankColumn = 'true';
+        }
+        header_row.appendChild(th);
+    });
+
+    thead.appendChild(header_row);
+
+    // Build tbody with rows for each metric
+    var tbody = document.createElement('tbody');
+    var metrics = [
+        {name: 'Efficiency Gap', key: 'eg', url: 'eg_metric_url'},
+        {name: 'Declination', key: 'd2', url: 'd2_metric_url'},
+        {name: 'Partisan Bias', key: 'pb', url: 'pb_metric_url'},
+        {name: 'Mean-Median Difference', key: 'mm', url: 'mm_metric_url'}
+    ];
+
+    metrics.forEach((metric) => {
+        var row = document.createElement('tr');
+        row.dataset.metric = metric.key;
+
+        // Metric name cell
+        var th = document.createElement('th');
+        var link = document.createElement('a');
+        link.href = window[metric.url];
+        link.textContent = metric.name;
+        th.appendChild(link);
+        row.appendChild(th);
+
+        // Create data cells (value, positives, percentrank_abs, percentrank_rel)
+        for(var i = 0; i < 4; i++) {
+            var td = document.createElement('td');
+            td.dataset.columnIndex = i;
+            if(i >= 2) {
+                td.dataset.percentRankColumn = 'true';
+            }
+            row.appendChild(td);
+        }
+
+        tbody.appendChild(row);
+    });
+
+    metrics_table.appendChild(thead);
+    metrics_table.appendChild(tbody);
+}
+
+function populate_metrics_table(plan, metrics_table)
 {
     if(!('Efficiency Gap Absolute Percent Rank' in plan.summary))
     {
         metrics_table.parentNode.style.display = 'none';
         return;
     }
+
+    metrics_table.parentNode.style.display = 'block';
 
     var eg_summary_name = which_score_summary_name(plan),
         eg_value = plan.summary[eg_summary_name],
@@ -780,99 +1013,75 @@ function show_metrics_table(plan, metrics_table)
             mmd_percentrank_abs = 'N/A',
             mmd_percentrank_rel = 'N/A';
     }
-    
-    if(plan.summary['Efficiency Gap Absolute Percent Rank'] === null) {
-        if(plan.summary['Declination Is Valid'] !== 0) {
-            var declination_row = `
-                <tr>
-                    <th><a href="${window.d2_metric_url}">Declination</a></th>
-                    <td>${Math.round(Math.abs(dec2_value) * 100)/100} Pro-${dec2_win_party}</td>
-                    <td>${nice_round_percent(dec2_positives)}</td>
-                </tr>
-            `;
-        } else {
-            var declination_row = '';
-        }
 
-        metrics_table.innerHTML = `
-            <thead>
-                <tr>
-                    <th>Metric</th>
-                    <th>Value</th>
-                    <th>Favors Democrats in this % of Scenarios<sup>*</sup></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <th><a href="${window.eg_metric_url}">Efficiency Gap</a></th>
-                    <td>${nice_percent(Math.abs(eg_value))} Pro-${eg_win_party}</td>
-                    <td>${nice_round_percent(eg_positives)}</td>
-                </tr>
-                ${declination_row}
-                <tr>
-                    <th><a href="${window.pb_metric_url}">Partisan Bias</a></th>
-                    <td>${pb_display}</td>
-                    <td>${pb_positives}</td>
-                </tr>
-                <tr>
-                    <th><a href="${window.mm_metric_url}">Mean-Median Difference</a></th>
-                    <td>${mmd_display}</td>
-                    <td>${mmd_positives}</td>
-                </tr>
-            </tbody>`;
+    // Determine if we show percent rank columns
+    var has_percent_rank = (plan.summary['Efficiency Gap Absolute Percent Rank'] !== null);
+
+    // Show/hide percent rank columns
+    metrics_table.querySelectorAll('[data-percent-rank-column]').forEach(el => {
+        el.style.display = has_percent_rank ? '' : 'none';
+    });
+
+    // Populate Efficiency Gap row
+    var eg_row = metrics_table.querySelector('tr[data-metric="eg"]');
+    var eg_cells = eg_row.querySelectorAll('td');
+    eg_cells[0].textContent = `${nice_percent(Math.abs(eg_value))} Pro-${eg_win_party}`;
+    eg_cells[1].textContent = nice_round_percent(eg_positives);
+    if(has_percent_rank) {
+        eg_cells[2].textContent = nice_round_percent(eg_percentrank_abs);
+        eg_cells[3].textContent = nice_round_percent(eg_percentrank_rel);
+    }
+
+    // Populate/hide Declination row
+    var d2_row = metrics_table.querySelector('tr[data-metric="d2"]');
+    if(plan.summary['Declination Is Valid'] !== 0) {
+        d2_row.style.display = '';
+        var d2_cells = d2_row.querySelectorAll('td');
+        d2_cells[0].textContent = `${Math.round(Math.abs(dec2_value) * 100)/100} Pro-${dec2_win_party}`;
+        d2_cells[1].textContent = nice_round_percent(dec2_positives);
+        if(has_percent_rank) {
+            d2_cells[2].textContent = nice_round_percent(dec2_percentrank_abs);
+            d2_cells[3].textContent = nice_round_percent(dec2_percentrank_rel);
+        }
     } else {
-        if(plan.summary['Declination Is Valid'] !== 0) {
-            var declination_row = `
-                <tr>
-                    <th><a href="${window.d2_metric_url}">Declination</a></th>
-                    <td>${Math.round(Math.abs(dec2_value) * 100)/100} Pro-${dec2_win_party}</td>
-                    <td>${nice_round_percent(dec2_positives)}</td>
-                    <td>${nice_round_percent(dec2_percentrank_abs)}</td>
-                    <td>${nice_round_percent(dec2_percentrank_rel)}</td>
-                </tr>
-            `;
-        } else {
-            var declination_row = '';
-        }
+        d2_row.style.display = 'none';
+    }
 
-        metrics_table.innerHTML = `
-            <thead>
-                <tr>
-                    <th>Metric</th>
-                    <th>Value</th>
-                    <th>Favors Democrats in this % of Scenarios<sup>*</sup></th>
-                    <th>More Skewed than this % of Historical Plans<sup>‡</sup></th>
-                    <th>More Pro-Democratic than this % of Historical Plans<sup>‡</sup></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <th><a href="${window.eg_metric_url}">Efficiency Gap</a></th>
-                    <td>${nice_percent(Math.abs(eg_value))} Pro-${eg_win_party}</td>
-                    <td>${nice_round_percent(eg_positives)}</td>
-                    <td>${nice_round_percent(eg_percentrank_abs)}</td>
-                    <td>${nice_round_percent(eg_percentrank_rel)}</td>
-                </tr>
-                ${declination_row}
-                <tr>
-                    <th><a href="${window.pb_metric_url}">Partisan Bias</a></th>
-                    <td>${pb_display}</td>
-                    <td>${pb_positives}</td>
-                    <td>${pb_percentrank_abs}</td>
-                    <td>${pb_percentrank_rel}</td>
-                </tr>
-                <tr>
-                    <th><a href="${window.mm_metric_url}">Mean-Median Difference</a></th>
-                    <td>${mmd_display}</td>
-                    <td>${mmd_positives}</td>
-                    <td>${mmd_percentrank_abs}</td>
-                    <td>${mmd_percentrank_rel}</td>
-                </tr>
-            </tbody>`;
+    // Populate Partisan Bias row
+    var pb_row = metrics_table.querySelector('tr[data-metric="pb"]');
+    var pb_cells = pb_row.querySelectorAll('td');
+    pb_cells[0].textContent = pb_display;
+    pb_cells[1].textContent = pb_positives;
+    if(has_percent_rank) {
+        pb_cells[2].textContent = pb_percentrank_abs;
+        pb_cells[3].textContent = pb_percentrank_rel;
+    }
+
+    // Populate Mean-Median row
+    var mm_row = metrics_table.querySelector('tr[data-metric="mm"]');
+    var mm_cells = mm_row.querySelectorAll('td');
+    mm_cells[0].textContent = mmd_display;
+    mm_cells[1].textContent = mmd_positives;
+    if(has_percent_rank) {
+        mm_cells[2].textContent = mmd_percentrank_abs;
+        mm_cells[3].textContent = mmd_percentrank_rel;
     }
 }
 
-function show_library_metadata(plan, metadata_el, geom_prefix)
+function construct_library_metadata(metadata_el)
+{
+    // The structure is already in HTML, just mark elements for population
+    for(node = metadata_el.firstChild; node = node.nextSibling; node)
+    {
+        if(node.nodeName == 'DIV' && node.className == 'link-grid') {
+            node.dataset.contentType = 'links';
+        } else if(node.nodeName == 'DIV' && node.className == 'notes') {
+            node.dataset.contentType = 'notes';
+        }
+    }
+}
+
+function populate_library_metadata(plan, metadata_el, geom_prefix)
 {
     var links = [
         {
@@ -906,17 +1115,17 @@ function show_library_metadata(plan, metadata_el, geom_prefix)
             alt: "link to a geojson download"
         },
     ];
-    
+
     for(node = metadata_el.firstChild; node = node.nextSibling; node)
     {
-        if(node.nodeName == 'DIV' && node.className == 'link-grid') {
+        if(node.nodeName == 'DIV' && node.dataset.contentType == 'links') {
             clear_element(node);
 
             for(var i = 0; i < links.length; i++)
             {
                 if(!links[i].href)
                     continue;
-                
+
                 var a = document.createElement('a');
                 a.href = links[i].href;
                 a.innerHTML = `
@@ -925,7 +1134,7 @@ function show_library_metadata(plan, metadata_el, geom_prefix)
                 `;
                 node.appendChild(a);
             }
-        } else if(node.nodeName == 'DIV' && node.className == 'notes') {
+        } else if(node.nodeName == 'DIV' && node.dataset.contentType == 'notes') {
             if(plan.library_metadata['notes']) {
                 node.innerHTML = plan.library_metadata['notes'];
             } else {
@@ -933,11 +1142,20 @@ function show_library_metadata(plan, metadata_el, geom_prefix)
             }
         }
     }
-    
+
     console.log(links);
 }
 
-function show_ftva_race_scores(plan, scores_FTVA)
+function construct_ftva_race_scores(scores_FTVA)
+{
+    // Mark each score element for later population
+    for(var i = 0; i < scores_FTVA.length; i++)
+    {
+        scores_FTVA[i].dataset.ftvaIndex = i;
+    }
+}
+
+function populate_ftva_race_scores(plan, scores_FTVA)
 {
     if('US President 2020 Efficiency Gap' in plan.summary)
     {
@@ -946,79 +1164,51 @@ function show_ftva_race_scores(plan, scores_FTVA)
         if('US President 2016 Efficiency Gap' in plan.summary) {
             ftva_races.push({office: 'U.S. President', year: '2016', gap: plan.summary['US President 2016 Efficiency Gap']});
         }
-        
+
         if('US Senate 2020 Efficiency Gap' in plan.summary) {
             ftva_races.push({office: 'U.S. Senate', year: '2020', gap: plan.summary['US Senate 2020 Efficiency Gap']});
         }
-        
+
         if('US Senate 2018 Efficiency Gap' in plan.summary) {
             ftva_races.push({office: 'U.S. Senate', year: '2018', gap: plan.summary['US Senate 2018 Efficiency Gap']});
         }
-        
+
         if('US Senate 2016 Efficiency Gap' in plan.summary) {
             ftva_races.push({office: 'U.S. Senate', year: '2016', gap: plan.summary['US Senate 2016 Efficiency Gap']});
         }
-        
+
         // We have space for no more than four FTVA races
         ftva_races = ftva_races.slice(0, 4);
-        
+
         for(var i = 0; i < ftva_races.length; i++)
         {
             var score_FTVA = scores_FTVA[i],
-                //summary_name = which_score_summary_name(plan),
                 gap = ftva_races[i].gap,
                 gap_amount = nice_percent(Math.abs(gap)) + partisan_suffix(gap),
                 win_party = (gap < 0 ? 'Republican' : 'Democratic'),
-                win_partisans = (gap < 0 ? 'Republicans' : 'Democrats'),
                 lose_party = (gap < 0 ? 'Democratic' : 'Republican');
 
             clear_element(score_FTVA);
+            score_FTVA.style.display = '';
 
             score_FTVA.innerHTML = `
                 <h5>${ftva_races[i].office} ${ftva_races[i].year}: ${gap_amount}</h5>
                 <p>
                 Under this plan, votes for the ${win_party}
-                candidate <!--for ${ftva_races[i].office} in
-                ${ftva_races[i].year}--> were inefficient at a rate
+                candidate were inefficient at a rate
                 ${gap_amount} lower than votes for the
                 ${lose_party} candidate.
                 </p>
                 `;
-
-            /*
-            for(node = score_FTVA.firstChild; node = node.nextSibling; node)
-            {
-                if(node.nodeName == 'H3') {
-                    node.innerHTML = `${ftva_races[i].office} ${ftva_races[i].year}: ${gap_amount}`;
-
-                } else if(node.nodeName == 'DIV') {
-                    drawBiasBellChart('ftva', gap, node.id,
-                        (plan.model ? plan.model.house : 'ushouse'), 'plan');
-
-                } else if(node.nodeName == 'P') {
-                    var win_party = (gap < 0 ? 'Republican' : 'Democratic'),
-                        win_partisans = (gap < 0 ? 'Republicans' : 'Democrats'),
-                        lose_party = (gap < 0 ? 'Democratic' : 'Republican');
-
-                    clear_element(node);
-        
-                    node.innerHTML = `
-                        Under this plan, votes for the ${win_party}
-                        candidate for ${ftva_races[i].office} in
-                        ${ftva_races[i].year} were inefficient at a rate
-                        ${gap_amount} lower than votes for the
-                        ${lose_party} candidate.
-                        `;
-                }
-            }
-            */
         }
 
+        // Hide unused score elements
         for(var j = i; j < scores_FTVA.length; j++)
         {
             scores_FTVA[j].style.display = 'none';
         }
     } else {
+        // Hide all FTVA sections if no data
         for(var i = 0; i < scores_FTVA.length; i++)
         {
             scores_FTVA[i].parentNode.style.display = 'none';
@@ -1850,8 +2040,9 @@ function load_plan_score(url, message_section, score_section,
         // Build the results table
         construct_districts_table(plan);
         populate_districts_table(plan);
-        show_seatshare_graphic(plan, districts_table);
-        
+        construct_seatshare_graphic(plan, districts_table);
+        populate_seatshare_graphic(plan);
+
         text_link.href = text_url;
 
         if(plan.districts)
@@ -1867,13 +2058,16 @@ function load_plan_score(url, message_section, score_section,
                 console.log(seat_count.parentNode.style.display = 'block');
             }
         }
-        
-        // Populate scores.
-        show_efficiency_gap_score(plan, score_EG);
-        show_sensitivity_test(plan, score_sense);
+
+        // Construct and populate scores.
+        construct_efficiency_gap_score(score_EG);
+        populate_efficiency_gap_score(plan, score_EG);
+        construct_sensitivity_test(score_sense);
+        populate_sensitivity_test(plan, score_sense);
 
         if('Declination' in plan.summary && plan.summary['Declination Is Valid'] !== 0) {
-            show_declination2_score(plan, score_DEC2);
+            construct_declination2_score(score_DEC2);
+            populate_declination2_score(plan, score_DEC2);
         } else if('Declination' in plan.summary) {
             hide_score_with_reason(score_DEC2,
                 'Declination is only shown where both parties each win one or more'
@@ -1884,24 +2078,29 @@ function load_plan_score(url, message_section, score_section,
         }
 
         if(plan_voteshare(plan) < .1 || location.hash.match(/\bshowall\b/)) {
-            show_partisan_bias_score(plan, score_PB);
-            show_mean_median_score(plan, score_MM);
+            construct_partisan_bias_score(score_PB);
+            populate_partisan_bias_score(plan, score_PB);
+            construct_mean_median_score(score_MM);
+            populate_mean_median_score(plan, score_MM);
         } else {
             hide_score_with_reason(score_PB,
-                'The parties’ statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
-                + ' Partisan bias is shown only where the parties’ statewide vote shares fall between 45% and 55%.'
-                + ' Outside this range the metric’s assumptions are not plausible.');
+                'The parties\' statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
+                + ' Partisan bias is shown only where the parties\' statewide vote shares fall between 45% and 55%.'
+                + ' Outside this range the metric\'s assumptions are not plausible.');
             hide_score_with_reason(score_MM,
-                'The parties’ statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
-                + ' The mean-median difference is shown only where the parties’ statewide vote shares fall between 45% and 55%.'
-                + ' Outside this range the metric’s assumptions are not plausible.');
+                'The parties\' statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
+                + ' The mean-median difference is shown only where the parties\' statewide vote shares fall between 45% and 55%.'
+                + ' Outside this range the metric\'s assumptions are not plausible.');
         }
 
-        show_metrics_table(plan, metrics_table);
-        show_ftva_race_scores(plan, scores_FTVA);
-        
+        construct_metrics_table(metrics_table);
+        populate_metrics_table(plan, metrics_table);
+        construct_ftva_race_scores(scores_FTVA);
+        populate_ftva_race_scores(plan, scores_FTVA);
+
         if('library_metadata' in plan && plan['library_metadata']) {
-            show_library_metadata(plan, metadata_el, geom_prefix);
+            construct_library_metadata(metadata_el);
+            populate_library_metadata(plan, metadata_el, geom_prefix);
         } else {
             metadata_el.style.display = 'none';
         }

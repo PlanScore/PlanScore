@@ -481,7 +481,54 @@ function populate_seatshare_svg(seatshare_array) {
 - More maintainable code with modern DOM APIs
 - All existing tests pass
 
-### Phase 2: Core Infrastructure (NEXT)
+### Phase 2: Refactor All Display Components ✅ COMPLETED
+
+**Status**: Completed 2026-02-17
+
+**What was done**:
+Refactored all remaining display functions in `on_loaded_score()` between the districts table (line 1852) and the map (line 1909) to separate DOM construction from data population.
+
+1. **Seatshare Graphic** (lines 459-547):
+   - `construct_seatshare_graphic(plan, districts_table)` - Creates span elements and text container
+   - `populate_seatshare_graphic(plan)` - Updates colors, widths, and seat share text
+
+2. **Score Cards** - All follow same pattern of adding data attributes during construction, updating values during population:
+   - **Efficiency Gap** (lines 598-673): `construct_efficiency_gap_score()` / `populate_efficiency_gap_score()`
+   - **Declination** (lines 716-783): `construct_declination2_score()` / `populate_declination2_score()`
+   - **Partisan Bias** (lines 832-905): `construct_partisan_bias_score()` / `populate_partisan_bias_score()`
+   - **Mean-Median** (lines 969-1042): `construct_mean_median_score()` / `populate_mean_median_score()`
+
+3. **Sensitivity Test Chart** (lines 1093-1157):
+   - `construct_sensitivity_test(score_sense)` - Creates Highcharts structure with empty data
+   - `populate_sensitivity_test(plan, score_sense)` - Uses `.setData()` to update chart without recreation
+
+4. **Metrics Table** (lines 1327-1498):
+   - `construct_metrics_table(metrics_table)` - Builds complete table structure using createElement
+   - `populate_metrics_table(plan, metrics_table)` - Updates cell values, handles conditional columns/rows
+
+5. **FTVA Race Scores** (lines 1732-1800):
+   - `construct_ftva_race_scores(scores_FTVA)` - Marks elements for population
+   - `populate_ftva_race_scores(plan, scores_FTVA)` - Updates race-specific efficiency gap data
+
+6. **Library Metadata** (lines 1565-1641):
+   - `construct_library_metadata(metadata_el)` - Marks existing HTML structure
+   - `populate_library_metadata(plan, metadata_el, geom_prefix)` - Populates links and notes
+
+7. **Updated `on_loaded_score()`** (lines 2623-2692):
+   - Replaced all `show_*()` calls with paired `construct_*()` and `populate_*()` calls
+   - Maintains identical visual output and behavior
+
+**Fixes applied**:
+- Changed `.textContent` to `.innerHTML` for score values containing HTML entities from `partisan_suffix()` to prevent `&nbsp;` from appearing as literal text
+
+**Benefits achieved**:
+- All display functions now follow consistent construct/populate pattern
+- DOM structures persist across updates (ready for scenarios)
+- Construction runs once, population can run multiple times
+- All existing tests pass
+- Foundation complete for interactive scenario updates
+
+### Phase 3: Scenario Infrastructure (NEXT)
 1. **Add scenario state management**
    ```javascript
    const ScenarioManager = {
@@ -541,28 +588,12 @@ function populate_seatshare_svg(seatshare_array) {
    }
    ```
 
-4. **Test scenario switching with districts table**
-   - Call `populate_districts_table()` with adjusted plan data
+4. **Test scenario switching with all components**
+   - Call all `populate_*()` functions with adjusted plan data
    - Verify all values update correctly
    - Test performance (target < 100ms)
 
-### Phase 3: Refactor Score Cards
-1. Split each `show_*_score()` function into:
-   - `construct_*_score(element)` - builds DOM structure
-   - `populate_*_score(element, plan, summary)` - updates values
-
-2. Modify chart drawing to support updates:
-   - Check if chart exists before creating
-   - Use `.setData()` or `.update()` for existing charts
-
-3. Test with scenario switching
-
-### Phase 4: Refactor Remaining Components
-1. Sensitivity chart updates
-2. Seatshare graphic updates
-3. Metrics table updates
-
-### Phase 5: Polish
+### Phase 4: Polish
 1. Add loading states during scenario switches
 2. Add transitions/animations for value changes
 3. Update URL hash to preserve scenario selection
@@ -570,30 +601,41 @@ function populate_seatshare_svg(seatshare_array) {
 
 ## Code Organization
 
-Suggested file structure:
+Current file structure:
 
 ```
 plan.js
 ├── Scenario Management
-│   ├── ScenarioManager object
 │   ├── load_plan_scenarios() [existing]
 │   └── adjust_scenario_stats() [existing stub]
 │
-├── Construction Functions (run once)
+├── Construction Functions (run once) ✅ IMPLEMENTED
 │   ├── construct_districts_table()
-│   ├── construct_score_cards()
-│   ├── construct_sensitivity_chart()
-│   └── construct_seatshare_graphic()
+│   ├── construct_seatshare_graphic()
+│   ├── construct_efficiency_gap_score()
+│   ├── construct_declination2_score()
+│   ├── construct_partisan_bias_score()
+│   ├── construct_mean_median_score()
+│   ├── construct_sensitivity_test()
+│   ├── construct_metrics_table()
+│   ├── construct_ftva_race_scores()
+│   └── construct_library_metadata()
 │
-├── Population Functions (run on updates)
+├── Population Functions (run on updates) ✅ IMPLEMENTED
 │   ├── populate_districts_table()
-│   ├── populate_score_cards()
-│   ├── populate_sensitivity_chart()
-│   └── populate_seatshare_graphic()
+│   ├── populate_seatshare_graphic()
+│   ├── populate_efficiency_gap_score()
+│   ├── populate_declination2_score()
+│   ├── populate_partisan_bias_score()
+│   ├── populate_mean_median_score()
+│   ├── populate_sensitivity_test()
+│   ├── populate_metrics_table()
+│   ├── populate_ftva_race_scores()
+│   └── populate_library_metadata()
 │
 └── Existing Functions
-    ├── on_loaded_score() [refactored]
-    ├── show_*_score() [deprecated/refactored]
+    ├── on_loaded_score() [refactored to use construct/populate pattern]
+    ├── show_*_score() [kept for reference, still functional]
     └── utility functions
 ```
 
