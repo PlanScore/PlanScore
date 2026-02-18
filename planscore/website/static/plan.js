@@ -216,6 +216,197 @@ function nice_vote_swing(value)
     return '–';
 }
 
+function swing_vote(red_districts, blue_districts, amount)
+{
+    // Swing the vote by a percentage, positive toward blue.
+    if (amount === 0) {
+        return [red_districts.slice(), blue_districts.slice()];
+    }
+
+    var swung_reds = [];
+    var swung_blues = [];
+
+    for (var i = 0; i < red_districts.length; i++) {
+        var r = red_districts[i];
+        var b = blue_districts[i];
+        var t = r + b;
+
+        if (t > 0) {
+            swung_reds.push((r / t - amount) * t);
+            swung_blues.push((b / t + amount) * t);
+        }
+    }
+
+    return [swung_reds, swung_blues];
+}
+
+function calculate_EG(red_districts, blue_districts)
+{
+    // Convert two lists of district vote counts into an EG score.
+    // By convention, result is positive for blue and negative for red.
+    // Note: This version does not include vote_swing parameter.
+
+    // Calculate initial vote share
+    var init_blue_total = blue_districts.reduce(function(a, b) { return a + b; }, 0);
+    var init_red_total = red_districts.reduce(function(a, b) { return a + b; }, 0);
+    var init_vote_share = init_blue_total / (init_blue_total + init_red_total);
+
+    // Determine clamping swing
+    var clamped_swing;
+    if (init_vote_share < 0.25) {
+        // Very red state, swing to 25 blue/75 red
+        clamped_swing = 0.25 - init_vote_share;
+    } else if (init_vote_share > 0.75) {
+        // Very blue state, swing to 75 blue/25 red
+        clamped_swing = init_vote_share - 0.75;
+        clamped_swing = -clamped_swing;
+    } else {
+        clamped_swing = 0;
+    }
+
+    // Apply clamping swing
+    var swung = swing_vote(red_districts, blue_districts, clamped_swing);
+    var swung_red = swung[0];
+    var swung_blue = swung[1];
+
+    // Filter nonzero districts and count blue wins
+    var district_blue_wins = 0;
+    var nonzero_count = 0;
+    var district_raw_blue_votes = 0;
+    var district_raw_total_votes = 0;
+
+    for (var i = 0; i < swung_red.length; i++) {
+        if (swung_red[i] + swung_blue[i] > 0) {
+            nonzero_count++;
+            if (swung_blue[i] > swung_red[i]) {
+                district_blue_wins++;
+            }
+            district_raw_blue_votes += swung_blue[i];
+            district_raw_total_votes += swung_red[i] + swung_blue[i];
+        }
+    }
+
+    var statewide_seat_share = district_blue_wins / nonzero_count;
+    var statewide_vote_share = district_raw_blue_votes / district_raw_total_votes;
+
+    return statewide_seat_share - 0.5 - 2 * (statewide_vote_share - 0.5);
+}
+
+function calculate_MMD(red_districts, blue_districts)
+{
+    // Convert two lists of district vote counts into a Mean-Median score.
+    // By convention, result is positive for blue and negative for red.
+
+    var shares = [];
+    for (var i = 0; i < red_districts.length; i++) {
+        var r = red_districts[i];
+        var b = blue_districts[i];
+        if (r + b > 0) {
+            shares.push(b / (r + b));
+        }
+    }
+
+    shares.sort(function(a, b) { return a - b; });
+
+    // Calculate median
+    var median;
+    var mid = Math.floor(shares.length / 2);
+    if (shares.length % 2 === 0) {
+        median = (shares[mid - 1] + shares[mid]) / 2;
+    } else {
+        median = shares[mid];
+    }
+
+    // Calculate mean
+    var sum = shares.reduce(function(a, b) { return a + b; }, 0);
+    var mean = sum / shares.length;
+
+    return median - mean;
+}
+
+function calculate_PB(red_districts, blue_districts)
+{
+    // Convert two lists of district vote counts into a Partisan Bias score.
+    // By convention, result is positive for blue and negative for red.
+
+    // Filter nonzero districts
+    var nonzero_reds = [];
+    var nonzero_blues = [];
+
+    for (var i = 0; i < red_districts.length; i++) {
+        if (red_districts[i] + blue_districts[i] > 0) {
+            nonzero_reds.push(red_districts[i]);
+            nonzero_blues.push(blue_districts[i]);
+        }
+    }
+
+    var red_total = nonzero_reds.reduce(function(a, b) { return a + b; }, 0);
+    var blue_total = nonzero_blues.reduce(function(a, b) { return a + b; }, 0);
+    var blue_margin = (blue_total - red_total) / (blue_total + red_total);
+
+    // Swing to 50/50
+    var swung = swing_vote(nonzero_reds, nonzero_blues, -blue_margin / 2);
+    var reds_5050 = swung[0];
+    var blues_5050 = swung[1];
+
+    // Count blue seats
+    var blue_seats = 0;
+    for (var i = 0; i < reds_5050.length; i++) {
+        if (reds_5050[i] < blues_5050[i]) {
+            blue_seats++;
+        }
+    }
+
+    var blue_seatshare = blue_seats / blues_5050.length;
+    var blue_voteshare = blues_5050.reduce(function(a, b) { return a + b; }, 0) /
+        (blues_5050.reduce(function(a, b) { return a + b; }, 0) + reds_5050.reduce(function(a, b) { return a + b; }, 0));
+
+    return blue_seatshare - blue_voteshare;
+}
+
+function calculate_D2(red_districts, blue_districts)
+{
+    // Convert two lists of district vote counts into a Declination score.
+    // By convention, result is positive for blue and negative for red.
+    // Adapt Python sample code from Warrington, 2018.
+
+    var blue_shares = [];
+    for (var i = 0; i < red_districts.length; i++) {
+        var r = red_districts[i];
+        var b = blue_districts[i];
+        if (r + b > 0) {
+            blue_shares.push(b / (r + b));
+        }
+    }
+
+    var seats = blue_shares.length;
+    var red_wins = blue_shares.filter(function(share) { return share <= 0.5; }).sort(function(a, b) { return a - b; });
+    var blue_wins = blue_shares.filter(function(share) { return share > 0.5; }).sort(function(a, b) { return a - b; });
+
+    var declination;
+
+    if (red_wins.length === 0) {
+        // -1 if red party does not win at least one seat
+        declination = -1;
+    } else if (blue_wins.length === 0) {
+        // +1 if blue party does not win at least one seat
+        declination = 1;
+    } else {
+        var mean_red_wins = red_wins.reduce(function(a, b) { return a + b; }, 0) / red_wins.length;
+        var mean_blue_wins = blue_wins.reduce(function(a, b) { return a + b; }, 0) / blue_wins.length;
+
+        var theta = Math.atan((1 - 2 * mean_red_wins) * seats / red_wins.length);
+        var gamma = Math.atan((2 * mean_blue_wins - 1) * seats / blue_wins.length);
+
+        // Convert to range [-1,1]
+        declination = 2.0 * (gamma - theta) / Math.PI;
+    }
+
+    var declination2 = declination * Math.log(seats) / 2;
+
+    return -declination2;
+}
+
 function adjust_scenario_stats(data)
 {
     if (data.dimensions.length != 3) {
@@ -2596,6 +2787,11 @@ if(typeof module !== 'undefined' && module.exports)
         update_heading_titles,
         adjust_scenario_stats,
         create_scenario_plan,
+        swing_vote,
+        calculate_EG,
+        calculate_MMD,
+        calculate_PB,
+        calculate_D2,
         SHY_COLUMN,
     };
 }

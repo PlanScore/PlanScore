@@ -617,6 +617,111 @@ assert.equal(plan.partisan_suffix(0), '');
 assert.equal(plan.partisan_suffix(1), '&nbsp;D');
 assert.equal(plan.partisan_suffix(-1), '&nbsp;R');
 
+// Test swing_vote helper function
+var swung1 = plan.swing_vote([1, 2, 3], [3, 2, 1], 0);
+assert.equal(swung1[0][0], 1, 'Zero swing should not change red votes');
+assert.equal(swung1[1][0], 3, 'Zero swing should not change blue votes');
+
+var swung2 = plan.swing_vote([1, 2, 3], [3, 2, 1], 0.1);
+assert.equal(Math.round(swung2[0][0] * 10) / 10, 0.6, 'Positive swing should decrease red votes');
+assert.equal(Math.round(swung2[1][0] * 10) / 10, 3.4, 'Positive swing should increase blue votes');
+
+var swung3 = plan.swing_vote([1, 2, 3], [3, 2, 1], -0.1);
+assert.equal(Math.round(swung3[0][0] * 10) / 10, 1.4, 'Negative swing should increase red votes');
+assert.equal(Math.round(swung3[1][0] * 10) / 10, 2.6, 'Negative swing should decrease blue votes');
+
+// Test calculate_EG with fair election
+var gap1 = plan.calculate_EG([2, 3, 5, 6], [6, 5, 3, 2]);
+assert.equal(Math.round(gap1 * 1000) / 1000, 0, 'Should see zero EG for fair election');
+
+var gap2 = plan.calculate_EG([2, 3, 5, 6, 0], [6, 5, 3, 2, 0]);
+assert.equal(Math.round(gap2 * 1000) / 1000, 0, 'Should see zero EG with one district missing votes');
+
+// Test calculate_EG with unfair election
+var gap3 = plan.calculate_EG([1, 5, 5, 5], [7, 3, 3, 3]);
+assert.equal(Math.round(gap3 * 100) / 100, -0.25, 'Should see -0.25 EG for unfair election');
+
+// Test calculate_MMD with various scenarios
+var mmd1 = plan.calculate_MMD([6, 6, 4, 4, 4], [5, 5, 5, 8, 8]);
+assert.equal(Math.round(mmd1 * 100) / 100, 0, 'Should see zero MMD with 44% mean and median');
+
+var mmd2 = plan.calculate_MMD([6, 6, 6, 6, 6], [4, 4, 4, 4, 4]);
+assert.equal(Math.round(mmd2 * 100) / 100, 0, 'Should see zero MMD with 60% mean and median');
+
+var mmd3 = plan.calculate_MMD([6, 6, 6, 1, 1], [5, 5, 5, 10, 10]);
+assert.equal(Math.round(mmd3 * 100) / 100, -0.18, 'Should see -0.18 MMD with red bias');
+
+var mmd4 = plan.calculate_MMD([6, 6, 6, 6, 1], [5, 5, 5, 5, 10]);
+assert.equal(Math.round(mmd4 * 100) / 100, -0.09, 'Should see -0.09 MMD with red bias');
+
+var mmd5 = plan.calculate_MMD([6, 6, 1, 1, 1], [5, 5, 7, 10, 10]);
+assert.equal(Math.round(mmd5 * 100) / 100, 0.15, 'Should see +0.15 MMD with blue bias');
+
+var mmd6 = plan.calculate_MMD([6, 6, 4, 4, 4, 0], [5, 5, 5, 8, 8, 0]);
+assert.equal(Math.round(mmd6 * 100) / 100, 0, 'Should see defined MMD with one district missing votes');
+
+// Test calculate_PB with various scenarios
+var pb1 = plan.calculate_PB([6, 6, 4, 4], [4, 4, 6, 6]);
+assert.equal(Math.round(pb1 * 100) / 100, 0, 'Should see zero PB with 50/50 election');
+
+var pb2 = plan.calculate_PB([6, 6, 6, 3, 3], [2, 2, 2, 5, 5]);
+assert.equal(Math.round(pb2 * 100) / 100, -0.1, 'Should see -0.1 PB with red bias');
+
+var pb3 = plan.calculate_PB([6, 6, 6, 3, 3], [4, 4, 4, 12, 12]);
+assert.equal(Math.round(pb3 * 100) / 100, -0.1, 'Should see -0.1 PB with red advantage');
+
+var pb4 = plan.calculate_PB([4, 4, 4, 12, 12], [6, 6, 6, 3, 3]);
+assert.equal(Math.round(pb4 * 100) / 100, 0.1, 'Should see +0.1 PB with blue advantage');
+
+var pb5 = plan.calculate_PB([6, 6, 4, 4, 0], [4, 4, 6, 6, 0]);
+assert.equal(Math.round(pb5 * 100) / 100, 0, 'Should see zero PB with one district missing votes');
+
+// Test calculate_D2 with various scenarios
+// Georgia 1972: 9 blue wins, 1 red win
+var d2a_reds = [];
+var d2a_blues = [];
+for (var i = 0; i < 9; i++) {
+    d2a_reds.push(1 - 0.584617612075026);
+    d2a_blues.push(0.584617612075026);
+}
+d2a_reds.push(1 - 0.240871024240908);
+d2a_blues.push(0.240871024240908);
+var d2a = plan.calculate_D2(d2a_reds, d2a_blues);
+assert.equal(Math.round(d2a * 1000) / 1000, 0.875, 'Should see high D2 in Georgia 1972');
+
+// Louisiana 2020: 1 blue win, 5 red wins
+var d2b_reds = [1 - 0.809097511747074];
+var d2b_blues = [0.809097511747074];
+for (var i = 0; i < 5; i++) {
+    d2b_reds.push(1 - 0.27072066577579);
+    d2b_blues.push(0.27072066577579);
+}
+var d2b = plan.calculate_D2(d2b_reds, d2b_blues);
+assert.equal(Math.round(d2b * 1000) / 1000, -0.459, 'Should see low D2 in Louisiana 2020');
+
+// North Carolina 1998: 5 blue wins, 7 red wins
+var d2c_reds = [];
+var d2c_blues = [];
+for (var i = 0; i < 5; i++) {
+    d2c_reds.push(1 - 0.598085862963535);
+    d2c_blues.push(0.598085862963535);
+}
+for (var i = 0; i < 7; i++) {
+    d2c_reds.push(1 - 0.357068466446836);
+    d2c_blues.push(0.357068466446836);
+}
+var d2c = plan.calculate_D2(d2c_reds, d2c_blues);
+assert.equal(Math.round(d2c * 1000) / 1000, 0.012, 'Should see near-zero D2 in North Carolina 1998');
+
+var d2d = plan.calculate_D2([1, 2, 3, 4, 0], [4, 3, 2, 1, 0]);
+assert.equal(Math.round(d2d * 1000) / 1000, 0, 'Should see zero D2 for balanced election');
+
+var d2f = plan.calculate_D2([3, 4, 5], [2, 1, 0]);
+assert.equal(Math.round(d2f * 1000) / 1000, -0.549, 'Should see low D2 when red wins all districts');
+
+var d2g = plan.calculate_D2([2, 1, 0], [3, 4, 5]);
+assert.equal(Math.round(d2g * 1000) / 1000, 0.549, 'Should see high D2 when blue wins all districts');
+
 var CT_2021_water_seatshare = plan.get_seatshare_array(CT_2021_water_district);
 
 assert.equal(CT_2021_water_seatshare.colors.length, 5, 'Should see the correct number of colors');
