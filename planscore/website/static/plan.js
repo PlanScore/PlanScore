@@ -443,6 +443,78 @@ function calculate_positives(array)
     return positives / array.length;
 }
 
+function percentrank_abs(column, house, value)
+{
+    // Calculate absolute percentrank: what proportion of historical plans
+    // have absolute value less than this plan's absolute value?
+    // Higher percentrank = more extreme (skewed) than more historical plans.
+
+    if (house === 'localplan' || !HISTORICAL_PERCENTRANK_DATA) {
+        return null;
+    }
+
+    if (!HISTORICAL_PERCENTRANK_DATA[house] || !HISTORICAL_PERCENTRANK_DATA[house][column]) {
+        return null;
+    }
+
+    var historical_values = HISTORICAL_PERCENTRANK_DATA[house][column];
+    if (historical_values.length === 0) {
+        return null;
+    }
+
+    var abs_value = Math.abs(value);
+    var count = 0;
+
+    for (var i = 0; i < historical_values.length; i++) {
+        if (Math.abs(historical_values[i]) < abs_value) {
+            count++;
+        }
+    }
+
+    return count / historical_values.length;
+}
+
+function percentrank_rel(column, house, value)
+{
+    // Calculate relative (directional) percentrank: what proportion of
+    // historical plans are more favorable to the other party?
+    // For negative values (favors R): count how many are MORE negative
+    // For positive values (favors D): count how many are MORE positive
+
+    if (house === 'localplan' || !HISTORICAL_PERCENTRANK_DATA) {
+        return null;
+    }
+
+    if (!HISTORICAL_PERCENTRANK_DATA[house] || !HISTORICAL_PERCENTRANK_DATA[house][column]) {
+        return null;
+    }
+
+    var historical_values = HISTORICAL_PERCENTRANK_DATA[house][column];
+    if (historical_values.length === 0) {
+        return null;
+    }
+
+    var count = 0;
+
+    if (value < 0) {
+        // Favors Republicans: count how many are MORE negative (< value)
+        for (var i = 0; i < historical_values.length; i++) {
+            if (historical_values[i] < value) {
+                count++;
+            }
+        }
+    } else {
+        // Favors Democrats: count how many are MORE positive (> value)
+        for (var i = 0; i < historical_values.length; i++) {
+            if (historical_values[i] > value) {
+                count++;
+            }
+        }
+    }
+
+    return count / historical_values.length;
+}
+
 function gaussian_randoms(count)
 {
     // Generate Gaussian (normal) random values using Box-Muller transform.
@@ -590,34 +662,44 @@ function create_scenario_plan(original_plan, scenarios, vote_swing_index)
     }
 
     // Calculate summary statistics from simulations
+    var house = original_plan.model ? original_plan.model.house : null;
+
     mutated_plan.summary['Efficiency Gap'] = calculate_mean(EG_sims);
     mutated_plan.summary['Efficiency Gap SD'] = calculate_stdev(EG_sims);
     mutated_plan.summary['Efficiency Gap Positives'] = calculate_positives(EG_sims);
-    mutated_plan.summary['Efficiency Gap Absolute Percent Rank'] = undefined;
-    mutated_plan.summary['Efficiency Gap Relative Percent Rank'] = undefined;
+    mutated_plan.summary['Efficiency Gap Absolute Percent Rank'] =
+        percentrank_abs('eg_adj_avg', house, mutated_plan.summary['Efficiency Gap']);
+    mutated_plan.summary['Efficiency Gap Relative Percent Rank'] =
+        percentrank_rel('eg_adj_avg', house, mutated_plan.summary['Efficiency Gap']);
 
     mutated_plan.summary['Mean-Median'] = calculate_mean(MMD_sims);
     mutated_plan.summary['Mean-Median SD'] = calculate_stdev(MMD_sims);
     mutated_plan.summary['Mean-Median Positives'] = calculate_positives(MMD_sims);
-    mutated_plan.summary['Mean-Median Absolute Percent Rank'] = undefined;
-    mutated_plan.summary['Mean-Median Relative Percent Rank'] = undefined;
+    mutated_plan.summary['Mean-Median Absolute Percent Rank'] =
+        percentrank_abs('mmd_avg', house, mutated_plan.summary['Mean-Median']);
+    mutated_plan.summary['Mean-Median Relative Percent Rank'] =
+        percentrank_rel('mmd_avg', house, mutated_plan.summary['Mean-Median']);
 
     mutated_plan.summary['Partisan Bias'] = calculate_mean(PB_sims);
     mutated_plan.summary['Partisan Bias SD'] = calculate_stdev(PB_sims);
     mutated_plan.summary['Partisan Bias Positives'] = calculate_positives(PB_sims);
-    mutated_plan.summary['Partisan Bias Absolute Percent Rank'] = undefined;
-    mutated_plan.summary['Partisan Bias Relative Percent Rank'] = undefined;
+    mutated_plan.summary['Partisan Bias Absolute Percent Rank'] =
+        percentrank_abs('bias_avg', house, mutated_plan.summary['Partisan Bias']);
+    mutated_plan.summary['Partisan Bias Relative Percent Rank'] =
+        percentrank_rel('bias_avg', house, mutated_plan.summary['Partisan Bias']);
 
     mutated_plan.summary['Declination'] = calculate_mean(D2_sims);
     mutated_plan.summary['Declination SD'] = calculate_stdev(D2_sims);
     mutated_plan.summary['Declination Positives'] = calculate_positives(D2_sims);
-    mutated_plan.summary['Declination Absolute Percent Rank'] = undefined;
-    mutated_plan.summary['Declination Relative Percent Rank'] = undefined;
+    mutated_plan.summary['Declination Absolute Percent Rank'] =
+        percentrank_abs('dec2_avg', house, mutated_plan.summary['Declination']);
+    mutated_plan.summary['Declination Relative Percent Rank'] =
+        percentrank_rel('dec2_avg', house, mutated_plan.summary['Declination']);
 
     return mutated_plan;
 }
 
-function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustments_form, districts_table, map_div, score_EG, score_PB, score_MM, score_DEC2)
+function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_PB, score_MM, score_DEC2)
 {
     // Initialize vote_swing field if it doesn't exist
     // This ensures the Vote Swing column can be toggled when scenarios are available
@@ -676,6 +758,9 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
             if (mutated_plan.summary['Declination'] !== null && mutated_plan.summary['Declination'] !== undefined) {
                 populate_declination2_score(mutated_plan, score_DEC2);
             }
+
+            // Update the metrics table with new percentrank values
+            populate_metrics_table(mutated_plan, metrics_table);
         });
     }
 }
@@ -2599,7 +2684,7 @@ function load_plan_score(url, message_section, score_section,
 
         // Immediately kick off scenario loading
         if (plan.scenarios !== undefined) {
-            load_plan_scenarios(geom_prefix + plan.scenarios.replace(/^\//, ''), plan, scenario_adjustments_form, districts_table, map_div, score_EG, score_PB, score_MM, score_DEC2);
+            load_plan_scenarios(geom_prefix + plan.scenarios.replace(/^\//, ''), plan, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_PB, score_MM, score_DEC2);
         }
 
         // Plan is done parsing and we can render the page
@@ -2751,7 +2836,7 @@ function load_plan_score(url, message_section, score_section,
     request.send();
 }
 
-function load_plan_scenarios(url, plan, scenario_adjustments_form, districts_table, map_div, score_EG, score_PB, score_MM, score_DEC2)
+function load_plan_scenarios(url, plan, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_PB, score_MM, score_DEC2)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -2765,7 +2850,7 @@ function load_plan_scenarios(url, plan, scenario_adjustments_form, districts_tab
             console.log('Loaded scenarios:', data);
             adjust_scenario_stats(data);
             console.log('New scenarios:', data);
-            setup_scenario_interactivity(plan, data, scenario_adjustments_form, districts_table, map_div, score_EG, score_PB, score_MM, score_DEC2);
+            setup_scenario_interactivity(plan, data, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_PB, score_MM, score_DEC2);
         }
     };
 
@@ -3008,6 +3093,8 @@ if(typeof module !== 'undefined' && module.exports)
         calculate_mean,
         calculate_stdev,
         calculate_positives,
+        percentrank_abs,
+        percentrank_rel,
         gaussian_randoms,
         SHY_COLUMN,
     };

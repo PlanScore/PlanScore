@@ -3,6 +3,9 @@ import os
 import urllib.parse
 import markdown
 import hashlib
+import gzip
+import csv
+import json
 from .. import data, constants
 
 MODELS_BASEDIR = os.path.join(os.path.dirname(__file__), 'models')
@@ -62,14 +65,59 @@ def get_annotate():
         version_parameters=data.VERSION_PARAMETERS,
     )
 
+def extract_historical_percentrank_data():
+    ''' Extract historical plan metrics for percentrank calculations.
+
+        Reads the three bias CSV files and returns a dict with sorted arrays of
+        metric values for each house type, suitable for frontend percentrank
+        calculations. Values are rounded to 4 decimal places and sorted for
+        efficient percentrank lookups.
+    '''
+    model_dir = os.path.join(os.path.dirname(__file__), '..', 'model')
+    house_files = {
+        'ushouse': 'bias_ushouse.csv.gz',
+        'statehouse': 'bias_statehouse.csv.gz',
+        'statesenate': 'bias_statesenate.csv.gz',
+    }
+
+    # Columns we need from the CSV files
+    columns_needed = ['eg_adj_avg', 'bias_avg', 'mmd_avg', 'dec2_avg']
+
+    result = {}
+
+    for house, filename in house_files.items():
+        filepath = os.path.join(model_dir, filename)
+        house_data = {col: [] for col in columns_needed}
+
+        with gzip.open(filepath, 'rt') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                for col in columns_needed:
+                    if row[col]:  # Skip empty values
+                        try:
+                            # Round to 4 decimal places for medium precision
+                            house_data[col].append(round(float(row[col]), 4))
+                        except ValueError:
+                            pass  # Skip non-numeric values
+
+        # Sort each array for efficient percentrank calculations
+        for col in columns_needed:
+            house_data[col].sort()
+
+        result[house] = house_data
+
+    return json.dumps(result)
+
 @app.route('/plan.html')
 def get_plan():
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     geom_url_prefix = constants.S3_URL_PATTERN.format(k='', b=flask.current_app.config['PLANSCORE_S3_BUCKET'])
     text_url_pattern = get_text_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
+    historical_percentrank_json = extract_historical_percentrank_data()
     return flask.render_template('plan.html',
         data_url_pattern=data_url_pattern, geom_url_prefix=geom_url_prefix,
         text_url_pattern=text_url_pattern,
+        historical_percentrank_json=historical_percentrank_json,
         planscore_website_base=flask.current_app.config['PLANSCORE_WEBSITE_BASE'].rstrip('/'))
 
 @app.route('/models/')

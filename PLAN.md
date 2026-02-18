@@ -664,6 +664,40 @@ Refactored all remaining display functions in `on_loaded_score()` between the di
     - **Updated test expectations** (tests.js line 406): Added 'Vote Swing' to expected column list for zero-vote-swings test
     - **Behavior**: Vote Swing column appears when non-zero swings applied, disappears at 0.0 swing, no table reconstruction needed (just CSS visibility toggle)
 
+17. **Implemented percentrank calculations for scenario metrics** (2026-02-18):
+    - **Backend data extraction** (planscore/website/__init__.py lines 68-109):
+      - Created `extract_historical_percentrank_data()` function to read bias CSV files
+      - Extracts 4 metric columns (eg_adj_avg, bias_avg, mmd_avg, dec2_avg) from 3 house types (~2,400 historical plans)
+      - Rounds values to 4 decimal places for efficiency (~50-60KB JSON output)
+      - Sorts arrays for efficient percentrank lookups
+      - Returns JSON string for template injection
+    - **Template integration** (plan.html line 299):
+      - Added `HISTORICAL_PERCENTRANK_DATA` as global JS constant alongside existing pattern URLs
+      - Data extracted at serve time, single source of truth from bias CSV files
+    - **Frontend percentrank functions** (plan.js lines 446-516):
+      - `percentrank_abs(column, house, value)`: Compares absolute values (higher = more extreme/skewed)
+      - `percentrank_rel(column, house, value)`: Compares directional values (considers D/R favoritism)
+      - Both handle localplan case (return null), missing data gracefully
+      - Exported to module.exports for testing
+    - **Scenario plan updates** (plan.js lines 665-697):
+      - Enhanced `create_scenario_plan()` to calculate 8 percentrank values (4 metrics × 2 types)
+      - Maps metric names to CSV columns: EG→eg_adj_avg, PB→bias_avg, MMD→mmd_avg, D2→dec2_avg
+      - Extracts house type from plan.model.house for correct historical comparison
+      - Sets 'Absolute Percent Rank' (skewedness) and 'Relative Percent Rank' (favoritism) for each metric
+    - **Metrics table updates** (plan.js lines 702, 2839, 2687):
+      - Updated `setup_scenario_interactivity()` to accept metrics_table parameter
+      - Added `populate_metrics_table()` call in scenario change event handler
+      - Updated `load_plan_scenarios()` signature to pass metrics_table through
+      - Metrics table now updates percentrank columns when scenarios change
+    - **Comprehensive testing** (tests.js lines 5-25, 900-948):
+      - Added mock `HISTORICAL_PERCENTRANK_DATA` with realistic test values for all 3 house types
+      - Tests for `percentrank_abs()`: validates absolute value comparisons, edge cases
+      - Tests for `percentrank_rel()`: validates directional comparisons (positive/negative values)
+      - Tests localplan handling (returns null), missing data scenarios
+      - Updated `create_scenario_plan()` tests to expect numeric percentrank values (not undefined)
+      - Validates percentrank values are between 0 and 1
+      - All tests pass ✓
+
 **Key design decisions**:
 - **No globals**: Used closures to pass state through callback chain
 - **Per-district incumbency**: Each district uses its own incumbent scenario from `plan.incumbents[]`
@@ -703,6 +737,14 @@ Score cards with bell charts:
 - Bell charts redraw on scenario change
 - Charts properly hide/reappear when toggling between vote swing scenarios
 
+Metrics table showing summary statistics:
+- All metric rows (Efficiency Gap, Partisan Bias, Mean-Median, Declination)
+- "More Skewed" column (Absolute Percent Rank) - compares |value| to historical plans
+- "More Pro-Democratic" column (Relative Percent Rank) - compares directional favoritism
+- "Favors Democrats" column (Positives) - proportion of simulations favoring Democrats
+- All values recalculated from 1000 simulations per scenario
+- Percentranks compare against ~2,400 historical plans from bias CSV files
+
 **Benefits achieved**:
 - Radio buttons now functional and update all visualizations interactively
 - All visualizations respond to scenario changes in real-time
@@ -711,6 +753,12 @@ Score cards with bell charts:
 - Charts properly hide when assumptions invalid (outside 45-55% range)
 - Charts reliably reappear when returning to valid range
 - Vote Swing column dynamically shows/hides without table reconstruction
+- Metrics table percentrank columns update with scenario changes
+- Historical context provided via percentrank comparisons to ~2,400 plans
+- Absolute percentrank shows relative extremity/skewedness of plan
+- Relative percentrank shows directional favoritism compared to history
+- Single source of truth: bias CSV files extracted at serve time
+- Efficient data format: sorted arrays, 4 decimal precision (~50-60KB)
 - Clean state management without globals
 - Well-tested with real scenario data and edge cases
 - Consistent construct/populate pattern across all page elements

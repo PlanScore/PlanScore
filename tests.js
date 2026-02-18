@@ -2,6 +2,28 @@ assert = require('assert');
 plan = require('./planscore/website/static/plan.js');
 annotate_new = require('./planscore/website/static/annotate-new.js');
 
+// Mock historical percentrank data for testing
+global.HISTORICAL_PERCENTRANK_DATA = {
+    ushouse: {
+        eg_adj_avg: [-0.15, -0.10, -0.05, 0.00, 0.05, 0.10, 0.15],
+        bias_avg: [-0.12, -0.08, -0.04, 0.00, 0.04, 0.08, 0.12],
+        mmd_avg: [-0.20, -0.10, 0.00, 0.10, 0.20],
+        dec2_avg: [-0.50, -0.25, 0.00, 0.25, 0.50]
+    },
+    statehouse: {
+        eg_adj_avg: [-0.20, -0.15, -0.10, -0.05, 0.00, 0.05, 0.10, 0.15, 0.20],
+        bias_avg: [-0.15, -0.10, -0.05, 0.00, 0.05, 0.10, 0.15],
+        mmd_avg: [-0.25, -0.15, -0.05, 0.05, 0.15, 0.25],
+        dec2_avg: [-0.60, -0.40, -0.20, 0.00, 0.20, 0.40, 0.60]
+    },
+    statesenate: {
+        eg_adj_avg: [-0.18, -0.12, -0.06, 0.00, 0.06, 0.12, 0.18],
+        bias_avg: [-0.14, -0.09, -0.04, 0.00, 0.04, 0.09, 0.14],
+        mmd_avg: [-0.22, -0.11, 0.00, 0.11, 0.22],
+        dec2_avg: [-0.55, -0.30, 0.00, 0.30, 0.55]
+    }
+};
+
 // Object.entries() polyfill for circle-ci machines with Node 6
 if (!Object.entries) {
     Object.entries = function (obj) {
@@ -875,6 +897,56 @@ assert.equal(pos4, 0.5, 'Values near epsilon should be handled correctly');
 var pos5 = plan.calculate_positives([]);
 assert.strictEqual(pos5, null, 'Positives of empty array should be null');
 
+// Test percentrank_abs function
+// With values [-0.15, -0.10, -0.05, 0.00, 0.05, 0.10, 0.15] (7 values)
+// Testing with 0.12: abs values are [0.15, 0.10, 0.05, 0.00, 0.05, 0.10, 0.15]
+// Values with abs < 0.12: 0.10, 0.05, 0.00, 0.05, 0.10 = 5 values
+// Percentrank = 5/7 = 0.714...
+var prank_abs1 = plan.percentrank_abs('eg_adj_avg', 'ushouse', 0.12);
+assert.equal(Math.round(prank_abs1 * 1000) / 1000, 0.714, 'Should calculate correct absolute percentrank for 0.12');
+
+// Testing with -0.08: abs value is 0.08
+// Values with abs < 0.08: 0.05, 0.00, 0.05 = 3 values
+// Percentrank = 3/7 = 0.428...
+var prank_abs2 = plan.percentrank_abs('eg_adj_avg', 'ushouse', -0.08);
+assert.equal(Math.round(prank_abs2 * 1000) / 1000, 0.429, 'Should calculate correct absolute percentrank for -0.08');
+
+// Testing with 0.00: abs value is 0.00
+// Values with abs < 0.00: none = 0 values
+// Percentrank = 0/7 = 0
+var prank_abs3 = plan.percentrank_abs('eg_adj_avg', 'ushouse', 0.00);
+assert.equal(prank_abs3, 0, 'Should return 0 percentrank for minimum absolute value');
+
+// Test with localplan (should return null)
+var prank_abs4 = plan.percentrank_abs('eg_adj_avg', 'localplan', 0.10);
+assert.strictEqual(prank_abs4, null, 'Should return null for localplan');
+
+// Test percentrank_rel function
+// With values [-0.15, -0.10, -0.05, 0.00, 0.05, 0.10, 0.15] (7 values)
+// Testing with 0.12 (positive, favors D): count values > 0.12 = only 0.15 = 1 value
+// Percentrank = 1/7 = 0.142...
+var prank_rel1 = plan.percentrank_rel('eg_adj_avg', 'ushouse', 0.12);
+assert.equal(Math.round(prank_rel1 * 1000) / 1000, 0.143, 'Should calculate correct relative percentrank for 0.12');
+
+// Testing with -0.12 (negative, favors R): count values < -0.12 = only -0.15 = 1 value
+// Percentrank = 1/7 = 0.142...
+var prank_rel2 = plan.percentrank_rel('eg_adj_avg', 'ushouse', -0.12);
+assert.equal(Math.round(prank_rel2 * 1000) / 1000, 0.143, 'Should calculate correct relative percentrank for -0.12');
+
+// Testing with 0.00: count values > 0.00 = 0.05, 0.10, 0.15 = 3 values
+// Percentrank = 3/7 = 0.428...
+var prank_rel3 = plan.percentrank_rel('eg_adj_avg', 'ushouse', 0.00);
+assert.equal(Math.round(prank_rel3 * 1000) / 1000, 0.429, 'Should calculate correct relative percentrank for 0.00');
+
+// Testing with 0.05: count values > 0.05 = 0.10, 0.15 = 2 values
+// Percentrank = 2/7 = 0.285...
+var prank_rel4 = plan.percentrank_rel('eg_adj_avg', 'ushouse', 0.05);
+assert.equal(Math.round(prank_rel4 * 1000) / 1000, 0.286, 'Should calculate correct relative percentrank for 0.05');
+
+// Test with localplan (should return null)
+var prank_rel5 = plan.percentrank_rel('eg_adj_avg', 'localplan', 0.10);
+assert.strictEqual(prank_rel5, null, 'Should return null for localplan');
+
 // Test that create_scenario_plan generates valid summary statistics
 var result_sim = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, 0);
 
@@ -882,26 +954,32 @@ var result_sim = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, 0);
 assert.ok(typeof result_sim.summary['Efficiency Gap'] === 'number', 'Should have Efficiency Gap mean');
 assert.ok(typeof result_sim.summary['Efficiency Gap SD'] === 'number', 'Should have Efficiency Gap SD');
 assert.ok(typeof result_sim.summary['Efficiency Gap Positives'] === 'number', 'Should have Efficiency Gap Positives');
-assert.strictEqual(result_sim.summary['Efficiency Gap Absolute Percent Rank'], undefined, 'Should have Efficiency Gap Absolute Percent Rank as undefined');
-assert.strictEqual(result_sim.summary['Efficiency Gap Relative Percent Rank'], undefined, 'Should have Efficiency Gap Relative Percent Rank as undefined');
+assert.ok(typeof result_sim.summary['Efficiency Gap Absolute Percent Rank'] === 'number', 'Should have Efficiency Gap Absolute Percent Rank as number');
+assert.ok(typeof result_sim.summary['Efficiency Gap Relative Percent Rank'] === 'number', 'Should have Efficiency Gap Relative Percent Rank as number');
 
 assert.ok(typeof result_sim.summary['Mean-Median'] === 'number', 'Should have Mean-Median mean');
 assert.ok(typeof result_sim.summary['Mean-Median SD'] === 'number', 'Should have Mean-Median SD');
 assert.ok(typeof result_sim.summary['Mean-Median Positives'] === 'number', 'Should have Mean-Median Positives');
-assert.strictEqual(result_sim.summary['Mean-Median Absolute Percent Rank'], undefined, 'Should have Mean-Median Absolute Percent Rank as undefined');
-assert.strictEqual(result_sim.summary['Mean-Median Relative Percent Rank'], undefined, 'Should have Mean-Median Relative Percent Rank as undefined');
+assert.ok(typeof result_sim.summary['Mean-Median Absolute Percent Rank'] === 'number', 'Should have Mean-Median Absolute Percent Rank as number');
+assert.ok(typeof result_sim.summary['Mean-Median Relative Percent Rank'] === 'number', 'Should have Mean-Median Relative Percent Rank as number');
 
 assert.ok(typeof result_sim.summary['Partisan Bias'] === 'number', 'Should have Partisan Bias mean');
 assert.ok(typeof result_sim.summary['Partisan Bias SD'] === 'number', 'Should have Partisan Bias SD');
 assert.ok(typeof result_sim.summary['Partisan Bias Positives'] === 'number', 'Should have Partisan Bias Positives');
-assert.strictEqual(result_sim.summary['Partisan Bias Absolute Percent Rank'], undefined, 'Should have Partisan Bias Absolute Percent Rank as undefined');
-assert.strictEqual(result_sim.summary['Partisan Bias Relative Percent Rank'], undefined, 'Should have Partisan Bias Relative Percent Rank as undefined');
+assert.ok(typeof result_sim.summary['Partisan Bias Absolute Percent Rank'] === 'number', 'Should have Partisan Bias Absolute Percent Rank as number');
+assert.ok(typeof result_sim.summary['Partisan Bias Relative Percent Rank'] === 'number', 'Should have Partisan Bias Relative Percent Rank as number');
 
 assert.ok(typeof result_sim.summary['Declination'] === 'number', 'Should have Declination mean');
 assert.ok(typeof result_sim.summary['Declination SD'] === 'number', 'Should have Declination SD');
 assert.ok(typeof result_sim.summary['Declination Positives'] === 'number', 'Should have Declination Positives');
-assert.strictEqual(result_sim.summary['Declination Absolute Percent Rank'], undefined, 'Should have Declination Absolute Percent Rank as undefined');
-assert.strictEqual(result_sim.summary['Declination Relative Percent Rank'], undefined, 'Should have Declination Relative Percent Rank as undefined');
+assert.ok(typeof result_sim.summary['Declination Absolute Percent Rank'] === 'number', 'Should have Declination Absolute Percent Rank as number');
+assert.ok(typeof result_sim.summary['Declination Relative Percent Rank'] === 'number', 'Should have Declination Relative Percent Rank as number');
+
+// Verify that percentrank values are between 0 and 1
+assert.ok(result_sim.summary['Efficiency Gap Absolute Percent Rank'] >= 0 && result_sim.summary['Efficiency Gap Absolute Percent Rank'] <= 1,
+    'Efficiency Gap Absolute Percent Rank should be between 0 and 1');
+assert.ok(result_sim.summary['Efficiency Gap Relative Percent Rank'] >= 0 && result_sim.summary['Efficiency Gap Relative Percent Rank'] <= 1,
+    'Efficiency Gap Relative Percent Rank should be between 0 and 1');
 
 // Test that positives are between 0 and 1
 assert.ok(result_sim.summary['Efficiency Gap Positives'] >= 0 && result_sim.summary['Efficiency Gap Positives'] <= 1,

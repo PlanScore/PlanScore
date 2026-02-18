@@ -119,6 +119,12 @@
     <p id="map"></p>
     <h2>District Data</h2>
     <hr />
+    <div class="table-jehl table-districts">
+        <table class="table table-hover" id="districts">
+            {# this table will be populated by load_plan_score() #}
+        </table>
+    </div>
+    <a href="#" id="text-link">Download raw data as tab-delimited text</a>.
     <form id="scenario-adjustments">
         <p>
             Vote swing:
@@ -147,12 +153,6 @@
             <label><input type="radio" name="vote-swing" value="-6.0"> R+6.0</label>
         </p>
     </form>
-    <div class="table-jehl table-districts">
-        <table class="table table-hover" id="districts">
-            {# this table will be populated by load_plan_score() #}
-        </table>
-    </div>
-    <a href="#" id="text-link">Download raw data as tab-delimited text</a>.
     <div class="table-jehl table-metrics">
         <table class="table table-hover" id="metrics">
             {# this table will be populated by load_plan_score() #}
@@ -295,7 +295,8 @@
 	        LEAN_RED_PATTERN_URL = "{{ url_for('static', filename='lean-red-pattern.png') }}",
 	        BLUEISH_PATTERN_URL = "{{ url_for('static', filename='blueish-pattern.png') }}",
 	        REDDISH_PATTERN_URL = "{{ url_for('static', filename='reddish-pattern.png') }}",
-	        UNKNOWN_PATTERN_URL = "{{ url_for('static', filename='unknown-pattern.png') }}";
+	        UNKNOWN_PATTERN_URL = "{{ url_for('static', filename='unknown-pattern.png') }}",
+	        HISTORICAL_PERCENTRANK_DATA = {{ historical_percentrank_json|safe }};
 
 	    var plan_id = location.search.replace('?', ''),
 	        plan_url = format_url('{{ data_url_pattern }}', plan_id),
