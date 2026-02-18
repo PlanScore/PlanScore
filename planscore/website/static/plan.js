@@ -2195,9 +2195,7 @@ function load_plan_score(url, message_section, score_section,
 
         // Immediately kick off scenario loading
         if (plan.scenarios !== undefined) {
-            load_plan_scenarios(geom_prefix + plan.scenarios.replace(/^\//, ''), function(scenarios) {
-                setup_scenario_interactivity(plan, scenarios, scenario_adjustments_form, districts_table, map_div);
-            });
+            load_plan_scenarios(geom_prefix + plan.scenarios.replace(/^\//, ''), plan, scenario_adjustments_form, districts_table, map_div);
         }
 
         // Plan is done parsing and we can render the page
@@ -2349,28 +2347,21 @@ function load_plan_score(url, message_section, score_section,
     request.send();
 }
 
-function load_plan_scenarios(url, callback)
+function load_plan_scenarios(url, plan, scenario_adjustments_form, districts_table, map_div)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
-
-    function on_loaded_scenarios(data)
-    {
-        adjust_scenario_stats(data);
-        console.log('New scenarios:', data);
-        if (callback) {
-            callback(data);
-        }
-    }
 
     request.onload = function()
     {
         if(request.status >= 200 && request.status < 400)
         {
-            // Returns a GeoJSON dictionary
+            // Returns a scenarios dictionary
             var data = JSON.parse(request.responseText);
             console.log('Loaded scenarios:', data);
-            on_loaded_scenarios(data);
+            adjust_scenario_stats(data);
+            console.log('New scenarios:', data);
+            setup_scenario_interactivity(plan, data, scenario_adjustments_form, districts_table, map_div);
         }
     };
 

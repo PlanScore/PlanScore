@@ -541,10 +541,11 @@ Refactored all remaining display functions in `on_loaded_score()` between the di
 **Status**: In Progress (started 2026-02-17)
 
 **What was done**:
-1. **Modified `load_plan_scenarios()` function** (lines 2218-2245):
-   - Added `callback` parameter to enable callbacks when scenarios finish loading
-   - Calls callback with scenarios data after `adjust_scenario_stats()` completes
-   - Allows `on_loaded_score()` to receive scenarios and set up interactivity
+1. **Modified `load_plan_scenarios()` function** (lines 2352-2372):
+   - Refactored to take dependencies directly instead of callback (consistent with `load_plan_map()`)
+   - Takes `url`, `plan`, `scenario_adjustments_form`, `districts_table`, `map_div` parameters
+   - Calls `setup_scenario_interactivity()` directly after loading and adjusting scenario data
+   - Cleaner pattern without callback nesting
 
 2. **Created `create_scenario_plan()` function** (lines 241-284):
    - Pure function that creates mutated copy of plan object with scenario data
