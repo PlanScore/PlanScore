@@ -698,6 +698,28 @@ Refactored all remaining display functions in `on_loaded_score()` between the di
       - Validates percentrank values are between 0 and 1
       - All tests pass ✓
 
+18. **Replaced radio buttons with range slider for vote swing control** (2026-02-18):
+    - **HTML changes** (plan.html lines 265-271):
+      - Moved `form#scenario-adjustments` outside `section#plan-score` to be after closing `</section>` tag
+      - Replaced 25 radio buttons with single `<input type="range" min="-6" max="6" step="0.5">`
+      - Added `#vote-swing-display` div to show formatted current value
+      - Form now positioned outside page content flow for fixed positioning
+    - **CSS styling** (plan.css lines 200-232):
+      - Added `position: fixed; top: 20px; right: 20px` to keep form visible in upper-right viewport
+      - Orange color scheme (background: `#fff3cd`, border: `#ff8c00`) to signal temporary/experimental feature
+      - Added `direction: rtl` to range input so D+ (positive) values are on left side of slider
+      - Box shadow and z-index: 1000 for visibility on top of page content
+    - **JavaScript updates** (plan.js lines 702-776):
+      - Updated `setup_scenario_interactivity()` to query single range input instead of multiple radio buttons
+      - Added `format_vote_swing()` helper function to format display as "D+3.0", "0.0", or "R+2.5"
+      - Changed event listener from `'change'` to `'input'` for real-time updates while dragging slider
+      - Display updates immediately as slider moves, all visualizations update in real-time
+    - **Benefits**:
+      - Smoother user experience with continuous slider vs discrete radio buttons
+      - More compact UI that stays visible while scrolling (fixed position)
+      - Clear visual indication this is temporary feature (orange styling)
+      - Left-to-right orientation matches political spectrum (D+ on left, R+ on right)
+
 **Key design decisions**:
 - **No globals**: Used closures to pass state through callback chain
 - **Per-district incumbency**: Each district uses its own incumbent scenario from `plan.incumbents[]`
@@ -746,8 +768,11 @@ Metrics table showing summary statistics:
 - Percentranks compare against ~2,400 historical plans from bias CSV files
 
 **Benefits achieved**:
-- Radio buttons now functional and update all visualizations interactively
-- All visualizations respond to scenario changes in real-time
+- Range slider provides smooth, continuous vote swing adjustment (±6.0 in 0.5% steps)
+- All visualizations respond to scenario changes in real-time with live updates while dragging
+- Fixed-position UI stays visible in upper-right corner while scrolling page content
+- Orange styling clearly signals this is an experimental/temporary feature
+- Intuitive left-to-right orientation (D+ on left, R+ on right) matches political spectrum
 - Score cards update with statistically valid simulated metrics
 - Map colors update without recreating entire map (smooth performance)
 - Charts properly hide when assumptions invalid (outside 45-55% range)

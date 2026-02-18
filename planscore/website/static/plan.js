@@ -712,57 +712,67 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         populate_districts_table(original_plan, districts_table);
     }
 
-    // Get all radio buttons in the form
-    var radios = scenario_adjustments_form.querySelectorAll('input[name="vote-swing"]');
+    // Get the range input and display element
+    var range_input = scenario_adjustments_form.querySelector('input[name="vote-swing"]');
+    var display = document.getElementById('vote-swing-display');
 
-    // Set the 0.0 radio button as checked initially
-    for (var i = 0; i < radios.length; i++) {
-        if (parseFloat(radios[i].value) === 0.0) {
-            radios[i].checked = true;
-            break;
+    // Helper function to format vote swing for display
+    function format_vote_swing(value) {
+        var num = parseFloat(value);
+        if (num === 0) {
+            return '0.0';
+        } else if (num > 0) {
+            return 'D+' + num.toFixed(1);
+        } else {
+            return 'R+' + Math.abs(num).toFixed(1);
         }
     }
 
-    // Add change listener to all radio buttons
-    for (var i = 0; i < radios.length; i++) {
-        radios[i].addEventListener('change', function(event) {
-            // Get the selected vote swing value
-            var vote_swing = parseFloat(event.target.value);
+    // Set initial value
+    range_input.value = 0;
+    display.textContent = format_vote_swing(0);
 
-            // Find the index in scenarios.vote_swings array
-            var vote_swing_index = scenarios.vote_swings.indexOf(vote_swing);
+    // Add input listener to range slider for live updates
+    range_input.addEventListener('input', function(event) {
+        // Get the selected vote swing value
+        var vote_swing = parseFloat(event.target.value);
 
-            if (vote_swing_index === -1) {
-                console.error('Vote swing not found in scenarios:', vote_swing);
-                return;
-            }
+        // Update the display
+        display.textContent = format_vote_swing(vote_swing);
 
-            // Create mutated plan with scenario data
-            var mutated_plan = create_scenario_plan(original_plan, scenarios, vote_swing_index);
+        // Find the index in scenarios.vote_swings array
+        var vote_swing_index = scenarios.vote_swings.indexOf(vote_swing);
 
-            // Update the districts table
-            populate_districts_table(mutated_plan, districts_table);
+        if (vote_swing_index === -1) {
+            console.error('Vote swing not found in scenarios:', vote_swing);
+            return;
+        }
 
-            // Update the seat share graphic
-            populate_seatshare_graphic(mutated_plan);
+        // Create mutated plan with scenario data
+        var mutated_plan = create_scenario_plan(original_plan, scenarios, vote_swing_index);
 
-            // Update the map colors
-            populate_plan_map(mutated_plan, map_div);
+        // Update the districts table
+        populate_districts_table(mutated_plan, districts_table);
 
-            // Update the score cards (each function handles its own validation)
-            populate_efficiency_gap_score(mutated_plan, score_EG);
-            populate_partisan_bias_score(mutated_plan, score_PB);
-            populate_mean_median_score(mutated_plan, score_MM);
+        // Update the seat share graphic
+        populate_seatshare_graphic(mutated_plan);
 
-            // Only update declination if it's valid
-            if (mutated_plan.summary['Declination'] !== null && mutated_plan.summary['Declination'] !== undefined) {
-                populate_declination2_score(mutated_plan, score_DEC2);
-            }
+        // Update the map colors
+        populate_plan_map(mutated_plan, map_div);
 
-            // Update the metrics table with new percentrank values
-            populate_metrics_table(mutated_plan, metrics_table);
-        });
-    }
+        // Update the score cards (each function handles its own validation)
+        populate_efficiency_gap_score(mutated_plan, score_EG);
+        populate_partisan_bias_score(mutated_plan, score_PB);
+        populate_mean_median_score(mutated_plan, score_MM);
+
+        // Only update declination if it's valid
+        if (mutated_plan.summary['Declination'] !== null && mutated_plan.summary['Declination'] !== undefined) {
+            populate_declination2_score(mutated_plan, score_DEC2);
+        }
+
+        // Update the metrics table with new percentrank values
+        populate_metrics_table(mutated_plan, metrics_table);
+    });
 }
 
 function clear_element(el)
