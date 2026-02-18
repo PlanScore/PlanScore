@@ -536,9 +536,9 @@ Refactored all remaining display functions in `on_loaded_score()` between the di
 - All existing tests pass
 - Foundation complete for interactive scenario updates
 
-### Phase 3: Wire Up Scenario Interactivity 🚧 IN PROGRESS
+### Phase 3: Wire Up Scenario Interactivity ✅ COMPLETED
 
-**Status**: In Progress (started 2026-02-17, updated 2026-02-18)
+**Status**: Completed 2026-02-18 (started 2026-02-17)
 
 **What was done**:
 1. **Modified `load_plan_scenarios()` function** (lines 2352-2372):
@@ -791,7 +791,10 @@ Metrics table showing summary statistics:
 - Foundation complete for future metric enhancements
 
 ### Phase 4: Polish
-- Update URL hash to preserve scenario selection
+- Update URL hash to preserve scenario selection:
+    - Valid syntax: "#scenario" (defaults), "#scenario=vote_swing:1.0" (non-default)
+- Condition appearance of form#scenario-adjustments on presence of URL hash, it should be totally invisible without this flag
+- If the original plan does not contain a scenarios.json linked, or if it includes top-level vote_swings set to anything other than zeros, render it in a disabled form and show a note: "Not available for this map"
 
 ## Code Organization
 
