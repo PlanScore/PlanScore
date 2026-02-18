@@ -1228,11 +1228,10 @@ function construct_efficiency_gap_score(score_EG)
     for(node = score_EG.firstChild; node = node.nextSibling; node)
     {
         if(node.nodeName == 'H3') {
-            // Add a span for the value
+            // Add a span for the value (includes colon)
             var value_span = document.createElement('span');
             value_span.className = 'score-value';
             value_span.dataset.metric = 'eg';
-            node.appendChild(document.createTextNode(': '));
             node.appendChild(value_span);
 
         } else if(node.nodeName == 'DIV') {
@@ -1252,14 +1251,15 @@ function populate_efficiency_gap_score(plan, score_EG)
 {
     var summary_name = which_score_summary_name(plan),
         gap = plan.summary[summary_name],
-        gap_amount = nice_percent(Math.abs(gap)) + partisan_suffix(gap);
+        gap_amount = nice_percent(Math.abs(gap)),
+        gap_amount_suffixed = gap_amount + partisan_suffix(gap);
 
     for(node = score_EG.firstChild; node = node.nextSibling; node)
     {
         if(node.nodeName == 'H3') {
             var value_span = node.querySelector('.score-value[data-metric="eg"]');
             if(value_span) {
-                value_span.innerHTML = gap_amount;
+                value_span.innerHTML = ': ' + gap_amount_suffixed;
             }
 
         } else if(node.nodeName == 'DIV' && node.dataset.metric == 'eg') {
@@ -1305,11 +1305,10 @@ function construct_declination2_score(score_DEC2)
     for(node = score_DEC2.firstChild; node = node.nextSibling; node)
     {
         if(node.nodeName == 'H3') {
-            // Add a span for the value
+            // Add a span for the value (includes colon)
             var value_span = document.createElement('span');
             value_span.className = 'score-value';
             value_span.dataset.metric = 'd2';
-            node.appendChild(document.createTextNode(': '));
             node.appendChild(value_span);
 
         } else if(node.nodeName == 'DIV') {
@@ -1328,14 +1327,15 @@ function construct_declination2_score(score_DEC2)
 function populate_declination2_score(plan, score_DEC2)
 {
     var declination = plan.summary['Declination'],
-        dec2_amount = (Math.round(Math.abs(declination) * 100) / 100) + partisan_suffix(declination);
+        dec2_amount = (Math.round(Math.abs(declination) * 100) / 100),
+        dec2_amount_suffixed = dec2_amount + partisan_suffix(declination);
 
     for(node = score_DEC2.firstChild; node = node.nextSibling; node)
     {
         if(node.nodeName == 'H3') {
             var value_span = node.querySelector('.score-value[data-metric="d2"]');
             if(value_span) {
-                value_span.innerHTML = dec2_amount;
+                value_span.innerHTML = ': ' + dec2_amount_suffixed;
             }
 
         } else if(node.nodeName == 'DIV' && node.dataset.metric == 'd2') {
@@ -1374,11 +1374,10 @@ function construct_partisan_bias_score(score_PB)
     for(node = score_PB.firstChild; node = node.nextSibling; node)
     {
         if(node.nodeName == 'H3') {
-            // Add a span for the value
+            // Add a span for the value (includes colon)
             var value_span = document.createElement('span');
             value_span.className = 'score-value';
             value_span.dataset.metric = 'pb';
-            node.appendChild(document.createTextNode(': '));
             node.appendChild(value_span);
 
         } else if(node.nodeName == 'DIV') {
@@ -1406,14 +1405,15 @@ function populate_partisan_bias_score(plan, score_PB)
     }
 
     var bias = plan.summary['Partisan Bias'],
-        bias_amount = nice_percent(Math.abs(bias)) + partisan_suffix(bias);
+        bias_amount = nice_percent(Math.abs(bias)),
+        bias_amount_suffixed = bias_amount + partisan_suffix(bias);
 
     for(node = score_PB.firstChild; node = node.nextSibling; node)
     {
         if(node.nodeName == 'H3') {
             var value_span = node.querySelector('.score-value[data-metric="pb"]');
             if(value_span) {
-                value_span.innerHTML = bias_amount;
+                value_span.innerHTML = ': ' + bias_amount_suffixed;
             }
 
         } else if(node.nodeName == 'DIV' && node.dataset.metric == 'pb') {
@@ -1459,7 +1459,15 @@ function hide_score_with_reason(score_node, reason)
 {
     for(node = score_node.firstChild; node = node.nextSibling; node)
     {
-        if(node.nodeName == 'DIV')
+        if(node.nodeName == 'H3')
+        {
+            // Clear the score value from the title
+            var value_span = node.querySelector('.score-value');
+            if(value_span) {
+                value_span.innerHTML = '';
+            }
+
+        } else if(node.nodeName == 'DIV')
         {
             // Hide the chart DIV instead of clearing it, preserving the chart structure
             node.style.display = 'none';
@@ -1476,11 +1484,10 @@ function construct_mean_median_score(score_MM)
     for(node = score_MM.firstChild; node = node.nextSibling; node)
     {
         if(node.nodeName == 'H3') {
-            // Add a span for the value
+            // Add a span for the value (includes colon)
             var value_span = document.createElement('span');
             value_span.className = 'score-value';
             value_span.dataset.metric = 'mm';
-            node.appendChild(document.createTextNode(': '));
             node.appendChild(value_span);
 
         } else if(node.nodeName == 'DIV') {
@@ -1508,14 +1515,15 @@ function populate_mean_median_score(plan, score_MM)
     }
 
     var diff = plan.summary['Mean-Median'],
-        diff_amount = nice_percent(Math.abs(diff)) + partisan_suffix(diff);
+        diff_amount = nice_percent(Math.abs(diff)),
+        diff_amount_suffixed = diff_amount + partisan_suffix(diff);
 
     for(node = score_MM.firstChild; node = node.nextSibling; node)
     {
         if(node.nodeName == 'H3') {
             var value_span = node.querySelector('.score-value[data-metric="mm"]');
             if(value_span) {
-                value_span.innerHTML = diff_amount;
+                value_span.innerHTML = ': ' + diff_amount_suffixed;
             }
 
         } else if(node.nodeName == 'DIV' && node.dataset.metric == 'mm') {
