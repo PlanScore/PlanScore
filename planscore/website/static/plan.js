@@ -556,6 +556,9 @@ function create_scenario_plan(original_plan, scenarios, vote_swing_index)
                 scenarios.statistics['Republican Votes SD'][vote_swing_index][incumbent_index][district_index]
             );
         }
+
+        // Set vote_swing field for this district (convert from percentage to decimal)
+        mutated_plan.districts[district_index].vote_swing = scenarios.vote_swings[vote_swing_index] / 100.0;
     }
 
     // Generate 1000 symmetric simulations and calculate statistics
@@ -616,6 +619,17 @@ function create_scenario_plan(original_plan, scenarios, vote_swing_index)
 
 function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustments_form, districts_table, map_div, score_EG, score_PB, score_MM, score_DEC2)
 {
+    // Initialize vote_swing field if it doesn't exist
+    // This ensures the Vote Swing column can be toggled when scenarios are available
+    if (original_plan.districts.length > 0 && !('vote_swing' in original_plan.districts[0])) {
+        for (var i = 0; i < original_plan.districts.length; i++) {
+            original_plan.districts[i].vote_swing = 0.0;
+        }
+        // Reconstruct table once to include the Vote Swing column (initially hidden)
+        construct_districts_table(original_plan, districts_table);
+        populate_districts_table(original_plan, districts_table);
+    }
+
     // Get all radio buttons in the form
     var radios = scenario_adjustments_form.querySelectorAll('input[name="vote-swing"]');
 
@@ -884,6 +898,12 @@ function construct_districts_table(plan, districts_table)
         // Use innerHTML for headers since they may contain HTML tags like <sup>
         th.innerHTML = heading_title;
         th.dataset.columnIndex = j;
+
+        // Mark Vote Swing column for show/hide toggling
+        if (heading_title === 'Vote Swing') {
+            th.dataset.columnName = 'Vote Swing';
+        }
+
         header_row.appendChild(th);
     }
 
@@ -909,6 +929,12 @@ function construct_districts_table(plan, districts_table)
             }
 
             cell.dataset.columnIndex = j;
+
+            // Mark Vote Swing column for show/hide toggling
+            if (heading_title === 'Vote Swing') {
+                cell.dataset.columnName = 'Vote Swing';
+            }
+
             tr.appendChild(cell);
         }
 
@@ -995,6 +1021,20 @@ function populate_districts_table(plan, districts_table)
             }
             cell_index++;
         }
+    }
+
+    // Show or hide the Vote Swing column based on whether all swings are 0.0
+    var all_swings_zero = true;
+    for (var i = 0; i < plan.districts.length; i++) {
+        if (plan.districts[i].vote_swing && plan.districts[i].vote_swing !== 0.0) {
+            all_swings_zero = false;
+            break;
+        }
+    }
+
+    var swing_cells = districts_table.querySelectorAll('[data-column-name="Vote Swing"]');
+    for (var i = 0; i < swing_cells.length; i++) {
+        swing_cells[i].style.display = all_swings_zero ? 'none' : '';
     }
 }
 
@@ -2335,7 +2375,7 @@ function plan_array(plan)
                 flip_chance = flippy_colors.indexOf(which_district_color(plan.districts[j], plan)) != -1;
                 current_row.push(flip_chance);
             }
-        } else if(field == 'Vote Swing' && !has_nonzero_vote_swings) {
+        } else if(field == 'Vote Swing' && field_missing) {
             continue;
         }
 
@@ -2351,7 +2391,7 @@ function plan_array(plan)
             } else if('compactness' in plan.districts[j] && field in plan.districts[j].compactness) {
                 current_row.push(plan.districts[j].compactness[field]);
 
-            } else if('vote_swing' in plan.districts[j] && field == 'Vote Swing' && has_nonzero_vote_swings) {
+            } else if('vote_swing' in plan.districts[j] && field == 'Vote Swing') {
                 current_row.push(plan.districts[j].vote_swing);
             }
         }

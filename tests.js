@@ -403,7 +403,7 @@ assert.deepEqual(plan_array10[0],
     ['District', 'Candidate Scenario', 'Pop. 2020', 'PlanScore:ShyColumn',
     'Hispanic CVAP 2023', 'Non-Hisp. Black CVAP 2023', 'Non-Hisp. Asian CVAP 2023',
     'Non-Hisp. Native CVAP 2023', 'Chance of 1+ Flips<sup>†</sup>', 'Chance of Democratic Win',
-    'Predicted Vote Shares', 'Harris (D) 2024', 'Trump (R) 2024', 'PlanScore:ShyColumn',
+    'Predicted Vote Shares', 'Vote Swing', 'Harris (D) 2024', 'Trump (R) 2024', 'PlanScore:ShyColumn',
     'PlanScore:ShyColumn', 'PlanScore:ShyColumn', 'PlanScore:ShyColumn'],
     'Should pick out the right column names');
 

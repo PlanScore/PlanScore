@@ -655,6 +655,15 @@ Refactored all remaining display functions in `on_loaded_score()` between the di
     - Verifies percentranks are undefined
     - All tests pass ✓
 
+16. **Added Vote Swing column visibility to scenario interactivity** (plan.js lines 561, 622-631, 891-894, 922-925, 1015-1027; plan_array lines 2341, 2394):
+    - **Enhanced `create_scenario_plan()`** (line 561): Sets `vote_swing` field on each district, converting from percentage to decimal (divides by 100)
+    - **Modified `plan_array()`** (lines 2341, 2394): Changed Vote Swing column logic from checking `has_nonzero_vote_swings` to `field_missing`, so column always appears when field exists
+    - **Updated `construct_districts_table()`** (lines 891-894, 922-925): Added `data-column-name="Vote Swing"` to header and body cells for show/hide toggling
+    - **Enhanced `populate_districts_table()`** (lines 1015-1027): Checks if all vote swings are 0.0 and dynamically shows/hides Vote Swing column using CSS `display` property
+    - **Updated `setup_scenario_interactivity()`** (lines 622-631): Initializes `vote_swing: 0.0` on all districts if field doesn't exist, then reconstructs table once to include column (initially hidden)
+    - **Updated test expectations** (tests.js line 406): Added 'Vote Swing' to expected column list for zero-vote-swings test
+    - **Behavior**: Vote Swing column appears when non-zero swings applied, disappears at 0.0 swing, no table reconstruction needed (just CSS visibility toggle)
+
 **Key design decisions**:
 - **No globals**: Used closures to pass state through callback chain
 - **Per-district incumbency**: Each district uses its own incumbent scenario from `plan.incumbents[]`
@@ -665,6 +674,7 @@ Refactored all remaining display functions in `on_loaded_score()` between the di
 - **Indexed lookups**: Vote swing maps to index (e.g., -6.0 → 0, 0.0 → 12, 6.0 → 24)
 - **Visibility over clearing**: Hide/show DIVs instead of destroying DOM structure
 - **Encapsulated validation**: Vote share checks inside populate functions, not duplicated
+- **CSS visibility for columns**: Vote Swing column uses `display: none` toggle instead of table reconstruction for smooth performance
 
 **What updates**:
 Districts table columns that depend on vote scenarios:
@@ -672,6 +682,7 @@ Districts table columns that depend on vote scenarios:
 - "Republican Votes"
 - "Chance of Democratic Win" (derived from Democratic Wins)
 - "Predicted Vote Shares" (calculated from Dem/Rep votes)
+- "Vote Swing" (hidden at 0.0, visible for non-zero swings)
 
 Seat share graphic that visualizes district outcomes:
 - Colored seat boxes (sorted by Democratic Wins, reordered per scenario)
@@ -699,6 +710,7 @@ Score cards with bell charts:
 - Map colors update without recreating entire map (smooth performance)
 - Charts properly hide when assumptions invalid (outside 45-55% range)
 - Charts reliably reappear when returning to valid range
+- Vote Swing column dynamically shows/hides without table reconstruction
 - Clean state management without globals
 - Well-tested with real scenario data and edge cases
 - Consistent construct/populate pattern across all page elements
@@ -706,10 +718,7 @@ Score cards with bell charts:
 - Foundation complete for future metric enhancements
 
 ### Phase 4: Polish
-1. Add loading states during scenario switches
-2. Add transitions/animations for value changes
-3. Update URL hash to preserve scenario selection
-4. Add keyboard shortcuts for scenario navigation
+- Update URL hash to preserve scenario selection
 
 ## Code Organization
 
