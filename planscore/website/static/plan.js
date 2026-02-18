@@ -407,6 +407,42 @@ function calculate_D2(red_districts, blue_districts)
     return -declination2;
 }
 
+function calculate_mean(array)
+{
+    // Calculate the arithmetic mean of an array of numbers.
+    if (array.length === 0) {
+        return null;
+    }
+    var sum = array.reduce(function(a, b) { return a + b; }, 0);
+    return sum / array.length;
+}
+
+function calculate_stdev(array)
+{
+    // Calculate the sample standard deviation of an array of numbers.
+    // Uses n-1 denominator (Bessel's correction) for unbiased estimate.
+    if (array.length < 2) {
+        return null;
+    }
+    var mean = calculate_mean(array);
+    var sum_squared_diffs = array.reduce(function(acc, val) {
+        return acc + Math.pow(val - mean, 2);
+    }, 0);
+    return Math.sqrt(sum_squared_diffs / (array.length - 1));
+}
+
+function calculate_positives(array)
+{
+    // Calculate the proportion of positive values in an array.
+    // Values greater than a small epsilon are considered positive.
+    if (array.length === 0) {
+        return null;
+    }
+    var epsilon = 1e-10;
+    var positives = array.filter(function(val) { return val > epsilon; }).length;
+    return positives / array.length;
+}
+
 function gaussian_randoms(count)
 {
     // Generate Gaussian (normal) random values using Box-Muller transform.
@@ -469,6 +505,12 @@ function create_scenario_plan(original_plan, scenarios, vote_swing_index)
     // Create a deep copy of the plan
     var mutated_plan = JSON.parse(JSON.stringify(original_plan));
 
+    // Arrays to store mean and SD values for simulations
+    var dem_votes_mean = [];
+    var rep_votes_mean = [];
+    var dem_votes_sd = [];
+    var rep_votes_sd = [];
+
     // Update each district with scenario data
     for (var district_index = 0; district_index < mutated_plan.districts.length; district_index++) {
         // Get incumbent scenario for this district (e.g., 'O', 'D', 'R')
@@ -484,14 +526,16 @@ function create_scenario_plan(original_plan, scenarios, vote_swing_index)
 
         // Update Democratic Votes
         if (scenarios.statistics['Democratic Votes']) {
-            mutated_plan.districts[district_index].totals['Democratic Votes'] =
-                scenarios.statistics['Democratic Votes'][vote_swing_index][incumbent_index][district_index];
+            var dem_mean = scenarios.statistics['Democratic Votes'][vote_swing_index][incumbent_index][district_index];
+            mutated_plan.districts[district_index].totals['Democratic Votes'] = dem_mean;
+            dem_votes_mean.push(dem_mean);
         }
 
         // Update Republican Votes
         if (scenarios.statistics['Republican Votes']) {
-            mutated_plan.districts[district_index].totals['Republican Votes'] =
-                scenarios.statistics['Republican Votes'][vote_swing_index][incumbent_index][district_index];
+            var rep_mean = scenarios.statistics['Republican Votes'][vote_swing_index][incumbent_index][district_index];
+            mutated_plan.districts[district_index].totals['Republican Votes'] = rep_mean;
+            rep_votes_mean.push(rep_mean);
         }
 
         // Update Democratic Wins
@@ -499,12 +543,78 @@ function create_scenario_plan(original_plan, scenarios, vote_swing_index)
             mutated_plan.districts[district_index].totals['Democratic Wins'] =
                 scenarios.statistics['Democratic Wins'][vote_swing_index][incumbent_index][district_index];
         }
+
+        // Extract SD values for simulations
+        if (scenarios.statistics['Democratic Votes SD']) {
+            dem_votes_sd.push(
+                scenarios.statistics['Democratic Votes SD'][vote_swing_index][incumbent_index][district_index]
+            );
+        }
+
+        if (scenarios.statistics['Republican Votes SD']) {
+            rep_votes_sd.push(
+                scenarios.statistics['Republican Votes SD'][vote_swing_index][incumbent_index][district_index]
+            );
+        }
     }
+
+    // Generate 1000 symmetric simulations and calculate statistics
+    var sim_count = 1000;
+    var random_values = gaussian_randoms(sim_count);
+
+    var EG_sims = [];
+    var MMD_sims = [];
+    var PB_sims = [];
+    var D2_sims = [];
+
+    for (var sim = 0; sim < sim_count; sim++) {
+        var random = random_values[sim];
+
+        // Generate symmetric vote perturbations (zero-sum per simulation)
+        var dem_sim = [];
+        var rep_sim = [];
+
+        for (var d = 0; d < dem_votes_mean.length; d++) {
+            dem_sim.push(dem_votes_mean[d] + random * dem_votes_sd[d]);
+            rep_sim.push(rep_votes_mean[d] - random * rep_votes_sd[d]);
+        }
+
+        // Calculate metrics for this simulation
+        EG_sims.push(calculate_EG(rep_sim, dem_sim));
+        MMD_sims.push(calculate_MMD(rep_sim, dem_sim));
+        PB_sims.push(calculate_PB(rep_sim, dem_sim));
+        D2_sims.push(calculate_D2(rep_sim, dem_sim));
+    }
+
+    // Calculate summary statistics from simulations
+    mutated_plan.summary['Efficiency Gap'] = calculate_mean(EG_sims);
+    mutated_plan.summary['Efficiency Gap SD'] = calculate_stdev(EG_sims);
+    mutated_plan.summary['Efficiency Gap Positives'] = calculate_positives(EG_sims);
+    mutated_plan.summary['Efficiency Gap Absolute Percent Rank'] = undefined;
+    mutated_plan.summary['Efficiency Gap Relative Percent Rank'] = undefined;
+
+    mutated_plan.summary['Mean-Median'] = calculate_mean(MMD_sims);
+    mutated_plan.summary['Mean-Median SD'] = calculate_stdev(MMD_sims);
+    mutated_plan.summary['Mean-Median Positives'] = calculate_positives(MMD_sims);
+    mutated_plan.summary['Mean-Median Absolute Percent Rank'] = undefined;
+    mutated_plan.summary['Mean-Median Relative Percent Rank'] = undefined;
+
+    mutated_plan.summary['Partisan Bias'] = calculate_mean(PB_sims);
+    mutated_plan.summary['Partisan Bias SD'] = calculate_stdev(PB_sims);
+    mutated_plan.summary['Partisan Bias Positives'] = calculate_positives(PB_sims);
+    mutated_plan.summary['Partisan Bias Absolute Percent Rank'] = undefined;
+    mutated_plan.summary['Partisan Bias Relative Percent Rank'] = undefined;
+
+    mutated_plan.summary['Declination'] = calculate_mean(D2_sims);
+    mutated_plan.summary['Declination SD'] = calculate_stdev(D2_sims);
+    mutated_plan.summary['Declination Positives'] = calculate_positives(D2_sims);
+    mutated_plan.summary['Declination Absolute Percent Rank'] = undefined;
+    mutated_plan.summary['Declination Relative Percent Rank'] = undefined;
 
     return mutated_plan;
 }
 
-function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustments_form, districts_table, map_div)
+function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustments_form, districts_table, map_div, score_EG, score_PB, score_MM, score_DEC2)
 {
     // Get all radio buttons in the form
     var radios = scenario_adjustments_form.querySelectorAll('input[name="vote-swing"]');
@@ -542,6 +652,16 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
 
             // Update the map colors
             populate_plan_map(mutated_plan, map_div);
+
+            // Update the score cards (each function handles its own validation)
+            populate_efficiency_gap_score(mutated_plan, score_EG);
+            populate_partisan_bias_score(mutated_plan, score_PB);
+            populate_mean_median_score(mutated_plan, score_MM);
+
+            // Only update declination if it's valid
+            if (mutated_plan.summary['Declination'] !== null && mutated_plan.summary['Declination'] !== undefined) {
+                populate_declination2_score(mutated_plan, score_DEC2);
+            }
         });
     }
 }
@@ -1141,6 +1261,15 @@ function construct_partisan_bias_score(score_PB)
 
 function populate_partisan_bias_score(plan, score_PB)
 {
+    // Check if vote shares are within 45-55% range
+    if (plan_voteshare(plan) >= 0.1 && !location.hash.match(/\bshowall\b/)) {
+        hide_score_with_reason(score_PB,
+            'The parties\' statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
+            + ' Partisan bias is shown only where the parties\' statewide vote shares fall between 45% and 55%.'
+            + ' Outside this range the metric\'s assumptions are not plausible.');
+        return;
+    }
+
     var bias = plan.summary['Partisan Bias'],
         bias_amount = nice_percent(Math.abs(bias)) + partisan_suffix(bias);
 
@@ -1153,6 +1282,8 @@ function populate_partisan_bias_score(plan, score_PB)
             }
 
         } else if(node.nodeName == 'DIV' && node.dataset.metric == 'pb') {
+            // Show the DIV in case it was hidden by hide_score_with_reason
+            node.style.display = '';
             drawBiasBellChart('pb', bias, node.id,
                 (plan.model ? plan.model.house : 'ushouse'), 'plan');
 
@@ -1195,7 +1326,8 @@ function hide_score_with_reason(score_node, reason)
     {
         if(node.nodeName == 'DIV')
         {
-            clear_element(node);
+            // Hide the chart DIV instead of clearing it, preserving the chart structure
+            node.style.display = 'none';
 
         } else if(node.nodeName == 'P') {
             clear_element(node);
@@ -1231,6 +1363,15 @@ function construct_mean_median_score(score_MM)
 
 function populate_mean_median_score(plan, score_MM)
 {
+    // Check if vote shares are within 45-55% range
+    if (plan_voteshare(plan) >= 0.1 && !location.hash.match(/\bshowall\b/)) {
+        hide_score_with_reason(score_MM,
+            'The parties\' statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
+            + ' The mean-median difference is shown only where the parties\' statewide vote shares fall between 45% and 55%.'
+            + ' Outside this range the metric\'s assumptions are not plausible.');
+        return;
+    }
+
     var diff = plan.summary['Mean-Median'],
         diff_amount = nice_percent(Math.abs(diff)) + partisan_suffix(diff);
 
@@ -1243,6 +1384,8 @@ function populate_mean_median_score(plan, score_MM)
             }
 
         } else if(node.nodeName == 'DIV' && node.dataset.metric == 'mm') {
+            // Show the DIV in case it was hidden by hide_score_with_reason
+            node.style.display = '';
             drawBiasBellChart('mm', diff, node.id,
                 (plan.model ? plan.model.house : 'ushouse'), 'plan');
 
@@ -2416,7 +2559,7 @@ function load_plan_score(url, message_section, score_section,
 
         // Immediately kick off scenario loading
         if (plan.scenarios !== undefined) {
-            load_plan_scenarios(geom_prefix + plan.scenarios.replace(/^\//, ''), plan, scenario_adjustments_form, districts_table, map_div);
+            load_plan_scenarios(geom_prefix + plan.scenarios.replace(/^\//, ''), plan, scenario_adjustments_form, districts_table, map_div, score_EG, score_PB, score_MM, score_DEC2);
         }
 
         // Plan is done parsing and we can render the page
@@ -2568,7 +2711,7 @@ function load_plan_score(url, message_section, score_section,
     request.send();
 }
 
-function load_plan_scenarios(url, plan, scenario_adjustments_form, districts_table, map_div)
+function load_plan_scenarios(url, plan, scenario_adjustments_form, districts_table, map_div, score_EG, score_PB, score_MM, score_DEC2)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -2582,7 +2725,7 @@ function load_plan_scenarios(url, plan, scenario_adjustments_form, districts_tab
             console.log('Loaded scenarios:', data);
             adjust_scenario_stats(data);
             console.log('New scenarios:', data);
-            setup_scenario_interactivity(plan, data, scenario_adjustments_form, districts_table, map_div);
+            setup_scenario_interactivity(plan, data, scenario_adjustments_form, districts_table, map_div, score_EG, score_PB, score_MM, score_DEC2);
         }
     };
 
@@ -2822,6 +2965,9 @@ if(typeof module !== 'undefined' && module.exports)
         calculate_MMD,
         calculate_PB,
         calculate_D2,
+        calculate_mean,
+        calculate_stdev,
+        calculate_positives,
         gaussian_randoms,
         SHY_COLUMN,
     };

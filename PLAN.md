@@ -538,7 +538,7 @@ Refactored all remaining display functions in `on_loaded_score()` between the di
 
 ### Phase 3: Wire Up Scenario Interactivity 🚧 IN PROGRESS
 
-**Status**: In Progress (started 2026-02-17)
+**Status**: In Progress (started 2026-02-17, updated 2026-02-18)
 
 **What was done**:
 1. **Modified `load_plan_scenarios()` function** (lines 2352-2372):
@@ -601,12 +601,70 @@ Refactored all remaining display functions in `on_loaded_score()` between the di
    - Tests per-district incumbent scenario lookups work correctly
    - All tests pass ✓
 
+9. **Added helper functions for statistical calculations** (plan.js lines 410-444):
+   - `calculate_mean(array)` - computes arithmetic mean
+   - `calculate_stdev(array)` - computes sample standard deviation with Bessel's correction (n-1)
+   - `calculate_positives(array)` - computes proportion of positive values (> epsilon)
+   - All exported to module.exports for testing
+   - Pure functions, handle edge cases (empty arrays, single elements)
+
+10. **Enhanced `create_scenario_plan()` with 1000 symmetric simulations** (plan.js lines 498-615):
+    - Mimics Python's score.py:1215-1237 logic
+    - Extracts "Democratic Votes SD" and "Republican Votes SD" from scenario statistics
+    - Generates 1000 gaussian random values using existing `gaussian_randoms()` function
+    - For each simulation:
+      - Applies symmetric perturbations: `dem = mean + random × sd`, `rep = mean - random × sd`
+      - Ensures zero-sum behavior per simulation (same random value affects both parties inversely)
+      - Calculates EG, MMD, PB, D2 metrics using existing calculate_* functions
+    - Computes summary statistics from all simulations:
+      - Mean: average of metric values across 1000 simulations
+      - SD: standard deviation with Bessel's correction
+      - Positives: proportion of simulations where metric > 0
+    - Sets percentranks to `undefined` (insufficient context for database ranking)
+    - Updates `mutated_plan.summary` with all calculated values
+
+11. **Updated `setup_scenario_interactivity()` to populate score cards** (plan.js lines 617-667):
+    - Added score card elements (`score_EG`, `score_PB`, `score_MM`, `score_DEC2`) to parameters
+    - Calls `populate_efficiency_gap_score()`, `populate_partisan_bias_score()`, `populate_mean_median_score()`
+    - Each populate function handles its own validation
+    - Conditionally calls `populate_declination2_score()` only if valid
+
+12. **Enhanced `populate_partisan_bias_score()` and `populate_mean_median_score()`** (plan.js lines 1262-1295, 1364-1395):
+    - Added vote share range validation (45-55%) at start of each function
+    - If outside range: calls `hide_score_with_reason()` with appropriate message and returns early
+    - If within range: proceeds to populate score and draw chart
+    - Shows DIV (sets `node.style.display = ''`) before drawing chart to restore visibility
+
+13. **Modified `hide_score_with_reason()` to preserve DOM structure** (plan.js lines 1324-1338):
+    - Changed from clearing DIV content to setting `node.style.display = 'none'`
+    - Preserves internal chart structure for re-rendering
+    - Allows charts to reappear when vote shares return to 45-55% range
+    - Prevents need for DOM reconstruction
+
+14. **Updated function call chain** (plan.js lines 2529, 2681-2701):
+    - Modified `load_plan_scenarios()` signature to accept score elements
+    - Passes `score_EG`, `score_PB`, `score_MM`, `score_DEC2` through to `setup_scenario_interactivity()`
+    - Updated call site in `on_loaded_score()` to pass score elements
+
+15. **Added comprehensive tests** (tests.js lines 838-920):
+    - Tests for `calculate_mean()`, `calculate_stdev()`, `calculate_positives()` with edge cases
+    - Verifies `create_scenario_plan()` generates valid summary statistics
+    - Checks all four metrics (EG, MMD, PB, D2) have mean, SD, positives properties
+    - Validates positives are between 0 and 1
+    - Confirms SD values are positive
+    - Verifies percentranks are undefined
+    - All tests pass ✓
+
 **Key design decisions**:
 - **No globals**: Used closures to pass state through callback chain
 - **Per-district incumbency**: Each district uses its own incumbent scenario from `plan.incumbents[]`
 - **Pure functions**: `create_scenario_plan()` is stateless and testable
-- **No DOM changes**: Only updates `textContent`/`innerHTML` of existing table cells
+- **Symmetric simulations**: Single random value affects both parties inversely (zero-sum per simulation)
+- **1000 simulations**: Matches Python implementation for statistical validity
+- **No DOM changes**: Only updates `textContent`/`innerHTML` of existing elements
 - **Indexed lookups**: Vote swing maps to index (e.g., -6.0 → 0, 0.0 → 12, 6.0 → 24)
+- **Visibility over clearing**: Hide/show DIVs instead of destroying DOM structure
+- **Encapsulated validation**: Vote share checks inside populate functions, not duplicated
 
 **What updates**:
 Districts table columns that depend on vote scenarios:
@@ -625,14 +683,27 @@ Leaflet map showing district geography:
 - Colors update based on `which_district_color()` using Democratic Wins probability
 - Popups remain scenario-independent (district number and incumbent status)
 
+Score cards with bell charts:
+- **Efficiency Gap**: Always shown, updates with simulated statistics
+- **Partisan Bias**: Shown when vote shares 45-55%, hidden with message outside range
+- **Mean-Median Difference**: Shown when vote shares 45-55%, hidden with message outside range
+- **Declination**: Shown when valid (both parties win seats in sufficient simulations)
+- All cards show mean, SD, and positives from 1000 symmetric simulations
+- Bell charts redraw on scenario change
+- Charts properly hide/reappear when toggling between vote swing scenarios
+
 **Benefits achieved**:
-- Radio buttons now functional and update table, seat share graphic, and map interactively
-- All three visualizations respond to scenario changes in real-time
+- Radio buttons now functional and update all visualizations interactively
+- All visualizations respond to scenario changes in real-time
+- Score cards update with statistically valid simulated metrics
 - Map colors update without recreating entire map (smooth performance)
+- Charts properly hide when assumptions invalid (outside 45-55% range)
+- Charts reliably reappear when returning to valid range
 - Clean state management without globals
-- Well-tested with real scenario data
+- Well-tested with real scenario data and edge cases
 - Consistent construct/populate pattern across all page elements
-- Foundation for future phases to update other metrics
+- Statistical calculations match Python backend implementation
+- Foundation complete for future metric enhancements
 
 ### Phase 4: Polish
 1. Add loading states during scenario switches

@@ -834,3 +834,87 @@ assert.equal(result_pos6.districts[0].totals['Democratic Votes'],
 assert.equal(result_pos6.districts[0].totals['Republican Votes'],
     NC_2025_scenarios.statistics['Republican Votes'][24][district_0_incumbent_index][0],
     'Should update Republican Votes for +6.0 swing');
+
+// Test helper functions
+// Test calculate_mean
+var mean1 = plan.calculate_mean([1, 2, 3, 4, 5]);
+assert.equal(mean1, 3, 'Mean of [1,2,3,4,5] should be 3');
+
+var mean2 = plan.calculate_mean([10, 20, 30]);
+assert.equal(Math.round(mean2 * 100) / 100, 20, 'Mean of [10,20,30] should be 20');
+
+var mean3 = plan.calculate_mean([]);
+assert.strictEqual(mean3, null, 'Mean of empty array should be null');
+
+// Test calculate_stdev
+var stdev1 = plan.calculate_stdev([2, 4, 4, 4, 5, 5, 7, 9]);
+assert.equal(Math.round(stdev1 * 100) / 100, 2.14, 'Stdev should be approximately 2.14');
+
+var stdev2 = plan.calculate_stdev([1, 2, 3, 4, 5]);
+assert.equal(Math.round(stdev2 * 100) / 100, 1.58, 'Stdev should be approximately 1.58');
+
+var stdev3 = plan.calculate_stdev([5]);
+assert.strictEqual(stdev3, null, 'Stdev of single element should be null');
+
+var stdev4 = plan.calculate_stdev([]);
+assert.strictEqual(stdev4, null, 'Stdev of empty array should be null');
+
+// Test calculate_positives
+var pos1 = plan.calculate_positives([1, 2, 3, 4, 5]);
+assert.equal(pos1, 1.0, 'All positive values should give 1.0');
+
+var pos2 = plan.calculate_positives([-1, -2, -3, -4, -5]);
+assert.equal(pos2, 0.0, 'All negative values should give 0.0');
+
+var pos3 = plan.calculate_positives([-2, -1, 0, 1, 2]);
+assert.equal(pos3, 0.4, 'Half positive should give 0.4 (2/5)');
+
+var pos4 = plan.calculate_positives([0.001, -0.001]);
+assert.equal(pos4, 0.5, 'Values near epsilon should be handled correctly');
+
+var pos5 = plan.calculate_positives([]);
+assert.strictEqual(pos5, null, 'Positives of empty array should be null');
+
+// Test that create_scenario_plan generates valid summary statistics
+var result_sim = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, 0);
+
+// Check that all required summary statistics are present
+assert.ok(typeof result_sim.summary['Efficiency Gap'] === 'number', 'Should have Efficiency Gap mean');
+assert.ok(typeof result_sim.summary['Efficiency Gap SD'] === 'number', 'Should have Efficiency Gap SD');
+assert.ok(typeof result_sim.summary['Efficiency Gap Positives'] === 'number', 'Should have Efficiency Gap Positives');
+assert.strictEqual(result_sim.summary['Efficiency Gap Absolute Percent Rank'], undefined, 'Should have Efficiency Gap Absolute Percent Rank as undefined');
+assert.strictEqual(result_sim.summary['Efficiency Gap Relative Percent Rank'], undefined, 'Should have Efficiency Gap Relative Percent Rank as undefined');
+
+assert.ok(typeof result_sim.summary['Mean-Median'] === 'number', 'Should have Mean-Median mean');
+assert.ok(typeof result_sim.summary['Mean-Median SD'] === 'number', 'Should have Mean-Median SD');
+assert.ok(typeof result_sim.summary['Mean-Median Positives'] === 'number', 'Should have Mean-Median Positives');
+assert.strictEqual(result_sim.summary['Mean-Median Absolute Percent Rank'], undefined, 'Should have Mean-Median Absolute Percent Rank as undefined');
+assert.strictEqual(result_sim.summary['Mean-Median Relative Percent Rank'], undefined, 'Should have Mean-Median Relative Percent Rank as undefined');
+
+assert.ok(typeof result_sim.summary['Partisan Bias'] === 'number', 'Should have Partisan Bias mean');
+assert.ok(typeof result_sim.summary['Partisan Bias SD'] === 'number', 'Should have Partisan Bias SD');
+assert.ok(typeof result_sim.summary['Partisan Bias Positives'] === 'number', 'Should have Partisan Bias Positives');
+assert.strictEqual(result_sim.summary['Partisan Bias Absolute Percent Rank'], undefined, 'Should have Partisan Bias Absolute Percent Rank as undefined');
+assert.strictEqual(result_sim.summary['Partisan Bias Relative Percent Rank'], undefined, 'Should have Partisan Bias Relative Percent Rank as undefined');
+
+assert.ok(typeof result_sim.summary['Declination'] === 'number', 'Should have Declination mean');
+assert.ok(typeof result_sim.summary['Declination SD'] === 'number', 'Should have Declination SD');
+assert.ok(typeof result_sim.summary['Declination Positives'] === 'number', 'Should have Declination Positives');
+assert.strictEqual(result_sim.summary['Declination Absolute Percent Rank'], undefined, 'Should have Declination Absolute Percent Rank as undefined');
+assert.strictEqual(result_sim.summary['Declination Relative Percent Rank'], undefined, 'Should have Declination Relative Percent Rank as undefined');
+
+// Test that positives are between 0 and 1
+assert.ok(result_sim.summary['Efficiency Gap Positives'] >= 0 && result_sim.summary['Efficiency Gap Positives'] <= 1,
+    'Efficiency Gap Positives should be between 0 and 1');
+assert.ok(result_sim.summary['Mean-Median Positives'] >= 0 && result_sim.summary['Mean-Median Positives'] <= 1,
+    'Mean-Median Positives should be between 0 and 1');
+assert.ok(result_sim.summary['Partisan Bias Positives'] >= 0 && result_sim.summary['Partisan Bias Positives'] <= 1,
+    'Partisan Bias Positives should be between 0 and 1');
+assert.ok(result_sim.summary['Declination Positives'] >= 0 && result_sim.summary['Declination Positives'] <= 1,
+    'Declination Positives should be between 0 and 1');
+
+// Test that SD values are positive
+assert.ok(result_sim.summary['Efficiency Gap SD'] > 0, 'Efficiency Gap SD should be positive');
+assert.ok(result_sim.summary['Mean-Median SD'] > 0, 'Mean-Median SD should be positive');
+assert.ok(result_sim.summary['Partisan Bias SD'] > 0, 'Partisan Bias SD should be positive');
+assert.ok(result_sim.summary['Declination SD'] > 0, 'Declination SD should be positive');
