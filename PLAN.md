@@ -536,9 +536,9 @@ Refactored all remaining display functions in `on_loaded_score()` between the di
 - All existing tests pass
 - Foundation complete for interactive scenario updates
 
-### Phase 3: Wire Up Scenario Interactivity ✅ COMPLETED
+### Phase 3: Wire Up Scenario Interactivity 🚧 IN PROGRESS
 
-**Status**: Completed 2026-02-17
+**Status**: In Progress (started 2026-02-17)
 
 **What was done**:
 1. **Modified `load_plan_scenarios()` function** (lines 2218-2245):
@@ -557,7 +557,7 @@ Refactored all remaining display functions in `on_loaded_score()` between the di
      - Looks up values at `scenarios.statistics[stat][vote_swing_index][incumbent_index][district_index]`
    - Exported to module.exports for testing
 
-3. **Created `setup_scenario_interactivity()` function** (lines 286-323):
+3. **Created `setup_scenario_interactivity()` function** (lines 286-326):
    - Uses closures to capture `original_plan` and `scenarios` (no global variables!)
    - Sets 0.0 radio button as checked initially
    - Adds change event listeners to all radio buttons in `#scenario-adjustments`
@@ -567,13 +567,32 @@ Refactored all remaining display functions in `on_loaded_score()` between the di
      - Calls `create_scenario_plan()` to get mutated plan
      - Calls `populate_districts_table()` to update districts table display
      - Calls `populate_seatshare_graphic()` to update seat share visualization
+     - Calls `populate_plan_map()` to update map district colors
 
 4. **Updated `on_loaded_score()`** (line 2066-2068):
    - Modified call to `load_plan_scenarios()` to pass callback
    - Callback invokes `setup_scenario_interactivity()` with plan and scenarios
    - Uses closure chain to avoid global state
 
-5. **Added unit tests** (tests.js lines 675-712):
+5. **Created `construct_plan_map()` function** (lines 1472-1571):
+   - Builds Leaflet map structure with tiles, controls, and GeoJSON layer
+   - Takes already-loaded geometry data (not URL) for consistency with other construct functions
+   - Sets up hover event handlers for table ↔ map interaction
+   - Stores references to geojson layer, data, and map on div element
+   - Calls `populate_plan_map()` with initial plan data
+
+6. **Created `populate_plan_map()` function** (lines 1573-1613):
+   - Updates district colors based on current plan data
+   - Uses Leaflet's `.setStyle()` to update colors without recreating map
+   - Includes comment noting how to add scenario-dependent popup data in future
+   - Currently popups are scenario-independent (just show district # and incumbent)
+
+7. **Updated `load_plan_map()` function** (lines 2381-2399):
+   - Simplified to only handle XHR request for geometry
+   - Calls `construct_plan_map()` with loaded data
+   - Consistent pattern: load handles async, construct handles DOM
+
+8. **Added unit tests** (tests.js lines 675-712):
    - Tests with real `NC_2025_index` plan object and `NC_2025_scenarios` data
    - Verifies vote_swing_index 12 (0.0) returns original plan unchanged
    - Verifies vote_swing_index 0 (-6.0) creates mutated copy with correct values
@@ -600,11 +619,18 @@ Seat share graphic that visualizes district outcomes:
 - Predicted D/R seat share percentages
 - D/R vote share percentages
 
+Leaflet map showing district geography:
+- District fill colors (solid blue/red for safe seats, lean colors for competitive)
+- Colors update based on `which_district_color()` using Democratic Wins probability
+- Popups remain scenario-independent (district number and incumbent status)
+
 **Benefits achieved**:
-- Radio buttons now functional and update both table and seat share graphic interactively
-- Seat share visualization responds to scenario changes in real-time
+- Radio buttons now functional and update table, seat share graphic, and map interactively
+- All three visualizations respond to scenario changes in real-time
+- Map colors update without recreating entire map (smooth performance)
 - Clean state management without globals
 - Well-tested with real scenario data
+- Consistent construct/populate pattern across all page elements
 - Foundation for future phases to update other metrics
 
 ### Phase 4: Polish
@@ -633,7 +659,8 @@ plan.js
 │   ├── construct_sensitivity_test()
 │   ├── construct_metrics_table()
 │   ├── construct_ftva_race_scores()
-│   └── construct_library_metadata()
+│   ├── construct_library_metadata()
+│   └── construct_plan_map()
 │
 ├── Population Functions (run on updates) ✅ IMPLEMENTED
 │   ├── populate_districts_table()
@@ -645,7 +672,8 @@ plan.js
 │   ├── populate_sensitivity_test()
 │   ├── populate_metrics_table()
 │   ├── populate_ftva_race_scores()
-│   └── populate_library_metadata()
+│   ├── populate_library_metadata()
+│   └── populate_plan_map()
 │
 └── Existing Functions
     ├── on_loaded_score() [refactored to use construct/populate pattern]

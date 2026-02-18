@@ -283,7 +283,7 @@ function create_scenario_plan(original_plan, scenarios, vote_swing_index)
     return mutated_plan;
 }
 
-function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustments_form, districts_table)
+function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustments_form, districts_table, map_div)
 {
     // Get all radio buttons in the form
     var radios = scenario_adjustments_form.querySelectorAll('input[name="vote-swing"]');
@@ -318,6 +318,9 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
 
             // Update the seat share graphic
             populate_seatshare_graphic(mutated_plan);
+
+            // Update the map colors
+            populate_plan_map(mutated_plan, map_div);
         });
     }
 }
@@ -1466,6 +1469,132 @@ function populate_ftva_race_scores(plan, scores_FTVA)
     }
 }
 
+function construct_plan_map(data, div, plan, table)
+{
+    function district_popup_content(layer)
+    {
+        var index = data.features.indexOf(layer.feature),
+            incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'},
+            has_incumbency = plan_has_incumbency(plan);
+
+        if(has_incumbency) {
+            return 'District ' + (index + 1) + '<br>' + incumbency[plan.incumbents[index]];
+        }
+
+        return 'District ' + (index + 1);
+    }
+
+    var geojson = L.geoJSON(data, {
+        style: function(feature)
+        {
+            var district = plan.districts[data.features.indexOf(feature)];
+            return { weight: 2, fillOpacity: .5, color: which_district_color(district, plan) };
+        }
+        }).bindPopup(district_popup_content);
+
+
+    // On map layer hover: highlight associated table rows
+    function on_geojson_mouse_event(evtdata) {
+        const should_apply_highlight = evtdata.type === 'mouseover';
+        const index = data.features.indexOf(evtdata.layer.feature);
+        const tableRowEl = $('table tbody tr').get(index);
+        tableRowEl.classList.toggle('highlighted', should_apply_highlight);
+    }
+    geojson.on('mouseover', on_geojson_mouse_event);
+    geojson.on('mouseout', on_geojson_mouse_event);
+
+
+    // On table row hover: highlight map district
+    table.querySelectorAll('tbody tr').forEach((elem, j) => {
+        const on_tr_mouse_event = e => {
+            const should_apply_highlight = e.type === 'mouseover';
+            const matched_feature = data.features[j];
+            const layer = Object.values(geojson._layers).find(l => l.feature === matched_feature);
+            const path_elem = layer['_path'];
+            path_elem.classList.toggle('highlight', should_apply_highlight);
+        };
+        elem.addEventListener('mouseover', on_tr_mouse_event);
+        elem.addEventListener('mouseout', on_tr_mouse_event);
+    });
+
+    console.log('GeoJSON bounds:', geojson.getBounds());
+
+    //
+    var show_leans = (typeof plan.districts[0].totals['Democratic Wins'] === 'number');
+    add_map_pattern_support(show_leans);
+
+    // Initialize the map on the passed div in the middle of the ocean
+    var map = L.map(div, {
+        scrollWheelZoom: false,
+        zoomControl: false,
+        center: [0, 0],
+        zoom: 8
+    });
+
+    var pane = map.createPane('labels');
+    pane.style.zIndex = 650; // http://leafletjs.com/examples/map-panes/
+    pane.style.pointerEvents = 'none';
+
+    // Add Toner tiles for base map
+    L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy;<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy;<a href="https://carto.com/attribution">CARTO</a>',
+        maxZoom: 18
+    }).addTo(map);
+
+    // Add a GeoJSON layer and fit it into view
+    geojson.addTo(map);
+    if(plan.model.state == 'AK') {
+        map.fitBounds(L.latLngBounds(L.latLng(54.6, -128.8), L.latLng(71.2, -174.1)));
+    } else if(plan.model.state == 'HI') {
+        map.fitBounds(L.latLngBounds(L.latLng(18.6, -154.3), L.latLng(22.5, -160.2)));
+    } else {
+        map.fitBounds(geojson.getBounds());
+    }
+
+    // Add Toner label tiles for base map
+    L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy;<a href="http://stamen.com/">Stamen</a>, &copy;<a href="http://www.stadiamaps.com/">Stadia</a>',
+        pane: 'labels',
+        maxZoom: 18
+    }).addTo(map);
+
+    map.addControl(L.control.zoom({'position': 'topright'}));
+    map.addControl(new L.Control.PartyLegend({'position': 'topleft'}));
+
+    // Store references for later updates
+    div._geojson_layer = geojson;
+    div._geojson_data = data;
+    div._leaflet_map = map;
+
+    // Populate with initial plan data
+    populate_plan_map(plan, div);
+}
+
+function populate_plan_map(plan, div)
+{
+    // NOTE: For future enhancement, if we want to add scenario-dependent data to popups
+    // (e.g., "Democratic Win Probability: 73%"), we would update popup content here
+    // using layer.getPopup().setContent(newContent) or layer.bindPopup(newContent).
+    // Currently, popups only show district number and incumbent status, which are
+    // scenario-independent, so they don't need updates.
+
+    var geojson = div._geojson_layer;
+    var data = div._geojson_data;
+
+    if (!geojson || !data) {
+        console.warn('Map not yet constructed, skipping populate');
+        return;
+    }
+
+    // Update district colors based on current plan data
+    Object.values(geojson._layers).forEach(function(layer) {
+        var index = data.features.indexOf(layer.feature);
+        var district = plan.districts[index];
+        var color = which_district_color(district, plan);
+        layer.setStyle({ color: color, fillOpacity: .5, weight: 2 });
+    });
+}
+
 function update_heading_titles(head)
 {
     var dem_index = head.indexOf('Democratic Votes'),
@@ -2067,7 +2196,7 @@ function load_plan_score(url, message_section, score_section,
         // Immediately kick off scenario loading
         if (plan.scenarios !== undefined) {
             load_plan_scenarios(geom_prefix + plan.scenarios.replace(/^\//, ''), function(scenarios) {
-                setup_scenario_interactivity(plan, scenarios, scenario_adjustments_form, districts_table);
+                setup_scenario_interactivity(plan, scenarios, scenario_adjustments_form, districts_table, map_div);
             });
         }
 
@@ -2254,99 +2383,6 @@ function load_plan_map(url, div, plan, table)
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
 
-    function on_loaded_geojson(data)
-    {
-        function district_popup_content(layer)
-        {
-            var index = data.features.indexOf(layer.feature),
-                incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'},
-                has_incumbency = plan_has_incumbency(plan);
-
-            if(has_incumbency) {
-                return 'District ' + (index + 1) + '<br>' + incumbency[plan.incumbents[index]];
-            }
-
-            return 'District ' + (index + 1);
-        }
-
-        var geojson = L.geoJSON(data, {
-            style: function(feature)
-            {
-                var district = plan.districts[data.features.indexOf(feature)];
-                return { weight: 2, fillOpacity: .5, color: which_district_color(district, plan) };
-            }
-            }).bindPopup(district_popup_content);
-
-
-        // On map layer hover: highlight associated table rows
-        function on_geojson_mouse_event(evtdata) {
-            const should_apply_highlight = evtdata.type === 'mouseover';
-            const index = data.features.indexOf(evtdata.layer.feature);
-            const tableRowEl = $('table tbody tr').get(index);
-            tableRowEl.classList.toggle('highlighted', should_apply_highlight);
-        }
-        geojson.on('mouseover', on_geojson_mouse_event);
-        geojson.on('mouseout', on_geojson_mouse_event);
-
-
-        // On table row hover: highlight map district
-        table.querySelectorAll('tbody tr').forEach((elem, j) => {
-            const on_tr_mouse_event = e => {
-                const should_apply_highlight = e.type === 'mouseover';
-                const matched_feature = data.features[j];
-                const layer = Object.values(geojson._layers).find(l => l.feature === matched_feature);
-                const path_elem = layer['_path'];
-                path_elem.classList.toggle('highlight', should_apply_highlight);
-            };
-            elem.addEventListener('mouseover', on_tr_mouse_event);
-            elem.addEventListener('mouseout', on_tr_mouse_event);
-        });
-
-        console.log('GeoJSON bounds:', geojson.getBounds());
-
-        //
-        var show_leans = (typeof plan.districts[0].totals['Democratic Wins'] === 'number');
-        add_map_pattern_support(show_leans);
-
-        // Initialize the map on the passed div in the middle of the ocean
-        var map = L.map(div, {
-            scrollWheelZoom: false,
-            zoomControl: false,
-            center: [0, 0],
-            zoom: 8
-        });
-
-        var pane = map.createPane('labels');
-        pane.style.zIndex = 650; // http://leafletjs.com/examples/map-panes/
-        pane.style.pointerEvents = 'none';
-
-        // Add Toner tiles for base map
-        L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy;<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy;<a href="https://carto.com/attribution">CARTO</a>',
-            maxZoom: 18
-        }).addTo(map);
-
-        // Add a GeoJSON layer and fit it into view
-        geojson.addTo(map);
-        if(plan.model.state == 'AK') {
-            map.fitBounds(L.latLngBounds(L.latLng(54.6, -128.8), L.latLng(71.2, -174.1)));
-        } else if(plan.model.state == 'HI') {
-            map.fitBounds(L.latLngBounds(L.latLng(18.6, -154.3), L.latLng(22.5, -160.2)));
-        } else {
-            map.fitBounds(geojson.getBounds());
-        }
-
-        // Add Toner label tiles for base map
-        L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy;<a href="http://stamen.com/">Stamen</a>, &copy;<a href="http://www.stadiamaps.com/">Stadia</a>',
-            pane: 'labels',
-            maxZoom: 18
-        }).addTo(map);
-
-        map.addControl(L.control.zoom({'position': 'topright'}));
-        map.addControl(new L.Control.PartyLegend({'position': 'topleft'}));
-    }
-
     request.onload = function()
     {
         if(request.status >= 200 && request.status < 400)
@@ -2354,7 +2390,7 @@ function load_plan_map(url, div, plan, table)
             // Returns a GeoJSON dictionary
             var data = JSON.parse(request.responseText);
             console.log('Loaded map:', data);
-            on_loaded_geojson(data);
+            construct_plan_map(data, div, plan, table);
         }
     };
 
