@@ -404,6 +404,172 @@ function get_seatshare_array(plan)
     };
 }
 
+function construct_districts_table(plan, districts_table)
+{
+    // Build table structure using DOM APIs, without populating data
+    var table_array = plan_array(plan);
+    if (!table_array) {
+        return;
+    }
+
+    const has_incumbency = plan_has_incumbency(plan);
+
+    // Helper function to determine if column should be left-aligned
+    function should_align_left(col_index) {
+        return col_index == 1 && has_incumbency;
+    }
+
+    // Helper function to get tooltip for renamed headings
+    function get_tooltip(title) {
+        if (!renamedHeadingToOrigField.has(title)) return '';
+        return renamedHeadingToOrigField.get(title);
+    }
+
+    // Clear existing content
+    districts_table.innerHTML = '';
+
+    // Create table element with classes
+    const table = document.createElement('table');
+    table.className = 'table table-hover';
+    table.id = 'districts';
+
+    // Create thead
+    const thead = document.createElement('thead');
+    const header_row = document.createElement('tr');
+
+    for (var j = 0; j < table_array[0].length; j++) {
+        const heading_title = table_array[0][j];
+        if (heading_title == SHY_COLUMN) {
+            continue;
+        }
+
+        const th = document.createElement('th');
+        if (should_align_left(j)) {
+            th.className = 'ltxt';
+        }
+
+        const tooltip = get_tooltip(heading_title);
+        if (tooltip) {
+            th.title = tooltip;
+        }
+
+        // Use innerHTML for headers since they may contain HTML tags like <sup>
+        th.innerHTML = heading_title;
+        th.dataset.columnIndex = j;
+        header_row.appendChild(th);
+    }
+
+    thead.appendChild(header_row);
+    table.appendChild(thead);
+
+    // Create tbody
+    const tbody = document.createElement('tbody');
+
+    for (var i = 1; i < table_array.length; i++) {
+        const tr = document.createElement('tr');
+        tr.dataset.districtIndex = i - 1;
+
+        for (var j = 0; j < table_array[i].length; j++) {
+            const heading_title = table_array[0][j];
+            if (heading_title == SHY_COLUMN) {
+                continue;
+            }
+
+            const cell = j == 0 ? document.createElement('th') : document.createElement('td');
+            if (should_align_left(j)) {
+                cell.className = 'ltxt';
+            }
+
+            cell.dataset.columnIndex = j;
+            tr.appendChild(cell);
+        }
+
+        tbody.appendChild(tr);
+    }
+
+    table.appendChild(tbody);
+    districts_table.appendChild(table);
+}
+
+function populate_districts_table(plan, districts_table)
+{
+    // Populate table cells with actual data
+    var table_array = plan_array(plan);
+    if (!table_array) {
+        return;
+    }
+
+    const tbody = districts_table.querySelector('tbody');
+    if (!tbody) {
+        return;
+    }
+
+    const rows = tbody.querySelectorAll('tr');
+
+    for (var i = 0; i < rows.length; i++) {
+        const tr = rows[i];
+        const table_row_index = i + 1; // +1 because table_array[0] is headers
+        const district_index = parseInt(tr.dataset.districtIndex);
+
+        // Determine row class and title
+        var row_class = 'no-votes';
+        var row_title = `District ${table_array[table_row_index][0]} has no votes and does not count toward partisan scores`;
+
+        // Check if any vote field has a value > 0
+        for (var j = 0; j < table_array[table_row_index].length; j++) {
+            for (var p in votesFieldToDisplayStr) {
+                if (table_array[0][j] == votesFieldToDisplayStr[p] && table_array[table_row_index][j] > 0) {
+                    row_class = 'has-votes';
+                    row_title = '';
+                }
+            }
+        }
+
+        // Check is_counted flag
+        if (plan.districts[district_index]['is_counted'] === false) {
+            row_class = 'no-votes';
+            row_title = `District ${table_array[table_row_index][0]} has insufficient votes and does not count toward partisan scores`;
+        }
+
+        tr.className = row_class;
+        tr.title = row_title;
+
+        // Populate cells
+        const cells = tr.querySelectorAll('td, th');
+        var cell_index = 0;
+
+        for (var j = 0; j < table_array[table_row_index].length; j++) {
+            const heading_title = table_array[0][j];
+            if (heading_title == SHY_COLUMN) {
+                continue;
+            }
+
+            var value;
+            var is_string = false;
+            if (typeof table_array[table_row_index][j] == 'number') {
+                value = nice_count(table_array[table_row_index][j]);
+            } else if (typeof table_array[table_row_index][j] == 'string') {
+                value = nice_string(table_array[table_row_index][j]);
+                is_string = true;
+            } else if (typeof table_array[table_row_index][j] == 'boolean') {
+                value = table_array[table_row_index][j] ? 'Yes' : 'No';
+            } else {
+                value = '???';
+            }
+
+            if (cells[cell_index]) {
+                // Use innerHTML for strings since nice_string() returns HTML entities
+                if (is_string) {
+                    cells[cell_index].innerHTML = value;
+                } else {
+                    cells[cell_index].textContent = value;
+                }
+            }
+            cell_index++;
+        }
+    }
+}
+
 function construct_seatshare_graphic(plan, districts_table)
 {
     if(!('Democratic Wins' in plan.districts[0].totals))
@@ -1800,172 +1966,6 @@ function load_plan_score(url, message_section, score_section,
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
 
-    function construct_districts_table(plan)
-    {
-        // Build table structure using DOM APIs, without populating data
-        var table_array = plan_array(plan);
-        if (!table_array) {
-            return;
-        }
-
-        const has_incumbency = plan_has_incumbency(plan);
-
-        // Helper function to determine if column should be left-aligned
-        function should_align_left(col_index) {
-            return col_index == 1 && has_incumbency;
-        }
-
-        // Helper function to get tooltip for renamed headings
-        function get_tooltip(title) {
-            if (!renamedHeadingToOrigField.has(title)) return '';
-            return renamedHeadingToOrigField.get(title);
-        }
-
-        // Clear existing content
-        districts_table.innerHTML = '';
-
-        // Create table element with classes
-        const table = document.createElement('table');
-        table.className = 'table table-hover';
-        table.id = 'districts';
-
-        // Create thead
-        const thead = document.createElement('thead');
-        const header_row = document.createElement('tr');
-
-        for (var j = 0; j < table_array[0].length; j++) {
-            const heading_title = table_array[0][j];
-            if (heading_title == SHY_COLUMN) {
-                continue;
-            }
-
-            const th = document.createElement('th');
-            if (should_align_left(j)) {
-                th.className = 'ltxt';
-            }
-
-            const tooltip = get_tooltip(heading_title);
-            if (tooltip) {
-                th.title = tooltip;
-            }
-
-            // Use innerHTML for headers since they may contain HTML tags like <sup>
-            th.innerHTML = heading_title;
-            th.dataset.columnIndex = j;
-            header_row.appendChild(th);
-        }
-
-        thead.appendChild(header_row);
-        table.appendChild(thead);
-
-        // Create tbody
-        const tbody = document.createElement('tbody');
-
-        for (var i = 1; i < table_array.length; i++) {
-            const tr = document.createElement('tr');
-            tr.dataset.districtIndex = i - 1;
-
-            for (var j = 0; j < table_array[i].length; j++) {
-                const heading_title = table_array[0][j];
-                if (heading_title == SHY_COLUMN) {
-                    continue;
-                }
-
-                const cell = j == 0 ? document.createElement('th') : document.createElement('td');
-                if (should_align_left(j)) {
-                    cell.className = 'ltxt';
-                }
-
-                cell.dataset.columnIndex = j;
-                tr.appendChild(cell);
-            }
-
-            tbody.appendChild(tr);
-        }
-
-        table.appendChild(tbody);
-        districts_table.appendChild(table);
-    }
-
-    function populate_districts_table(plan)
-    {
-        // Populate table cells with actual data
-        var table_array = plan_array(plan);
-        if (!table_array) {
-            return;
-        }
-
-        const tbody = districts_table.querySelector('tbody');
-        if (!tbody) {
-            return;
-        }
-
-        const rows = tbody.querySelectorAll('tr');
-
-        for (var i = 0; i < rows.length; i++) {
-            const tr = rows[i];
-            const table_row_index = i + 1; // +1 because table_array[0] is headers
-            const district_index = parseInt(tr.dataset.districtIndex);
-
-            // Determine row class and title
-            var row_class = 'no-votes';
-            var row_title = `District ${table_array[table_row_index][0]} has no votes and does not count toward partisan scores`;
-
-            // Check if any vote field has a value > 0
-            for (var j = 0; j < table_array[table_row_index].length; j++) {
-                for (var p in votesFieldToDisplayStr) {
-                    if (table_array[0][j] == votesFieldToDisplayStr[p] && table_array[table_row_index][j] > 0) {
-                        row_class = 'has-votes';
-                        row_title = '';
-                    }
-                }
-            }
-
-            // Check is_counted flag
-            if (plan.districts[district_index]['is_counted'] === false) {
-                row_class = 'no-votes';
-                row_title = `District ${table_array[table_row_index][0]} has insufficient votes and does not count toward partisan scores`;
-            }
-
-            tr.className = row_class;
-            tr.title = row_title;
-
-            // Populate cells
-            const cells = tr.querySelectorAll('td, th');
-            var cell_index = 0;
-
-            for (var j = 0; j < table_array[table_row_index].length; j++) {
-                const heading_title = table_array[0][j];
-                if (heading_title == SHY_COLUMN) {
-                    continue;
-                }
-
-                var value;
-                var is_string = false;
-                if (typeof table_array[table_row_index][j] == 'number') {
-                    value = nice_count(table_array[table_row_index][j]);
-                } else if (typeof table_array[table_row_index][j] == 'string') {
-                    value = nice_string(table_array[table_row_index][j]);
-                    is_string = true;
-                } else if (typeof table_array[table_row_index][j] == 'boolean') {
-                    value = table_array[table_row_index][j] ? 'Yes' : 'No';
-                } else {
-                    value = '???';
-                }
-
-                if (cells[cell_index]) {
-                    // Use innerHTML for strings since nice_string() returns HTML entities
-                    if (is_string) {
-                        cells[cell_index].innerHTML = value;
-                    } else {
-                        cells[cell_index].textContent = value;
-                    }
-                }
-                cell_index++;
-            }
-        }
-    }
-
     function on_loaded_score(plan, modified_at)
     {
         const is_plan_still_parsing = (plan.status !== true && which_score_summary_name(plan) === null);
@@ -2038,8 +2038,8 @@ function load_plan_score(url, message_section, score_section,
         }
 
         // Build the results table
-        construct_districts_table(plan);
-        populate_districts_table(plan);
+        construct_districts_table(plan, districts_table);
+        populate_districts_table(plan, districts_table);
         construct_seatshare_graphic(plan, districts_table);
         populate_seatshare_graphic(plan);
 

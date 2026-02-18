@@ -456,29 +456,37 @@ function populate_seatshare_svg(seatshare_array) {
 **Status**: Completed 2026-02-17
 
 **What was done**:
-1. Created `construct_districts_table(plan)` function (lines 1613-1695):
+1. Created `construct_districts_table(plan, districts_table)` function (lines 407-492):
    - Builds DOM structure using createElement APIs
    - Creates thead with column headers from plan_array()
    - Creates tbody with rows and cells for each district
    - Attaches data-* attributes (districtIndex, columnIndex) for identification
    - Sets table classes ('table', 'table-hover') and id ('districts')
    - Uses innerHTML for headers to support HTML tags like `<sup>`
+   - **Located outside `load_plan_score()`** to match pattern of other construct/populate pairs
 
-2. Created `populate_districts_table(plan)` function (lines 1697-1774):
+2. Created `populate_districts_table(plan, districts_table)` function (lines 494-571):
    - Queries existing cells by data attributes
    - Fills in values using existing formatters (nice_count, nice_string)
    - Sets row classes ('has-votes', 'no-votes') and titles
    - Uses innerHTML for string values to handle HTML entities from nice_string()
    - Uses textContent for numbers and other values
+   - **Located outside `load_plan_score()`** to match pattern of other construct/populate pairs
 
-3. Updated `on_loaded_score()` (line 1841-1843):
+3. Updated `on_loaded_score()` (lines 2041-2042):
    - Replaced 74 lines of HTML string building code with two function calls
    - Maintains identical visual output and behavior
+
+**Implementation note**:
+- Initially these functions were created as nested functions inside `load_plan_score()`
+- Moved to top-level (near line 407) to match the pattern of all other construct/populate function pairs
+- This provides a consistent code organization throughout the file
 
 **Benefits achieved**:
 - Clear separation of construction from population
 - Foundation for future scenarios: construction runs once, population can run multiple times
 - More maintainable code with modern DOM APIs
+- Consistent location and pattern with all other construct/populate functions
 - All existing tests pass
 
 ### Phase 2: Refactor All Display Components ✅ COMPLETED
