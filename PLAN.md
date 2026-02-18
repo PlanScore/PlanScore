@@ -536,70 +536,69 @@ Refactored all remaining display functions in `on_loaded_score()` between the di
 - All existing tests pass
 - Foundation complete for interactive scenario updates
 
-### Phase 3: Scenario Infrastructure (NEXT)
-1. **Add scenario state management**
-   ```javascript
-   const ScenarioManager = {
-     currentScenarioIndex: 12, // 0.0 vote swing
-     scenariosData: null,
+### Phase 3: Wire Up Scenario Interactivity ✅ COMPLETED
 
-     load(scenariosUrl) {
-       // Load scenarios.json
-     },
+**Status**: Completed 2026-02-17
 
-     getScenarioData(voteSwing) {
-       // Return adjusted plan object for given swing
-     },
+**What was done**:
+1. **Modified `load_plan_scenarios()` function** (lines 2218-2245):
+   - Added `callback` parameter to enable callbacks when scenarios finish loading
+   - Calls callback with scenarios data after `adjust_scenario_stats()` completes
+   - Allows `on_loaded_score()` to receive scenarios and set up interactivity
 
-     setScenario(index) {
-       // Update current scenario and trigger updates
-     }
-   };
-   ```
+2. **Created `create_scenario_plan()` function** (lines 241-284):
+   - Pure function that creates mutated copy of plan object with scenario data
+   - Takes `original_plan`, `scenarios`, and `vote_swing_index` as parameters
+   - Special case: returns original plan unchanged for index 12 (0.0 swing)
+   - For each district:
+     - Gets incumbent code from `plan.incumbents[district_index]` ('O', 'D', 'R', 'U')
+     - Finds incumbent_index in `scenarios.incumbents` array
+     - Updates `totals['Democratic Votes']`, `totals['Republican Votes']`, `totals['Democratic Wins']`
+     - Looks up values at `scenarios.statistics[stat][vote_swing_index][incumbent_index][district_index]`
+   - Exported to module.exports for testing
 
-2. **Wire up radio buttons**
-   ```javascript
-   function init_scenario_controls() {
-     const form = document.getElementById('scenario-adjustments');
-     const radios = form.querySelectorAll('input[name="vote-swing"]');
+3. **Created `setup_scenario_interactivity()` function** (lines 286-320):
+   - Uses closures to capture `original_plan` and `scenarios` (no global variables!)
+   - Sets 0.0 radio button as checked initially
+   - Adds change event listeners to all radio buttons in `#scenario-adjustments`
+   - When radio button clicked:
+     - Gets selected vote swing value (e.g., -6.0, 0.0, 6.0)
+     - Finds corresponding index in `scenarios.vote_swings` array (0-24)
+     - Calls `create_scenario_plan()` to get mutated plan
+     - Calls `populate_districts_table()` to update display
 
-     radios.forEach(radio => {
-       radio.addEventListener('change', (e) => {
-         const voteSwing = parseFloat(e.target.value);
-         const scenarioIndex = ScenarioManager.getIndexForVoteSwing(voteSwing);
-         ScenarioManager.setScenario(scenarioIndex);
-         updateAllDisplays();
-       });
-     });
-   }
-   ```
+4. **Updated `on_loaded_score()`** (line 2066-2068):
+   - Modified call to `load_plan_scenarios()` to pass callback
+   - Callback invokes `setup_scenario_interactivity()` with plan and scenarios
+   - Uses closure chain to avoid global state
 
-3. **Create data adjustment function**
-   ```javascript
-   function adjust_scenario_stats(plan, scenariosData, voteSwingIndex) {
-     // Take base plan and overlay scenario statistics
-     const adjustedPlan = JSON.parse(JSON.stringify(plan));
+5. **Added unit tests** (tests.js lines 675-712):
+   - Tests with real `NC_2025_index` plan object and `NC_2025_scenarios` data
+   - Verifies vote_swing_index 12 (0.0) returns original plan unchanged
+   - Verifies vote_swing_index 0 (-6.0) creates mutated copy with correct values
+   - Verifies vote_swing_index 24 (+6.0) uses different scenario data
+   - Tests per-district incumbent scenario lookups work correctly
+   - All tests pass ✓
 
-     // Update district totals
-     adjustedPlan.districts.forEach((district, i) => {
-       district.totals['Democratic Votes'] =
-         scenariosData.statistics['Democratic Votes'][voteSwingIndex][0][i];
-       district.totals['Republican Votes'] =
-         scenariosData.statistics['Republican Votes'][voteSwingIndex][0][i];
-       // ... other fields
-     });
+**Key design decisions**:
+- **No globals**: Used closures to pass state through callback chain
+- **Per-district incumbency**: Each district uses its own incumbent scenario from `plan.incumbents[]`
+- **Pure functions**: `create_scenario_plan()` is stateless and testable
+- **No DOM changes**: Only updates `textContent`/`innerHTML` of existing table cells
+- **Indexed lookups**: Vote swing maps to index (e.g., -6.0 → 0, 0.0 → 12, 6.0 → 24)
 
-     // Recalculate summary statistics
-     adjustedPlan.summary = calculate_summary_from_districts(adjustedPlan.districts);
+**What updates**:
+Only the districts table columns that depend on vote scenarios:
+- "Democratic Votes"
+- "Republican Votes"
+- "Chance of Democratic Win" (derived from Democratic Wins)
+- "Predicted Vote Shares" (calculated from Dem/Rep votes)
 
-     return adjustedPlan;
-   }
-   ```
-
-4. **Test scenario switching with all components**
-   - Call all `populate_*()` functions with adjusted plan data
-   - Verify all values update correctly
-   - Test performance (target < 100ms)
+**Benefits achieved**:
+- Radio buttons now functional and update table interactively
+- Clean state management without globals
+- Well-tested with real scenario data
+- Foundation for future phases to update other metrics
 
 ### Phase 4: Polish
 1. Add loading states during scenario switches

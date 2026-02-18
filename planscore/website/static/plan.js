@@ -238,6 +238,87 @@ function adjust_scenario_stats(data)
     }
 }
 
+function create_scenario_plan(original_plan, scenarios, vote_swing_index)
+{
+    // Special case: 0.0 swing (index 12) returns original plan unchanged
+    if (vote_swing_index === 12) {
+        return original_plan;
+    }
+
+    // Create a deep copy of the plan
+    var mutated_plan = JSON.parse(JSON.stringify(original_plan));
+
+    // Update each district with scenario data
+    for (var district_index = 0; district_index < mutated_plan.districts.length; district_index++) {
+        // Get incumbent scenario for this district (e.g., 'O', 'D', 'R')
+        var incumbent_code = original_plan.incumbents[district_index];
+
+        // Find the index in scenarios.incumbents array
+        var incumbent_index = scenarios.incumbents.indexOf(incumbent_code);
+
+        if (incumbent_index === -1) {
+            console.warn('Unknown incumbent code:', incumbent_code, 'for district', district_index);
+            continue;
+        }
+
+        // Update Democratic Votes
+        if (scenarios.statistics['Democratic Votes']) {
+            mutated_plan.districts[district_index].totals['Democratic Votes'] =
+                scenarios.statistics['Democratic Votes'][vote_swing_index][incumbent_index][district_index];
+        }
+
+        // Update Republican Votes
+        if (scenarios.statistics['Republican Votes']) {
+            mutated_plan.districts[district_index].totals['Republican Votes'] =
+                scenarios.statistics['Republican Votes'][vote_swing_index][incumbent_index][district_index];
+        }
+
+        // Update Democratic Wins
+        if (scenarios.statistics['Democratic Wins']) {
+            mutated_plan.districts[district_index].totals['Democratic Wins'] =
+                scenarios.statistics['Democratic Wins'][vote_swing_index][incumbent_index][district_index];
+        }
+    }
+
+    return mutated_plan;
+}
+
+function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustments_form, districts_table)
+{
+    // Get all radio buttons in the form
+    var radios = scenario_adjustments_form.querySelectorAll('input[name="vote-swing"]');
+
+    // Set the 0.0 radio button as checked initially
+    for (var i = 0; i < radios.length; i++) {
+        if (parseFloat(radios[i].value) === 0.0) {
+            radios[i].checked = true;
+            break;
+        }
+    }
+
+    // Add change listener to all radio buttons
+    for (var i = 0; i < radios.length; i++) {
+        radios[i].addEventListener('change', function(event) {
+            // Get the selected vote swing value
+            var vote_swing = parseFloat(event.target.value);
+
+            // Find the index in scenarios.vote_swings array
+            var vote_swing_index = scenarios.vote_swings.indexOf(vote_swing);
+
+            if (vote_swing_index === -1) {
+                console.error('Vote swing not found in scenarios:', vote_swing);
+                return;
+            }
+
+            // Create mutated plan with scenario data
+            var mutated_plan = create_scenario_plan(original_plan, scenarios, vote_swing_index);
+
+            // Update the districts table
+            populate_districts_table(mutated_plan, districts_table);
+        });
+    }
+}
+
 function clear_element(el)
 {
     while(el.lastChild)
@@ -1982,7 +2063,9 @@ function load_plan_score(url, message_section, score_section,
 
         // Immediately kick off scenario loading
         if (plan.scenarios !== undefined) {
-            load_plan_scenarios(geom_prefix + plan.scenarios.replace(/^\//, ''));
+            load_plan_scenarios(geom_prefix + plan.scenarios.replace(/^\//, ''), function(scenarios) {
+                setup_scenario_interactivity(plan, scenarios, scenario_adjustments_form, districts_table);
+            });
         }
 
         // Plan is done parsing and we can render the page
@@ -2134,7 +2217,7 @@ function load_plan_score(url, message_section, score_section,
     request.send();
 }
 
-function load_plan_scenarios(url)
+function load_plan_scenarios(url, callback)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -2143,6 +2226,9 @@ function load_plan_scenarios(url)
     {
         adjust_scenario_stats(data);
         console.log('New scenarios:', data);
+        if (callback) {
+            callback(data);
+        }
     }
 
     request.onload = function()
@@ -2479,6 +2565,7 @@ if(typeof module !== 'undefined' && module.exports)
         update_cvap2015_percentages,
         update_heading_titles,
         adjust_scenario_stats,
+        create_scenario_plan,
         SHY_COLUMN,
     };
 }

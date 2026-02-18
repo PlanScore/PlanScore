@@ -25,6 +25,7 @@ var NC_index = require('./data/sample-NC-1-992/index.json'),
     NC_2019_incumbency = require('./data/sample-NC2019/index-incumbency.json'),
     NC_2020 = require('./data/sample-NC2020/index.json'),
     NC_2020_unified = require('./data/sample-NC-unified/index.json'),
+    NC_2025_index = require('./data/sample-NC2025/index.json'),
     NC_2025_scenarios = require('./data/sample-NC2025/scenarios.json'),
     FL_2020_declination = require('./data/sample-FL-declination/index.json'),
     CT_2021_water_district = require('./data/sample-CT-mostly-water-district/index.json'),
@@ -670,3 +671,42 @@ assert.equal(NC_2025_scenarios.statistics['Democratic Votes SD'][1][1][1], 12911
 assert.equal(NC_2025_scenarios.statistics['Democratic Wins'][1][1][1], 1);
 assert.equal(NC_2025_scenarios.statistics['Republican Votes'][1][1][1], 148173.07);
 assert.equal(NC_2025_scenarios.statistics['Republican Votes SD'][1][1][1], 12911.24);
+
+// Test create_scenario_plan
+
+// Test: vote_swing_index 12 (0.0) should return original plan unchanged
+var result_zero = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, 12);
+assert.strictEqual(result_zero, NC_2025_index, 'Should return original plan for 0.0 swing');
+
+// Test: vote_swing_index 0 (-6.0) should mutate the plan
+var result_neg6 = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, 0);
+assert.notStrictEqual(result_neg6, NC_2025_index, 'Should return a different object for non-zero swing');
+
+// Verify that the first district (index 0) gets data from the correct incumbent scenario
+var district_0_incumbent = NC_2025_index.incumbents[0];
+var district_0_incumbent_index = NC_2025_scenarios.incumbents.indexOf(district_0_incumbent);
+assert.equal(result_neg6.districts[0].totals['Democratic Votes'],
+    NC_2025_scenarios.statistics['Democratic Votes'][0][district_0_incumbent_index][0],
+    'Should update Democratic Votes for district 0 with correct incumbent');
+assert.equal(result_neg6.districts[0].totals['Republican Votes'],
+    NC_2025_scenarios.statistics['Republican Votes'][0][district_0_incumbent_index][0],
+    'Should update Republican Votes for district 0 with correct incumbent');
+
+// Verify second district (index 1)
+var district_1_incumbent = NC_2025_index.incumbents[1];
+var district_1_incumbent_index = NC_2025_scenarios.incumbents.indexOf(district_1_incumbent);
+assert.equal(result_neg6.districts[1].totals['Democratic Votes'],
+    NC_2025_scenarios.statistics['Democratic Votes'][0][district_1_incumbent_index][1],
+    'Should update Democratic Votes for district 1 with correct incumbent');
+assert.equal(result_neg6.districts[1].totals['Republican Votes'],
+    NC_2025_scenarios.statistics['Republican Votes'][0][district_1_incumbent_index][1],
+    'Should update Republican Votes for district 1 with correct incumbent');
+
+// Test: vote_swing_index 24 (+6.0) should use different scenario data
+var result_pos6 = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, 24);
+assert.equal(result_pos6.districts[0].totals['Democratic Votes'],
+    NC_2025_scenarios.statistics['Democratic Votes'][24][district_0_incumbent_index][0],
+    'Should update Democratic Votes for +6.0 swing');
+assert.equal(result_pos6.districts[0].totals['Republican Votes'],
+    NC_2025_scenarios.statistics['Republican Votes'][24][district_0_incumbent_index][0],
+    'Should update Republican Votes for +6.0 swing');
