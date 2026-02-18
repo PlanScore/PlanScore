@@ -699,6 +699,101 @@ function create_scenario_plan(original_plan, scenarios, vote_swing_index)
     return mutated_plan;
 }
 
+function parse_scenario_hash()
+{
+    // Parse URL hash to extract vote swing value
+    // Supports: #scenario (default 0.0) or #scenario=vote_swing:1.0
+    var hash = window.location.hash;
+
+    if (!hash || !hash.match(/\bscenario\b/)) {
+        return null; // No scenario hash present
+    }
+
+    // Look for vote_swing parameter
+    var match = hash.match(/vote_swing:([-\d.]+)/);
+    if (match) {
+        return parseFloat(match[1]);
+    }
+
+    // Default to 0.0 if just #scenario with no parameter
+    return 0.0;
+}
+
+function update_scenario_hash(vote_swing)
+{
+    // Update URL hash with vote swing value without page reload
+    var hash_value = vote_swing === 0.0
+        ? '#scenario'
+        : '#scenario=vote_swing:' + vote_swing.toFixed(1);
+
+    // Use replaceState to avoid adding to browser history
+    if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, null, hash_value);
+    } else {
+        window.location.hash = hash_value;
+    }
+}
+
+function has_scenario_hash()
+{
+    // Check if URL contains #scenario hash
+    var hash = window.location.hash;
+    return hash && hash.match(/\bscenario\b/) !== null;
+}
+
+function check_scenarios_available(plan)
+{
+    // Check if scenarios feature is available for this plan
+    // Returns: { available: boolean, reason: string }
+
+    // Check if plan has scenarios linked
+    if (!plan.scenarios) {
+        return { available: false, reason: 'no_scenarios_file' };
+    }
+
+    // Check if all districts have zero vote_swing initially
+    // (Plans with pre-applied vote swings shouldn't show the interactive feature)
+    for (var i = 0; i < plan.districts.length; i++) {
+        if ('vote_swing' in plan.districts[i] && plan.districts[i].vote_swing !== 0.0) {
+            return { available: false, reason: 'nonzero_vote_swings' };
+        }
+    }
+
+    return { available: true, reason: null };
+}
+
+function update_form_visibility(form, plan)
+{
+    // Update form visibility based on URL hash and plan availability
+    var has_hash = has_scenario_hash();
+    var availability = check_scenarios_available(plan);
+
+    if (!has_hash) {
+        // No hash: hide form completely
+        form.classList.add('scenario-adjustments-hidden');
+        form.classList.remove('scenario-adjustments-disabled');
+    } else if (!availability.available) {
+        // Has hash but scenarios not available: show disabled form
+        form.classList.remove('scenario-adjustments-hidden');
+        form.classList.add('scenario-adjustments-disabled');
+    } else {
+        // Has hash and scenarios available: show enabled form
+        form.classList.remove('scenario-adjustments-hidden');
+        form.classList.remove('scenario-adjustments-disabled');
+    }
+}
+
+function setup_form_visibility_listener(form, plan)
+{
+    // Set up hashchange listener to toggle form visibility
+    window.addEventListener('hashchange', function() {
+        update_form_visibility(form, plan);
+    });
+
+    // Set initial visibility
+    update_form_visibility(form, plan);
+}
+
 function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_PB, score_MM, score_DEC2)
 {
     // Initialize vote_swing field if it doesn't exist
@@ -728,18 +823,8 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         }
     }
 
-    // Set initial value
-    range_input.value = 0;
-    display.textContent = format_vote_swing(0);
-
-    // Add input listener to range slider for live updates
-    range_input.addEventListener('input', function(event) {
-        // Get the selected vote swing value
-        var vote_swing = parseFloat(event.target.value);
-
-        // Update the display
-        display.textContent = format_vote_swing(vote_swing);
-
+    // Helper function to update all visualizations for a given vote swing
+    function update_visualizations(vote_swing) {
         // Find the index in scenarios.vote_swings array
         var vote_swing_index = scenarios.vote_swings.indexOf(vote_swing);
 
@@ -772,6 +857,41 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
 
         // Update the metrics table with new percentrank values
         populate_metrics_table(mutated_plan, metrics_table);
+    }
+
+    // Set initial value from hash or default to 0
+    var initial_vote_swing = parse_scenario_hash();
+    if (initial_vote_swing === null) {
+        initial_vote_swing = 0.0;
+    }
+
+    // Validate that the initial vote swing exists in scenarios
+    if (scenarios.vote_swings.indexOf(initial_vote_swing) === -1) {
+        console.warn('Vote swing from hash not found in scenarios, defaulting to 0.0:', initial_vote_swing);
+        initial_vote_swing = 0.0;
+    }
+
+    range_input.value = initial_vote_swing;
+    display.textContent = format_vote_swing(initial_vote_swing);
+
+    // If initial vote swing is non-zero, update visualizations immediately
+    if (initial_vote_swing !== 0.0) {
+        update_visualizations(initial_vote_swing);
+    }
+
+    // Add input listener to range slider for live updates
+    range_input.addEventListener('input', function(event) {
+        // Get the selected vote swing value
+        var vote_swing = parseFloat(event.target.value);
+
+        // Update the display
+        display.textContent = format_vote_swing(vote_swing);
+
+        // Update the URL hash
+        update_scenario_hash(vote_swing);
+
+        // Update all visualizations with the new vote swing
+        update_visualizations(vote_swing);
     });
 }
 
@@ -1396,7 +1516,7 @@ function construct_partisan_bias_score(score_PB)
 function populate_partisan_bias_score(plan, score_PB)
 {
     // Check if vote shares are within 45-55% range
-    if (plan_voteshare(plan) >= 0.1 && !location.hash.match(/\bshowall\b/)) {
+    if (plan_voteshare(plan) >= 0.1) {
         hide_score_with_reason(score_PB,
             'The parties\' statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
             + ' Partisan bias is shown only where the parties\' statewide vote shares fall between 45% and 55%.'
@@ -1506,7 +1626,7 @@ function construct_mean_median_score(score_MM)
 function populate_mean_median_score(plan, score_MM)
 {
     // Check if vote shares are within 45-55% range
-    if (plan_voteshare(plan) >= 0.1 && !location.hash.match(/\bshowall\b/)) {
+    if (plan_voteshare(plan) >= 0.1) {
         hide_score_with_reason(score_MM,
             'The parties\' statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
             + ' The mean-median difference is shown only where the parties\' statewide vote shares fall between 45% and 55%.'
@@ -1745,7 +1865,7 @@ function populate_metrics_table(plan, metrics_table)
             ? (1 - plan.summary['Declination Relative Percent Rank'])
             : plan.summary['Declination Relative Percent Rank']);
 
-    if(plan_voteshare(plan) < .1 || location.hash.match(/\bshowall\b/)) {
+    if(plan_voteshare(plan) < .1) {
         var pb_value = plan.summary['Partisan Bias'],
             pb_win_party = (pb_value < 0 ? 'Republican' : 'Democratic'),
             pb_display = `${nice_percent(Math.abs(pb_value))} Pro-${pb_win_party}`,
@@ -2700,8 +2820,11 @@ function load_plan_score(url, message_section, score_section,
             return;
         }
 
-        // Immediately kick off scenario loading
-        if (plan.scenarios !== undefined) {
+        // Set up form visibility based on hash and availability
+        setup_form_visibility_listener(scenario_adjustments_form, plan);
+
+        // Immediately kick off scenario loading if available and hash present
+        if (plan.scenarios !== undefined && has_scenario_hash()) {
             load_plan_scenarios(geom_prefix + plan.scenarios.replace(/^\//, ''), plan, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_PB, score_MM, score_DEC2);
         }
 
@@ -2797,7 +2920,7 @@ function load_plan_score(url, message_section, score_section,
                 'We were not yet calculating declination at the time that we scored this plan.');
         }
 
-        if(plan_voteshare(plan) < .1 || location.hash.match(/\bshowall\b/)) {
+        if(plan_voteshare(plan) < .1) {
             construct_partisan_bias_score(score_PB);
             populate_partisan_bias_score(plan, score_PB);
             construct_mean_median_score(score_MM);

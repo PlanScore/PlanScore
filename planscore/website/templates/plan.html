@@ -262,11 +262,12 @@
 
     </section>
 
-    <form id="scenario-adjustments">
+    <form id="scenario-adjustments" class="scenario-adjustments-hidden">
         <div>
             <label for="vote-swing-range">Vote Swing:</label>
             <div id="vote-swing-display">0.0</div>
             <input type="range" id="vote-swing-range" name="vote-swing" min="-6" max="6" step="0.5" value="0">
+            <div class="disabled-message">Not available for this map</div>
         </div>
     </form>
 

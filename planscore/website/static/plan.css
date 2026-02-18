@@ -211,6 +211,31 @@ path.highlight {
     min-width: 200px;
 }
 
+#scenario-adjustments.scenario-adjustments-hidden {
+    display: none !important;
+}
+
+#scenario-adjustments.scenario-adjustments-disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+#scenario-adjustments .disabled-message {
+    display: none;
+    color: #856404;
+    font-style: italic;
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+#scenario-adjustments.scenario-adjustments-disabled .disabled-message {
+    display: block;
+}
+
+#scenario-adjustments.scenario-adjustments-disabled input[type="range"] {
+    cursor: not-allowed;
+}
+
 #scenario-adjustments label {
     display: block;
     font-weight: bold;
