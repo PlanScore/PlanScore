@@ -557,7 +557,7 @@ Refactored all remaining display functions in `on_loaded_score()` between the di
      - Looks up values at `scenarios.statistics[stat][vote_swing_index][incumbent_index][district_index]`
    - Exported to module.exports for testing
 
-3. **Created `setup_scenario_interactivity()` function** (lines 286-320):
+3. **Created `setup_scenario_interactivity()` function** (lines 286-323):
    - Uses closures to capture `original_plan` and `scenarios` (no global variables!)
    - Sets 0.0 radio button as checked initially
    - Adds change event listeners to all radio buttons in `#scenario-adjustments`
@@ -565,7 +565,8 @@ Refactored all remaining display functions in `on_loaded_score()` between the di
      - Gets selected vote swing value (e.g., -6.0, 0.0, 6.0)
      - Finds corresponding index in `scenarios.vote_swings` array (0-24)
      - Calls `create_scenario_plan()` to get mutated plan
-     - Calls `populate_districts_table()` to update display
+     - Calls `populate_districts_table()` to update districts table display
+     - Calls `populate_seatshare_graphic()` to update seat share visualization
 
 4. **Updated `on_loaded_score()`** (line 2066-2068):
    - Modified call to `load_plan_scenarios()` to pass callback
@@ -588,14 +589,20 @@ Refactored all remaining display functions in `on_loaded_score()` between the di
 - **Indexed lookups**: Vote swing maps to index (e.g., -6.0 → 0, 0.0 → 12, 6.0 → 24)
 
 **What updates**:
-Only the districts table columns that depend on vote scenarios:
+Districts table columns that depend on vote scenarios:
 - "Democratic Votes"
 - "Republican Votes"
 - "Chance of Democratic Win" (derived from Democratic Wins)
 - "Predicted Vote Shares" (calculated from Dem/Rep votes)
 
+Seat share graphic that visualizes district outcomes:
+- Colored seat boxes (sorted by Democratic Wins, reordered per scenario)
+- Predicted D/R seat share percentages
+- D/R vote share percentages
+
 **Benefits achieved**:
-- Radio buttons now functional and update table interactively
+- Radio buttons now functional and update both table and seat share graphic interactively
+- Seat share visualization responds to scenario changes in real-time
 - Clean state management without globals
 - Well-tested with real scenario data
 - Foundation for future phases to update other metrics

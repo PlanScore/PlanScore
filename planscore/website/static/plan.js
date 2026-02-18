@@ -315,6 +315,9 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
 
             // Update the districts table
             populate_districts_table(mutated_plan, districts_table);
+
+            // Update the seat share graphic
+            populate_seatshare_graphic(mutated_plan);
         });
     }
 }
