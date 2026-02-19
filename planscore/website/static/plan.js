@@ -1045,6 +1045,35 @@ function get_seatshare_array(plan)
     };
 }
 
+function construct_candidate_scenario_content(cell, row)
+{
+    cell.innerHTML = [
+        `<form>`,
+        `<input type="radio" name="C${row}" value="D" id="D${row}"/><label for="D${row}">DEM</label>`,
+        `<input type="radio" name="C${row}" value="O" id="O${row}"/><label for="O${row}">OPEN</label>`,
+        `<input type="radio" name="C${row}" value="R" id="R${row}"/><label for="R${row}">REP</label>`,
+        `</form>`,
+        `<span style="display:none"></span>`
+    ].join('');
+}
+
+function populate_candidate_scenario_content(cell, value)
+{
+    cell.firstChild.childNodes[0].checked = false;
+    cell.firstChild.childNodes[2].checked = false;
+    cell.firstChild.childNodes[2].checked = false;
+    if (value == 'D') {
+        cell.firstChild.childNodes[0].checked = true;
+    } else if (value == 'O') {
+        cell.firstChild.childNodes[2].checked = true;
+    } else if (value == 'R') {
+        cell.firstChild.childNodes[4].checked = true;
+    }
+
+    var incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'};
+    cell.lastChild.innerText = incumbency[value];
+}
+
 function construct_districts_table(plan, districts_table)
 {
     // Build table structure using DOM APIs, without populating data
@@ -1129,8 +1158,10 @@ function construct_districts_table(plan, districts_table)
 
             cell.dataset.columnIndex = j;
 
-            // Mark Vote Swing column for show/hide toggling
-            if (heading_title === 'Vote Swing') {
+            if (heading_title === 'Candidate Scenario') {
+                construct_candidate_scenario_content(cell, i);
+            } else if (heading_title === 'Vote Swing') {
+                // Mark Vote Swing column for show/hide toggling
                 cell.dataset.columnName = 'Vote Swing';
             }
 
@@ -1199,7 +1230,9 @@ function populate_districts_table(plan, districts_table)
 
             var value;
             var is_string = false;
-            if (typeof table_array[table_row_index][j] == 'number') {
+            if (heading_title == 'Candidate Scenario') {
+                value = table_array[table_row_index][j];
+            } else if (typeof table_array[table_row_index][j] == 'number') {
                 value = nice_count(table_array[table_row_index][j]);
             } else if (typeof table_array[table_row_index][j] == 'string') {
                 value = nice_string(table_array[table_row_index][j]);
@@ -1212,7 +1245,9 @@ function populate_districts_table(plan, districts_table)
 
             if (cells[cell_index]) {
                 // Use innerHTML for strings since nice_string() returns HTML entities
-                if (is_string) {
+                if (heading_title == 'Candidate Scenario') {
+                    populate_candidate_scenario_content(cells[cell_index], value);
+                } else if (is_string) {
                     cells[cell_index].innerHTML = value;
                 } else {
                     cells[cell_index].textContent = value;
@@ -2503,8 +2538,7 @@ function update_cvap2023_percentages(head, row)
  */
 function plan_array(plan)
 {
-    var incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'},
-        flippy_colors = [LEAN_BLUE_COLOR_HEX, LEAN_RED_COLOR_HEX],
+    var flippy_colors = [LEAN_BLUE_COLOR_HEX, LEAN_RED_COLOR_HEX],
         fields = FIELDS.slice();
 
     // Build list of columns
@@ -2536,7 +2570,7 @@ function plan_array(plan)
         }
 
         if(has_incumbency) {
-            new_row.push(incumbency[plan.incumbents[j]]);
+            new_row.push(plan.incumbents[j]);
         }
 
         all_rows.push(new_row);
