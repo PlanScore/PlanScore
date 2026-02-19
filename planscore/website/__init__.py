@@ -77,7 +77,7 @@ def get_gaussian_randoms():
     raw_mean, raw_stdev = statistics.mean(raw_values), statistics.stdev(raw_values)
     return [(raw_value - raw_mean) / raw_stdev for raw_value in raw_values]
 
-def extract_historical_percentrank_data():
+def get_historical_percentrank_data():
     ''' Extract historical plan metrics for percentrank calculations.
 
         Reads the three bias CSV files and returns a dict with sorted arrays of
@@ -105,33 +105,33 @@ def extract_historical_percentrank_data():
             reader = csv.DictReader(file)
             for row in reader:
                 for col in columns_needed:
-                    if row[col]:  # Skip empty values
+                    if row[col]:
                         try:
-                            # Round to 4 decimal places for medium precision
-                            house_data[col].append(round(float(row[col]), 4))
+                            house_data[col].append(round(float(row[col]), 3))
                         except ValueError:
-                            pass  # Skip non-numeric values
+                            pass
 
-        # Sort each array for efficient percentrank calculations
-        for col in columns_needed:
-            house_data[col].sort()
+        # Sort and sample each array for efficient percentrank calculations
+        for col, col_data in house_data.items():
+            step = len(col_data) // 100 # Aim for ~100 results, still valid for percentrank
+            house_data[col] = sorted(col_data)[::step]
 
         result[house] = house_data
 
-    return json.dumps(result)
+    return result
 
 @app.route('/plan.html')
 def get_plan():
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     geom_url_prefix = constants.S3_URL_PATTERN.format(k='', b=flask.current_app.config['PLANSCORE_S3_BUCKET'])
     text_url_pattern = get_text_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
-    historical_percentrank_json = extract_historical_percentrank_data()
+    historical_percentrank = get_historical_percentrank_data()
     gaussian_randoms = get_gaussian_randoms()
     return flask.render_template('plan.html',
         data_url_pattern=data_url_pattern, geom_url_prefix=geom_url_prefix,
         text_url_pattern=text_url_pattern,
         gaussian_randoms_json=json.dumps(gaussian_randoms),
-        historical_percentrank_json=historical_percentrank_json,
+        historical_percentrank_json=json.dumps(historical_percentrank),
         planscore_website_base=flask.current_app.config['PLANSCORE_WEBSITE_BASE'].rstrip('/'))
 
 @app.route('/models/')
