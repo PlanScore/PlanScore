@@ -2836,6 +2836,7 @@ function load_plan_score(url, message_section, score_section,
             const desc_el = document.createElement('h1');
             desc_el.textContent = plan.description;
             description_el.append(desc_el);
+            document.title = document.title + ' :: ' + plan.description;
         }
 
         const hr = document.createElement('hr');
