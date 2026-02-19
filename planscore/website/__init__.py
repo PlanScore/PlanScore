@@ -6,6 +6,8 @@ import hashlib
 import gzip
 import csv
 import json
+import random
+import statistics
 from .. import data, constants
 
 MODELS_BASEDIR = os.path.join(os.path.dirname(__file__), 'models')
@@ -65,6 +67,16 @@ def get_annotate():
         version_parameters=data.VERSION_PARAMETERS,
     )
 
+def get_gaussian_randoms():
+    ''' Get a deterministic list of 500 gaussian random values
+
+        Adjust output of random.gauss() so that mean and stdev are (0.0, 1.0)
+    '''
+    random.seed(0)
+    raw_values = [round(random.gauss(0, 1), 3) for _ in range(500)]
+    raw_mean, raw_stdev = statistics.mean(raw_values), statistics.stdev(raw_values)
+    return [(raw_value - raw_mean) / raw_stdev for raw_value in raw_values]
+
 def extract_historical_percentrank_data():
     ''' Extract historical plan metrics for percentrank calculations.
 
@@ -114,9 +126,11 @@ def get_plan():
     geom_url_prefix = constants.S3_URL_PATTERN.format(k='', b=flask.current_app.config['PLANSCORE_S3_BUCKET'])
     text_url_pattern = get_text_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     historical_percentrank_json = extract_historical_percentrank_data()
+    gaussian_randoms = get_gaussian_randoms()
     return flask.render_template('plan.html',
         data_url_pattern=data_url_pattern, geom_url_prefix=geom_url_prefix,
         text_url_pattern=text_url_pattern,
+        gaussian_randoms_json=json.dumps(gaussian_randoms),
         historical_percentrank_json=historical_percentrank_json,
         planscore_website_base=flask.current_app.config['PLANSCORE_WEBSITE_BASE'].rstrip('/'))
 

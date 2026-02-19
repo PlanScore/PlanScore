@@ -515,36 +515,6 @@ function percentrank_rel(column, house, value)
     return count / historical_values.length;
 }
 
-function gaussian_randoms(count)
-{
-    // Generate Gaussian (normal) random values using Box-Muller transform.
-    // Returns an array of standard normal random values (mean=0, stddev=1).
-
-    var results = [];
-
-    // Box-Muller generates pairs, so we iterate in steps of 2
-    for (var i = 0; i < count; i += 2) {
-        // Generate two uniform random values in (0, 1)
-        var u1 = Math.random();
-        var u2 = Math.random();
-
-        // Ensure u1 is not zero to avoid log(0)
-        while (u1 === 0) {
-            u1 = Math.random();
-        }
-
-        // Box-Muller transform
-        var mag = Math.sqrt(-2.0 * Math.log(u1));
-        var z0 = mag * Math.cos(2.0 * Math.PI * u2);
-        var z1 = mag * Math.sin(2.0 * Math.PI * u2);
-
-        results.push(z0);
-        results.push(z1);
-    }
-
-    return results.slice(0, count);
-}
-
 function adjust_scenario_stats(data)
 {
     if (data.dimensions.length != 3) {
@@ -633,17 +603,13 @@ function create_scenario_plan(original_plan, scenarios, vote_swing_index)
         mutated_plan.districts[district_index].vote_swing = scenarios.vote_swings[vote_swing_index] / 100.0;
     }
 
-    // Generate 1000 symmetric simulations and calculate statistics
-    var sim_count = 1000;
-    var random_values = gaussian_randoms(sim_count);
-
     var EG_sims = [];
     var MMD_sims = [];
     var PB_sims = [];
     var D2_sims = [];
 
-    for (var sim = 0; sim < sim_count; sim++) {
-        var random = random_values[sim];
+    for (var i in GAUSSIAN_RANDOMS) {
+        var random = GAUSSIAN_RANDOMS[i];
 
         // Generate symmetric vote perturbations (zero-sum per simulation)
         var dem_sim = [];
@@ -3269,7 +3235,6 @@ if(typeof module !== 'undefined' && module.exports)
         calculate_positives,
         percentrank_abs,
         percentrank_rel,
-        gaussian_randoms,
         SHY_COLUMN,
     };
 }

@@ -2,6 +2,9 @@ assert = require('assert');
 plan = require('./planscore/website/static/plan.js');
 annotate_new = require('./planscore/website/static/annotate-new.js');
 
+// Mock gaussian randoms for testing
+global.GAUSSIAN_RANDOMS = [1.647, -1.307, -0.401, 0.925, -0.827, 0.366, 0.684, -0.593, -1.197, 0.702];
+
 // Mock historical percentrank data for testing
 global.HISTORICAL_PERCENTRANK_DATA = {
     ushouse: {
@@ -743,25 +746,6 @@ assert.equal(Math.round(d2f * 1000) / 1000, -0.549, 'Should see low D2 when red 
 
 var d2g = plan.calculate_D2([2, 1, 0], [3, 4, 5]);
 assert.equal(Math.round(d2g * 1000) / 1000, 0.549, 'Should see high D2 when blue wins all districts');
-
-// Test gaussian_randoms with 1001 values
-var gaussians = plan.gaussian_randoms(1001);
-assert.equal(gaussians.length, 1001, 'Should generate exactly 1001 values');
-
-// Calculate mean and standard deviation
-var sum = gaussians.reduce(function(a, b) { return a + b; }, 0);
-var mean = sum / gaussians.length;
-var variance = gaussians.reduce(function(a, b) { return a + Math.pow(b - mean, 2); }, 0) / gaussians.length;
-var stddev = Math.sqrt(variance);
-
-// With 1001 samples, mean should be close to 0 and stddev close to 1
-// Using generous tolerances for random variation
-assert.ok(Math.abs(mean) < 0.1, 'Mean should be close to 0, got ' + mean);
-assert.ok(Math.abs(stddev - 1.0) < 0.1, 'Standard deviation should be close to 1, got ' + stddev);
-
-// Check that values span reasonable range (most should be within 3 standard deviations)
-var within_3sigma = gaussians.filter(function(x) { return Math.abs(x) <= 3; }).length;
-assert.ok(within_3sigma > 990, 'Most values should be within 3 standard deviations, got ' + within_3sigma);
 
 var CT_2021_water_seatshare = plan.get_seatshare_array(CT_2021_water_district);
 

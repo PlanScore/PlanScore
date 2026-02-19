@@ -277,6 +277,7 @@
 	        BLUEISH_PATTERN_URL = "{{ url_for('static', filename='blueish-pattern.png') }}",
 	        REDDISH_PATTERN_URL = "{{ url_for('static', filename='reddish-pattern.png') }}",
 	        UNKNOWN_PATTERN_URL = "{{ url_for('static', filename='unknown-pattern.png') }}",
+	        GAUSSIAN_RANDOMS = {{ gaussian_randoms_json|safe }};
 	        HISTORICAL_PERCENTRANK_DATA = {{ historical_percentrank_json|safe }};
 
 	    var plan_id = location.search.replace('?', ''),
