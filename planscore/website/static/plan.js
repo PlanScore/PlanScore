@@ -539,8 +539,10 @@ function adjust_scenario_stats(data)
 
 function create_scenario_plan(original_plan, scenarios, vote_swing_index)
 {
-    // Special case: 0.0 swing (index 12) returns original plan unchanged
-    if (vote_swing_index === 12) {
+    var zero_index = 12;
+
+    // Special case: 0.0 swing returns original plan unchanged
+    if (vote_swing_index === zero_index) {
         return original_plan;
     }
 
@@ -553,10 +555,18 @@ function create_scenario_plan(original_plan, scenarios, vote_swing_index)
     var dem_votes_sd = [];
     var rep_votes_sd = [];
 
+    var all_open_seats = true;
+    for (var i in original_plan.incumbents) {
+        if (original_plan.incumbents[i] !== 'O') {
+            all_open_seats = false;
+        }
+    }
+
     // Update each district with scenario data
     for (var district_index = 0; district_index < mutated_plan.districts.length; district_index++) {
-        // Get incumbent scenario for this district (e.g., 'O', 'D', 'R')
-        var incumbent_code = original_plan.incumbents[district_index];
+        // Get incumbent scenario for this district (e.g., 'O', 'D', 'R', or 'U')
+        // When all seats are open we use a slightly different model matrix
+        var incumbent_code = all_open_seats ? 'U' : original_plan.incumbents[district_index];
 
         // Find the index in scenarios.incumbents array
         var incumbent_index = scenarios.incumbents.indexOf(incumbent_code);
@@ -599,8 +609,12 @@ function create_scenario_plan(original_plan, scenarios, vote_swing_index)
             );
         }
 
-        // Set vote_swing field for this district (convert from percentage to decimal)
-        mutated_plan.districts[district_index].vote_swing = scenarios.vote_swings[vote_swing_index] / 100.0;
+        // Set vote_swing field for this district based on calculated difference from original
+        var mvd = mutated_plan.districts[district_index].totals['Democratic Votes'],
+            mvr = mutated_plan.districts[district_index].totals['Republican Votes'],
+            ovd = original_plan.districts[district_index].totals['Democratic Votes'],
+            ovr = original_plan.districts[district_index].totals['Republican Votes'];
+        mutated_plan.districts[district_index].vote_swing = mvd / (mvd + mvr) - ovd / (ovd + ovr);
     }
 
     var EG_sims = [];

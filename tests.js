@@ -814,7 +814,7 @@ assert.notStrictEqual(result_neg6, NC_2025_index, 'Should return a different obj
 
 // Verify that the first district (index 0) gets data from the correct incumbent scenario
 var district_0_incumbent = NC_2025_index.incumbents[0];
-var district_0_incumbent_index = NC_2025_scenarios.incumbents.indexOf(district_0_incumbent);
+var district_0_incumbent_index = 3; // hard code the entirely-open option
 assert.equal(result_neg6.districts[0].totals['Democratic Votes'],
     NC_2025_scenarios.statistics['Democratic Votes'][0][district_0_incumbent_index][0],
     'Should update Democratic Votes for district 0 with correct incumbent');
@@ -824,7 +824,7 @@ assert.equal(result_neg6.districts[0].totals['Republican Votes'],
 
 // Verify second district (index 1)
 var district_1_incumbent = NC_2025_index.incumbents[1];
-var district_1_incumbent_index = NC_2025_scenarios.incumbents.indexOf(district_1_incumbent);
+var district_1_incumbent_index = 3; // hard code the entirely-open option
 assert.equal(result_neg6.districts[1].totals['Democratic Votes'],
     NC_2025_scenarios.statistics['Democratic Votes'][0][district_1_incumbent_index][1],
     'Should update Democratic Votes for district 1 with correct incumbent');
