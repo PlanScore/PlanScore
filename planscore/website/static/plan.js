@@ -216,6 +216,669 @@ function nice_vote_swing(value)
     return '–';
 }
 
+function swing_vote(red_districts, blue_districts, amount)
+{
+    // Swing the vote by a percentage, positive toward blue.
+    if (amount === 0) {
+        return [red_districts.slice(), blue_districts.slice()];
+    }
+
+    var swung_reds = [];
+    var swung_blues = [];
+
+    for (var i = 0; i < red_districts.length; i++) {
+        var r = red_districts[i];
+        var b = blue_districts[i];
+        var t = r + b;
+
+        if (t > 0) {
+            swung_reds.push((r / t - amount) * t);
+            swung_blues.push((b / t + amount) * t);
+        }
+    }
+
+    return [swung_reds, swung_blues];
+}
+
+function calculate_EG(red_districts, blue_districts)
+{
+    // Convert two lists of district vote counts into an EG score.
+    // By convention, result is positive for blue and negative for red.
+    // Note: This version does not include vote_swing parameter.
+
+    // Calculate initial vote share
+    var init_blue_total = blue_districts.reduce(function(a, b) { return a + b; }, 0);
+    var init_red_total = red_districts.reduce(function(a, b) { return a + b; }, 0);
+    var init_vote_share = init_blue_total / (init_blue_total + init_red_total);
+
+    // Determine clamping swing
+    var clamped_swing;
+    if (init_vote_share < 0.25) {
+        // Very red state, swing to 25 blue/75 red
+        clamped_swing = 0.25 - init_vote_share;
+    } else if (init_vote_share > 0.75) {
+        // Very blue state, swing to 75 blue/25 red
+        clamped_swing = init_vote_share - 0.75;
+        clamped_swing = -clamped_swing;
+    } else {
+        clamped_swing = 0;
+    }
+
+    // Apply clamping swing
+    var swung = swing_vote(red_districts, blue_districts, clamped_swing);
+    var swung_red = swung[0];
+    var swung_blue = swung[1];
+
+    // Filter nonzero districts and count blue wins
+    var district_blue_wins = 0;
+    var nonzero_count = 0;
+    var district_raw_blue_votes = 0;
+    var district_raw_total_votes = 0;
+
+    for (var i = 0; i < swung_red.length; i++) {
+        if (swung_red[i] + swung_blue[i] > 0) {
+            nonzero_count++;
+            if (swung_blue[i] > swung_red[i]) {
+                district_blue_wins++;
+            }
+            district_raw_blue_votes += swung_blue[i];
+            district_raw_total_votes += swung_red[i] + swung_blue[i];
+        }
+    }
+
+    var statewide_seat_share = district_blue_wins / nonzero_count;
+    var statewide_vote_share = district_raw_blue_votes / district_raw_total_votes;
+
+    return statewide_seat_share - 0.5 - 2 * (statewide_vote_share - 0.5);
+}
+
+function calculate_MMD(red_districts, blue_districts)
+{
+    // Convert two lists of district vote counts into a Mean-Median score.
+    // By convention, result is positive for blue and negative for red.
+
+    var shares = [];
+    for (var i = 0; i < red_districts.length; i++) {
+        var r = red_districts[i];
+        var b = blue_districts[i];
+        if (r + b > 0) {
+            shares.push(b / (r + b));
+        }
+    }
+
+    shares.sort(function(a, b) { return a - b; });
+
+    // Calculate median
+    var median;
+    var mid = Math.floor(shares.length / 2);
+    if (shares.length % 2 === 0) {
+        median = (shares[mid - 1] + shares[mid]) / 2;
+    } else {
+        median = shares[mid];
+    }
+
+    // Calculate mean
+    var sum = shares.reduce(function(a, b) { return a + b; }, 0);
+    var mean = sum / shares.length;
+
+    return median - mean;
+}
+
+function calculate_PB(red_districts, blue_districts)
+{
+    // Convert two lists of district vote counts into a Partisan Bias score.
+    // By convention, result is positive for blue and negative for red.
+
+    // Filter nonzero districts
+    var nonzero_reds = [];
+    var nonzero_blues = [];
+
+    for (var i = 0; i < red_districts.length; i++) {
+        if (red_districts[i] + blue_districts[i] > 0) {
+            nonzero_reds.push(red_districts[i]);
+            nonzero_blues.push(blue_districts[i]);
+        }
+    }
+
+    var red_total = nonzero_reds.reduce(function(a, b) { return a + b; }, 0);
+    var blue_total = nonzero_blues.reduce(function(a, b) { return a + b; }, 0);
+    var blue_margin = (blue_total - red_total) / (blue_total + red_total);
+
+    // Swing to 50/50
+    var swung = swing_vote(nonzero_reds, nonzero_blues, -blue_margin / 2);
+    var reds_5050 = swung[0];
+    var blues_5050 = swung[1];
+
+    // Count blue seats
+    var blue_seats = 0;
+    for (var i = 0; i < reds_5050.length; i++) {
+        if (reds_5050[i] < blues_5050[i]) {
+            blue_seats++;
+        }
+    }
+
+    var blue_seatshare = blue_seats / blues_5050.length;
+    var blue_voteshare = blues_5050.reduce(function(a, b) { return a + b; }, 0) /
+        (blues_5050.reduce(function(a, b) { return a + b; }, 0) + reds_5050.reduce(function(a, b) { return a + b; }, 0));
+
+    return blue_seatshare - blue_voteshare;
+}
+
+function calculate_D2(red_districts, blue_districts)
+{
+    // Convert two lists of district vote counts into a Declination score.
+    // By convention, result is positive for blue and negative for red.
+    // Adapt Python sample code from Warrington, 2018.
+
+    var blue_shares = [];
+    for (var i = 0; i < red_districts.length; i++) {
+        var r = red_districts[i];
+        var b = blue_districts[i];
+        if (r + b > 0) {
+            blue_shares.push(b / (r + b));
+        }
+    }
+
+    var seats = blue_shares.length;
+    var red_wins = blue_shares.filter(function(share) { return share <= 0.5; }).sort(function(a, b) { return a - b; });
+    var blue_wins = blue_shares.filter(function(share) { return share > 0.5; }).sort(function(a, b) { return a - b; });
+
+    var declination;
+
+    if (red_wins.length === 0) {
+        // -1 if red party does not win at least one seat
+        declination = -1;
+    } else if (blue_wins.length === 0) {
+        // +1 if blue party does not win at least one seat
+        declination = 1;
+    } else {
+        var mean_red_wins = red_wins.reduce(function(a, b) { return a + b; }, 0) / red_wins.length;
+        var mean_blue_wins = blue_wins.reduce(function(a, b) { return a + b; }, 0) / blue_wins.length;
+
+        var theta = Math.atan((1 - 2 * mean_red_wins) * seats / red_wins.length);
+        var gamma = Math.atan((2 * mean_blue_wins - 1) * seats / blue_wins.length);
+
+        // Convert to range [-1,1]
+        declination = 2.0 * (gamma - theta) / Math.PI;
+    }
+
+    var declination2 = declination * Math.log(seats) / 2;
+
+    return -declination2;
+}
+
+function calculate_mean(array)
+{
+    // Calculate the arithmetic mean of an array of numbers.
+    if (array.length === 0) {
+        return null;
+    }
+    var sum = array.reduce(function(a, b) { return a + b; }, 0);
+    return sum / array.length;
+}
+
+function calculate_stdev(array)
+{
+    // Calculate the sample standard deviation of an array of numbers.
+    // Uses n-1 denominator (Bessel's correction) for unbiased estimate.
+    if (array.length < 2) {
+        return null;
+    }
+    var mean = calculate_mean(array);
+    var sum_squared_diffs = array.reduce(function(acc, val) {
+        return acc + Math.pow(val - mean, 2);
+    }, 0);
+    return Math.sqrt(sum_squared_diffs / (array.length - 1));
+}
+
+function calculate_positives(array)
+{
+    // Calculate the proportion of positive values in an array.
+    // Values greater than a small epsilon are considered positive.
+    if (array.length === 0) {
+        return null;
+    }
+    var epsilon = 1e-10;
+    var positives = array.filter(function(val) { return val > epsilon; }).length;
+    return positives / array.length;
+}
+
+function percentrank_abs(column, house, value)
+{
+    // Calculate absolute percentrank: what proportion of historical plans
+    // have absolute value less than this plan's absolute value?
+    // Higher percentrank = more extreme (skewed) than more historical plans.
+
+    if (house === 'localplan' || !HISTORICAL_PERCENTRANK_DATA) {
+        return null;
+    }
+
+    if (!HISTORICAL_PERCENTRANK_DATA[house] || !HISTORICAL_PERCENTRANK_DATA[house][column]) {
+        return null;
+    }
+
+    var historical_values = HISTORICAL_PERCENTRANK_DATA[house][column];
+    if (historical_values.length === 0) {
+        return null;
+    }
+
+    var abs_value = Math.abs(value);
+    var count = 0;
+
+    for (var i = 0; i < historical_values.length; i++) {
+        if (Math.abs(historical_values[i]) < abs_value) {
+            count++;
+        }
+    }
+
+    return count / historical_values.length;
+}
+
+function percentrank_rel(column, house, value)
+{
+    // Calculate relative (directional) percentrank: what proportion of
+    // historical plans are more favorable to the other party?
+    // For negative values (favors R): count how many are MORE negative
+    // For positive values (favors D): count how many are MORE positive
+
+    if (house === 'localplan' || !HISTORICAL_PERCENTRANK_DATA) {
+        return null;
+    }
+
+    if (!HISTORICAL_PERCENTRANK_DATA[house] || !HISTORICAL_PERCENTRANK_DATA[house][column]) {
+        return null;
+    }
+
+    var historical_values = HISTORICAL_PERCENTRANK_DATA[house][column];
+    if (historical_values.length === 0) {
+        return null;
+    }
+
+    var count = 0;
+
+    if (value < 0) {
+        // Favors Republicans: count how many are MORE negative (< value)
+        for (var i = 0; i < historical_values.length; i++) {
+            if (historical_values[i] < value) {
+                count++;
+            }
+        }
+    } else {
+        // Favors Democrats: count how many are MORE positive (> value)
+        for (var i = 0; i < historical_values.length; i++) {
+            if (historical_values[i] > value) {
+                count++;
+            }
+        }
+    }
+
+    return count / historical_values.length;
+}
+
+function adjust_scenario_stats(data)
+{
+    if (data.dimensions.length != 3) {
+        throw new Error("Unexpected number of dimensions");
+    }
+
+    // Adjust statistics to represent real values
+    // All scenario stat values past [0][0] are diffs atop [0][0] to save bytes
+    for (var i = 0; i < data[data.dimensions[0]].length; i++) {
+        for (var j = 0; j < data[data.dimensions[1]].length; j++) {
+            if (i > 0 || j > 0) {
+                for (var k = 0; k < data[data.dimensions[2]].length; k++) {
+                    for (var s in data.statistics) {
+                        var stat = data.statistics[s];
+                        stat[i][j][k] = stat[0][0][k] + stat[i][j][k];
+                    }
+                }
+            }
+        }
+    }
+}
+
+function create_scenario_plan(original_plan, scenarios, vote_swing_index)
+{
+    var zero_index = 12;
+
+    // Special case: 0.0 swing returns original plan unchanged
+    if (vote_swing_index === zero_index) {
+        return original_plan;
+    }
+
+    // Create a deep copy of the plan
+    var mutated_plan = JSON.parse(JSON.stringify(original_plan));
+
+    // Arrays to store mean and SD values for simulations
+    var dem_votes_mean = [];
+    var rep_votes_mean = [];
+    var dem_votes_sd = [];
+    var rep_votes_sd = [];
+
+    var all_open_seats = true;
+    for (var i in original_plan.incumbents) {
+        if (original_plan.incumbents[i] !== 'O') {
+            all_open_seats = false;
+        }
+    }
+
+    // Update each district with scenario data
+    for (var district_index = 0; district_index < mutated_plan.districts.length; district_index++) {
+        // Get incumbent scenario for this district (e.g., 'O', 'D', 'R', or 'U')
+        // When all seats are open we use a slightly different model matrix
+        var incumbent_code = all_open_seats ? 'U' : original_plan.incumbents[district_index];
+
+        // Find the index in scenarios.incumbents array
+        var incumbent_index = scenarios.incumbents.indexOf(incumbent_code);
+
+        if (incumbent_index === -1) {
+            console.warn('Unknown incumbent code:', incumbent_code, 'for district', district_index);
+            continue;
+        }
+
+        // Update Democratic Votes
+        if (scenarios.statistics['Democratic Votes']) {
+            var dem_mean = scenarios.statistics['Democratic Votes'][vote_swing_index][incumbent_index][district_index];
+            mutated_plan.districts[district_index].totals['Democratic Votes'] = dem_mean;
+            dem_votes_mean.push(dem_mean);
+        }
+
+        // Update Republican Votes
+        if (scenarios.statistics['Republican Votes']) {
+            var rep_mean = scenarios.statistics['Republican Votes'][vote_swing_index][incumbent_index][district_index];
+            mutated_plan.districts[district_index].totals['Republican Votes'] = rep_mean;
+            rep_votes_mean.push(rep_mean);
+        }
+
+        // Update Democratic Wins
+        if (scenarios.statistics['Democratic Wins']) {
+            mutated_plan.districts[district_index].totals['Democratic Wins'] =
+                scenarios.statistics['Democratic Wins'][vote_swing_index][incumbent_index][district_index];
+        }
+
+        // Extract SD values for simulations
+        if (scenarios.statistics['Democratic Votes SD']) {
+            dem_votes_sd.push(
+                scenarios.statistics['Democratic Votes SD'][vote_swing_index][incumbent_index][district_index]
+            );
+        }
+
+        if (scenarios.statistics['Republican Votes SD']) {
+            rep_votes_sd.push(
+                scenarios.statistics['Republican Votes SD'][vote_swing_index][incumbent_index][district_index]
+            );
+        }
+
+        // Set vote_swing field for this district based on calculated difference from original
+        var mvd = mutated_plan.districts[district_index].totals['Democratic Votes'],
+            mvr = mutated_plan.districts[district_index].totals['Republican Votes'],
+            ovd = original_plan.districts[district_index].totals['Democratic Votes'],
+            ovr = original_plan.districts[district_index].totals['Republican Votes'];
+        mutated_plan.districts[district_index].vote_swing = mvd / (mvd + mvr) - ovd / (ovd + ovr);
+    }
+
+    var EG_sims = [];
+    var MMD_sims = [];
+    var PB_sims = [];
+    var D2_sims = [];
+
+    for (var i in GAUSSIAN_RANDOMS) {
+        var random = GAUSSIAN_RANDOMS[i];
+
+        // Generate symmetric vote perturbations (zero-sum per simulation)
+        var dem_sim = [];
+        var rep_sim = [];
+
+        for (var d = 0; d < dem_votes_mean.length; d++) {
+            dem_sim.push(dem_votes_mean[d] + random * dem_votes_sd[d]);
+            rep_sim.push(rep_votes_mean[d] - random * rep_votes_sd[d]);
+        }
+
+        // Calculate metrics for this simulation
+        EG_sims.push(calculate_EG(rep_sim, dem_sim));
+        MMD_sims.push(calculate_MMD(rep_sim, dem_sim));
+        PB_sims.push(calculate_PB(rep_sim, dem_sim));
+        D2_sims.push(calculate_D2(rep_sim, dem_sim));
+    }
+
+    // Calculate summary statistics from simulations
+    var house = original_plan.model ? original_plan.model.house : null;
+
+    mutated_plan.summary['Efficiency Gap'] = calculate_mean(EG_sims);
+    mutated_plan.summary['Efficiency Gap SD'] = calculate_stdev(EG_sims);
+    mutated_plan.summary['Efficiency Gap Positives'] = calculate_positives(EG_sims);
+    mutated_plan.summary['Efficiency Gap Absolute Percent Rank'] =
+        percentrank_abs('eg_adj_avg', house, mutated_plan.summary['Efficiency Gap']);
+    mutated_plan.summary['Efficiency Gap Relative Percent Rank'] =
+        percentrank_rel('eg_adj_avg', house, mutated_plan.summary['Efficiency Gap']);
+
+    mutated_plan.summary['Mean-Median'] = calculate_mean(MMD_sims);
+    mutated_plan.summary['Mean-Median SD'] = calculate_stdev(MMD_sims);
+    mutated_plan.summary['Mean-Median Positives'] = calculate_positives(MMD_sims);
+    mutated_plan.summary['Mean-Median Absolute Percent Rank'] =
+        percentrank_abs('mmd_avg', house, mutated_plan.summary['Mean-Median']);
+    mutated_plan.summary['Mean-Median Relative Percent Rank'] =
+        percentrank_rel('mmd_avg', house, mutated_plan.summary['Mean-Median']);
+
+    mutated_plan.summary['Partisan Bias'] = calculate_mean(PB_sims);
+    mutated_plan.summary['Partisan Bias SD'] = calculate_stdev(PB_sims);
+    mutated_plan.summary['Partisan Bias Positives'] = calculate_positives(PB_sims);
+    mutated_plan.summary['Partisan Bias Absolute Percent Rank'] =
+        percentrank_abs('bias_avg', house, mutated_plan.summary['Partisan Bias']);
+    mutated_plan.summary['Partisan Bias Relative Percent Rank'] =
+        percentrank_rel('bias_avg', house, mutated_plan.summary['Partisan Bias']);
+
+    mutated_plan.summary['Declination'] = calculate_mean(D2_sims);
+    mutated_plan.summary['Declination SD'] = calculate_stdev(D2_sims);
+    mutated_plan.summary['Declination Positives'] = calculate_positives(D2_sims);
+    mutated_plan.summary['Declination Absolute Percent Rank'] =
+        percentrank_abs('dec2_avg', house, mutated_plan.summary['Declination']);
+    mutated_plan.summary['Declination Relative Percent Rank'] =
+        percentrank_rel('dec2_avg', house, mutated_plan.summary['Declination']);
+
+    return mutated_plan;
+}
+
+function parse_scenario_hash()
+{
+    // Parse URL hash to extract vote swing value
+    // Supports: #scenario (default 0.0) or #scenario=vote_swing:1.0
+    var hash = window.location.hash;
+
+    if (!hash || !hash.match(/\bscenario\b/)) {
+        return null; // No scenario hash present
+    }
+
+    // Look for vote_swing parameter
+    var match = hash.match(/vote_swing:([-\d.]+)/);
+    if (match) {
+        return parseFloat(match[1]);
+    }
+
+    // Default to 0.0 if just #scenario with no parameter
+    return 0.0;
+}
+
+function update_scenario_hash(vote_swing)
+{
+    // Update URL hash with vote swing value without page reload
+    var hash_value = vote_swing === 0.0
+        ? '#scenario'
+        : '#scenario=vote_swing:' + vote_swing.toFixed(1);
+
+    // Use replaceState to avoid adding to browser history
+    if (window.history && window.history.replaceState) {
+        window.history.replaceState(null, null, hash_value);
+    } else {
+        window.location.hash = hash_value;
+    }
+}
+
+function has_scenario_hash()
+{
+    // Check if URL contains #scenario hash
+    var hash = window.location.hash;
+    return hash && hash.match(/\bscenario\b/) !== null;
+}
+
+function check_scenarios_available(plan)
+{
+    // Check if scenarios feature is available for this plan
+    // Returns: { available: boolean, reason: string }
+
+    // Check if plan has scenarios linked
+    if (!plan.scenarios) {
+        return { available: false, reason: 'no_scenarios_file' };
+    }
+
+    // Check if all districts have zero vote_swing initially
+    // (Plans with pre-applied vote swings shouldn't show the interactive feature)
+    for (var i = 0; i < plan.districts.length; i++) {
+        if ('vote_swing' in plan.districts[i] && plan.districts[i].vote_swing !== 0.0) {
+            return { available: false, reason: 'nonzero_vote_swings' };
+        }
+    }
+
+    return { available: true, reason: null };
+}
+
+function update_form_visibility(form, plan)
+{
+    // Update form visibility based on URL hash and plan availability
+    var has_hash = has_scenario_hash();
+    var availability = check_scenarios_available(plan);
+
+    if (!has_hash) {
+        // No hash: hide form completely
+        form.classList.add('scenario-adjustments-hidden');
+        form.classList.remove('scenario-adjustments-disabled');
+    } else if (!availability.available) {
+        // Has hash but scenarios not available: show disabled form
+        form.classList.remove('scenario-adjustments-hidden');
+        form.classList.add('scenario-adjustments-disabled');
+    } else {
+        // Has hash and scenarios available: show enabled form
+        form.classList.remove('scenario-adjustments-hidden');
+        form.classList.remove('scenario-adjustments-disabled');
+    }
+}
+
+function setup_form_visibility_listener(form, plan)
+{
+    // Set up hashchange listener to toggle form visibility
+    window.addEventListener('hashchange', function() {
+        update_form_visibility(form, plan);
+    });
+
+    // Set initial visibility
+    update_form_visibility(form, plan);
+}
+
+function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA)
+{
+    // Remove disabled class now that scenarios have loaded
+    scenario_adjustments_form.classList.remove('scenario-adjustments-disabled');
+
+    // Initialize vote_swing field if it doesn't exist
+    // This ensures the Vote Swing column can be toggled when scenarios are available
+    if (original_plan.districts.length > 0 && !('vote_swing' in original_plan.districts[0])) {
+        for (var i = 0; i < original_plan.districts.length; i++) {
+            original_plan.districts[i].vote_swing = 0.0;
+        }
+        // Reconstruct table once to include the Vote Swing column (initially hidden)
+        construct_districts_table(original_plan, districts_table);
+        populate_districts_table(original_plan, districts_table);
+    }
+
+    // Get the range input and display element
+    var range_input = scenario_adjustments_form.querySelector('input[name="vote-swing"]');
+    var display = document.getElementById('vote-swing-display');
+
+    // Helper function to format vote swing for display
+    function format_vote_swing(value) {
+        var num = parseFloat(value);
+        if (num === 0) {
+            return '0.0';
+        } else if (num > 0) {
+            return 'D+' + num.toFixed(1);
+        } else {
+            return 'R+' + Math.abs(num).toFixed(1);
+        }
+    }
+
+    // Helper function to update all visualizations for a given vote swing
+    function update_visualizations(vote_swing) {
+        // Find the index in scenarios.vote_swings array
+        var vote_swing_index = scenarios.vote_swings.indexOf(vote_swing);
+
+        if (vote_swing_index === -1) {
+            console.error('Vote swing not found in scenarios:', vote_swing);
+            return;
+        }
+
+        // Create mutated plan with scenario data
+        var mutated_plan = create_scenario_plan(original_plan, scenarios, vote_swing_index);
+
+        // Update the districts table
+        populate_districts_table(mutated_plan, districts_table);
+
+        // Update the seat share graphic
+        populate_seatshare_graphic(mutated_plan);
+
+        // Update the map colors
+        populate_plan_map(mutated_plan, map_div);
+
+        // Update the score cards (each function handles its own validation)
+        populate_efficiency_gap_score(mutated_plan, score_EG);
+        populate_sensitivity_test(original_plan, score_sense);  // Always use original plan for sensitivity range
+        populate_partisan_bias_score(mutated_plan, score_PB);
+        populate_mean_median_score(mutated_plan, score_MM);
+
+        // Only update declination if it's valid
+        if (mutated_plan.summary['Declination'] !== null && mutated_plan.summary['Declination'] !== undefined) {
+            populate_declination2_score(mutated_plan, score_DEC2);
+        }
+
+        // Update the metrics table with new percentrank values
+        populate_metrics_table(mutated_plan, metrics_table);
+        populate_ftva_race_scores(mutated_plan, scores_FTVA);
+    }
+
+    // Set initial value from hash or default to 0
+    var initial_vote_swing = parse_scenario_hash();
+    if (initial_vote_swing === null) {
+        initial_vote_swing = 0.0;
+    }
+
+    // Validate that the initial vote swing exists in scenarios
+    if (scenarios.vote_swings.indexOf(initial_vote_swing) === -1) {
+        console.warn('Vote swing from hash not found in scenarios, defaulting to 0.0:', initial_vote_swing);
+        initial_vote_swing = 0.0;
+    }
+
+    range_input.value = initial_vote_swing;
+    display.textContent = format_vote_swing(initial_vote_swing);
+
+    // Always update visualizations on initial load (even for 0.0)
+    // This ensures that if we were waiting_for_scenarios, we now populate everything
+    update_visualizations(initial_vote_swing);
+
+    // Add input listener to range slider for live updates
+    range_input.addEventListener('input', function(event) {
+        // Get the selected vote swing value
+        var vote_swing = parseFloat(event.target.value);
+
+        // Update the display
+        display.textContent = format_vote_swing(vote_swing);
+
+        // Update the URL hash
+        update_scenario_hash(vote_swing);
+
+        // Update all visualizations with the new vote swing
+        update_visualizations(vote_swing);
+    });
+}
+
 function clear_element(el)
 {
     while(el.lastChild)
@@ -382,42 +1045,278 @@ function get_seatshare_array(plan)
     };
 }
 
-function show_seatshare_graphic(plan, districts_table)
+function construct_districts_table(plan, districts_table)
 {
-    var seatshare_array = get_seatshare_array(plan),
-        tags = [],
-        last_color = false;
-    
-    if(seatshare_array === undefined)
-    {
+    // Build table structure using DOM APIs, without populating data
+    var table_array = plan_array(plan);
+    if (!table_array) {
         return;
     }
 
+    const has_incumbency = plan_has_incumbency(plan);
+
+    // Helper function to determine if column should be left-aligned
+    function should_align_left(col_index) {
+        return col_index == 1 && has_incumbency;
+    }
+
+    // Helper function to get tooltip for renamed headings
+    function get_tooltip(title) {
+        if (!renamedHeadingToOrigField.has(title)) return '';
+        return renamedHeadingToOrigField.get(title);
+    }
+
+    // Clear existing content
+    districts_table.innerHTML = '';
+
+    // Create table element with classes
+    const table = document.createElement('table');
+    table.className = 'table table-hover';
+    table.id = 'districts';
+
+    // Create thead
+    const thead = document.createElement('thead');
+    const header_row = document.createElement('tr');
+
+    for (var j = 0; j < table_array[0].length; j++) {
+        const heading_title = table_array[0][j];
+        if (heading_title == SHY_COLUMN) {
+            continue;
+        }
+
+        const th = document.createElement('th');
+        if (should_align_left(j)) {
+            th.className = 'ltxt';
+        }
+
+        const tooltip = get_tooltip(heading_title);
+        if (tooltip) {
+            th.title = tooltip;
+        }
+
+        // Use innerHTML for headers since they may contain HTML tags like <sup>
+        th.innerHTML = heading_title;
+        th.dataset.columnIndex = j;
+
+        // Mark Vote Swing column for show/hide toggling
+        if (heading_title === 'Vote Swing') {
+            th.dataset.columnName = 'Vote Swing';
+        }
+
+        header_row.appendChild(th);
+    }
+
+    thead.appendChild(header_row);
+    table.appendChild(thead);
+
+    // Create tbody
+    const tbody = document.createElement('tbody');
+
+    for (var i = 1; i < table_array.length; i++) {
+        const tr = document.createElement('tr');
+        tr.dataset.districtIndex = i - 1;
+
+        for (var j = 0; j < table_array[i].length; j++) {
+            const heading_title = table_array[0][j];
+            if (heading_title == SHY_COLUMN) {
+                continue;
+            }
+
+            const cell = j == 0 ? document.createElement('th') : document.createElement('td');
+            if (should_align_left(j)) {
+                cell.className = 'ltxt';
+            }
+
+            cell.dataset.columnIndex = j;
+
+            // Mark Vote Swing column for show/hide toggling
+            if (heading_title === 'Vote Swing') {
+                cell.dataset.columnName = 'Vote Swing';
+            }
+
+            tr.appendChild(cell);
+        }
+
+        tbody.appendChild(tr);
+    }
+
+    table.appendChild(tbody);
+    districts_table.appendChild(table);
+}
+
+function populate_districts_table(plan, districts_table)
+{
+    // Populate table cells with actual data
+    var table_array = plan_array(plan);
+    if (!table_array) {
+        return;
+    }
+
+    const tbody = districts_table.querySelector('tbody');
+    if (!tbody) {
+        return;
+    }
+
+    const rows = tbody.querySelectorAll('tr');
+
+    for (var i = 0; i < rows.length; i++) {
+        const tr = rows[i];
+        const table_row_index = i + 1; // +1 because table_array[0] is headers
+        const district_index = parseInt(tr.dataset.districtIndex);
+
+        // Determine row class and title
+        var row_class = 'no-votes';
+        var row_title = `District ${table_array[table_row_index][0]} has no votes and does not count toward partisan scores`;
+
+        // Check if any vote field has a value > 0
+        for (var j = 0; j < table_array[table_row_index].length; j++) {
+            for (var p in votesFieldToDisplayStr) {
+                if (table_array[0][j] == votesFieldToDisplayStr[p] && table_array[table_row_index][j] > 0) {
+                    row_class = 'has-votes';
+                    row_title = '';
+                }
+            }
+        }
+
+        // Check is_counted flag
+        if (plan.districts[district_index]['is_counted'] === false) {
+            row_class = 'no-votes';
+            row_title = `District ${table_array[table_row_index][0]} has insufficient votes and does not count toward partisan scores`;
+        }
+
+        tr.className = row_class;
+        tr.title = row_title;
+
+        // Populate cells
+        const cells = tr.querySelectorAll('td, th');
+        var cell_index = 0;
+
+        for (var j = 0; j < table_array[table_row_index].length; j++) {
+            const heading_title = table_array[0][j];
+            if (heading_title == SHY_COLUMN) {
+                continue;
+            }
+
+            var value;
+            var is_string = false;
+            if (typeof table_array[table_row_index][j] == 'number') {
+                value = nice_count(table_array[table_row_index][j]);
+            } else if (typeof table_array[table_row_index][j] == 'string') {
+                value = nice_string(table_array[table_row_index][j]);
+                is_string = true;
+            } else if (typeof table_array[table_row_index][j] == 'boolean') {
+                value = table_array[table_row_index][j] ? 'Yes' : 'No';
+            } else {
+                value = '???';
+            }
+
+            if (cells[cell_index]) {
+                // Use innerHTML for strings since nice_string() returns HTML entities
+                if (is_string) {
+                    cells[cell_index].innerHTML = value;
+                } else {
+                    cells[cell_index].textContent = value;
+                }
+            }
+            cell_index++;
+        }
+    }
+
+    // Show or hide the Vote Swing column based on whether all swings are 0.0
+    var all_swings_zero = true;
+    for (var i = 0; i < plan.districts.length; i++) {
+        if (plan.districts[i].vote_swing && plan.districts[i].vote_swing !== 0.0) {
+            all_swings_zero = false;
+            break;
+        }
+    }
+
+    var swing_cells = districts_table.querySelectorAll('[data-column-name="Vote Swing"]');
+    for (var i = 0; i < swing_cells.length; i++) {
+        swing_cells[i].style.display = all_swings_zero ? 'none' : '';
+    }
+}
+
+function construct_seatshare_graphic(plan, districts_table)
+{
+    if(!('Democratic Wins' in plan.districts[0].totals))
+    {
+        return null;
+    }
+
+    // Create container div
+    var container = document.createElement('div');
+    container.className = 'seatshare-graphic';
+
+    // Create span elements for each district (structure only)
+    for(var i = 0; i < plan.districts.filter((d) => (d['is_counted'] !== false)).length; i++)
+    {
+        var span = document.createElement('span');
+        span.className = 'seatshare-box';
+        span.dataset.seatIndex = i;
+        span.textContent = ' ';
+        container.appendChild(span);
+    }
+
+    // Create line break
+    container.appendChild(document.createElement('br'));
+
+    // Create text container for seat share vs vote share
+    var text_span = document.createElement('span');
+    text_span.className = 'seatshare-text';
+    container.appendChild(text_span);
+
+    // Insert after districts table
+    districts_table.parentNode.parentNode.insertBefore(container, districts_table.parentNode.nextSibling);
+
+    return container;
+}
+
+function populate_seatshare_graphic(plan)
+{
+    var container = document.querySelector('.seatshare-graphic');
+    if(!container) {
+        return;
+    }
+
+    var seatshare_array = get_seatshare_array(plan);
+    if(seatshare_array === undefined) {
+        return;
+    }
+
+    var spans = container.querySelectorAll('.seatshare-box');
+    var last_color = false;
+
+    // Update each seat box with colors and widths
     for(var i = 0; i < seatshare_array.colors.length; i++)
     {
         var color = seatshare_array.colors[i],
             gutter = (last_color && color != last_color) ? '3px' : '1px',
             width = `calc(${100/(seatshare_array.colors.length)}% - ${gutter})`,
-            last_color = color;
-        
+            background = color;
+
         if(color == LEAN_BLUE_COLOR_HEX) {
-            color += ' url(&quot;/static/lean-blue-pattern.png&quot;)';
+            background += ' url("/static/lean-blue-pattern.png")';
         } else if(color == LEAN_RED_COLOR_HEX) {
-            color += ' url(&quot;/static/lean-red-pattern.png&quot;)';
+            background += ' url("/static/lean-red-pattern.png")';
         }
-    
+
         if(seatshare_array.colors.length > 50)
         {
-            color += ' fixed';
+            background += ' fixed';
         }
 
-        tags.push(
-            `<span style="width:${width};margin-left:${gutter};background:${color};" class="seatshare-box"> </span>`
-        );
+        spans[i].style.width = width;
+        spans[i].style.marginLeft = gutter;
+        spans[i].style.background = background;
+
+        last_color = color;
     }
 
-    tags.push(`
-        <br>Predicted
+    // Update text with seat share and vote share percentages
+    var text_span = container.querySelector('.seatshare-text');
+    text_span.innerHTML = `
+        Predicted
         ${nice_round_percent(seatshare_array.seat_share)} D
         / ${nice_round_percent(1 - seatshare_array.seat_share)} R
         seat share across scenarios<sup>*</sup>
@@ -425,31 +1324,53 @@ function show_seatshare_graphic(plan, districts_table)
         ${nice_round_percent(seatshare_array.blue_votes / (seatshare_array.total_votes))} D
         / ${nice_round_percent(seatshare_array.red_votes / (seatshare_array.total_votes))} R
         vote share.
-        `);
-
-    svg_div = document.createElement('div');
-    svg_div.innerHTML = tags.join('');
-
-    // TODO: something more elegant than looking up two levels from the table
-    districts_table.parentNode.parentNode.insertBefore(svg_div, districts_table.parentNode.nextSibling);
+    `;
 }
 
-function show_efficiency_gap_score(plan, score_EG)
+function construct_efficiency_gap_score(score_EG)
+{
+    for(node = score_EG.firstChild; node = node.nextSibling; node)
+    {
+        if(node.nodeName == 'H3') {
+            // Add a span for the value (includes colon)
+            var value_span = document.createElement('span');
+            value_span.className = 'score-value';
+            value_span.dataset.metric = 'eg';
+            node.appendChild(value_span);
+
+        } else if(node.nodeName == 'DIV') {
+            // Mark for chart creation
+            node.dataset.metric = 'eg';
+            node.dataset.chartType = 'bellchart';
+
+        } else if(node.nodeName == 'P') {
+            // Mark for description population
+            node.dataset.metric = 'eg';
+            node.dataset.contentType = 'description';
+        }
+    }
+}
+
+function populate_efficiency_gap_score(plan, score_EG)
 {
     var summary_name = which_score_summary_name(plan),
         gap = plan.summary[summary_name],
-        gap_amount = nice_percent(Math.abs(gap)) + partisan_suffix(gap);
+        gap_amount = nice_percent(Math.abs(gap)),
+        gap_amount_suffixed = gap_amount + partisan_suffix(gap);
 
     for(node = score_EG.firstChild; node = node.nextSibling; node)
     {
         if(node.nodeName == 'H3') {
-            node.innerHTML += ': ' + gap_amount;
+            var value_span = node.querySelector('.score-value[data-metric="eg"]');
+            if(value_span) {
+                value_span.innerHTML = ': ' + gap_amount_suffixed;
+            }
 
-        } else if(node.nodeName == 'DIV') {
+        } else if(node.nodeName == 'DIV' && node.dataset.metric == 'eg') {
             drawBiasBellChart('eg', gap, node.id,
                 (plan.model ? plan.model.house : 'ushouse'), 'plan');
 
-        } else if(node.nodeName == 'P') {
+        } else if(node.nodeName == 'P' && node.dataset.metric == 'eg') {
             var win_party = (gap < 0 ? 'Republican' : 'Democratic'),
                 win_partisans = (gap < 0 ? 'Republicans' : 'Democrats'),
                 lose_party = (gap < 0 ? 'Democratic' : 'Republican');
@@ -483,21 +1404,49 @@ function show_efficiency_gap_score(plan, score_EG)
     }
 }
 
-function show_declination2_score(plan, score_DEC2)
+function construct_declination2_score(score_DEC2)
+{
+    for(node = score_DEC2.firstChild; node = node.nextSibling; node)
+    {
+        if(node.nodeName == 'H3') {
+            // Add a span for the value (includes colon)
+            var value_span = document.createElement('span');
+            value_span.className = 'score-value';
+            value_span.dataset.metric = 'd2';
+            node.appendChild(value_span);
+
+        } else if(node.nodeName == 'DIV') {
+            // Mark for chart creation
+            node.dataset.metric = 'd2';
+            node.dataset.chartType = 'bellchart';
+
+        } else if(node.nodeName == 'P') {
+            // Mark for description population
+            node.dataset.metric = 'd2';
+            node.dataset.contentType = 'description';
+        }
+    }
+}
+
+function populate_declination2_score(plan, score_DEC2)
 {
     var declination = plan.summary['Declination'],
-        dec2_amount = (Math.round(Math.abs(declination) * 100) / 100) + partisan_suffix(declination);
+        dec2_amount = (Math.round(Math.abs(declination) * 100) / 100),
+        dec2_amount_suffixed = dec2_amount + partisan_suffix(declination);
 
     for(node = score_DEC2.firstChild; node = node.nextSibling; node)
     {
         if(node.nodeName == 'H3') {
-            node.innerHTML += ': ' + dec2_amount;
+            var value_span = node.querySelector('.score-value[data-metric="d2"]');
+            if(value_span) {
+                value_span.innerHTML = ': ' + dec2_amount_suffixed;
+            }
 
-        } else if(node.nodeName == 'DIV') {
+        } else if(node.nodeName == 'DIV' && node.dataset.metric == 'd2') {
             drawBiasBellChart('d2', declination, node.id,
                 (plan.model ? plan.model.house : 'ushouse'), 'plan');
 
-        } else if(node.nodeName == 'P') {
+        } else if(node.nodeName == 'P' && node.dataset.metric == 'd2') {
             var win_party = (declination < 0 ? 'Republican' : 'Democratic'),
                 win_partisans = (declination < 0 ? 'Republicans' : 'Democrats'),
                 lose_party = (declination < 0 ? 'Democratic' : 'Republican');
@@ -524,21 +1473,60 @@ function show_declination2_score(plan, score_DEC2)
     }
 }
 
-function show_partisan_bias_score(plan, score_PB)
+function construct_partisan_bias_score(score_PB)
 {
+    for(node = score_PB.firstChild; node = node.nextSibling; node)
+    {
+        if(node.nodeName == 'H3') {
+            // Add a span for the value (includes colon)
+            var value_span = document.createElement('span');
+            value_span.className = 'score-value';
+            value_span.dataset.metric = 'pb';
+            node.appendChild(value_span);
+
+        } else if(node.nodeName == 'DIV') {
+            // Mark for chart creation
+            node.dataset.metric = 'pb';
+            node.dataset.chartType = 'bellchart';
+
+        } else if(node.nodeName == 'P') {
+            // Mark for description population
+            node.dataset.metric = 'pb';
+            node.dataset.contentType = 'description';
+        }
+    }
+}
+
+function populate_partisan_bias_score(plan, score_PB)
+{
+    // Check if vote shares are within 45-55% range
+    if (plan_voteshare(plan) >= 0.1) {
+        hide_score_with_reason(score_PB,
+            'The parties\' statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
+            + ' Partisan bias is shown only where the parties\' statewide vote shares fall between 45% and 55%.'
+            + ' Outside this range the metric\'s assumptions are not plausible.');
+        return;
+    }
+
     var bias = plan.summary['Partisan Bias'],
-        bias_amount = nice_percent(Math.abs(bias)) + partisan_suffix(bias);
+        bias_amount = nice_percent(Math.abs(bias)),
+        bias_amount_suffixed = bias_amount + partisan_suffix(bias);
 
     for(node = score_PB.firstChild; node = node.nextSibling; node)
     {
         if(node.nodeName == 'H3') {
-            node.innerHTML += ': ' + bias_amount;
+            var value_span = node.querySelector('.score-value[data-metric="pb"]');
+            if(value_span) {
+                value_span.innerHTML = ': ' + bias_amount_suffixed;
+            }
 
-        } else if(node.nodeName == 'DIV') {
+        } else if(node.nodeName == 'DIV' && node.dataset.metric == 'pb') {
+            // Show the DIV in case it was hidden by hide_score_with_reason
+            node.style.display = '';
             drawBiasBellChart('pb', bias, node.id,
                 (plan.model ? plan.model.house : 'ushouse'), 'plan');
 
-        } else if(node.nodeName == 'P') {
+        } else if(node.nodeName == 'P' && node.dataset.metric == 'pb') {
             var win_party = (bias < 0 ? 'Republicans' : 'Democrats'),
                 win_partisans = (bias < 0 ? 'Republicans' : 'Democrats');
 
@@ -575,9 +1563,18 @@ function hide_score_with_reason(score_node, reason)
 {
     for(node = score_node.firstChild; node = node.nextSibling; node)
     {
-        if(node.nodeName == 'DIV')
+        if(node.nodeName == 'H3')
         {
-            clear_element(node);
+            // Clear the score value from the title
+            var value_span = node.querySelector('.score-value');
+            if(value_span) {
+                value_span.innerHTML = '';
+            }
+
+        } else if(node.nodeName == 'DIV')
+        {
+            // Hide the chart DIV instead of clearing it, preserving the chart structure
+            node.style.display = 'none';
 
         } else if(node.nodeName == 'P') {
             clear_element(node);
@@ -586,21 +1583,60 @@ function hide_score_with_reason(score_node, reason)
     }
 }
 
-function show_mean_median_score(plan, score_MM)
+function construct_mean_median_score(score_MM)
 {
+    for(node = score_MM.firstChild; node = node.nextSibling; node)
+    {
+        if(node.nodeName == 'H3') {
+            // Add a span for the value (includes colon)
+            var value_span = document.createElement('span');
+            value_span.className = 'score-value';
+            value_span.dataset.metric = 'mm';
+            node.appendChild(value_span);
+
+        } else if(node.nodeName == 'DIV') {
+            // Mark for chart creation
+            node.dataset.metric = 'mm';
+            node.dataset.chartType = 'bellchart';
+
+        } else if(node.nodeName == 'P') {
+            // Mark for description population
+            node.dataset.metric = 'mm';
+            node.dataset.contentType = 'description';
+        }
+    }
+}
+
+function populate_mean_median_score(plan, score_MM)
+{
+    // Check if vote shares are within 45-55% range
+    if (plan_voteshare(plan) >= 0.1) {
+        hide_score_with_reason(score_MM,
+            'The parties\' statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
+            + ' The mean-median difference is shown only where the parties\' statewide vote shares fall between 45% and 55%.'
+            + ' Outside this range the metric\'s assumptions are not plausible.');
+        return;
+    }
+
     var diff = plan.summary['Mean-Median'],
-        diff_amount = nice_percent(Math.abs(diff)) + partisan_suffix(diff);
+        diff_amount = nice_percent(Math.abs(diff)),
+        diff_amount_suffixed = diff_amount + partisan_suffix(diff);
 
     for(node = score_MM.firstChild; node = node.nextSibling; node)
     {
         if(node.nodeName == 'H3') {
-            node.innerHTML += ': ' + diff_amount;
+            var value_span = node.querySelector('.score-value[data-metric="mm"]');
+            if(value_span) {
+                value_span.innerHTML = ': ' + diff_amount_suffixed;
+            }
 
-        } else if(node.nodeName == 'DIV') {
+        } else if(node.nodeName == 'DIV' && node.dataset.metric == 'mm') {
+            // Show the DIV in case it was hidden by hide_score_with_reason
+            node.style.display = '';
             drawBiasBellChart('mm', diff, node.id,
                 (plan.model ? plan.model.house : 'ushouse'), 'plan');
 
-        } else if(node.nodeName == 'P') {
+        } else if(node.nodeName == 'P' && node.dataset.metric == 'mm') {
             var win_party = (diff < 0 ? 'Republican' : 'Democrat'),
                 win_partisans = (diff < 0 ? 'Republicans' : 'Democrats');
 
@@ -633,28 +1669,17 @@ function show_mean_median_score(plan, score_MM)
     }
 }
 
-function show_sensitivity_test(plan, score_sense)
+function construct_sensitivity_test(score_sense)
 {
-    Highcharts.chart(score_sense, {
+    // Create chart structure with empty data initially
+    var chart = Highcharts.chart(score_sense, {
         chart: { type: 'line' },
         legend: { enabled: false },
         credits: { enabled: false },
         title: { text: null },
         series: [{
             name: 'Expected Efficiency Gap',
-            data: [
-                100 * plan.summary['Efficiency Gap +5 Dem'],
-                100 * plan.summary['Efficiency Gap +4 Dem'],
-                100 * plan.summary['Efficiency Gap +3 Dem'],
-                100 * plan.summary['Efficiency Gap +2 Dem'],
-                100 * plan.summary['Efficiency Gap +1 Dem'],
-                100 * plan.summary['Efficiency Gap'],
-                100 * plan.summary['Efficiency Gap +1 Rep'],
-                100 * plan.summary['Efficiency Gap +2 Rep'],
-                100 * plan.summary['Efficiency Gap +3 Rep'],
-                100 * plan.summary['Efficiency Gap +4 Rep'],
-                100 * plan.summary['Efficiency Gap +5 Rep']
-                ]
+            data: [] // Empty data initially
         }],
         xAxis: {
             categories: ['+5 D', '+4 D', '+3 D', '+2 D', '+1 D', '0', '+1 R', '+2 R', '+3 R', '+4 R', '+5 R'],
@@ -680,6 +1705,34 @@ function show_sensitivity_test(plan, score_sense)
             }
         }
     });
+
+    // Store chart reference for later population
+    score_sense._highchartsChart = chart;
+}
+
+function populate_sensitivity_test(plan, score_sense)
+{
+    var chart = score_sense._highchartsChart;
+    if(!chart) {
+        return;
+    }
+
+    var data = [
+        100 * plan.summary['Efficiency Gap +5 Dem'],
+        100 * plan.summary['Efficiency Gap +4 Dem'],
+        100 * plan.summary['Efficiency Gap +3 Dem'],
+        100 * plan.summary['Efficiency Gap +2 Dem'],
+        100 * plan.summary['Efficiency Gap +1 Dem'],
+        100 * plan.summary['Efficiency Gap'],
+        100 * plan.summary['Efficiency Gap +1 Rep'],
+        100 * plan.summary['Efficiency Gap +2 Rep'],
+        100 * plan.summary['Efficiency Gap +3 Rep'],
+        100 * plan.summary['Efficiency Gap +4 Rep'],
+        100 * plan.summary['Efficiency Gap +5 Rep']
+    ];
+
+    // Update chart data
+    chart.series[0].setData(data, true);
 }
 
 function show_message(text, score_section, message_section)
@@ -706,13 +1759,79 @@ function hide_message(score_section, message_section)
     message_section.style.display = 'none';
 }
 
-function show_metrics_table(plan, metrics_table)
+function construct_metrics_table(metrics_table)
+{
+    // Build table structure with all possible columns
+    var thead = document.createElement('thead');
+    var header_row = document.createElement('tr');
+
+    var headers = [
+        'Metric',
+        'Value',
+        'Favors Democrats in this % of Scenarios<sup>*</sup>',
+        'More Skewed than this % of Historical Plans<sup>‡</sup>',
+        'More Pro-Democratic than this % of Historical Plans<sup>‡</sup>'
+    ];
+
+    headers.forEach((header_text, idx) => {
+        var th = document.createElement('th');
+        th.innerHTML = header_text;
+        th.dataset.columnIndex = idx;
+        if(idx >= 3) {
+            th.dataset.percentRankColumn = 'true';
+        }
+        header_row.appendChild(th);
+    });
+
+    thead.appendChild(header_row);
+
+    // Build tbody with rows for each metric
+    var tbody = document.createElement('tbody');
+    var metrics = [
+        {name: 'Efficiency Gap', key: 'eg', url: 'eg_metric_url'},
+        {name: 'Declination', key: 'd2', url: 'd2_metric_url'},
+        {name: 'Partisan Bias', key: 'pb', url: 'pb_metric_url'},
+        {name: 'Mean-Median Difference', key: 'mm', url: 'mm_metric_url'}
+    ];
+
+    metrics.forEach((metric) => {
+        var row = document.createElement('tr');
+        row.dataset.metric = metric.key;
+
+        // Metric name cell
+        var th = document.createElement('th');
+        var link = document.createElement('a');
+        link.href = window[metric.url];
+        link.textContent = metric.name;
+        th.appendChild(link);
+        row.appendChild(th);
+
+        // Create data cells (value, positives, percentrank_abs, percentrank_rel)
+        for(var i = 0; i < 4; i++) {
+            var td = document.createElement('td');
+            td.dataset.columnIndex = i;
+            if(i >= 2) {
+                td.dataset.percentRankColumn = 'true';
+            }
+            row.appendChild(td);
+        }
+
+        tbody.appendChild(row);
+    });
+
+    metrics_table.appendChild(thead);
+    metrics_table.appendChild(tbody);
+}
+
+function populate_metrics_table(plan, metrics_table)
 {
     if(!('Efficiency Gap Absolute Percent Rank' in plan.summary))
     {
         metrics_table.parentNode.style.display = 'none';
         return;
     }
+
+    metrics_table.parentNode.style.display = 'block';
 
     var eg_summary_name = which_score_summary_name(plan),
         eg_value = plan.summary[eg_summary_name],
@@ -730,7 +1849,7 @@ function show_metrics_table(plan, metrics_table)
             ? (1 - plan.summary['Declination Relative Percent Rank'])
             : plan.summary['Declination Relative Percent Rank']);
 
-    if(plan_voteshare(plan) < .1 || location.hash.match(/\bshowall\b/)) {
+    if(plan_voteshare(plan) < .1) {
         var pb_value = plan.summary['Partisan Bias'],
             pb_win_party = (pb_value < 0 ? 'Republican' : 'Democratic'),
             pb_display = `${nice_percent(Math.abs(pb_value))} Pro-${pb_win_party}`,
@@ -758,99 +1877,75 @@ function show_metrics_table(plan, metrics_table)
             mmd_percentrank_abs = 'N/A',
             mmd_percentrank_rel = 'N/A';
     }
-    
-    if(plan.summary['Efficiency Gap Absolute Percent Rank'] === null) {
-        if(plan.summary['Declination Is Valid'] !== 0) {
-            var declination_row = `
-                <tr>
-                    <th><a href="${window.d2_metric_url}">Declination</a></th>
-                    <td>${Math.round(Math.abs(dec2_value) * 100)/100} Pro-${dec2_win_party}</td>
-                    <td>${nice_round_percent(dec2_positives)}</td>
-                </tr>
-            `;
-        } else {
-            var declination_row = '';
-        }
 
-        metrics_table.innerHTML = `
-            <thead>
-                <tr>
-                    <th>Metric</th>
-                    <th>Value</th>
-                    <th>Favors Democrats in this % of Scenarios<sup>*</sup></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <th><a href="${window.eg_metric_url}">Efficiency Gap</a></th>
-                    <td>${nice_percent(Math.abs(eg_value))} Pro-${eg_win_party}</td>
-                    <td>${nice_round_percent(eg_positives)}</td>
-                </tr>
-                ${declination_row}
-                <tr>
-                    <th><a href="${window.pb_metric_url}">Partisan Bias</a></th>
-                    <td>${pb_display}</td>
-                    <td>${pb_positives}</td>
-                </tr>
-                <tr>
-                    <th><a href="${window.mm_metric_url}">Mean-Median Difference</a></th>
-                    <td>${mmd_display}</td>
-                    <td>${mmd_positives}</td>
-                </tr>
-            </tbody>`;
+    // Determine if we show percent rank columns
+    var has_percent_rank = (plan.summary['Efficiency Gap Absolute Percent Rank'] !== null);
+
+    // Show/hide percent rank columns
+    metrics_table.querySelectorAll('[data-percent-rank-column]').forEach(el => {
+        el.style.display = has_percent_rank ? '' : 'none';
+    });
+
+    // Populate Efficiency Gap row
+    var eg_row = metrics_table.querySelector('tr[data-metric="eg"]');
+    var eg_cells = eg_row.querySelectorAll('td');
+    eg_cells[0].textContent = `${nice_percent(Math.abs(eg_value))} Pro-${eg_win_party}`;
+    eg_cells[1].textContent = nice_round_percent(eg_positives);
+    if(has_percent_rank) {
+        eg_cells[2].textContent = nice_round_percent(eg_percentrank_abs);
+        eg_cells[3].textContent = nice_round_percent(eg_percentrank_rel);
+    }
+
+    // Populate/hide Declination row
+    var d2_row = metrics_table.querySelector('tr[data-metric="d2"]');
+    if(plan.summary['Declination Is Valid'] !== 0) {
+        d2_row.style.display = '';
+        var d2_cells = d2_row.querySelectorAll('td');
+        d2_cells[0].textContent = `${Math.round(Math.abs(dec2_value) * 100)/100} Pro-${dec2_win_party}`;
+        d2_cells[1].textContent = nice_round_percent(dec2_positives);
+        if(has_percent_rank) {
+            d2_cells[2].textContent = nice_round_percent(dec2_percentrank_abs);
+            d2_cells[3].textContent = nice_round_percent(dec2_percentrank_rel);
+        }
     } else {
-        if(plan.summary['Declination Is Valid'] !== 0) {
-            var declination_row = `
-                <tr>
-                    <th><a href="${window.d2_metric_url}">Declination</a></th>
-                    <td>${Math.round(Math.abs(dec2_value) * 100)/100} Pro-${dec2_win_party}</td>
-                    <td>${nice_round_percent(dec2_positives)}</td>
-                    <td>${nice_round_percent(dec2_percentrank_abs)}</td>
-                    <td>${nice_round_percent(dec2_percentrank_rel)}</td>
-                </tr>
-            `;
-        } else {
-            var declination_row = '';
-        }
+        d2_row.style.display = 'none';
+    }
 
-        metrics_table.innerHTML = `
-            <thead>
-                <tr>
-                    <th>Metric</th>
-                    <th>Value</th>
-                    <th>Favors Democrats in this % of Scenarios<sup>*</sup></th>
-                    <th>More Skewed than this % of Historical Plans<sup>‡</sup></th>
-                    <th>More Pro-Democratic than this % of Historical Plans<sup>‡</sup></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <th><a href="${window.eg_metric_url}">Efficiency Gap</a></th>
-                    <td>${nice_percent(Math.abs(eg_value))} Pro-${eg_win_party}</td>
-                    <td>${nice_round_percent(eg_positives)}</td>
-                    <td>${nice_round_percent(eg_percentrank_abs)}</td>
-                    <td>${nice_round_percent(eg_percentrank_rel)}</td>
-                </tr>
-                ${declination_row}
-                <tr>
-                    <th><a href="${window.pb_metric_url}">Partisan Bias</a></th>
-                    <td>${pb_display}</td>
-                    <td>${pb_positives}</td>
-                    <td>${pb_percentrank_abs}</td>
-                    <td>${pb_percentrank_rel}</td>
-                </tr>
-                <tr>
-                    <th><a href="${window.mm_metric_url}">Mean-Median Difference</a></th>
-                    <td>${mmd_display}</td>
-                    <td>${mmd_positives}</td>
-                    <td>${mmd_percentrank_abs}</td>
-                    <td>${mmd_percentrank_rel}</td>
-                </tr>
-            </tbody>`;
+    // Populate Partisan Bias row
+    var pb_row = metrics_table.querySelector('tr[data-metric="pb"]');
+    var pb_cells = pb_row.querySelectorAll('td');
+    pb_cells[0].textContent = pb_display;
+    pb_cells[1].textContent = pb_positives;
+    if(has_percent_rank) {
+        pb_cells[2].textContent = pb_percentrank_abs;
+        pb_cells[3].textContent = pb_percentrank_rel;
+    }
+
+    // Populate Mean-Median row
+    var mm_row = metrics_table.querySelector('tr[data-metric="mm"]');
+    var mm_cells = mm_row.querySelectorAll('td');
+    mm_cells[0].textContent = mmd_display;
+    mm_cells[1].textContent = mmd_positives;
+    if(has_percent_rank) {
+        mm_cells[2].textContent = mmd_percentrank_abs;
+        mm_cells[3].textContent = mmd_percentrank_rel;
     }
 }
 
-function show_library_metadata(plan, metadata_el, geom_prefix)
+function construct_library_metadata(metadata_el)
+{
+    // The structure is already in HTML, just mark elements for population
+    for(node = metadata_el.firstChild; node = node.nextSibling; node)
+    {
+        if(node.nodeName == 'DIV' && node.className == 'link-grid') {
+            node.dataset.contentType = 'links';
+        } else if(node.nodeName == 'DIV' && node.className == 'notes') {
+            node.dataset.contentType = 'notes';
+        }
+    }
+}
+
+function populate_library_metadata(plan, metadata_el, geom_prefix)
 {
     var links = [
         {
@@ -884,17 +1979,17 @@ function show_library_metadata(plan, metadata_el, geom_prefix)
             alt: "link to a geojson download"
         },
     ];
-    
+
     for(node = metadata_el.firstChild; node = node.nextSibling; node)
     {
-        if(node.nodeName == 'DIV' && node.className == 'link-grid') {
+        if(node.nodeName == 'DIV' && node.dataset.contentType == 'links') {
             clear_element(node);
 
             for(var i = 0; i < links.length; i++)
             {
                 if(!links[i].href)
                     continue;
-                
+
                 var a = document.createElement('a');
                 a.href = links[i].href;
                 a.innerHTML = `
@@ -903,7 +1998,7 @@ function show_library_metadata(plan, metadata_el, geom_prefix)
                 `;
                 node.appendChild(a);
             }
-        } else if(node.nodeName == 'DIV' && node.className == 'notes') {
+        } else if(node.nodeName == 'DIV' && node.dataset.contentType == 'notes') {
             if(plan.library_metadata['notes']) {
                 node.innerHTML = plan.library_metadata['notes'];
             } else {
@@ -911,11 +2006,20 @@ function show_library_metadata(plan, metadata_el, geom_prefix)
             }
         }
     }
-    
+
     console.log(links);
 }
 
-function show_ftva_race_scores(plan, scores_FTVA)
+function construct_ftva_race_scores(scores_FTVA)
+{
+    // Mark each score element for later population
+    for(var i = 0; i < scores_FTVA.length; i++)
+    {
+        scores_FTVA[i].dataset.ftvaIndex = i;
+    }
+}
+
+function populate_ftva_race_scores(plan, scores_FTVA)
 {
     if('US President 2020 Efficiency Gap' in plan.summary)
     {
@@ -924,84 +2028,184 @@ function show_ftva_race_scores(plan, scores_FTVA)
         if('US President 2016 Efficiency Gap' in plan.summary) {
             ftva_races.push({office: 'U.S. President', year: '2016', gap: plan.summary['US President 2016 Efficiency Gap']});
         }
-        
+
         if('US Senate 2020 Efficiency Gap' in plan.summary) {
             ftva_races.push({office: 'U.S. Senate', year: '2020', gap: plan.summary['US Senate 2020 Efficiency Gap']});
         }
-        
+
         if('US Senate 2018 Efficiency Gap' in plan.summary) {
             ftva_races.push({office: 'U.S. Senate', year: '2018', gap: plan.summary['US Senate 2018 Efficiency Gap']});
         }
-        
+
         if('US Senate 2016 Efficiency Gap' in plan.summary) {
             ftva_races.push({office: 'U.S. Senate', year: '2016', gap: plan.summary['US Senate 2016 Efficiency Gap']});
         }
-        
+
         // We have space for no more than four FTVA races
         ftva_races = ftva_races.slice(0, 4);
-        
+
         for(var i = 0; i < ftva_races.length; i++)
         {
             var score_FTVA = scores_FTVA[i],
-                //summary_name = which_score_summary_name(plan),
                 gap = ftva_races[i].gap,
                 gap_amount = nice_percent(Math.abs(gap)) + partisan_suffix(gap),
                 win_party = (gap < 0 ? 'Republican' : 'Democratic'),
-                win_partisans = (gap < 0 ? 'Republicans' : 'Democrats'),
                 lose_party = (gap < 0 ? 'Democratic' : 'Republican');
 
             clear_element(score_FTVA);
+            score_FTVA.style.display = '';
 
             score_FTVA.innerHTML = `
                 <h5>${ftva_races[i].office} ${ftva_races[i].year}: ${gap_amount}</h5>
                 <p>
                 Under this plan, votes for the ${win_party}
-                candidate <!--for ${ftva_races[i].office} in
-                ${ftva_races[i].year}--> were inefficient at a rate
+                candidate were inefficient at a rate
                 ${gap_amount} lower than votes for the
                 ${lose_party} candidate.
                 </p>
                 `;
-
-            /*
-            for(node = score_FTVA.firstChild; node = node.nextSibling; node)
-            {
-                if(node.nodeName == 'H3') {
-                    node.innerHTML = `${ftva_races[i].office} ${ftva_races[i].year}: ${gap_amount}`;
-
-                } else if(node.nodeName == 'DIV') {
-                    drawBiasBellChart('ftva', gap, node.id,
-                        (plan.model ? plan.model.house : 'ushouse'), 'plan');
-
-                } else if(node.nodeName == 'P') {
-                    var win_party = (gap < 0 ? 'Republican' : 'Democratic'),
-                        win_partisans = (gap < 0 ? 'Republicans' : 'Democrats'),
-                        lose_party = (gap < 0 ? 'Democratic' : 'Republican');
-
-                    clear_element(node);
-        
-                    node.innerHTML = `
-                        Under this plan, votes for the ${win_party}
-                        candidate for ${ftva_races[i].office} in
-                        ${ftva_races[i].year} were inefficient at a rate
-                        ${gap_amount} lower than votes for the
-                        ${lose_party} candidate.
-                        `;
-                }
-            }
-            */
         }
 
+        // Hide unused score elements
         for(var j = i; j < scores_FTVA.length; j++)
         {
             scores_FTVA[j].style.display = 'none';
         }
     } else {
+        // Hide all FTVA sections if no data
         for(var i = 0; i < scores_FTVA.length; i++)
         {
             scores_FTVA[i].parentNode.style.display = 'none';
         }
     }
+}
+
+function construct_plan_map(data, div, plan, table, waiting_for_scenarios)
+{
+    function district_popup_content(layer)
+    {
+        var index = data.features.indexOf(layer.feature),
+            incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'},
+            has_incumbency = plan_has_incumbency(plan);
+
+        if(has_incumbency) {
+            return 'District ' + (index + 1) + '<br>' + incumbency[plan.incumbents[index]];
+        }
+
+        return 'District ' + (index + 1);
+    }
+
+    var geojson = L.geoJSON(data, {
+        style: function(feature)
+        {
+            var district = plan.districts[data.features.indexOf(feature)];
+            return { weight: 2, fillOpacity: .5, color: which_district_color(district, plan) };
+        }
+        }).bindPopup(district_popup_content);
+
+
+    // On map layer hover: highlight associated table rows
+    function on_geojson_mouse_event(evtdata) {
+        const should_apply_highlight = evtdata.type === 'mouseover';
+        const index = data.features.indexOf(evtdata.layer.feature);
+        const tableRowEl = $('table tbody tr').get(index);
+        tableRowEl.classList.toggle('highlighted', should_apply_highlight);
+    }
+    geojson.on('mouseover', on_geojson_mouse_event);
+    geojson.on('mouseout', on_geojson_mouse_event);
+
+
+    // On table row hover: highlight map district
+    table.querySelectorAll('tbody tr').forEach((elem, j) => {
+        const on_tr_mouse_event = e => {
+            const should_apply_highlight = e.type === 'mouseover';
+            const matched_feature = data.features[j];
+            const layer = Object.values(geojson._layers).find(l => l.feature === matched_feature);
+            const path_elem = layer['_path'];
+            path_elem.classList.toggle('highlight', should_apply_highlight);
+        };
+        elem.addEventListener('mouseover', on_tr_mouse_event);
+        elem.addEventListener('mouseout', on_tr_mouse_event);
+    });
+
+    console.log('GeoJSON bounds:', geojson.getBounds());
+
+    //
+    var show_leans = (typeof plan.districts[0].totals['Democratic Wins'] === 'number');
+    add_map_pattern_support(show_leans);
+
+    // Initialize the map on the passed div in the middle of the ocean
+    var map = L.map(div, {
+        scrollWheelZoom: false,
+        zoomControl: false,
+        center: [0, 0],
+        zoom: 8
+    });
+
+    var pane = map.createPane('labels');
+    pane.style.zIndex = 650; // http://leafletjs.com/examples/map-panes/
+    pane.style.pointerEvents = 'none';
+
+    // Add Toner tiles for base map
+    L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy;<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy;<a href="https://carto.com/attribution">CARTO</a>',
+        maxZoom: 18
+    }).addTo(map);
+
+    // Add a GeoJSON layer and fit it into view
+    geojson.addTo(map);
+    if(plan.model.state == 'AK') {
+        map.fitBounds(L.latLngBounds(L.latLng(54.6, -128.8), L.latLng(71.2, -174.1)));
+    } else if(plan.model.state == 'HI') {
+        map.fitBounds(L.latLngBounds(L.latLng(18.6, -154.3), L.latLng(22.5, -160.2)));
+    } else {
+        map.fitBounds(geojson.getBounds());
+    }
+
+    // Add Toner label tiles for base map
+    L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy;<a href="http://stamen.com/">Stamen</a>, &copy;<a href="http://www.stadiamaps.com/">Stadia</a>',
+        pane: 'labels',
+        maxZoom: 18
+    }).addTo(map);
+
+    map.addControl(L.control.zoom({'position': 'topright'}));
+    map.addControl(new L.Control.PartyLegend({'position': 'topleft'}));
+
+    // Store references for later updates
+    div._geojson_layer = geojson;
+    div._geojson_data = data;
+    div._leaflet_map = map;
+
+    // Populate with initial plan data (unless waiting for scenarios)
+    if (!waiting_for_scenarios) {
+        populate_plan_map(plan, div);
+    }
+}
+
+function populate_plan_map(plan, div)
+{
+    // NOTE: For future enhancement, if we want to add scenario-dependent data to popups
+    // (e.g., "Democratic Win Probability: 73%"), we would update popup content here
+    // using layer.getPopup().setContent(newContent) or layer.bindPopup(newContent).
+    // Currently, popups only show district number and incumbent status, which are
+    // scenario-independent, so they don't need updates.
+
+    var geojson = div._geojson_layer;
+    var data = div._geojson_data;
+
+    if (!geojson || !data) {
+        console.warn('Map not yet constructed, skipping populate');
+        return;
+    }
+
+    // Update district colors based on current plan data
+    Object.values(geojson._layers).forEach(function(layer) {
+        var index = data.features.indexOf(layer.feature);
+        var district = plan.districts[index];
+        var color = which_district_color(district, plan);
+        layer.setStyle({ color: color, fillOpacity: .5, weight: 2 });
+    });
 }
 
 function update_heading_titles(head)
@@ -1380,7 +2584,7 @@ function plan_array(plan)
                 flip_chance = flippy_colors.indexOf(which_district_color(plan.districts[j], plan)) != -1;
                 current_row.push(flip_chance);
             }
-        } else if(field == 'Vote Swing' && !has_nonzero_vote_swings) {
+        } else if(field == 'Vote Swing' && field_missing) {
             continue;
         }
 
@@ -1396,7 +2600,7 @@ function plan_array(plan)
             } else if('compactness' in plan.districts[j] && field in plan.districts[j].compactness) {
                 current_row.push(plan.districts[j].compactness[field]);
 
-            } else if('vote_swing' in plan.districts[j] && field == 'Vote Swing' && has_nonzero_vote_swings) {
+            } else if('vote_swing' in plan.districts[j] && field == 'Vote Swing') {
                 current_row.push(plan.districts[j].vote_swing);
             }
         }
@@ -1558,14 +2762,15 @@ function plan_has_incumbency(plan)
 function start_load_plan_polling(url, message_section, score_section,
     description_el, metadata_el, model_link, model_footnote, model_url_pattern,
     districts_table, metrics_table, score_EG, score_PB, score_MM, score_DEC2,
-    score_sense, scores_FTVA, text_url, text_link, geom_prefix, map_div, seat_count)
+    score_sense, scores_FTVA, text_url, text_link, geom_prefix, map_div, seat_count,
+    scenario_adjustments_form)
 {
     const make_xhr = () => {
         load_plan_score(url, message_section, score_section,
             description_el, metadata_el, model_link, model_footnote, model_url_pattern,
             districts_table, metrics_table, score_EG, score_PB, score_MM,
             score_DEC2, score_sense, scores_FTVA, text_url, text_link, geom_prefix, map_div,
-            seat_count, xhr_retry_callback);
+            seat_count, scenario_adjustments_form, xhr_retry_callback);
     };
 
     const xhr_retry_callback = () => {
@@ -1582,7 +2787,7 @@ function load_plan_score(url, message_section, score_section,
     description_el, metadata_el, model_link, model_footnote, model_url_pattern,
     districts_table, metrics_table, score_EG, score_PB, score_MM, score_DEC2,
     score_sense, scores_FTVA, text_url, text_link, geom_prefix, map_div, seat_count,
-    xhr_retry_callback)
+    scenario_adjustments_form, xhr_retry_callback)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -1601,6 +2806,26 @@ function load_plan_score(url, message_section, score_section,
             return;
         }
 
+        // Check if we should wait for scenarios before populating
+        // Only wait if hash contains a non-default value (not 0.0)
+        var initial_vote_swing = parse_scenario_hash();
+        var waiting_for_scenarios = (
+            plan.scenarios !== undefined &&
+            initial_vote_swing !== null &&
+            initial_vote_swing !== 0.0
+        );
+
+        // Set up form visibility based on hash and availability
+        setup_form_visibility_listener(scenario_adjustments_form, plan);
+
+        // Immediately kick off scenario loading if available and hash present
+        if (plan.scenarios !== undefined && has_scenario_hash()) {
+            // Add disabled class while loading scenarios
+            scenario_adjustments_form.classList.add('scenario-adjustments-disabled');
+
+            load_plan_scenarios(geom_prefix + plan.scenarios.replace(/^\//, ''), plan, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA);
+        }
+
         // Plan is done parsing and we can render the page
         hide_message(score_section, message_section);
 
@@ -1611,6 +2836,7 @@ function load_plan_score(url, message_section, score_section,
             const desc_el = document.createElement('h1');
             desc_el.textContent = plan.description;
             description_el.append(desc_el);
+            document.title = document.title + ' :: ' + plan.description;
         }
 
         const hr = document.createElement('hr');
@@ -1654,82 +2880,13 @@ function load_plan_score(url, message_section, score_section,
         }
 
         // Build the results table
-
-        var table_array = plan_array(plan),
-            tags, value;
-        const has_incumbency = plan_has_incumbency(plan);
-
-        function maybeAlignLeft(j) {
-            return j == 1 && has_incumbency ? 'class="ltxt"' : '';
+        construct_districts_table(plan, districts_table);
+        construct_seatshare_graphic(plan, districts_table);
+        if (!waiting_for_scenarios) {
+            populate_districts_table(plan, districts_table);
+            populate_seatshare_graphic(plan);
         }
 
-        // If we shorted the display of this heading, add a tooltip with the expanded version.
-        function tooltip(title) {
-            if (!renamedHeadingToOrigField.has(title)) return '';
-            return `title="${renamedHeadingToOrigField.get(title)}"`;
-        }
-
-        tags = ['<thead>', '<tr>'];
-        for(var j = 0; j < table_array[0].length; j++)
-        {
-            const headingTitle = table_array[0][j];
-            if(headingTitle == SHY_COLUMN)
-            {
-                continue;
-            }
-            tags = tags.concat([`<th ${maybeAlignLeft(j)} ${tooltip(headingTitle)}>`, headingTitle, '</th>']);
-        }
-        tags = tags.concat(['</tr>', '</thead>', '<tbody>']);
-        for(var i = 1; i < table_array.length; i++)
-        {
-            var row_class = 'no-votes',
-                row_title = `District ${table_array[i][0]} has no votes and does not count toward partisan scores`;
-            for(var j = 0; j < table_array[i].length; j++)
-            {
-                for(var p in votesFieldToDisplayStr)
-                {
-                    if(table_array[0][j] == votesFieldToDisplayStr[p] && table_array[i][j] > 0)
-                    {
-                        row_class = 'has-votes';
-                        row_title = '';
-                    }
-                }
-            }
-            
-            if(plan.districts[i - 1]['is_counted'] === false)
-            {
-                row_class = 'no-votes';
-                row_title = `District ${table_array[i][0]} has insufficient votes and does not count toward partisan scores`;
-            }
-            
-            tags = tags.concat([`<tr class="${row_class}" title="${row_title}">`]);
-            for(var j = 0; j < table_array[i].length; j++)
-            {
-                const headingTitle = table_array[0][j];
-                if(headingTitle == SHY_COLUMN)
-                {
-                    continue;
-                }
-                if(typeof table_array[i][j] == 'number') {
-                    value = nice_count(table_array[i][j]);
-                } else if(typeof table_array[i][j] == 'string') {
-                    value = nice_string(table_array[i][j]);
-                } else if(typeof table_array[i][j] == 'boolean') {
-                    value = table_array[i][j] ? 'Yes' : 'No';
-                } else {
-                    value = '???';
-                }
-                tags = j == 0
-                  ? tags.concat([`<th ${maybeAlignLeft(j)}>`, value, '</th>'])
-                  : tags.concat([`<td ${maybeAlignLeft(j)}>`, value, '</td>']);
-            }
-            tags = tags.concat(['</tr>']);
-        }
-
-        tags = tags.concat(['</tbody>']);
-        districts_table.innerHTML = tags.join('');
-        show_seatshare_graphic(plan, districts_table);
-        
         text_link.href = text_url;
 
         if(plan.districts)
@@ -1745,13 +2902,13 @@ function load_plan_score(url, message_section, score_section,
                 console.log(seat_count.parentNode.style.display = 'block');
             }
         }
-        
-        // Populate scores.
-        show_efficiency_gap_score(plan, score_EG);
-        show_sensitivity_test(plan, score_sense);
+
+        // Construct and populate scores.
+        construct_efficiency_gap_score(score_EG);
+        construct_sensitivity_test(score_sense);
 
         if('Declination' in plan.summary && plan.summary['Declination Is Valid'] !== 0) {
-            show_declination2_score(plan, score_DEC2);
+            construct_declination2_score(score_DEC2);
         } else if('Declination' in plan.summary) {
             hide_score_with_reason(score_DEC2,
                 'Declination is only shown where both parties each win one or more'
@@ -1761,31 +2918,52 @@ function load_plan_score(url, message_section, score_section,
                 'We were not yet calculating declination at the time that we scored this plan.');
         }
 
-        if(plan_voteshare(plan) < .1 || location.hash.match(/\bshowall\b/)) {
-            show_partisan_bias_score(plan, score_PB);
-            show_mean_median_score(plan, score_MM);
+        if(plan_voteshare(plan) < .1) {
+            construct_partisan_bias_score(score_PB);
+            construct_mean_median_score(score_MM);
         } else {
             hide_score_with_reason(score_PB,
-                'The parties’ statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
-                + ' Partisan bias is shown only where the parties’ statewide vote shares fall between 45% and 55%.'
-                + ' Outside this range the metric’s assumptions are not plausible.');
+                'The parties\' statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
+                + ' Partisan bias is shown only where the parties\' statewide vote shares fall between 45% and 55%.'
+                + ' Outside this range the metric\'s assumptions are not plausible.');
             hide_score_with_reason(score_MM,
-                'The parties’ statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
-                + ' The mean-median difference is shown only where the parties’ statewide vote shares fall between 45% and 55%.'
-                + ' Outside this range the metric’s assumptions are not plausible.');
+                'The parties\' statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
+                + ' The mean-median difference is shown only where the parties\' statewide vote shares fall between 45% and 55%.'
+                + ' Outside this range the metric\'s assumptions are not plausible.');
         }
 
-        show_metrics_table(plan, metrics_table);
-        show_ftva_race_scores(plan, scores_FTVA);
-        
+        construct_metrics_table(metrics_table);
+        construct_ftva_race_scores(scores_FTVA);
+
+        if (!waiting_for_scenarios) {
+            populate_efficiency_gap_score(plan, score_EG);
+            populate_sensitivity_test(plan, score_sense);
+
+            if('Declination' in plan.summary && plan.summary['Declination Is Valid'] !== 0) {
+                populate_declination2_score(plan, score_DEC2);
+            }
+
+            if(plan_voteshare(plan) < .1) {
+                populate_partisan_bias_score(plan, score_PB);
+                populate_mean_median_score(plan, score_MM);
+            }
+
+            populate_metrics_table(plan, metrics_table);
+            populate_ftva_race_scores(plan, scores_FTVA);
+        }
+
         if('library_metadata' in plan && plan['library_metadata']) {
-            show_library_metadata(plan, metadata_el, geom_prefix);
+            construct_library_metadata(metadata_el);
+            if (!waiting_for_scenarios) {
+                populate_library_metadata(plan, metadata_el, geom_prefix);
+            }
         } else {
             metadata_el.style.display = 'none';
         }
 
-        // Go on to load the map.
-        load_plan_map(geom_prefix + plan.geometry_key, map_div, plan, districts_table);
+        // Go on to load the map (construct_plan_map includes populate_plan_map call).
+        // Note: The map's populate call is inside construct_plan_map, so we need special handling.
+        load_plan_map(geom_prefix + plan.geometry_key, map_div, plan, districts_table, waiting_for_scenarios);
     }
 
     request.onload = function()
@@ -1813,103 +2991,32 @@ function load_plan_score(url, message_section, score_section,
     request.send();
 }
 
-function load_plan_map(url, div, plan, table)
+function load_plan_scenarios(url, plan, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
 
-    function on_loaded_geojson(data)
+    request.onload = function()
     {
-        function district_popup_content(layer)
+        if(request.status >= 200 && request.status < 400)
         {
-            var index = data.features.indexOf(layer.feature),
-                incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'},
-                has_incumbency = plan_has_incumbency(plan);
-
-            if(has_incumbency) {
-                return 'District ' + (index + 1) + '<br>' + incumbency[plan.incumbents[index]];
-            }
-
-            return 'District ' + (index + 1);
+            // Returns a scenarios dictionary
+            var data = JSON.parse(request.responseText);
+            console.log('Loaded scenarios:', data);
+            adjust_scenario_stats(data);
+            console.log('New scenarios:', data);
+            setup_scenario_interactivity(plan, data, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA);
         }
+    };
 
-        var geojson = L.geoJSON(data, {
-            style: function(feature)
-            {
-                var district = plan.districts[data.features.indexOf(feature)];
-                return { weight: 2, fillOpacity: .5, color: which_district_color(district, plan) };
-            }
-            }).bindPopup(district_popup_content);
+    request.onerror = function() { /* There was a connection error of some sort */ };
+    request.send();
+}
 
-
-        // On map layer hover: highlight associated table rows
-        function on_geojson_mouse_event(evtdata) {
-            const should_apply_highlight = evtdata.type === 'mouseover';
-            const index = data.features.indexOf(evtdata.layer.feature);
-            const tableRowEl = $('table tbody tr').get(index);
-            tableRowEl.classList.toggle('highlighted', should_apply_highlight);
-        }
-        geojson.on('mouseover', on_geojson_mouse_event);
-        geojson.on('mouseout', on_geojson_mouse_event);
-
-
-        // On table row hover: highlight map district
-        table.querySelectorAll('tbody tr').forEach((elem, j) => {
-            const on_tr_mouse_event = e => {
-                const should_apply_highlight = e.type === 'mouseover';
-                const matched_feature = data.features[j];
-                const layer = Object.values(geojson._layers).find(l => l.feature === matched_feature);
-                const path_elem = layer['_path'];
-                path_elem.classList.toggle('highlight', should_apply_highlight);
-            };
-            elem.addEventListener('mouseover', on_tr_mouse_event);
-            elem.addEventListener('mouseout', on_tr_mouse_event);
-        });
-
-        console.log('GeoJSON bounds:', geojson.getBounds());
-
-        //
-        var show_leans = (typeof plan.districts[0].totals['Democratic Wins'] === 'number');
-        add_map_pattern_support(show_leans);
-
-        // Initialize the map on the passed div in the middle of the ocean
-        var map = L.map(div, {
-            scrollWheelZoom: false,
-            zoomControl: false,
-            center: [0, 0],
-            zoom: 8
-        });
-
-        var pane = map.createPane('labels');
-        pane.style.zIndex = 650; // http://leafletjs.com/examples/map-panes/
-        pane.style.pointerEvents = 'none';
-
-        // Add Toner tiles for base map
-        L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy;<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy;<a href="https://carto.com/attribution">CARTO</a>',
-            maxZoom: 18
-        }).addTo(map);
-
-        // Add a GeoJSON layer and fit it into view
-        geojson.addTo(map);
-        if(plan.model.state == 'AK') {
-            map.fitBounds(L.latLngBounds(L.latLng(54.6, -128.8), L.latLng(71.2, -174.1)));
-        } else if(plan.model.state == 'HI') {
-            map.fitBounds(L.latLngBounds(L.latLng(18.6, -154.3), L.latLng(22.5, -160.2)));
-        } else {
-            map.fitBounds(geojson.getBounds());
-        }
-
-        // Add Toner label tiles for base map
-        L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_labels/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy;<a href="http://stamen.com/">Stamen</a>, &copy;<a href="http://www.stadiamaps.com/">Stadia</a>',
-            pane: 'labels',
-            maxZoom: 18
-        }).addTo(map);
-
-        map.addControl(L.control.zoom({'position': 'topright'}));
-        map.addControl(new L.Control.PartyLegend({'position': 'topleft'}));
-    }
+function load_plan_map(url, div, plan, table, waiting_for_scenarios)
+{
+    var request = new XMLHttpRequest();
+    request.open('GET', url, true);
 
     request.onload = function()
     {
@@ -1918,7 +3025,7 @@ function load_plan_map(url, div, plan, table)
             // Returns a GeoJSON dictionary
             var data = JSON.parse(request.responseText);
             console.log('Loaded map:', data);
-            on_loaded_geojson(data);
+            construct_plan_map(data, div, plan, table, waiting_for_scenarios);
         }
     };
 
@@ -2131,6 +3238,18 @@ if(typeof module !== 'undefined' && module.exports)
         update_acs2016_percentages,
         update_cvap2015_percentages,
         update_heading_titles,
+        adjust_scenario_stats,
+        create_scenario_plan,
+        swing_vote,
+        calculate_EG,
+        calculate_MMD,
+        calculate_PB,
+        calculate_D2,
+        calculate_mean,
+        calculate_stdev,
+        calculate_positives,
+        percentrank_abs,
+        percentrank_rel,
         SHY_COLUMN,
     };
 }

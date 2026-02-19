@@ -3,6 +3,11 @@ import os
 import urllib.parse
 import markdown
 import hashlib
+import gzip
+import csv
+import json
+import random
+import statistics
 from .. import data, constants
 
 MODELS_BASEDIR = os.path.join(os.path.dirname(__file__), 'models')
@@ -62,14 +67,71 @@ def get_annotate():
         version_parameters=data.VERSION_PARAMETERS,
     )
 
+def get_gaussian_randoms():
+    ''' Get a deterministic list of 500 gaussian random values
+
+        Adjust output of random.gauss() so that mean and stdev are (0.0, 1.0)
+    '''
+    random.seed(0)
+    raw_values = [round(random.gauss(0, 1), 3) for _ in range(500)]
+    raw_mean, raw_stdev = statistics.mean(raw_values), statistics.stdev(raw_values)
+    return [(raw_value - raw_mean) / raw_stdev for raw_value in raw_values]
+
+def get_historical_percentrank_data():
+    ''' Extract historical plan metrics for percentrank calculations.
+
+        Reads the three bias CSV files and returns a dict with sorted arrays of
+        metric values for each house type, suitable for frontend percentrank
+        calculations. Values are rounded to 4 decimal places and sorted for
+        efficient percentrank lookups.
+    '''
+    model_dir = os.path.join(os.path.dirname(__file__), '..', 'model')
+    house_files = {
+        'ushouse': 'bias_ushouse.csv.gz',
+        'statehouse': 'bias_statehouse.csv.gz',
+        'statesenate': 'bias_statesenate.csv.gz',
+    }
+
+    # Columns we need from the CSV files
+    columns_needed = ['eg_adj_avg', 'bias_avg', 'mmd_avg', 'dec2_avg']
+
+    result = {}
+
+    for house, filename in house_files.items():
+        filepath = os.path.join(model_dir, filename)
+        house_data = {col: [] for col in columns_needed}
+
+        with gzip.open(filepath, 'rt') as file:
+            reader = csv.DictReader(file)
+            for row in reader:
+                for col in columns_needed:
+                    if row[col]:
+                        try:
+                            house_data[col].append(round(float(row[col]), 3))
+                        except ValueError:
+                            pass
+
+        # Sort and sample each array for efficient percentrank calculations
+        for col, col_data in house_data.items():
+            step = len(col_data) // 100 # Aim for ~100 results, still valid for percentrank
+            house_data[col] = sorted(col_data)[::step]
+
+        result[house] = house_data
+
+    return result
+
 @app.route('/plan.html')
 def get_plan():
     data_url_pattern = get_data_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
     geom_url_prefix = constants.S3_URL_PATTERN.format(k='', b=flask.current_app.config['PLANSCORE_S3_BUCKET'])
     text_url_pattern = get_text_url_pattern(flask.current_app.config['PLANSCORE_S3_BUCKET'])
+    historical_percentrank = get_historical_percentrank_data()
+    gaussian_randoms = get_gaussian_randoms()
     return flask.render_template('plan.html',
         data_url_pattern=data_url_pattern, geom_url_prefix=geom_url_prefix,
         text_url_pattern=text_url_pattern,
+        gaussian_randoms_json=json.dumps(gaussian_randoms),
+        historical_percentrank_json=json.dumps(historical_percentrank),
         planscore_website_base=flask.current_app.config['PLANSCORE_WEBSITE_BASE'].rstrip('/'))
 
 @app.route('/models/')

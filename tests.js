@@ -2,6 +2,31 @@ assert = require('assert');
 plan = require('./planscore/website/static/plan.js');
 annotate_new = require('./planscore/website/static/annotate-new.js');
 
+// Mock gaussian randoms for testing
+global.GAUSSIAN_RANDOMS = [1.647, -1.307, -0.401, 0.925, -0.827, 0.366, 0.684, -0.593, -1.197, 0.702];
+
+// Mock historical percentrank data for testing
+global.HISTORICAL_PERCENTRANK_DATA = {
+    ushouse: {
+        eg_adj_avg: [-0.15, -0.10, -0.05, 0.00, 0.05, 0.10, 0.15],
+        bias_avg: [-0.12, -0.08, -0.04, 0.00, 0.04, 0.08, 0.12],
+        mmd_avg: [-0.20, -0.10, 0.00, 0.10, 0.20],
+        dec2_avg: [-0.50, -0.25, 0.00, 0.25, 0.50]
+    },
+    statehouse: {
+        eg_adj_avg: [-0.20, -0.15, -0.10, -0.05, 0.00, 0.05, 0.10, 0.15, 0.20],
+        bias_avg: [-0.15, -0.10, -0.05, 0.00, 0.05, 0.10, 0.15],
+        mmd_avg: [-0.25, -0.15, -0.05, 0.05, 0.15, 0.25],
+        dec2_avg: [-0.60, -0.40, -0.20, 0.00, 0.20, 0.40, 0.60]
+    },
+    statesenate: {
+        eg_adj_avg: [-0.18, -0.12, -0.06, 0.00, 0.06, 0.12, 0.18],
+        bias_avg: [-0.14, -0.09, -0.04, 0.00, 0.04, 0.09, 0.14],
+        mmd_avg: [-0.22, -0.11, 0.00, 0.11, 0.22],
+        dec2_avg: [-0.55, -0.30, 0.00, 0.30, 0.55]
+    }
+};
+
 // Object.entries() polyfill for circle-ci machines with Node 6
 if (!Object.entries) {
     Object.entries = function (obj) {
@@ -25,6 +50,8 @@ var NC_index = require('./data/sample-NC-1-992/index.json'),
     NC_2019_incumbency = require('./data/sample-NC2019/index-incumbency.json'),
     NC_2020 = require('./data/sample-NC2020/index.json'),
     NC_2020_unified = require('./data/sample-NC-unified/index.json'),
+    NC_2025_index = require('./data/sample-NC2025/index.json'),
+    NC_2025_scenarios = require('./data/sample-NC2025/scenarios.json'),
     FL_2020_declination = require('./data/sample-FL-declination/index.json'),
     CT_2021_water_district = require('./data/sample-CT-mostly-water-district/index.json'),
     MS_zero_vote_swings = require('./data/sample-MS-zero-vote-swings/index.json'),
@@ -401,7 +428,7 @@ assert.deepEqual(plan_array10[0],
     ['District', 'Candidate Scenario', 'Pop. 2020', 'PlanScore:ShyColumn',
     'Hispanic CVAP 2023', 'Non-Hisp. Black CVAP 2023', 'Non-Hisp. Asian CVAP 2023',
     'Non-Hisp. Native CVAP 2023', 'Chance of 1+ Flips<sup>†</sup>', 'Chance of Democratic Win',
-    'Predicted Vote Shares', 'Harris (D) 2024', 'Trump (R) 2024', 'PlanScore:ShyColumn',
+    'Predicted Vote Shares', 'Vote Swing', 'Harris (D) 2024', 'Trump (R) 2024', 'PlanScore:ShyColumn',
     'PlanScore:ShyColumn', 'PlanScore:ShyColumn', 'PlanScore:ShyColumn'],
     'Should pick out the right column names');
 
@@ -615,6 +642,111 @@ assert.equal(plan.partisan_suffix(0), '');
 assert.equal(plan.partisan_suffix(1), '&nbsp;D');
 assert.equal(plan.partisan_suffix(-1), '&nbsp;R');
 
+// Test swing_vote helper function
+var swung1 = plan.swing_vote([1, 2, 3], [3, 2, 1], 0);
+assert.equal(swung1[0][0], 1, 'Zero swing should not change red votes');
+assert.equal(swung1[1][0], 3, 'Zero swing should not change blue votes');
+
+var swung2 = plan.swing_vote([1, 2, 3], [3, 2, 1], 0.1);
+assert.equal(Math.round(swung2[0][0] * 10) / 10, 0.6, 'Positive swing should decrease red votes');
+assert.equal(Math.round(swung2[1][0] * 10) / 10, 3.4, 'Positive swing should increase blue votes');
+
+var swung3 = plan.swing_vote([1, 2, 3], [3, 2, 1], -0.1);
+assert.equal(Math.round(swung3[0][0] * 10) / 10, 1.4, 'Negative swing should increase red votes');
+assert.equal(Math.round(swung3[1][0] * 10) / 10, 2.6, 'Negative swing should decrease blue votes');
+
+// Test calculate_EG with fair election
+var gap1 = plan.calculate_EG([2, 3, 5, 6], [6, 5, 3, 2]);
+assert.equal(Math.round(gap1 * 1000) / 1000, 0, 'Should see zero EG for fair election');
+
+var gap2 = plan.calculate_EG([2, 3, 5, 6, 0], [6, 5, 3, 2, 0]);
+assert.equal(Math.round(gap2 * 1000) / 1000, 0, 'Should see zero EG with one district missing votes');
+
+// Test calculate_EG with unfair election
+var gap3 = plan.calculate_EG([1, 5, 5, 5], [7, 3, 3, 3]);
+assert.equal(Math.round(gap3 * 100) / 100, -0.25, 'Should see -0.25 EG for unfair election');
+
+// Test calculate_MMD with various scenarios
+var mmd1 = plan.calculate_MMD([6, 6, 4, 4, 4], [5, 5, 5, 8, 8]);
+assert.equal(Math.round(mmd1 * 100) / 100, 0, 'Should see zero MMD with 44% mean and median');
+
+var mmd2 = plan.calculate_MMD([6, 6, 6, 6, 6], [4, 4, 4, 4, 4]);
+assert.equal(Math.round(mmd2 * 100) / 100, 0, 'Should see zero MMD with 60% mean and median');
+
+var mmd3 = plan.calculate_MMD([6, 6, 6, 1, 1], [5, 5, 5, 10, 10]);
+assert.equal(Math.round(mmd3 * 100) / 100, -0.18, 'Should see -0.18 MMD with red bias');
+
+var mmd4 = plan.calculate_MMD([6, 6, 6, 6, 1], [5, 5, 5, 5, 10]);
+assert.equal(Math.round(mmd4 * 100) / 100, -0.09, 'Should see -0.09 MMD with red bias');
+
+var mmd5 = plan.calculate_MMD([6, 6, 1, 1, 1], [5, 5, 7, 10, 10]);
+assert.equal(Math.round(mmd5 * 100) / 100, 0.15, 'Should see +0.15 MMD with blue bias');
+
+var mmd6 = plan.calculate_MMD([6, 6, 4, 4, 4, 0], [5, 5, 5, 8, 8, 0]);
+assert.equal(Math.round(mmd6 * 100) / 100, 0, 'Should see defined MMD with one district missing votes');
+
+// Test calculate_PB with various scenarios
+var pb1 = plan.calculate_PB([6, 6, 4, 4], [4, 4, 6, 6]);
+assert.equal(Math.round(pb1 * 100) / 100, 0, 'Should see zero PB with 50/50 election');
+
+var pb2 = plan.calculate_PB([6, 6, 6, 3, 3], [2, 2, 2, 5, 5]);
+assert.equal(Math.round(pb2 * 100) / 100, -0.1, 'Should see -0.1 PB with red bias');
+
+var pb3 = plan.calculate_PB([6, 6, 6, 3, 3], [4, 4, 4, 12, 12]);
+assert.equal(Math.round(pb3 * 100) / 100, -0.1, 'Should see -0.1 PB with red advantage');
+
+var pb4 = plan.calculate_PB([4, 4, 4, 12, 12], [6, 6, 6, 3, 3]);
+assert.equal(Math.round(pb4 * 100) / 100, 0.1, 'Should see +0.1 PB with blue advantage');
+
+var pb5 = plan.calculate_PB([6, 6, 4, 4, 0], [4, 4, 6, 6, 0]);
+assert.equal(Math.round(pb5 * 100) / 100, 0, 'Should see zero PB with one district missing votes');
+
+// Test calculate_D2 with various scenarios
+// Georgia 1972: 9 blue wins, 1 red win
+var d2a_reds = [];
+var d2a_blues = [];
+for (var i = 0; i < 9; i++) {
+    d2a_reds.push(1 - 0.584617612075026);
+    d2a_blues.push(0.584617612075026);
+}
+d2a_reds.push(1 - 0.240871024240908);
+d2a_blues.push(0.240871024240908);
+var d2a = plan.calculate_D2(d2a_reds, d2a_blues);
+assert.equal(Math.round(d2a * 1000) / 1000, 0.875, 'Should see high D2 in Georgia 1972');
+
+// Louisiana 2020: 1 blue win, 5 red wins
+var d2b_reds = [1 - 0.809097511747074];
+var d2b_blues = [0.809097511747074];
+for (var i = 0; i < 5; i++) {
+    d2b_reds.push(1 - 0.27072066577579);
+    d2b_blues.push(0.27072066577579);
+}
+var d2b = plan.calculate_D2(d2b_reds, d2b_blues);
+assert.equal(Math.round(d2b * 1000) / 1000, -0.459, 'Should see low D2 in Louisiana 2020');
+
+// North Carolina 1998: 5 blue wins, 7 red wins
+var d2c_reds = [];
+var d2c_blues = [];
+for (var i = 0; i < 5; i++) {
+    d2c_reds.push(1 - 0.598085862963535);
+    d2c_blues.push(0.598085862963535);
+}
+for (var i = 0; i < 7; i++) {
+    d2c_reds.push(1 - 0.357068466446836);
+    d2c_blues.push(0.357068466446836);
+}
+var d2c = plan.calculate_D2(d2c_reds, d2c_blues);
+assert.equal(Math.round(d2c * 1000) / 1000, 0.012, 'Should see near-zero D2 in North Carolina 1998');
+
+var d2d = plan.calculate_D2([1, 2, 3, 4, 0], [4, 3, 2, 1, 0]);
+assert.equal(Math.round(d2d * 1000) / 1000, 0, 'Should see zero D2 for balanced election');
+
+var d2f = plan.calculate_D2([3, 4, 5], [2, 1, 0]);
+assert.equal(Math.round(d2f * 1000) / 1000, -0.549, 'Should see low D2 when red wins all districts');
+
+var d2g = plan.calculate_D2([2, 1, 0], [3, 4, 5]);
+assert.equal(Math.round(d2g * 1000) / 1000, 0.549, 'Should see high D2 when blue wins all districts');
+
 var CT_2021_water_seatshare = plan.get_seatshare_array(CT_2021_water_district);
 
 assert.equal(CT_2021_water_seatshare.colors.length, 5, 'Should see the correct number of colors');
@@ -653,3 +785,198 @@ assert.equal(annotate_new.get_description(NC_2019_preread_end, undefined),
     'North Carolina U.S. House plan uploaded on 12/28/2019');
 
 console.log('Tests pass.', new Date().toLocaleString());
+
+// Adjust scenario statistics
+
+assert.notEqual(NC_2025_scenarios.statistics['Democratic Votes'][1][1][1], 252495.57);
+assert.notEqual(NC_2025_scenarios.statistics['Democratic Votes SD'][1][1][1], 12911.24);
+assert.notEqual(NC_2025_scenarios.statistics['Democratic Wins'][1][1][1], 1);
+assert.notEqual(NC_2025_scenarios.statistics['Republican Votes'][1][1][1], 148173.07);
+assert.notEqual(NC_2025_scenarios.statistics['Republican Votes SD'][1][1][1], 12911.24);
+
+plan.adjust_scenario_stats(NC_2025_scenarios);
+
+assert.equal(NC_2025_scenarios.statistics['Democratic Votes'][1][1][1], 252495.57);
+assert.equal(NC_2025_scenarios.statistics['Democratic Votes SD'][1][1][1], 12911.24);
+assert.equal(NC_2025_scenarios.statistics['Democratic Wins'][1][1][1], 1);
+assert.equal(NC_2025_scenarios.statistics['Republican Votes'][1][1][1], 148173.07);
+assert.equal(NC_2025_scenarios.statistics['Republican Votes SD'][1][1][1], 12911.24);
+
+// Test create_scenario_plan
+
+// Test: vote_swing_index 12 (0.0) should return original plan unchanged
+var result_zero = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, 12);
+assert.strictEqual(result_zero, NC_2025_index, 'Should return original plan for 0.0 swing');
+
+// Test: vote_swing_index 0 (-6.0) should mutate the plan
+var result_neg6 = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, 0);
+assert.notStrictEqual(result_neg6, NC_2025_index, 'Should return a different object for non-zero swing');
+
+// Verify that the first district (index 0) gets data from the correct incumbent scenario
+var district_0_incumbent = NC_2025_index.incumbents[0];
+var district_0_incumbent_index = 3; // hard code the entirely-open option
+assert.equal(result_neg6.districts[0].totals['Democratic Votes'],
+    NC_2025_scenarios.statistics['Democratic Votes'][0][district_0_incumbent_index][0],
+    'Should update Democratic Votes for district 0 with correct incumbent');
+assert.equal(result_neg6.districts[0].totals['Republican Votes'],
+    NC_2025_scenarios.statistics['Republican Votes'][0][district_0_incumbent_index][0],
+    'Should update Republican Votes for district 0 with correct incumbent');
+
+// Verify second district (index 1)
+var district_1_incumbent = NC_2025_index.incumbents[1];
+var district_1_incumbent_index = 3; // hard code the entirely-open option
+assert.equal(result_neg6.districts[1].totals['Democratic Votes'],
+    NC_2025_scenarios.statistics['Democratic Votes'][0][district_1_incumbent_index][1],
+    'Should update Democratic Votes for district 1 with correct incumbent');
+assert.equal(result_neg6.districts[1].totals['Republican Votes'],
+    NC_2025_scenarios.statistics['Republican Votes'][0][district_1_incumbent_index][1],
+    'Should update Republican Votes for district 1 with correct incumbent');
+
+// Test: vote_swing_index 24 (+6.0) should use different scenario data
+var result_pos6 = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, 24);
+assert.equal(result_pos6.districts[0].totals['Democratic Votes'],
+    NC_2025_scenarios.statistics['Democratic Votes'][24][district_0_incumbent_index][0],
+    'Should update Democratic Votes for +6.0 swing');
+assert.equal(result_pos6.districts[0].totals['Republican Votes'],
+    NC_2025_scenarios.statistics['Republican Votes'][24][district_0_incumbent_index][0],
+    'Should update Republican Votes for +6.0 swing');
+
+// Test helper functions
+// Test calculate_mean
+var mean1 = plan.calculate_mean([1, 2, 3, 4, 5]);
+assert.equal(mean1, 3, 'Mean of [1,2,3,4,5] should be 3');
+
+var mean2 = plan.calculate_mean([10, 20, 30]);
+assert.equal(Math.round(mean2 * 100) / 100, 20, 'Mean of [10,20,30] should be 20');
+
+var mean3 = plan.calculate_mean([]);
+assert.strictEqual(mean3, null, 'Mean of empty array should be null');
+
+// Test calculate_stdev
+var stdev1 = plan.calculate_stdev([2, 4, 4, 4, 5, 5, 7, 9]);
+assert.equal(Math.round(stdev1 * 100) / 100, 2.14, 'Stdev should be approximately 2.14');
+
+var stdev2 = plan.calculate_stdev([1, 2, 3, 4, 5]);
+assert.equal(Math.round(stdev2 * 100) / 100, 1.58, 'Stdev should be approximately 1.58');
+
+var stdev3 = plan.calculate_stdev([5]);
+assert.strictEqual(stdev3, null, 'Stdev of single element should be null');
+
+var stdev4 = plan.calculate_stdev([]);
+assert.strictEqual(stdev4, null, 'Stdev of empty array should be null');
+
+// Test calculate_positives
+var pos1 = plan.calculate_positives([1, 2, 3, 4, 5]);
+assert.equal(pos1, 1.0, 'All positive values should give 1.0');
+
+var pos2 = plan.calculate_positives([-1, -2, -3, -4, -5]);
+assert.equal(pos2, 0.0, 'All negative values should give 0.0');
+
+var pos3 = plan.calculate_positives([-2, -1, 0, 1, 2]);
+assert.equal(pos3, 0.4, 'Half positive should give 0.4 (2/5)');
+
+var pos4 = plan.calculate_positives([0.001, -0.001]);
+assert.equal(pos4, 0.5, 'Values near epsilon should be handled correctly');
+
+var pos5 = plan.calculate_positives([]);
+assert.strictEqual(pos5, null, 'Positives of empty array should be null');
+
+// Test percentrank_abs function
+// With values [-0.15, -0.10, -0.05, 0.00, 0.05, 0.10, 0.15] (7 values)
+// Testing with 0.12: abs values are [0.15, 0.10, 0.05, 0.00, 0.05, 0.10, 0.15]
+// Values with abs < 0.12: 0.10, 0.05, 0.00, 0.05, 0.10 = 5 values
+// Percentrank = 5/7 = 0.714...
+var prank_abs1 = plan.percentrank_abs('eg_adj_avg', 'ushouse', 0.12);
+assert.equal(Math.round(prank_abs1 * 1000) / 1000, 0.714, 'Should calculate correct absolute percentrank for 0.12');
+
+// Testing with -0.08: abs value is 0.08
+// Values with abs < 0.08: 0.05, 0.00, 0.05 = 3 values
+// Percentrank = 3/7 = 0.428...
+var prank_abs2 = plan.percentrank_abs('eg_adj_avg', 'ushouse', -0.08);
+assert.equal(Math.round(prank_abs2 * 1000) / 1000, 0.429, 'Should calculate correct absolute percentrank for -0.08');
+
+// Testing with 0.00: abs value is 0.00
+// Values with abs < 0.00: none = 0 values
+// Percentrank = 0/7 = 0
+var prank_abs3 = plan.percentrank_abs('eg_adj_avg', 'ushouse', 0.00);
+assert.equal(prank_abs3, 0, 'Should return 0 percentrank for minimum absolute value');
+
+// Test with localplan (should return null)
+var prank_abs4 = plan.percentrank_abs('eg_adj_avg', 'localplan', 0.10);
+assert.strictEqual(prank_abs4, null, 'Should return null for localplan');
+
+// Test percentrank_rel function
+// With values [-0.15, -0.10, -0.05, 0.00, 0.05, 0.10, 0.15] (7 values)
+// Testing with 0.12 (positive, favors D): count values > 0.12 = only 0.15 = 1 value
+// Percentrank = 1/7 = 0.142...
+var prank_rel1 = plan.percentrank_rel('eg_adj_avg', 'ushouse', 0.12);
+assert.equal(Math.round(prank_rel1 * 1000) / 1000, 0.143, 'Should calculate correct relative percentrank for 0.12');
+
+// Testing with -0.12 (negative, favors R): count values < -0.12 = only -0.15 = 1 value
+// Percentrank = 1/7 = 0.142...
+var prank_rel2 = plan.percentrank_rel('eg_adj_avg', 'ushouse', -0.12);
+assert.equal(Math.round(prank_rel2 * 1000) / 1000, 0.143, 'Should calculate correct relative percentrank for -0.12');
+
+// Testing with 0.00: count values > 0.00 = 0.05, 0.10, 0.15 = 3 values
+// Percentrank = 3/7 = 0.428...
+var prank_rel3 = plan.percentrank_rel('eg_adj_avg', 'ushouse', 0.00);
+assert.equal(Math.round(prank_rel3 * 1000) / 1000, 0.429, 'Should calculate correct relative percentrank for 0.00');
+
+// Testing with 0.05: count values > 0.05 = 0.10, 0.15 = 2 values
+// Percentrank = 2/7 = 0.285...
+var prank_rel4 = plan.percentrank_rel('eg_adj_avg', 'ushouse', 0.05);
+assert.equal(Math.round(prank_rel4 * 1000) / 1000, 0.286, 'Should calculate correct relative percentrank for 0.05');
+
+// Test with localplan (should return null)
+var prank_rel5 = plan.percentrank_rel('eg_adj_avg', 'localplan', 0.10);
+assert.strictEqual(prank_rel5, null, 'Should return null for localplan');
+
+// Test that create_scenario_plan generates valid summary statistics
+var result_sim = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, 0);
+
+// Check that all required summary statistics are present
+assert.ok(typeof result_sim.summary['Efficiency Gap'] === 'number', 'Should have Efficiency Gap mean');
+assert.ok(typeof result_sim.summary['Efficiency Gap SD'] === 'number', 'Should have Efficiency Gap SD');
+assert.ok(typeof result_sim.summary['Efficiency Gap Positives'] === 'number', 'Should have Efficiency Gap Positives');
+assert.ok(typeof result_sim.summary['Efficiency Gap Absolute Percent Rank'] === 'number', 'Should have Efficiency Gap Absolute Percent Rank as number');
+assert.ok(typeof result_sim.summary['Efficiency Gap Relative Percent Rank'] === 'number', 'Should have Efficiency Gap Relative Percent Rank as number');
+
+assert.ok(typeof result_sim.summary['Mean-Median'] === 'number', 'Should have Mean-Median mean');
+assert.ok(typeof result_sim.summary['Mean-Median SD'] === 'number', 'Should have Mean-Median SD');
+assert.ok(typeof result_sim.summary['Mean-Median Positives'] === 'number', 'Should have Mean-Median Positives');
+assert.ok(typeof result_sim.summary['Mean-Median Absolute Percent Rank'] === 'number', 'Should have Mean-Median Absolute Percent Rank as number');
+assert.ok(typeof result_sim.summary['Mean-Median Relative Percent Rank'] === 'number', 'Should have Mean-Median Relative Percent Rank as number');
+
+assert.ok(typeof result_sim.summary['Partisan Bias'] === 'number', 'Should have Partisan Bias mean');
+assert.ok(typeof result_sim.summary['Partisan Bias SD'] === 'number', 'Should have Partisan Bias SD');
+assert.ok(typeof result_sim.summary['Partisan Bias Positives'] === 'number', 'Should have Partisan Bias Positives');
+assert.ok(typeof result_sim.summary['Partisan Bias Absolute Percent Rank'] === 'number', 'Should have Partisan Bias Absolute Percent Rank as number');
+assert.ok(typeof result_sim.summary['Partisan Bias Relative Percent Rank'] === 'number', 'Should have Partisan Bias Relative Percent Rank as number');
+
+assert.ok(typeof result_sim.summary['Declination'] === 'number', 'Should have Declination mean');
+assert.ok(typeof result_sim.summary['Declination SD'] === 'number', 'Should have Declination SD');
+assert.ok(typeof result_sim.summary['Declination Positives'] === 'number', 'Should have Declination Positives');
+assert.ok(typeof result_sim.summary['Declination Absolute Percent Rank'] === 'number', 'Should have Declination Absolute Percent Rank as number');
+assert.ok(typeof result_sim.summary['Declination Relative Percent Rank'] === 'number', 'Should have Declination Relative Percent Rank as number');
+
+// Verify that percentrank values are between 0 and 1
+assert.ok(result_sim.summary['Efficiency Gap Absolute Percent Rank'] >= 0 && result_sim.summary['Efficiency Gap Absolute Percent Rank'] <= 1,
+    'Efficiency Gap Absolute Percent Rank should be between 0 and 1');
+assert.ok(result_sim.summary['Efficiency Gap Relative Percent Rank'] >= 0 && result_sim.summary['Efficiency Gap Relative Percent Rank'] <= 1,
+    'Efficiency Gap Relative Percent Rank should be between 0 and 1');
+
+// Test that positives are between 0 and 1
+assert.ok(result_sim.summary['Efficiency Gap Positives'] >= 0 && result_sim.summary['Efficiency Gap Positives'] <= 1,
+    'Efficiency Gap Positives should be between 0 and 1');
+assert.ok(result_sim.summary['Mean-Median Positives'] >= 0 && result_sim.summary['Mean-Median Positives'] <= 1,
+    'Mean-Median Positives should be between 0 and 1');
+assert.ok(result_sim.summary['Partisan Bias Positives'] >= 0 && result_sim.summary['Partisan Bias Positives'] <= 1,
+    'Partisan Bias Positives should be between 0 and 1');
+assert.ok(result_sim.summary['Declination Positives'] >= 0 && result_sim.summary['Declination Positives'] <= 1,
+    'Declination Positives should be between 0 and 1');
+
+// Test that SD values are positive
+assert.ok(result_sim.summary['Efficiency Gap SD'] > 0, 'Efficiency Gap SD should be positive');
+assert.ok(result_sim.summary['Mean-Median SD'] > 0, 'Mean-Median SD should be positive');
+assert.ok(result_sim.summary['Partisan Bias SD'] > 0, 'Partisan Bias SD should be positive');
+assert.ok(result_sim.summary['Declination SD'] > 0, 'Declination SD should be positive');

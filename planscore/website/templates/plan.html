@@ -262,12 +262,23 @@
 
     </section>
 
+    <form id="scenario-adjustments" class="scenario-adjustments-hidden">
+        <div>
+            <label for="vote-swing-range">Vote Swing:</label>
+            <div id="vote-swing-display">0.0</div>
+            <input type="range" id="vote-swing-range" name="vote-swing" min="-6" max="6" step="0.5" value="0">
+            <div class="disabled-message">Not available for this map</div>
+        </div>
+    </form>
+
 	<script language="javascript">
 	    var LEAN_BLUE_PATTERN_URL = "{{ url_for('static', filename='lean-blue-pattern.png') }}",
 	        LEAN_RED_PATTERN_URL = "{{ url_for('static', filename='lean-red-pattern.png') }}",
 	        BLUEISH_PATTERN_URL = "{{ url_for('static', filename='blueish-pattern.png') }}",
 	        REDDISH_PATTERN_URL = "{{ url_for('static', filename='reddish-pattern.png') }}",
-	        UNKNOWN_PATTERN_URL = "{{ url_for('static', filename='unknown-pattern.png') }}";
+	        UNKNOWN_PATTERN_URL = "{{ url_for('static', filename='unknown-pattern.png') }}",
+	        GAUSSIAN_RANDOMS = {{ gaussian_randoms_json|safe }};
+	        HISTORICAL_PERCENTRANK_DATA = {{ historical_percentrank_json|safe }};
 
 	    var plan_id = location.search.replace('?', ''),
 	        plan_url = format_url('{{ data_url_pattern }}', plan_id),
@@ -308,7 +319,8 @@
 	        document.getElementById('text-link'),
 	        geom_prefix,
 	        document.getElementById('map'),
-	        document.getElementById('plan-seat-count')
+	        document.getElementById('plan-seat-count'),
+	        document.getElementById('scenario-adjustments')
         );
 	</script>
 

@@ -196,3 +196,62 @@ path.highlight {
     margin: 0;
     background-repeat: repeat;
 }
+
+/* Scenario adjustments form - fixed position in upper-right */
+#scenario-adjustments {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #fff3cd; /* Light orange background */
+    border: 2px solid #ff8c00; /* Orange border */
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 10px rgba(255,140,0,0.3);
+    z-index: 1000;
+    min-width: 200px;
+}
+
+#scenario-adjustments.scenario-adjustments-hidden {
+    display: none !important;
+}
+
+#scenario-adjustments.scenario-adjustments-disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+#scenario-adjustments .disabled-message {
+    display: none;
+    color: #856404;
+    font-style: italic;
+    margin-top: 10px;
+    font-size: 0.9em;
+}
+
+#scenario-adjustments.scenario-adjustments-disabled .disabled-message {
+    display: block;
+}
+
+#scenario-adjustments.scenario-adjustments-disabled input[type="range"] {
+    cursor: not-allowed;
+}
+
+#scenario-adjustments label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+#vote-swing-display {
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin: 10px 0;
+    color: #333;
+}
+
+#vote-swing-range {
+    width: 100%;
+    margin: 10px 0;
+    direction: rtl; /* Reverse slider so D+ values are on the left */
+}
