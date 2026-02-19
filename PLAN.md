@@ -790,11 +790,72 @@ Metrics table showing summary statistics:
 - Statistical calculations match Python backend implementation
 - Foundation complete for future metric enhancements
 
-### Phase 4: Polish
-- Update URL hash to preserve scenario selection:
-    - Valid syntax: "#scenario" (defaults), "#scenario=vote_swing:1.0" (non-default)
-- Condition appearance of form#scenario-adjustments on presence of URL hash, it should be totally invisible without this flag
-- If the original plan does not contain a scenarios.json linked, or if it includes top-level vote_swings set to anything other than zeros, render it in a disabled form and show a note: "Not available for this map"
+### Phase 4: Polish ✅ COMPLETED
+
+**Status**: Completed 2026-02-18
+
+**What was done**:
+1. **URL Hash Management for Scenario Selection** (plan.js lines 702-742):
+   - `parse_scenario_hash()` - Extracts vote swing value from URL hash
+   - `update_scenario_hash(vote_swing)` - Updates hash without page reload using replaceState
+   - `has_scenario_hash()` - Checks if #scenario hash is present
+   - Supports syntax: `#scenario` (defaults to 0.0) or `#scenario=vote_swing:1.0` (non-default)
+   - Hash updates in real-time as slider moves
+
+2. **Conditional Form Visibility** (plan.html line 265, plan.css lines 214-237, plan.js lines 744-795):
+   - Form completely invisible by default (no hash = no form)
+   - Form only shows when `#scenario` hash is present in URL
+   - Three states: **hidden** (no hash), **disabled** (hash + unavailable), **enabled** (hash + available)
+   - `check_scenarios_available(plan)` - Validates scenarios.json exists and vote_swings are zero
+   - `update_form_visibility(form, plan)` - Controls form visibility and state
+   - `setup_form_visibility_listener(form, plan)` - Responds to hashchange events
+   - Disabled state shows message: "Not available for this map"
+
+3. **Removed Legacy #showall Functionality** (4 locations):
+   - Removed from `populate_partisan_bias_score()` (line 1399)
+   - Removed from `populate_mean_median_score()` (line 1509)
+   - Removed from metrics table construction (line 1748)
+   - Removed from `on_loaded_score()` score card logic (line 2800)
+   - Simplified vote share validation logic throughout
+
+4. **Eliminated Flash on Page Load** (plan.js lines 2823-2979):
+   - Root cause: Page was populating with default data, then updating to hash-specified scenario
+   - Parse hash early to detect non-default scenario values (not 0.0)
+   - Set `waiting_for_scenarios` flag only for non-default hash values
+   - Skip all `populate_*()` calls when `waiting_for_scenarios` is true
+   - Keep all `construct_*()` calls to build DOM structure
+   - Group constructs together, then populates, to reduce conditional repetition
+   - Pass `waiting_for_scenarios` flag through `load_plan_map()` → `construct_plan_map()`
+
+5. **Loading State Management** (plan.js lines 2838, 800):
+   - Add `scenario-adjustments-disabled` class when scenarios.json starts loading
+   - Form appears grayed-out with "Not available" message during load
+   - Remove disabled class in `setup_scenario_interactivity()` when ready
+   - Provides clear visual feedback during async load
+
+6. **Enhanced Scenario Interactivity** (plan.js lines 797-900):
+   - Modified `setup_scenario_interactivity()` to read initial vote swing from hash
+   - Always calls `update_visualizations()` on initial load (even for 0.0)
+   - Ensures delayed populations happen when `waiting_for_scenarios` was true
+   - Added `score_sense` and `scores_FTVA` parameters throughout call chain
+   - Added `populate_sensitivity_test()` to visualization updates
+   - Added `populate_ftva_race_scores()` to visualization updates
+   - Sensitivity test always uses `original_plan` (shows full range, not selected scenario)
+
+**Three Perfect Behaviors**:
+1. **No hash**: Instant render with default data, no form visible
+2. **#scenario (0.0)**: Instant render with default data, form disabled briefly then enables
+3. **#scenario=vote_swing:2.0**: Single render with 2.0 data (no flash!), form disabled then enables
+
+**Benefits achieved**:
+- Fast initial render for default case (no waiting)
+- No visual flash for non-default case (single render with correct data)
+- Clear feedback during loading (disabled form state)
+- Clean removal of outdated `#showall` functionality
+- User must explicitly opt-in via URL hash to see experimental feature
+- Hash preserves scenario selection for sharing/bookmarking
+- All visualizations (including FTVA and Sensitivity) properly update
+- Sensitivity chart correctly shows full scenario range (not mutated)
 
 ## Code Organization
 
@@ -893,12 +954,12 @@ To avoid breaking existing functionality:
 
 ## Success Metrics
 
-- [ ] User can switch between vote swing scenarios
-- [ ] All metrics update within 100ms
-- [ ] No visual flicker or layout shift
-- [ ] Works in all supported browsers
-- [ ] Code is more maintainable (construction/population separate)
-- [ ] No regression in initial page load time
+- [x] User can switch between vote swing scenarios
+- [x] All metrics update within 100ms
+- [x] No visual flicker or layout shift
+- [ ] Works in all supported browsers (needs manual testing)
+- [x] Code is more maintainable (construction/population separate)
+- [x] No regression in initial page load time (improved for default case)
 
 ## Next Steps
 

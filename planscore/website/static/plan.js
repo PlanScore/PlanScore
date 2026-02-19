@@ -794,8 +794,11 @@ function setup_form_visibility_listener(form, plan)
     update_form_visibility(form, plan);
 }
 
-function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_PB, score_MM, score_DEC2)
+function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA)
 {
+    // Remove disabled class now that scenarios have loaded
+    scenario_adjustments_form.classList.remove('scenario-adjustments-disabled');
+
     // Initialize vote_swing field if it doesn't exist
     // This ensures the Vote Swing column can be toggled when scenarios are available
     if (original_plan.districts.length > 0 && !('vote_swing' in original_plan.districts[0])) {
@@ -847,6 +850,7 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
 
         // Update the score cards (each function handles its own validation)
         populate_efficiency_gap_score(mutated_plan, score_EG);
+        populate_sensitivity_test(original_plan, score_sense);  // Always use original plan for sensitivity range
         populate_partisan_bias_score(mutated_plan, score_PB);
         populate_mean_median_score(mutated_plan, score_MM);
 
@@ -857,6 +861,7 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
 
         // Update the metrics table with new percentrank values
         populate_metrics_table(mutated_plan, metrics_table);
+        populate_ftva_race_scores(mutated_plan, scores_FTVA);
     }
 
     // Set initial value from hash or default to 0
@@ -874,10 +879,9 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
     range_input.value = initial_vote_swing;
     display.textContent = format_vote_swing(initial_vote_swing);
 
-    // If initial vote swing is non-zero, update visualizations immediately
-    if (initial_vote_swing !== 0.0) {
-        update_visualizations(initial_vote_swing);
-    }
+    // Always update visualizations on initial load (even for 0.0)
+    // This ensures that if we were waiting_for_scenarios, we now populate everything
+    update_visualizations(initial_vote_swing);
 
     // Add input listener to range slider for live updates
     range_input.addEventListener('input', function(event) {
@@ -2096,7 +2100,7 @@ function populate_ftva_race_scores(plan, scores_FTVA)
     }
 }
 
-function construct_plan_map(data, div, plan, table)
+function construct_plan_map(data, div, plan, table, waiting_for_scenarios)
 {
     function district_popup_content(layer)
     {
@@ -2193,8 +2197,10 @@ function construct_plan_map(data, div, plan, table)
     div._geojson_data = data;
     div._leaflet_map = map;
 
-    // Populate with initial plan data
-    populate_plan_map(plan, div);
+    // Populate with initial plan data (unless waiting for scenarios)
+    if (!waiting_for_scenarios) {
+        populate_plan_map(plan, div);
+    }
 }
 
 function populate_plan_map(plan, div)
@@ -2820,12 +2826,24 @@ function load_plan_score(url, message_section, score_section,
             return;
         }
 
+        // Check if we should wait for scenarios before populating
+        // Only wait if hash contains a non-default value (not 0.0)
+        var initial_vote_swing = parse_scenario_hash();
+        var waiting_for_scenarios = (
+            plan.scenarios !== undefined &&
+            initial_vote_swing !== null &&
+            initial_vote_swing !== 0.0
+        );
+
         // Set up form visibility based on hash and availability
         setup_form_visibility_listener(scenario_adjustments_form, plan);
 
         // Immediately kick off scenario loading if available and hash present
         if (plan.scenarios !== undefined && has_scenario_hash()) {
-            load_plan_scenarios(geom_prefix + plan.scenarios.replace(/^\//, ''), plan, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_PB, score_MM, score_DEC2);
+            // Add disabled class while loading scenarios
+            scenario_adjustments_form.classList.add('scenario-adjustments-disabled');
+
+            load_plan_scenarios(geom_prefix + plan.scenarios.replace(/^\//, ''), plan, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA);
         }
 
         // Plan is done parsing and we can render the page
@@ -2882,9 +2900,11 @@ function load_plan_score(url, message_section, score_section,
 
         // Build the results table
         construct_districts_table(plan, districts_table);
-        populate_districts_table(plan, districts_table);
         construct_seatshare_graphic(plan, districts_table);
-        populate_seatshare_graphic(plan);
+        if (!waiting_for_scenarios) {
+            populate_districts_table(plan, districts_table);
+            populate_seatshare_graphic(plan);
+        }
 
         text_link.href = text_url;
 
@@ -2904,13 +2924,10 @@ function load_plan_score(url, message_section, score_section,
 
         // Construct and populate scores.
         construct_efficiency_gap_score(score_EG);
-        populate_efficiency_gap_score(plan, score_EG);
         construct_sensitivity_test(score_sense);
-        populate_sensitivity_test(plan, score_sense);
 
         if('Declination' in plan.summary && plan.summary['Declination Is Valid'] !== 0) {
             construct_declination2_score(score_DEC2);
-            populate_declination2_score(plan, score_DEC2);
         } else if('Declination' in plan.summary) {
             hide_score_with_reason(score_DEC2,
                 'Declination is only shown where both parties each win one or more'
@@ -2922,9 +2939,7 @@ function load_plan_score(url, message_section, score_section,
 
         if(plan_voteshare(plan) < .1) {
             construct_partisan_bias_score(score_PB);
-            populate_partisan_bias_score(plan, score_PB);
             construct_mean_median_score(score_MM);
-            populate_mean_median_score(plan, score_MM);
         } else {
             hide_score_with_reason(score_PB,
                 'The parties\' statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
@@ -2937,19 +2952,37 @@ function load_plan_score(url, message_section, score_section,
         }
 
         construct_metrics_table(metrics_table);
-        populate_metrics_table(plan, metrics_table);
         construct_ftva_race_scores(scores_FTVA);
-        populate_ftva_race_scores(plan, scores_FTVA);
+
+        if (!waiting_for_scenarios) {
+            populate_efficiency_gap_score(plan, score_EG);
+            populate_sensitivity_test(plan, score_sense);
+
+            if('Declination' in plan.summary && plan.summary['Declination Is Valid'] !== 0) {
+                populate_declination2_score(plan, score_DEC2);
+            }
+
+            if(plan_voteshare(plan) < .1) {
+                populate_partisan_bias_score(plan, score_PB);
+                populate_mean_median_score(plan, score_MM);
+            }
+
+            populate_metrics_table(plan, metrics_table);
+            populate_ftva_race_scores(plan, scores_FTVA);
+        }
 
         if('library_metadata' in plan && plan['library_metadata']) {
             construct_library_metadata(metadata_el);
-            populate_library_metadata(plan, metadata_el, geom_prefix);
+            if (!waiting_for_scenarios) {
+                populate_library_metadata(plan, metadata_el, geom_prefix);
+            }
         } else {
             metadata_el.style.display = 'none';
         }
 
-        // Go on to load the map.
-        load_plan_map(geom_prefix + plan.geometry_key, map_div, plan, districts_table);
+        // Go on to load the map (construct_plan_map includes populate_plan_map call).
+        // Note: The map's populate call is inside construct_plan_map, so we need special handling.
+        load_plan_map(geom_prefix + plan.geometry_key, map_div, plan, districts_table, waiting_for_scenarios);
     }
 
     request.onload = function()
@@ -2977,7 +3010,7 @@ function load_plan_score(url, message_section, score_section,
     request.send();
 }
 
-function load_plan_scenarios(url, plan, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_PB, score_MM, score_DEC2)
+function load_plan_scenarios(url, plan, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -2991,7 +3024,7 @@ function load_plan_scenarios(url, plan, scenario_adjustments_form, districts_tab
             console.log('Loaded scenarios:', data);
             adjust_scenario_stats(data);
             console.log('New scenarios:', data);
-            setup_scenario_interactivity(plan, data, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_PB, score_MM, score_DEC2);
+            setup_scenario_interactivity(plan, data, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA);
         }
     };
 
@@ -2999,7 +3032,7 @@ function load_plan_scenarios(url, plan, scenario_adjustments_form, districts_tab
     request.send();
 }
 
-function load_plan_map(url, div, plan, table)
+function load_plan_map(url, div, plan, table, waiting_for_scenarios)
 {
     var request = new XMLHttpRequest();
     request.open('GET', url, true);
@@ -3011,7 +3044,7 @@ function load_plan_map(url, div, plan, table)
             // Returns a GeoJSON dictionary
             var data = JSON.parse(request.responseText);
             console.log('Loaded map:', data);
-            construct_plan_map(data, div, plan, table);
+            construct_plan_map(data, div, plan, table, waiting_for_scenarios);
         }
     };
 
