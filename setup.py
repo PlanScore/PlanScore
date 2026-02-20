@@ -27,7 +27,7 @@ setup(
             ],
         },
     install_requires = [
-        'Flask == 2.3.3',
+        'Flask == 3.1.3',
         'itsdangerous == 2.2.0',
         'Jinja2 == 3.1.6',
         'Markdown == 3.9',
