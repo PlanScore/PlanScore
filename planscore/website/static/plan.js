@@ -742,7 +742,7 @@ function check_scenarios_available(plan)
     return { available: true, reason: null };
 }
 
-function update_form_visibility(form, plan)
+function update_form_visibility(form, plan, districts_table, on_change_callback)
 {
     // Update form visibility based on URL hash and plan availability
     var has_hash = has_scenario_hash();
@@ -761,23 +761,36 @@ function update_form_visibility(form, plan)
         form.classList.remove('scenario-adjustments-hidden');
         form.classList.remove('scenario-adjustments-disabled');
     }
+
+    // Calculate whether scenarios are active and update candidate scenario cells
+    var is_scenarios_active = has_hash && availability.available;
+    if (districts_table) {
+        populate_districts_table(plan, districts_table, is_scenarios_active, on_change_callback);
+    }
 }
 
-function setup_form_visibility_listener(form, plan)
+function setup_form_visibility_listener(form, plan, districts_table, on_change_callback)
 {
     // Set up hashchange listener to toggle form visibility
     window.addEventListener('hashchange', function() {
-        update_form_visibility(form, plan);
+        update_form_visibility(form, plan, districts_table, on_change_callback);
     });
 
     // Set initial visibility
-    update_form_visibility(form, plan);
+    update_form_visibility(form, plan, districts_table, on_change_callback);
 }
 
 function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA)
 {
     // Remove disabled class now that scenarios have loaded
     scenario_adjustments_form.classList.remove('scenario-adjustments-disabled');
+
+    // Define callback for candidate scenario radio button changes
+    // This will be called when a user selects a different incumbency option
+    function on_candidate_scenario_change(row, value) {
+        // TODO: Update scenario state and recalculate visualizations
+        console.log('Candidate scenario changed for row', row, 'to', value);
+    }
 
     // Initialize vote_swing field if it doesn't exist
     // This ensures the Vote Swing column can be toggled when scenarios are available
@@ -786,8 +799,8 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
             original_plan.districts[i].vote_swing = 0.0;
         }
         // Reconstruct table once to include the Vote Swing column (initially hidden)
-        construct_districts_table(original_plan, districts_table);
-        populate_districts_table(original_plan, districts_table);
+        construct_districts_table(original_plan, districts_table, true);
+        populate_districts_table(original_plan, districts_table, true, on_candidate_scenario_change);
     }
 
     // Get the range input and display element
@@ -820,7 +833,7 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         var mutated_plan = create_scenario_plan(original_plan, scenarios, vote_swing_index);
 
         // Update the districts table
-        populate_districts_table(mutated_plan, districts_table);
+        populate_districts_table(mutated_plan, districts_table, true, on_candidate_scenario_change);
 
         // Update the seat share graphic
         populate_seatshare_graphic(mutated_plan);
@@ -1045,36 +1058,56 @@ function get_seatshare_array(plan)
     };
 }
 
-function construct_candidate_scenario_content(cell, row)
+function populate_candidate_scenario_content(cell, row, value, is_scenarios_active, on_change_callback)
 {
+    var incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'};
+
+    // Handle inactive case: show text only if no form exists
+    // (never go from active to inactive - forms are never removed once created)
+    if (!is_scenarios_active) {
+        if (!cell.firstChild || cell.firstChild.tagName !== 'FORM') {
+            cell.textContent = incumbency[value] || '';
+        }
+        return;
+    }
+
+    // Handle active case with existing form: just update checked state
+    if (cell.firstChild && cell.firstChild.tagName === 'FORM') {
+        var form = cell.firstChild;
+        form.childNodes[0].checked = (value === 'D');
+        form.childNodes[2].checked = (value === 'O');
+        form.childNodes[4].checked = (value === 'R');
+        return;
+    }
+
+    // Handle active case with no form: create new form
     cell.innerHTML = [
         `<form>`,
         `<input type="radio" name="C${row}" value="D" id="D${row}"/><label for="D${row}">DEM</label>`,
         `<input type="radio" name="C${row}" value="O" id="O${row}"/><label for="O${row}">OPEN</label>`,
         `<input type="radio" name="C${row}" value="R" id="R${row}"/><label for="R${row}">REP</label>`,
-        `</form>`,
-        `<span style="display:none"></span>`
+        `</form>`
     ].join('');
-}
 
-function populate_candidate_scenario_content(cell, value)
-{
-    cell.firstChild.childNodes[0].checked = false;
-    cell.firstChild.childNodes[2].checked = false;
-    cell.firstChild.childNodes[2].checked = false;
-    if (value == 'D') {
-        cell.firstChild.childNodes[0].checked = true;
-    } else if (value == 'O') {
-        cell.firstChild.childNodes[2].checked = true;
-    } else if (value == 'R') {
-        cell.firstChild.childNodes[4].checked = true;
+    // Attach event listeners if callback provided
+    if (on_change_callback) {
+        var form = cell.firstChild;
+        var radios = form.querySelectorAll('input[type="radio"]');
+        for (var i = 0; i < radios.length; i++) {
+            radios[i].addEventListener('change', function(e) {
+                on_change_callback(row, e.target.value);
+            });
+        }
     }
 
-    var incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'};
-    cell.lastChild.innerText = incumbency[value];
+    // Set initial checked state
+    var form = cell.firstChild;
+    form.childNodes[0].checked = (value === 'D');
+    form.childNodes[2].checked = (value === 'O');
+    form.childNodes[4].checked = (value === 'R');
 }
 
-function construct_districts_table(plan, districts_table)
+function construct_districts_table(plan, districts_table, is_scenarios_active)
 {
     // Build table structure using DOM APIs, without populating data
     var table_array = plan_array(plan);
@@ -1159,7 +1192,7 @@ function construct_districts_table(plan, districts_table)
             cell.dataset.columnIndex = j;
 
             if (heading_title === 'Candidate Scenario') {
-                construct_candidate_scenario_content(cell, i);
+                populate_candidate_scenario_content(cell, i, '', is_scenarios_active, null);
             } else if (heading_title === 'Vote Swing') {
                 // Mark Vote Swing column for show/hide toggling
                 cell.dataset.columnName = 'Vote Swing';
@@ -1175,7 +1208,7 @@ function construct_districts_table(plan, districts_table)
     districts_table.appendChild(table);
 }
 
-function populate_districts_table(plan, districts_table)
+function populate_districts_table(plan, districts_table, is_scenarios_active, on_change_callback)
 {
     // Populate table cells with actual data
     var table_array = plan_array(plan);
@@ -1246,7 +1279,7 @@ function populate_districts_table(plan, districts_table)
             if (cells[cell_index]) {
                 // Use innerHTML for strings since nice_string() returns HTML entities
                 if (heading_title == 'Candidate Scenario') {
-                    populate_candidate_scenario_content(cells[cell_index], value);
+                    populate_candidate_scenario_content(cells[cell_index], i, value, is_scenarios_active, on_change_callback);
                 } else if (is_string) {
                     cells[cell_index].innerHTML = value;
                 } else {
@@ -2850,7 +2883,7 @@ function load_plan_score(url, message_section, score_section,
         );
 
         // Set up form visibility based on hash and availability
-        setup_form_visibility_listener(scenario_adjustments_form, plan);
+        setup_form_visibility_listener(scenario_adjustments_form, plan, districts_table, null);
 
         // Immediately kick off scenario loading if available and hash present
         if (plan.scenarios !== undefined && has_scenario_hash()) {
@@ -2914,10 +2947,10 @@ function load_plan_score(url, message_section, score_section,
         }
 
         // Build the results table
-        construct_districts_table(plan, districts_table);
+        construct_districts_table(plan, districts_table, false);
         construct_seatshare_graphic(plan, districts_table);
         if (!waiting_for_scenarios) {
-            populate_districts_table(plan, districts_table);
+            populate_districts_table(plan, districts_table, false, null);
             populate_seatshare_graphic(plan);
         }
 
