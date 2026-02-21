@@ -52,6 +52,8 @@ var NC_index = require('./data/sample-NC-1-992/index.json'),
     NC_2020_unified = require('./data/sample-NC-unified/index.json'),
     NC_2025_index = require('./data/sample-NC2025/index.json'),
     NC_2025_scenarios = require('./data/sample-NC2025/scenarios.json'),
+    NC_2025_incumbents_index = require('./data/sample-NC2025-incumbents/index.json'),
+    NC_2025_incumbents_scenarios = require('./data/sample-NC2025-incumbents/scenarios.json'),
     FL_2020_declination = require('./data/sample-FL-declination/index.json'),
     CT_2021_water_district = require('./data/sample-CT-mostly-water-district/index.json'),
     MS_zero_vote_swings = require('./data/sample-MS-zero-vote-swings/index.json'),
@@ -804,12 +806,12 @@ assert.equal(NC_2025_scenarios.statistics['Republican Votes SD'][1][1][1], 12911
 
 // Test create_scenario_plan
 
-// Test: vote_swing_index 12 (0.0) should return original plan unchanged
-var result_zero = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, 12);
-assert.strictEqual(result_zero, NC_2025_index, 'Should return original plan for 0.0 swing');
+// Test: vote_swing 0.0 with unchanged incumbents should return original plan
+var result_zero = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, 0.0, NC_2025_index.incumbents.slice());
+assert.strictEqual(result_zero, NC_2025_index, 'Should return original plan for 0.0 swing with unchanged incumbents');
 
-// Test: vote_swing_index 0 (-6.0) should mutate the plan
-var result_neg6 = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, 0);
+// Test: vote_swing -6.0 should mutate the plan
+var result_neg6 = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, -6.0, NC_2025_index.incumbents.slice());
 assert.notStrictEqual(result_neg6, NC_2025_index, 'Should return a different object for non-zero swing');
 
 // Verify that the first district (index 0) gets data from the correct incumbent scenario
@@ -832,8 +834,8 @@ assert.equal(result_neg6.districts[1].totals['Republican Votes'],
     NC_2025_scenarios.statistics['Republican Votes'][0][district_1_incumbent_index][1],
     'Should update Republican Votes for district 1 with correct incumbent');
 
-// Test: vote_swing_index 24 (+6.0) should use different scenario data
-var result_pos6 = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, 24);
+// Test: vote_swing +6.0 should use different scenario data
+var result_pos6 = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, 6.0, NC_2025_index.incumbents.slice());
 assert.equal(result_pos6.districts[0].totals['Democratic Votes'],
     NC_2025_scenarios.statistics['Democratic Votes'][24][district_0_incumbent_index][0],
     'Should update Democratic Votes for +6.0 swing');
@@ -932,7 +934,7 @@ var prank_rel5 = plan.percentrank_rel('eg_adj_avg', 'localplan', 0.10);
 assert.strictEqual(prank_rel5, null, 'Should return null for localplan');
 
 // Test that create_scenario_plan generates valid summary statistics
-var result_sim = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, 0);
+var result_sim = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, -6.0, NC_2025_index.incumbents.slice());
 
 // Check that all required summary statistics are present
 assert.ok(typeof result_sim.summary['Efficiency Gap'] === 'number', 'Should have Efficiency Gap mean');
@@ -980,3 +982,67 @@ assert.ok(result_sim.summary['Efficiency Gap SD'] > 0, 'Efficiency Gap SD should
 assert.ok(result_sim.summary['Mean-Median SD'] > 0, 'Mean-Median SD should be positive');
 assert.ok(result_sim.summary['Partisan Bias SD'] > 0, 'Partisan Bias SD should be positive');
 assert.ok(result_sim.summary['Declination SD'] > 0, 'Declination SD should be positive');
+
+// Test incumbency scenario functionality with NC 2025 incumbents plan
+// Plan has 14 districts with mixed incumbents (not all open)
+
+// Test that changing incumbents changes the results
+var result_original_inc = plan.create_scenario_plan(
+    NC_2025_incumbents_index,
+    NC_2025_incumbents_scenarios,
+    0.0,
+    NC_2025_incumbents_index.incumbents.slice()
+);
+
+// Create alternate incumbents (flip all to opposite party where applicable)
+var alternate_incumbents = NC_2025_incumbents_index.incumbents.map(function(inc) {
+    if (inc === 'D') return 'R';
+    if (inc === 'R') return 'D';
+    return inc;
+});
+
+var result_alternate_inc = plan.create_scenario_plan(
+    NC_2025_incumbents_index,
+    NC_2025_incumbents_scenarios,
+    0.0,
+    alternate_incumbents
+);
+
+// Verify that changing incumbents produces different results
+assert.notEqual(
+    result_original_inc.districts[1].totals['Democratic Votes'],
+    result_alternate_inc.districts[1].totals['Democratic Votes'],
+    'Different incumbents should produce different Democratic vote totals'
+);
+
+// Verify that the mutated plan has the correct incumbents
+assert.deepEqual(result_original_inc.incumbents, NC_2025_incumbents_index.incumbents,
+    'Result plan should have original incumbents');
+assert.deepEqual(result_alternate_inc.incumbents, alternate_incumbents,
+    'Result plan should have alternate incumbents');
+
+// Test parse_scenario_hash function
+// Mock window.location.hash for testing
+global.window = { location: { hash: '#scenario=vote_swing:1.5;incumbents:RDRRRRRRRRDRR' } };
+var hash_result = plan.parse_scenario_hash();
+assert.equal(hash_result.vote_swing, 1.5, 'Should parse vote_swing from hash');
+assert.equal(hash_result.incumbents, 'RDRRRRRRRRDRR', 'Should parse incumbents from hash');
+
+global.window.location.hash = '#scenario=vote_swing:-2.0';
+hash_result = plan.parse_scenario_hash();
+assert.equal(hash_result.vote_swing, -2.0, 'Should parse negative vote_swing from hash');
+assert.equal(hash_result.incumbents, null, 'Should return null incumbents when not in hash');
+
+global.window.location.hash = '#scenario=incumbents:ORDORD';
+hash_result = plan.parse_scenario_hash();
+assert.equal(hash_result.vote_swing, 0.0, 'Should default to 0.0 when vote_swing not in hash');
+assert.equal(hash_result.incumbents, 'ORDORD', 'Should parse incumbents-only hash');
+
+global.window.location.hash = '#scenario';
+hash_result = plan.parse_scenario_hash();
+assert.equal(hash_result.vote_swing, 0.0, 'Should default to 0.0 for bare #scenario');
+assert.equal(hash_result.incumbents, null, 'Should return null incumbents for bare #scenario');
+
+global.window.location.hash = '';
+hash_result = plan.parse_scenario_hash();
+assert.equal(hash_result, null, 'Should return null when no scenario hash present');

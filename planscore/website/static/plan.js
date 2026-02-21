@@ -537,17 +537,55 @@ function adjust_scenario_stats(data)
     }
 }
 
-function create_scenario_plan(original_plan, scenarios, vote_swing_index)
+function read_scenario_incumbents_from_table(districts_table)
 {
-    var zero_index = 12;
+    // Query all checked radio buttons in candidate scenario forms
+    // Return array of incumbent codes ['O', 'D', 'R', ...] in district order
+    var incumbents = [];
+    var rows = districts_table.querySelectorAll('tbody tr');
 
-    // Special case: 0.0 swing returns original plan unchanged
-    if (vote_swing_index === zero_index) {
+    for (var i = 0; i < rows.length; i++) {
+        var checked_radio = rows[i].querySelector('form.candidate-scenario input[type="radio"]:checked');
+        if (checked_radio) {
+            incumbents.push(checked_radio.value);
+        } else {
+            // If no radio button is checked, this shouldn't happen but fall back to 'O'
+            console.warn('No checked radio button found for row', i);
+            incumbents.push('O');
+        }
+    }
+
+    return incumbents;
+}
+
+function create_scenario_plan(original_plan, scenarios, vote_swing, scenario_incumbents)
+{
+    // Find the vote swing index in scenarios.vote_swings array
+    var vote_swing_index = scenarios.vote_swings.indexOf(vote_swing);
+
+    if (vote_swing_index === -1) {
+        console.error('Vote swing not found in scenarios:', vote_swing);
+        return original_plan;
+    }
+
+    // Special case: 0.0 swing with unchanged incumbents returns original plan
+    var incumbents_unchanged = true;
+    for (var i = 0; i < scenario_incumbents.length; i++) {
+        if (scenario_incumbents[i] !== original_plan.incumbents[i]) {
+            incumbents_unchanged = false;
+            break;
+        }
+    }
+
+    if (vote_swing === 0.0 && incumbents_unchanged) {
         return original_plan;
     }
 
     // Create a deep copy of the plan
     var mutated_plan = JSON.parse(JSON.stringify(original_plan));
+
+    // Update the plan's incumbents to reflect the scenario
+    mutated_plan.incumbents = scenario_incumbents.slice();
 
     // Arrays to store mean and SD values for simulations
     var dem_votes_mean = [];
@@ -556,8 +594,8 @@ function create_scenario_plan(original_plan, scenarios, vote_swing_index)
     var rep_votes_sd = [];
 
     var all_open_seats = true;
-    for (var i in original_plan.incumbents) {
-        if (original_plan.incumbents[i] !== 'O') {
+    for (var i in scenario_incumbents) {
+        if (scenario_incumbents[i] !== 'O') {
             all_open_seats = false;
         }
     }
@@ -566,7 +604,7 @@ function create_scenario_plan(original_plan, scenarios, vote_swing_index)
     for (var district_index = 0; district_index < mutated_plan.districts.length; district_index++) {
         // Get incumbent scenario for this district (e.g., 'O', 'D', 'R', or 'U')
         // When all seats are open we use a slightly different model matrix
-        var incumbent_code = all_open_seats ? 'U' : original_plan.incumbents[district_index];
+        var incumbent_code = all_open_seats ? 'U' : scenario_incumbents[district_index];
 
         // Find the index in scenarios.incumbents array
         var incumbent_index = scenarios.incumbents.indexOf(incumbent_code);
@@ -681,30 +719,52 @@ function create_scenario_plan(original_plan, scenarios, vote_swing_index)
 
 function parse_scenario_hash()
 {
-    // Parse URL hash to extract vote swing value
-    // Supports: #scenario (default 0.0) or #scenario=vote_swing:1.0
+    // Parse URL hash to extract vote swing and incumbents
+    // Supports: #scenario, #scenario=vote_swing:1.5, #scenario=incumbents:ORDORD,
+    //           #scenario=vote_swing:1.5;incumbents:ORDORD
     var hash = window.location.hash;
 
     if (!hash || !hash.match(/\bscenario\b/)) {
         return null; // No scenario hash present
     }
 
+    var result = {
+        vote_swing: 0.0,
+        incumbents: null
+    };
+
     // Look for vote_swing parameter
-    var match = hash.match(/vote_swing:([-\d.]+)/);
-    if (match) {
-        return parseFloat(match[1]);
+    var vote_swing_match = hash.match(/vote_swing:([-\d.]+)/);
+    if (vote_swing_match) {
+        result.vote_swing = parseFloat(vote_swing_match[1]);
     }
 
-    // Default to 0.0 if just #scenario with no parameter
-    return 0.0;
+    // Look for incumbents parameter (string of O/D/R characters)
+    var incumbents_match = hash.match(/incumbents:([ODR]+)/);
+    if (incumbents_match) {
+        result.incumbents = incumbents_match[1];
+    }
+
+    return result;
 }
 
-function update_scenario_hash(vote_swing)
+function update_scenario_hash(vote_swing, incumbents_string, original_incumbents_string)
 {
-    // Update URL hash with vote swing value without page reload
-    var hash_value = vote_swing === 0.0
-        ? '#scenario'
-        : '#scenario=vote_swing:' + vote_swing.toFixed(1);
+    // Update URL hash with vote swing and incumbents without page reload
+    // Omit vote_swing if 0.0, omit incumbents if matches original
+    var parts = [];
+
+    if (vote_swing !== 0.0) {
+        parts.push('vote_swing:' + vote_swing.toFixed(1));
+    }
+
+    if (incumbents_string && incumbents_string !== original_incumbents_string) {
+        parts.push('incumbents:' + incumbents_string);
+    }
+
+    var hash_value = parts.length > 0
+        ? '#scenario=' + parts.join(';')
+        : '#scenario';
 
     // Use replaceState to avoid adding to browser history
     if (window.history && window.history.replaceState) {
@@ -785,11 +845,26 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
     // Remove disabled class now that scenarios have loaded
     scenario_adjustments_form.classList.remove('scenario-adjustments-disabled');
 
+    // Get the range input and display element
+    var range_input = scenario_adjustments_form.querySelector('input[name="vote-swing"]');
+    var display = document.getElementById('vote-swing-display');
+
     // Define callback for candidate scenario radio button changes
     // This will be called when a user selects a different incumbency option
     function on_candidate_scenario_change(row, value) {
-        // TODO: Update scenario state and recalculate visualizations
-        console.log('Candidate scenario changed for row', row, 'to', value);
+        // Read current incumbents from the table forms
+        var scenario_incumbents = read_scenario_incumbents_from_table(districts_table);
+
+        // Get current vote swing from the range input
+        var vote_swing = parseFloat(range_input.value);
+
+        // Update the URL hash
+        var original_incumbents_string = original_plan.incumbents.join('');
+        var scenario_incumbents_string = scenario_incumbents.join('');
+        update_scenario_hash(vote_swing, scenario_incumbents_string, original_incumbents_string);
+
+        // Update all visualizations with the new incumbency
+        update_visualizations(vote_swing, scenario_incumbents);
     }
 
     // Initialize vote_swing field if it doesn't exist
@@ -803,10 +878,6 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         populate_districts_table(original_plan, districts_table, true, on_candidate_scenario_change);
     }
 
-    // Get the range input and display element
-    var range_input = scenario_adjustments_form.querySelector('input[name="vote-swing"]');
-    var display = document.getElementById('vote-swing-display');
-
     // Helper function to format vote swing for display
     function format_vote_swing(value) {
         var num = parseFloat(value);
@@ -819,18 +890,10 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         }
     }
 
-    // Helper function to update all visualizations for a given vote swing
-    function update_visualizations(vote_swing) {
-        // Find the index in scenarios.vote_swings array
-        var vote_swing_index = scenarios.vote_swings.indexOf(vote_swing);
-
-        if (vote_swing_index === -1) {
-            console.error('Vote swing not found in scenarios:', vote_swing);
-            return;
-        }
-
+    // Helper function to update all visualizations for a given vote swing and incumbents
+    function update_visualizations(vote_swing, scenario_incumbents) {
         // Create mutated plan with scenario data
-        var mutated_plan = create_scenario_plan(original_plan, scenarios, vote_swing_index);
+        var mutated_plan = create_scenario_plan(original_plan, scenarios, vote_swing, scenario_incumbents);
 
         // Update the districts table
         populate_districts_table(mutated_plan, districts_table, true, on_candidate_scenario_change);
@@ -857,10 +920,23 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         populate_ftva_race_scores(mutated_plan, scores_FTVA);
     }
 
-    // Set initial value from hash or default to 0
-    var initial_vote_swing = parse_scenario_hash();
-    if (initial_vote_swing === null) {
-        initial_vote_swing = 0.0;
+    // Set initial values from hash or defaults
+    var hash_data = parse_scenario_hash();
+    var initial_vote_swing = 0.0;
+    var initial_incumbents = original_plan.incumbents.slice();
+
+    if (hash_data !== null) {
+        initial_vote_swing = hash_data.vote_swing;
+
+        // Parse incumbents from hash if present
+        if (hash_data.incumbents !== null) {
+            // Validate incumbents length matches district count
+            if (hash_data.incumbents.length === original_plan.incumbents.length) {
+                initial_incumbents = hash_data.incumbents.split('');
+            } else {
+                console.warn('Incumbents from hash has wrong length, ignoring:', hash_data.incumbents);
+            }
+        }
     }
 
     // Validate that the initial vote swing exists in scenarios
@@ -874,21 +950,71 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
 
     // Always update visualizations on initial load (even for 0.0)
     // This ensures that if we were waiting_for_scenarios, we now populate everything
-    update_visualizations(initial_vote_swing);
+    update_visualizations(initial_vote_swing, initial_incumbents);
 
     // Add input listener to range slider for live updates
     range_input.addEventListener('input', function(event) {
         // Get the selected vote swing value
         var vote_swing = parseFloat(event.target.value);
 
+        // Read current incumbents from the table forms
+        var scenario_incumbents = read_scenario_incumbents_from_table(districts_table);
+
         // Update the display
         display.textContent = format_vote_swing(vote_swing);
 
         // Update the URL hash
-        update_scenario_hash(vote_swing);
+        var original_incumbents_string = original_plan.incumbents.join('');
+        var scenario_incumbents_string = scenario_incumbents.join('');
+        update_scenario_hash(vote_swing, scenario_incumbents_string, original_incumbents_string);
 
         // Update all visualizations with the new vote swing
-        update_visualizations(vote_swing);
+        update_visualizations(vote_swing, scenario_incumbents);
+    });
+
+    // Add hashchange listener to respond to URL changes (e.g., browser back/forward)
+    window.addEventListener('hashchange', function() {
+        var hash_data = parse_scenario_hash();
+        if (hash_data === null) {
+            // Hash removed, no action needed here (handled by form visibility listener)
+            return;
+        }
+
+        var vote_swing = hash_data.vote_swing;
+        var hash_incumbents = hash_data.incumbents
+            ? hash_data.incumbents.split('')
+            : original_plan.incumbents.slice();
+
+        // Validate incumbents length
+        if (hash_data.incumbents && hash_data.incumbents.length !== original_plan.incumbents.length) {
+            console.warn('Incumbents from hash has wrong length, using original');
+            hash_incumbents = original_plan.incumbents.slice();
+        }
+
+        // Validate vote swing
+        if (scenarios.vote_swings.indexOf(vote_swing) === -1) {
+            console.warn('Vote swing from hash not found in scenarios, ignoring hashchange');
+            return;
+        }
+
+        // Update range input and display
+        range_input.value = vote_swing;
+        display.textContent = format_vote_swing(vote_swing);
+
+        // Update radio button states in table to match hash
+        var rows = districts_table.querySelectorAll('tbody tr');
+        for (var i = 0; i < rows.length && i < hash_incumbents.length; i++) {
+            var form = rows[i].querySelector('form.candidate-scenario');
+            if (form) {
+                var radios = form.querySelectorAll('input[type="radio"]');
+                for (var j = 0; j < radios.length; j++) {
+                    radios[j].checked = (radios[j].value === hash_incumbents[i]);
+                }
+            }
+        }
+
+        // Update visualizations
+        update_visualizations(vote_swing, hash_incumbents);
     });
 }
 
@@ -3307,6 +3433,7 @@ if(typeof module !== 'undefined' && module.exports)
         update_heading_titles,
         adjust_scenario_stats,
         create_scenario_plan,
+        parse_scenario_hash,
         swing_vote,
         calculate_EG,
         calculate_MMD,
