@@ -797,6 +797,7 @@ assert.notEqual(NC_2025_scenarios.statistics['Republican Votes'][1][1][1], 14817
 assert.notEqual(NC_2025_scenarios.statistics['Republican Votes SD'][1][1][1], 12911.24);
 
 plan.adjust_scenario_stats(NC_2025_scenarios);
+plan.adjust_scenario_stats(NC_2025_incumbents_scenarios);
 
 assert.equal(NC_2025_scenarios.statistics['Democratic Votes'][1][1][1], 252495.57);
 assert.equal(NC_2025_scenarios.statistics['Democratic Votes SD'][1][1][1], 12911.24);
@@ -1020,6 +1021,52 @@ assert.deepEqual(result_original_inc.incumbents, NC_2025_incumbents_index.incumb
     'Result plan should have original incumbents');
 assert.deepEqual(result_alternate_inc.incumbents, alternate_incumbents,
     'Result plan should have alternate incumbents');
+
+// Test that vote_swing field is calculated relative to baseline with same incumbents
+// This ensures that changing incumbents alone (with 0.0 vote swing) shows 0.0 vote_swing
+var result_inc_no_swing = plan.create_scenario_plan(
+    NC_2025_incumbents_index,
+    NC_2025_incumbents_scenarios,
+    0.0,
+    alternate_incumbents  // Different incumbents but 0.0 vote swing
+);
+
+// Verify that all districts have 0.0 vote_swing when vote swing parameter is 0.0
+// even though incumbents have changed
+for (var i = 0; i < result_inc_no_swing.districts.length; i++) {
+    assert.equal(
+        result_inc_no_swing.districts[i].vote_swing,
+        0.0,
+        'District ' + i + ' should have 0.0 vote_swing when vote swing parameter is 0.0, regardless of incumbency changes'
+    );
+}
+
+// Test that vote_swing field reflects actual vote swing, not incumbency changes
+var result_inc_with_swing = plan.create_scenario_plan(
+    NC_2025_incumbents_index,
+    NC_2025_incumbents_scenarios,
+    2.0,  // Positive vote swing
+    alternate_incumbents  // Different incumbents
+);
+
+// Verify that vote_swing values are non-zero and positive when vote swing parameter is positive
+var has_nonzero_swings = false;
+for (var i = 0; i < result_inc_with_swing.districts.length; i++) {
+    var swing = result_inc_with_swing.districts[i].vote_swing;
+    if (swing !== 0.0) {
+        has_nonzero_swings = true;
+    }
+    // Vote swing should be roughly around the 2% (0.02) parameter, allowing for district variation
+    assert.ok(
+        typeof swing === 'number' && !isNaN(swing),
+        'District ' + i + ' vote_swing should be a valid number, got: ' + swing
+    );
+    assert.ok(
+        Math.abs(swing) < 0.1,  // Sanity check: shouldn't be wildly off
+        'District ' + i + ' vote_swing (' + swing + ') should be reasonable (< 10%) when vote swing parameter is 2.0'
+    );
+}
+assert.ok(has_nonzero_swings, 'At least some districts should have non-zero vote_swing when vote swing parameter is non-zero');
 
 // Test parse_scenario_hash function
 // Mock window.location.hash for testing

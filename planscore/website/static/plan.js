@@ -579,6 +579,13 @@ function create_scenario_plan(original_plan, scenarios, vote_swing, scenario_inc
         return original_plan;
     }
 
+    // Find the baseline (0.0 swing) index for calculating vote_swing values
+    var baseline_vote_swing_index = scenarios.vote_swings.indexOf(0.0);
+    if (baseline_vote_swing_index === -1) {
+        console.error('Baseline vote swing (0.0) not found in scenarios');
+        baseline_vote_swing_index = vote_swing_index; // Fallback to current
+    }
+
     // Special case: 0.0 swing with unchanged incumbents returns original plan
     var incumbents_unchanged = true;
     for (var i = 0; i < scenario_incumbents.length; i++) {
@@ -653,12 +660,30 @@ function create_scenario_plan(original_plan, scenarios, vote_swing, scenario_inc
             );
         }
 
-        // Set vote_swing field for this district based on calculated difference from original
-        var mvd = mutated_plan.districts[district_index].totals['Democratic Votes'],
-            mvr = mutated_plan.districts[district_index].totals['Republican Votes'],
-            ovd = original_plan.districts[district_index].totals['Democratic Votes'],
-            ovr = original_plan.districts[district_index].totals['Republican Votes'];
-        mutated_plan.districts[district_index].vote_swing = mvd / (mvd + mvr) - ovd / (ovd + ovr);
+        // Set vote_swing field for this district based on difference from baseline with same incumbents
+        // This isolates the vote swing parameter effect from the incumbency effect
+        var current_dem = mutated_plan.districts[district_index].totals['Democratic Votes'],
+            current_rep = mutated_plan.districts[district_index].totals['Republican Votes'];
+
+        // Get baseline votes (0.0 swing with same incumbent scenario)
+        var baseline_dem = scenarios.statistics['Democratic Votes']
+            ? scenarios.statistics['Democratic Votes'][baseline_vote_swing_index][incumbent_index][district_index]
+            : current_dem;
+        var baseline_rep = scenarios.statistics['Republican Votes']
+            ? scenarios.statistics['Republican Votes'][baseline_vote_swing_index][incumbent_index][district_index]
+            : current_rep;
+
+        // Calculate vote swing as difference from baseline with same incumbents
+        // Handle edge case where total votes might be zero
+        var current_total = current_dem + current_rep;
+        var baseline_total = baseline_dem + baseline_rep;
+
+        if (current_total > 0 && baseline_total > 0) {
+            mutated_plan.districts[district_index].vote_swing =
+                current_dem / current_total - baseline_dem / baseline_total;
+        } else {
+            mutated_plan.districts[district_index].vote_swing = 0.0;
+        }
     }
 
     var EG_sims = [];
