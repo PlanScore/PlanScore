@@ -306,3 +306,23 @@ form.candidate-scenario input[type="radio"]:focus + label {
     outline: dotted 1px #ccc;
     outline-offset: 2px;
 }
+
+/* Duller styling when all seats are open (different model used) */
+.table-districts table.all-open-seats form.candidate-scenario {
+    border-color: #cccccc;
+}
+
+.table-districts table.all-open-seats form.candidate-scenario label {
+    color: #999;
+    background-color: #f8f8f8;
+}
+
+.table-districts table.all-open-seats form.candidate-scenario input[type="radio"]:hover + label {
+    background-color: #eeeeee;
+}
+
+.table-districts table.all-open-seats form.candidate-scenario input[type="radio"]:checked + label {
+    background-color: #ddd;
+    color: #666;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+}

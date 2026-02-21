@@ -558,6 +558,17 @@ function read_scenario_incumbents_from_table(districts_table)
     return incumbents;
 }
 
+function check_all_open_seats(incumbents)
+{
+    // Check if all incumbents are open seats
+    for (var i in incumbents) {
+        if (incumbents[i] !== 'O') {
+            return false;
+        }
+    }
+    return true;
+}
+
 function create_scenario_plan(original_plan, scenarios, vote_swing, scenario_incumbents)
 {
     // Find the vote swing index in scenarios.vote_swings array
@@ -593,12 +604,7 @@ function create_scenario_plan(original_plan, scenarios, vote_swing, scenario_inc
     var dem_votes_sd = [];
     var rep_votes_sd = [];
 
-    var all_open_seats = true;
-    for (var i in scenario_incumbents) {
-        if (scenario_incumbents[i] !== 'O') {
-            all_open_seats = false;
-        }
-    }
+    var all_open_seats = check_all_open_seats(scenario_incumbents);
 
     // Update each district with scenario data
     for (var district_index = 0; district_index < mutated_plan.districts.length; district_index++) {
@@ -1345,6 +1351,16 @@ function populate_districts_table(plan, districts_table, is_scenarios_active, on
     const tbody = districts_table.querySelector('tbody');
     if (!tbody) {
         return;
+    }
+
+    // Add or remove 'all-open-seats' class based on incumbency
+    const table = districts_table.querySelector('table');
+    if (table && plan.incumbents && plan.incumbents.length > 0) {
+        if (check_all_open_seats(plan.incumbents)) {
+            table.classList.add('all-open-seats');
+        } else {
+            table.classList.remove('all-open-seats');
+        }
     }
 
     const rows = tbody.querySelectorAll('tr');
