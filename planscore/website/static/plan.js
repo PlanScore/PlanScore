@@ -1261,9 +1261,9 @@ function populate_candidate_scenario_content(cell, row, value, is_scenarios_acti
     // Handle active case with no form: create new form
     cell.innerHTML = [
         `<form class="candidate-scenario">`,
-        `<input type="radio" name="C${row}" value="D" id="D${row}"/><label for="D${row}">DEM</label>`,
-        `<input type="radio" name="C${row}" value="O" id="O${row}"/><label for="O${row}">OPEN</label>`,
-        `<input type="radio" name="C${row}" value="R" id="R${row}"/><label for="R${row}">REP</label>`,
+        `<input type="radio" name="C${row}" value="D" id="D${row}"/><label for="D${row}" class="D">DEM</label>`,
+        `<input type="radio" name="C${row}" value="O" id="O${row}"/><label for="O${row}" class="O">OPEN</label>`,
+        `<input type="radio" name="C${row}" value="R" id="R${row}"/><label for="R${row}" class="R">REP</label>`,
         `</form>`
     ].join('');
 
