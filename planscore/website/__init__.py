@@ -75,7 +75,7 @@ def get_gaussian_randoms():
     random.seed(0)
     raw_values = [round(random.gauss(0, 1), 3) for _ in range(500)]
     raw_mean, raw_stdev = statistics.mean(raw_values), statistics.stdev(raw_values)
-    return [(raw_value - raw_mean) / raw_stdev for raw_value in raw_values]
+    return [round((raw_value - raw_mean) / raw_stdev, 3) for raw_value in raw_values]
 
 def get_historical_percentrank_data():
     ''' Extract historical plan metrics for percentrank calculations.
