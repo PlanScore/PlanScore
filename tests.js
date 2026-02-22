@@ -291,7 +291,7 @@ var plan_array7 = plan.plan_array(NC_2019_incumbency);
 assert.equal(plan_array7.length, 14, 'Should have a header with 13 districts');
 
 assert.deepEqual(plan_array7[0],
-    ['District', 'Candidate Scenario', 'Pop. 2010', 'Pop. 2016',
+    ['District', 'Incumbent Scenario', 'Pop. 2010', 'Pop. 2016',
     'Black Pop. 2016', 'Hispanic Pop. 2016',
     'Predicted Democratic Vote Share', 'Predicted Republican Vote Share'],
     'Should pick out the right column names');
@@ -427,7 +427,7 @@ var plan_array10 = plan.plan_array(MS_zero_vote_swings);
 assert.equal(plan_array10.length, 5, 'Should have a header with 4 districts');
 
 assert.deepEqual(plan_array10[0],
-    ['District', 'Candidate Scenario', 'Pop. 2020', 'PlanScore:ShyColumn',
+    ['District', 'Incumbent Scenario', 'Pop. 2020', 'PlanScore:ShyColumn',
     'Hispanic CVAP 2023', 'Non-Hisp. Black CVAP 2023', 'Non-Hisp. Asian CVAP 2023',
     'Non-Hisp. Native CVAP 2023', 'Chance of 1+ Flips<sup>†</sup>', 'Chance of Democratic Win',
     'Predicted Vote Shares', 'Vote Swing', 'Harris (D) 2024', 'Trump (R) 2024', 'PlanScore:ShyColumn',
@@ -442,7 +442,7 @@ var plan_array11 = plan.plan_array(MS_vote_swings);
 assert.equal(plan_array11.length, 5, 'Should have a header with 4 districts');
 
 assert.deepEqual(plan_array11[0],
-    ['District', 'Candidate Scenario', 'Pop. 2020', 'PlanScore:ShyColumn',
+    ['District', 'Incumbent Scenario', 'Pop. 2020', 'PlanScore:ShyColumn',
     'Hispanic CVAP 2023', 'Non-Hisp. Black CVAP 2023', 'Non-Hisp. Asian CVAP 2023',
     'Non-Hisp. Native CVAP 2023', 'Chance of 1+ Flips<sup>†</sup>', 'Chance of Democratic Win',
     'Predicted Vote Shares', 'Vote Swing', 'Harris (D) 2024', 'Trump (R) 2024',

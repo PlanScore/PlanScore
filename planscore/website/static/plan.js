@@ -539,7 +539,7 @@ function adjust_scenario_stats(data)
 
 function read_scenario_incumbents_from_table(districts_table)
 {
-    // Query all checked radio buttons in candidate scenario forms
+    // Query all checked radio buttons in incumbent scenario forms
     // Return array of incumbent codes ['O', 'D', 'R', ...] in district order
     var incumbents = [];
     var rows = districts_table.querySelectorAll('tbody tr');
@@ -852,7 +852,7 @@ function update_form_visibility(form, plan, districts_table, on_change_callback)
         form.classList.remove('scenario-adjustments-disabled');
     }
 
-    // Calculate whether scenarios are active and update candidate scenario cells
+    // Calculate whether scenarios are active and update incumbent scenario cells
     var is_scenarios_active = has_hash && availability.available;
     if (districts_table) {
         populate_districts_table(plan, districts_table, is_scenarios_active, on_change_callback);
@@ -906,7 +906,7 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         );
     }
 
-    // Define callback for candidate scenario radio button changes
+    // Define callback for incumbent scenario radio button changes
     // This will be called when a user selects a different incumbency option
     function on_candidate_scenario_change(row, value) {
         // Prevent feedback loop: ignore events triggered by our own programmatic updates
@@ -1369,7 +1369,7 @@ function construct_districts_table(plan, districts_table, is_scenarios_active)
 
             cell.dataset.columnIndex = j;
 
-            if (heading_title === 'Candidate Scenario') {
+            if (heading_title === 'Incumbent Scenario') {
                 populate_candidate_scenario_content(cell, i, '', is_scenarios_active, null);
             } else if (heading_title === 'Vote Swing') {
                 // Mark Vote Swing column for show/hide toggling
@@ -1451,7 +1451,7 @@ function populate_districts_table(plan, districts_table, is_scenarios_active, on
 
             var value;
             var is_string = false;
-            if (heading_title == 'Candidate Scenario') {
+            if (heading_title == 'Incumbent Scenario') {
                 value = table_array[table_row_index][j];
             } else if (typeof table_array[table_row_index][j] == 'number') {
                 value = nice_count(table_array[table_row_index][j]);
@@ -1466,7 +1466,7 @@ function populate_districts_table(plan, districts_table, is_scenarios_active, on
 
             if (cells[cell_index]) {
                 // Use innerHTML for strings since nice_string() returns HTML entities
-                if (heading_title == 'Candidate Scenario') {
+                if (heading_title == 'Incumbent Scenario') {
                     populate_candidate_scenario_content(cells[cell_index], i, value, is_scenarios_active, on_change_callback);
                 } else if (is_string) {
                     cells[cell_index].innerHTML = value;
@@ -2769,7 +2769,7 @@ function plan_array(plan)
     const has_incumbency = plan_has_incumbency(plan);
 
     if(has_incumbency) {
-        head_row.push('Candidate Scenario');
+        head_row.push('Incumbent Scenario');
     }
 
     if(plan.districts.length == 0)
