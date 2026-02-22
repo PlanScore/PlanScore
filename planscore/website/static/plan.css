@@ -197,18 +197,26 @@ path.highlight {
     background-repeat: repeat;
 }
 
-/* Scenario adjustments form - fixed position in upper-right */
+/* Scenario adjustments form - fixed position bottom-right on mobile, upper-right on desktop */
 #scenario-adjustments {
     position: fixed;
-    top: 20px;
+    bottom: 20px;
     right: 20px;
     background: #fff3cd; /* Light orange background */
     border: 2px solid #ff8c00; /* Orange border */
     border-radius: 8px;
     padding: 15px;
     box-shadow: 0 2px 10px rgba(255,140,0,0.3);
-    z-index: 1000;
+    z-index: 1100;
     min-width: 200px;
+}
+
+/* Desktop: position below navbar to avoid overlap */
+@media (min-width: 992px) {
+    #scenario-adjustments {
+        top: 110px;
+        bottom: auto;
+    }
 }
 
 #scenario-adjustments.scenario-adjustments-hidden {

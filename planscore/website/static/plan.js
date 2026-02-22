@@ -3467,6 +3467,59 @@ function add_map_pattern_support(show_leans)
 }
 
 // Export functions for testing
+// Adjust scenario form position to avoid overlapping with Olark chat button
+function adjust_scenario_form_for_olark()
+{
+    var scenario_form = document.getElementById('scenario-adjustments');
+    if (!scenario_form) return;
+
+    // Only adjust on narrow viewports (below desktop breakpoint)
+    var is_narrow = window.innerWidth < 992;
+
+    if (is_narrow) {
+        // Look for any fixed-position elements in the bottom-right corner
+        // This detects Olark or similar chat widgets without hardcoding IDs
+        var bottom_right_elements = Array.from(document.querySelectorAll('*')).filter(function(el) {
+            // Skip our own form
+            if (el === scenario_form) return false;
+
+            var style = window.getComputedStyle(el);
+            if (style.position !== 'fixed') return false;
+
+            var right = parseInt(style.right);
+            var bottom = parseInt(style.bottom);
+
+            // Element is in bottom-right if right and bottom are both small positive numbers
+            return !isNaN(right) && right >= 0 && right < 100 &&
+                   !isNaN(bottom) && bottom >= 0 && bottom < 100;
+        });
+
+        if (bottom_right_elements.length > 0) {
+            // Found other fixed element(s) in bottom-right, move form up to avoid overlap
+            scenario_form.style.bottom = '90px';
+        } else {
+            // No other elements, use default
+            scenario_form.style.bottom = '20px';
+        }
+    } else {
+        // Desktop: clear inline style to let CSS media query handle it
+        scenario_form.style.bottom = '';
+    }
+}
+
+// Run on page load and when window resizes
+if (typeof window !== 'undefined') {
+    window.addEventListener('load', function() {
+        // Initial adjustment
+        adjust_scenario_form_for_olark();
+
+        // Check again after a delay to catch late-loading Olark
+        setTimeout(adjust_scenario_form_for_olark, 1000);
+    });
+
+    window.addEventListener('resize', adjust_scenario_form_for_olark);
+}
+
 if(typeof module !== 'undefined' && module.exports)
 {
     module.exports = {
