@@ -881,39 +881,36 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
 
     // Centralized scheduling for visualization updates with optional debouncing
     // Defers heavy computation using setTimeout to allow browser to paint UI changes first.
-    // Uses is_updating flag to prevent feedback loops from programmatic DOM updates.
-    var pending_update_timer = null;
-    var is_updating = false;
+    // Uses is_visualization_updating flag to prevent feedback loops from programmatic DOM updates.
+    var pending_visualization_update_timer = null;
+    var is_visualization_updating = false;
 
-    function schedule_visualization_update(vote_swing, scenario_incumbents, delay_ms) {
-        // Default to 0ms (next tick) for radio buttons
-        // Pass 50ms for range slider to debounce during dragging
-        if (delay_ms === undefined) {
-            delay_ms = 0;
-        }
-
+    function schedule_visualization_update(vote_swing, scenario_incumbents) {
         // Cancel any pending update to avoid queue buildup
-        if (pending_update_timer !== null) {
-            clearTimeout(pending_update_timer);
+        if (pending_visualization_update_timer !== null) {
+            clearTimeout(pending_visualization_update_timer);
         }
 
         // Schedule the heavy work with specified delay
-        pending_update_timer = setTimeout(function() {
-            is_updating = true;
-            var original_incumbents_string = original_plan.incumbents.join('');
-            var scenario_incumbents_string = scenario_incumbents.join('');
-            update_scenario_hash(vote_swing, scenario_incumbents_string, original_incumbents_string);
-            update_visualizations(vote_swing, scenario_incumbents);
-            pending_update_timer = null;
-            is_updating = false;
-        }, delay_ms);
+        pending_visualization_update_timer = setTimeout(
+            function() {
+                is_visualization_updating = true;
+                var original_incumbents_string = original_plan.incumbents.join('');
+                var scenario_incumbents_string = scenario_incumbents.join('');
+                update_scenario_hash(vote_swing, scenario_incumbents_string, original_incumbents_string);
+                update_visualizations(vote_swing, scenario_incumbents);
+                pending_visualization_update_timer = null;
+                is_visualization_updating = false;
+            },
+            25 // this msec value feels good after testing on desktop and mobile
+        );
     }
 
     // Define callback for candidate scenario radio button changes
     // This will be called when a user selects a different incumbency option
     function on_candidate_scenario_change(row, value) {
         // Prevent feedback loop: ignore events triggered by our own programmatic updates
-        if (is_updating) {
+        if (is_visualization_updating) {
             return;
         }
 
@@ -923,7 +920,7 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         // Get current vote swing from the range input
         var vote_swing = parseFloat(range_input.value);
 
-        // Schedule heavy work (deferred to next tick, lets browser paint CSS changes first)
+        // Schedule heavy work, let browser paint input changes first
         schedule_visualization_update(vote_swing, scenario_incumbents);
     }
 
@@ -1023,8 +1020,8 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         // Update the display immediately
         display.textContent = format_vote_swing(vote_swing);
 
-        // Schedule heavy work with 50ms debounce (wait for dragging to stop)
-        schedule_visualization_update(vote_swing, scenario_incumbents, 50);
+        // Schedule heavy work, let browser paint input changes first
+        schedule_visualization_update(vote_swing, scenario_incumbents);
     });
 
     // Add hashchange listener to respond to URL changes (e.g., browser back/forward)
