@@ -286,6 +286,8 @@ form.candidate-scenario label {
     font-weight: 600;
     text-align: center;
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;  /* Disable iOS tap highlight delay */
+    touch-action: manipulation;  /* Disable double-tap zoom delay */
 }
 
 form.candidate-scenario label:not(:last-child) {

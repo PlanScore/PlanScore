@@ -550,7 +550,6 @@ function read_scenario_incumbents_from_table(districts_table)
             incumbents.push(checked_radio.value);
         } else {
             // If no radio button is checked, this shouldn't happen but fall back to 'O'
-            console.warn('No checked radio button found for row', i);
             incumbents.push('O');
         }
     }
@@ -880,22 +879,52 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
     var range_input = scenario_adjustments_form.querySelector('input[name="vote-swing"]');
     var display = document.getElementById('vote-swing-display');
 
+    // Centralized scheduling for visualization updates with optional debouncing
+    // Defers heavy computation using setTimeout to allow browser to paint UI changes first.
+    // Uses is_updating flag to prevent feedback loops from programmatic DOM updates.
+    var pending_update_timer = null;
+    var is_updating = false;
+
+    function schedule_visualization_update(vote_swing, scenario_incumbents, delay_ms) {
+        // Default to 0ms (next tick) for radio buttons
+        // Pass 50ms for range slider to debounce during dragging
+        if (delay_ms === undefined) {
+            delay_ms = 0;
+        }
+
+        // Cancel any pending update to avoid queue buildup
+        if (pending_update_timer !== null) {
+            clearTimeout(pending_update_timer);
+        }
+
+        // Schedule the heavy work with specified delay
+        pending_update_timer = setTimeout(function() {
+            is_updating = true;
+            var original_incumbents_string = original_plan.incumbents.join('');
+            var scenario_incumbents_string = scenario_incumbents.join('');
+            update_scenario_hash(vote_swing, scenario_incumbents_string, original_incumbents_string);
+            update_visualizations(vote_swing, scenario_incumbents);
+            pending_update_timer = null;
+            is_updating = false;
+        }, delay_ms);
+    }
+
     // Define callback for candidate scenario radio button changes
     // This will be called when a user selects a different incumbency option
     function on_candidate_scenario_change(row, value) {
+        // Prevent feedback loop: ignore events triggered by our own programmatic updates
+        if (is_updating) {
+            return;
+        }
+
         // Read current incumbents from the table forms
         var scenario_incumbents = read_scenario_incumbents_from_table(districts_table);
 
         // Get current vote swing from the range input
         var vote_swing = parseFloat(range_input.value);
 
-        // Update the URL hash
-        var original_incumbents_string = original_plan.incumbents.join('');
-        var scenario_incumbents_string = scenario_incumbents.join('');
-        update_scenario_hash(vote_swing, scenario_incumbents_string, original_incumbents_string);
-
-        // Update all visualizations with the new incumbency
-        update_visualizations(vote_swing, scenario_incumbents);
+        // Schedule heavy work (deferred to next tick, lets browser paint CSS changes first)
+        schedule_visualization_update(vote_swing, scenario_incumbents);
     }
 
     // Initialize vote_swing field if it doesn't exist
@@ -991,16 +1020,11 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         // Read current incumbents from the table forms
         var scenario_incumbents = read_scenario_incumbents_from_table(districts_table);
 
-        // Update the display
+        // Update the display immediately
         display.textContent = format_vote_swing(vote_swing);
 
-        // Update the URL hash
-        var original_incumbents_string = original_plan.incumbents.join('');
-        var scenario_incumbents_string = scenario_incumbents.join('');
-        update_scenario_hash(vote_swing, scenario_incumbents_string, original_incumbents_string);
-
-        // Update all visualizations with the new vote swing
-        update_visualizations(vote_swing, scenario_incumbents);
+        // Schedule heavy work with 50ms debounce (wait for dragging to stop)
+        schedule_visualization_update(vote_swing, scenario_incumbents, 50);
     });
 
     // Add hashchange listener to respond to URL changes (e.g., browser back/forward)
@@ -2430,7 +2454,6 @@ function populate_plan_map(plan, div)
     var data = div._geojson_data;
 
     if (!geojson || !data) {
-        console.warn('Map not yet constructed, skipping populate');
         return;
     }
 
