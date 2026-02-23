@@ -886,14 +886,14 @@ function check_scenarios_available(plan)
 
     // Check if plan has scenarios linked
     if (!plan.scenarios) {
-        return { available: false, reason: 'no_scenarios_file' };
+        return { available: false, reason: 'PlanScore did not calculate alternative outcomes for this plan' };
     }
 
     // Check if all districts have zero vote_swing initially
     // (Plans with pre-applied vote swings shouldn't show the interactive feature)
     for (var i = 0; i < plan.districts.length; i++) {
         if ('vote_swing' in plan.districts[i] && plan.districts[i].vote_swing !== 0.0) {
-            return { available: false, reason: 'nonzero_vote_swings' };
+            return { available: false, reason: 'This plan already has vote swing adjustments applied' };
         }
     }
 
@@ -905,19 +905,32 @@ function update_form_visibility(form, plan, districts_table, on_change_callback)
     // Update form visibility based on URL hash and plan availability
     var has_hash = has_scenario_hash();
     var availability = check_scenarios_available(plan);
+    var disabled_message_el = form.querySelector('.disabled-message');
 
     if (!has_hash) {
         // No hash: hide form completely
         form.classList.add('scenario-adjustments-hidden');
         form.classList.remove('scenario-adjustments-disabled');
+        // Remove the disabled message element if it exists
+        if (disabled_message_el) {
+            disabled_message_el.remove();
+        }
     } else if (!availability.available) {
-        // Has hash but scenarios not available: show disabled form
+        // Has hash but scenarios not available: show disabled form with reason
         form.classList.remove('scenario-adjustments-hidden');
         form.classList.add('scenario-adjustments-disabled');
+        // Set the disabled message text to the reason
+        if (disabled_message_el) {
+            disabled_message_el.textContent = availability.reason;
+        }
     } else {
         // Has hash and scenarios available: show enabled form
         form.classList.remove('scenario-adjustments-hidden');
         form.classList.remove('scenario-adjustments-disabled');
+        // Remove the disabled message element if it exists
+        if (disabled_message_el) {
+            disabled_message_el.remove();
+        }
     }
 
     // Calculate whether scenarios are active and update incumbent scenario cells

@@ -202,11 +202,9 @@ path.highlight {
     position: fixed;
     bottom: 20px;
     right: 20px;
-    background: #fff3cd; /* Light orange background */
-    border: 2px solid #ff8c00; /* Orange border */
-    border-radius: 8px;
+    background: #f4f5f5; /* Light gray background */
+    border: 1px solid #dfdfdf;
     padding: 15px;
-    box-shadow: 0 2px 10px rgba(255,140,0,0.3);
     z-index: 1100;
     min-width: 200px;
 }
@@ -214,7 +212,7 @@ path.highlight {
 /* Desktop: position below navbar to avoid overlap */
 @media (min-width: 992px) {
     #scenario-adjustments {
-        top: 110px;
+        top: 110px; /* Observed top of H1 element */
         bottom: auto;
     }
 }
@@ -229,15 +227,12 @@ path.highlight {
 }
 
 #scenario-adjustments .disabled-message {
-    display: none;
-    color: #856404;
-    font-style: italic;
+    color: #606980;
     margin-top: 10px;
     font-size: 0.9em;
-}
-
-#scenario-adjustments.scenario-adjustments-disabled .disabled-message {
-    display: block;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    max-width: 200px;
 }
 
 #scenario-adjustments input#vote-swing-range[type=range]
@@ -245,7 +240,7 @@ path.highlight {
     height: 20px;
     -webkit-appearance: none;
     width: 100%;
-    background-color: #fff3cd; /* Light orange background */
+    background-color: #f4f5f5; /* Light gray background */
 }
 
     #scenario-adjustments input#vote-swing-range[type=range]::-webkit-slider-runnable-track
@@ -255,12 +250,12 @@ path.highlight {
         cursor: pointer;
         animate: 0.2s;
         box-shadow: none;
-        background: #000; /* Track background */
+        background: #0f2c3a; /* Track background */
         border-radius: 10px;
-        border: 0px solid #000; /* Track background */
+        border: 0px solid #0f2c3a; /* Track background */
     }
 
-    #scenario-adjustments input#vote-swing-range[type=range]:focus::-webkit-slider-runnable-track { background: #000; /* Track background */ }
+    #scenario-adjustments input#vote-swing-range[type=range]:focus::-webkit-slider-runnable-track { background: #0f2c3a; /* Track background */ }
 
     #scenario-adjustments input#vote-swing-range[type=range]::-moz-range-track
     {
@@ -269,15 +264,15 @@ path.highlight {
         cursor: pointer;
         animate: 0.2s;
         box-shadow: none;
-        background: #000; /* Track background */
+        background: #0f2c3a; /* Track background */
         border-radius: 10px;
-        border: 0px solid #000; /* Track background */
+        border: 0px solid #0f2c3a; /* Track background */
     }
 
     #scenario-adjustments input#vote-swing-range[type=range]::-webkit-slider-thumb
     {
         box-shadow: none;
-        border: 2px solid #000; /* Track background */
+        border: 2px solid #0f2c3a; /* Track background */
         height: 18px;
         width: 18px;
         border-radius: 10px;
@@ -289,7 +284,7 @@ path.highlight {
     #scenario-adjustments input#vote-swing-range[type=range]::-moz-range-thumb
     {
         box-shadow: none;
-        border: 2px solid #000; /* Track background */
+        border: 2px solid #0f2c3a; /* Track background */
         height: 14px;
         width: 14px;
         border-radius: 10px;
@@ -310,16 +305,16 @@ path.highlight {
 
     #scenario-adjustments input#vote-swing-range[type=range]::-ms-fill-lower
     {
-        background: #000; /* Track background */
-        border: 0px solid #000; /* Track background */
+        background: #0f2c3a; /* Track background */
+        border: 0px solid #0f2c3a; /* Track background */
         border-radius: 18px;
         box-shadow: none;
     }
 
     #scenario-adjustments input#vote-swing-range[type=range]::-ms-fill-upper
     {
-        background: #000; /* Track background */
-        border: 0px solid #000; /* Track background */
+        background: #0f2c3a; /* Track background */
+        border: 0px solid #0f2c3a; /* Track background */
         border-radius: 18px;
         box-shadow: none;
     }
@@ -328,7 +323,7 @@ path.highlight {
     {
         margin-top: 1px;
         box-shadow: none;
-        border: 2px solid #000; /* Track background */
+        border: 2px solid #0f2c3a; /* Track background */
         height: 18px;
         width: 18px;
         border-radius: 10px;
@@ -336,9 +331,9 @@ path.highlight {
         cursor: pointer;
     }
 
-    #scenario-adjustments input#vote-swing-range[type=range]:focus::-ms-fill-lower { background: #000; /* Track background */ }
+    #scenario-adjustments input#vote-swing-range[type=range]:focus::-ms-fill-lower { background: #0f2c3a; /* Track background */ }
 
-    #scenario-adjustments input#vote-swing-range[type=range]:focus::-ms-fill-upper { background: #000; /* Track background */ }
+    #scenario-adjustments input#vote-swing-range[type=range]:focus::-ms-fill-upper { background: #0f2c3a; /* Track background */ }
 
     @media (-ms-high-contrast:none),(-ms-high-contrast:active)
     {
