@@ -1012,12 +1012,12 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
     }
 
     // Initialize vote_swing field if it doesn't exist
-    // This ensures the Vote Swing column can be toggled when scenarios are available
+    // This ensures the Margin Swing column can be toggled when scenarios are available
     if (original_plan.districts.length > 0 && !('vote_swing' in original_plan.districts[0])) {
         for (var i = 0; i < original_plan.districts.length; i++) {
             original_plan.districts[i].vote_swing = 0.0;
         }
-        // Reconstruct table once to include the Vote Swing column (initially hidden)
+        // Reconstruct table once to include the Margin Swing column (initially hidden)
         construct_districts_table(original_plan, districts_table, true);
         populate_districts_table(original_plan, districts_table, true, on_candidate_scenario_change);
     }
@@ -1419,7 +1419,7 @@ function construct_districts_table(plan, districts_table, is_scenarios_active)
         th.innerHTML = heading_title;
         th.dataset.columnIndex = j;
 
-        // Mark Vote Swing column for show/hide toggling
+        // Mark Margin Swing column for show/hide toggling
         if (heading_title === 'Margin Swing') {
             th.dataset.columnName = 'Margin Swing';
         }
@@ -1453,7 +1453,7 @@ function construct_districts_table(plan, districts_table, is_scenarios_active)
             if (heading_title === 'Incumbent Scenario') {
                 populate_candidate_scenario_content(cell, i, '', is_scenarios_active, null);
             } else if (heading_title === 'Margin Swing') {
-                // Mark Vote Swing column for show/hide toggling
+                // Mark Margin Swing column for show/hide toggling
                 cell.dataset.columnName = 'Margin Swing';
             }
 
@@ -1559,7 +1559,7 @@ function populate_districts_table(plan, districts_table, is_scenarios_active, on
         }
     }
 
-    // Show or hide the Vote Swing column based on whether all swings are 0.0
+    // Show or hide the Margin Swing column based on whether all swings are 0.0
     var all_swings_zero = true;
     for (var i = 0; i < plan.districts.length; i++) {
         if (plan.districts[i].vote_swing && plan.districts[i].vote_swing !== 0.0) {
@@ -1568,7 +1568,7 @@ function populate_districts_table(plan, districts_table, is_scenarios_active, on
         }
     }
 
-    var swing_cells = districts_table.querySelectorAll('[data-column-name="Vote Swing"]');
+    var swing_cells = districts_table.querySelectorAll('[data-column-name="Margin Swing"]');
     for (var i = 0; i < swing_cells.length; i++) {
         swing_cells[i].style.display = all_swings_zero ? 'none' : '';
     }
