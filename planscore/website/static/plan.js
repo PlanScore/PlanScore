@@ -3555,7 +3555,8 @@ function adjust_scenario_form_for_olark()
     if (!scenario_form) return;
 
     // Only adjust on narrow viewports (below desktop breakpoint)
-    var is_narrow = window.innerWidth < 992;
+    var is_narrow = window.innerWidth < 780; // corresponds to @media 768px
+    console.log('window.innerWidth:', window.innerWidth);
 
     if (is_narrow) {
         // Look for any fixed-position elements in the bottom-right corner

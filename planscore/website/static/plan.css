@@ -212,7 +212,7 @@ path.highlight {
 }
 
 /* Desktop: position below navbar to avoid overlap */
-@media (min-width: 992px) {
+@media (min-width: 769px) {
     #scenario-adjustments {
         top: 110px; /* Observed top of H1 element */
         bottom: auto;
