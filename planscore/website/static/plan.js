@@ -476,10 +476,11 @@ function percentrank_abs(column, house, value)
 
 function percentrank_rel(column, house, value)
 {
-    // Calculate relative (directional) percentrank: what proportion of
-    // historical plans are more favorable to the other party?
-    // For negative values (favors R): count how many are MORE negative
-    // For positive values (favors D): count how many are MORE positive
+    // Calculate relative (directional) percentrank matching server implementation.
+    // Server code: score.py lines 301-324
+    // For negative values: count where value < historical (historical is more pro-D)
+    // For positive values: count where value > historical (historical is less pro-D)
+    // This asymmetry matches the server behavior exactly.
 
     if (house === 'localplan' || !HISTORICAL_PERCENTRANK_DATA) {
         return null;
@@ -497,16 +498,16 @@ function percentrank_rel(column, house, value)
     var count = 0;
 
     if (value < 0) {
-        // Favors Republicans: count how many are MORE negative (< value)
+        // For negative values: count where value < historical
         for (var i = 0; i < historical_values.length; i++) {
-            if (historical_values[i] < value) {
+            if (value < historical_values[i]) {
                 count++;
             }
         }
     } else {
-        // Favors Democrats: count how many are MORE positive (> value)
+        // For positive values: count where value > historical
         for (var i = 0; i < historical_values.length; i++) {
-            if (historical_values[i] > value) {
+            if (value > historical_values[i]) {
                 count++;
             }
         }

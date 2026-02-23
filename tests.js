@@ -908,27 +908,27 @@ assert.equal(prank_abs3, 0, 'Should return 0 percentrank for minimum absolute va
 var prank_abs4 = plan.percentrank_abs('eg_adj_avg', 'localplan', 0.10);
 assert.strictEqual(prank_abs4, null, 'Should return null for localplan');
 
-// Test percentrank_rel function
+// Test percentrank_rel function - matches server implementation in score.py
 // With values [-0.15, -0.10, -0.05, 0.00, 0.05, 0.10, 0.15] (7 values)
-// Testing with 0.12 (positive, favors D): count values > 0.12 = only 0.15 = 1 value
-// Percentrank = 1/7 = 0.142...
+// Testing with 0.12 (positive, favors D): count where 0.12 > historical = 6 values (all except 0.15)
+// Percentrank = 6/7 = 0.857...
 var prank_rel1 = plan.percentrank_rel('eg_adj_avg', 'ushouse', 0.12);
-assert.equal(Math.round(prank_rel1 * 1000) / 1000, 0.143, 'Should calculate correct relative percentrank for 0.12');
+assert.equal(Math.round(prank_rel1 * 1000) / 1000, 0.857, 'Should calculate correct relative percentrank for 0.12');
 
-// Testing with -0.12 (negative, favors R): count values < -0.12 = only -0.15 = 1 value
-// Percentrank = 1/7 = 0.142...
+// Testing with -0.12 (negative, favors R): count where -0.12 < historical = 6 values (all except -0.15)
+// Percentrank = 6/7 = 0.857...
 var prank_rel2 = plan.percentrank_rel('eg_adj_avg', 'ushouse', -0.12);
-assert.equal(Math.round(prank_rel2 * 1000) / 1000, 0.143, 'Should calculate correct relative percentrank for -0.12');
+assert.equal(Math.round(prank_rel2 * 1000) / 1000, 0.857, 'Should calculate correct relative percentrank for -0.12');
 
-// Testing with 0.00: count values > 0.00 = 0.05, 0.10, 0.15 = 3 values
+// Testing with 0.00: count where 0.00 > historical = 3 values (-0.15, -0.10, -0.05)
 // Percentrank = 3/7 = 0.428...
 var prank_rel3 = plan.percentrank_rel('eg_adj_avg', 'ushouse', 0.00);
 assert.equal(Math.round(prank_rel3 * 1000) / 1000, 0.429, 'Should calculate correct relative percentrank for 0.00');
 
-// Testing with 0.05: count values > 0.05 = 0.10, 0.15 = 2 values
-// Percentrank = 2/7 = 0.285...
+// Testing with 0.05: count where 0.05 > historical = 4 values (all negatives + 0.00)
+// Percentrank = 4/7 = 0.571...
 var prank_rel4 = plan.percentrank_rel('eg_adj_avg', 'ushouse', 0.05);
-assert.equal(Math.round(prank_rel4 * 1000) / 1000, 0.286, 'Should calculate correct relative percentrank for 0.05');
+assert.equal(Math.round(prank_rel4 * 1000) / 1000, 0.571, 'Should calculate correct relative percentrank for 0.05');
 
 // Test with localplan (should return null)
 var prank_rel5 = plan.percentrank_rel('eg_adj_avg', 'localplan', 0.10);
