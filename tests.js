@@ -177,7 +177,7 @@ assert.deepEqual(plan.which_score_column_names(NC_multisim_index),
         'Democratic Wins',
         'Democratic Votes',
         'Republican Votes',
-        'Vote Swing',
+        'Margin Swing',
         'US President 2024 - DEM',
         'US President 2024 - REP',
         'US President 2020 - DEM',
@@ -430,7 +430,7 @@ assert.deepEqual(plan_array10[0],
     ['District', 'Incumbent Scenario', 'Pop. 2020', 'PlanScore:ShyColumn',
     'Hispanic CVAP 2023', 'Non-Hisp. Black CVAP 2023', 'Non-Hisp. Asian CVAP 2023',
     'Non-Hisp. Native CVAP 2023', 'Chance of 1+ Flips<sup>†</sup>', 'Chance of Democratic Win',
-    'Predicted Vote Shares', 'Vote Swing', 'Harris (D) 2024', 'Trump (R) 2024', 'PlanScore:ShyColumn',
+    'Predicted Vote Shares', 'Margin Swing', 'Harris (D) 2024', 'Trump (R) 2024', 'PlanScore:ShyColumn',
     'PlanScore:ShyColumn', 'PlanScore:ShyColumn', 'PlanScore:ShyColumn'],
     'Should pick out the right column names');
 
@@ -445,25 +445,25 @@ assert.deepEqual(plan_array11[0],
     ['District', 'Incumbent Scenario', 'Pop. 2020', 'PlanScore:ShyColumn',
     'Hispanic CVAP 2023', 'Non-Hisp. Black CVAP 2023', 'Non-Hisp. Asian CVAP 2023',
     'Non-Hisp. Native CVAP 2023', 'Chance of 1+ Flips<sup>†</sup>', 'Chance of Democratic Win',
-    'Predicted Vote Shares', 'Vote Swing', 'Harris (D) 2024', 'Trump (R) 2024',
+    'Predicted Vote Shares', 'Margin Swing', 'Harris (D) 2024', 'Trump (R) 2024',
     'PlanScore:ShyColumn', 'PlanScore:ShyColumn', 'PlanScore:ShyColumn', 'PlanScore:ShyColumn'],
     'Should pick out the right column names');
 
 assert.equal(plan_array11[1].length, plan_array11[0].length);
 assert.equal(plan_array11[1][10], '36% D / 64% R');
-assert.equal(plan_array11[1][11], 'D+8.0');
+assert.equal(plan_array11[1][11], 'D+16');
 
 assert.equal(plan_array11[2].length, plan_array11[0].length);
 assert.equal(plan_array11[2][10], '68% D / 32% R');
-assert.equal(plan_array11[2][11], 'D+5.0');
+assert.equal(plan_array11[2][11], 'D+10');
 
 assert.equal(plan_array11[3].length, plan_array11[0].length);
 assert.equal(plan_array11[3][10], '40% D / 60% R');
-assert.equal(plan_array11[3][11], 'D+7.0');
+assert.equal(plan_array11[3][11], 'D+14');
 
 assert.equal(plan_array11[4].length, plan_array11[0].length);
 assert.equal(plan_array11[4][10], '33% D / 67% R');
-assert.equal(plan_array11[4][11], 'D+8.0');
+assert.equal(plan_array11[4][11], 'D+16');
 
 // Display preparation functions
 
@@ -630,15 +630,15 @@ assert.equal(plan.nice_gap(-.1), '+10.0% for Republicans', 'Negative gaps should
 
 assert.equal(plan.nice_string('yo'), '&#121;&#111;');
 
-assert.equal(plan.nice_vote_swing(-0.101), 'R+10');
-assert.equal(plan.nice_vote_swing(-0.1), 'R+10');
-assert.equal(plan.nice_vote_swing(-0.095), 'R+9.5');
-assert.equal(plan.nice_vote_swing(-0.015), 'R+1.5');
-assert.equal(plan.nice_vote_swing(0.0), '–');
-assert.equal(plan.nice_vote_swing(0.101), 'D+10');
-assert.equal(plan.nice_vote_swing(0.1), 'D+10');
-assert.equal(plan.nice_vote_swing(0.095), 'D+9.5');
-assert.equal(plan.nice_vote_swing(0.015), 'D+1.5');
+assert.equal(plan.nice_margin_swing(-0.101 / 2), 'R+10');
+assert.equal(plan.nice_margin_swing(-0.1 / 2), 'R+10');
+assert.equal(plan.nice_margin_swing(-0.095 / 2), 'R+9.5');
+assert.equal(plan.nice_margin_swing(-0.015 / 2), 'R+1.5');
+assert.equal(plan.nice_margin_swing(0.0 / 2), '–');
+assert.equal(plan.nice_margin_swing(0.101 / 2), 'D+10');
+assert.equal(plan.nice_margin_swing(0.1 / 2), 'D+10');
+assert.equal(plan.nice_margin_swing(0.095 / 2), 'D+9.5');
+assert.equal(plan.nice_margin_swing(0.015 / 2), 'D+1.5');
 
 assert.equal(plan.partisan_suffix(0), '');
 assert.equal(plan.partisan_suffix(1), '&nbsp;D');
@@ -1070,19 +1070,19 @@ assert.ok(has_nonzero_swings, 'At least some districts should have non-zero vote
 
 // Test parse_scenario_hash function
 // Mock window.location.hash for testing
-global.window = { location: { hash: '#scenario=vote_swing:1.5;incumbents:RDRRRRRRRRDRR' } };
+global.window = { location: { hash: '#scenario=margin_swing:3.0;incumbents:RDRRRRRRRRDRR' } };
 var hash_result = plan.parse_scenario_hash();
-assert.equal(hash_result.vote_swing, 1.5, 'Should parse vote_swing from hash');
+assert.equal(hash_result.vote_swing, 1.5, 'Should parse margin_swing from hash and convert to vote_swing');
 assert.equal(hash_result.incumbents, 'RDRRRRRRRRDRR', 'Should parse incumbents from hash');
 
-global.window.location.hash = '#scenario=vote_swing:-2.0';
+global.window.location.hash = '#scenario=margin_swing:-4.0';
 hash_result = plan.parse_scenario_hash();
-assert.equal(hash_result.vote_swing, -2.0, 'Should parse negative vote_swing from hash');
+assert.equal(hash_result.vote_swing, -2.0, 'Should parse negative margin_swing from hash and convert');
 assert.equal(hash_result.incumbents, null, 'Should return null incumbents when not in hash');
 
 global.window.location.hash = '#scenario=incumbents:ORDORD';
 hash_result = plan.parse_scenario_hash();
-assert.equal(hash_result.vote_swing, 0.0, 'Should default to 0.0 when vote_swing not in hash');
+assert.equal(hash_result.vote_swing, 0.0, 'Should default to 0.0 when margin_swing not in hash');
 assert.equal(hash_result.incumbents, 'ORDORD', 'Should parse incumbents-only hash');
 
 global.window.location.hash = '#scenario';
@@ -1149,9 +1149,9 @@ assert.ok(encoded.length < long_string.length, 'Encoding should reduce length fo
 assert.equal(encoded, '50O', 'Should encode 50 O\'s as "50O"');
 
 // Test parse_scenario_hash with compressed incumbents
-global.window.location.hash = '#scenario=vote_swing:1.5;incumbents:15O';
+global.window.location.hash = '#scenario=margin_swing:3.0;incumbents:15O';
 hash_result = plan.parse_scenario_hash();
-assert.equal(hash_result.vote_swing, 1.5, 'Should parse vote_swing with compressed incumbents');
+assert.equal(hash_result.vote_swing, 1.5, 'Should parse margin_swing with compressed incumbents');
 assert.equal(hash_result.incumbents, 'OOOOOOOOOOOOOOO', 'Should decode compressed incumbents from hash');
 
 global.window.location.hash = '#scenario=incumbents:5ORR3D';

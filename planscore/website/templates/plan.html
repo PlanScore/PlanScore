@@ -70,7 +70,7 @@
             <h3>Sensitivity Testing</h3>
             <div id="score-sensitivity"></div>
             <p>
-                Sensitivity testing shows us a plan’s expected efficiency gap given a range of possible vote swings. It lets us evaluate the durability of a plan’s skew.
+                Sensitivity testing shows us a plan's expected efficiency gap given a range of possible margin swings. It lets us evaluate the durability of a plan's skew.
             </p>
         </li>
         <li class="col-md-4" id="score-declination">
@@ -264,9 +264,9 @@
 
     <form id="scenario-adjustments" class="scenario-adjustments-hidden">
         <div>
-            <label for="vote-swing-range">Vote Swing:</label>
-            <div id="vote-swing-display">0.0</div>
-            <input type="range" id="vote-swing-range" name="vote-swing" min="-6" max="6" step="0.5" value="0">
+            <label for="margin-swing-range">Margin Swing:</label>
+            <p id="margin-swing-display">0.0</p>
+            <input type="range" id="margin-swing-range" name="margin-swing" min="-12" max="12" step="1" value="0">
             <div class="disabled-message">Not available for this map</div>
         </div>
     </form>
