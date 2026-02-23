@@ -747,6 +747,73 @@ function create_scenario_plan(original_plan, scenarios, vote_swing, scenario_inc
     return mutated_plan;
 }
 
+function encode_incumbents_rle(incumbents_string)
+{
+    // Compress incumbents string using run-length encoding
+    // e.g., "OOOOOOOOOOOOOOO" -> "15O", "OOOOORRRDDD" -> "5ORR3D"
+    // Rules: runs of 3+ use number prefix, runs of 2 repeat character, runs of 1 use single character
+    if (!incumbents_string || incumbents_string.length === 0) {
+        return '';
+    }
+
+    var result = [];
+    var current_char = incumbents_string[0];
+    var count = 1;
+
+    for (var i = 1; i < incumbents_string.length; i++) {
+        if (incumbents_string[i] === current_char) {
+            count++;
+        } else {
+            // Output the run
+            if (count >= 3) {
+                result.push(count + current_char);
+            } else {
+                // count is 1 or 2, just repeat the character
+                for (var j = 0; j < count; j++) {
+                    result.push(current_char);
+                }
+            }
+            current_char = incumbents_string[i];
+            count = 1;
+        }
+    }
+
+    // Don't forget the last run
+    if (count >= 3) {
+        result.push(count + current_char);
+    } else {
+        for (var j = 0; j < count; j++) {
+            result.push(current_char);
+        }
+    }
+
+    return result.join('');
+}
+
+function decode_incumbents_rle(encoded_string)
+{
+    // Decode run-length encoded incumbents string
+    // Supports both compressed format (e.g., "15O", "5ORR3D") and legacy uncompressed format (e.g., "ORDORD")
+    // Returns expanded string, e.g., "15O" -> "OOOOOOOOOOOOOOO"
+    if (!encoded_string || encoded_string.length === 0) {
+        return '';
+    }
+
+    var result = [];
+    var regex = /(\d*)([ODR])/g;
+    var match;
+
+    while ((match = regex.exec(encoded_string)) !== null) {
+        var count = match[1] ? parseInt(match[1]) : 1;
+        var char = match[2];
+        for (var i = 0; i < count; i++) {
+            result.push(char);
+        }
+    }
+
+    return result.join('');
+}
+
 function parse_scenario_hash()
 {
     // Parse URL hash to extract vote swing and incumbents
@@ -769,10 +836,10 @@ function parse_scenario_hash()
         result.vote_swing = parseFloat(vote_swing_match[1]);
     }
 
-    // Look for incumbents parameter (string of O/D/R characters)
-    var incumbents_match = hash.match(/incumbents:([ODR]+)/);
+    // Look for incumbents parameter (string of O/D/R characters, optionally run-length encoded)
+    var incumbents_match = hash.match(/incumbents:([0-9ODR]+)/);
     if (incumbents_match) {
-        result.incumbents = incumbents_match[1];
+        result.incumbents = decode_incumbents_rle(incumbents_match[1]);
     }
 
     return result;
@@ -789,7 +856,7 @@ function update_scenario_hash(vote_swing, incumbents_string, original_incumbents
     }
 
     if (incumbents_string && incumbents_string !== original_incumbents_string) {
-        parts.push('incumbents:' + incumbents_string);
+        parts.push('incumbents:' + encode_incumbents_rle(incumbents_string));
     }
 
     var hash_value = parts.length > 0
@@ -3548,6 +3615,8 @@ if(typeof module !== 'undefined' && module.exports)
         adjust_scenario_stats,
         create_scenario_plan,
         parse_scenario_hash,
+        encode_incumbents_rle,
+        decode_incumbents_rle,
         swing_vote,
         calculate_EG,
         calculate_MMD,

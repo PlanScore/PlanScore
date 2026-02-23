@@ -1093,3 +1093,72 @@ assert.equal(hash_result.incumbents, null, 'Should return null incumbents for ba
 global.window.location.hash = '';
 hash_result = plan.parse_scenario_hash();
 assert.equal(hash_result, null, 'Should return null when no scenario hash present');
+
+// Test encode_incumbents_rle function
+// Test encoding 15 consecutive O's
+assert.equal(plan.encode_incumbents_rle('OOOOOOOOOOOOOOO'), '15O', 'Should encode 15 O\'s as "15O"');
+
+// Test encoding with mixed runs - user's example (5 O's, 2 R's, 3 D's)
+assert.equal(plan.encode_incumbents_rle('OOOOORRDDD'), '5ORR3D', 'Should encode 5 O\'s, 2 R\'s, 3 D\'s as "5ORR3D"');
+
+// Test encoding with runs of 1, 2, and 3+
+assert.equal(plan.encode_incumbents_rle('ORDDRRRDDD'), 'ORDD3R3D', 'Should encode runs of 1, 2, and 3+ correctly');
+
+// Test encoding all single characters (no compression)
+assert.equal(plan.encode_incumbents_rle('ORDORD'), 'ORDORD', 'Should not compress single characters');
+
+// Test encoding empty string
+assert.equal(plan.encode_incumbents_rle(''), '', 'Should handle empty string');
+
+// Test encoding very long run
+assert.equal(plan.encode_incumbents_rle('DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD'), '32D', 'Should encode 32 D\'s as "32D"');
+
+// Test encoding multiple runs
+assert.equal(plan.encode_incumbents_rle('OOOOOOOOOOOOOOODDDDDDDDDDDDDDDRRRRRRRRRRRRRRR'), '15O15D15R', 'Should encode multiple long runs');
+
+// Test decode_incumbents_rle function
+// Test decoding compressed format
+assert.equal(plan.decode_incumbents_rle('15O'), 'OOOOOOOOOOOOOOO', 'Should decode "15O" to 15 O\'s');
+
+// Test decoding user's example
+assert.equal(plan.decode_incumbents_rle('5ORR3D'), 'OOOOORRDDD', 'Should decode "5ORR3D" correctly');
+
+// Test decoding uncompressed format (backward compatibility)
+assert.equal(plan.decode_incumbents_rle('ORDORD'), 'ORDORD', 'Should handle uncompressed format for backward compatibility');
+
+// Test decoding empty string
+assert.equal(plan.decode_incumbents_rle(''), '', 'Should handle empty string');
+
+// Test decoding multiple runs
+assert.equal(plan.decode_incumbents_rle('15O15D15R'), 'OOOOOOOOOOOOOOODDDDDDDDDDDDDDDRRRRRRRRRRRRRRR', 'Should decode multiple long runs');
+
+// Test round-trip encoding/decoding
+var original1 = 'OOOOOOOOOOOOOOO';
+assert.equal(plan.decode_incumbents_rle(plan.encode_incumbents_rle(original1)), original1, 'Round-trip should preserve 15 O\'s');
+
+var original2 = 'OOOOORRDDD';
+assert.equal(plan.decode_incumbents_rle(plan.encode_incumbents_rle(original2)), original2, 'Round-trip should preserve "OOOOORRDDD"');
+
+var original3 = 'ORDORD';
+assert.equal(plan.decode_incumbents_rle(plan.encode_incumbents_rle(original3)), original3, 'Round-trip should preserve "ORDORD"');
+
+// Test that compression actually reduces length for long runs
+var long_string = 'O'.repeat(50);
+var encoded = plan.encode_incumbents_rle(long_string);
+assert.ok(encoded.length < long_string.length, 'Encoding should reduce length for long runs');
+assert.equal(encoded, '50O', 'Should encode 50 O\'s as "50O"');
+
+// Test parse_scenario_hash with compressed incumbents
+global.window.location.hash = '#scenario=vote_swing:1.5;incumbents:15O';
+hash_result = plan.parse_scenario_hash();
+assert.equal(hash_result.vote_swing, 1.5, 'Should parse vote_swing with compressed incumbents');
+assert.equal(hash_result.incumbents, 'OOOOOOOOOOOOOOO', 'Should decode compressed incumbents from hash');
+
+global.window.location.hash = '#scenario=incumbents:5ORR3D';
+hash_result = plan.parse_scenario_hash();
+assert.equal(hash_result.incumbents, 'OOOOORRDDD', 'Should decode "5ORR3D" from hash');
+
+// Test backward compatibility with old uncompressed hash
+global.window.location.hash = '#scenario=incumbents:ORDORD';
+hash_result = plan.parse_scenario_hash();
+assert.equal(hash_result.incumbents, 'ORDORD', 'Should handle old uncompressed format in hash');
