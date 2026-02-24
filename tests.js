@@ -177,7 +177,7 @@ assert.deepEqual(plan.which_score_column_names(NC_multisim_index),
         'Democratic Wins',
         'Democratic Votes',
         'Republican Votes',
-        'Vote Swing',
+        'Margin Swing',
         'US President 2024 - DEM',
         'US President 2024 - REP',
         'US President 2020 - DEM',
@@ -291,7 +291,7 @@ var plan_array7 = plan.plan_array(NC_2019_incumbency);
 assert.equal(plan_array7.length, 14, 'Should have a header with 13 districts');
 
 assert.deepEqual(plan_array7[0],
-    ['District', 'Candidate Scenario', 'Pop. 2010', 'Pop. 2016',
+    ['District', 'Incumbent Scenario', 'Pop. 2010', 'Pop. 2016',
     'Black Pop. 2016', 'Hispanic Pop. 2016',
     'Predicted Democratic Vote Share', 'Predicted Republican Vote Share'],
     'Should pick out the right column names');
@@ -427,10 +427,10 @@ var plan_array10 = plan.plan_array(MS_zero_vote_swings);
 assert.equal(plan_array10.length, 5, 'Should have a header with 4 districts');
 
 assert.deepEqual(plan_array10[0],
-    ['District', 'Candidate Scenario', 'Pop. 2020', 'PlanScore:ShyColumn',
+    ['District', 'Incumbent Scenario', 'Pop. 2020', 'PlanScore:ShyColumn',
     'Hispanic CVAP 2023', 'Non-Hisp. Black CVAP 2023', 'Non-Hisp. Asian CVAP 2023',
     'Non-Hisp. Native CVAP 2023', 'Chance of 1+ Flips<sup>†</sup>', 'Chance of Democratic Win',
-    'Predicted Vote Shares', 'Vote Swing', 'Harris (D) 2024', 'Trump (R) 2024', 'PlanScore:ShyColumn',
+    'Predicted Vote Shares', 'Margin Swing', 'Harris (D) 2024', 'Trump (R) 2024', 'PlanScore:ShyColumn',
     'PlanScore:ShyColumn', 'PlanScore:ShyColumn', 'PlanScore:ShyColumn'],
     'Should pick out the right column names');
 
@@ -442,28 +442,28 @@ var plan_array11 = plan.plan_array(MS_vote_swings);
 assert.equal(plan_array11.length, 5, 'Should have a header with 4 districts');
 
 assert.deepEqual(plan_array11[0],
-    ['District', 'Candidate Scenario', 'Pop. 2020', 'PlanScore:ShyColumn',
+    ['District', 'Incumbent Scenario', 'Pop. 2020', 'PlanScore:ShyColumn',
     'Hispanic CVAP 2023', 'Non-Hisp. Black CVAP 2023', 'Non-Hisp. Asian CVAP 2023',
     'Non-Hisp. Native CVAP 2023', 'Chance of 1+ Flips<sup>†</sup>', 'Chance of Democratic Win',
-    'Predicted Vote Shares', 'Vote Swing', 'Harris (D) 2024', 'Trump (R) 2024',
+    'Predicted Vote Shares', 'Margin Swing', 'Harris (D) 2024', 'Trump (R) 2024',
     'PlanScore:ShyColumn', 'PlanScore:ShyColumn', 'PlanScore:ShyColumn', 'PlanScore:ShyColumn'],
     'Should pick out the right column names');
 
 assert.equal(plan_array11[1].length, plan_array11[0].length);
 assert.equal(plan_array11[1][10], '36% D / 64% R');
-assert.equal(plan_array11[1][11], 'D+8.0');
+assert.equal(plan_array11[1][11], 'D+16');
 
 assert.equal(plan_array11[2].length, plan_array11[0].length);
 assert.equal(plan_array11[2][10], '68% D / 32% R');
-assert.equal(plan_array11[2][11], 'D+5.0');
+assert.equal(plan_array11[2][11], 'D+10');
 
 assert.equal(plan_array11[3].length, plan_array11[0].length);
 assert.equal(plan_array11[3][10], '40% D / 60% R');
-assert.equal(plan_array11[3][11], 'D+7.0');
+assert.equal(plan_array11[3][11], 'D+14');
 
 assert.equal(plan_array11[4].length, plan_array11[0].length);
 assert.equal(plan_array11[4][10], '33% D / 67% R');
-assert.equal(plan_array11[4][11], 'D+8.0');
+assert.equal(plan_array11[4][11], 'D+16');
 
 // Display preparation functions
 
@@ -630,15 +630,15 @@ assert.equal(plan.nice_gap(-.1), '+10.0% for Republicans', 'Negative gaps should
 
 assert.equal(plan.nice_string('yo'), '&#121;&#111;');
 
-assert.equal(plan.nice_vote_swing(-0.101), 'R+10');
-assert.equal(plan.nice_vote_swing(-0.1), 'R+10');
-assert.equal(plan.nice_vote_swing(-0.095), 'R+9.5');
-assert.equal(plan.nice_vote_swing(-0.015), 'R+1.5');
-assert.equal(plan.nice_vote_swing(0.0), '–');
-assert.equal(plan.nice_vote_swing(0.101), 'D+10');
-assert.equal(plan.nice_vote_swing(0.1), 'D+10');
-assert.equal(plan.nice_vote_swing(0.095), 'D+9.5');
-assert.equal(plan.nice_vote_swing(0.015), 'D+1.5');
+assert.equal(plan.nice_margin_swing(-0.101 / 2), 'R+10');
+assert.equal(plan.nice_margin_swing(-0.1 / 2), 'R+10');
+assert.equal(plan.nice_margin_swing(-0.095 / 2), 'R+9.5');
+assert.equal(plan.nice_margin_swing(-0.015 / 2), 'R+1.5');
+assert.equal(plan.nice_margin_swing(0.0 / 2), '–');
+assert.equal(plan.nice_margin_swing(0.101 / 2), 'D+10');
+assert.equal(plan.nice_margin_swing(0.1 / 2), 'D+10');
+assert.equal(plan.nice_margin_swing(0.095 / 2), 'D+9.5');
+assert.equal(plan.nice_margin_swing(0.015 / 2), 'D+1.5');
 
 assert.equal(plan.partisan_suffix(0), '');
 assert.equal(plan.partisan_suffix(1), '&nbsp;D');
@@ -908,27 +908,27 @@ assert.equal(prank_abs3, 0, 'Should return 0 percentrank for minimum absolute va
 var prank_abs4 = plan.percentrank_abs('eg_adj_avg', 'localplan', 0.10);
 assert.strictEqual(prank_abs4, null, 'Should return null for localplan');
 
-// Test percentrank_rel function
+// Test percentrank_rel function - matches server implementation in score.py
 // With values [-0.15, -0.10, -0.05, 0.00, 0.05, 0.10, 0.15] (7 values)
-// Testing with 0.12 (positive, favors D): count values > 0.12 = only 0.15 = 1 value
-// Percentrank = 1/7 = 0.142...
+// Testing with 0.12 (positive, favors D): count where 0.12 > historical = 6 values (all except 0.15)
+// Percentrank = 6/7 = 0.857...
 var prank_rel1 = plan.percentrank_rel('eg_adj_avg', 'ushouse', 0.12);
-assert.equal(Math.round(prank_rel1 * 1000) / 1000, 0.143, 'Should calculate correct relative percentrank for 0.12');
+assert.equal(Math.round(prank_rel1 * 1000) / 1000, 0.857, 'Should calculate correct relative percentrank for 0.12');
 
-// Testing with -0.12 (negative, favors R): count values < -0.12 = only -0.15 = 1 value
-// Percentrank = 1/7 = 0.142...
+// Testing with -0.12 (negative, favors R): count where -0.12 < historical = 6 values (all except -0.15)
+// Percentrank = 6/7 = 0.857...
 var prank_rel2 = plan.percentrank_rel('eg_adj_avg', 'ushouse', -0.12);
-assert.equal(Math.round(prank_rel2 * 1000) / 1000, 0.143, 'Should calculate correct relative percentrank for -0.12');
+assert.equal(Math.round(prank_rel2 * 1000) / 1000, 0.857, 'Should calculate correct relative percentrank for -0.12');
 
-// Testing with 0.00: count values > 0.00 = 0.05, 0.10, 0.15 = 3 values
+// Testing with 0.00: count where 0.00 > historical = 3 values (-0.15, -0.10, -0.05)
 // Percentrank = 3/7 = 0.428...
 var prank_rel3 = plan.percentrank_rel('eg_adj_avg', 'ushouse', 0.00);
 assert.equal(Math.round(prank_rel3 * 1000) / 1000, 0.429, 'Should calculate correct relative percentrank for 0.00');
 
-// Testing with 0.05: count values > 0.05 = 0.10, 0.15 = 2 values
-// Percentrank = 2/7 = 0.285...
+// Testing with 0.05: count where 0.05 > historical = 4 values (all negatives + 0.00)
+// Percentrank = 4/7 = 0.571...
 var prank_rel4 = plan.percentrank_rel('eg_adj_avg', 'ushouse', 0.05);
-assert.equal(Math.round(prank_rel4 * 1000) / 1000, 0.286, 'Should calculate correct relative percentrank for 0.05');
+assert.equal(Math.round(prank_rel4 * 1000) / 1000, 0.571, 'Should calculate correct relative percentrank for 0.05');
 
 // Test with localplan (should return null)
 var prank_rel5 = plan.percentrank_rel('eg_adj_avg', 'localplan', 0.10);
@@ -1070,19 +1070,19 @@ assert.ok(has_nonzero_swings, 'At least some districts should have non-zero vote
 
 // Test parse_scenario_hash function
 // Mock window.location.hash for testing
-global.window = { location: { hash: '#scenario=vote_swing:1.5;incumbents:RDRRRRRRRRDRR' } };
+global.window = { location: { hash: '#scenario=margin_swing:3.0;incumbents:RDRRRRRRRRDRR' } };
 var hash_result = plan.parse_scenario_hash();
-assert.equal(hash_result.vote_swing, 1.5, 'Should parse vote_swing from hash');
+assert.equal(hash_result.vote_swing, 1.5, 'Should parse margin_swing from hash and convert to vote_swing');
 assert.equal(hash_result.incumbents, 'RDRRRRRRRRDRR', 'Should parse incumbents from hash');
 
-global.window.location.hash = '#scenario=vote_swing:-2.0';
+global.window.location.hash = '#scenario=margin_swing:-4.0';
 hash_result = plan.parse_scenario_hash();
-assert.equal(hash_result.vote_swing, -2.0, 'Should parse negative vote_swing from hash');
+assert.equal(hash_result.vote_swing, -2.0, 'Should parse negative margin_swing from hash and convert');
 assert.equal(hash_result.incumbents, null, 'Should return null incumbents when not in hash');
 
 global.window.location.hash = '#scenario=incumbents:ORDORD';
 hash_result = plan.parse_scenario_hash();
-assert.equal(hash_result.vote_swing, 0.0, 'Should default to 0.0 when vote_swing not in hash');
+assert.equal(hash_result.vote_swing, 0.0, 'Should default to 0.0 when margin_swing not in hash');
 assert.equal(hash_result.incumbents, 'ORDORD', 'Should parse incumbents-only hash');
 
 global.window.location.hash = '#scenario';
@@ -1093,3 +1093,72 @@ assert.equal(hash_result.incumbents, null, 'Should return null incumbents for ba
 global.window.location.hash = '';
 hash_result = plan.parse_scenario_hash();
 assert.equal(hash_result, null, 'Should return null when no scenario hash present');
+
+// Test encode_incumbents_rle function
+// Test encoding 15 consecutive O's
+assert.equal(plan.encode_incumbents_rle('OOOOOOOOOOOOOOO'), '15O', 'Should encode 15 O\'s as "15O"');
+
+// Test encoding with mixed runs - user's example (5 O's, 2 R's, 3 D's)
+assert.equal(plan.encode_incumbents_rle('OOOOORRDDD'), '5ORR3D', 'Should encode 5 O\'s, 2 R\'s, 3 D\'s as "5ORR3D"');
+
+// Test encoding with runs of 1, 2, and 3+
+assert.equal(plan.encode_incumbents_rle('ORDDRRRDDD'), 'ORDD3R3D', 'Should encode runs of 1, 2, and 3+ correctly');
+
+// Test encoding all single characters (no compression)
+assert.equal(plan.encode_incumbents_rle('ORDORD'), 'ORDORD', 'Should not compress single characters');
+
+// Test encoding empty string
+assert.equal(plan.encode_incumbents_rle(''), '', 'Should handle empty string');
+
+// Test encoding very long run
+assert.equal(plan.encode_incumbents_rle('DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD'), '32D', 'Should encode 32 D\'s as "32D"');
+
+// Test encoding multiple runs
+assert.equal(plan.encode_incumbents_rle('OOOOOOOOOOOOOOODDDDDDDDDDDDDDDRRRRRRRRRRRRRRR'), '15O15D15R', 'Should encode multiple long runs');
+
+// Test decode_incumbents_rle function
+// Test decoding compressed format
+assert.equal(plan.decode_incumbents_rle('15O'), 'OOOOOOOOOOOOOOO', 'Should decode "15O" to 15 O\'s');
+
+// Test decoding user's example
+assert.equal(plan.decode_incumbents_rle('5ORR3D'), 'OOOOORRDDD', 'Should decode "5ORR3D" correctly');
+
+// Test decoding uncompressed format (backward compatibility)
+assert.equal(plan.decode_incumbents_rle('ORDORD'), 'ORDORD', 'Should handle uncompressed format for backward compatibility');
+
+// Test decoding empty string
+assert.equal(plan.decode_incumbents_rle(''), '', 'Should handle empty string');
+
+// Test decoding multiple runs
+assert.equal(plan.decode_incumbents_rle('15O15D15R'), 'OOOOOOOOOOOOOOODDDDDDDDDDDDDDDRRRRRRRRRRRRRRR', 'Should decode multiple long runs');
+
+// Test round-trip encoding/decoding
+var original1 = 'OOOOOOOOOOOOOOO';
+assert.equal(plan.decode_incumbents_rle(plan.encode_incumbents_rle(original1)), original1, 'Round-trip should preserve 15 O\'s');
+
+var original2 = 'OOOOORRDDD';
+assert.equal(plan.decode_incumbents_rle(plan.encode_incumbents_rle(original2)), original2, 'Round-trip should preserve "OOOOORRDDD"');
+
+var original3 = 'ORDORD';
+assert.equal(plan.decode_incumbents_rle(plan.encode_incumbents_rle(original3)), original3, 'Round-trip should preserve "ORDORD"');
+
+// Test that compression actually reduces length for long runs
+var long_string = 'O'.repeat(50);
+var encoded = plan.encode_incumbents_rle(long_string);
+assert.ok(encoded.length < long_string.length, 'Encoding should reduce length for long runs');
+assert.equal(encoded, '50O', 'Should encode 50 O\'s as "50O"');
+
+// Test parse_scenario_hash with compressed incumbents
+global.window.location.hash = '#scenario=margin_swing:3.0;incumbents:15O';
+hash_result = plan.parse_scenario_hash();
+assert.equal(hash_result.vote_swing, 1.5, 'Should parse margin_swing with compressed incumbents');
+assert.equal(hash_result.incumbents, 'OOOOOOOOOOOOOOO', 'Should decode compressed incumbents from hash');
+
+global.window.location.hash = '#scenario=incumbents:5ORR3D';
+hash_result = plan.parse_scenario_hash();
+assert.equal(hash_result.incumbents, 'OOOOORRDDD', 'Should decode "5ORR3D" from hash');
+
+// Test backward compatibility with old uncompressed hash
+global.window.location.hash = '#scenario=incumbents:ORDORD';
+hash_result = plan.parse_scenario_hash();
+assert.equal(hash_result.incumbents, 'ORDORD', 'Should handle old uncompressed format in hash');

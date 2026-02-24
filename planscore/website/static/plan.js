@@ -47,7 +47,7 @@ var FIELDS = [
     'Democratic Wins',
     'Democratic Votes',
     'Republican Votes',
-    'Vote Swing',
+    'Margin Swing',
     'US President 2024 - DEM',
     'US President 2024 - REP',
     'US President 2020 - DEM',
@@ -202,16 +202,19 @@ function nice_string(value)
     return value.replace(/./gm, function(c) { return "&#" + c.charCodeAt(0) + ";" });
 }
 
-function nice_vote_swing(value)
+function nice_margin_swing(vote_swing_value)
 {
-    if (value < -0.0955) {
-        return `R+${(value * -100).toFixed(0)}`;
-    } else if (value > 0.0955) {
-        return `D+${(value * 100).toFixed(0)}`;
-    } else if (value < 0) {
-        return `R+${(value * -100).toFixed(1)}`;
-    } else if (value > 0) {
-        return `D+${(value * 100).toFixed(1)}`;
+    // Display vote swing as margin swing (2x) to user
+    var margin_value = vote_swing_value * 2;
+
+    if (margin_value < -0.0955) {
+        return `R+${(margin_value * -100).toFixed(0)}`;
+    } else if (margin_value > 0.0955) {
+        return `D+${(margin_value * 100).toFixed(0)}`;
+    } else if (margin_value < 0) {
+        return `R+${(margin_value * -100).toFixed(1)}`;
+    } else if (margin_value > 0) {
+        return `D+${(margin_value * 100).toFixed(1)}`;
     }
     return '–';
 }
@@ -476,10 +479,11 @@ function percentrank_abs(column, house, value)
 
 function percentrank_rel(column, house, value)
 {
-    // Calculate relative (directional) percentrank: what proportion of
-    // historical plans are more favorable to the other party?
-    // For negative values (favors R): count how many are MORE negative
-    // For positive values (favors D): count how many are MORE positive
+    // Calculate relative (directional) percentrank matching server implementation.
+    // Server code: score.py lines 301-324
+    // For negative values: count where value < historical (historical is more pro-D)
+    // For positive values: count where value > historical (historical is less pro-D)
+    // This asymmetry matches the server behavior exactly.
 
     if (house === 'localplan' || !HISTORICAL_PERCENTRANK_DATA) {
         return null;
@@ -497,16 +501,16 @@ function percentrank_rel(column, house, value)
     var count = 0;
 
     if (value < 0) {
-        // Favors Republicans: count how many are MORE negative (< value)
+        // For negative values: count where value < historical
         for (var i = 0; i < historical_values.length; i++) {
-            if (historical_values[i] < value) {
+            if (value < historical_values[i]) {
                 count++;
             }
         }
     } else {
-        // Favors Democrats: count how many are MORE positive (> value)
+        // For positive values: count where value > historical
         for (var i = 0; i < historical_values.length; i++) {
-            if (historical_values[i] > value) {
+            if (value > historical_values[i]) {
                 count++;
             }
         }
@@ -539,7 +543,7 @@ function adjust_scenario_stats(data)
 
 function read_scenario_incumbents_from_table(districts_table)
 {
-    // Query all checked radio buttons in candidate scenario forms
+    // Query all checked radio buttons in incumbent scenario forms
     // Return array of incumbent codes ['O', 'D', 'R', ...] in district order
     var incumbents = [];
     var rows = districts_table.querySelectorAll('tbody tr');
@@ -747,11 +751,78 @@ function create_scenario_plan(original_plan, scenarios, vote_swing, scenario_inc
     return mutated_plan;
 }
 
+function encode_incumbents_rle(incumbents_string)
+{
+    // Compress incumbents string using run-length encoding
+    // e.g., "OOOOOOOOOOOOOOO" -> "15O", "OOOOORRRDDD" -> "5ORR3D"
+    // Rules: runs of 3+ use number prefix, runs of 2 repeat character, runs of 1 use single character
+    if (!incumbents_string || incumbents_string.length === 0) {
+        return '';
+    }
+
+    var result = [];
+    var current_char = incumbents_string[0];
+    var count = 1;
+
+    for (var i = 1; i < incumbents_string.length; i++) {
+        if (incumbents_string[i] === current_char) {
+            count++;
+        } else {
+            // Output the run
+            if (count >= 3) {
+                result.push(count + current_char);
+            } else {
+                // count is 1 or 2, just repeat the character
+                for (var j = 0; j < count; j++) {
+                    result.push(current_char);
+                }
+            }
+            current_char = incumbents_string[i];
+            count = 1;
+        }
+    }
+
+    // Don't forget the last run
+    if (count >= 3) {
+        result.push(count + current_char);
+    } else {
+        for (var j = 0; j < count; j++) {
+            result.push(current_char);
+        }
+    }
+
+    return result.join('');
+}
+
+function decode_incumbents_rle(encoded_string)
+{
+    // Decode run-length encoded incumbents string
+    // Supports both compressed format (e.g., "15O", "5ORR3D") and legacy uncompressed format (e.g., "ORDORD")
+    // Returns expanded string, e.g., "15O" -> "OOOOOOOOOOOOOOO"
+    if (!encoded_string || encoded_string.length === 0) {
+        return '';
+    }
+
+    var result = [];
+    var regex = /(\d*)([ODR])/g;
+    var match;
+
+    while ((match = regex.exec(encoded_string)) !== null) {
+        var count = match[1] ? parseInt(match[1]) : 1;
+        var char = match[2];
+        for (var i = 0; i < count; i++) {
+            result.push(char);
+        }
+    }
+
+    return result.join('');
+}
+
 function parse_scenario_hash()
 {
-    // Parse URL hash to extract vote swing and incumbents
-    // Supports: #scenario, #scenario=vote_swing:1.5, #scenario=incumbents:ORDORD,
-    //           #scenario=vote_swing:1.5;incumbents:ORDORD
+    // Parse URL hash to extract margin swing and incumbents
+    // Supports: #scenario, #scenario=margin_swing:3.0, #scenario=incumbents:ORDORD,
+    //           #scenario=margin_swing:3.0;incumbents:ORDORD
     var hash = window.location.hash;
 
     if (!hash || !hash.match(/\bscenario\b/)) {
@@ -763,16 +834,16 @@ function parse_scenario_hash()
         incumbents: null
     };
 
-    // Look for vote_swing parameter
-    var vote_swing_match = hash.match(/vote_swing:([-\d.]+)/);
-    if (vote_swing_match) {
-        result.vote_swing = parseFloat(vote_swing_match[1]);
+    // Parse margin_swing parameter and convert to vote_swing (divide by 2)
+    var margin_swing_match = hash.match(/margin_swing:([-\d.]+)/);
+    if (margin_swing_match) {
+        result.vote_swing = parseFloat(margin_swing_match[1]) / 2;
     }
 
-    // Look for incumbents parameter (string of O/D/R characters)
-    var incumbents_match = hash.match(/incumbents:([ODR]+)/);
+    // Look for incumbents parameter (string of O/D/R characters, optionally run-length encoded)
+    var incumbents_match = hash.match(/incumbents:([0-9ODR]+)/);
     if (incumbents_match) {
-        result.incumbents = incumbents_match[1];
+        result.incumbents = decode_incumbents_rle(incumbents_match[1]);
     }
 
     return result;
@@ -780,16 +851,18 @@ function parse_scenario_hash()
 
 function update_scenario_hash(vote_swing, incumbents_string, original_incumbents_string)
 {
-    // Update URL hash with vote swing and incumbents without page reload
-    // Omit vote_swing if 0.0, omit incumbents if matches original
+    // Update URL hash with margin swing (2x vote swing) and incumbents without page reload
+    // Omit margin_swing if 0.0, omit incumbents if matches original
     var parts = [];
 
     if (vote_swing !== 0.0) {
-        parts.push('vote_swing:' + vote_swing.toFixed(1));
+        // Store as margin_swing in URL (2x for user readability)
+        var margin_swing = vote_swing * 2;
+        parts.push('margin_swing:' + margin_swing.toFixed(1));
     }
 
     if (incumbents_string && incumbents_string !== original_incumbents_string) {
-        parts.push('incumbents:' + incumbents_string);
+        parts.push('incumbents:' + encode_incumbents_rle(incumbents_string));
     }
 
     var hash_value = parts.length > 0
@@ -818,14 +891,14 @@ function check_scenarios_available(plan)
 
     // Check if plan has scenarios linked
     if (!plan.scenarios) {
-        return { available: false, reason: 'no_scenarios_file' };
+        return { available: false, reason: 'PlanScore did not calculate alternative outcomes for this plan' };
     }
 
     // Check if all districts have zero vote_swing initially
     // (Plans with pre-applied vote swings shouldn't show the interactive feature)
     for (var i = 0; i < plan.districts.length; i++) {
         if ('vote_swing' in plan.districts[i] && plan.districts[i].vote_swing !== 0.0) {
-            return { available: false, reason: 'nonzero_vote_swings' };
+            return { available: false, reason: 'This plan already has margin swing adjustments applied' };
         }
     }
 
@@ -837,22 +910,35 @@ function update_form_visibility(form, plan, districts_table, on_change_callback)
     // Update form visibility based on URL hash and plan availability
     var has_hash = has_scenario_hash();
     var availability = check_scenarios_available(plan);
+    var disabled_message_el = form.querySelector('.disabled-message');
 
     if (!has_hash) {
         // No hash: hide form completely
         form.classList.add('scenario-adjustments-hidden');
         form.classList.remove('scenario-adjustments-disabled');
+        // Remove the disabled message element if it exists
+        if (disabled_message_el) {
+            disabled_message_el.remove();
+        }
     } else if (!availability.available) {
-        // Has hash but scenarios not available: show disabled form
+        // Has hash but scenarios not available: show disabled form with reason
         form.classList.remove('scenario-adjustments-hidden');
         form.classList.add('scenario-adjustments-disabled');
+        // Set the disabled message text to the reason
+        if (disabled_message_el) {
+            disabled_message_el.textContent = availability.reason;
+        }
     } else {
         // Has hash and scenarios available: show enabled form
         form.classList.remove('scenario-adjustments-hidden');
         form.classList.remove('scenario-adjustments-disabled');
+        // Remove the disabled message element if it exists
+        if (disabled_message_el) {
+            disabled_message_el.remove();
+        }
     }
 
-    // Calculate whether scenarios are active and update candidate scenario cells
+    // Calculate whether scenarios are active and update incumbent scenario cells
     var is_scenarios_active = has_hash && availability.available;
     if (districts_table) {
         populate_districts_table(plan, districts_table, is_scenarios_active, on_change_callback);
@@ -876,8 +962,8 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
     scenario_adjustments_form.classList.remove('scenario-adjustments-disabled');
 
     // Get the range input and display element
-    var range_input = scenario_adjustments_form.querySelector('input[name="vote-swing"]');
-    var display = document.getElementById('vote-swing-display');
+    var range_input = scenario_adjustments_form.querySelector('input[name="margin-swing"]');
+    var display = document.getElementById('margin-swing-display');
 
     // Centralized scheduling for visualization updates with optional debouncing
     // Defers heavy computation using setTimeout to allow browser to paint UI changes first.
@@ -906,7 +992,7 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         );
     }
 
-    // Define callback for candidate scenario radio button changes
+    // Define callback for incumbent scenario radio button changes
     // This will be called when a user selects a different incumbency option
     function on_candidate_scenario_change(row, value) {
         // Prevent feedback loop: ignore events triggered by our own programmatic updates
@@ -917,34 +1003,28 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         // Read current incumbents from the table forms
         var scenario_incumbents = read_scenario_incumbents_from_table(districts_table);
 
-        // Get current vote swing from the range input
-        var vote_swing = parseFloat(range_input.value);
+        // Get current margin swing from the range input and convert to vote swing
+        var margin_swing = parseFloat(range_input.value);
+        var vote_swing = margin_swing / 2;
 
         // Schedule heavy work, let browser paint input changes first
         schedule_visualization_update(vote_swing, scenario_incumbents);
     }
 
     // Initialize vote_swing field if it doesn't exist
-    // This ensures the Vote Swing column can be toggled when scenarios are available
+    // This ensures the Margin Swing column can be toggled when scenarios are available
     if (original_plan.districts.length > 0 && !('vote_swing' in original_plan.districts[0])) {
         for (var i = 0; i < original_plan.districts.length; i++) {
             original_plan.districts[i].vote_swing = 0.0;
         }
-        // Reconstruct table once to include the Vote Swing column (initially hidden)
+        // Reconstruct table once to include the Margin Swing column (initially hidden)
         construct_districts_table(original_plan, districts_table, true);
         populate_districts_table(original_plan, districts_table, true, on_candidate_scenario_change);
     }
 
-    // Helper function to format vote swing for display
-    function format_vote_swing(value) {
-        var num = parseFloat(value);
-        if (num === 0) {
-            return '0.0';
-        } else if (num > 0) {
-            return 'D+' + num.toFixed(1);
-        } else {
-            return 'R+' + Math.abs(num).toFixed(1);
-        }
+    // Helper function to format vote swing percentages for display
+    function format_vote_swing(vote_swing_percent) {
+        return nice_margin_swing(vote_swing_percent / 100);
     }
 
     // Helper function to update all visualizations for a given vote swing and incumbents
@@ -1002,7 +1082,7 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         initial_vote_swing = 0.0;
     }
 
-    range_input.value = initial_vote_swing;
+    range_input.value = initial_vote_swing * 2;  // Convert vote_swing to margin_swing for slider
     display.textContent = format_vote_swing(initial_vote_swing);
 
     // Always update visualizations on initial load (even for 0.0)
@@ -1011,8 +1091,9 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
 
     // Add input listener to range slider for live updates
     range_input.addEventListener('input', function(event) {
-        // Get the selected vote swing value
-        var vote_swing = parseFloat(event.target.value);
+        // Get the selected margin swing value from slider and convert to vote swing for server data
+        var margin_swing = parseFloat(event.target.value);
+        var vote_swing = margin_swing / 2;
 
         // Read current incumbents from the table forms
         var scenario_incumbents = read_scenario_incumbents_from_table(districts_table);
@@ -1050,8 +1131,8 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         }
 
         // Update range input and display
-        range_input.value = vote_swing;
-        display.textContent = format_vote_swing(vote_swing);
+        range_input.value = vote_swing * 2;  // Convert vote_swing to margin_swing for slider
+        display.textContent = format_margin_swing(vote_swing);
 
         // Update radio button states in table to match hash
         var rows = districts_table.querySelectorAll('tbody tr');
@@ -1261,9 +1342,9 @@ function populate_candidate_scenario_content(cell, row, value, is_scenarios_acti
     // Handle active case with no form: create new form
     cell.innerHTML = [
         `<form class="candidate-scenario">`,
-        `<input type="radio" name="C${row}" value="D" id="D${row}"/><label for="D${row}">DEM</label>`,
-        `<input type="radio" name="C${row}" value="O" id="O${row}"/><label for="O${row}">OPEN</label>`,
-        `<input type="radio" name="C${row}" value="R" id="R${row}"/><label for="R${row}">REP</label>`,
+        `<input type="radio" name="C${row}" value="D" id="D${row}"/><label for="D${row}" class="D">DEM</label>`,
+        `<input type="radio" name="C${row}" value="O" id="O${row}"/><label for="O${row}" class="O">OPEN</label>`,
+        `<input type="radio" name="C${row}" value="R" id="R${row}"/><label for="R${row}" class="R">REP</label>`,
         `</form>`
     ].join('');
 
@@ -1338,9 +1419,9 @@ function construct_districts_table(plan, districts_table, is_scenarios_active)
         th.innerHTML = heading_title;
         th.dataset.columnIndex = j;
 
-        // Mark Vote Swing column for show/hide toggling
-        if (heading_title === 'Vote Swing') {
-            th.dataset.columnName = 'Vote Swing';
+        // Mark Margin Swing column for show/hide toggling
+        if (heading_title === 'Margin Swing') {
+            th.dataset.columnName = 'Margin Swing';
         }
 
         header_row.appendChild(th);
@@ -1369,11 +1450,11 @@ function construct_districts_table(plan, districts_table, is_scenarios_active)
 
             cell.dataset.columnIndex = j;
 
-            if (heading_title === 'Candidate Scenario') {
+            if (heading_title === 'Incumbent Scenario') {
                 populate_candidate_scenario_content(cell, i, '', is_scenarios_active, null);
-            } else if (heading_title === 'Vote Swing') {
-                // Mark Vote Swing column for show/hide toggling
-                cell.dataset.columnName = 'Vote Swing';
+            } else if (heading_title === 'Margin Swing') {
+                // Mark Margin Swing column for show/hide toggling
+                cell.dataset.columnName = 'Margin Swing';
             }
 
             tr.appendChild(cell);
@@ -1451,7 +1532,7 @@ function populate_districts_table(plan, districts_table, is_scenarios_active, on
 
             var value;
             var is_string = false;
-            if (heading_title == 'Candidate Scenario') {
+            if (heading_title == 'Incumbent Scenario') {
                 value = table_array[table_row_index][j];
             } else if (typeof table_array[table_row_index][j] == 'number') {
                 value = nice_count(table_array[table_row_index][j]);
@@ -1466,7 +1547,7 @@ function populate_districts_table(plan, districts_table, is_scenarios_active, on
 
             if (cells[cell_index]) {
                 // Use innerHTML for strings since nice_string() returns HTML entities
-                if (heading_title == 'Candidate Scenario') {
+                if (heading_title == 'Incumbent Scenario') {
                     populate_candidate_scenario_content(cells[cell_index], i, value, is_scenarios_active, on_change_callback);
                 } else if (is_string) {
                     cells[cell_index].innerHTML = value;
@@ -1478,7 +1559,7 @@ function populate_districts_table(plan, districts_table, is_scenarios_active, on
         }
     }
 
-    // Show or hide the Vote Swing column based on whether all swings are 0.0
+    // Show or hide the Margin Swing column based on whether all swings are 0.0
     var all_swings_zero = true;
     for (var i = 0; i < plan.districts.length; i++) {
         if (plan.districts[i].vote_swing && plan.districts[i].vote_swing !== 0.0) {
@@ -1487,7 +1568,7 @@ function populate_districts_table(plan, districts_table, is_scenarios_active, on
         }
     }
 
-    var swing_cells = districts_table.querySelectorAll('[data-column-name="Vote Swing"]');
+    var swing_cells = districts_table.querySelectorAll('[data-column-name="Margin Swing"]');
     for (var i = 0; i < swing_cells.length; i++) {
         swing_cells[i].style.display = all_swings_zero ? 'none' : '';
     }
@@ -1938,8 +2019,8 @@ function construct_sensitivity_test(score_sense)
             data: [] // Empty data initially
         }],
         xAxis: {
-            categories: ['+5 D', '+4 D', '+3 D', '+2 D', '+1 D', '0', '+1 R', '+2 R', '+3 R', '+4 R', '+5 R'],
-            title: { text: 'Possible Vote Swing' }
+            categories: ['D+10', 'D+8', 'D+6', 'D+4', 'D+2', '0', 'R+2', 'R+4', 'R+6', 'R+8', 'R+10'],
+            title: { text: 'Possible Margin Swing' }
         },
         yAxis: {
             title: { text: null },
@@ -2565,13 +2646,13 @@ function update_vote_percentages(head, row, source_row)
     }
 }
 
-function update_vote_swings(head, row)
+function update_margin_swings(head, row)
 {
-    var swing_index = head.indexOf('Vote Swing');
+    var swing_index = head.indexOf('Margin Swing');
 
     if(swing_index >= 0)
     {
-        row[swing_index] = nice_vote_swing(row[swing_index]);
+        row[swing_index] = nice_margin_swing(row[swing_index]);
     }
 }
 
@@ -2769,7 +2850,7 @@ function plan_array(plan)
     const has_incumbency = plan_has_incumbency(plan);
 
     if(has_incumbency) {
-        head_row.push('Candidate Scenario');
+        head_row.push('Incumbent Scenario');
     }
 
     if(plan.districts.length == 0)
@@ -2808,7 +2889,7 @@ function plan_array(plan)
                 continue;
             } else if('compactness' in plan.districts[j] && field in plan.districts[j].compactness) {
                 continue;
-            } else if('vote_swing' in plan.districts[j] && field == 'Vote Swing') {
+            } else if('vote_swing' in plan.districts[j] && field == 'Margin Swing') {
                 if (plan.districts[j].vote_swing != 0.0) {
                     has_nonzero_vote_swings = true;
                 }
@@ -2838,7 +2919,7 @@ function plan_array(plan)
                 flip_chance = flippy_colors.indexOf(which_district_color(plan.districts[j], plan)) != -1;
                 current_row.push(flip_chance);
             }
-        } else if(field == 'Vote Swing' && field_missing) {
+        } else if(field == 'Margin Swing' && field_missing) {
             continue;
         }
 
@@ -2854,7 +2935,7 @@ function plan_array(plan)
             } else if('compactness' in plan.districts[j] && field in plan.districts[j].compactness) {
                 current_row.push(plan.districts[j].compactness[field]);
 
-            } else if('vote_swing' in plan.districts[j] && field == 'Vote Swing') {
+            } else if('vote_swing' in plan.districts[j] && field == 'Margin Swing') {
                 current_row.push(plan.districts[j].vote_swing);
             }
         }
@@ -2862,7 +2943,7 @@ function plan_array(plan)
 
     for(var j = 1; j < all_rows.length; j++)
     {
-        update_vote_swings(head_row, all_rows[j]);
+        update_margin_swings(head_row, all_rows[j]);
         update_acs2015_percentages(head_row, all_rows[j]);
         update_acs2016_percentages(head_row, all_rows[j]);
         update_acs2018_percentages(head_row, all_rows[j]);
@@ -3467,6 +3548,60 @@ function add_map_pattern_support(show_leans)
 }
 
 // Export functions for testing
+// Adjust scenario form position to avoid overlapping with Olark chat button
+function adjust_scenario_form_for_olark()
+{
+    var scenario_form = document.getElementById('scenario-adjustments');
+    if (!scenario_form) return;
+
+    // Only adjust on narrow viewports (below desktop breakpoint)
+    var is_narrow = window.innerWidth < 780; // corresponds to @media 768px
+    console.log('window.innerWidth:', window.innerWidth);
+
+    if (is_narrow) {
+        // Look for any fixed-position elements in the bottom-right corner
+        // This detects Olark or similar chat widgets without hardcoding IDs
+        var bottom_right_elements = Array.from(document.querySelectorAll('*')).filter(function(el) {
+            // Skip our own form
+            if (el === scenario_form) return false;
+
+            var style = window.getComputedStyle(el);
+            if (style.position !== 'fixed') return false;
+
+            var right = parseInt(style.right);
+            var bottom = parseInt(style.bottom);
+
+            // Element is in bottom-right if right and bottom are both small positive numbers
+            return !isNaN(right) && right >= 0 && right < 100 &&
+                   !isNaN(bottom) && bottom >= 0 && bottom < 100;
+        });
+
+        if (bottom_right_elements.length > 0) {
+            // Found other fixed element(s) in bottom-right, move form up to avoid overlap
+            scenario_form.style.bottom = '90px';
+        } else {
+            // No other elements, use default
+            scenario_form.style.bottom = '20px';
+        }
+    } else {
+        // Desktop: clear inline style to let CSS media query handle it
+        scenario_form.style.bottom = '';
+    }
+}
+
+// Run on page load and when window resizes
+if (typeof window !== 'undefined') {
+    window.addEventListener('load', function() {
+        // Initial adjustment
+        adjust_scenario_form_for_olark();
+
+        // Check again after a delay to catch late-loading Olark
+        setTimeout(adjust_scenario_form_for_olark, 1000);
+    });
+
+    window.addEventListener('resize', adjust_scenario_form_for_olark);
+}
+
 if(typeof module !== 'undefined' && module.exports)
 {
     module.exports = {
@@ -3475,7 +3610,7 @@ if(typeof module !== 'undefined' && module.exports)
         nice_string,
         nice_percent,
         nice_round_percent,
-        nice_vote_swing,
+        nice_margin_swing,
         partisan_suffix,
         get_plan_headings,
         nice_gap,
@@ -3487,7 +3622,7 @@ if(typeof module !== 'undefined' && module.exports)
         plan_array,
         plan_has_incumbency,
         update_vote_percentages,
-        update_vote_swings,
+        update_margin_swings,
         update_acs2015_percentages,
         update_acs2016_percentages,
         update_cvap2015_percentages,
@@ -3495,6 +3630,8 @@ if(typeof module !== 'undefined' && module.exports)
         adjust_scenario_stats,
         create_scenario_plan,
         parse_scenario_hash,
+        encode_incumbents_rle,
+        decode_incumbents_rle,
         swing_vote,
         calculate_EG,
         calculate_MMD,
