@@ -145,6 +145,7 @@ ul.scores-box
     ul.scores-box li p
     {
         font-size: 14px !important;
+        line-height: 24px !important;
         color: #606980 !important;
         margin-bottom: 0 !important;
     }
@@ -229,8 +230,9 @@ path.highlight {
 
 #scenario-adjustments p {
     margin-bottom: 1em;
-    font-size: 14px;
-    line-height: 1.4em;
+    color: #4d566c;
+    font-size: 14px; /* Match ul.scores-box li p */
+    line-height: 24px; /* Match ul.scores-box li p */
 }
 
 #scenario-adjustments p label {
