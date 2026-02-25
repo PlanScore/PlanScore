@@ -1105,50 +1105,6 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         schedule_visualization_update(vote_swing, scenario_incumbents);
     });
 
-    // Add hashchange listener to respond to URL changes (e.g., browser back/forward)
-    window.addEventListener('hashchange', function() {
-        var hash_data = parse_scenario_hash();
-        if (hash_data === null) {
-            // Hash removed, no action needed here (handled by form visibility listener)
-            return;
-        }
-
-        var vote_swing = hash_data.vote_swing;
-        var hash_incumbents = hash_data.incumbents
-            ? hash_data.incumbents.split('')
-            : original_plan.incumbents.slice();
-
-        // Validate incumbents length
-        if (hash_data.incumbents && hash_data.incumbents.length !== original_plan.incumbents.length) {
-            console.warn('Incumbents from hash has wrong length, using original');
-            hash_incumbents = original_plan.incumbents.slice();
-        }
-
-        // Validate vote swing
-        if (scenarios.vote_swings.indexOf(vote_swing) === -1) {
-            console.warn('Vote swing from hash not found in scenarios, ignoring hashchange');
-            return;
-        }
-
-        // Update range input and display
-        range_input.value = vote_swing * 2;  // Convert vote_swing to margin_swing for slider
-        display.textContent = format_margin_swing(vote_swing);
-
-        // Update radio button states in table to match hash
-        var rows = districts_table.querySelectorAll('tbody tr');
-        for (var i = 0; i < rows.length && i < hash_incumbents.length; i++) {
-            var form = rows[i].querySelector('form.candidate-scenario');
-            if (form) {
-                var radios = form.querySelectorAll('input[type="radio"]');
-                for (var j = 0; j < radios.length; j++) {
-                    radios[j].checked = (radios[j].value === hash_incumbents[i]);
-                }
-            }
-        }
-
-        // Update visualizations
-        update_visualizations(vote_swing, hash_incumbents);
-    });
 }
 
 function clear_element(el)
