@@ -1855,6 +1855,8 @@ class TestScore (unittest.TestCase):
 
         # First round of sims - swing 0
         self.assertEqual(output.summary['Efficiency Gap'], 0)
+        # Efficiency Gap 0 Swing should equal Efficiency Gap (both at swing 0)
+        self.assertEqual(output.summary['Efficiency Gap 0 Swing'], 0)
         # Verify vectorized_EG was called with correct array for swing 0 (EG index 12)
         call_args = vectorized_EG.mock_calls[0][1][0][12]
         self.assertEqual(call_args.shape, (3, 5, 2))  # 3 sims, 5 districts (including NaN), 2 parties
