@@ -589,20 +589,9 @@ function create_scenario_plan(original_plan, scenarios, vote_swing, scenario_inc
         baseline_vote_swing_index = vote_swing_index; // Fallback to current
     }
 
-    // Special case: 0.0 swing with unchanged incumbents returns original plan
-    var incumbents_unchanged = true;
-    for (var i = 0; i < scenario_incumbents.length; i++) {
-        if (scenario_incumbents[i] !== original_plan.incumbents[i]) {
-            incumbents_unchanged = false;
-            break;
-        }
-    }
-
-    if (vote_swing === 0.0 && incumbents_unchanged) {
-        return original_plan;
-    }
-
     // Create a deep copy of the plan
+    // Note: We always create a mutated plan even when vote_swing=0 and incumbents unchanged,
+    // because we need to add sensitivity sweep properties that aren't in the original
     var mutated_plan = JSON.parse(JSON.stringify(original_plan));
 
     // Update the plan's incumbents to reflect the scenario
@@ -747,6 +736,62 @@ function create_scenario_plan(original_plan, scenarios, vote_swing, scenario_inc
         percentrank_abs('dec2_avg', house, mutated_plan.summary['Declination']);
     mutated_plan.summary['Declination Relative Percent Rank'] =
         percentrank_rel('dec2_avg', house, mutated_plan.summary['Declination']);
+
+    // Calculate sensitivity sweep values for the sensitivity chart
+    // Chart shows margin swings (D+10, D+8, etc.) but we calculate with vote swings (margin/2)
+    // scenarios.vote_swings uses percentage points (5.0 = 5%), not decimal (0.05)
+    var sensitivity_vote_swings = [
+        { swing: 5.0, name: 'Efficiency Gap +5 Dem' },   // D+10 margin
+        { swing: 4.0, name: 'Efficiency Gap +4 Dem' },   // D+8 margin
+        { swing: 3.0, name: 'Efficiency Gap +3 Dem' },   // D+6 margin
+        { swing: 2.0, name: 'Efficiency Gap +2 Dem' },   // D+4 margin
+        { swing: 1.0, name: 'Efficiency Gap +1 Dem' },   // D+2 margin
+        { swing: 0.0, name: 'Efficiency Gap 0 Swing' },  // Even (for sensitivity chart center)
+        { swing: -1.0, name: 'Efficiency Gap +1 Rep' },  // R+2 margin
+        { swing: -2.0, name: 'Efficiency Gap +2 Rep' },  // R+4 margin
+        { swing: -3.0, name: 'Efficiency Gap +3 Rep' },  // R+6 margin
+        { swing: -4.0, name: 'Efficiency Gap +4 Rep' },  // R+8 margin
+        { swing: -5.0, name: 'Efficiency Gap +5 Rep' }   // R+10 margin
+    ];
+
+    for (var s = 0; s < sensitivity_vote_swings.length; s++) {
+        var sensitivity_swing = sensitivity_vote_swings[s].swing;
+        var sensitivity_name = sensitivity_vote_swings[s].name;
+
+        // Find this vote_swing in scenarios.vote_swings array
+        var sensitivity_index = scenarios.vote_swings.indexOf(sensitivity_swing);
+
+        if (sensitivity_index === -1) {
+            // This swing not in scenarios data, skip
+            continue;
+        }
+
+        // Recalculate EG simulations at this vote_swing with current scenario_incumbents
+        var EG_sims_sensitivity = [];
+
+        for (var i in GAUSSIAN_RANDOMS) {
+            var random = GAUSSIAN_RANDOMS[i];
+            var dem_sim = [];
+            var rep_sim = [];
+
+            for (var d = 0; d < original_plan.districts.length; d++) {
+                var incumbent_code = all_open_seats ? 'U' : scenario_incumbents[d];
+                var incumbent_index = scenarios.incumbents.indexOf(incumbent_code);
+
+                var dem_mean = scenarios.statistics['Democratic Votes'][sensitivity_index][incumbent_index][d];
+                var rep_mean = scenarios.statistics['Republican Votes'][sensitivity_index][incumbent_index][d];
+                var dem_sd = scenarios.statistics['Democratic Votes SD'][sensitivity_index][incumbent_index][d];
+                var rep_sd = scenarios.statistics['Republican Votes SD'][sensitivity_index][incumbent_index][d];
+
+                dem_sim.push(dem_mean + random * dem_sd);
+                rep_sim.push(rep_mean - random * rep_sd);
+            }
+
+            EG_sims_sensitivity.push(calculate_EG(rep_sim, dem_sim));
+        }
+
+        mutated_plan.summary[sensitivity_name] = calculate_mean(EG_sims_sensitivity);
+    }
 
     return mutated_plan;
 }
@@ -910,32 +955,24 @@ function update_form_visibility(form, plan, districts_table, on_change_callback)
     // Update form visibility based on URL hash and plan availability
     var has_hash = has_scenario_hash();
     var availability = check_scenarios_available(plan);
-    var disabled_message_el = form.querySelector('.disabled-message');
+    var caption_el = form.querySelector('.caption');
 
     if (!has_hash) {
         // No hash: hide form completely
         form.classList.add('scenario-adjustments-hidden');
         form.classList.remove('scenario-adjustments-disabled');
-        // Remove the disabled message element if it exists
-        if (disabled_message_el) {
-            disabled_message_el.remove();
-        }
     } else if (!availability.available) {
         // Has hash but scenarios not available: show disabled form with reason
         form.classList.remove('scenario-adjustments-hidden');
         form.classList.add('scenario-adjustments-disabled');
-        // Set the disabled message text to the reason
-        if (disabled_message_el) {
-            disabled_message_el.textContent = availability.reason;
+        // Replace the caption text with the disabled reason
+        if (caption_el) {
+            caption_el.textContent = availability.reason;
         }
     } else {
-        // Has hash and scenarios available: show enabled form
-        form.classList.remove('scenario-adjustments-hidden');
+        // Has hash and scenarios available: enable form but keep hidden
+        // Form will be shown by setup_scenario_interactivity after initialization
         form.classList.remove('scenario-adjustments-disabled');
-        // Remove the disabled message element if it exists
-        if (disabled_message_el) {
-            disabled_message_el.remove();
-        }
     }
 
     // Calculate whether scenarios are active and update incumbent scenario cells
@@ -958,9 +995,6 @@ function setup_form_visibility_listener(form, plan, districts_table, on_change_c
 
 function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA)
 {
-    // Remove disabled class now that scenarios have loaded
-    scenario_adjustments_form.classList.remove('scenario-adjustments-disabled');
-
     // Get the range input and display element
     var range_input = scenario_adjustments_form.querySelector('input[name="margin-swing"]');
     var display = document.getElementById('margin-swing-display');
@@ -1043,7 +1077,7 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
 
         // Update the score cards (each function handles its own validation)
         populate_efficiency_gap_score(mutated_plan, score_EG);
-        populate_sensitivity_test(original_plan, score_sense);  // Always use original plan for sensitivity range
+        populate_sensitivity_test(mutated_plan, score_sense);  // Use mutated plan to get scenario-aware sensitivity values
         populate_partisan_bias_score(mutated_plan, score_PB);
         populate_mean_median_score(mutated_plan, score_MM);
 
@@ -1089,6 +1123,10 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
     // This ensures that if we were waiting_for_scenarios, we now populate everything
     update_visualizations(initial_vote_swing, initial_incumbents);
 
+    // Show the form now that it's fully initialized
+    scenario_adjustments_form.classList.remove('scenario-adjustments-hidden');
+    scenario_adjustments_form.classList.remove('scenario-adjustments-disabled');
+
     // Add input listener to range slider for live updates
     range_input.addEventListener('input', function(event) {
         // Get the selected margin swing value from slider and convert to vote swing for server data
@@ -1105,50 +1143,6 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         schedule_visualization_update(vote_swing, scenario_incumbents);
     });
 
-    // Add hashchange listener to respond to URL changes (e.g., browser back/forward)
-    window.addEventListener('hashchange', function() {
-        var hash_data = parse_scenario_hash();
-        if (hash_data === null) {
-            // Hash removed, no action needed here (handled by form visibility listener)
-            return;
-        }
-
-        var vote_swing = hash_data.vote_swing;
-        var hash_incumbents = hash_data.incumbents
-            ? hash_data.incumbents.split('')
-            : original_plan.incumbents.slice();
-
-        // Validate incumbents length
-        if (hash_data.incumbents && hash_data.incumbents.length !== original_plan.incumbents.length) {
-            console.warn('Incumbents from hash has wrong length, using original');
-            hash_incumbents = original_plan.incumbents.slice();
-        }
-
-        // Validate vote swing
-        if (scenarios.vote_swings.indexOf(vote_swing) === -1) {
-            console.warn('Vote swing from hash not found in scenarios, ignoring hashchange');
-            return;
-        }
-
-        // Update range input and display
-        range_input.value = vote_swing * 2;  // Convert vote_swing to margin_swing for slider
-        display.textContent = format_margin_swing(vote_swing);
-
-        // Update radio button states in table to match hash
-        var rows = districts_table.querySelectorAll('tbody tr');
-        for (var i = 0; i < rows.length && i < hash_incumbents.length; i++) {
-            var form = rows[i].querySelector('form.candidate-scenario');
-            if (form) {
-                var radios = form.querySelectorAll('input[type="radio"]');
-                for (var j = 0; j < radios.length; j++) {
-                    radios[j].checked = (radios[j].value === hash_incumbents[i]);
-                }
-            }
-        }
-
-        // Update visualizations
-        update_visualizations(vote_swing, hash_incumbents);
-    });
 }
 
 function clear_element(el)
@@ -2054,13 +2048,19 @@ function populate_sensitivity_test(plan, score_sense)
         return;
     }
 
+    // Use 'Efficiency Gap 0 Swing' for chart center if available (scenario mode),
+    // otherwise fall back to 'Efficiency Gap' (non-scenario mode)
+    var center_value = plan.summary['Efficiency Gap 0 Swing'] !== undefined
+        ? plan.summary['Efficiency Gap 0 Swing']
+        : plan.summary['Efficiency Gap'];
+
     var data = [
         100 * plan.summary['Efficiency Gap +5 Dem'],
         100 * plan.summary['Efficiency Gap +4 Dem'],
         100 * plan.summary['Efficiency Gap +3 Dem'],
         100 * plan.summary['Efficiency Gap +2 Dem'],
         100 * plan.summary['Efficiency Gap +1 Dem'],
-        100 * plan.summary['Efficiency Gap'],
+        100 * center_value,
         100 * plan.summary['Efficiency Gap +1 Rep'],
         100 * plan.summary['Efficiency Gap +2 Rep'],
         100 * plan.summary['Efficiency Gap +3 Rep'],
@@ -3555,8 +3555,8 @@ function adjust_scenario_form_for_olark()
     if (!scenario_form) return;
 
     // Only adjust on narrow viewports (below desktop breakpoint)
-    var is_narrow = window.innerWidth < 780; // corresponds to @media 768px
-    console.log('window.innerWidth:', window.innerWidth);
+    // Use matchMedia to match CSS @media query exactly (handles scrollbar width correctly)
+    var is_narrow = !window.matchMedia('(min-width: 769px)').matches;
 
     if (is_narrow) {
         // Look for any fixed-position elements in the bottom-right corner

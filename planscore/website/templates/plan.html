@@ -262,12 +262,14 @@
 
     </section>
 
-    <form id="scenario-adjustments" class="scenario-adjustments-hidden">
+    <form id="scenario-adjustments" class="scenario-adjustments-hidden scenario-adjustments-disabled">
         <div>
-            <label for="margin-swing-range">Margin Swing:</label>
-            <p id="margin-swing-display">0.0</p>
-            <input type="range" id="margin-swing-range" name="margin-swing" min="-12" max="12" step="1" value="0">
-            <div class="disabled-message">Not available for this map</div>
+            <p>
+                <label for="margin-swing-range">Margin: <span id="margin-swing-display">0.0</span></label>
+                <br>
+                <input type="range" id="margin-swing-range" name="margin-swing" min="-12" max="12" step="1" value="0">
+            </p>
+            <p class="caption">Change the margin swing to see a range of possible predicted scenarios.</p>
         </div>
     </form>
 

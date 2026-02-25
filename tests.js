@@ -807,9 +807,10 @@ assert.equal(NC_2025_scenarios.statistics['Republican Votes SD'][1][1][1], 12911
 
 // Test create_scenario_plan
 
-// Test: vote_swing 0.0 with unchanged incumbents should return original plan
+// Test: vote_swing 0.0 with unchanged incumbents should return a mutated plan with sensitivity properties
 var result_zero = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, 0.0, NC_2025_index.incumbents.slice());
-assert.strictEqual(result_zero, NC_2025_index, 'Should return original plan for 0.0 swing with unchanged incumbents');
+assert.notStrictEqual(result_zero, NC_2025_index, 'Should return a new object even for 0.0 swing (to add sensitivity properties)');
+assert.ok(typeof result_zero.summary['Efficiency Gap 0 Swing'] === 'number', 'Should have sensitivity properties even at 0.0 swing');
 
 // Test: vote_swing -6.0 should mutate the plan
 var result_neg6 = plan.create_scenario_plan(NC_2025_index, NC_2025_scenarios, -6.0, NC_2025_index.incumbents.slice());
@@ -983,6 +984,51 @@ assert.ok(result_sim.summary['Efficiency Gap SD'] > 0, 'Efficiency Gap SD should
 assert.ok(result_sim.summary['Mean-Median SD'] > 0, 'Mean-Median SD should be positive');
 assert.ok(result_sim.summary['Partisan Bias SD'] > 0, 'Partisan Bias SD should be positive');
 assert.ok(result_sim.summary['Declination SD'] > 0, 'Declination SD should be positive');
+
+// Test sensitivity sweep properties using incumbents plan (avoids early-return optimization)
+var result_with_sens = plan.create_scenario_plan(
+    NC_2025_incumbents_index,
+    NC_2025_incumbents_scenarios,
+    0.0,
+    NC_2025_incumbents_index.incumbents.slice()
+);
+assert.ok(typeof result_with_sens.summary['Efficiency Gap 0 Swing'] === 'number', 'Should have Efficiency Gap 0 Swing');
+assert.ok(typeof result_with_sens.summary['Efficiency Gap +5 Dem'] === 'number', 'Should have Efficiency Gap +5 Dem');
+assert.ok(typeof result_with_sens.summary['Efficiency Gap +4 Dem'] === 'number', 'Should have Efficiency Gap +4 Dem');
+assert.ok(typeof result_with_sens.summary['Efficiency Gap +3 Dem'] === 'number', 'Should have Efficiency Gap +3 Dem');
+assert.ok(typeof result_with_sens.summary['Efficiency Gap +2 Dem'] === 'number', 'Should have Efficiency Gap +2 Dem');
+assert.ok(typeof result_with_sens.summary['Efficiency Gap +1 Dem'] === 'number', 'Should have Efficiency Gap +1 Dem');
+assert.ok(typeof result_with_sens.summary['Efficiency Gap +1 Rep'] === 'number', 'Should have Efficiency Gap +1 Rep');
+assert.ok(typeof result_with_sens.summary['Efficiency Gap +2 Rep'] === 'number', 'Should have Efficiency Gap +2 Rep');
+assert.ok(typeof result_with_sens.summary['Efficiency Gap +3 Rep'] === 'number', 'Should have Efficiency Gap +3 Rep');
+assert.ok(typeof result_with_sens.summary['Efficiency Gap +4 Rep'] === 'number', 'Should have Efficiency Gap +4 Rep');
+assert.ok(typeof result_with_sens.summary['Efficiency Gap +5 Rep'] === 'number', 'Should have Efficiency Gap +5 Rep');
+
+// Test that Efficiency Gap 0 Swing is independent of the vote_swing parameter
+// Use NC_2025_incumbents which has mixed D/R/O incumbents (not all 'U')
+var result_swing_0 = plan.create_scenario_plan(
+    NC_2025_incumbents_index,
+    NC_2025_incumbents_scenarios,
+    0.0,
+    NC_2025_incumbents_index.incumbents.slice()
+);
+var result_swing_3 = plan.create_scenario_plan(
+    NC_2025_incumbents_index,
+    NC_2025_incumbents_scenarios,
+    3.0,
+    NC_2025_incumbents_index.incumbents.slice()
+);
+assert.equal(
+    result_swing_0.summary['Efficiency Gap 0 Swing'],
+    result_swing_3.summary['Efficiency Gap 0 Swing'],
+    'Efficiency Gap 0 Swing should be the same regardless of vote_swing parameter'
+);
+// But regular Efficiency Gap should be different
+assert.notEqual(
+    result_swing_0.summary['Efficiency Gap'],
+    result_swing_3.summary['Efficiency Gap'],
+    'Regular Efficiency Gap should change with vote_swing parameter'
+);
 
 // Test incumbency scenario functionality with NC 2025 incumbents plan
 // Plan has 14 districts with mixed incumbents (not all open)

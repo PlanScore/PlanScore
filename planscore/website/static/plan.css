@@ -21,9 +21,6 @@ div.planscore-partylegend {
     padding: 5px 5px 0 5px;
 }
 
-div.planscore-partylegend div.planscore-partylegend-legend {
-}
-
 div.planscore-partylegend div.planscore-partylegend-swatch {
     display: inline-block;
     width: 18px;
@@ -145,6 +142,7 @@ ul.scores-box
     ul.scores-box li p
     {
         font-size: 14px !important;
+        line-height: 24px !important;
         color: #606980 !important;
         margin-bottom: 0 !important;
     }
@@ -227,9 +225,15 @@ path.highlight {
     pointer-events: none;
 }
 
-#scenario-adjustments .disabled-message {
-    color: #606980;
-    margin-top: 10px;
+#scenario-adjustments p {
+    margin-bottom: 1em;
+    color: #4d566c;
+    font-size: 14px; /* Match ul.scores-box li p */
+    line-height: 24px; /* Match ul.scores-box li p */
+}
+
+#scenario-adjustments p label {
+    font-size: 16px;
 }
 
 #scenario-adjustments input#margin-swing-range[type=range]
@@ -337,28 +341,49 @@ path.highlight {
         #scenario-adjustments input#margin-swing-range[type=range] { height: 70px; }
     }
 
+    /* Dull appearance when the #scenario-adjustments form is disabled */
+
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]::-webkit-slider-runnable-track
+    {
+        background: #b3c6d2; /* Disabled track background */
+        border: 0px solid #b3c6d2; /* Disabled track background */
+    }
+
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]:focus::-webkit-slider-runnable-track { background: #b3c6d2; /* Disabled track background */ }
+
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]::-moz-range-track
+    {
+        background: #b3c6d2; /* Disabled track background */
+        border: 0px solid #b3c6d2; /* Disabled track background */
+    }
+
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]::-webkit-slider-thumb { border: 2px solid #b3c6d2; /* Disabled track background */ }
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]::-moz-range-thumb { border: 2px solid #b3c6d2; /* Disabled track background */ }
+
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]::-ms-fill-lower
+    {
+        background: #b3c6d2; /* Disabled track background */
+        border: 0px solid #b3c6d2; /* Disabled track background */
+    }
+
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]::-ms-fill-upper {
+        background: #b3c6d2; /* Disabled track background */
+        border: 0px solid #b3c6d2; /* Disabled track background */
+    }
+
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]::-ms-thumb { border: 2px solid #b3c6d2; /* Disabled track background */ }
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]:focus::-ms-fill-lower { background: #b3c6d2; /* Disabled track background */ }
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]:focus::-ms-fill-upper { background: #b3c6d2; /* Disabled track background */ }
+
+    #scenario-adjustments.scenario-adjustments-disabled { color: #606980; }
+
 
 #scenario-adjustments.scenario-adjustments-disabled input[type="range"] {
     cursor: not-allowed;
 }
 
-#scenario-adjustments label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-#margin-swing-display {
-    text-align: center;
-    font-size: 1.2em;
-    font-weight: bold;
-    margin: 10px 0;
-    color: #333;
-}
-
 #margin-swing-range {
     width: 100%;
-    margin: 10px 0;
     direction: rtl; /* Reverse slider so D+ values are on the left */
 }
 

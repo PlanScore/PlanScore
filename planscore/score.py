@@ -1235,7 +1235,11 @@ def calculate_district_biases(upload):
         'Efficiency Gap Absolute Percent Rank': percentrank_abs(COLUMN_EG, upload.model.house, np_safe_mean(EGs[0.0])),
         'Efficiency Gap Relative Percent Rank': percentrank_rel(COLUMN_EG, upload.model.house, np_safe_mean(EGs[0.0])),
     }
-    
+
+    # Add sensitivity sweep properties for the sensitivity chart
+    # 'Efficiency Gap 0 Swing' is the center point, always calculated at 0.0 regardless of current swing
+    summary_dict['Efficiency Gap 0 Swing'] = np_safe_mean(EGs[0.0])
+
     for swing in (1.0, 2.0, 3.0, 4.0, 5.0):
         summary_dict.update({
             f'Efficiency Gap +{swing:.0f} Dem': np_safe_mean(EGs[swing]),
