@@ -337,6 +337,40 @@ path.highlight {
         #scenario-adjustments input#margin-swing-range[type=range] { height: 70px; }
     }
 
+    /* Dull appearance when the #scenario-adjustments form is disabled */
+
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]::-webkit-slider-runnable-track
+    {
+        background: #b3c6d2; /* Disabled track background */
+        border: 0px solid #b3c6d2; /* Disabled track background */
+    }
+
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]:focus::-webkit-slider-runnable-track { background: #b3c6d2; /* Disabled track background */ }
+
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]::-moz-range-track
+    {
+        background: #b3c6d2; /* Disabled track background */
+        border: 0px solid #b3c6d2; /* Disabled track background */
+    }
+
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]::-webkit-slider-thumb { border: 2px solid #b3c6d2; /* Disabled track background */ }
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]::-moz-range-thumb { border: 2px solid #b3c6d2; /* Disabled track background */ }
+
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]::-ms-fill-lower
+    {
+        background: #b3c6d2; /* Disabled track background */
+        border: 0px solid #b3c6d2; /* Disabled track background */
+    }
+
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]::-ms-fill-upper {
+        background: #b3c6d2; /* Disabled track background */
+        border: 0px solid #b3c6d2; /* Disabled track background */
+    }
+
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]::-ms-thumb { border: 2px solid #b3c6d2; /* Disabled track background */ }
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]:focus::-ms-fill-lower { background: #b3c6d2; /* Disabled track background */ }
+    #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]:focus::-ms-fill-upper { background: #b3c6d2; /* Disabled track background */ }
+
 
 #scenario-adjustments.scenario-adjustments-disabled input[type="range"] {
     cursor: not-allowed;
