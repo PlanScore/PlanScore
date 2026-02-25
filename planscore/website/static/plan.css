@@ -21,9 +21,6 @@ div.planscore-partylegend {
     padding: 5px 5px 0 5px;
 }
 
-div.planscore-partylegend div.planscore-partylegend-legend {
-}
-
 div.planscore-partylegend div.planscore-partylegend-swatch {
     display: inline-block;
     width: 18px;
@@ -383,9 +380,6 @@ path.highlight {
 
 #scenario-adjustments.scenario-adjustments-disabled input[type="range"] {
     cursor: not-allowed;
-}
-
-#margin-swing-display {
 }
 
 #margin-swing-range {
