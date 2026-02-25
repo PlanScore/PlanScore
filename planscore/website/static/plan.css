@@ -227,9 +227,14 @@ path.highlight {
     pointer-events: none;
 }
 
-#scenario-adjustments .disabled-message {
-    color: #606980;
-    margin-top: 10px;
+#scenario-adjustments p {
+    margin-bottom: 1em;
+    font-size: 14px;
+    line-height: 1.4em;
+}
+
+#scenario-adjustments p label {
+    font-size: 16px;
 }
 
 #scenario-adjustments input#margin-swing-range[type=range]
@@ -371,28 +376,18 @@ path.highlight {
     #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]:focus::-ms-fill-lower { background: #b3c6d2; /* Disabled track background */ }
     #scenario-adjustments.scenario-adjustments-disabled input#margin-swing-range[type=range]:focus::-ms-fill-upper { background: #b3c6d2; /* Disabled track background */ }
 
+    #scenario-adjustments.scenario-adjustments-disabled { color: #606980; }
+
 
 #scenario-adjustments.scenario-adjustments-disabled input[type="range"] {
     cursor: not-allowed;
 }
 
-#scenario-adjustments label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
 #margin-swing-display {
-    text-align: center;
-    font-size: 1.2em;
-    font-weight: bold;
-    margin: 10px 0;
-    color: #333;
 }
 
 #margin-swing-range {
     width: 100%;
-    margin: 10px 0;
     direction: rtl; /* Reverse slider so D+ values are on the left */
 }
 
