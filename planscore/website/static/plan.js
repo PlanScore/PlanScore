@@ -929,8 +929,8 @@ function update_form_visibility(form, plan, districts_table, on_change_callback)
             disabled_message_el.textContent = availability.reason;
         }
     } else {
-        // Has hash and scenarios available: show enabled form
-        form.classList.remove('scenario-adjustments-hidden');
+        // Has hash and scenarios available: enable form but keep hidden
+        // Form will be shown by setup_scenario_interactivity after initialization
         form.classList.remove('scenario-adjustments-disabled');
         // Remove the disabled message element if it exists
         if (disabled_message_el) {
@@ -958,9 +958,6 @@ function setup_form_visibility_listener(form, plan, districts_table, on_change_c
 
 function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA)
 {
-    // Remove disabled class now that scenarios have loaded
-    scenario_adjustments_form.classList.remove('scenario-adjustments-disabled');
-
     // Get the range input and display element
     var range_input = scenario_adjustments_form.querySelector('input[name="margin-swing"]');
     var display = document.getElementById('margin-swing-display');
@@ -1088,6 +1085,10 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
     // Always update visualizations on initial load (even for 0.0)
     // This ensures that if we were waiting_for_scenarios, we now populate everything
     update_visualizations(initial_vote_swing, initial_incumbents);
+
+    // Show the form now that it's fully initialized
+    scenario_adjustments_form.classList.remove('scenario-adjustments-hidden');
+    scenario_adjustments_form.classList.remove('scenario-adjustments-disabled');
 
     // Add input listener to range slider for live updates
     range_input.addEventListener('input', function(event) {
