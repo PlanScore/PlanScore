@@ -1023,10 +1023,10 @@ function parse_scenario_hash()
     return result;
 }
 
-function update_scenario_hash(vote_swing, incumbents_string, original_incumbents_string, model_year_idx, scenarios)
+function update_scenario_hash(vote_swing, incumbents_string, original_incumbents_string, model_year_idx, scenarios, default_model_year)
 {
     // Update URL hash with margin swing (2x vote swing), incumbents, and model year without page reload
-    // Omit margin_swing if 0.0, omit incumbents if matches original, omit model_year if 0 or not 4D
+    // Omit margin_swing if 0.0, omit incumbents if matches original, omit model_year if matches default
     var parts = [];
 
     if (vote_swing !== 0.0) {
@@ -1039,10 +1039,16 @@ function update_scenario_hash(vote_swing, incumbents_string, original_incumbents
         parts.push('incumbents:' + encode_incumbents_rle(incumbents_string));
     }
 
-    // Add model_year if it's a 4D scenario and not the default (index 0)
-    if (scenarios && is_4d_scenarios(scenarios) && model_year_idx > 0) {
-        var model_year = scenarios.model_years[model_year_idx];
-        parts.push('model_year:' + model_year);
+    // Add model_year if it's a 4D scenario and not the default from plan
+    if (scenarios && is_4d_scenarios(scenarios)) {
+        var scenario_key = scenarios.model_years[model_year_idx];
+        var parsed = parse_scenario_year_key(scenario_key);
+        if (parsed) {
+            // Only include in hash if different from plan's default model_year
+            if (!default_model_year || parsed.model_year !== default_model_year) {
+                parts.push('model_year:' + parsed.model_year);
+            }
+        }
     }
 
     var hash_value = parts.length > 0
@@ -1152,7 +1158,7 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
                 is_visualization_updating = true;
                 var original_incumbents_string = original_plan.incumbents.join('');
                 var scenario_incumbents_string = scenario_incumbents.join('');
-                update_scenario_hash(vote_swing, scenario_incumbents_string, original_incumbents_string, model_year_idx, scenarios);
+                update_scenario_hash(vote_swing, scenario_incumbents_string, original_incumbents_string, model_year_idx, scenarios, original_plan.model_year);
                 update_visualizations(vote_swing, scenario_incumbents, model_year_idx);
                 pending_visualization_update_timer = null;
                 is_visualization_updating = false;
