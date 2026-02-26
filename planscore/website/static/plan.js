@@ -1311,9 +1311,10 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         // First pass: uncheck all and show/hide based on availability
         for (var i = 0; i < radio_buttons.length; i++) {
             var radio_year = parseInt(radio_buttons[i].value);
-            var radio_label = radio_buttons[i].parentElement;
+            var radio_input = radio_buttons[i];
+            var radio_label = scenario_adjustments_form.querySelector('label[for="' + radio_input.id + '"]');
 
-            radio_buttons[i].checked = false; // Clear all first
+            radio_input.checked = false; // Clear all first
 
             // Find if this radio_year matches any scenario key
             var found = false;
@@ -1326,9 +1327,11 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
             }
 
             if (found) {
-                radio_label.style.display = '';
+                radio_input.style.display = '';
+                if (radio_label) radio_label.style.display = '';
             } else {
-                radio_label.style.display = 'none';
+                radio_input.style.display = 'none';
+                if (radio_label) radio_label.style.display = 'none';
             }
         }
 
