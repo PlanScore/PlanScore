@@ -1379,16 +1379,18 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
             });
         }
     } else {
-        // Legacy scenarios without model_year dimension: hide model year selection
-        var model_year_section = scenario_adjustments_form.querySelector('p:has(input[name="model-year"])');
-        if (!model_year_section) {
-            // Fallback: hide all model year radio buttons
-            var radio_buttons = scenario_adjustments_form.querySelectorAll('input[name="model-year"]');
-            for (var i = 0; i < radio_buttons.length; i++) {
-                radio_buttons[i].parentElement.style.display = 'none';
-            }
-        } else {
-            model_year_section.style.display = 'none';
+        // Legacy scenarios without model_year dimension: disable model year selection
+        var radio_buttons = scenario_adjustments_form.querySelectorAll('input[name="model-year"]');
+
+        // Disable all model year radio buttons
+        for (var i = 0; i < radio_buttons.length; i++) {
+            radio_buttons[i].disabled = true;
+        }
+
+        // Add a class to the model year container for styling
+        var model_year_container = scenario_adjustments_form.querySelector('#model-year');
+        if (model_year_container) {
+            model_year_container.classList.add('model-year-disabled');
         }
     }
 
