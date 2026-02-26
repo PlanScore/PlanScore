@@ -232,9 +232,9 @@ var dem_mean = get_scenario_statistic(
 );
 ```
 
-#### 4.4 Future Enhancement: Model Year Selection UI
+#### 4.4 Model Year Selection UI
 
-**Not required for initial implementation**, but for future reference:
+Support model year display and selection in UI
 
 - Add dropdown/selector in scenario adjustment form to choose model year
 - Pass selected model_year_idx through `create_scenario_plan()`
