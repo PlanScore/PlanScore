@@ -521,9 +521,9 @@ function percentrank_rel(column, house, value)
 
 function adjust_scenario_stats(data)
 {
-    // Handle both 3D (legacy) and 4D (new) formats
+    // Handle both legacy (3 dimensions) and new (4 dimensions with model_year) formats
     if (data.dimensions.length == 3) {
-        // 3D format: [vote_swings, incumbents, districts]
+        // Legacy format: [vote_swings, incumbents, districts]
         // Adjust statistics to represent real values
         // All scenario stat values past [0][0] are diffs atop [0][0] to save bytes
         for (var i = 0; i < data[data.dimensions[0]].length; i++) {
@@ -539,7 +539,7 @@ function adjust_scenario_stats(data)
             }
         }
     } else if (data.dimensions.length == 4) {
-        // 4D format: [model_years, vote_swings, incumbents, districts]
+        // New format with model_year dimension: [model_years, vote_swings, incumbents, districts]
         // Adjust statistics to represent real values
         // All scenario stat values past [0][0][0] are diffs atop [0][0][0] to save bytes
         for (var i = 0; i < data[data.dimensions[0]].length; i++) {
@@ -562,11 +562,11 @@ function adjust_scenario_stats(data)
 }
 
 /**
- * Get a statistic value from scenarios, handling both 3D (old) and 4D (new) formats
+ * Get a statistic value from scenarios, handling both legacy (3 dimensions) and new (with model_year) formats
  *
  * @param {Object} scenarios - The scenarios object
  * @param {string} stat_name - Name of statistic (e.g., 'Democratic Votes')
- * @param {number} model_year_idx - Model year index (ignored for 3D format)
+ * @param {number} model_year_idx - Model year index (ignored for legacy format)
  * @param {number} swing_idx - Vote swing index
  * @param {number} inc_idx - Incumbent index
  * @param {number} dist_idx - District index
@@ -579,20 +579,21 @@ function get_scenario_statistic(scenarios, stat_name, model_year_idx, swing_idx,
         return null;
     }
 
-    // Check if this is the new 4D format (has model_years dimension)
+    // Check if this is the new format with model_years dimension
     if (scenarios.dimensions && scenarios.dimensions[0] === 'model_years') {
-        // 4D: [model_year][swing][incumbent][district]
+        // New format: [model_year][swing][incumbent][district]
         return statistic[model_year_idx][swing_idx][inc_idx][dist_idx];
     } else {
-        // 3D (legacy): [swing][incumbent][district]
+        // Legacy format: [swing][incumbent][district]
         return statistic[swing_idx][inc_idx][dist_idx];
     }
 }
 
 /**
- * Check if scenarios use the new 4D format
+ * Check if scenarios include the model_year dimension
+ * (as opposed to legacy scenarios with only vote_swings, incumbents, districts)
  */
-function is_4d_scenarios(scenarios)
+function has_model_year_dimension(scenarios)
 {
     return scenarios.dimensions && scenarios.dimensions[0] === 'model_years';
 }
@@ -667,7 +668,7 @@ function create_scenario_plan(original_plan, scenarios, vote_swing, scenario_inc
 
     // Extract pvote_year from scenario key if available
     var pvote_year = original_plan.pvote_year; // default
-    if (is_4d_scenarios(scenarios) && scenarios.model_years[model_year_idx]) {
+    if (has_model_year_dimension(scenarios) && scenarios.model_years[model_year_idx]) {
         var parsed = parse_scenario_year_key(scenarios.model_years[model_year_idx]);
         if (parsed) {
             pvote_year = parsed.pvote_year;
@@ -1039,8 +1040,8 @@ function update_scenario_hash(vote_swing, incumbents_string, original_incumbents
         parts.push('incumbents:' + encode_incumbents_rle(incumbents_string));
     }
 
-    // Add model_year if it's a 4D scenario and not the default from plan
-    if (scenarios && is_4d_scenarios(scenarios)) {
+    // Add model_year if scenarios include model_year dimension and it's not the default from plan
+    if (scenarios && has_model_year_dimension(scenarios)) {
         var scenario_key = scenarios.model_years[model_year_idx];
         var parsed = parse_scenario_year_key(scenario_key);
         if (parsed) {
@@ -1175,7 +1176,7 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         }
 
         // Find the index where model_year matches
-        if (is_4d_scenarios(scenarios)) {
+        if (has_model_year_dimension(scenarios)) {
             var selected_year = parseInt(checked_radio.value);
 
             // Parse each scenario key and find matching model_year
@@ -1189,7 +1190,7 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
             return 0; // Default to first if not found
         }
 
-        return 0; // 3D scenarios always use index 0
+        return 0; // Legacy scenarios without model_year dimension always use index 0
     }
 
     // Define callback for incumbent scenario radio button changes
@@ -1300,7 +1301,7 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
     display.textContent = format_vote_swing(initial_vote_swing);
 
     // Set up model year radio buttons
-    if (is_4d_scenarios(scenarios)) {
+    if (has_model_year_dimension(scenarios)) {
         console.log('Setting up model year radio buttons. Available years:', scenarios.model_years, 'Initial year:', initial_model_year);
 
         // Show/hide radio buttons based on available model years
@@ -1378,7 +1379,7 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
             });
         }
     } else {
-        // 3D scenarios: hide model year selection
+        // Legacy scenarios without model_year dimension: hide model year selection
         var model_year_section = scenario_adjustments_form.querySelector('p:has(input[name="model-year"])');
         if (!model_year_section) {
             // Fallback: hide all model year radio buttons
@@ -3934,7 +3935,7 @@ if(typeof module !== 'undefined' && module.exports)
         encode_incumbents_rle,
         decode_incumbents_rle,
         get_scenario_statistic,
-        is_4d_scenarios,
+        has_model_year_dimension,
         parse_scenario_year_key,
         swing_vote,
         calculate_EG,
