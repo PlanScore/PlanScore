@@ -1160,8 +1160,14 @@ def calculate_district_biases(upload):
     vote_stats_diff[..., 0] = vote_stats_diff[..., 0].round(constants.ROUND_FLOAT)
     vote_stats_diff[..., 1:] = vote_stats_diff[..., 1:].round(constants.ROUND_COUNT)
 
+    # Combine model_year and pvote_year into scenario keys
+    scenario_keys = [
+        f"{model_year} ({pvote_year})"
+        for model_year, pvote_year in zip(model_years, pvote_years)
+    ]
+
     scenarios = dict(
-        model_years=model_years,
+        model_years=scenario_keys,
         vote_swings=list(swing_range),
         incumbents=list(INCUMBENCY.keys()),
         districts=list(range(1, 1 + district_count)),

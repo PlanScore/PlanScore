@@ -1964,6 +1964,12 @@ class TestScore (unittest.TestCase):
         self.assertEqual(len(output.scenarios['model_years']), 2)
         self.assertIsInstance(output.scenarios['model_years'], list)
 
+        # Check that model_years are in combined string format "model_year (pvote_year)"
+        # 2022F: model_year=2020, pvote_year=2020 -> "2020 (2020)"
+        # 2025A: model_year=2024, pvote_year=2020 -> "2024 (2020)"
+        self.assertEqual(output.scenarios['model_years'][0], '2020 (2020)')
+        self.assertEqual(output.scenarios['model_years'][1], '2024 (2020)')
+
         # Check statistics are 4D
         dem_votes = output.scenarios['statistics']['Democratic Votes']
         self.assertEqual(len(dem_votes), 2)  # 2 model years
@@ -2023,6 +2029,10 @@ class TestScore (unittest.TestCase):
             ['model_years', 'vote_swings', 'incumbents', 'districts']
         )
         self.assertEqual(len(output.scenarios['model_years']), 1)
+
+        # Check that model_years are in combined string format "model_year (pvote_year)"
+        # 2025A: model_year=2024, pvote_year=2020 -> "2024 (2020)"
+        self.assertEqual(output.scenarios['model_years'][0], '2024 (2020)')
 
         # Check statistics are 4D
         dem_votes = output.scenarios['statistics']['Democratic Votes']
