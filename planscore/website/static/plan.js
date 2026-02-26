@@ -597,6 +597,36 @@ function is_4d_scenarios(scenarios)
     return scenarios.dimensions && scenarios.dimensions[0] === 'model_years';
 }
 
+/**
+ * Parse a scenario key in format "model_year (pvote_year)"
+ * Returns {model_year: int, pvote_year: int} or null if not parseable
+ * Handles both old integer format and new string format for compatibility
+ */
+function parse_scenario_year_key(key)
+{
+    if (typeof key === 'number') {
+        // Legacy integer format: use as both model_year and pvote_year
+        return {model_year: key, pvote_year: key};
+    }
+
+    // New string format: "2024 (2020)"
+    var match = String(key).match(/^(\d{4})\s*\((\d{4})\)$/);
+    if (match) {
+        return {
+            model_year: parseInt(match[1]),
+            pvote_year: parseInt(match[2])
+        };
+    }
+
+    // Try simple integer string
+    var year = parseInt(key);
+    if (!isNaN(year)) {
+        return {model_year: year, pvote_year: year};
+    }
+
+    return null;
+}
+
 function read_scenario_incumbents_from_table(districts_table)
 {
     // Query all checked radio buttons in incumbent scenario forms
@@ -635,6 +665,15 @@ function create_scenario_plan(original_plan, scenarios, vote_swing, scenario_inc
         model_year_idx = 0;
     }
 
+    // Extract pvote_year from scenario key if available
+    var pvote_year = original_plan.pvote_year; // default
+    if (is_4d_scenarios(scenarios) && scenarios.model_years[model_year_idx]) {
+        var parsed = parse_scenario_year_key(scenarios.model_years[model_year_idx]);
+        if (parsed) {
+            pvote_year = parsed.pvote_year;
+        }
+    }
+
     // Find the vote swing index in scenarios.vote_swings array
     var vote_swing_index = scenarios.vote_swings.indexOf(vote_swing);
 
@@ -657,6 +696,9 @@ function create_scenario_plan(original_plan, scenarios, vote_swing, scenario_inc
 
     // Update the plan's incumbents to reflect the scenario
     mutated_plan.incumbents = scenario_incumbents.slice();
+
+    // Add pvote_year to mutated plan so update_heading_titles can use it
+    mutated_plan.pvote_year = pvote_year;
 
     // Arrays to store mean and SD values for simulations
     var dem_votes_mean = [];
@@ -1126,11 +1168,19 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
             return 0; // Default to first model year
         }
 
-        // Find the index of the selected year in scenarios.model_years
+        // Find the index where model_year matches
         if (is_4d_scenarios(scenarios)) {
             var selected_year = parseInt(checked_radio.value);
-            var idx = scenarios.model_years.indexOf(selected_year);
-            return idx >= 0 ? idx : 0;
+
+            // Parse each scenario key and find matching model_year
+            for (var i = 0; i < scenarios.model_years.length; i++) {
+                var parsed = parse_scenario_year_key(scenarios.model_years[i]);
+                if (parsed && parsed.model_year === selected_year) {
+                    return i;
+                }
+            }
+
+            return 0; // Default to first if not found
         }
 
         return 0; // 3D scenarios always use index 0
@@ -1258,7 +1308,17 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
 
             radio_buttons[i].checked = false; // Clear all first
 
-            if (scenarios.model_years.indexOf(radio_year) >= 0) {
+            // Find if this radio_year matches any scenario key
+            var found = false;
+            for (var j = 0; j < scenarios.model_years.length; j++) {
+                var parsed = parse_scenario_year_key(scenarios.model_years[j]);
+                if (parsed && parsed.model_year === radio_year) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found) {
                 radio_label.style.display = '';
             } else {
                 radio_label.style.display = 'none';
@@ -1269,7 +1329,17 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         for (var i = 0; i < radio_buttons.length; i++) {
             var radio_year = parseInt(radio_buttons[i].value);
 
-            if (scenarios.model_years.indexOf(radio_year) >= 0) {
+            // Find if this radio_year matches any scenario key
+            var found = false;
+            for (var j = 0; j < scenarios.model_years.length; j++) {
+                var parsed = parse_scenario_year_key(scenarios.model_years[j]);
+                if (parsed && parsed.model_year === radio_year) {
+                    found = true;
+                    break;
+                }
+            }
+
+            if (found) {
                 // Check radio button based on initial_model_year (from hash or plan.model_year)
                 if (initial_model_year !== null && radio_year === initial_model_year) {
                     console.log('Checking radio button for year:', radio_year);
@@ -3840,6 +3910,7 @@ if(typeof module !== 'undefined' && module.exports)
         decode_incumbents_rle,
         get_scenario_statistic,
         is_4d_scenarios,
+        parse_scenario_year_key,
         swing_vote,
         calculate_EG,
         calculate_MMD,

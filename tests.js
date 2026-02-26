@@ -1212,3 +1212,43 @@ assert.equal(hash_result.incumbents, 'OOOOORRDDD', 'Should decode "5ORR3D" from 
 global.window.location.hash = '#scenario=incumbents:ORDORD';
 hash_result = plan.parse_scenario_hash();
 assert.equal(hash_result.incumbents, 'ORDORD', 'Should handle old uncompressed format in hash');
+
+// Test parse_scenario_year_key with new string format
+var parsed = plan.parse_scenario_year_key('2024 (2020)');
+assert.equal(parsed.model_year, 2024, 'Should parse model_year from "2024 (2020)"');
+assert.equal(parsed.pvote_year, 2020, 'Should parse pvote_year from "2024 (2020)"');
+
+// Test parse_scenario_year_key with integer (legacy format)
+parsed = plan.parse_scenario_year_key(2024);
+assert.equal(parsed.model_year, 2024, 'Should handle integer as both model_year and pvote_year');
+assert.equal(parsed.pvote_year, 2024, 'Should handle integer as both model_year and pvote_year');
+
+// Test parse_scenario_year_key with integer string
+parsed = plan.parse_scenario_year_key('2024');
+assert.equal(parsed.model_year, 2024, 'Should parse integer string');
+assert.equal(parsed.pvote_year, 2024, 'Should use same value for both years from integer string');
+
+// Test parse_scenario_year_key with different years
+parsed = plan.parse_scenario_year_key('2024 (2016)');
+assert.equal(parsed.model_year, 2024, 'Should parse model_year from "2024 (2016)"');
+assert.equal(parsed.pvote_year, 2016, 'Should parse pvote_year from "2024 (2016)"');
+
+// Test parse_scenario_year_key with extra whitespace
+parsed = plan.parse_scenario_year_key('2024  (2020)');
+assert.equal(parsed.model_year, 2024, 'Should handle extra whitespace');
+assert.equal(parsed.pvote_year, 2020, 'Should handle extra whitespace');
+
+// Test parse_scenario_year_key with invalid input
+parsed = plan.parse_scenario_year_key('invalid');
+assert.equal(parsed, null, 'Should return null for invalid input');
+
+// Note: '2024 (invalid)' will parse as 2024 via parseInt which stops at first non-digit
+parsed = plan.parse_scenario_year_key('2024 (invalid)');
+assert.equal(parsed.model_year, 2024, 'parseInt extracts 2024 from "2024 (invalid)"');
+assert.equal(parsed.pvote_year, 2024, 'Uses same value when only partial match');
+
+parsed = plan.parse_scenario_year_key(null);
+assert.equal(parsed, null, 'Should return null for null input');
+
+parsed = plan.parse_scenario_year_key('');
+assert.equal(parsed, null, 'Should return null for empty string');
