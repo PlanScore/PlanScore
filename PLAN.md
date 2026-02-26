@@ -1,5 +1,16 @@
 # Plan: Add model_year as First Dimension in Scenarios Matrix
 
+## Status
+
+**✓ Backend (Python) - COMPLETED** (commit 966c91f1 on migurski/support-all-pvote-scenarios)
+- All backend changes implemented and tested
+- 186 Python tests passing
+- 4D scenarios matrix successfully generating from multiple model versions
+
+**⏳ Frontend (JavaScript) - PENDING**
+- Backwards compatibility helpers needed
+- JavaScript tests needed
+
 ## Overview
 
 Currently, the scenarios matrix is 3-dimensional: `[vote_swing, incumbent, district]`. We need to add `model_year` as a new first dimension, making it 4-dimensional: `[model_year, vote_swing, incumbent, district]`.
@@ -31,130 +42,13 @@ Currently, the scenarios matrix is 3-dimensional: `[vote_swing, incumbent, distr
 **Required Changes**:
 
 1. **Loop through all model versions** (around line 1106-1112):
-   ```python
-   # OLD:
-   prepared_district_data, pvote_year, model_year = matrix.prepare_district_data(upload)
-   model_output = matrix.model_votes(
-       upload.model_version or upload.model.versions[0],
-       upload.model.state,
-       upload.model.house,
-       matrix.filter_district_data(prepared_district_data),
-   )
-
-   # NEW:
-   model_outputs = []
-   model_years = []
-   pvote_years = []
-
-   for version in upload.model.versions:
-       prepared_district_data, pvote_year, model_year = matrix.prepare_district_data(
-           upload.clone(model_version=version)
-       )
-       model_output = matrix.model_votes(
-           version,
-           upload.model.state,
-           upload.model.house,
-           matrix.filter_district_data(prepared_district_data),
-       )
-       model_outputs.append(model_output)
-       model_years.append(model_year)
-       pvote_years.append(pvote_year)
-
-   # Stack into 5D: (model_versions, incumbency=4, sims, districts, 2)
-   model_output = numpy.stack(model_outputs, axis=0)
-   ```
-
 2. **Update swing_vote_matrix call** (around line 1117):
-   ```python
-   # Apply per-district vote swings to all incumbency scenarios AND model years
-   model_output = swing_vote_matrix(model_output, upload.vote_swings)
-   # model_output shape is now (model_versions, incumbency=4, sims, districts, 2)
-   ```
-   - Note: `swing_vote_matrix()` should work as-is due to negative indexing
-
 3. **Update dimension extraction** (around line 1124):
-   ```python
-   # OLD:
-   incumbency_count, sim_count, district_count, _ = model_output.shape
-
-   # NEW:
-   model_version_count, incumbency_count, sim_count, district_count, _ = model_output.shape
-   ```
-
 4. **Update all_votes creation** (around line 1130-1133):
-   ```python
-   # OLD: Creates 5D (swing_count, incumbency=4, sims, districts, 2)
-   all_votes = numpy.concatenate(
-       [vectorized_swing(model_output, a/100).reshape((1, *model_output.shape)) for a in swing_range],
-       axis=0,
-   )
-
-   # NEW: Creates 6D (model_versions, swing_count, incumbency=4, sims, districts, 2)
-   # Need to reshape to add swing dimension after model_versions
-   all_votes = numpy.concatenate(
-       [vectorized_swing(model_output, a/100).reshape(
-           (model_output.shape[0], 1, *model_output.shape[1:])
-       ) for a in swing_range],
-       axis=1,
-   )
-   ```
-
 5. **Update vote_stats creation** (around line 1135-1143):
-   ```python
-   # vote_stats shape is now (model_versions, swing_count, incumbency=4, sims, districts, 2, 3)
-   vote_stats = vectorized_vote_statistics(all_votes)
-
-   # Use first model version as base for differential encoding
-   vote_stats_base = vote_stats[0, 0, 0, ...]
-   vote_stats_diff = vote_stats - numpy.full(vote_stats.shape, vote_stats_base)
-   vote_stats_diff[0, 0, 0] = vote_stats_base
-   vote_stats_diff[..., 0] = vote_stats_diff[..., 0].round(constants.ROUND_FLOAT)
-   vote_stats_diff[..., 1:] = vote_stats_diff[..., 1:].round(constants.ROUND_COUNT)
-   ```
-
 6. **Update scenarios dict** (around line 1144-1156):
-   ```python
-   scenarios = dict(
-       model_years=model_years,  # NEW: list of years
-       vote_swings=list(swing_range),
-       incumbents=list(INCUMBENCY.keys()),
-       districts=list(range(1, 1 + district_count)),
-       dimensions=["model_years", "vote_swings", "incumbents", "districts"],  # UPDATED
-       statistics={
-           # NEW: 4D arrays [model_year][swing][incumbent][district]
-           "Democratic Wins": vote_stats_diff[:, :, :, :, 0, 0].tolist(),
-           "Democratic Votes": vote_stats_diff[:, :, :, :, 0, 1].tolist(),
-           "Republican Votes": vote_stats_diff[:, :, :, :, 1, 1].tolist(),
-           "Democratic Votes SD": vote_stats_diff[:, :, :, :, 0, 2].tolist(),
-           "Republican Votes SD": vote_stats_diff[:, :, :, :, 1, 2].tolist(),
-       }
-   )
-   ```
-
 7. **Update chosen scenario extraction** (around line 1160-1173):
-   ```python
-   # Use first model version (index 0) for main metrics
-   chosen_stats = select_incumbency_stats(vote_stats[0, z], upload.incumbents)
-   chosen_dem_wins = chosen_stats[..., 0, 0]
-   chosen_dem_votes_mean = chosen_stats[..., 0, 1]
-   chosen_rep_votes_mean = chosen_stats[..., 1, 1]
-   chosen_dem_votes_std = chosen_stats[..., 0, 2]
-   chosen_rep_votes_std = chosen_stats[..., 1, 2]
-
-   chosen_votes = select_incumbency_votes(all_votes[0, z], upload.incumbents)
-   incumbent_votes = select_incumbency_votes(all_votes[0], upload.incumbents)
-   ```
-
 8. **Update pvote_year and model_year** (around line 1252-1258):
-   ```python
-   return upload.clone(
-       districts=copied_districts,
-       summary=summary_dict,
-       scenarios=scenarios,
-       pvote_year=pvote_years[0],  # Use first version's pvote year
-       model_year=model_years[0],  # Use first version's model year
-   )
-   ```
 
 ### 2. planscore/matrix.py
 
@@ -440,20 +334,27 @@ var dem_mean = get_scenario_statistic(
 
 ## Implementation Checklist
 
-- [ ] Backend: Update `calculate_district_biases()` to loop through all model versions
-- [ ] Backend: Update `all_votes` and `vote_stats` creation for 6D/7D arrays
-- [ ] Backend: Update scenarios dict with 4D statistics
-- [ ] Backend: Update chosen scenario extraction to use first model version
-- [ ] Backend: Verify helper functions work with new dimensions
+### Backend (Python) - COMPLETED ✓
+
+- [x] Backend: Update `calculate_district_biases()` to loop through all model versions
+- [x] Backend: Update `all_votes` and `vote_stats` creation for 5D/6D/7D arrays
+- [x] Backend: Update scenarios dict with 4D statistics
+- [x] Backend: Update chosen scenario extraction to use user-specified model version
+- [x] Backend: Verify helper functions work with new dimensions
+- [x] Backend: Fix vectorized_vote_statistics() axis bug (axis=-1 for dimension-agnostic stacking)
+- [x] Tests: Update Python tests for 4D scenarios structure
+- [x] Tests: Add multi-version test case (test_calculate_district_biases_multiple_versions)
+- [x] Tests: Add single-version backwards compatibility test (test_calculate_district_biases_single_version)
+- [x] Tests: Verify all existing tests still pass (186 tests passing)
+- [x] Run full test suite: `python setup.py test`
+- [x] Backend changes committed to git (commit 966c91f1)
+
+### Frontend (JavaScript) - PENDING
+
 - [ ] Frontend: Add `get_scenario_statistic()` and `is_4d_scenarios()` helpers
 - [ ] Frontend: Update `create_scenario_plan()` to use compatibility helpers
 - [ ] Frontend: Update `populate_swing_metrics()` to use compatibility helpers
-- [ ] Tests: Update Python tests for 4D scenarios structure
-- [ ] Tests: Add multi-version test case
-- [ ] Tests: Add single-version backwards compatibility test
 - [ ] Tests: Add JavaScript tests for 3D and 4D format detection
-- [ ] Tests: Verify all existing tests still pass
-- [ ] Run full test suite: `python setup.py test`
 - [ ] Run JavaScript tests: `node tests.js`
 - [ ] Manual testing with real data
 
@@ -474,9 +375,16 @@ var dem_mean = get_scenario_statistic(
 
 ## Success Criteria
 
-- [ ] New uploads with multi-version models generate 4D scenarios
-- [ ] New uploads with single-version models generate 4D scenarios (length-1)
-- [ ] Old uploads with 3D scenarios continue to work in frontend
-- [ ] All metrics calculations use first model version by default
-- [ ] Test suite passes completely
-- [ ] No regression in existing functionality
+### Backend - COMPLETED ✓
+
+- [x] New uploads with multi-version models generate 4D scenarios
+- [x] New uploads with single-version models generate 4D scenarios (length-1)
+- [x] All metrics calculations use user-specified model version
+- [x] Test suite passes completely (186 tests passing)
+- [x] No regression in existing functionality
+
+### Frontend - PENDING
+
+- [ ] Old uploads with 3D scenarios continue to work in frontend (backwards compatibility)
+- [ ] JavaScript tests pass
+- [ ] Manual testing confirms correct behavior in UI
