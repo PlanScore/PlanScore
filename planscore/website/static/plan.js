@@ -2298,6 +2298,13 @@ function populate_mean_median_score(plan, score_MM)
 
 function construct_sensitivity_test(score_sense)
 {
+    // Check if Highcharts is available
+    if (typeof Highcharts === 'undefined') {
+        console.error('Highcharts library failed to load, sensitivity test chart will not be displayed.');
+        score_sense.innerHTML = '<p>Chart unavailable.</p>';
+        return;
+    }
+
     // Create chart structure with empty data initially
     var chart = Highcharts.chart(score_sense, {
         chart: { type: 'line' },
@@ -3455,14 +3462,6 @@ function load_plan_score(url, message_section, score_section,
         // Set up form visibility based on hash and availability
         setup_form_visibility_listener(scenario_adjustments_form, plan, districts_table, null);
 
-        // Immediately kick off scenario loading if available and hash present
-        if (plan.scenarios !== undefined && has_scenario_hash()) {
-            // Add disabled class while loading scenarios
-            scenario_adjustments_form.classList.add('scenario-adjustments-disabled');
-
-            load_plan_scenarios(geom_prefix + plan.scenarios.replace(/^\//, ''), plan, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA);
-        }
-
         // Plan is done parsing and we can render the page
         hide_message(score_section, message_section);
 
@@ -3571,6 +3570,15 @@ function load_plan_score(url, message_section, score_section,
 
         construct_metrics_table(metrics_table);
         construct_ftva_race_scores(scores_FTVA);
+
+        // Kick off scenario loading after table construction if available and hash present
+        // This ensures the table structure exists before any populate calls from scenario callbacks
+        if (plan.scenarios !== undefined && has_scenario_hash()) {
+            // Add disabled class while loading scenarios
+            scenario_adjustments_form.classList.add('scenario-adjustments-disabled');
+
+            load_plan_scenarios(geom_prefix + plan.scenarios.replace(/^\//, ''), plan, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA);
+        }
 
         if (!waiting_for_scenarios) {
             populate_efficiency_gap_score(plan, score_EG);
