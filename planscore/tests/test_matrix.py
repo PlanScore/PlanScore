@@ -409,13 +409,14 @@ class TestMatrix (unittest.TestCase):
                 dict(totals={'US President 2024 - REP': 7, 'US President 2024 - DEM': 1, 'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
                 ])
         
-        output, pvote_year = matrix.prepare_district_data(input)
+        output, pvote_year, model_year = matrix.prepare_district_data(input)
         self.assertEqual(pvote_year, 2020)
+        self.assertEqual(model_year, 2024)
         self.assertEqual(output[0], (6.0, 2.0))
         self.assertEqual(output[1], (5.0, 3.0))
         self.assertEqual(output[2], (3.0, 5.0))
         self.assertEqual(output[3], (2.0, 6.0))
-    
+
     def test_prepare_district_data_2025B_version(self):
         input = data.Upload(id=None, key=None,
             model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2025B'], None),
@@ -426,14 +427,15 @@ class TestMatrix (unittest.TestCase):
                 dict(totals={'US President 2024 - REP': 6, 'US President 2024 - DEM': 2, 'US President 2020 - REP': 5, 'US President 2020 - DEM': 3}, tile=None),
                 dict(totals={'US President 2024 - REP': 7, 'US President 2024 - DEM': 1, 'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
                 ])
-        
-        output, pvote_year = matrix.prepare_district_data(input)
+
+        output, pvote_year, model_year = matrix.prepare_district_data(input)
         self.assertEqual(pvote_year, 2024)
+        self.assertEqual(model_year, 2024)
         self.assertEqual(output[0], (5.0, 3.0))
         self.assertEqual(output[1], (4.0, 4.0))
         self.assertEqual(output[2], (2.0, 6.0))
         self.assertEqual(output[3], (1.0, 7.0))
-    
+
     def test_prepare_district_data_default_version(self):
         input = data.Upload(id=None, key=None,
             model = data.Model(data.State.XX, data.House.ushouse, 4, False, ['2025A', '2025B'], None),
@@ -444,9 +446,10 @@ class TestMatrix (unittest.TestCase):
                 dict(totals={'US President 2024 - REP': 6, 'US President 2024 - DEM': 2, 'US President 2020 - REP': 5, 'US President 2020 - DEM': 3}, tile=None),
                 dict(totals={'US President 2024 - REP': 7, 'US President 2024 - DEM': 1, 'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
                 ])
-        
-        output, pvote_year = matrix.prepare_district_data(input)
+
+        output, pvote_year, model_year = matrix.prepare_district_data(input)
         self.assertEqual(pvote_year, 2020)
+        self.assertEqual(model_year, 2024)
         self.assertEqual(output[0], (6.0, 2.0))
         self.assertEqual(output[1], (5.0, 3.0))
         self.assertEqual(output[2], (3.0, 5.0))

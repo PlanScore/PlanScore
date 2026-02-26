@@ -207,11 +207,11 @@ def model_votes(model_version, state, house, districts):
 
     return votes
 
-def prepare_district_data(upload) -> tuple[list[tuple[float, float]], int]:
-    ''' Simple presidential vote input for model_votes() plus the pvote year used
+def prepare_district_data(upload) -> tuple[list[tuple[float, float]], int, int]:
+    ''' Simple presidential vote input for model_votes() plus the pvote year used and model year
     '''
     params = data.VERSION_PARAMETERS[upload.model_version or upload.model.versions[0]]
-    
+
     out_data, used_year = [], None
     
     for district in upload.districts:
@@ -232,8 +232,8 @@ def prepare_district_data(upload) -> tuple[list[tuple[float, float]], int]:
                 break
         else:
             raise ValueError(f'Missing presidential vote columns for {params.pvotes}')
-    
-    return out_data, used_year
+
+    return out_data, used_year, params.year
 
 def filter_district_data(prepared_data: list[tuple[float, float]]) -> list[tuple[float, float]]:
     ''' Set to zero any district with votes 90% below mean()

@@ -1103,7 +1103,7 @@ def calculate_district_biases(upload):
         return upload.clone()
 
     # Get large number of simulated outputs from model_votes
-    prepared_district_data, pvote_year = matrix.prepare_district_data(upload)
+    prepared_district_data, pvote_year, model_year = matrix.prepare_district_data(upload)
     model_output = matrix.model_votes(
         upload.model_version or upload.model.versions[0],
         upload.model.state,
@@ -1254,6 +1254,7 @@ def calculate_district_biases(upload):
         summary=summary_dict,
         scenarios=scenarios,
         pvote_year=pvote_year,
+        model_year=model_year,
     )
 
 def calculate_fva_biases(upload):
@@ -1307,6 +1308,7 @@ def main():
     
     print('''Scores for {id} ({state}, {house}):
 PVote: {pvote_year}
+Model: {model_year}
 EG: {EG:.1f}%; {EG_wins:.0f}% favor D
 GK Bias: {PB:.1f}%; {PB_wins:.0f}% favor D
 Mean-Med: {MMD:.1f}%; {MMD_wins:.0f}% favor D
@@ -1318,6 +1320,7 @@ R votes: {votes_R}'''.format(
         state=complete_upload.model.state,
         house=complete_upload.model.house,
         pvote_year=complete_upload.pvote_year,
+        model_year=complete_upload.model_year,
         EG=complete_upload.summary['Efficiency Gap'] * 100,
         EG_wins=complete_upload.summary['Efficiency Gap Positives'] * 100,
         PB=complete_upload.summary['Partisan Bias'] * 100,
