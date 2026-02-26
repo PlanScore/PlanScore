@@ -8,18 +8,11 @@ Change scenario keys from single integer to combined string format: `"{model_yea
 
 ---
 
-## Backend Changes (Python)
+## Backend Changes (Python) ✅ COMPLETED
 
-### 1. **planscore/score.py** - Line ~1164
-**Current:**
-```python
-scenarios = dict(
-    model_years=model_years,  # [2024, 2024]
-    ...
-)
-```
+### 1. **planscore/score.py** - Line ~1164 ✅ DONE (commit e8270627)
 
-**Change to:**
+**Implemented:**
 ```python
 # Combine model_year and pvote_year into scenario keys
 scenario_keys = [
@@ -33,14 +26,17 @@ scenarios = dict(
 )
 ```
 
-### 2. **planscore/tests/test_score.py**
-- Update test assertions that check `scenarios['model_years']` to expect string format
-- Verify string keys like `"2024 (2020)"` in test outputs
-- Test backward compatibility for plans without 4D scenarios
+**Result:** Backend now generates combined scenario keys that include both model year and presidential vote year.
+
+### 2. **planscore/tests/test_score.py** ✅ DONE (commit e8270627)
+- ✅ Updated test assertions to expect string format: `["2020 (2020)", "2024 (2020)"]`
+- ✅ Added verification for `test_calculate_district_biases_multiple_versions`
+- ✅ Added verification for `test_calculate_district_biases_single_version`
+- ✅ All 147 Python tests pass
 
 ---
 
-## Frontend Changes (JavaScript)
+## Frontend Changes (JavaScript) 🔲 TODO
 
 ### 3. **planscore/website/static/plan.js** - Add parsing helper function (after line 598)
 
@@ -176,7 +172,7 @@ function get_selected_model_year_idx() {
 
 ### 7. **planscore/website/static/plan.js** - Update hash parsing (lines 975-979)
 
-Parse model_year from hash and match against scenario keys:
+Parse model_year from hash and match against scenario keys as before:
 
 ```javascript
 // Look for model_year parameter
@@ -184,37 +180,25 @@ var model_year_match = hash.match(/model_year:(\d+)/);
 if (model_year_match) {
     result.model_year = parseInt(model_year_match[1]);
 }
-
-// NEW: Also try parsing full scenario key format
-var scenario_key_match = hash.match(/model_year:(\d{4})\s*\((\d{4})\)/);
-if (scenario_key_match) {
-    result.model_year = parseInt(scenario_key_match[1]);
-    result.pvote_year = parseInt(scenario_key_match[2]);
-}
 ```
 
-### 8. **planscore/website/static/plan.js** - Update hash encoding (lines 1000-1004)
+Do not try parsing full scenario key format.
 
-Encode full scenario key in hash:
+### 8. **planscore/website/static/plan.js** - Leave hash encoding (lines 1000-1004)
 
-```javascript
-// Add model_year if it's a 4D scenario and not the default (index 0)
-if (scenarios && is_4d_scenarios(scenarios) && model_year_idx > 0) {
-    var scenario_key = scenarios.model_years[model_year_idx];
-    parts.push('model_year:' + encodeURIComponent(scenario_key));
-}
-```
+Encode only model_year in hash.
 
 ---
 
 ## Testing
 
-### 9. **Python tests** - Update test_score.py
-- Find tests checking `scenarios['model_years']` format
-- Update assertions to expect string format: `["2024 (2020)", "2024 (2024)"]`
-- Add test for backward compatibility (3D scenarios without model_years)
+### 9. **Python tests** - Update test_score.py ✅ DONE (commit e8270627)
+- ✅ Found tests checking `scenarios['model_years']` format
+- ✅ Updated assertions to expect string format: `["2020 (2020)", "2024 (2020)"]`
+- ✅ Tests verify correct format for both multi-version and single-version scenarios
+- ✅ All 147 Python tests pass
 
-### 10. **JavaScript tests** - Update tests.js
+### 10. **JavaScript tests** - Update tests.js 🔲 TODO
 - Test `parse_scenario_key()` with various inputs:
   - `"2024 (2020)"` → `{model_year: 2024, pvote_year: 2020}`
   - `2024` (integer) → `{model_year: 2024, pvote_year: 2024}`
@@ -235,11 +219,31 @@ if (scenarios && is_4d_scenarios(scenarios) && model_year_idx > 0) {
 
 ## Success Criteria
 
-✓ Scenario keys combine model_year and pvote_year: `"2024 (2020)"`
-✓ Radio buttons show correct labels when multiple scenarios exist for same model year
-✓ `update_heading_titles` receives correct pvote_year from selected scenario
-✓ Presidential vote columns display correct year (e.g., 2020 data for model 2025A)
-✓ URL hash correctly encodes/decodes scenario keys
-✓ All Python tests pass
-✓ All JavaScript tests pass
-✓ Backward compatibility maintained for plans without 4D scenarios
+### Backend (Python)
+✅ Scenario keys combine model_year and pvote_year: `"2024 (2020)"` (commit e8270627)
+✅ All Python tests pass (147 tests passing)
+
+### Frontend (JavaScript) - TODO
+🔲 Radio buttons show correct labels when multiple scenarios exist for same model year
+🔲 `update_heading_titles` receives correct pvote_year from selected scenario
+🔲 Presidential vote columns display correct year (e.g., 2020 data for model 2025A)
+🔲 URL hash correctly encodes/decodes model years
+🔲 All JavaScript tests pass
+🔲 Backward compatibility maintained for plans without 4D scenarios
+
+---
+
+## Implementation Status
+
+**Completed (commit e8270627):**
+- ✅ Backend Python changes to generate combined scenario keys
+- ✅ Updated Python tests to verify string format
+- ✅ All 147 Python tests passing
+
+**Ready for AWS Testing:**
+Backend is complete and ready to test in AWS. New uploads will generate scenarios with combined keys like `"2024 (2020)"`.
+
+**Remaining Work:**
+- Frontend JavaScript changes to parse and use combined keys
+- JavaScript tests
+- Integration testing with AWS
