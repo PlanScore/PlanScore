@@ -1774,7 +1774,7 @@ function populate_districts_table(plan, districts_table, is_scenarios_active, on
             }
 
             if (header_cells[header_index]) {
-                header_cells[header_index].textContent = heading_title;
+                header_cells[header_index].innerHTML = heading_title;
             }
             header_index++;
         }
