@@ -521,24 +521,80 @@ function percentrank_rel(column, house, value)
 
 function adjust_scenario_stats(data)
 {
-    if (data.dimensions.length != 3) {
-        throw new Error("Unexpected number of dimensions");
-    }
-
-    // Adjust statistics to represent real values
-    // All scenario stat values past [0][0] are diffs atop [0][0] to save bytes
-    for (var i = 0; i < data[data.dimensions[0]].length; i++) {
-        for (var j = 0; j < data[data.dimensions[1]].length; j++) {
-            if (i > 0 || j > 0) {
-                for (var k = 0; k < data[data.dimensions[2]].length; k++) {
-                    for (var s in data.statistics) {
-                        var stat = data.statistics[s];
-                        stat[i][j][k] = stat[0][0][k] + stat[i][j][k];
+    // Handle both 3D (legacy) and 4D (new) formats
+    if (data.dimensions.length == 3) {
+        // 3D format: [vote_swings, incumbents, districts]
+        // Adjust statistics to represent real values
+        // All scenario stat values past [0][0] are diffs atop [0][0] to save bytes
+        for (var i = 0; i < data[data.dimensions[0]].length; i++) {
+            for (var j = 0; j < data[data.dimensions[1]].length; j++) {
+                if (i > 0 || j > 0) {
+                    for (var k = 0; k < data[data.dimensions[2]].length; k++) {
+                        for (var s in data.statistics) {
+                            var stat = data.statistics[s];
+                            stat[i][j][k] = stat[0][0][k] + stat[i][j][k];
+                        }
                     }
                 }
             }
         }
+    } else if (data.dimensions.length == 4) {
+        // 4D format: [model_years, vote_swings, incumbents, districts]
+        // Adjust statistics to represent real values
+        // All scenario stat values past [0][0][0] are diffs atop [0][0][0] to save bytes
+        for (var i = 0; i < data[data.dimensions[0]].length; i++) {
+            for (var j = 0; j < data[data.dimensions[1]].length; j++) {
+                for (var k = 0; k < data[data.dimensions[2]].length; k++) {
+                    if (i > 0 || j > 0 || k > 0) {
+                        for (var m = 0; m < data[data.dimensions[3]].length; m++) {
+                            for (var s in data.statistics) {
+                                var stat = data.statistics[s];
+                                stat[i][j][k][m] = stat[0][0][0][m] + stat[i][j][k][m];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        throw new Error("Unexpected number of dimensions: " + data.dimensions.length);
     }
+}
+
+/**
+ * Get a statistic value from scenarios, handling both 3D (old) and 4D (new) formats
+ *
+ * @param {Object} scenarios - The scenarios object
+ * @param {string} stat_name - Name of statistic (e.g., 'Democratic Votes')
+ * @param {number} model_year_idx - Model year index (ignored for 3D format)
+ * @param {number} swing_idx - Vote swing index
+ * @param {number} inc_idx - Incumbent index
+ * @param {number} dist_idx - District index
+ * @returns {number} The statistic value
+ */
+function get_scenario_statistic(scenarios, stat_name, model_year_idx, swing_idx, inc_idx, dist_idx)
+{
+    var statistic = scenarios.statistics[stat_name];
+    if (!statistic) {
+        return null;
+    }
+
+    // Check if this is the new 4D format (has model_years dimension)
+    if (scenarios.dimensions && scenarios.dimensions[0] === 'model_years') {
+        // 4D: [model_year][swing][incumbent][district]
+        return statistic[model_year_idx][swing_idx][inc_idx][dist_idx];
+    } else {
+        // 3D (legacy): [swing][incumbent][district]
+        return statistic[swing_idx][inc_idx][dist_idx];
+    }
+}
+
+/**
+ * Check if scenarios use the new 4D format
+ */
+function is_4d_scenarios(scenarios)
+{
+    return scenarios.dimensions && scenarios.dimensions[0] === 'model_years';
 }
 
 function read_scenario_incumbents_from_table(districts_table)
@@ -572,8 +628,13 @@ function check_all_open_seats(incumbents)
     return true;
 }
 
-function create_scenario_plan(original_plan, scenarios, vote_swing, scenario_incumbents)
+function create_scenario_plan(original_plan, scenarios, vote_swing, scenario_incumbents, model_year_idx)
 {
+    // Default to first model year (index 0) if not provided
+    if (typeof model_year_idx === 'undefined') {
+        model_year_idx = 0;
+    }
+
     // Find the vote swing index in scenarios.vote_swings array
     var vote_swing_index = scenarios.vote_swings.indexOf(vote_swing);
 
@@ -619,51 +680,58 @@ function create_scenario_plan(original_plan, scenarios, vote_swing, scenario_inc
             continue;
         }
 
-        // Update Democratic Votes
-        if (scenarios.statistics['Democratic Votes']) {
-            var dem_mean = scenarios.statistics['Democratic Votes'][vote_swing_index][incumbent_index][district_index];
+        // Use helper function for all statistic access
+        var dem_mean = get_scenario_statistic(
+            scenarios, 'Democratic Votes',
+            model_year_idx, vote_swing_index, incumbent_index, district_index
+        );
+        var rep_mean = get_scenario_statistic(
+            scenarios, 'Republican Votes',
+            model_year_idx, vote_swing_index, incumbent_index, district_index
+        );
+        var dem_wins = get_scenario_statistic(
+            scenarios, 'Democratic Wins',
+            model_year_idx, vote_swing_index, incumbent_index, district_index
+        );
+        var dem_sd = get_scenario_statistic(
+            scenarios, 'Democratic Votes SD',
+            model_year_idx, vote_swing_index, incumbent_index, district_index
+        );
+        var rep_sd = get_scenario_statistic(
+            scenarios, 'Republican Votes SD',
+            model_year_idx, vote_swing_index, incumbent_index, district_index
+        );
+
+        if (dem_mean !== null) {
             mutated_plan.districts[district_index].totals['Democratic Votes'] = dem_mean;
             dem_votes_mean.push(dem_mean);
         }
-
-        // Update Republican Votes
-        if (scenarios.statistics['Republican Votes']) {
-            var rep_mean = scenarios.statistics['Republican Votes'][vote_swing_index][incumbent_index][district_index];
+        if (rep_mean !== null) {
             mutated_plan.districts[district_index].totals['Republican Votes'] = rep_mean;
             rep_votes_mean.push(rep_mean);
         }
-
-        // Update Democratic Wins
-        if (scenarios.statistics['Democratic Wins']) {
-            mutated_plan.districts[district_index].totals['Democratic Wins'] =
-                scenarios.statistics['Democratic Wins'][vote_swing_index][incumbent_index][district_index];
+        if (dem_wins !== null) {
+            mutated_plan.districts[district_index].totals['Democratic Wins'] = dem_wins;
+        }
+        if (dem_sd !== null) {
+            dem_votes_sd.push(dem_sd);
+        }
+        if (rep_sd !== null) {
+            rep_votes_sd.push(rep_sd);
         }
 
-        // Extract SD values for simulations
-        if (scenarios.statistics['Democratic Votes SD']) {
-            dem_votes_sd.push(
-                scenarios.statistics['Democratic Votes SD'][vote_swing_index][incumbent_index][district_index]
-            );
-        }
+        // Get baseline votes for vote_swing calculation
+        var baseline_dem = get_scenario_statistic(
+            scenarios, 'Democratic Votes',
+            model_year_idx, baseline_vote_swing_index, incumbent_index, district_index
+        );
+        var baseline_rep = get_scenario_statistic(
+            scenarios, 'Republican Votes',
+            model_year_idx, baseline_vote_swing_index, incumbent_index, district_index
+        );
 
-        if (scenarios.statistics['Republican Votes SD']) {
-            rep_votes_sd.push(
-                scenarios.statistics['Republican Votes SD'][vote_swing_index][incumbent_index][district_index]
-            );
-        }
-
-        // Set vote_swing field for this district based on difference from baseline with same incumbents
-        // This isolates the vote swing parameter effect from the incumbency effect
-        var current_dem = mutated_plan.districts[district_index].totals['Democratic Votes'],
-            current_rep = mutated_plan.districts[district_index].totals['Republican Votes'];
-
-        // Get baseline votes (0.0 swing with same incumbent scenario)
-        var baseline_dem = scenarios.statistics['Democratic Votes']
-            ? scenarios.statistics['Democratic Votes'][baseline_vote_swing_index][incumbent_index][district_index]
-            : current_dem;
-        var baseline_rep = scenarios.statistics['Republican Votes']
-            ? scenarios.statistics['Republican Votes'][baseline_vote_swing_index][incumbent_index][district_index]
-            : current_rep;
+        var current_dem = dem_mean;
+        var current_rep = rep_mean;
 
         // Calculate vote swing as difference from baseline with same incumbents
         // Handle edge case where total votes might be zero
@@ -778,10 +846,22 @@ function create_scenario_plan(original_plan, scenarios, vote_swing, scenario_inc
                 var incumbent_code = all_open_seats ? 'U' : scenario_incumbents[d];
                 var incumbent_index = scenarios.incumbents.indexOf(incumbent_code);
 
-                var dem_mean = scenarios.statistics['Democratic Votes'][sensitivity_index][incumbent_index][d];
-                var rep_mean = scenarios.statistics['Republican Votes'][sensitivity_index][incumbent_index][d];
-                var dem_sd = scenarios.statistics['Democratic Votes SD'][sensitivity_index][incumbent_index][d];
-                var rep_sd = scenarios.statistics['Republican Votes SD'][sensitivity_index][incumbent_index][d];
+                var dem_mean = get_scenario_statistic(
+                    scenarios, 'Democratic Votes',
+                    model_year_idx, sensitivity_index, incumbent_index, d
+                );
+                var rep_mean = get_scenario_statistic(
+                    scenarios, 'Republican Votes',
+                    model_year_idx, sensitivity_index, incumbent_index, d
+                );
+                var dem_sd = get_scenario_statistic(
+                    scenarios, 'Democratic Votes SD',
+                    model_year_idx, sensitivity_index, incumbent_index, d
+                );
+                var rep_sd = get_scenario_statistic(
+                    scenarios, 'Republican Votes SD',
+                    model_year_idx, sensitivity_index, incumbent_index, d
+                );
 
                 dem_sim.push(dem_mean + random * dem_sd);
                 rep_sim.push(rep_mean - random * rep_sd);
@@ -865,9 +945,9 @@ function decode_incumbents_rle(encoded_string)
 
 function parse_scenario_hash()
 {
-    // Parse URL hash to extract margin swing and incumbents
+    // Parse URL hash to extract margin swing, incumbents, and model year
     // Supports: #scenario, #scenario=margin_swing:3.0, #scenario=incumbents:ORDORD,
-    //           #scenario=margin_swing:3.0;incumbents:ORDORD
+    //           #scenario=margin_swing:3.0;incumbents:ORDORD;model_year:2024
     var hash = window.location.hash;
 
     if (!hash || !hash.match(/\bscenario\b/)) {
@@ -876,7 +956,8 @@ function parse_scenario_hash()
 
     var result = {
         vote_swing: 0.0,
-        incumbents: null
+        incumbents: null,
+        model_year: null
     };
 
     // Parse margin_swing parameter and convert to vote_swing (divide by 2)
@@ -891,13 +972,19 @@ function parse_scenario_hash()
         result.incumbents = decode_incumbents_rle(incumbents_match[1]);
     }
 
+    // Look for model_year parameter
+    var model_year_match = hash.match(/model_year:(\d+)/);
+    if (model_year_match) {
+        result.model_year = parseInt(model_year_match[1]);
+    }
+
     return result;
 }
 
-function update_scenario_hash(vote_swing, incumbents_string, original_incumbents_string)
+function update_scenario_hash(vote_swing, incumbents_string, original_incumbents_string, model_year_idx, scenarios)
 {
-    // Update URL hash with margin swing (2x vote swing) and incumbents without page reload
-    // Omit margin_swing if 0.0, omit incumbents if matches original
+    // Update URL hash with margin swing (2x vote swing), incumbents, and model year without page reload
+    // Omit margin_swing if 0.0, omit incumbents if matches original, omit model_year if 0 or not 4D
     var parts = [];
 
     if (vote_swing !== 0.0) {
@@ -908,6 +995,12 @@ function update_scenario_hash(vote_swing, incumbents_string, original_incumbents
 
     if (incumbents_string && incumbents_string !== original_incumbents_string) {
         parts.push('incumbents:' + encode_incumbents_rle(incumbents_string));
+    }
+
+    // Add model_year if it's a 4D scenario and not the default (index 0)
+    if (scenarios && is_4d_scenarios(scenarios) && model_year_idx > 0) {
+        var model_year = scenarios.model_years[model_year_idx];
+        parts.push('model_year:' + model_year);
     }
 
     var hash_value = parts.length > 0
@@ -1005,7 +1098,7 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
     var pending_visualization_update_timer = null;
     var is_visualization_updating = false;
 
-    function schedule_visualization_update(vote_swing, scenario_incumbents) {
+    function schedule_visualization_update(vote_swing, scenario_incumbents, model_year_idx) {
         // Cancel any pending update to avoid queue buildup
         if (pending_visualization_update_timer !== null) {
             clearTimeout(pending_visualization_update_timer);
@@ -1017,13 +1110,30 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
                 is_visualization_updating = true;
                 var original_incumbents_string = original_plan.incumbents.join('');
                 var scenario_incumbents_string = scenario_incumbents.join('');
-                update_scenario_hash(vote_swing, scenario_incumbents_string, original_incumbents_string);
-                update_visualizations(vote_swing, scenario_incumbents);
+                update_scenario_hash(vote_swing, scenario_incumbents_string, original_incumbents_string, model_year_idx, scenarios);
+                update_visualizations(vote_swing, scenario_incumbents, model_year_idx);
                 pending_visualization_update_timer = null;
                 is_visualization_updating = false;
             },
             25 // this msec value feels good after testing on desktop and mobile
         );
+    }
+
+    // Helper function to get current model_year_idx from radio buttons
+    function get_selected_model_year_idx() {
+        var checked_radio = scenario_adjustments_form.querySelector('input[name="model-year"]:checked');
+        if (!checked_radio) {
+            return 0; // Default to first model year
+        }
+
+        // Find the index of the selected year in scenarios.model_years
+        if (is_4d_scenarios(scenarios)) {
+            var selected_year = parseInt(checked_radio.value);
+            var idx = scenarios.model_years.indexOf(selected_year);
+            return idx >= 0 ? idx : 0;
+        }
+
+        return 0; // 3D scenarios always use index 0
     }
 
     // Define callback for incumbent scenario radio button changes
@@ -1041,8 +1151,11 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         var margin_swing = parseFloat(range_input.value);
         var vote_swing = margin_swing / 2;
 
+        // Get current model year index
+        var model_year_idx = get_selected_model_year_idx();
+
         // Schedule heavy work, let browser paint input changes first
-        schedule_visualization_update(vote_swing, scenario_incumbents);
+        schedule_visualization_update(vote_swing, scenario_incumbents, model_year_idx);
     }
 
     // Initialize vote_swing field if it doesn't exist
@@ -1062,9 +1175,9 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
     }
 
     // Helper function to update all visualizations for a given vote swing and incumbents
-    function update_visualizations(vote_swing, scenario_incumbents) {
+    function update_visualizations(vote_swing, scenario_incumbents, model_year_idx) {
         // Create mutated plan with scenario data
-        var mutated_plan = create_scenario_plan(original_plan, scenarios, vote_swing, scenario_incumbents);
+        var mutated_plan = create_scenario_plan(original_plan, scenarios, vote_swing, scenario_incumbents, model_year_idx);
 
         // Update the districts table
         populate_districts_table(mutated_plan, districts_table, true, on_candidate_scenario_change);
@@ -1095,6 +1208,9 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
     var hash_data = parse_scenario_hash();
     var initial_vote_swing = 0.0;
     var initial_incumbents = original_plan.incumbents.slice();
+    var initial_model_year = original_plan.model_year || null; // Use plan's model_year as default
+
+    console.log('Initial setup - plan.model_year:', original_plan.model_year, 'hash_data:', hash_data);
 
     if (hash_data !== null) {
         initial_vote_swing = hash_data.vote_swing;
@@ -1108,7 +1224,15 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
                 console.warn('Incumbents from hash has wrong length, ignoring:', hash_data.incumbents);
             }
         }
+
+        // Parse model_year from hash if present (overrides plan.model_year)
+        if (hash_data.model_year !== null && hash_data.model_year !== undefined) {
+            initial_model_year = hash_data.model_year;
+            console.log('Overriding with model_year from hash:', initial_model_year);
+        }
     }
+
+    console.log('Final initial_model_year:', initial_model_year);
 
     // Validate that the initial vote swing exists in scenarios
     if (scenarios.vote_swings.indexOf(initial_vote_swing) === -1) {
@@ -1119,9 +1243,82 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
     range_input.value = initial_vote_swing * 2;  // Convert vote_swing to margin_swing for slider
     display.textContent = format_vote_swing(initial_vote_swing);
 
+    // Set up model year radio buttons
+    if (is_4d_scenarios(scenarios)) {
+        console.log('Setting up model year radio buttons. Available years:', scenarios.model_years, 'Initial year:', initial_model_year);
+
+        // Show/hide radio buttons based on available model years
+        var radio_buttons = scenario_adjustments_form.querySelectorAll('input[name="model-year"]');
+        var first_available_checked = false;
+
+        // First pass: uncheck all and show/hide based on availability
+        for (var i = 0; i < radio_buttons.length; i++) {
+            var radio_year = parseInt(radio_buttons[i].value);
+            var radio_label = radio_buttons[i].parentElement;
+
+            radio_buttons[i].checked = false; // Clear all first
+
+            if (scenarios.model_years.indexOf(radio_year) >= 0) {
+                radio_label.style.display = '';
+            } else {
+                radio_label.style.display = 'none';
+            }
+        }
+
+        // Second pass: check the appropriate button
+        for (var i = 0; i < radio_buttons.length; i++) {
+            var radio_year = parseInt(radio_buttons[i].value);
+
+            if (scenarios.model_years.indexOf(radio_year) >= 0) {
+                // Check radio button based on initial_model_year (from hash or plan.model_year)
+                if (initial_model_year !== null && radio_year === initial_model_year) {
+                    console.log('Checking radio button for year:', radio_year);
+                    radio_buttons[i].checked = true;
+                    first_available_checked = true;
+                    break; // Found and checked the right one
+                } else if (!first_available_checked && initial_model_year === null) {
+                    // Default to first available radio button if no model_year specified
+                    console.log('Checking first available radio button for year:', radio_year);
+                    radio_buttons[i].checked = true;
+                    first_available_checked = true;
+                    break; // Checked the first available
+                }
+            }
+        }
+
+        // Add change listener to model year radio buttons
+        for (var i = 0; i < radio_buttons.length; i++) {
+            radio_buttons[i].addEventListener('change', function(event) {
+                if (is_visualization_updating) {
+                    return;
+                }
+
+                var margin_swing = parseFloat(range_input.value);
+                var vote_swing = margin_swing / 2;
+                var scenario_incumbents = read_scenario_incumbents_from_table(districts_table);
+                var model_year_idx = get_selected_model_year_idx();
+
+                schedule_visualization_update(vote_swing, scenario_incumbents, model_year_idx);
+            });
+        }
+    } else {
+        // 3D scenarios: hide model year selection
+        var model_year_section = scenario_adjustments_form.querySelector('p:has(input[name="model-year"])');
+        if (!model_year_section) {
+            // Fallback: hide all model year radio buttons
+            var radio_buttons = scenario_adjustments_form.querySelectorAll('input[name="model-year"]');
+            for (var i = 0; i < radio_buttons.length; i++) {
+                radio_buttons[i].parentElement.style.display = 'none';
+            }
+        } else {
+            model_year_section.style.display = 'none';
+        }
+    }
+
     // Always update visualizations on initial load (even for 0.0)
     // This ensures that if we were waiting_for_scenarios, we now populate everything
-    update_visualizations(initial_vote_swing, initial_incumbents);
+    var initial_model_year_idx = get_selected_model_year_idx();
+    update_visualizations(initial_vote_swing, initial_incumbents, initial_model_year_idx);
 
     // Show the form now that it's fully initialized
     scenario_adjustments_form.classList.remove('scenario-adjustments-hidden');
@@ -1136,11 +1333,14 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         // Read current incumbents from the table forms
         var scenario_incumbents = read_scenario_incumbents_from_table(districts_table);
 
+        // Get current model year index
+        var model_year_idx = get_selected_model_year_idx();
+
         // Update the display immediately
         display.textContent = format_vote_swing(vote_swing);
 
         // Schedule heavy work, let browser paint input changes first
-        schedule_visualization_update(vote_swing, scenario_incumbents);
+        schedule_visualization_update(vote_swing, scenario_incumbents, model_year_idx);
     });
 
 }
@@ -3638,6 +3838,8 @@ if(typeof module !== 'undefined' && module.exports)
         parse_scenario_hash,
         encode_incumbents_rle,
         decode_incumbents_rle,
+        get_scenario_statistic,
+        is_4d_scenarios,
         swing_vote,
         calculate_EG,
         calculate_MMD,
