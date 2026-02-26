@@ -1754,6 +1754,25 @@ function populate_districts_table(plan, districts_table, is_scenarios_active, on
         }
     }
 
+    // Update thead headers with new pvote_year data
+    const thead = districts_table.querySelector('thead tr');
+    if (thead) {
+        const header_cells = thead.querySelectorAll('th');
+        var header_index = 0;
+
+        for (var j = 0; j < table_array[0].length; j++) {
+            const heading_title = table_array[0][j];
+            if (heading_title == SHY_COLUMN) {
+                continue;
+            }
+
+            if (header_cells[header_index]) {
+                header_cells[header_index].textContent = heading_title;
+            }
+            header_index++;
+        }
+    }
+
     const rows = tbody.querySelectorAll('tr');
 
     for (var i = 0; i < rows.length; i++) {
