@@ -452,3 +452,105 @@ class TestPostreadCalculate (unittest.TestCase):
                 },
             ],
         )
+
+    @unittest.mock.patch('planscore.postread_calculate.commence_geometry_upload_scoring')
+    @unittest.mock.patch('planscore.postread_calculate.util.guess_upload_type')
+    @unittest.mock.patch('planscore.postread_calculate.util.temporary_buffer_file')
+    def test_commence_upload_scoring_assigns_last_version_when_none(
+        self, mock_temp_file, mock_guess_type, mock_commence_geom
+    ):
+        ''' When upload.model_version is None, commence_upload_scoring should assign the LAST version.
+        '''
+        # Create a mock S3 client
+        mock_s3 = unittest.mock.Mock()
+        mock_athena = unittest.mock.Mock()
+        mock_context = unittest.mock.Mock()
+
+        # Create test model with multiple versions
+        test_versions = ['2019Z', '2022F', '2025B']
+        test_model = data.Model(
+            state=data.State.XX,
+            house=data.House.ushouse,
+            seats=4,
+            incumbency=True,
+            versions=test_versions,
+            key_prefix='data/XX/test'
+        )
+
+        # Create upload with model_version=None
+        test_upload = data.Upload(
+            id='test-id',
+            key='uploads/test-id/upload/test.geojson',
+            model=test_model,
+            model_version=None,  # This is the key - no version specified
+        )
+
+        # Mock S3 get_object to return a fake file
+        mock_s3.get_object.return_value = {'Body': unittest.mock.Mock()}
+
+        # Mock the upload type guess
+        mock_guess_type.return_value = postread_calculate.util.UploadType.OGR_DATASOURCE
+
+        # Mock temporary_buffer_file context manager
+        mock_temp_file.return_value.__enter__.return_value = '/fake/path.geojson'
+
+        # Call commence_upload_scoring
+        postread_calculate.commence_upload_scoring(
+            mock_context, mock_s3, mock_athena, 'test-bucket', test_upload
+        )
+
+        # The upload object should now have model_version set to the LAST version
+        self.assertEqual(test_upload.model_version, '2025B',
+            f'Expected last version "2025B" but got "{test_upload.model_version}". '
+            f'When model_version is None, should default to newest version.')
+
+    @unittest.mock.patch('planscore.postread_calculate.commence_geometry_upload_scoring')
+    @unittest.mock.patch('planscore.postread_calculate.util.guess_upload_type')
+    @unittest.mock.patch('planscore.postread_calculate.util.temporary_buffer_file')
+    def test_commence_upload_scoring_preserves_specified_version(
+        self, mock_temp_file, mock_guess_type, mock_commence_geom
+    ):
+        ''' When upload.model_version is specified, commence_upload_scoring should preserve it.
+        '''
+        # Create a mock S3 client
+        mock_s3 = unittest.mock.Mock()
+        mock_athena = unittest.mock.Mock()
+        mock_context = unittest.mock.Mock()
+
+        # Create test model with multiple versions
+        test_versions = ['2019Z', '2022F', '2025B']
+        test_model = data.Model(
+            state=data.State.XX,
+            house=data.House.ushouse,
+            seats=4,
+            incumbency=True,
+            versions=test_versions,
+            key_prefix='data/XX/test'
+        )
+
+        # Create upload with model_version specified
+        test_upload = data.Upload(
+            id='test-id',
+            key='uploads/test-id/upload/test.geojson',
+            model=test_model,
+            model_version='2022F',  # Specifically choosing middle version
+        )
+
+        # Mock S3 get_object to return a fake file
+        mock_s3.get_object.return_value = {'Body': unittest.mock.Mock()}
+
+        # Mock the upload type guess
+        mock_guess_type.return_value = postread_calculate.util.UploadType.OGR_DATASOURCE
+
+        # Mock temporary_buffer_file context manager
+        mock_temp_file.return_value.__enter__.return_value = '/fake/path.geojson'
+
+        # Call commence_upload_scoring
+        postread_calculate.commence_upload_scoring(
+            mock_context, mock_s3, mock_athena, 'test-bucket', test_upload
+        )
+
+        # The upload object should still have the originally specified version
+        self.assertEqual(test_upload.model_version, '2022F',
+            f'Expected specified version "2022F" but got "{test_upload.model_version}". '
+            f'When model_version is already set, it should not be changed.')
