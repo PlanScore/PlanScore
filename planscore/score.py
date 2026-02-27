@@ -1059,10 +1059,12 @@ def vectorized_vote_statistics(all_votes: numpy.typing.NDArray) -> numpy.typing.
     rep_votes_std = numpy.nanstd(rep_votes, axis=-2, ddof=1).round(constants.ROUND_COUNT)
 
     # Stack votes with trailing dimensions as (party, wins/mean/std)
-    vote_stats = numpy.stack(
+    # Use axis=-1 to stack after the districts dimension, regardless of leading_dims count
+    stacked = numpy.stack(
         [dem_wins, dem_votes_mean, dem_votes_std, 1 - dem_wins, rep_votes_mean, rep_votes_std],
-        axis=3
-    ).reshape((*leading_dims, district_count, party_count, 3))
+        axis=-1
+    )
+    vote_stats = stacked.reshape((*leading_dims, district_count, party_count, 3))
 
     return vote_stats
 
@@ -1102,63 +1104,92 @@ def calculate_district_biases(upload):
         # Skip everything if we don't see current presidential votes
         return upload.clone()
 
-    # Get large number of simulated outputs from model_votes
-    model_output = matrix.model_votes(
-        upload.model_version or upload.model.versions[0],
-        upload.model.state,
-        upload.model.house,
-        matrix.filter_district_data(matrix.prepare_district_data(upload)),
-    )
-    print("model_output.shape:", model_output.shape, "=", model_output.size, "cells")
-    # model_output shape is (incumbency=4, sims, districts, 2)
+    # Get large number of simulated outputs from model_votes for all model versions
+    model_outputs = []
+    model_years = []
+    pvote_years = []
 
-    # Apply per-district vote swings to all incumbency scenarios
+    for version in upload.model.versions:
+        prepared_district_data, pvote_year, model_year = matrix.prepare_district_data(
+            upload.clone(model_version=version)
+        )
+        model_output = matrix.model_votes(
+            version,
+            upload.model.state,
+            upload.model.house,
+            matrix.filter_district_data(prepared_district_data),
+        )
+        model_outputs.append(model_output)
+        model_years.append(model_year)
+        pvote_years.append(pvote_year)
+
+    # Stack into 5D: (model_versions, incumbency=4, sims, districts, 2)
+    model_output = numpy.stack(model_outputs, axis=0)
+    print("model_output.shape:", model_output.shape, "=", model_output.size, "cells")
+    # model_output shape is now (model_versions, incumbency=4, sims, districts, 2)
+
+    # Apply per-district vote swings to all incumbency scenarios AND model years
     model_output = swing_vote_matrix(model_output, upload.vote_swings)
-    # model_output shape remains (incumbency=4, sims, districts, 2)
+    # model_output shape remains (model_versions, incumbency=4, sims, districts, 2)
 
     # NOTE: Incumbency selection now happens later (at line ~1033 for JSON output and before metrics)
     # Keep the full incumbency dimension through vote calculations
 
-    # Extract dimensions from the 4D model_output
-    incumbency_count, sim_count, district_count, _ = model_output.shape
+    # Extract dimensions from the 5D model_output
+    model_version_count, incumbency_count, sim_count, district_count, _ = model_output.shape
 
     # Reshape so first axis can be swing amount, then expand to all swings
     swing_count = 25
     swing_range = [(i - swing_count // 2) / 2 for i in range(swing_count)]
     z = swing_count // 2 # Index of zero-swing swing_range midpoint
     all_votes = numpy.concatenate(
-        [vectorized_swing(model_output, a/100).reshape((1, *model_output.shape)) for a in swing_range],
-        axis=0,
+        [vectorized_swing(model_output, a/100).reshape(
+            (model_output.shape[0], 1, *model_output.shape[1:])
+        ) for a in swing_range],
+        axis=1,
     )
-    # all_votes shape is now (swing_count, incumbency=4, sims, districts, 2)
+    # all_votes shape is now (model_versions, swing_count, incumbency=4, sims, districts, 2)
     vote_stats = vectorized_vote_statistics(all_votes)
 
-    # vote_stats shape is now (swing_count, incumbency=4, sims, districts, 2, 3)
-    vote_stats_base = vote_stats[0, 0, ...]
+    # vote_stats shape is now (model_versions, swing_count, incumbency=4, districts, 2, 3)
+    # Note: sims dimension is aggregated by vectorized_vote_statistics
+    # Use first model version as base for differential encoding
+    vote_stats_base = vote_stats[0, 0, 0, ...]
     vote_stats_diff = vote_stats - numpy.full(vote_stats.shape, vote_stats_base)
-    vote_stats_diff[0, 0] = vote_stats_base
+    vote_stats_diff[0, 0, 0] = vote_stats_base
     vote_stats_diff[..., 0] = vote_stats_diff[..., 0].round(constants.ROUND_FLOAT)
     vote_stats_diff[..., 1:] = vote_stats_diff[..., 1:].round(constants.ROUND_COUNT)
 
+    # Combine model_year and pvote_year into scenario keys
+    scenario_keys = [
+        f"{model_year} ({pvote_year})"
+        for model_year, pvote_year in zip(model_years, pvote_years)
+    ]
+
     scenarios = dict(
+        model_years=scenario_keys,
         vote_swings=list(swing_range),
         incumbents=list(INCUMBENCY.keys()),
         districts=list(range(1, 1 + district_count)),
-        dimensions=["vote_swings", "incumbents", "districts"],
+        dimensions=["model_years", "vote_swings", "incumbents", "districts"],
         statistics={
-            "Democratic Wins": vote_stats_diff[:, :, :, 0, 0].tolist(),
-            "Democratic Votes": vote_stats_diff[:, :, :, 0, 1].tolist(),
-            "Republican Votes": vote_stats_diff[:, :, :, 1, 1].tolist(),
-            "Democratic Votes SD": vote_stats_diff[:, :, :, 0, 2].tolist(),
-            "Republican Votes SD": vote_stats_diff[:, :, :, 1, 2].tolist(),
+            "Democratic Wins": vote_stats_diff[:, :, :, :, 0, 0].tolist(),
+            "Democratic Votes": vote_stats_diff[:, :, :, :, 0, 1].tolist(),
+            "Republican Votes": vote_stats_diff[:, :, :, :, 1, 1].tolist(),
+            "Democratic Votes SD": vote_stats_diff[:, :, :, :, 0, 2].tolist(),
+            "Republican Votes SD": vote_stats_diff[:, :, :, :, 1, 2].tolist(),
         }
     )
 
     # -------- Extract main chosen scenario from amongst alternatives --------
 
+    # Find the index of the user-specified model version, or use last one as default
+    chosen_version = upload.model_version or upload.model.versions[-1]
+    chosen_version_idx = upload.model.versions.index(chosen_version)
+
     # Select appropriate incumbency scenario per district for JSON output
     # Result arrays have shape (districts,)
-    chosen_stats = select_incumbency_stats(vote_stats[z], upload.incumbents)
+    chosen_stats = select_incumbency_stats(vote_stats[chosen_version_idx, z], upload.incumbents)
     chosen_dem_wins = chosen_stats[...,0,0]
     chosen_dem_votes_mean = chosen_stats[...,0,1]
     chosen_rep_votes_mean = chosen_stats[...,1,1]
@@ -1168,8 +1199,8 @@ def calculate_district_biases(upload):
     # Select appropriate incumbency scenario per output vote
     # chosen_votes has shape (sims, districts, 2)
     # incumbent_votes has shape (swings, sims, districts, 2)
-    chosen_votes = select_incumbency_votes(all_votes[z], upload.incumbents)
-    incumbent_votes = select_incumbency_votes(all_votes, upload.incumbents)
+    chosen_votes = select_incumbency_votes(all_votes[chosen_version_idx, z], upload.incumbents)
+    incumbent_votes = select_incumbency_votes(all_votes[chosen_version_idx], upload.incumbents)
 
     # -------- After this point stop using alternative scenario data --------
 
@@ -1248,7 +1279,13 @@ def calculate_district_biases(upload):
             f'Efficiency Gap +{swing:.0f} Rep SD': np_safe_stdev(EGs[-swing]),
         })
 
-    return upload.clone(districts=copied_districts, summary=summary_dict, scenarios=scenarios)
+    return upload.clone(
+        districts=copied_districts,
+        summary=summary_dict,
+        scenarios=scenarios,
+        pvote_year=pvote_years[chosen_version_idx],
+        model_year=model_years[chosen_version_idx],
+    )
 
 def calculate_fva_biases(upload):
     ''' Calculate partisan metrics relevant to Freedom To Vote Act
@@ -1300,6 +1337,8 @@ def main():
     complete_upload = upload2.clone(message='Finished scoring this plan.')
     
     print('''Scores for {id} ({state}, {house}):
+PVote: {pvote_year}
+Model: {model_year}
 EG: {EG:.1f}%; {EG_wins:.0f}% favor D
 GK Bias: {PB:.1f}%; {PB_wins:.0f}% favor D
 Mean-Med: {MMD:.1f}%; {MMD_wins:.0f}% favor D
@@ -1310,6 +1349,8 @@ R votes: {votes_R}'''.format(
         id=complete_upload.id,
         state=complete_upload.model.state,
         house=complete_upload.model.house,
+        pvote_year=complete_upload.pvote_year,
+        model_year=complete_upload.model_year,
         EG=complete_upload.summary['Efficiency Gap'] * 100,
         EG_wins=complete_upload.summary['Efficiency Gap Positives'] * 100,
         PB=complete_upload.summary['Partisan Bias'] * 100,

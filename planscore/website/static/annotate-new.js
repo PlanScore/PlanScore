@@ -160,15 +160,18 @@ function load_plan_preread(url, form, message_section, preread_section, descript
             incumbency_unavailable.style.display = 'block';
             incumbency_scenarios.style.display = 'none';
         }
+
+        // Use only the last (most recent) model, don't offer a choice
+        var local_versions = plan.model.versions.slice(-1);
         
-        if(plan.model.versions.length <= 1)
+        if(local_versions.length <= 1)
         {
             model_versions.parentElement.parentElement.style.display = 'none';
         }
         
-        for(var i = 0; i < plan.model.versions.length; i++)
+        for(var i = 0; i < local_versions.length; i++)
         {
-            var value = plan.model.versions[i];
+            var value = local_versions[i];
             
             if(value in window.version_parameters)
             {

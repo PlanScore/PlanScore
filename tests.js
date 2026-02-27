@@ -468,46 +468,50 @@ assert.equal(plan_array11[4][11], 'D+16');
 // Display preparation functions
 
 var head1 = ['Democratic Votes', 'Republican Votes'];
-plan.update_heading_titles(head1)
+plan.update_heading_titles(head1, undefined)
 assert.deepEqual(head1, ['Predicted Democratic Vote Share', 'Predicted Republican Vote Share']);
 
 var head2 = ['Citizen Voting-Age Population 2015', 'Asian Citizen Voting-Age Population 2015',
     'Black Citizen Voting-Age Population 2015', 'Hispanic Citizen Voting-Age Population 2015'];
-plan.update_heading_titles(head2)
+plan.update_heading_titles(head2, undefined)
 assert.deepEqual(head2, ['CVAP 2015', 'Non-Hisp. Asian CVAP 2015',
     'Non-Hisp. Black CVAP 2015', 'Hispanic CVAP 2015']);
 
 var head3 = ['US President 2016 - DEM', 'US President 2016 - REP'];
-plan.update_heading_titles(head3)
+plan.update_heading_titles(head3, undefined)
 assert.deepEqual(head3, ['Clinton (D) 2016', 'Trump (R) 2016']);
 
 var head4 = ['Democratic Wins'];
-plan.update_heading_titles(head4)
+plan.update_heading_titles(head4, undefined)
 assert.deepEqual(head4, ['Chance of Democratic Win']);
 
 var head5 = ['Democratic Wins', 'Democratic Votes', 'Republican Votes'];
-plan.update_heading_titles(head5)
+plan.update_heading_titles(head5, undefined)
 assert.deepEqual(head5, ['Chance of Democratic Win', 'Predicted Vote Shares']);
 
 var head6 = ['Population 2016', 'Black Population 2016', 'Hispanic Population 2016']
-plan.update_heading_titles(head6)
+plan.update_heading_titles(head6, undefined)
 assert.deepEqual(head6, ['Pop. 2016', 'Black Pop. 2016', 'Hispanic Pop. 2016']);
 
 var head7 = ['US President 2020 - DEM', 'US President 2020 - REP']
-plan.update_heading_titles(head7)
+plan.update_heading_titles(head7, undefined)
 assert.deepEqual(head7, ['Biden (D) 2020', 'Trump (R) 2020']);
 
 var head8 = ['US President 2016 - DEM', 'US President 2016 - REP', 'US President 2020 - DEM', 'US President 2020 - REP']
-plan.update_heading_titles(head8)
+plan.update_heading_titles(head8, undefined)
 assert.deepEqual(head8, [plan.SHY_COLUMN, plan.SHY_COLUMN, 'Biden (D) 2020', 'Trump (R) 2020']);
 
 var head9 = ['US President 2024 - DEM', 'US President 2024 - REP']
-plan.update_heading_titles(head9)
+plan.update_heading_titles(head9, undefined)
 assert.deepEqual(head9, ['Harris (D) 2024', 'Trump (R) 2024']);
 
 var head10 = ['US President 2020 - DEM', 'US President 2020 - REP', 'US President 2024 - DEM', 'US President 2024 - REP']
-plan.update_heading_titles(head10)
+plan.update_heading_titles(head10, undefined)
 assert.deepEqual(head10, [plan.SHY_COLUMN, plan.SHY_COLUMN, 'Harris (D) 2024', 'Trump (R) 2024']);
+
+var head11 = ['US President 2016 - DEM', 'US President 2016 - REP', 'US President 2020 - DEM', 'US President 2020 - REP', 'US President 2024 - DEM', 'US President 2024 - REP']
+plan.update_heading_titles(head11, 2020)
+assert.deepEqual(head11, [plan.SHY_COLUMN, plan.SHY_COLUMN, 'Biden (D) 2020', 'Trump (R) 2020', plan.SHY_COLUMN, plan.SHY_COLUMN]);
 
 var row1 = [4, 6];
 plan.update_vote_percentages(['Democratic Votes', 'Republican Votes'], row1, {});
@@ -1208,3 +1212,43 @@ assert.equal(hash_result.incumbents, 'OOOOORRDDD', 'Should decode "5ORR3D" from 
 global.window.location.hash = '#scenario=incumbents:ORDORD';
 hash_result = plan.parse_scenario_hash();
 assert.equal(hash_result.incumbents, 'ORDORD', 'Should handle old uncompressed format in hash');
+
+// Test parse_scenario_year_key with new string format
+var parsed = plan.parse_scenario_year_key('2024 (2020)');
+assert.equal(parsed.model_year, 2024, 'Should parse model_year from "2024 (2020)"');
+assert.equal(parsed.pvote_year, 2020, 'Should parse pvote_year from "2024 (2020)"');
+
+// Test parse_scenario_year_key with integer (legacy format)
+parsed = plan.parse_scenario_year_key(2024);
+assert.equal(parsed.model_year, 2024, 'Should handle integer as both model_year and pvote_year');
+assert.equal(parsed.pvote_year, 2024, 'Should handle integer as both model_year and pvote_year');
+
+// Test parse_scenario_year_key with integer string
+parsed = plan.parse_scenario_year_key('2024');
+assert.equal(parsed.model_year, 2024, 'Should parse integer string');
+assert.equal(parsed.pvote_year, 2024, 'Should use same value for both years from integer string');
+
+// Test parse_scenario_year_key with different years
+parsed = plan.parse_scenario_year_key('2024 (2016)');
+assert.equal(parsed.model_year, 2024, 'Should parse model_year from "2024 (2016)"');
+assert.equal(parsed.pvote_year, 2016, 'Should parse pvote_year from "2024 (2016)"');
+
+// Test parse_scenario_year_key with extra whitespace
+parsed = plan.parse_scenario_year_key('2024  (2020)');
+assert.equal(parsed.model_year, 2024, 'Should handle extra whitespace');
+assert.equal(parsed.pvote_year, 2020, 'Should handle extra whitespace');
+
+// Test parse_scenario_year_key with invalid input
+parsed = plan.parse_scenario_year_key('invalid');
+assert.equal(parsed, null, 'Should return null for invalid input');
+
+// Note: '2024 (invalid)' will parse as 2024 via parseInt which stops at first non-digit
+parsed = plan.parse_scenario_year_key('2024 (invalid)');
+assert.equal(parsed.model_year, 2024, 'parseInt extracts 2024 from "2024 (invalid)"');
+assert.equal(parsed.pvote_year, 2024, 'Uses same value when only partial match');
+
+parsed = plan.parse_scenario_year_key(null);
+assert.equal(parsed, null, 'Should return null for null input');
+
+parsed = plan.parse_scenario_year_key('');
+assert.equal(parsed, null, 'Should return null for empty string');

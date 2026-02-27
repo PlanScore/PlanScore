@@ -1904,6 +1904,139 @@ class TestScore (unittest.TestCase):
         calculate_EG.return_value = 0
 
         output = score.calculate_everything(input)
-        
+
         self.assertEqual(output.summary['Declination Absolute Percent Rank'], 1.)
         self.assertEqual(output.summary['Declination Relative Percent Rank'], 1.)
+
+    @unittest.mock.patch('planscore.score.percentrank_rel')
+    @unittest.mock.patch('planscore.score.percentrank_abs')
+    @unittest.mock.patch('planscore.score.vectorized_D2_diff')
+    @unittest.mock.patch('planscore.score.vectorized_D2')
+    @unittest.mock.patch('planscore.score.vectorized_MMD')
+    @unittest.mock.patch('planscore.score.vectorized_PB')
+    @unittest.mock.patch('planscore.score.vectorized_EG')
+    @unittest.mock.patch('planscore.matrix.model_votes')
+    @unittest.mock.patch('planscore.matrix.filter_district_data')
+    def test_calculate_district_biases_multiple_versions(self, filter_district_data, model_votes, vectorized_EG, vectorized_PB, vectorized_MMD, vectorized_D2, vectorized_D2_diff, percentrank_abs, percentrank_rel):
+        ''' Scenarios matrix should be 4D with multiple model versions
+        '''
+        input = data.Upload(id=None, key=None,
+            model=data.Model(data.State.XX, data.House.ushouse, 4, False, ['2022F', '2025A'], None),
+            model_version='2022F',
+            districts=[
+                dict(totals={'US President 2020 - REP': 2, 'US President 2020 - DEM': 6}, tile=None),
+                dict(totals={'US President 2020 - REP': 3, 'US President 2020 - DEM': 5}, tile=None),
+                dict(totals={'US President 2020 - REP': 5, 'US President 2020 - DEM': 3}, tile=None),
+                dict(totals={'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
+            ],
+            incumbents=['D', 'R', 'O', 'D'],
+        )
+
+        percentrank_rel.return_value = 0
+        percentrank_abs.return_value = 0
+        vectorized_D2.return_value = numpy.array([0, 0, 0])
+        vectorized_D2_diff.return_value = numpy.array([0, 0, 0])
+        vectorized_MMD.return_value = numpy.array([0, 0, 0])
+        vectorized_PB.return_value = numpy.array([0, 0, 0])
+        vectorized_EG.return_value = numpy.array([[0, 0, 0]] * 25)
+
+        # Mock return shape is (incumbency, sims, districts, parties)
+        model_votes.return_value = numpy.array([
+            [
+                [[5.3, 2.7], [3.9, 4.1], [2.8, 5.2], [1.9, 6.1]],
+                [[6.0, 2.0], [5.7, 2.3], [4.1, 3.9], [2.7, 5.3]],
+                [[5.9, 2.1], [5.1, 2.9], [2.8, 5.2], [2.6, 5.4]],
+            ],
+        ] * 4)
+
+        output = score.calculate_everything(input)
+
+        # Should have called model_votes twice (once per version)
+        self.assertEqual(len(model_votes.mock_calls), 2)
+        self.assertEqual(model_votes.mock_calls[0][1][0], '2022F')
+        self.assertEqual(model_votes.mock_calls[1][1][0], '2025A')
+
+        # Check 4D scenarios structure
+        self.assertEqual(
+            output.scenarios['dimensions'],
+            ['model_years', 'vote_swings', 'incumbents', 'districts']
+        )
+        self.assertEqual(len(output.scenarios['model_years']), 2)
+        self.assertIsInstance(output.scenarios['model_years'], list)
+
+        # Check that model_years are in combined string format "model_year (pvote_year)"
+        # 2022F: model_year=2020, pvote_year=2020 -> "2020 (2020)"
+        # 2025A: model_year=2024, pvote_year=2020 -> "2024 (2020)"
+        self.assertEqual(output.scenarios['model_years'][0], '2020 (2020)')
+        self.assertEqual(output.scenarios['model_years'][1], '2024 (2020)')
+
+        # Check statistics are 4D
+        dem_votes = output.scenarios['statistics']['Democratic Votes']
+        self.assertEqual(len(dem_votes), 2)  # 2 model years
+        self.assertEqual(len(dem_votes[0]), 25)  # 25 vote swings
+        self.assertEqual(len(dem_votes[0][0]), 4)  # 4 incumbency scenarios
+        self.assertEqual(len(dem_votes[0][0][0]), 4)  # 4 districts
+
+    @unittest.mock.patch('planscore.score.percentrank_rel')
+    @unittest.mock.patch('planscore.score.percentrank_abs')
+    @unittest.mock.patch('planscore.score.vectorized_D2_diff')
+    @unittest.mock.patch('planscore.score.vectorized_D2')
+    @unittest.mock.patch('planscore.score.vectorized_MMD')
+    @unittest.mock.patch('planscore.score.vectorized_PB')
+    @unittest.mock.patch('planscore.score.vectorized_EG')
+    @unittest.mock.patch('planscore.matrix.model_votes')
+    @unittest.mock.patch('planscore.matrix.filter_district_data')
+    def test_calculate_district_biases_single_version(self, filter_district_data, model_votes, vectorized_EG, vectorized_PB, vectorized_MMD, vectorized_D2, vectorized_D2_diff, percentrank_abs, percentrank_rel):
+        ''' Scenarios matrix should be 4D even with single model version
+        '''
+        input = data.Upload(id=None, key=None,
+            model=data.Model(data.State.XX, data.House.ushouse, 4, False, ['2025A'], None),
+            model_version='2025A',
+            districts=[
+                dict(totals={'US President 2020 - REP': 2, 'US President 2020 - DEM': 6}, tile=None),
+                dict(totals={'US President 2020 - REP': 3, 'US President 2020 - DEM': 5}, tile=None),
+                dict(totals={'US President 2020 - REP': 5, 'US President 2020 - DEM': 3}, tile=None),
+                dict(totals={'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
+            ],
+            incumbents=['D', 'R', 'O', 'D'],
+        )
+
+        percentrank_rel.return_value = 0
+        percentrank_abs.return_value = 0
+        vectorized_D2.return_value = numpy.array([0, 0, 0])
+        vectorized_D2_diff.return_value = numpy.array([0, 0, 0])
+        vectorized_MMD.return_value = numpy.array([0, 0, 0])
+        vectorized_PB.return_value = numpy.array([0, 0, 0])
+        vectorized_EG.return_value = numpy.array([[0, 0, 0]] * 25)
+
+        # Mock return shape is (incumbency, sims, districts, parties)
+        model_votes.return_value = numpy.array([
+            [
+                [[5.3, 2.7], [3.9, 4.1], [2.8, 5.2], [1.9, 6.1]],
+                [[6.0, 2.0], [5.7, 2.3], [4.1, 3.9], [2.7, 5.3]],
+                [[5.9, 2.1], [5.1, 2.9], [2.8, 5.2], [2.6, 5.4]],
+            ],
+        ] * 4)
+
+        output = score.calculate_everything(input)
+
+        # Should have called model_votes once
+        self.assertEqual(len(model_votes.mock_calls), 1)
+
+        # Should still produce 4D structure but with single model year
+        self.assertEqual(
+            output.scenarios['dimensions'],
+            ['model_years', 'vote_swings', 'incumbents', 'districts']
+        )
+        self.assertEqual(len(output.scenarios['model_years']), 1)
+
+        # Check that model_years are in combined string format "model_year (pvote_year)"
+        # 2025A: model_year=2024, pvote_year=2020 -> "2024 (2020)"
+        self.assertEqual(output.scenarios['model_years'][0], '2024 (2020)')
+
+        # Check statistics are 4D
+        dem_votes = output.scenarios['statistics']['Democratic Votes']
+        self.assertEqual(len(dem_votes), 1)  # 1 model year
+        self.assertEqual(len(dem_votes[0]), 25)  # 25 vote swings
+        self.assertEqual(len(dem_votes[0][0]), 4)  # 4 incumbency scenarios
+        self.assertEqual(len(dem_votes[0][0][0]), 4)  # 4 districts

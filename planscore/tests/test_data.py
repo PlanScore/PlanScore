@@ -84,6 +84,16 @@ class TestData (unittest.TestCase):
         self.assertEqual(model8.key_prefix, 'data/NC/001')
         self.assertEqual(model8.versions, ['2020', '2021'])
 
+    def test_MODELS(self):
+        ''' Check that models all meet expectations
+        '''
+        for model in data.MODELS:
+            versions = [data.VERSION_PARAMETERS[version] for version in model.versions]
+
+            # All versions are unique and model years increase monotonically
+            self.assertEqual(len({v.path_suffix for v in versions}), len(versions))
+            self.assertTrue(all(v1.year < v2.year for v1, v2 in zip(versions, versions[1:])))
+
     def test_upload_storage(self):
         ''' Past and future data.Upload instances are readable
         '''
