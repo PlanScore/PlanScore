@@ -38,7 +38,7 @@ def commence_upload_scoring(context, s3, athena, bucket, upload):
     object = s3.get_object(Bucket=bucket, Key=upload.key)
     
     if upload.model_version is None:
-        upload.model_version = upload.model.versions[0]
+        upload.model_version = upload.model.versions[-1]
 
     with util.temporary_buffer_file(os.path.basename(upload.key), object['Body']) as ul_path:
         upload_type = util.guess_upload_type(ul_path)

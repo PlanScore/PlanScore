@@ -87,7 +87,7 @@ def get_current_model(dest_model_version: str, src_model: data.Model) -> tuple[s
         raise ValueError(f'No model for {repr(src_model.state.value)}, {repr(src_model.house.value)}')
 
     if dest_model_version is None:
-        return src_current_models[0].versions[0], src_current_models[0]
+        return src_current_models[0].versions[-1], src_current_models[0]
 
     dest_current_models = [
         model for model in src_current_models

@@ -75,7 +75,7 @@ components:
           example: "Congressional Redistricting Plan 2024"
         model_version:
           type: string
-          description: Predictive model version to use. If omitted, the first available version is used.
+          description: Predictive model version to use. If omitted, the most recent available version is used.
         library_metadata:
           $ref: '#/components/schemas/LibraryMetadata'
         features:
@@ -235,7 +235,7 @@ components:
           example: [0.04, 0.05, 0.06]
         model_version:
           type: string
-          description: Predictive model version. If omitted, the first one is used.
+          description: Predictive model version. If omitted, the most recent one is used.
         library_metadata:
           $ref: '#/components/schemas/LibraryMetadata'
 
@@ -267,7 +267,7 @@ components:
           example: [0.04, 0.05, 0.06]
         model_version:
           type: string
-          description: Predictive model version. If omitted, the first one is used.
+          description: Predictive model version. If omitted, the most recent one is used.
         library_metadata:
           $ref: '#/components/schemas/LibraryMetadata'
 
