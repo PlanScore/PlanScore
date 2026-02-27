@@ -628,7 +628,7 @@ class PlanScoreScoring(cdk.Stack):
         polygonize = make_large_function(self, "PolygonizeD", 10240, "planscore.polygonize.lambda_handler")
         grant_data_bucket_access(data_bucket, polygonize)
 
-        postread_calculate = make_large_function(self, "PostreadCalculateD", 2048, "planscore.postread_calculate.lambda_handler")
+        postread_calculate = make_large_function(self, "PostreadCalculateD", 4096, "planscore.postread_calculate.lambda_handler")
         grant_data_bucket_access(data_bucket, postread_calculate)
         grant_function_invoke(polygonize, 'FUNC_NAME_POLYGONIZE', postread_calculate)
 
