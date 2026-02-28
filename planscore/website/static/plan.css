@@ -217,6 +217,14 @@ path.highlight {
     }
 }
 
+#scenario-adjustments #grow-shrink-ui {
+    position: absolute;
+    top: -30px;
+    text-align: right;
+    width: 180px;
+    margin: 0 -15px;
+}
+
 #scenario-adjustments.scenario-adjustments-hidden {
     display: none !important;
 }
