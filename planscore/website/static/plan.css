@@ -202,7 +202,7 @@ path.highlight {
     right: 20px;
     background: #f4f5f5; /* Light gray background */
     border: 1px solid #dfdfdf;
-    padding: 15px;
+    padding: 15px 15px 0 15px;
     z-index: 1100;
     width: 180px;
     font-size: 14px;
@@ -217,14 +217,6 @@ path.highlight {
     }
 }
 
-#scenario-adjustments #grow-shrink-ui {
-    position: absolute;
-    top: -30px;
-    text-align: right;
-    width: 180px;
-    margin: 0 -15px;
-}
-
 #scenario-adjustments.scenario-adjustments-hidden {
     display: none !important;
 }
@@ -233,9 +225,30 @@ path.highlight {
     pointer-events: none;
 }
 
-#scenario-adjustments.scenario-adjustments-shrunken .grown-shrunken {
-    display: none;
-}
+    #scenario-adjustments #grow-shrink-ui {
+        position: absolute;
+        top: 0px;
+        text-align: right;
+        width: 180px;
+        margin: 0 -15px;
+    }
+
+    #scenario-adjustments #grow-shrink-ui input[type="checkbox"] {
+        width: 0;
+        height: 0;
+        position: absolute;
+        left: -9999px;
+    }
+
+    #scenario-adjustments #grow-shrink-ui label {
+        cursor: pointer;
+        padding: 4px 4px;
+        color: #b3c6d2;
+    }
+
+    #scenario-adjustments.scenario-adjustments-shrunken .grown-shrunken {
+        display: none;
+    }
 
 #scenario-adjustments p {
     margin-bottom: 1em;

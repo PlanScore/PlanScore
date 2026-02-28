@@ -3917,15 +3917,18 @@ if (typeof window !== 'undefined') {
 
         // Set up grow/shrink checkbox for scenario adjustments form
         var grow_shrink_checkbox = document.getElementById('grow-shrink');
+        var grow_shrink_label = grow_shrink_checkbox.nextElementSibling;
         var scenario_form = document.getElementById('scenario-adjustments');
         if (grow_shrink_checkbox && scenario_form) {
             grow_shrink_checkbox.addEventListener('change', function() {
                 if (this.checked) {
                     // Checked = grown (remove shrunken class)
                     scenario_form.classList.remove('scenario-adjustments-shrunken');
+                    grow_shrink_label.innerText = '▼';
                 } else {
                     // Unchecked = shrunken (add shrunken class)
                     scenario_form.classList.add('scenario-adjustments-shrunken');
+                    grow_shrink_label.innerText = '▲';
                 }
             });
         }
