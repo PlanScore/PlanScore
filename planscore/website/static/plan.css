@@ -221,7 +221,8 @@ path.highlight {
     display: none !important;
 }
 
-#scenario-adjustments.scenario-adjustments-disabled {
+#scenario-adjustments.scenario-adjustments-disabled #margin-swing-range,
+#scenario-adjustments.scenario-adjustments-disabled #model-year {
     pointer-events: none;
 }
 
