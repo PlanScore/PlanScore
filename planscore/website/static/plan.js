@@ -3914,6 +3914,21 @@ if (typeof window !== 'undefined') {
 
         // Check again after a delay to catch late-loading Olark
         setTimeout(adjust_scenario_form_for_olark, 1000);
+
+        // Set up grow/shrink checkbox for scenario adjustments form
+        var grow_shrink_checkbox = document.getElementById('grow-shrink');
+        var scenario_form = document.getElementById('scenario-adjustments');
+        if (grow_shrink_checkbox && scenario_form) {
+            grow_shrink_checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    // Checked = grown (remove shrunken class)
+                    scenario_form.classList.remove('scenario-adjustments-shrunken');
+                } else {
+                    // Unchecked = shrunken (add shrunken class)
+                    scenario_form.classList.add('scenario-adjustments-shrunken');
+                }
+            });
+        }
     });
 
     window.addEventListener('resize', adjust_scenario_form_for_olark);

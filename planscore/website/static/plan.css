@@ -233,6 +233,10 @@ path.highlight {
     pointer-events: none;
 }
 
+#scenario-adjustments.scenario-adjustments-shrunken .grown-shrunken {
+    display: none;
+}
+
 #scenario-adjustments p {
     margin-bottom: 1em;
     color: #4d566c;
