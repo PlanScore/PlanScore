@@ -1267,8 +1267,6 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
     var initial_incumbents = original_plan.incumbents.slice();
     var initial_model_year = original_plan.model_year || null; // Use plan's model_year as default
 
-    console.log('Initial setup - plan.model_year:', original_plan.model_year, 'hash_data:', hash_data);
-
     if (hash_data !== null) {
         initial_vote_swing = hash_data.vote_swing;
 
@@ -1285,11 +1283,8 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         // Parse model_year from hash if present (overrides plan.model_year)
         if (hash_data.model_year !== null && hash_data.model_year !== undefined) {
             initial_model_year = hash_data.model_year;
-            console.log('Overriding with model_year from hash:', initial_model_year);
         }
     }
-
-    console.log('Final initial_model_year:', initial_model_year);
 
     // Validate that the initial vote swing exists in scenarios
     if (scenarios.vote_swings.indexOf(initial_vote_swing) === -1) {
@@ -1302,8 +1297,6 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
 
     // Set up model year radio buttons
     if (has_model_year_dimension(scenarios)) {
-        console.log('Setting up model year radio buttons. Available years:', scenarios.model_years, 'Initial year:', initial_model_year);
-
         // Show/hide radio buttons based on available model years
         var radio_buttons = scenario_adjustments_form.querySelectorAll('input[name="model-year"]');
         var first_available_checked = false;
@@ -1352,13 +1345,11 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
             if (found) {
                 // Check radio button based on initial_model_year (from hash or plan.model_year)
                 if (initial_model_year !== null && radio_year === initial_model_year) {
-                    console.log('Checking radio button for year:', radio_year);
                     radio_buttons[i].checked = true;
                     first_available_checked = true;
                     break; // Found and checked the right one
                 } else if (!first_available_checked && initial_model_year === null) {
                     // Default to first available radio button if no model_year specified
-                    console.log('Checking first available radio button for year:', radio_year);
                     radio_buttons[i].checked = true;
                     first_available_checked = true;
                     break; // Checked the first available
@@ -2727,14 +2718,19 @@ function populate_ftva_race_scores(plan, scores_FTVA)
 
 function construct_plan_map(data, div, plan, table, waiting_for_scenarios)
 {
+    // Store initial plan reference for popup content
+    div._current_plan = plan;
+
     function district_popup_content(layer)
     {
-        var index = data.features.indexOf(layer.feature),
-            incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'},
-            has_incumbency = plan_has_incumbency(plan);
+        // Use current plan from div (may be updated by scenarios)
+        var current_plan = div._current_plan || plan;
+        var index = data.features.indexOf(layer.feature);
+        var incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'};
+        var has_incumbency = plan_has_incumbency(current_plan);
 
-        if(has_incumbency) {
-            return 'District ' + (index + 1) + '<br>' + incumbency[plan.incumbents[index]];
+        if(has_incumbency && current_plan.incumbents && current_plan.incumbents[index]) {
+            return 'District ' + (index + 1) + '<br>' + incumbency[current_plan.incumbents[index]];
         }
 
         return 'District ' + (index + 1);
@@ -2821,6 +2817,8 @@ function construct_plan_map(data, div, plan, table, waiting_for_scenarios)
     div._geojson_layer = geojson;
     div._geojson_data = data;
     div._leaflet_map = map;
+    div._current_plan = plan; // Store plan reference for popup updates
+    div._popup_content_fn = district_popup_content; // Store popup content function for later use
 
     // Populate with initial plan data (unless waiting for scenarios)
     if (!waiting_for_scenarios) {
@@ -2830,18 +2828,15 @@ function construct_plan_map(data, div, plan, table, waiting_for_scenarios)
 
 function populate_plan_map(plan, div)
 {
-    // NOTE: For future enhancement, if we want to add scenario-dependent data to popups
-    // (e.g., "Democratic Win Probability: 73%"), we would update popup content here
-    // using layer.getPopup().setContent(newContent) or layer.bindPopup(newContent).
-    // Currently, popups only show district number and incumbent status, which are
-    // scenario-independent, so they don't need updates.
-
     var geojson = div._geojson_layer;
     var data = div._geojson_data;
 
     if (!geojson || !data) {
         return;
     }
+
+    // Store current plan for popup updates
+    div._current_plan = plan;
 
     // Update district colors based on current plan data
     Object.values(geojson._layers).forEach(function(layer) {
@@ -2850,6 +2845,23 @@ function populate_plan_map(plan, div)
         var color = which_district_color(district, plan);
         layer.setStyle({ color: color, fillOpacity: .5, weight: 2 });
     });
+
+    // Update any open popup by regenerating its content
+    var map = div._leaflet_map;
+    var popup_content_fn = div._popup_content_fn;
+    if (map && popup_content_fn) {
+        var open_popup = map._popup;
+        if (open_popup && open_popup._source) {
+            var popup_layer = open_popup._source;
+
+            // Manually regenerate the popup content using the stored function
+            var new_content = popup_content_fn(popup_layer);
+
+            // Update the popup with the new content
+            open_popup.setContent(new_content);
+            open_popup.update();
+        }
+    }
 }
 
 function update_heading_titles(head, pvote_year)
