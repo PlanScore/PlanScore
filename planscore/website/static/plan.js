@@ -3559,10 +3559,12 @@ function load_plan_score(url, message_section, score_section,
                 'We were not yet calculating declination at the time that we scored this plan.');
         }
 
-        if(plan_voteshare(plan) < .1) {
-            construct_partisan_bias_score(score_PB);
-            construct_mean_median_score(score_MM);
-        } else {
+        // Always construct the score elements, even if initially outside valid range
+        construct_partisan_bias_score(score_PB);
+        construct_mean_median_score(score_MM);
+
+        // Hide if outside valid range initially
+        if(plan_voteshare(plan) >= .1) {
             hide_score_with_reason(score_PB,
                 'The parties\' statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
                 + ' Partisan bias is shown only where the parties\' statewide vote shares fall between 45% and 55%.'
