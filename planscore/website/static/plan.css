@@ -253,6 +253,7 @@ path.highlight {
         text-align: right;
         width: 180px;
         margin: 0 -15px;
+        pointer-events: none;
     }
 
     #scenario-adjustments #grow-shrink-ui input[type="checkbox"] {
@@ -266,6 +267,7 @@ path.highlight {
         cursor: pointer;
         padding: 4px 4px;
         color: #b3c6d2;
+        pointer-events: auto;
     }
 
     #scenario-adjustments.scenario-adjustments-shrunken .grown-shrunken {
