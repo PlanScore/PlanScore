@@ -1064,13 +1064,6 @@ function update_scenario_hash(vote_swing, incumbents_string, original_incumbents
     }
 }
 
-function has_scenario_hash()
-{
-    // Check if URL contains #scenario hash
-    var hash = window.location.hash;
-    return hash && hash.match(/\bscenario\b/) !== null;
-}
-
 function check_scenarios_available(plan)
 {
     // Check if scenarios feature is available for this plan
@@ -1094,17 +1087,12 @@ function check_scenarios_available(plan)
 
 function update_form_visibility(form, plan, districts_table, on_change_callback)
 {
-    // Update form visibility based on URL hash and plan availability
-    var has_hash = has_scenario_hash();
+    // Update form visibility based on plan availability
     var availability = check_scenarios_available(plan);
     var caption_el = form.querySelector('.caption');
 
-    if (!has_hash) {
-        // No hash: hide form completely
-        form.classList.add('scenario-adjustments-hidden');
-        form.classList.remove('scenario-adjustments-disabled');
-    } else if (!availability.available) {
-        // Has hash but scenarios not available: show disabled form with reason
+    if (!availability.available) {
+        // Scenarios not available: show disabled form with reason
         form.classList.remove('scenario-adjustments-hidden');
         form.classList.add('scenario-adjustments-disabled');
         // Replace the caption text with the disabled reason
@@ -1112,13 +1100,13 @@ function update_form_visibility(form, plan, districts_table, on_change_callback)
             caption_el.textContent = availability.reason;
         }
     } else {
-        // Has hash and scenarios available: enable form but keep hidden
+        // Scenarios available: enable form but keep hidden
         // Form will be shown by setup_scenario_interactivity after initialization
         form.classList.remove('scenario-adjustments-disabled');
     }
 
     // Calculate whether scenarios are active and update incumbent scenario cells
-    var is_scenarios_active = has_hash && availability.available;
+    var is_scenarios_active = availability.available;
     if (districts_table) {
         populate_districts_table(plan, districts_table, is_scenarios_active, on_change_callback);
     }
@@ -1126,11 +1114,6 @@ function update_form_visibility(form, plan, districts_table, on_change_callback)
 
 function setup_form_visibility_listener(form, plan, districts_table, on_change_callback)
 {
-    // Set up hashchange listener to toggle form visibility
-    window.addEventListener('hashchange', function() {
-        update_form_visibility(form, plan, districts_table, on_change_callback);
-    });
-
     // Set initial visibility
     update_form_visibility(form, plan, districts_table, on_change_callback);
 }
@@ -1389,7 +1372,6 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
     }
 
     // Always update visualizations on initial load (even for 0.0)
-    // This ensures that if we were waiting_for_scenarios, we now populate everything
     var initial_model_year_idx = get_selected_model_year_idx();
     update_visualizations(initial_vote_swing, initial_incumbents, initial_model_year_idx);
 
@@ -3473,7 +3455,7 @@ function load_plan_score(url, message_section, score_section,
         var waiting_for_scenarios = (
             plan.scenarios !== undefined &&
             initial_vote_swing !== null &&
-            initial_vote_swing !== 0.0
+            initial_vote_swing.vote_swing !== 0.0
         );
 
         // Set up form visibility based on hash and availability
@@ -3590,9 +3572,9 @@ function load_plan_score(url, message_section, score_section,
         construct_metrics_table(metrics_table);
         construct_ftva_race_scores(scores_FTVA);
 
-        // Kick off scenario loading after table construction if available and hash present
+        // Kick off scenario loading after table construction if available
         // This ensures the table structure exists before any populate calls from scenario callbacks
-        if (plan.scenarios !== undefined && has_scenario_hash()) {
+        if (plan.scenarios !== undefined) {
             // Add disabled class while loading scenarios
             scenario_adjustments_form.classList.add('scenario-adjustments-disabled');
 
@@ -3626,7 +3608,6 @@ function load_plan_score(url, message_section, score_section,
         }
 
         // Go on to load the map (construct_plan_map includes populate_plan_map call).
-        // Note: The map's populate call is inside construct_plan_map, so we need special handling.
         load_plan_map(geom_prefix + plan.geometry_key, map_div, plan, districts_table, waiting_for_scenarios);
     }
 
