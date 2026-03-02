@@ -1064,13 +1064,6 @@ function update_scenario_hash(vote_swing, incumbents_string, original_incumbents
     }
 }
 
-function has_scenario_hash()
-{
-    // Check if URL contains #scenario hash
-    var hash = window.location.hash;
-    return hash && hash.match(/\bscenario\b/) !== null;
-}
-
 function check_scenarios_available(plan)
 {
     // Check if scenarios feature is available for this plan
@@ -1094,17 +1087,12 @@ function check_scenarios_available(plan)
 
 function update_form_visibility(form, plan, districts_table, on_change_callback)
 {
-    // Update form visibility based on URL hash and plan availability
-    var has_hash = has_scenario_hash();
+    // Update form visibility based on plan availability
     var availability = check_scenarios_available(plan);
     var caption_el = form.querySelector('.caption');
 
-    if (!has_hash) {
-        // No hash: hide form completely
-        form.classList.add('scenario-adjustments-hidden');
-        form.classList.remove('scenario-adjustments-disabled');
-    } else if (!availability.available) {
-        // Has hash but scenarios not available: show disabled form with reason
+    if (!availability.available) {
+        // Scenarios not available: show disabled form with reason
         form.classList.remove('scenario-adjustments-hidden');
         form.classList.add('scenario-adjustments-disabled');
         // Replace the caption text with the disabled reason
@@ -1112,13 +1100,13 @@ function update_form_visibility(form, plan, districts_table, on_change_callback)
             caption_el.textContent = availability.reason;
         }
     } else {
-        // Has hash and scenarios available: enable form but keep hidden
+        // Scenarios available: enable form but keep hidden
         // Form will be shown by setup_scenario_interactivity after initialization
         form.classList.remove('scenario-adjustments-disabled');
     }
 
     // Calculate whether scenarios are active and update incumbent scenario cells
-    var is_scenarios_active = has_hash && availability.available;
+    var is_scenarios_active = availability.available;
     if (districts_table) {
         populate_districts_table(plan, districts_table, is_scenarios_active, on_change_callback);
     }
@@ -1126,11 +1114,6 @@ function update_form_visibility(form, plan, districts_table, on_change_callback)
 
 function setup_form_visibility_listener(form, plan, districts_table, on_change_callback)
 {
-    // Set up hashchange listener to toggle form visibility
-    window.addEventListener('hashchange', function() {
-        update_form_visibility(form, plan, districts_table, on_change_callback);
-    });
-
     // Set initial visibility
     update_form_visibility(form, plan, districts_table, on_change_callback);
 }
@@ -1267,8 +1250,6 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
     var initial_incumbents = original_plan.incumbents.slice();
     var initial_model_year = original_plan.model_year || null; // Use plan's model_year as default
 
-    console.log('Initial setup - plan.model_year:', original_plan.model_year, 'hash_data:', hash_data);
-
     if (hash_data !== null) {
         initial_vote_swing = hash_data.vote_swing;
 
@@ -1285,11 +1266,8 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
         // Parse model_year from hash if present (overrides plan.model_year)
         if (hash_data.model_year !== null && hash_data.model_year !== undefined) {
             initial_model_year = hash_data.model_year;
-            console.log('Overriding with model_year from hash:', initial_model_year);
         }
     }
-
-    console.log('Final initial_model_year:', initial_model_year);
 
     // Validate that the initial vote swing exists in scenarios
     if (scenarios.vote_swings.indexOf(initial_vote_swing) === -1) {
@@ -1302,8 +1280,6 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
 
     // Set up model year radio buttons
     if (has_model_year_dimension(scenarios)) {
-        console.log('Setting up model year radio buttons. Available years:', scenarios.model_years, 'Initial year:', initial_model_year);
-
         // Show/hide radio buttons based on available model years
         var radio_buttons = scenario_adjustments_form.querySelectorAll('input[name="model-year"]');
         var first_available_checked = false;
@@ -1352,13 +1328,11 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
             if (found) {
                 // Check radio button based on initial_model_year (from hash or plan.model_year)
                 if (initial_model_year !== null && radio_year === initial_model_year) {
-                    console.log('Checking radio button for year:', radio_year);
                     radio_buttons[i].checked = true;
                     first_available_checked = true;
                     break; // Found and checked the right one
                 } else if (!first_available_checked && initial_model_year === null) {
                     // Default to first available radio button if no model_year specified
-                    console.log('Checking first available radio button for year:', radio_year);
                     radio_buttons[i].checked = true;
                     first_available_checked = true;
                     break; // Checked the first available
@@ -1398,7 +1372,6 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
     }
 
     // Always update visualizations on initial load (even for 0.0)
-    // This ensures that if we were waiting_for_scenarios, we now populate everything
     var initial_model_year_idx = get_selected_model_year_idx();
     update_visualizations(initial_vote_swing, initial_incumbents, initial_model_year_idx);
 
@@ -2727,14 +2700,19 @@ function populate_ftva_race_scores(plan, scores_FTVA)
 
 function construct_plan_map(data, div, plan, table, waiting_for_scenarios)
 {
+    // Store initial plan reference for popup content
+    div._current_plan = plan;
+
     function district_popup_content(layer)
     {
-        var index = data.features.indexOf(layer.feature),
-            incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'},
-            has_incumbency = plan_has_incumbency(plan);
+        // Use current plan from div (may be updated by scenarios)
+        var current_plan = div._current_plan || plan;
+        var index = data.features.indexOf(layer.feature);
+        var incumbency = {'O': 'Open Seat', 'D': 'Democratic Incumbent', 'R': 'Republican Incumbent'};
+        var has_incumbency = plan_has_incumbency(current_plan);
 
-        if(has_incumbency) {
-            return 'District ' + (index + 1) + '<br>' + incumbency[plan.incumbents[index]];
+        if(has_incumbency && current_plan.incumbents && current_plan.incumbents[index]) {
+            return 'District ' + (index + 1) + '<br>' + incumbency[current_plan.incumbents[index]];
         }
 
         return 'District ' + (index + 1);
@@ -2821,6 +2799,8 @@ function construct_plan_map(data, div, plan, table, waiting_for_scenarios)
     div._geojson_layer = geojson;
     div._geojson_data = data;
     div._leaflet_map = map;
+    div._current_plan = plan; // Store plan reference for popup updates
+    div._popup_content_fn = district_popup_content; // Store popup content function for later use
 
     // Populate with initial plan data (unless waiting for scenarios)
     if (!waiting_for_scenarios) {
@@ -2830,18 +2810,15 @@ function construct_plan_map(data, div, plan, table, waiting_for_scenarios)
 
 function populate_plan_map(plan, div)
 {
-    // NOTE: For future enhancement, if we want to add scenario-dependent data to popups
-    // (e.g., "Democratic Win Probability: 73%"), we would update popup content here
-    // using layer.getPopup().setContent(newContent) or layer.bindPopup(newContent).
-    // Currently, popups only show district number and incumbent status, which are
-    // scenario-independent, so they don't need updates.
-
     var geojson = div._geojson_layer;
     var data = div._geojson_data;
 
     if (!geojson || !data) {
         return;
     }
+
+    // Store current plan for popup updates
+    div._current_plan = plan;
 
     // Update district colors based on current plan data
     Object.values(geojson._layers).forEach(function(layer) {
@@ -2850,6 +2827,23 @@ function populate_plan_map(plan, div)
         var color = which_district_color(district, plan);
         layer.setStyle({ color: color, fillOpacity: .5, weight: 2 });
     });
+
+    // Update any open popup by regenerating its content
+    var map = div._leaflet_map;
+    var popup_content_fn = div._popup_content_fn;
+    if (map && popup_content_fn) {
+        var open_popup = map._popup;
+        if (open_popup && open_popup._source) {
+            var popup_layer = open_popup._source;
+
+            // Manually regenerate the popup content using the stored function
+            var new_content = popup_content_fn(popup_layer);
+
+            // Update the popup with the new content
+            open_popup.setContent(new_content);
+            open_popup.update();
+        }
+    }
 }
 
 function update_heading_titles(head, pvote_year)
@@ -3461,7 +3455,7 @@ function load_plan_score(url, message_section, score_section,
         var waiting_for_scenarios = (
             plan.scenarios !== undefined &&
             initial_vote_swing !== null &&
-            initial_vote_swing !== 0.0
+            initial_vote_swing.vote_swing !== 0.0
         );
 
         // Set up form visibility based on hash and availability
@@ -3559,10 +3553,12 @@ function load_plan_score(url, message_section, score_section,
                 'We were not yet calculating declination at the time that we scored this plan.');
         }
 
-        if(plan_voteshare(plan) < .1) {
-            construct_partisan_bias_score(score_PB);
-            construct_mean_median_score(score_MM);
-        } else {
+        // Always construct the score elements, even if initially outside valid range
+        construct_partisan_bias_score(score_PB);
+        construct_mean_median_score(score_MM);
+
+        // Hide if outside valid range initially
+        if(plan_voteshare(plan) >= .1) {
             hide_score_with_reason(score_PB,
                 'The parties\' statewide vote shares are ' + nice_plan_voteshare(plan) + ' based on the model.'
                 + ' Partisan bias is shown only where the parties\' statewide vote shares fall between 45% and 55%.'
@@ -3576,9 +3572,9 @@ function load_plan_score(url, message_section, score_section,
         construct_metrics_table(metrics_table);
         construct_ftva_race_scores(scores_FTVA);
 
-        // Kick off scenario loading after table construction if available and hash present
+        // Kick off scenario loading after table construction if available
         // This ensures the table structure exists before any populate calls from scenario callbacks
-        if (plan.scenarios !== undefined && has_scenario_hash()) {
+        if (plan.scenarios !== undefined) {
             // Add disabled class while loading scenarios
             scenario_adjustments_form.classList.add('scenario-adjustments-disabled');
 
@@ -3612,7 +3608,6 @@ function load_plan_score(url, message_section, score_section,
         }
 
         // Go on to load the map (construct_plan_map includes populate_plan_map call).
-        // Note: The map's populate call is inside construct_plan_map, so we need special handling.
         load_plan_map(geom_prefix + plan.geometry_key, map_div, plan, districts_table, waiting_for_scenarios);
     }
 
@@ -3912,6 +3907,24 @@ if (typeof window !== 'undefined') {
 
         // Check again after a delay to catch late-loading Olark
         setTimeout(adjust_scenario_form_for_olark, 1000);
+
+        // Set up grow/shrink checkbox for scenario adjustments form
+        var grow_shrink_checkbox = document.getElementById('grow-shrink');
+        var grow_shrink_label = grow_shrink_checkbox.nextElementSibling;
+        var scenario_form = document.getElementById('scenario-adjustments');
+        if (grow_shrink_checkbox && scenario_form) {
+            grow_shrink_checkbox.addEventListener('change', function() {
+                if (this.checked) {
+                    // Checked = grown (remove shrunken class)
+                    scenario_form.classList.remove('scenario-adjustments-shrunken');
+                    grow_shrink_label.innerText = '▼';
+                } else {
+                    // Unchecked = shrunken (add shrunken class)
+                    scenario_form.classList.add('scenario-adjustments-shrunken');
+                    grow_shrink_label.innerText = '▲';
+                }
+            });
+        }
     });
 
     window.addEventListener('resize', adjust_scenario_form_for_olark);

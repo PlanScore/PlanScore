@@ -202,7 +202,7 @@ path.highlight {
     right: 20px;
     background: #f4f5f5; /* Light gray background */
     border: 1px solid #dfdfdf;
-    padding: 15px;
+    padding: 15px 15px 0 15px;
     z-index: 1100;
     width: 180px;
     font-size: 14px;
@@ -217,13 +217,62 @@ path.highlight {
     }
 }
 
+@media only print {
+    /* Make scenario adjustments form flow in document for print */
+    #scenario-adjustments {
+        position: static !important;
+        width: auto !important;
+        margin: 20px 0 !important;
+        border: 1px solid #dfdfdf;
+        page-break-inside: avoid;
+    }
+
+    /* Hide grow/shrink UI control in print */
+    #scenario-adjustments #grow-shrink-ui {
+        display: none !important;
+    }
+
+    /* Hide margin slider in print (value is shown as text) */
+    #scenario-adjustments input#margin-swing-range {
+        display: none !important;
+    }
+}
+
 #scenario-adjustments.scenario-adjustments-hidden {
     display: none !important;
 }
 
-#scenario-adjustments.scenario-adjustments-disabled {
+#scenario-adjustments.scenario-adjustments-disabled #margin-swing-range,
+#scenario-adjustments.scenario-adjustments-disabled #model-year {
     pointer-events: none;
 }
+
+    #scenario-adjustments #grow-shrink-ui {
+        position: absolute;
+        top: 0px;
+        text-align: right;
+        width: 180px;
+        margin: 0 -15px;
+        pointer-events: none;
+    }
+
+    #scenario-adjustments #grow-shrink-ui input[type="checkbox"] {
+        width: 0;
+        height: 0;
+        position: absolute;
+        left: -9999px;
+    }
+
+    #scenario-adjustments #grow-shrink-ui label {
+        cursor: pointer;
+        padding: 4px 4px;
+        color: #b3c6d2;
+        pointer-events: auto;
+    }
+
+    #scenario-adjustments.scenario-adjustments-shrunken .grown-shrunken {
+        display: none;
+    }
 
 #scenario-adjustments p {
     margin-bottom: 1em;
@@ -398,6 +447,33 @@ form.candidate-scenario,
     align-items: stretch;
     border-radius: 9px;
     overflow: hidden;
+}
+
+@media only print {
+    /* Style model year radio buttons for print - use underline instead of background color */
+    #scenario-adjustments #model-year input[type="radio"] + label {
+        background-color: transparent !important;
+        color: #000 !important;
+    }
+
+    #scenario-adjustments #model-year input[type="radio"]:checked + label {
+        background-color: transparent !important;
+        color: #000 !important;
+        font-weight: bold;
+        text-decoration: underline;
+    }
+
+    /* For candidate scenarios, only show the selected option */
+    form.candidate-scenario input[type="radio"] + label {
+        display: none !important;
+    }
+
+    form.candidate-scenario input[type="radio"]:checked + label {
+        display: inline-block !important;
+        background-color: transparent !important;
+        color: #000 !important;
+        font-weight: bold;
+    }
 }
 
     /* Make the radio buttons disappear and only interact with labels */
