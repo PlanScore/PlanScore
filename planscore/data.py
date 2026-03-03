@@ -493,7 +493,7 @@ MODELS = [
     Model(State.AZ, House.statesenate,  30,  True, VERSIONS_16_20_24A, 'data/AZ/012-acs-2020'), # c82db89
     Model(State.AZ, House.statehouse,   60,  True, VERSIONS_16_20_24A, 'data/AZ/012-acs-2020'), # c82db89
     Model(State.AZ, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/AZ/012-acs-2020'), # c82db89
-    Model(State.CA, House.ushouse,      52,  True, VERSIONS_20_24B, 'data/CA/010-cvap-2023'), # d4b3c7d
+    Model(State.CA, House.ushouse,      52,  True, VERSIONS_16_20_24B, 'data/CA/011-pvote-2016'), # 5c24f37
     Model(State.CA, House.statesenate,  40,  True, VERSIONS_20_24A, 'data/CA/008-acs-2020'), # c82db89
     Model(State.CA, House.statehouse,   80,  True, VERSIONS_20_24A, 'data/CA/008-acs-2020'), # c82db89
     Model(State.CA, House.localplan,  None,  True, VERSIONS_20_24A, 'data/CA/008-acs-2020'), # c82db89
