@@ -656,7 +656,7 @@ MODELS = [
     Model(State.VA, House.statesenate,  40,  True, VERSIONS_16_20_24A, 'data/VA/010-acs-2020'), # c82db89
     Model(State.VA, House.statehouse,  100,  True, VERSIONS_16_20_24A, 'data/VA/010-acs-2020'), # c82db89
     Model(State.VA, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/VA/010-acs-2020'), # c82db89
-    Model(State.VT, House.ushouse,       1,  True, VERSIONS_16_20_24A, 'data/VT/011-cvap-2023'), # d4b3c7d
+    Model(State.VT, House.ushouse,       1,  True, VERSIONS_16_20_24B, 'data/VT/012-pvote-2024'), # 82923d3
     Model(State.VT, House.statesenate,  30,  True, VERSIONS_16_20_24A, 'data/VT/010-acs-2020'), # c82db89
     Model(State.VT, House.statehouse,  150,  True, VERSIONS_16_20_24A, 'data/VT/010-acs-2020'), # c82db89
     Model(State.VT, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/VT/010-acs-2020'), # c82db89
