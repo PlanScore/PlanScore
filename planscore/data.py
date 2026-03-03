@@ -561,7 +561,7 @@ MODELS = [
     Model(State.ME, House.statesenate,  35,  True, VERSIONS_16_20_24A, 'data/ME/011-acs-2020'), # c82db89
     Model(State.ME, House.statehouse,  151,  True, VERSIONS_16_20_24A, 'data/ME/011-acs-2020'), # c82db89
     Model(State.ME, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/ME/011-acs-2020'), # c82db89
-    Model(State.MI, House.ushouse,      13,  True, VERSIONS_16_20_24A, 'data/MI/012-cvap-2023'), # d4b3c7d
+    Model(State.MI, House.ushouse,      13,  True, VERSIONS_16_20_24B, 'data/MI/013-pvote-2024'), # 87112a0
     Model(State.MI, House.statesenate,  38,  True, VERSIONS_16_20_24A, 'data/MI/011-acs-2020'), # c82db89
     Model(State.MI, House.statehouse,  110,  True, VERSIONS_16_20_24A, 'data/MI/011-acs-2020'), # c82db89
     Model(State.MI, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/MI/011-acs-2020'), # c82db89
