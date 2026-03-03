@@ -480,8 +480,8 @@ VERSIONS_20_24B = ['2022F', '2025B']
 MODELS = [
     Model(State.XX, House.statehouse,    2,  True, VERSIONS_16_20_24A, 'data/XX/007-pvote-2024'), # b8e19879 and more
     Model(State.AK, House.ushouse,       1,  True, VERSIONS_20_24B, 'data/AK/010-pvote-2024'), # 6bacc75
-    Model(State.AK, House.statesenate,  20,  True, VERSIONS_20_24A, 'data/AK/008-acs-2020'), # c82db89
-    Model(State.AK, House.statehouse,   40,  True, VERSIONS_20_24A, 'data/AK/008-acs-2020'), # c82db89
+    Model(State.AK, House.statesenate,  20,  True, VERSIONS_20_24B, 'data/AK/009-pvote-2024'), # 6bacc75
+    Model(State.AK, House.statehouse,   40,  True, VERSIONS_20_24B, 'data/AK/009-pvote-2024'), # 6bacc75
     Model(State.AK, House.localplan,  None,  True, VERSIONS_20_24A, 'data/AK/008-acs-2020'), # c82db89
     Model(State.AL, House.ushouse,       7,  True, VERSIONS_16_20_24B, 'data/AL/010-cvap-2023'), # d4b3c7d
     Model(State.AL, House.statesenate,  35,  True, VERSIONS_16_20_24B, 'data/AL/010-cvap-2023'), # d4b3c7d
@@ -619,8 +619,8 @@ MODELS = [
     Model(State.OH, House.statehouse,   99,  True, VERSIONS_16_20_24B, 'data/OH/011-cvap-2023'), # d4b3c7d
     Model(State.OH, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/OH/009-acs-2020'), # c82db89
     Model(State.OK, House.ushouse,       5,  True, VERSIONS_16_20_24B, 'data/OK/010-pvote-2024'), # 6bacc75
-    Model(State.OK, House.statesenate,  48,  True, VERSIONS_16_20_24A, 'data/OK/008-acs-2020'), # c82db89
-    Model(State.OK, House.statehouse,  101,  True, VERSIONS_16_20_24A, 'data/OK/008-acs-2020'), # c82db89
+    Model(State.OK, House.statesenate,  48,  True, VERSIONS_16_20_24B, 'data/OK/009-pvote-2024'), # 6bacc75
+    Model(State.OK, House.statehouse,  101,  True, VERSIONS_16_20_24B, 'data/OK/009-pvote-2024'), # 6bacc75
     Model(State.OK, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/OK/008-acs-2020'), # c82db89
     Model(State.OR, House.ushouse,       6,  True, VERSIONS_16_20_24B, 'data/OR/010-pvote-2024'), # dcd1742
     Model(State.OR, House.statesenate,  30,  True, VERSIONS_16_20_24B, 'data/OR/010-pvote-2024'), # dcd1742
@@ -639,8 +639,8 @@ MODELS = [
     Model(State.SC, House.statehouse,  124,  True, VERSIONS_16_20_24B, 'data/SC/010-cvap-2023'), # d4b3c7d
     Model(State.SC, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/SC/008-acs-2020'), # c82db89
     Model(State.SD, House.ushouse,       1,  True, VERSIONS_16_20_24B, 'data/SD/010-pvote-2024'), # 6bacc75
-    Model(State.SD, House.statesenate,  35,  True, VERSIONS_16_20_24A, 'data/SD/008-acs-2020'), # c82db89
-    Model(State.SD, House.statehouse,   70,  True, VERSIONS_16_20_24A, 'data/SD/008-acs-2020'), # c82db89
+    Model(State.SD, House.statesenate,  35,  True, VERSIONS_16_20_24B, 'data/SD/009-pvote-2024'), # 6bacc75
+    Model(State.SD, House.statehouse,   70,  True, VERSIONS_16_20_24B, 'data/SD/009-pvote-2024'), # 6bacc75
     Model(State.SD, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/SD/008-acs-2020'), # c82db89
     Model(State.TN, House.ushouse,       9,  True, VERSIONS_20_24B, 'data/TN/011-cvap-2023'), # d4b3c7d
     Model(State.TN, House.statesenate,  33,  True, VERSIONS_20_24B, 'data/TN/011-cvap-2023'), # d4b3c7d
