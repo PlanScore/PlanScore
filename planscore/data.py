@@ -525,7 +525,7 @@ MODELS = [
     Model(State.IA, House.statesenate,  50,  True, VERSIONS_16_20_24A, 'data/IA/008-acs-2020'), # c82db89
     Model(State.IA, House.statehouse,  100,  True, VERSIONS_16_20_24A, 'data/IA/008-acs-2020'), # c82db89
     Model(State.IA, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/IA/008-acs-2020'), # c82db89
-    Model(State.ID, House.ushouse,       2,  True, VERSIONS_16_20_24A, 'data/ID/009-cvap-2023'), # d4b3c7d
+    Model(State.ID, House.ushouse,       2,  True, VERSIONS_16_20_24B, 'data/ID/010-pvote-2024'), # 26cc51f
     Model(State.ID, House.statesenate,  35,  True, VERSIONS_16_20_24A, 'data/ID/008-acs-2020'), # c82db89
     Model(State.ID, House.statehouse,   70,  True, VERSIONS_16_20_24A, 'data/ID/008-acs-2020'), # c82db89
     Model(State.ID, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/ID/008-acs-2020'), # c82db89
