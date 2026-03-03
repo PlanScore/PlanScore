@@ -585,7 +585,7 @@ MODELS = [
     Model(State.NC, House.statesenate,  50,  True, VERSIONS_16_20_24A, 'data/NC/022-acs-2020'), # c82db89
     Model(State.NC, House.statehouse,  120,  True, VERSIONS_16_20_24A, 'data/NC/022-acs-2020'), # c82db89
     Model(State.NC, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/NC/022-acs-2020'), # c82db89
-    Model(State.ND, House.ushouse,       1,  True, VERSIONS_16_20_24A, 'data/ND/012-cvap-2023'), # d4b3c7d
+    Model(State.ND, House.ushouse,       1,  True, VERSIONS_16_20_24B, 'data/ND/013-pvote-2024'), # 3581561
     Model(State.ND, House.statesenate,  47,  True, VERSIONS_16_20_24A, 'data/ND/011-acs-2020'), # c82db89
     Model(State.ND, House.statehouse,   94,  True, VERSIONS_16_20_24A, 'data/ND/011-acs-2020'), # c82db89
     Model(State.ND, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/ND/011-acs-2020'), # c82db89
