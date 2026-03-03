@@ -596,7 +596,7 @@ MODELS = [
     Model(State.NH, House.statesenate,  24,  True, VERSIONS_16_20_24A, 'data/NH/010-acs-2020'), # c82db89
     Model(State.NH, House.statehouse,  400,  True, VERSIONS_16_20_24A, 'data/NH/010-acs-2020'), # c82db89
     Model(State.NH, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/NH/010-acs-2020'), # c82db89
-    Model(State.NJ, House.ushouse,      12,  True, VERSIONS_16_20_24A, 'data/NJ/008-cvap-2023'), # d4b3c7d
+    Model(State.NJ, House.ushouse,      12,  True, VERSIONS_16_20_24B, 'data/NJ/009-pvote-2024'), # ab04d3c
     Model(State.NJ, House.statesenate,  40,  True, VERSIONS_16_20_24A, 'data/NJ/007-acs-2020'), # c82db89
     Model(State.NJ, House.statehouse,   80,  True, VERSIONS_16_20_24A, 'data/NJ/007-acs-2020'), # c82db89
     Model(State.NJ, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/NJ/007-acs-2020'), # c82db89
