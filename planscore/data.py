@@ -620,7 +620,7 @@ MODELS = [
     Model(State.OK, House.statesenate,  48,  True, VERSIONS_16_20_24A, 'data/OK/008-acs-2020'), # c82db89
     Model(State.OK, House.statehouse,  101,  True, VERSIONS_16_20_24A, 'data/OK/008-acs-2020'), # c82db89
     Model(State.OK, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/OK/008-acs-2020'), # c82db89
-    Model(State.OR, House.ushouse,       6,  True, VERSIONS_16_20_24A, 'data/OR/009-cvap-2023'), # d4b3c7d
+    Model(State.OR, House.ushouse,       6,  True, VERSIONS_16_20_24B, 'data/OR/010-pvote-2024'), # dcd1742
     Model(State.OR, House.statesenate,  30,  True, VERSIONS_16_20_24A, 'data/OR/008-acs-2020'), # c82db89
     Model(State.OR, House.statehouse,   60,  True, VERSIONS_16_20_24A, 'data/OR/008-acs-2020'), # c82db89
     Model(State.OR, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/OR/008-acs-2020'), # c82db89
