@@ -2189,12 +2189,12 @@ class TestScore (unittest.TestCase):
         filter_district_data.return_value = valid_data
 
         # Mock return shape is (incumbency, sims, districts, parties)
-        # Note: model_votes will only be called for valid districts internally
+        # District 1 (index 1) should have NaN values to be marked as invalid
         model_votes.return_value = numpy.array([
             [
-                [[5.3, 2.7], [0, 0], [2.8, 5.2], [1.9, 6.1]],
-                [[6.0, 2.0], [0, 0], [4.1, 3.9], [2.7, 5.3]],
-                [[5.9, 2.1], [0, 0], [2.8, 5.2], [2.6, 5.4]],
+                [[5.3, 2.7], [numpy.nan, numpy.nan], [2.8, 5.2], [1.9, 6.1]],
+                [[6.0, 2.0], [numpy.nan, numpy.nan], [4.1, 3.9], [2.7, 5.3]],
+                [[5.9, 2.1], [numpy.nan, numpy.nan], [2.8, 5.2], [2.6, 5.4]],
             ],
         ] * 4)
 

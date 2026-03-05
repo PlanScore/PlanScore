@@ -234,7 +234,8 @@ class Upload:
         self.model = model
         self.status = status
         self.districts = districts or []
-        self.scenarios = scenarios or {}
+        # Preserve explicit None for scenarios when not generated (e.g., due to pre-applied swings)
+        self.scenarios = scenarios
         self.incumbents = incumbents or []
         self.vote_swings = vote_swings or []
         self.summary = summary or {}

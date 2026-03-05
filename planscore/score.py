@@ -1166,20 +1166,25 @@ def calculate_district_biases(upload):
         for model_year, pvote_year in zip(model_years, pvote_years)
     ]
 
-    scenarios = dict(
-        model_years=scenario_keys,
-        vote_swings=list(swing_range),
-        incumbents=list(INCUMBENCY.keys()),
-        districts=list(range(1, 1 + district_count)),
-        dimensions=["model_years", "vote_swings", "incumbents", "districts"],
-        statistics={
-            "Democratic Wins": vote_stats_diff[:, :, :, :, 0, 0].tolist(),
-            "Democratic Votes": vote_stats_diff[:, :, :, :, 0, 1].tolist(),
-            "Republican Votes": vote_stats_diff[:, :, :, :, 1, 1].tolist(),
-            "Democratic Votes SD": vote_stats_diff[:, :, :, :, 0, 2].tolist(),
-            "Republican Votes SD": vote_stats_diff[:, :, :, :, 1, 2].tolist(),
-        }
-    )
+    # Only generate scenarios if no per-district vote swings were applied
+    # Plans with pre-applied swings represent a specific scenario, not a baseline
+    if not upload.vote_swings or not any(s != 0 for s in upload.vote_swings):
+        scenarios = dict(
+            model_years=scenario_keys,
+            vote_swings=list(swing_range),
+            incumbents=list(INCUMBENCY.keys()),
+            districts=list(range(1, 1 + district_count)),
+            dimensions=["model_years", "vote_swings", "incumbents", "districts"],
+            statistics={
+                "Democratic Wins": vote_stats_diff[:, :, :, :, 0, 0].tolist(),
+                "Democratic Votes": vote_stats_diff[:, :, :, :, 0, 1].tolist(),
+                "Republican Votes": vote_stats_diff[:, :, :, :, 1, 1].tolist(),
+                "Democratic Votes SD": vote_stats_diff[:, :, :, :, 0, 2].tolist(),
+                "Republican Votes SD": vote_stats_diff[:, :, :, :, 1, 2].tolist(),
+            }
+        )
+    else:
+        scenarios = None
 
     # -------- Extract main chosen scenario from amongst alternatives --------
 

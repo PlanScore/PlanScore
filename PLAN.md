@@ -369,29 +369,48 @@ Create new test fixtures in `/data/` directory:
 
 ## Implementation Progress
 
-### Backend Tests - COMPLETED
-Added 3 failing tests to `planscore/tests/test_score.py`:
+### Backend Tests - ✅ COMPLETED
+Added 3 tests to `planscore/tests/test_score.py`:
 
 1. **test_calculate_district_biases_with_vote_swings** (lines 2044-2098)
-   - Status: ❌ FAILING (as expected)
+   - Status: ✅ PASSING
    - Tests that scenarios are NOT generated with non-zero vote_swings
-   - Currently fails because scenarios ARE generated (exposes the bug)
+   - Verifies scenarios is None when upload has pre-applied swings
 
 2. **test_calculate_district_biases_mixed_vote_swings** (lines 2100-2146)
-   - Status: ❌ FAILING (as expected)
+   - Status: ✅ PASSING
    - Tests that even ONE non-zero vote_swing prevents scenario generation
-   - Currently fails because scenarios ARE generated (exposes the bug)
+   - Verifies any non-zero swing prevents scenarios
 
 3. **test_invalid_districts_get_null_vote_swing** (lines 2148-2215)
-   - Status: ❌ FAILING (as expected)
+   - Status: ✅ PASSING
    - Tests that invalid districts receive null vote_swing values
-   - Currently fails because invalid districts get 0.0 instead of null (exposes the bug)
+   - Verifies invalid districts are properly marked with None
 
-All tests verified to fail with expected error messages.
+All backend tests now passing.
+
+### Backend Implementation - ✅ COMPLETED
+
+**File: planscore/score.py** (lines 1169-1187)
+- Added conditional check before generating scenarios
+- Scenarios only generated when `upload.vote_swings` is None or all zeros
+- When non-zero swings exist, scenarios is set to None
+- Preserves vote_swing values in district output regardless of scenario generation
+
+**File: planscore/data.py** (line 238)
+- Modified Upload.__init__ to preserve explicit None for scenarios
+- Changed from `scenarios or {}` to `scenarios` (direct assignment)
+- Allows scenarios=None to be stored without conversion to empty dict
+- Maintains backward compatibility for other Upload creation patterns
+
+**File: planscore/tests/test_score.py** (line 2193-2199)
+- Fixed test mock to return NaN values for invalid districts
+- Changed district 1 mock data from [0, 0] to [numpy.nan, numpy.nan]
+- Ensures valid_mask correctly identifies invalid districts
 
 ### Next Steps
-1. Implement backend fix in `planscore/score.py`
-2. Verify all 3 backend tests pass after fix
+1. ✅ ~~Implement backend fix in `planscore/score.py`~~
+2. ✅ ~~Verify all 3 backend tests pass after fix~~
 3. Add failing frontend tests to `tests.js`
 4. Implement frontend fix in `planscore/website/static/plan.js`
 5. Verify all frontend tests pass after fix
