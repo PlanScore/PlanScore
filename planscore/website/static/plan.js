@@ -1378,7 +1378,7 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
     // Show the form now that it's fully initialized
     scenario_adjustments_form.classList.remove('scenario-adjustments-hidden');
     // Only remove disabled class if scenarios are actually available for this plan
-    var availability = check_scenarios_available(plan);
+    var availability = check_scenarios_available(original_plan);
     if (availability.available) {
         scenario_adjustments_form.classList.remove('scenario-adjustments-disabled');
     }
@@ -3653,13 +3653,10 @@ function load_plan_scenarios(url, plan, scenario_adjustments_form, districts_tab
     {
         if(request.status >= 200 && request.status < 400)
         {
+            // Returns a scenarios dictionary
+            var data;
             try {
-                // Returns a scenarios dictionary
-                var data = JSON.parse(request.responseText);
-                console.log('Loaded scenarios:', data);
-                adjust_scenario_stats(data);
-                console.log('New scenarios:', data);
-                setup_scenario_interactivity(plan, data, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA);
+                data = JSON.parse(request.responseText);
             } catch (e) {
                 // Handle invalid JSON (e.g., scenarios containing NaN values)
                 console.error('Failed to parse scenarios JSON:', e);
@@ -3670,7 +3667,13 @@ function load_plan_scenarios(url, plan, scenario_adjustments_form, districts_tab
                 if (caption_el) {
                     caption_el.textContent = 'This plan did not have scenarios correctly calculated';
                 }
+                return;
             }
+
+            console.log('Loaded scenarios:', data);
+            adjust_scenario_stats(data);
+            console.log('New scenarios:', data);
+            setup_scenario_interactivity(plan, data, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA);
         }
     };
 
