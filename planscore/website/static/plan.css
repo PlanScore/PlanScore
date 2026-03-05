@@ -527,7 +527,8 @@ form.candidate-scenario,
     .all-open-seats form.candidate-scenario input[type="radio"]:checked + label { background-color: #717171 }
 
     /* Text colors */
-    #scenario-adjustments #model-year input[type="radio"] + label { color: #999 }
+    #scenario-adjustments #model-year input[type="radio"] + label,
+    #scenario-adjustments.scenario-adjustments-disabled #model-year input[type="radio"]:checked + label { color: #999 }
     #scenario-adjustments #model-year input[type="radio"]:checked + label { color: #fff }
 
     /* Default background colors */

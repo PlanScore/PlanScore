@@ -532,7 +532,10 @@ function adjust_scenario_stats(data)
                     for (var k = 0; k < data[data.dimensions[2]].length; k++) {
                         for (var s in data.statistics) {
                             var stat = data.statistics[s];
-                            stat[i][j][k] = stat[0][0][k] + stat[i][j][k];
+                            var base = stat[0][0][k];
+                            var diff = stat[i][j][k];
+                            // Handle null values from invalid districts (e.g., water districts)
+                            stat[i][j][k] = (base === null || diff === null) ? null : base + diff;
                         }
                     }
                 }
@@ -549,7 +552,10 @@ function adjust_scenario_stats(data)
                         for (var m = 0; m < data[data.dimensions[3]].length; m++) {
                             for (var s in data.statistics) {
                                 var stat = data.statistics[s];
-                                stat[i][j][k][m] = stat[0][0][0][m] + stat[i][j][k][m];
+                                var base = stat[0][0][0][m];
+                                var diff = stat[i][j][k][m];
+                                // Handle null values from invalid districts (e.g., water districts)
+                                stat[i][j][k][m] = (base === null || diff === null) ? null : base + diff;
                             }
                         }
                     }
@@ -1077,7 +1083,7 @@ function check_scenarios_available(plan)
     // Check if all districts have zero vote_swing initially
     // (Plans with pre-applied vote swings shouldn't show the interactive feature)
     for (var i = 0; i < plan.districts.length; i++) {
-        if ('vote_swing' in plan.districts[i] && plan.districts[i].vote_swing !== 0.0) {
+        if (typeof plan.districts[i].vote_swing === 'number' && plan.districts[i].vote_swing !== 0.0) {
             return { available: false, reason: 'This plan already has margin swing adjustments applied' };
         }
     }
@@ -1377,7 +1383,11 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
 
     // Show the form now that it's fully initialized
     scenario_adjustments_form.classList.remove('scenario-adjustments-hidden');
-    scenario_adjustments_form.classList.remove('scenario-adjustments-disabled');
+    // Only remove disabled class if scenarios are actually available for this plan
+    var availability = check_scenarios_available(original_plan);
+    if (availability.available) {
+        scenario_adjustments_form.classList.remove('scenario-adjustments-disabled');
+    }
 
     // Add input listener to range slider for live updates
     range_input.addEventListener('input', function(event) {
@@ -3574,12 +3584,16 @@ function load_plan_score(url, message_section, score_section,
 
         // Kick off scenario loading after table construction if available
         // This ensures the table structure exists before any populate calls from scenario callbacks
-        if (plan.scenarios !== undefined) {
+        // Check if scenarios are available for this plan BEFORE checking if scenarios field exists
+        // This prevents attempting to load scenarios for plans with pre-applied vote swings
+        var availability = check_scenarios_available(plan);
+        if (availability.available && plan.scenarios !== undefined) {
             // Add disabled class while loading scenarios
             scenario_adjustments_form.classList.add('scenario-adjustments-disabled');
 
             load_plan_scenarios(geom_prefix + plan.scenarios.replace(/^\//, ''), plan, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA);
         }
+        // If not available, update_form_visibility already handled showing the disabled message
 
         if (!waiting_for_scenarios) {
             populate_efficiency_gap_score(plan, score_EG);
@@ -3646,7 +3660,22 @@ function load_plan_scenarios(url, plan, scenario_adjustments_form, districts_tab
         if(request.status >= 200 && request.status < 400)
         {
             // Returns a scenarios dictionary
-            var data = JSON.parse(request.responseText);
+            var data;
+            try {
+                data = JSON.parse(request.responseText);
+            } catch (e) {
+                // Handle invalid JSON (e.g., scenarios containing NaN values)
+                console.error('Failed to parse scenarios JSON:', e);
+                // Show the form in disabled state with error message
+                scenario_adjustments_form.classList.remove('scenario-adjustments-hidden');
+                scenario_adjustments_form.classList.add('scenario-adjustments-disabled');
+                var caption_el = scenario_adjustments_form.querySelector('.caption');
+                if (caption_el) {
+                    caption_el.textContent = 'This plan did not have scenarios correctly calculated';
+                }
+                return;
+            }
+
             console.log('Loaded scenarios:', data);
             adjust_scenario_stats(data);
             console.log('New scenarios:', data);
@@ -3973,6 +4002,7 @@ if(typeof module !== 'undefined' && module.exports)
         calculate_positives,
         percentrank_abs,
         percentrank_rel,
+        check_scenarios_available,
         SHY_COLUMN,
     };
 }

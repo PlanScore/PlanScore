@@ -2040,3 +2040,176 @@ class TestScore (unittest.TestCase):
         self.assertEqual(len(dem_votes[0]), 25)  # 25 vote swings
         self.assertEqual(len(dem_votes[0][0]), 4)  # 4 incumbency scenarios
         self.assertEqual(len(dem_votes[0][0][0]), 4)  # 4 districts
+
+    @unittest.mock.patch('planscore.score.percentrank_rel')
+    @unittest.mock.patch('planscore.score.percentrank_abs')
+    @unittest.mock.patch('planscore.score.vectorized_D2_diff')
+    @unittest.mock.patch('planscore.score.vectorized_D2')
+    @unittest.mock.patch('planscore.score.vectorized_MMD')
+    @unittest.mock.patch('planscore.score.vectorized_PB')
+    @unittest.mock.patch('planscore.score.vectorized_EG')
+    @unittest.mock.patch('planscore.matrix.model_votes')
+    @unittest.mock.patch('planscore.matrix.filter_district_data')
+    def test_calculate_district_biases_with_vote_swings(self, filter_district_data, model_votes, vectorized_EG, vectorized_PB, vectorized_MMD, vectorized_D2, vectorized_D2_diff, percentrank_abs, percentrank_rel):
+        ''' Scenarios should NOT be generated when upload has non-zero vote_swings
+        '''
+        input = data.Upload(id=None, key=None,
+            model=data.Model(data.State.XX, data.House.ushouse, 4, False, ['2025A'], None),
+            model_version='2025A',
+            districts=[
+                dict(totals={'US President 2020 - REP': 2, 'US President 2020 - DEM': 6}, tile=None),
+                dict(totals={'US President 2020 - REP': 3, 'US President 2020 - DEM': 5}, tile=None),
+                dict(totals={'US President 2020 - REP': 5, 'US President 2020 - DEM': 3}, tile=None),
+                dict(totals={'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
+            ],
+            incumbents=['D', 'R', 'O', 'D'],
+            vote_swings=[0.05, 0.08, 0.07, 0.05],  # Non-zero vote swings
+        )
+
+        percentrank_rel.return_value = 0
+        percentrank_abs.return_value = 0
+        vectorized_D2.return_value = numpy.array([0, 0, 0])
+        vectorized_D2_diff.return_value = numpy.array([0, 0, 0])
+        vectorized_MMD.return_value = numpy.array([0, 0, 0])
+        vectorized_PB.return_value = numpy.array([0, 0, 0])
+        vectorized_EG.return_value = numpy.array([[0, 0, 0]] * 25)
+
+        # Mock return shape is (incumbency, sims, districts, parties)
+        model_votes.return_value = numpy.array([
+            [
+                [[5.3, 2.7], [3.9, 4.1], [2.8, 5.2], [1.9, 6.1]],
+                [[6.0, 2.0], [5.7, 2.3], [4.1, 3.9], [2.7, 5.3]],
+                [[5.9, 2.1], [5.1, 2.9], [2.8, 5.2], [2.6, 5.4]],
+            ],
+        ] * 4)
+
+        output = score.calculate_everything(input)
+
+        # Scenarios should NOT be generated for plans with pre-applied swings
+        self.assertIsNone(output.scenarios, "Scenarios should not be generated for plans with pre-applied swings")
+
+        # vote_swing values should be preserved in districts
+        self.assertEqual(output.districts[0]['vote_swing'], 0.05, "vote_swing values should be preserved in districts")
+        self.assertEqual(output.districts[1]['vote_swing'], 0.08)
+        self.assertEqual(output.districts[2]['vote_swing'], 0.07)
+        self.assertEqual(output.districts[3]['vote_swing'], 0.05)
+
+        # District totals should still be calculated
+        self.assertIn('Democratic Votes', output.districts[0]['totals'], "District totals should still be calculated")
+
+    @unittest.mock.patch('planscore.score.percentrank_rel')
+    @unittest.mock.patch('planscore.score.percentrank_abs')
+    @unittest.mock.patch('planscore.score.vectorized_D2_diff')
+    @unittest.mock.patch('planscore.score.vectorized_D2')
+    @unittest.mock.patch('planscore.score.vectorized_MMD')
+    @unittest.mock.patch('planscore.score.vectorized_PB')
+    @unittest.mock.patch('planscore.score.vectorized_EG')
+    @unittest.mock.patch('planscore.matrix.model_votes')
+    @unittest.mock.patch('planscore.matrix.filter_district_data')
+    def test_calculate_district_biases_mixed_vote_swings(self, filter_district_data, model_votes, vectorized_EG, vectorized_PB, vectorized_MMD, vectorized_D2, vectorized_D2_diff, percentrank_abs, percentrank_rel):
+        ''' Even one non-zero vote_swing should prevent scenario generation
+        '''
+        input = data.Upload(id=None, key=None,
+            model=data.Model(data.State.XX, data.House.ushouse, 4, False, ['2025A'], None),
+            model_version='2025A',
+            districts=[
+                dict(totals={'US President 2020 - REP': 2, 'US President 2020 - DEM': 6}, tile=None),
+                dict(totals={'US President 2020 - REP': 3, 'US President 2020 - DEM': 5}, tile=None),
+                dict(totals={'US President 2020 - REP': 5, 'US President 2020 - DEM': 3}, tile=None),
+                dict(totals={'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
+            ],
+            incumbents=['D', 'R', 'O', 'D'],
+            vote_swings=[0.0, 0.01, 0.0, 0.0],  # Only one non-zero
+        )
+
+        percentrank_rel.return_value = 0
+        percentrank_abs.return_value = 0
+        vectorized_D2.return_value = numpy.array([0, 0, 0])
+        vectorized_D2_diff.return_value = numpy.array([0, 0, 0])
+        vectorized_MMD.return_value = numpy.array([0, 0, 0])
+        vectorized_PB.return_value = numpy.array([0, 0, 0])
+        vectorized_EG.return_value = numpy.array([[0, 0, 0]] * 25)
+
+        # Mock return shape is (incumbency, sims, districts, parties)
+        model_votes.return_value = numpy.array([
+            [
+                [[5.3, 2.7], [3.9, 4.1], [2.8, 5.2], [1.9, 6.1]],
+                [[6.0, 2.0], [5.7, 2.3], [4.1, 3.9], [2.7, 5.3]],
+                [[5.9, 2.1], [5.1, 2.9], [2.8, 5.2], [2.6, 5.4]],
+            ],
+        ] * 4)
+
+        output = score.calculate_everything(input)
+
+        # Even one non-zero vote_swing should prevent scenario generation
+        self.assertIsNone(output.scenarios, "Even one non-zero vote_swing should prevent scenario generation")
+        self.assertEqual(output.districts[1]['vote_swing'], 0.01)
+
+    @unittest.mock.patch('planscore.score.percentrank_rel')
+    @unittest.mock.patch('planscore.score.percentrank_abs')
+    @unittest.mock.patch('planscore.score.vectorized_D2_diff')
+    @unittest.mock.patch('planscore.score.vectorized_D2')
+    @unittest.mock.patch('planscore.score.vectorized_MMD')
+    @unittest.mock.patch('planscore.score.vectorized_PB')
+    @unittest.mock.patch('planscore.score.vectorized_EG')
+    @unittest.mock.patch('planscore.matrix.model_votes')
+    @unittest.mock.patch('planscore.matrix.filter_district_data')
+    def test_invalid_districts_get_null_vote_swing(self, filter_district_data, model_votes, vectorized_EG, vectorized_PB, vectorized_MMD, vectorized_D2, vectorized_D2_diff, percentrank_abs, percentrank_rel):
+        ''' Invalid districts should receive null vote_swing values
+        '''
+        input = data.Upload(id=None, key=None,
+            model=data.Model(data.State.XX, data.House.ushouse, 4, False, ['2025A'], None),
+            model_version='2025A',
+            districts=[
+                dict(totals={'US President 2020 - REP': 2, 'US President 2020 - DEM': 6}, tile=None),
+                dict(totals={'US President 2020 - REP': 0, 'US President 2020 - DEM': 0}, tile=None),  # Invalid district
+                dict(totals={'US President 2020 - REP': 5, 'US President 2020 - DEM': 3}, tile=None),
+                dict(totals={'US President 2020 - REP': 6, 'US President 2020 - DEM': 2}, tile=None),
+            ],
+            incumbents=['D', 'R', 'O', 'D'],
+            vote_swings=None,
+        )
+
+        percentrank_rel.return_value = 0
+        percentrank_abs.return_value = 0
+        vectorized_D2.return_value = numpy.array([0, 0, 0])
+        vectorized_D2_diff.return_value = numpy.array([0, 0, 0])
+        vectorized_MMD.return_value = numpy.array([0, 0, 0])
+        vectorized_PB.return_value = numpy.array([0, 0, 0])
+        vectorized_EG.return_value = numpy.array([[0, 0, 0]] * 25)
+
+        # Mock filter_district_data to mark district 1 as invalid
+        # Return shape is (districts, elections, parties)
+        valid_data = numpy.array([
+            [[6, 2], [0, 0], [0, 0]],  # District 0: valid
+            [[0, 0], [0, 0], [0, 0]],  # District 1: invalid (all zeros)
+            [[3, 5], [0, 0], [0, 0]],  # District 2: valid
+            [[2, 6], [0, 0], [0, 0]],  # District 3: valid
+        ])
+        filter_district_data.return_value = valid_data
+
+        # Mock return shape is (incumbency, sims, districts, parties)
+        # District 1 (index 1) should have NaN values to be marked as invalid
+        model_votes.return_value = numpy.array([
+            [
+                [[5.3, 2.7], [numpy.nan, numpy.nan], [2.8, 5.2], [1.9, 6.1]],
+                [[6.0, 2.0], [numpy.nan, numpy.nan], [4.1, 3.9], [2.7, 5.3]],
+                [[5.9, 2.1], [numpy.nan, numpy.nan], [2.8, 5.2], [2.6, 5.4]],
+            ],
+        ] * 4)
+
+        output = score.calculate_everything(input)
+
+        # Valid districts should have numeric vote_swing
+        self.assertIsNotNone(output.districts[0]['vote_swing'], "Valid districts should have numeric vote_swing")
+        self.assertEqual(output.districts[0]['vote_swing'], 0.0)
+
+        # Invalid district should have null vote_swing
+        self.assertIsNone(output.districts[1]['vote_swing'], "Invalid districts should have null vote_swing")
+        self.assertFalse(output.districts[1]['is_counted'])
+
+        # Other valid districts should have numeric vote_swing
+        self.assertIsNotNone(output.districts[2]['vote_swing'], "Valid districts should have numeric vote_swing")
+        self.assertEqual(output.districts[2]['vote_swing'], 0.0)
+        self.assertIsNotNone(output.districts[3]['vote_swing'], "Valid districts should have numeric vote_swing")
+        self.assertEqual(output.districts[3]['vote_swing'], 0.0)
