@@ -2,11 +2,13 @@
 
 ## Problem Summary
 
-Three related bugs are preventing correct scenario functionality:
+Four related bugs are preventing correct scenario functionality:
 
-1. **Backend Issue**: Plans uploaded with pre-applied per-district vote swings incorrectly generate scenarios with those swings already baked into the scenario data.
-2. **Frontend Issue #1**: Plans with `null` vote_swing values in invalid districts are incorrectly flagged as having "margin swing adjustments applied", preventing scenario controls from displaying.
-3. **Frontend Issue #2**: Plans with pre-applied swings that also have scenarios data (from backend bug #1) show the correct warning message but fail to keep the form disabled, allowing users to interact with invalid scenario controls.
+1. **Backend Issue #1**: Plans uploaded with pre-applied per-district vote swings incorrectly generate scenarios with those swings already baked into the scenario data.
+2. **Backend Issue #2**: Plans with invalid districts generate scenarios containing NaN values, which are serialized as the literal string "NaN" (invalid JSON), causing parse errors in the frontend.
+3. **Frontend Issue #1**: Plans with `null` vote_swing values in invalid districts are incorrectly flagged as having "margin swing adjustments applied", preventing scenario controls from displaying.
+4. **Frontend Issue #2**: Plans with pre-applied swings that also have scenarios data (from backend bug #1) show the correct warning message but fail to keep the form disabled, allowing users to interact with invalid scenario controls.
+5. **Frontend Issue #3**: Plans with invalid scenarios JSON (containing NaN values) cause uncaught parse errors, preventing the scenario form from being displayed at all.
 
 ## Affected Plans
 
@@ -16,10 +18,13 @@ Three related bugs are preventing correct scenario functionality:
   - Frontend correctly shows "This plan already has margin swing adjustments applied"
   - **BUG**: Form is NOT disabled - class `scenario-adjustments-disabled` is not applied to form#scenario-adjustments
 
-- **Plan with null swings**: https://planscore.org/plan.html?20260305T181521.750964899Z
-  - Has vote_swing: 0.0 for valid districts, null for invalid districts
-  - Backend correctly generated scenarios
-  - Frontend incorrectly shows "This plan already has margin swing adjustments applied" due to null check bug
+- **Plan with null swings and NaN in scenarios**: https://planscore.org/plan.html?20260305T181521.750964899Z
+  - Has vote_swing: 0.0 for valid districts, null for invalid districts (district 139)
+  - Backend generated scenarios but included NaN values for invalid districts
+  - scenarios.json contains 48 instances of literal "NaN" string (invalid JSON)
+  - **BUG**: Frontend throws "SyntaxError: JSON Parse error: Unexpected identifier 'NaN'" at plan.js:3653
+  - **BUG**: Scenario form never appears due to uncaught parse error
+  - Frontend incorrectly shows "This plan already has margin swing adjustments applied" due to null check bug (before the parse error was fixed)
 
 ## Root Cause Analysis
 
@@ -75,6 +80,36 @@ scenario_adjustments_form.classList.remove('scenario-adjustments-disabled');
 5. Line 1380: Unconditionally removes `scenario-adjustments-disabled` class
 
 **Expected**: `setup_scenario_interactivity()` should not remove the disabled class if scenarios are not actually available for this plan (i.e., if the plan has pre-applied vote swings).
+
+### Backend Issue #2 (score.py and observe.py - NaN serialization)
+
+In `calculate_district_biases()` (lines 1179-1183) and `put_upload_index()` (line 39):
+
+1. Lines 1179-1183: Converts numpy arrays to Python lists via `.tolist()`
+2. Invalid districts have NaN values in vote_stats arrays (from insufficient data)
+3. `.tolist()` converts numpy NaN to Python `float('nan')`
+4. Line 39 (observe.py): `json.dumps(upload.scenarios)` serializes the scenarios dict
+5. Python's json module (with default `allow_nan=True`) writes `float('nan')` as literal string "NaN"
+
+**Problem**: The literal string "NaN" is not valid JSON per RFC 8259. While JavaScript allows it, strict JSON parsers (including JavaScript's JSON.parse()) will throw a SyntaxError. Plans with invalid districts (e.g., district 139 in plan 20260305T181521.750964899Z) end up with 48+ NaN values in scenarios.json.
+
+**Expected**: Either:
+- Filter out invalid districts from scenarios entirely, OR
+- Replace NaN values with `None` (serializes to JSON `null`) before calling json.dumps(), OR
+- Use a custom JSON encoder that handles NaN values
+
+### Frontend Issue #3 (plan.js - load_plan_scenarios)
+
+In `load_plan_scenarios()` (line 3653):
+
+Line 3653 directly parses the response:
+```javascript
+var data = JSON.parse(request.responseText);
+```
+
+**Problem**: When scenarios.json contains literal "NaN" strings (from Backend Issue #2), JSON.parse() throws a SyntaxError. This uncaught error prevents the scenario form from being displayed at all, leaving users with no feedback about why scenarios aren't working.
+
+**Expected**: Catch parse errors and display the scenario form in a disabled state with an appropriate error message.
 
 ## Proposed Solution
 
@@ -150,6 +185,40 @@ if (availability.available) {
 
 This ensures the form stays disabled when the plan has pre-applied vote swings, even if scenarios data exists (from backend bug #1).
 
+### Frontend Fix #3 (planscore/website/static/plan.js - load_plan_scenarios)
+
+Line 3653, wrap JSON.parse() in try-catch and handle parse errors:
+
+```javascript
+// Change from:
+var data = JSON.parse(request.responseText);
+console.log('Loaded scenarios:', data);
+adjust_scenario_stats(data);
+console.log('New scenarios:', data);
+setup_scenario_interactivity(plan, data, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA);
+
+// To:
+try {
+    var data = JSON.parse(request.responseText);
+    console.log('Loaded scenarios:', data);
+    adjust_scenario_stats(data);
+    console.log('New scenarios:', data);
+    setup_scenario_interactivity(plan, data, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA);
+} catch (e) {
+    // Handle invalid JSON (e.g., scenarios containing NaN values)
+    console.error('Failed to parse scenarios JSON:', e);
+    // Show the form in disabled state with error message
+    scenario_adjustments_form.classList.remove('scenario-adjustments-hidden');
+    scenario_adjustments_form.classList.add('scenario-adjustments-disabled');
+    var caption_el = scenario_adjustments_form.querySelector('.caption');
+    if (caption_el) {
+        caption_el.textContent = 'This plan did not have scenarios correctly calculated';
+    }
+}
+```
+
+This ensures that when scenarios.json contains invalid JSON (like NaN values), the user sees a clear error message instead of a blank page with console errors.
+
 ## Expected Outcomes
 
 After applying all three fixes:
@@ -171,6 +240,13 @@ After applying all three fixes:
    - Backend: No scenarios generated (no presidential votes to model)
    - Frontend: Shows "PlanScore did not calculate alternative outcomes for this plan"
    - Frontend: Scenario controls disabled
+
+4. **Plans with invalid scenarios (containing NaN)**:
+   - Backend: With Backend Fix #2: Invalid districts filtered out or NaN replaced with null
+   - Frontend: With Frontend Fix #3: JSON parse errors caught gracefully
+   - Frontend: Shows "This plan did not have scenarios correctly calculated"
+   - Frontend: Form displayed with `scenario-adjustments-disabled` class
+   - Frontend: User sees clear error message instead of blank page with console errors
 
 ## Testing Plan
 
@@ -506,15 +582,39 @@ All frontend tests now passing for issue #1.
 - This prevents the form from being incorrectly enabled when plans have pre-applied swings but also have scenarios data (from backend bug #1)
 - All tests still pass after this change
 
+### Frontend Implementation #3 - ✅ COMPLETED
+
+**File: planscore/website/static/plan.js** (lines 3652-3669 in `load_plan_scenarios`)
+- Wrapped `JSON.parse()` in try-catch block to handle invalid JSON
+- Catches parse errors (e.g., scenarios containing literal "NaN" strings)
+- On error, displays form in disabled state with class `scenario-adjustments-disabled`
+- Shows error message "This plan did not have scenarios correctly calculated"
+- Logs error to console for debugging
+- All tests still pass after this change
+
+### Frontend Implementation #4 - ✅ COMPLETED
+
+**File: planscore/website/static/plan.js** (lines 3581-3590 in main plan loading)
+- Added check for scenario availability BEFORE checking if `plan.scenarios` field exists
+- Prevents attempting to load scenarios.json when plan has pre-applied vote swings
+- Fixes regression where plans with pre-applied swings would attempt to load scenarios
+- Now correctly shows "This plan already has margin swing adjustments applied" instead of attempting to load scenarios and showing parse error message
+- This ensures the proper message is displayed based on the actual reason scenarios are unavailable
+
 ### Next Steps
-1. ✅ ~~Implement backend fix in `planscore/score.py`~~
+1. ✅ ~~Implement backend fix #1 in `planscore/score.py`~~
 2. ✅ ~~Verify all 3 backend tests pass after fix~~
 3. ✅ ~~Add failing frontend tests to `tests.js`~~
 4. ✅ ~~Implement frontend fix #1 in `planscore/website/static/plan.js`~~
 5. ✅ ~~Verify all frontend tests pass after fix~~
 6. ✅ ~~Implement frontend fix #2 in `planscore/website/static/plan.js`~~
-7. ⏳ **Deploy and test fix #2 with plan 20260305T180634.417430779Z** - After deployment, verify that `form#scenario-adjustments` has class `scenario-adjustments-disabled` applied
-8. ⏳ **Commit all changes**
+7. ✅ ~~Implement frontend fix #3 for NaN parse error handling~~
+8. ✅ ~~Implement frontend fix #4 to prevent loading scenarios with pre-applied swings~~
+9. ⏳ **Deploy and test fixes** - After deployment:
+   - Verify plan 20260305T180634.417430779Z shows "This plan already has margin swing adjustments applied" (not parse error)
+   - Verify plan 20260305T181521.750964899Z shows "This plan did not have scenarios correctly calculated" (NaN parse error handled)
+   - After backend fix deployed, verify new plans don't generate NaN in scenarios
+10. ⏳ **Commit all changes**
 
 ## Implementation Notes
 

@@ -3578,12 +3578,16 @@ function load_plan_score(url, message_section, score_section,
 
         // Kick off scenario loading after table construction if available
         // This ensures the table structure exists before any populate calls from scenario callbacks
-        if (plan.scenarios !== undefined) {
+        // Check if scenarios are available for this plan BEFORE checking if scenarios field exists
+        // This prevents attempting to load scenarios for plans with pre-applied vote swings
+        var availability = check_scenarios_available(plan);
+        if (availability.available && plan.scenarios !== undefined) {
             // Add disabled class while loading scenarios
             scenario_adjustments_form.classList.add('scenario-adjustments-disabled');
 
             load_plan_scenarios(geom_prefix + plan.scenarios.replace(/^\//, ''), plan, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA);
         }
+        // If not available, update_form_visibility already handled showing the disabled message
 
         if (!waiting_for_scenarios) {
             populate_efficiency_gap_score(plan, score_EG);
@@ -3649,12 +3653,24 @@ function load_plan_scenarios(url, plan, scenario_adjustments_form, districts_tab
     {
         if(request.status >= 200 && request.status < 400)
         {
-            // Returns a scenarios dictionary
-            var data = JSON.parse(request.responseText);
-            console.log('Loaded scenarios:', data);
-            adjust_scenario_stats(data);
-            console.log('New scenarios:', data);
-            setup_scenario_interactivity(plan, data, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA);
+            try {
+                // Returns a scenarios dictionary
+                var data = JSON.parse(request.responseText);
+                console.log('Loaded scenarios:', data);
+                adjust_scenario_stats(data);
+                console.log('New scenarios:', data);
+                setup_scenario_interactivity(plan, data, scenario_adjustments_form, districts_table, map_div, metrics_table, score_EG, score_sense, score_PB, score_MM, score_DEC2, scores_FTVA);
+            } catch (e) {
+                // Handle invalid JSON (e.g., scenarios containing NaN values)
+                console.error('Failed to parse scenarios JSON:', e);
+                // Show the form in disabled state with error message
+                scenario_adjustments_form.classList.remove('scenario-adjustments-hidden');
+                scenario_adjustments_form.classList.add('scenario-adjustments-disabled');
+                var caption_el = scenario_adjustments_form.querySelector('.caption');
+                if (caption_el) {
+                    caption_el.textContent = 'This plan did not have scenarios correctly calculated';
+                }
+            }
         }
     };
 
