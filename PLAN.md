@@ -367,6 +367,35 @@ Create new test fixtures in `/data/` directory:
 - Already exists as `sample-MS-zero-vote-swings/`
 - Verify it has scenarios.json and all valid districts have `vote_swing: 0.0`
 
+## Implementation Progress
+
+### Backend Tests - COMPLETED
+Added 3 failing tests to `planscore/tests/test_score.py`:
+
+1. **test_calculate_district_biases_with_vote_swings** (lines 2044-2098)
+   - Status: ❌ FAILING (as expected)
+   - Tests that scenarios are NOT generated with non-zero vote_swings
+   - Currently fails because scenarios ARE generated (exposes the bug)
+
+2. **test_calculate_district_biases_mixed_vote_swings** (lines 2100-2146)
+   - Status: ❌ FAILING (as expected)
+   - Tests that even ONE non-zero vote_swing prevents scenario generation
+   - Currently fails because scenarios ARE generated (exposes the bug)
+
+3. **test_invalid_districts_get_null_vote_swing** (lines 2148-2215)
+   - Status: ❌ FAILING (as expected)
+   - Tests that invalid districts receive null vote_swing values
+   - Currently fails because invalid districts get 0.0 instead of null (exposes the bug)
+
+All tests verified to fail with expected error messages.
+
+### Next Steps
+1. Implement backend fix in `planscore/score.py`
+2. Verify all 3 backend tests pass after fix
+3. Add failing frontend tests to `tests.js`
+4. Implement frontend fix in `planscore/website/static/plan.js`
+5. Verify all frontend tests pass after fix
+
 ## Implementation Notes
 
 - Both fixes are independent and can be applied separately
