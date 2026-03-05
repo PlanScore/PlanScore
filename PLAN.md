@@ -2,10 +2,11 @@
 
 ## Problem Summary
 
-Two related bugs are preventing correct scenario functionality:
+Three related bugs are preventing correct scenario functionality:
 
 1. **Backend Issue**: Plans uploaded with pre-applied per-district vote swings incorrectly generate scenarios with those swings already baked into the scenario data.
-2. **Frontend Issue**: Plans with `null` vote_swing values in invalid districts are incorrectly flagged as having "margin swing adjustments applied", preventing scenario controls from displaying.
+2. **Frontend Issue #1**: Plans with `null` vote_swing values in invalid districts are incorrectly flagged as having "margin swing adjustments applied", preventing scenario controls from displaying.
+3. **Frontend Issue #2**: Plans with pre-applied swings that also have scenarios data (from backend bug #1) show the correct warning message but fail to keep the form disabled, allowing users to interact with invalid scenario controls.
 
 ## Affected Plans
 
@@ -13,6 +14,7 @@ Two related bugs are preventing correct scenario functionality:
   - Has non-zero vote_swing values (-0.029 to -0.056)
   - Backend incorrectly generated scenarios with swings baked in
   - Frontend correctly shows "This plan already has margin swing adjustments applied"
+  - **BUG**: Form is NOT disabled - class `scenario-adjustments-disabled` is not applied to form#scenario-adjustments
 
 - **Plan with null swings**: https://planscore.org/plan.html?20260305T181521.750964899Z
   - Has vote_swing: 0.0 for valid districts, null for invalid districts
@@ -37,7 +39,7 @@ In `calculate_district_biases()` (line 1071-1288):
 - Interactive scenario exploration doesn't make sense with pre-applied swings
 - The frontend correctly disables scenario controls when it detects pre-applied swings
 
-### Frontend Issue (plan.js)
+### Frontend Issue #1 (plan.js - check_scenarios_available)
 
 In `check_scenarios_available()` (line 1067-1086):
 
@@ -51,6 +53,28 @@ if ('vote_swing' in plan.districts[i] && plan.districts[i].vote_swing !== 0.0) {
 **Problem**: Invalid districts have `vote_swing: null` (set in score.py:1231). In JavaScript, `null !== 0.0` evaluates to `true`, causing the function to incorrectly return false for plans where all *valid* districts have zero swings.
 
 **Expected**: The check should only consider numeric vote_swing values.
+
+### Frontend Issue #2 (plan.js - setup_scenario_interactivity)
+
+In `setup_scenario_interactivity()` (line 1380):
+
+Line 1380 unconditionally removes the disabled class:
+```javascript
+// Show the form now that it's fully initialized
+scenario_adjustments_form.classList.remove('scenario-adjustments-hidden');
+scenario_adjustments_form.classList.remove('scenario-adjustments-disabled');
+```
+
+**Problem**: This function is called from `load_plan_scenarios()` which is triggered whenever `plan.scenarios` exists (line 3577-3581). Due to backend bug #1, plans with pre-applied vote swings may have scenarios data, causing this code path to execute. The function unconditionally removes the `scenario-adjustments-disabled` class that was correctly added by `update_form_visibility()` at line 1097.
+
+**Call sequence**:
+1. Line 1091: `update_form_visibility()` calls `check_scenarios_available()`
+2. Line 1094-1097: Correctly adds `scenario-adjustments-disabled` class when scenarios aren't available
+3. Line 3577: If `plan.scenarios !== undefined`, calls `load_plan_scenarios()`
+4. Line 3653: `load_plan_scenarios()` calls `setup_scenario_interactivity()`
+5. Line 1380: Unconditionally removes `scenario-adjustments-disabled` class
+
+**Expected**: `setup_scenario_interactivity()` should not remove the disabled class if scenarios are not actually available for this plan (i.e., if the plan has pre-applied vote swings).
 
 ## Proposed Solution
 
@@ -90,7 +114,7 @@ return upload.clone(
 )
 ```
 
-### Frontend Fix (planscore/website/static/plan.js)
+### Frontend Fix #1 (planscore/website/static/plan.js - check_scenarios_available)
 
 Line 1080, add type check before comparison:
 
@@ -104,15 +128,38 @@ if (typeof plan.districts[i].vote_swing === 'number' && plan.districts[i].vote_s
 
 This ensures only numeric vote_swing values are checked, ignoring null values from invalid districts.
 
+### Frontend Fix #2 (planscore/website/static/plan.js - setup_scenario_interactivity)
+
+Line 1380, conditionally remove the disabled class only if scenarios are actually available:
+
+```javascript
+// Change from:
+// Show the form now that it's fully initialized
+scenario_adjustments_form.classList.remove('scenario-adjustments-hidden');
+scenario_adjustments_form.classList.remove('scenario-adjustments-disabled');
+
+// To:
+// Show the form now that it's fully initialized
+scenario_adjustments_form.classList.remove('scenario-adjustments-hidden');
+// Only remove disabled class if scenarios are actually available for this plan
+var availability = check_scenarios_available(plan);
+if (availability.available) {
+    scenario_adjustments_form.classList.remove('scenario-adjustments-disabled');
+}
+```
+
+This ensures the form stays disabled when the plan has pre-applied vote swings, even if scenarios data exists (from backend bug #1).
+
 ## Expected Outcomes
 
-After applying both fixes:
+After applying all three fixes:
 
 1. **Plans with non-zero pre-applied vote swings**:
    - Backend: No scenarios generated (scenarios = None)
    - Frontend: Shows "This plan already has margin swing adjustments applied"
    - Frontend: Displays Margin Swing column in districts table
-   - Frontend: Scenario controls disabled
+   - Frontend: Scenario controls disabled (class `scenario-adjustments-disabled` applied and retained)
+   - Frontend: Form remains disabled even if old scenarios data exists from before backend fix
 
 2. **Plans with zero swings (or no swings)**:
    - Backend: Scenarios generated normally
@@ -439,7 +486,7 @@ Added 5 tests to `tests.js` to verify correct scenario availability behavior:
 
 **Export Update**: Added `check_scenarios_available` to plan.js module.exports (line 3976) to enable testing.
 
-### Frontend Implementation - ✅ COMPLETED
+### Frontend Implementation #1 - ✅ COMPLETED
 
 **File: planscore/website/static/plan.js** (line 1080)
 - Added type check before comparing vote_swing to 0.0
@@ -448,21 +495,34 @@ Added 5 tests to `tests.js` to verify correct scenario availability behavior:
 - Only numeric vote_swing values are now checked, null values are ignored
 - Invalid districts with null vote_swing no longer incorrectly block scenarios
 
-All frontend tests now passing.
+All frontend tests now passing for issue #1.
+
+### Frontend Implementation #2 - ✅ COMPLETED
+
+**File: planscore/website/static/plan.js** (lines 1380-1384 in `setup_scenario_interactivity`)
+- Added conditional check before removing `scenario-adjustments-disabled` class
+- Calls `check_scenarios_available(plan)` to verify scenarios are actually available
+- Only removes disabled class if `availability.available === true`
+- This prevents the form from being incorrectly enabled when plans have pre-applied swings but also have scenarios data (from backend bug #1)
+- All tests still pass after this change
 
 ### Next Steps
 1. ✅ ~~Implement backend fix in `planscore/score.py`~~
 2. ✅ ~~Verify all 3 backend tests pass after fix~~
 3. ✅ ~~Add failing frontend tests to `tests.js`~~
-4. ✅ ~~Implement frontend fix in `planscore/website/static/plan.js`~~
+4. ✅ ~~Implement frontend fix #1 in `planscore/website/static/plan.js`~~
 5. ✅ ~~Verify all frontend tests pass after fix~~
-6. ✅ **ALL FIXES COMPLETED** - Both backend and frontend bugs have been fixed
+6. ✅ ~~Implement frontend fix #2 in `planscore/website/static/plan.js`~~
+7. ⏳ **Deploy and test fix #2 with plan 20260305T180634.417430779Z** - After deployment, verify that `form#scenario-adjustments` has class `scenario-adjustments-disabled` applied
+8. ⏳ **Commit all changes**
 
 ## Implementation Notes
 
-- Both fixes are independent and can be applied separately
-- Frontend fix is simpler and lower risk - consider deploying first
+- All three fixes are independent and can be applied separately
+- Frontend fixes #1 and #2 are simpler and lower risk - can be deployed immediately
+- Frontend fix #2 is especially important for existing plans that have both pre-applied swings AND scenarios data (from backend bug #1)
 - Backend fix requires regenerating plans with pre-applied swings to get correct scenario data
 - Existing plans with incorrect scenario data will need to be re-scored after backend fix
+- Once backend fix is deployed, frontend fix #2 will still be necessary for backward compatibility with old plans
 - All new tests should be added to existing test files (`test_score.py` and `tests.js`)
 - Test fixtures should follow existing naming conventions in `/data/` directory

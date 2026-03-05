@@ -1377,7 +1377,11 @@ function setup_scenario_interactivity(original_plan, scenarios, scenario_adjustm
 
     // Show the form now that it's fully initialized
     scenario_adjustments_form.classList.remove('scenario-adjustments-hidden');
-    scenario_adjustments_form.classList.remove('scenario-adjustments-disabled');
+    // Only remove disabled class if scenarios are actually available for this plan
+    var availability = check_scenarios_available(plan);
+    if (availability.available) {
+        scenario_adjustments_form.classList.remove('scenario-adjustments-disabled');
+    }
 
     // Add input listener to range slider for live updates
     range_input.addEventListener('input', function(event) {
