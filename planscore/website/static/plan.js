@@ -1077,7 +1077,7 @@ function check_scenarios_available(plan)
     // Check if all districts have zero vote_swing initially
     // (Plans with pre-applied vote swings shouldn't show the interactive feature)
     for (var i = 0; i < plan.districts.length; i++) {
-        if ('vote_swing' in plan.districts[i] && plan.districts[i].vote_swing !== 0.0) {
+        if (typeof plan.districts[i].vote_swing === 'number' && plan.districts[i].vote_swing !== 0.0) {
             return { available: false, reason: 'This plan already has margin swing adjustments applied' };
         }
     }

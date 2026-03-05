@@ -408,30 +408,55 @@ All backend tests now passing.
 - Changed district 1 mock data from [0, 0] to [numpy.nan, numpy.nan]
 - Ensures valid_mask correctly identifies invalid districts
 
-### Frontend Tests - ✅ COMPLETED (Tests added and failing as expected)
+### Frontend Tests - ✅ COMPLETED
 
-Added 2 failing tests to `tests.js` that demonstrate the bug:
+Added 5 tests to `tests.js` to verify correct scenario availability behavior:
 
 1. **test_check_scenarios_available_with_null_vote_swings** (lines 1256-1270)
-   - Status: ❌ FAILING (demonstrates the bug)
+   - Status: ✅ PASSING
    - Tests that null vote_swing values should not prevent scenario availability
-   - Currently fails because `null !== 0.0` is true in JavaScript
-   - The bug: Invalid districts have `vote_swing: null` but the check treats null as non-zero
+   - Verifies invalid districts with null swings don't block scenarios
 
 2. **test_check_scenarios_available_mixed_null_and_zero** (lines 1272-1286)
-   - Status: ❌ FAILING (demonstrates the bug)
+   - Status: ✅ PASSING
    - Tests that mix of null and 0.0 values should allow scenario availability
-   - Currently fails because null values are incorrectly treated as non-zero
-   - The bug: When some districts have 0.0 and others have null, scenarios should still be available
+   - Verifies correct handling of mixed null and zero values
+
+3. **test_check_scenarios_available_with_nonzero_vote_swings** (lines 1288-1302)
+   - Status: ✅ PASSING
+   - Tests that non-zero numeric vote_swings prevent scenario availability
+   - Verifies pre-applied swings correctly disable scenarios
+
+4. **test_check_scenarios_available_with_zero_vote_swings** (lines 1304-1317)
+   - Status: ✅ PASSING
+   - Tests that explicit zero vote_swings allow scenario availability
+   - Verifies all-zero plans can use scenarios
+
+5. **test_check_scenarios_available_no_scenarios_field** (lines 1319-1331)
+   - Status: ✅ PASSING
+   - Tests that plans without scenarios field are handled correctly
+   - Verifies appropriate message for plans without scenarios
 
 **Export Update**: Added `check_scenarios_available` to plan.js module.exports (line 3976) to enable testing.
+
+### Frontend Implementation - ✅ COMPLETED
+
+**File: planscore/website/static/plan.js** (line 1080)
+- Added type check before comparing vote_swing to 0.0
+- Changed from: `if ('vote_swing' in plan.districts[i] && plan.districts[i].vote_swing !== 0.0)`
+- Changed to: `if (typeof plan.districts[i].vote_swing === 'number' && plan.districts[i].vote_swing !== 0.0)`
+- Only numeric vote_swing values are now checked, null values are ignored
+- Invalid districts with null vote_swing no longer incorrectly block scenarios
+
+All frontend tests now passing.
 
 ### Next Steps
 1. ✅ ~~Implement backend fix in `planscore/score.py`~~
 2. ✅ ~~Verify all 3 backend tests pass after fix~~
 3. ✅ ~~Add failing frontend tests to `tests.js`~~
-4. Implement frontend fix in `planscore/website/static/plan.js`
-5. Verify all frontend tests pass after fix
+4. ✅ ~~Implement frontend fix in `planscore/website/static/plan.js`~~
+5. ✅ ~~Verify all frontend tests pass after fix~~
+6. ✅ **ALL FIXES COMPLETED** - Both backend and frontend bugs have been fixed
 
 ## Implementation Notes
 

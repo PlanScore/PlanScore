@@ -1284,3 +1284,48 @@ var availability_mixed = plan.check_scenarios_available(plan_mixed_swings);
 assert.strictEqual(availability_mixed.available, true,
     "Scenarios should be available with mix of 0.0 and null values");
 assert.strictEqual(availability_mixed.reason, null);
+
+// Test check_scenarios_available with non-zero vote_swings
+// Verify that non-zero numeric vote_swings prevent scenario availability
+var plan_with_nonzero_swings = {
+    scenarios: "/uploads/test/scenarios.json",
+    districts: [
+        { vote_swing: 0.05, totals: { 'Democratic Votes': 1000 } },
+        { vote_swing: 0.08, totals: { 'Democratic Votes': 1000 } },
+        { vote_swing: null, totals: { 'Democratic Votes': 0 } }
+    ]
+};
+var availability_nonzero = plan.check_scenarios_available(plan_with_nonzero_swings);
+assert.strictEqual(availability_nonzero.available, false,
+    "Scenarios should not be available with non-zero vote_swings");
+assert.strictEqual(availability_nonzero.reason, 'This plan already has margin swing adjustments applied',
+    "Should show the correct reason message for non-zero swings");
+
+// Test check_scenarios_available with zero vote_swings
+// Verify that explicit zero vote_swings allow scenario availability
+var plan_with_zero_swings = {
+    scenarios: "/uploads/test/scenarios.json",
+    districts: [
+        { vote_swing: 0.0, totals: { 'Democratic Votes': 1000 } },
+        { vote_swing: 0.0, totals: { 'Democratic Votes': 1000 } },
+        { vote_swing: 0.0, totals: { 'Democratic Votes': 1000 } }
+    ]
+};
+var availability_zero = plan.check_scenarios_available(plan_with_zero_swings);
+assert.strictEqual(availability_zero.available, true,
+    "Scenarios should be available with all zero vote_swings");
+assert.strictEqual(availability_zero.reason, null, "No reason should be given for zero swings");
+
+// Test check_scenarios_available without scenarios field
+// Verify that plans without scenarios field are handled correctly
+var plan_without_scenarios = {
+    districts: [
+        { vote_swing: 0.0, totals: { 'Democratic Votes': 1000 } }
+    ]
+};
+var availability_no_scenarios = plan.check_scenarios_available(plan_without_scenarios);
+assert.strictEqual(availability_no_scenarios.available, false,
+    "Scenarios should not be available without scenarios field");
+assert.strictEqual(availability_no_scenarios.reason,
+    'PlanScore did not calculate alternative outcomes for this plan',
+    "Should show correct reason message when scenarios field is missing");
