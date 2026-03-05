@@ -584,13 +584,16 @@ All frontend tests now passing for issue #1.
 
 ### Frontend Implementation #3 - ✅ COMPLETED
 
-**File: planscore/website/static/plan.js** (lines 3652-3669 in `load_plan_scenarios`)
+**File: planscore/website/static/plan.js** (lines 3656-3671 in `load_plan_scenarios`)
 - Wrapped `JSON.parse()` in try-catch block to handle invalid JSON
 - Catches parse errors (e.g., scenarios containing literal "NaN" strings)
 - On error, displays form in disabled state with class `scenario-adjustments-disabled`
 - Shows error message "This plan did not have scenarios correctly calculated"
 - Logs error to console for debugging
+- Try-catch scope narrowed to ONLY wrap JSON.parse() (not subsequent function calls)
+- Added early return on parse error to prevent executing subsequent code
 - All tests still pass after this change
+- Bug fix: Changed `plan` to `original_plan` at line 1381 in setup_scenario_interactivity to fix ReferenceError
 
 ### Frontend Implementation #4 - ✅ COMPLETED
 
