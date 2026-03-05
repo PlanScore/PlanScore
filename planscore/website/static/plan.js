@@ -3973,6 +3973,7 @@ if(typeof module !== 'undefined' && module.exports)
         calculate_positives,
         percentrank_abs,
         percentrank_rel,
+        check_scenarios_available,
         SHY_COLUMN,
     };
 }

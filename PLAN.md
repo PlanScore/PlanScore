@@ -408,10 +408,28 @@ All backend tests now passing.
 - Changed district 1 mock data from [0, 0] to [numpy.nan, numpy.nan]
 - Ensures valid_mask correctly identifies invalid districts
 
+### Frontend Tests - ✅ COMPLETED (Tests added and failing as expected)
+
+Added 2 failing tests to `tests.js` that demonstrate the bug:
+
+1. **test_check_scenarios_available_with_null_vote_swings** (lines 1256-1270)
+   - Status: ❌ FAILING (demonstrates the bug)
+   - Tests that null vote_swing values should not prevent scenario availability
+   - Currently fails because `null !== 0.0` is true in JavaScript
+   - The bug: Invalid districts have `vote_swing: null` but the check treats null as non-zero
+
+2. **test_check_scenarios_available_mixed_null_and_zero** (lines 1272-1286)
+   - Status: ❌ FAILING (demonstrates the bug)
+   - Tests that mix of null and 0.0 values should allow scenario availability
+   - Currently fails because null values are incorrectly treated as non-zero
+   - The bug: When some districts have 0.0 and others have null, scenarios should still be available
+
+**Export Update**: Added `check_scenarios_available` to plan.js module.exports (line 3976) to enable testing.
+
 ### Next Steps
 1. ✅ ~~Implement backend fix in `planscore/score.py`~~
 2. ✅ ~~Verify all 3 backend tests pass after fix~~
-3. Add failing frontend tests to `tests.js`
+3. ✅ ~~Add failing frontend tests to `tests.js`~~
 4. Implement frontend fix in `planscore/website/static/plan.js`
 5. Verify all frontend tests pass after fix
 

@@ -1252,3 +1252,35 @@ assert.equal(parsed, null, 'Should return null for null input');
 
 parsed = plan.parse_scenario_year_key('');
 assert.equal(parsed, null, 'Should return null for empty string');
+
+// Test check_scenarios_available with null vote_swings
+// This test demonstrates the bug: null values are incorrectly treated as non-zero
+var plan_with_null_swings = {
+    scenarios: "/uploads/test/scenarios.json",
+    districts: [
+        { vote_swing: 0.0, totals: { 'Democratic Votes': 1000 } },
+        { vote_swing: 0.0, totals: { 'Democratic Votes': 1000 } },
+        { vote_swing: null, totals: { 'Democratic Votes': 0 } },  // Invalid district
+        { vote_swing: null, totals: { 'Democratic Votes': 0 } }   // Invalid district
+    ]
+};
+var availability_null = plan.check_scenarios_available(plan_with_null_swings);
+assert.strictEqual(availability_null.available, true,
+    "Scenarios should be available when only null vote_swings are present");
+assert.strictEqual(availability_null.reason, null, "No reason should be given for null vote_swings");
+
+// Test check_scenarios_available with mixed null and zero
+// This test also demonstrates the bug: null values incorrectly trigger the "already applied" message
+var plan_mixed_swings = {
+    scenarios: "/uploads/test/scenarios.json",
+    districts: [
+        { vote_swing: 0.0, totals: { 'Democratic Votes': 1000 } },
+        { vote_swing: null, totals: { 'Democratic Votes': 0 } },
+        { vote_swing: 0.0, totals: { 'Democratic Votes': 1000 } },
+        { vote_swing: null, totals: { 'Democratic Votes': 0 } }
+    ]
+};
+var availability_mixed = plan.check_scenarios_available(plan_mixed_swings);
+assert.strictEqual(availability_mixed.available, true,
+    "Scenarios should be available with mix of 0.0 and null values");
+assert.strictEqual(availability_mixed.reason, null);
