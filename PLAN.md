@@ -604,6 +604,62 @@ All frontend tests now passing for issue #1.
 - Now correctly shows "This plan already has margin swing adjustments applied" instead of attempting to load scenarios and showing parse error message
 - This ensures the proper message is displayed based on the actual reason scenarios are unavailable
 
+### Backend Implementation #2 - ✅ COMPLETED (NaN Serialization Fix)
+
+**File: planscore/score.py** (lines 1169-1177, 1193-1198)
+
+Added `numpy_to_list_with_nulls()` helper function to replace NaN values with None before JSON serialization:
+
+```python
+def numpy_to_list_with_nulls(arr):
+    """
+    Convert numpy array to list, replacing NaN with None for valid JSON.
+    Water districts and other invalid districts may have NaN values.
+    """
+    # Replace NaN in the numpy array before converting to list
+    arr_copy = arr.copy()
+    arr_copy = numpy.where(numpy.isnan(arr_copy), None, arr_copy)
+    return arr_copy.tolist()
+```
+
+Applied this function to all statistics arrays when generating scenarios:
+- "Democratic Wins", "Democratic Votes", "Republican Votes", etc.
+- Converts NaN values at the numpy level before .tolist() conversion
+- Results in valid JSON with null values instead of literal "NaN" strings
+- More efficient than recursive post-processing of nested Python lists
+
+**Impact**: Plans with invalid/water districts now generate valid JSON scenarios with null values instead of causing parse errors.
+
+### Frontend Implementation #5 - ✅ COMPLETED (Null Value Handling in adjust_scenario_stats)
+
+**File: planscore/website/static/plan.js** (lines 522-568 in `adjust_scenario_stats`)
+
+Updated the scenario statistics adjustment logic to handle null values gracefully:
+
+**Legacy format (3 dimensions)**:
+```javascript
+var base = stat[0][0][k];
+var diff = stat[i][j][k];
+// Handle null values from invalid districts (e.g., water districts)
+stat[i][j][k] = (base === null || diff === null) ? null : base + diff;
+```
+
+**New format (4 dimensions with model_year)**:
+```javascript
+var base = stat[0][0][0][m];
+var diff = stat[i][j][k][m];
+// Handle null values from invalid districts (e.g., water districts)
+stat[i][j][k][m] = (base === null || diff === null) ? null : base + diff;
+```
+
+**Changes**:
+- Added null checks before performing arithmetic operations
+- If either base or diff value is null, result is null (not NaN)
+- Prevents propagation of NaN through scenario calculations
+- Invalid districts retain null values throughout all scenarios
+
+**Impact**: Plans with null values in scenarios (from water districts) now process correctly without generating NaN in calculations.
+
 ### Next Steps
 1. ✅ ~~Implement backend fix #1 in `planscore/score.py`~~
 2. ✅ ~~Verify all 3 backend tests pass after fix~~
@@ -613,11 +669,14 @@ All frontend tests now passing for issue #1.
 6. ✅ ~~Implement frontend fix #2 in `planscore/website/static/plan.js`~~
 7. ✅ ~~Implement frontend fix #3 for NaN parse error handling~~
 8. ✅ ~~Implement frontend fix #4 to prevent loading scenarios with pre-applied swings~~
-9. ⏳ **Deploy and test fixes** - After deployment:
+9. ✅ ~~Implement backend fix #2 for NaN serialization in `planscore/score.py`~~
+10. ✅ ~~Implement frontend fix #5 for null value handling in `adjust_scenario_stats()`~~
+11. ✅ ~~Run all backend and frontend tests~~
+12. ⏳ **Deploy and test fixes** - After deployment:
    - Verify plan 20260305T180634.417430779Z shows "This plan already has margin swing adjustments applied" (not parse error)
-   - Verify plan 20260305T181521.750964899Z shows "This plan did not have scenarios correctly calculated" (NaN parse error handled)
-   - After backend fix deployed, verify new plans don't generate NaN in scenarios
-10. ⏳ **Commit all changes**
+   - Verify new uploads with invalid/water districts generate valid JSON with null values (not literal "NaN")
+   - Verify plans with null values in scenarios display and calculate correctly
+13. ⏳ **Commit all changes**
 
 ## Implementation Notes
 

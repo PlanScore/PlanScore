@@ -532,7 +532,10 @@ function adjust_scenario_stats(data)
                     for (var k = 0; k < data[data.dimensions[2]].length; k++) {
                         for (var s in data.statistics) {
                             var stat = data.statistics[s];
-                            stat[i][j][k] = stat[0][0][k] + stat[i][j][k];
+                            var base = stat[0][0][k];
+                            var diff = stat[i][j][k];
+                            // Handle null values from invalid districts (e.g., water districts)
+                            stat[i][j][k] = (base === null || diff === null) ? null : base + diff;
                         }
                     }
                 }
@@ -549,7 +552,10 @@ function adjust_scenario_stats(data)
                         for (var m = 0; m < data[data.dimensions[3]].length; m++) {
                             for (var s in data.statistics) {
                                 var stat = data.statistics[s];
-                                stat[i][j][k][m] = stat[0][0][0][m] + stat[i][j][k][m];
+                                var base = stat[0][0][0][m];
+                                var diff = stat[i][j][k][m];
+                                // Handle null values from invalid districts (e.g., water districts)
+                                stat[i][j][k][m] = (base === null || diff === null) ? null : base + diff;
                             }
                         }
                     }

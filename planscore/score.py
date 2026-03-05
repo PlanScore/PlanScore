@@ -1166,6 +1166,16 @@ def calculate_district_biases(upload):
         for model_year, pvote_year in zip(model_years, pvote_years)
     ]
 
+    def numpy_to_list_with_nulls(arr):
+        """
+        Convert numpy array to list, replacing NaN with None for valid JSON.
+        Water districts and other invalid districts may have NaN values.
+        """
+        # Replace NaN in the numpy array before converting to list
+        arr_copy = arr.copy()
+        arr_copy = numpy.where(numpy.isnan(arr_copy), None, arr_copy)
+        return arr_copy.tolist()
+
     # Only generate scenarios if no per-district vote swings were applied
     # Plans with pre-applied swings represent a specific scenario, not a baseline
     if not upload.vote_swings or not any(s != 0 for s in upload.vote_swings):
@@ -1176,11 +1186,11 @@ def calculate_district_biases(upload):
             districts=list(range(1, 1 + district_count)),
             dimensions=["model_years", "vote_swings", "incumbents", "districts"],
             statistics={
-                "Democratic Wins": vote_stats_diff[:, :, :, :, 0, 0].tolist(),
-                "Democratic Votes": vote_stats_diff[:, :, :, :, 0, 1].tolist(),
-                "Republican Votes": vote_stats_diff[:, :, :, :, 1, 1].tolist(),
-                "Democratic Votes SD": vote_stats_diff[:, :, :, :, 0, 2].tolist(),
-                "Republican Votes SD": vote_stats_diff[:, :, :, :, 1, 2].tolist(),
+                "Democratic Wins": numpy_to_list_with_nulls(vote_stats_diff[:, :, :, :, 0, 0]),
+                "Democratic Votes": numpy_to_list_with_nulls(vote_stats_diff[:, :, :, :, 0, 1]),
+                "Republican Votes": numpy_to_list_with_nulls(vote_stats_diff[:, :, :, :, 1, 1]),
+                "Democratic Votes SD": numpy_to_list_with_nulls(vote_stats_diff[:, :, :, :, 0, 2]),
+                "Republican Votes SD": numpy_to_list_with_nulls(vote_stats_diff[:, :, :, :, 1, 2]),
             }
         )
     else:
