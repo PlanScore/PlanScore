@@ -142,9 +142,236 @@ After applying both fixes:
    - Verify interactive scenarios work correctly
    - Verify Margin Swing column appears when adjusting scenarios
 
+## Unit Test Specifications
+
+### Backend Tests (planscore/tests/test_score.py)
+
+#### Test 1: `test_calculate_district_biases_with_vote_swings`
+**Purpose**: Verify that scenarios are NOT generated when upload has non-zero vote_swings
+
+**Setup**:
+- Create an Upload object with presidential vote data
+- Set `upload.vote_swings = [0.05, 0.08, 0.07, 0.05]` (non-zero values)
+- Mock `matrix.prepare_district_data` and `matrix.model_votes` to return test data
+
+**Assertions**:
+```python
+result = score.calculate_district_biases(upload)
+assert result.scenarios is None, "Scenarios should not be generated for plans with pre-applied swings"
+assert result.districts[0]['vote_swing'] == 0.05, "vote_swing values should be preserved in districts"
+assert result.districts[1]['vote_swing'] == 0.08
+assert 'Democratic Votes' in result.districts[0]['totals'], "District totals should still be calculated"
+```
+
+#### Test 2: `test_calculate_district_biases_without_vote_swings`
+**Purpose**: Verify that scenarios ARE generated when upload has no vote_swings or all zeros
+
+**Setup**:
+- Create an Upload object with presidential vote data
+- Set `upload.vote_swings = None` (or `[0.0, 0.0, 0.0, 0.0]`)
+- Mock `matrix.prepare_district_data` and `matrix.model_votes` to return test data
+
+**Assertions**:
+```python
+result = score.calculate_district_biases(upload)
+assert result.scenarios is not None, "Scenarios should be generated for plans without pre-applied swings"
+assert 'model_years' in result.scenarios
+assert 'vote_swings' in result.scenarios
+assert 'incumbents' in result.scenarios
+assert 'statistics' in result.scenarios
+assert result.districts[0]['vote_swing'] == 0.0, "vote_swing should be 0.0 for all districts"
+```
+
+#### Test 3: `test_calculate_district_biases_with_zero_vote_swings`
+**Purpose**: Verify that explicit zero vote_swings are treated as no pre-applied swings
+
+**Setup**:
+- Create an Upload object with presidential vote data
+- Set `upload.vote_swings = [0.0, 0.0, 0.0, 0.0]` (explicit zeros)
+- Mock `matrix.prepare_district_data` and `matrix.model_votes` to return test data
+
+**Assertions**:
+```python
+result = score.calculate_district_biases(upload)
+assert result.scenarios is not None, "Scenarios should be generated even with explicit zero swings"
+assert result.districts[0]['vote_swing'] == 0.0
+```
+
+#### Test 4: `test_calculate_district_biases_mixed_vote_swings`
+**Purpose**: Verify that ANY non-zero vote_swing prevents scenario generation
+
+**Setup**:
+- Create an Upload object with presidential vote data
+- Set `upload.vote_swings = [0.0, 0.01, 0.0, 0.0]` (only one non-zero)
+- Mock `matrix.prepare_district_data` and `matrix.model_votes` to return test data
+
+**Assertions**:
+```python
+result = score.calculate_district_biases(upload)
+assert result.scenarios is None, "Even one non-zero vote_swing should prevent scenario generation"
+assert result.districts[1]['vote_swing'] == 0.01
+```
+
+#### Test 5: `test_invalid_districts_get_null_vote_swing`
+**Purpose**: Verify that invalid districts receive null vote_swing values
+
+**Setup**:
+- Create an Upload object where some districts have insufficient data (trigger `valid_mask[i] == False`)
+- Set `upload.vote_swings = [0.05, 0.08]` or `None`
+
+**Assertions**:
+```python
+result = score.calculate_district_biases(upload)
+# Assuming district 1 is invalid (valid_mask[1] == False)
+assert result.districts[1]['vote_swing'] is None, "Invalid districts should have null vote_swing"
+assert result.districts[1]['is_counted'] is False
+assert result.districts[0]['vote_swing'] is not None, "Valid districts should have numeric vote_swing"
+```
+
+### Frontend Tests (tests.js)
+
+#### Test 6: `test_check_scenarios_available_with_null_vote_swings`
+**Purpose**: Verify that null vote_swing values don't trigger "already applied" message
+
+**Setup**:
+```javascript
+var plan_with_null_swings = {
+    scenarios: "/uploads/test/scenarios.json",
+    districts: [
+        { vote_swing: 0.0, totals: { 'Democratic Votes': 1000 } },
+        { vote_swing: 0.0, totals: { 'Democratic Votes': 1000 } },
+        { vote_swing: null, totals: { 'Democratic Votes': 0 } },  // Invalid district
+        { vote_swing: null, totals: { 'Democratic Votes': 0 } }   // Invalid district
+    ]
+};
+```
+
+**Assertions**:
+```javascript
+var availability = plan.check_scenarios_available(plan_with_null_swings);
+assert.strictEqual(availability.available, true,
+    "Scenarios should be available when only null vote_swings are present");
+assert.strictEqual(availability.reason, null, "No reason should be given");
+```
+
+#### Test 7: `test_check_scenarios_available_with_nonzero_vote_swings`
+**Purpose**: Verify that non-zero numeric vote_swings prevent scenario availability
+
+**Setup**:
+```javascript
+var plan_with_nonzero_swings = {
+    scenarios: "/uploads/test/scenarios.json",
+    districts: [
+        { vote_swing: 0.05, totals: { 'Democratic Votes': 1000 } },
+        { vote_swing: 0.08, totals: { 'Democratic Votes': 1000 } },
+        { vote_swing: null, totals: { 'Democratic Votes': 0 } }
+    ]
+};
+```
+
+**Assertions**:
+```javascript
+var availability = plan.check_scenarios_available(plan_with_nonzero_swings);
+assert.strictEqual(availability.available, false,
+    "Scenarios should not be available with non-zero vote_swings");
+assert.strictEqual(availability.reason, 'This plan already has margin swing adjustments applied',
+    "Should show the correct reason message");
+```
+
+#### Test 8: `test_check_scenarios_available_with_zero_vote_swings`
+**Purpose**: Verify that explicit zero vote_swings allow scenario availability
+
+**Setup**:
+```javascript
+var plan_with_zero_swings = {
+    scenarios: "/uploads/test/scenarios.json",
+    districts: [
+        { vote_swing: 0.0, totals: { 'Democratic Votes': 1000 } },
+        { vote_swing: 0.0, totals: { 'Democratic Votes': 1000 } },
+        { vote_swing: 0.0, totals: { 'Democratic Votes': 1000 } }
+    ]
+};
+```
+
+**Assertions**:
+```javascript
+var availability = plan.check_scenarios_available(plan_with_zero_swings);
+assert.strictEqual(availability.available, true,
+    "Scenarios should be available with all zero vote_swings");
+assert.strictEqual(availability.reason, null);
+```
+
+#### Test 9: `test_check_scenarios_available_no_scenarios_field`
+**Purpose**: Verify that plans without scenarios field are handled correctly
+
+**Setup**:
+```javascript
+var plan_without_scenarios = {
+    districts: [
+        { vote_swing: 0.0, totals: { 'Democratic Votes': 1000 } }
+    ]
+};
+```
+
+**Assertions**:
+```javascript
+var availability = plan.check_scenarios_available(plan_without_scenarios);
+assert.strictEqual(availability.available, false,
+    "Scenarios should not be available without scenarios field");
+assert.strictEqual(availability.reason,
+    'PlanScore did not calculate alternative outcomes for this plan');
+```
+
+#### Test 10: `test_check_scenarios_available_mixed_null_and_zero`
+**Purpose**: Verify that mix of null and 0.0 values works correctly
+
+**Setup**:
+```javascript
+var plan_mixed_swings = {
+    scenarios: "/uploads/test/scenarios.json",
+    districts: [
+        { vote_swing: 0.0, totals: { 'Democratic Votes': 1000 } },
+        { vote_swing: null, totals: { 'Democratic Votes': 0 } },
+        { vote_swing: 0.0, totals: { 'Democratic Votes': 1000 } },
+        { vote_swing: null, totals: { 'Democratic Votes': 0 } }
+    ]
+};
+```
+
+**Assertions**:
+```javascript
+var availability = plan.check_scenarios_available(plan_mixed_swings);
+assert.strictEqual(availability.available, true,
+    "Scenarios should be available with mix of 0.0 and null values");
+assert.strictEqual(availability.reason, null);
+```
+
+### Integration Test Data
+
+Create new test fixtures in `/data/` directory:
+
+#### Test Fixture 1: `sample-MS-nonzero-vote-swings/`
+- Copy from `sample-MS-vote-swings/` but ensure:
+  - `index.json` has non-zero `vote_swing` values in all valid districts
+  - No `scenarios.json` file (or scenarios field points to null)
+  - Used to verify backend doesn't generate scenarios
+
+#### Test Fixture 2: `sample-MS-null-vote-swings/`
+- Create plan with:
+  - Some districts with `vote_swing: 0.0`
+  - Some districts with `vote_swing: null` (invalid districts)
+  - Valid `scenarios.json` file with scenario data
+  - Used to verify frontend shows scenarios correctly
+
+#### Test Fixture 3: `sample-MS-all-zero-swings/`
+- Already exists as `sample-MS-zero-vote-swings/`
+- Verify it has scenarios.json and all valid districts have `vote_swing: 0.0`
+
 ## Implementation Notes
 
 - Both fixes are independent and can be applied separately
 - Frontend fix is simpler and lower risk - consider deploying first
 - Backend fix requires regenerating plans with pre-applied swings to get correct scenario data
 - Existing plans with incorrect scenario data will need to be re-scored after backend fix
+- All new tests should be added to existing test files (`test_score.py` and `tests.js`)
+- Test fixtures should follow existing naming conventions in `/data/` directory
