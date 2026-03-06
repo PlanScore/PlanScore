@@ -69,6 +69,8 @@ def guess_upload_type(path):
         if ext == '.txt':
             return UploadType.ZIPPED_BLOCK_ASSIGNMENT
 
+    raise RuntimeError('Zip file does not contain recognized file types (.shp or .txt)')
+
 def vsizip_shapefile(zip_path):
     '''
     '''
