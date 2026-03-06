@@ -56,9 +56,28 @@ class TestUtil (unittest.TestCase):
     
         with self.assertRaises(ValueError):
             util.guess_upload_type('bad.jpg')
-    
+
         with self.assertRaises(ValueError):
             util.guess_upload_type('bad.pdf')
+
+    def test_guess_upload_type_zip_without_recognized_files(self):
+        ''' Test that a zip file without .shp or .txt raises RuntimeError
+        '''
+        import zipfile
+
+        # Create a temporary zip file with only unrecognized file types
+        zip_path = os.path.join(self.tempdir, 'bad-upload.zip')
+        with zipfile.ZipFile(zip_path, 'w') as zf:
+            # Add some files that aren't .shp or .txt
+            zf.writestr('document.pdf', b'fake pdf content')
+            zf.writestr('image.jpg', b'fake image content')
+            zf.writestr('data.csv', b'some,csv,data')  # .csv is not recognized in zips
+
+        # Should raise RuntimeError with specific message
+        with self.assertRaises(RuntimeError) as cm:
+            util.guess_upload_type(zip_path)
+
+        self.assertIn('Zip file does not contain recognized file types', str(cm.exception))
     
     @unittest.mock.patch('sys.stdout')
     def test_vsizip_shapefile(self, stdout):
