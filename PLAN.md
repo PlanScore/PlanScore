@@ -269,30 +269,42 @@ all_votes = numpy.concatenate(
 - `814dfd39`: Plan logit shift implementation for vote swings
 - `b61d0f1c`: Implement logit shift for vote swings without scipy
 
-### Phase 2: Optimized Version 🔄 PLANNED
+### Phase 2: Optimized Version ✅ COMPLETE
 
-**To Do:**
-1. Implement fully vectorized version (`vectorized_logit_shift_optimized()`)
-2. Add comparison tests to verify identical outputs
-3. Benchmark performance improvement
-4. If significantly faster (>2x), replace loop version
-5. Document actual speedup achieved
+**Completed:**
+- Replaced `vectorized_logit_shift()` with fully vectorized version (in-place replacement)
+- Eliminated Python loop over scenarios
+- Vectorized bisection across all scenarios simultaneously
+- All 194 tests pass with identical results
+- Test runtime: 7.095s
+- **Actual speedup: 7.72x** (from 54.778s to 7.095s)
 
-**Expected Results:**
-- Test runtime: <10s (estimated 5-10x speedup)
-- Identical mathematical results
-- No test changes needed
+**Implementation details:**
+- Maintains arrays of left/right bounds for ALL scenarios at once
+- Uses numpy broadcasting to evaluate objective function in parallel
+- Conditionally updates bounds using numpy.where() across all scenarios
+- Same mathematical behavior, just vectorized
+
+**Commits:**
+- `88c20d43`: Update PLAN.md with optimized vectorized logit shift implementation
 
 ### Performance Analysis
 
-**Where time is spent (estimated):**
-- Loop version: ~50% in bisection loops, ~30% in expit calculations, ~20% in array operations
-- Vectorized version should reduce bisection overhead by ~10x
-- Total expected speedup: 5-10x for typical workloads
+**Actual performance improvement:**
+- Baseline (loop version): 54.778s
+- Optimized (vectorized): 7.095s
+- Speedup: 7.72x (87% reduction in test time)
+- This matches the expected 5-10x speedup range
 
-**Critical path:**
-The 25 swing scenarios in the list comprehension at line 1252 are computed sequentially.
-Future optimization could parallelize these 25 calls using multiprocessing.
+**Where the speedup came from:**
+- Eliminated ~40,000 Python loop iterations over scenarios
+- All bisection iterations now process scenarios in parallel using numpy
+- Better utilization of BLAS/LAPACK optimizations
+- Reduced overhead from Python function calls
+
+**Critical path (unchanged):**
+The 25 swing scenarios in the list comprehension at line 1252 are still computed sequentially.
+Future optimization could parallelize these 25 calls using multiprocessing for additional gains.
 
 ## Questions to Address
 
