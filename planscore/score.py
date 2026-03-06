@@ -334,7 +334,7 @@ def vectorized_logit_shift(votes:numpy.typing.NDArray, target_diff:float) -> num
 
     # Convert back to vote counts
     # Shape: (N, districts, 2)
-    new_votes = numpy.zeros_like(votes_flat)
+    new_votes = numpy.zeros_like(votes_flat, dtype=float)
     new_votes[:, :, 0] = new_shares * turnout  # blue
     new_votes[:, :, 1] = (1 - new_shares) * turnout  # red
 
