@@ -50,6 +50,8 @@ def commence_upload_parsing(s3, lam, bucket, upload):
         if upload_type in (util.UploadType.BLOCK_ASSIGNMENT, util.UploadType.ZIPPED_BLOCK_ASSIGNMENT):
             return commence_blockassign_upload_parsing(s3, lam, bucket, upload, ul_path)
 
+        raise RuntimeError('Unhandled upload type: {}'.format(upload_type))
+
 def commence_geometry_upload_parsing(s3, bucket, upload, ds_path):
     model = guess_geometry_model(ds_path)
     storage = data.Storage(s3, bucket, model.key_prefix)
