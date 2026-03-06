@@ -220,6 +220,112 @@ def swing_vote_matrix(votes:numpy.typing.NDArray, vote_swings:list[float]) -> nu
 
     return new_votes.round(6)
 
+def vectorized_logit_shift(votes:numpy.typing.NDArray, target_diff:float) -> numpy.typing.NDArray:
+    '''
+    Apply logit-based vote shift to achieve target national swing.
+
+    Input array shape is (*leading_dims, districts, 2) where leading_dims can be any number of dimensions.
+    Convention: votes[..., 0] = blue, votes[..., 1] = red
+    Returns array of same shape with logit-shifted votes.
+
+    Unlike vectorized_swing() which applies uniform shifts, this calculates
+    per-district shifts using log-odds transformation to better model real
+    electoral swing patterns.
+
+    Examples:
+    - (sims, districts, 2) - original 3D shape
+    - (incumbency, sims, districts, 2) - 4D shape with incumbency
+    - (model_versions, incumbency, sims, districts, 2) - 5D shape
+    '''
+    if target_diff == 0:
+        return votes.copy()
+
+    # Store original shape and flatten leading dimensions
+    original_shape = votes.shape
+    leading_dims = original_shape[:-2]
+    district_count = original_shape[-2]
+
+    # Reshape to (N, districts, 2) where N = product of all leading dimensions
+    # This lets us process each "scenario" (sim/incumbency/model combo) independently
+    flat_scenarios = int(numpy.prod(leading_dims))
+    votes_flat = votes.reshape(flat_scenarios, district_count, 2)
+
+    # Simple expit (logistic sigmoid) implementation
+    def expit(x):
+        # Clip to avoid overflow
+        clipped = numpy.clip(x, -20, 20)
+        return 1.0 / (1.0 + numpy.exp(-clipped))
+
+    # Process each scenario independently
+    result_flat = numpy.zeros_like(votes_flat)
+
+    for scenario_idx in range(flat_scenarios):
+        scenario_votes = votes_flat[scenario_idx]  # shape: (districts, 2)
+        ndv = scenario_votes[:, 0]  # blue votes
+        nrv = scenario_votes[:, 1]  # red votes
+
+        # Calculate target share for this scenario
+        total_blue = ndv.sum()
+        total_red = nrv.sum()
+        total_votes = total_blue + total_red
+
+        if total_votes == 0:
+            # No votes in this scenario, return zeros
+            result_flat[scenario_idx] = scenario_votes
+            continue
+
+        current_share = total_blue / total_votes
+        target_share = current_share + target_diff
+        turnout = ndv + nrv
+
+        # Compute log-odds where turnout > 0
+        # log_odds = log(blue/red) = log(blue) - log(red)
+        log_odds = numpy.where(turnout > 0, numpy.log(ndv + 1e-10) - numpy.log(nrv + 1e-10), 0)
+
+        # Objective function for bisection
+        def objective(shift):
+            return numpy.average(expit(log_odds + shift), weights=turnout) - target_share
+
+        # Bisection to find the shift parameter
+        left, right = -10.0, 10.0
+        tol = 1e-6
+        max_iter = 50
+
+        for iteration in range(max_iter):
+            if right - left <= tol:
+                break
+
+            mid = (left + right) / 2.0
+            val = objective(mid)
+
+            if abs(val) < tol:
+                break
+
+            if val < 0:
+                left = mid
+            else:
+                right = mid
+
+        shift = (left + right) / 2.0
+
+        # Apply shift to get new vote shares
+        new_shares = expit(log_odds + shift)
+
+        # Convert back to vote counts
+        new_votes = numpy.zeros_like(scenario_votes)
+        new_votes[:, 0] = new_shares * turnout  # blue
+        new_votes[:, 1] = (1 - new_shares) * turnout  # red
+
+        # Preserve zero-turnout districts
+        mask = turnout > 0
+        new_votes[:, 0] = numpy.where(mask, new_votes[:, 0], 0.0)
+        new_votes[:, 1] = numpy.where(mask, new_votes[:, 1], 0.0)
+
+        result_flat[scenario_idx] = new_votes
+
+    # Reshape back to original dimensions
+    return result_flat.reshape(original_shape)
+
 def _is_valid_number(val):
     '''Helper to check if a value is a valid number (not None or NaN)'''
     return val is not None and not (isinstance(val, float) and math.isnan(val))
@@ -1143,7 +1249,7 @@ def calculate_district_biases(upload):
     swing_range = [(i - swing_count // 2) / 2 for i in range(swing_count)]
     z = swing_count // 2 # Index of zero-swing swing_range midpoint
     all_votes = numpy.concatenate(
-        [vectorized_swing(model_output, a/100).reshape(
+        [vectorized_logit_shift(model_output, a/100).reshape(
             (model_output.shape[0], 1, *model_output.shape[1:])
         ) for a in swing_range],
         axis=1,
