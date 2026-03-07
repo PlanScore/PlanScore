@@ -241,7 +241,7 @@ def ordered_districts(layer) -> tuple[typing.Optional[str], list]:
         raw_values = [feat.GetField(name) for feat in polygon_features]
 
         # Check if this is a U.S. Census column name
-        is_census_column = bool(re.match(r'^(SLDLST|SLDUST|CD\d+FP)$', name))
+        is_census_column = bool(re.match(r'^(SLDLST|SLDUST|CD\d\d\dFP)$', name))
 
         if is_census_column:
             # Census columns need special handling
