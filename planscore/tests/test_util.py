@@ -381,7 +381,7 @@ class TestUtil (unittest.TestCase):
         layer = ds.GetLayer(0)
         name, features = util.ordered_districts(layer)
         self.assertEqual(name, 'CD119FP')
-        self.assertEqual([f.GetFID() for f in features], [i for i in range(5)])
+        self.assertEqual([f.GetFID() for f in features], [1, 0] + [i for i in range(2, 5)])
 
     @unittest.mock.patch('planscore.util.is_polygonal_feature')
     @unittest.mock.patch('sys.stdout')
@@ -394,7 +394,7 @@ class TestUtil (unittest.TestCase):
         layer = ds.GetLayer(0)
         name, features = util.ordered_districts(layer)
         self.assertEqual(name, 'SLDUST')
-        self.assertEqual([f.GetFID() for f in features], [i for i in range(9)])
+        self.assertEqual([f.GetFID() for f in features], [1, 0] + [i for i in range(2, 9)])
 
     @unittest.mock.patch('planscore.util.is_polygonal_feature')
     @unittest.mock.patch('sys.stdout')
@@ -407,7 +407,7 @@ class TestUtil (unittest.TestCase):
         layer = ds.GetLayer(0)
         name, features = util.ordered_districts(layer)
         self.assertEqual(name, 'SLDLST')
-        self.assertEqual([f.GetFID() for f in features], [i for i in range(9)])
+        self.assertEqual([f.GetFID() for f in features], [1, 0] + [i for i in range(2, 9)])
 
     @unittest.mock.patch('planscore.util.is_polygonal_feature')
     @unittest.mock.patch('sys.stdout')
@@ -420,7 +420,7 @@ class TestUtil (unittest.TestCase):
         layer = ds.GetLayer(0)
         name, features = util.ordered_districts(layer)
         self.assertEqual(name, 'SLDLST')
-        self.assertEqual([f.GetFID() for f in features], [i for i in range(7)])
+        self.assertEqual([f.GetFID() for f in features], [1, 0] + [i for i in range(2, 7)])
 
     @unittest.mock.patch('planscore.util.is_polygonal_feature')
     @unittest.mock.patch('sys.stdout')
@@ -433,7 +433,7 @@ class TestUtil (unittest.TestCase):
         layer = ds.GetLayer(0)
         name, features = util.ordered_districts(layer)
         self.assertEqual(name, 'SLDLST')
-        self.assertEqual([f.GetFID() for f in features], [i for i in range(18)])
+        self.assertEqual([f.GetFID() for f in features], [1, 0] + [i for i in range(2, 18)])
 
     @unittest.mock.patch('planscore.util.is_polygonal_feature')
     @unittest.mock.patch('sys.stdout')
@@ -446,7 +446,7 @@ class TestUtil (unittest.TestCase):
         layer = ds.GetLayer(0)
         name, features = util.ordered_districts(layer)
         self.assertEqual(name, 'SLDUST')
-        self.assertEqual([f.GetFID() for f in features], [i for i in range(16)])
+        self.assertEqual([f.GetFID() for f in features], [1, 0] + [i for i in range(2, 16)])
 
     def test_is_polygonal_feature(self):
         '''

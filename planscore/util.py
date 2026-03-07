@@ -227,7 +227,7 @@ def _make_district_sort_key(
 
     return sort_key
 
-def ordered_districts(layer) -> tuple[typing.Optional[str], list]:
+def ordered_districts(layer) -> tuple[str|None, list]:
     ''' Return field name and list of layer features ordered by guessed district numbers.
     '''
     defn = layer.GetLayerDefn()

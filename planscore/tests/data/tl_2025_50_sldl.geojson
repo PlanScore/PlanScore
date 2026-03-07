@@ -1,8 +1,8 @@
 {
 "type": "FeatureCollection",
 "features": [
-{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "A-1" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
 { "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "A-5" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "A-1" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
 { "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "A-R" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
 { "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "B-1" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
 { "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "C-9" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
