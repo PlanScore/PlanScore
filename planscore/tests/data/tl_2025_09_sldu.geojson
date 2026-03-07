@@ -1,0 +1,15 @@
+{
+"type": "FeatureCollection",
+"features": [
+{ "type": "Feature", "properties": { "STATEFP": "09", "SLDUST": "028" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "09", "SLDUST": "029" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "09", "SLDUST": "030" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "09", "SLDUST": "031" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "09", "SLDUST": "032" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "09", "SLDUST": "033" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "09", "SLDUST": "034" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "09", "SLDUST": "035" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "09", "SLDUST": "036" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "09", "SLDUST": "ZZZ" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } }
+]
+}

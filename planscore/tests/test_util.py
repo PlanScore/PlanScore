@@ -369,7 +369,85 @@ class TestUtil (unittest.TestCase):
             feature3_a.GetGeometryRef().Area() + feature3_b.GetGeometryRef().Area(),
             features3[2].GetGeometryRef().Area(),
         )
-    
+
+    @unittest.mock.patch('planscore.util.is_polygonal_feature')
+    @unittest.mock.patch('sys.stdout')
+    def test_ordered_districts_tl_2025_09_cd119(self, stdout, is_polygonal_feature):
+        ''' Correctly order all districts, but skip the "ZZ" one
+        '''
+        is_polygonal_feature.return_value = True
+
+        ds = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'tl_2025_09_cd119.geojson'))
+        layer = ds.GetLayer(0)
+        name, features = util.ordered_districts(layer)
+        self.assertEqual(name, 'CD119FP')
+        self.assertEqual([f.GetFID() for f in features], [i for i in range(5)])
+
+    @unittest.mock.patch('planscore.util.is_polygonal_feature')
+    @unittest.mock.patch('sys.stdout')
+    def test_ordered_districts_tl_2025_09_sldu(self, stdout, is_polygonal_feature):
+        ''' Correctly order all districts, but skip the "ZZZ" one
+        '''
+        is_polygonal_feature.return_value = True
+
+        ds = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'tl_2025_09_sldu.geojson'))
+        layer = ds.GetLayer(0)
+        name, features = util.ordered_districts(layer)
+        self.assertEqual(name, 'SLDUST')
+        self.assertEqual([f.GetFID() for f in features], [i for i in range(9)])
+
+    @unittest.mock.patch('planscore.util.is_polygonal_feature')
+    @unittest.mock.patch('sys.stdout')
+    def test_ordered_districts_tl_2025_24_sldl(self, stdout, is_polygonal_feature):
+        ''' Correctly order all districts with alphanumeric identifiers
+        '''
+        is_polygonal_feature.return_value = True
+
+        ds = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'tl_2025_24_sldl.geojson'))
+        layer = ds.GetLayer(0)
+        name, features = util.ordered_districts(layer)
+        self.assertEqual(name, 'SLDLST')
+        self.assertEqual([f.GetFID() for f in features], [i for i in range(9)])
+
+    @unittest.mock.patch('planscore.util.is_polygonal_feature')
+    @unittest.mock.patch('sys.stdout')
+    def test_ordered_districts_tl_2025_34_sldl(self, stdout, is_polygonal_feature):
+        ''' Correctly order all districts with zero-padded integer identifiers
+        '''
+        is_polygonal_feature.return_value = True
+
+        ds = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'tl_2025_34_sldl.geojson'))
+        layer = ds.GetLayer(0)
+        name, features = util.ordered_districts(layer)
+        self.assertEqual(name, 'SLDLST')
+        self.assertEqual([f.GetFID() for f in features], [i for i in range(7)])
+
+    @unittest.mock.patch('planscore.util.is_polygonal_feature')
+    @unittest.mock.patch('sys.stdout')
+    def test_ordered_districts_tl_2025_50_sldl(self, stdout, is_polygonal_feature):
+        ''' Correctly order all districts with alphanumeric identifiers
+        '''
+        is_polygonal_feature.return_value = True
+
+        ds = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'tl_2025_50_sldl.geojson'))
+        layer = ds.GetLayer(0)
+        name, features = util.ordered_districts(layer)
+        self.assertEqual(name, 'SLDLST')
+        self.assertEqual([f.GetFID() for f in features], [i for i in range(18)])
+
+    @unittest.mock.patch('planscore.util.is_polygonal_feature')
+    @unittest.mock.patch('sys.stdout')
+    def test_ordered_districts_tl_2025_50_sldu(self, stdout, is_polygonal_feature):
+        ''' Correctly order all districts with alphabetic identifiers
+        '''
+        is_polygonal_feature.return_value = True
+
+        ds = ogr.Open(os.path.join(os.path.dirname(__file__), 'data', 'tl_2025_50_sldu.geojson'))
+        layer = ds.GetLayer(0)
+        name, features = util.ordered_districts(layer)
+        self.assertEqual(name, 'SLDUST')
+        self.assertEqual([f.GetFID() for f in features], [i for i in range(16)])
+
     def test_is_polygonal_feature(self):
         '''
         '''
