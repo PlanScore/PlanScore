@@ -198,29 +198,25 @@ def _make_district_sort_key(
         # Letter+number or letter+letter format (like Vermont lower: "A-1", "A-R", "CA3")
         if has_alpha_then_num or has_alpha_then_alpha:
             # Extract prefix letters and suffix
-            match = re.match(r'^([A-Z]+)-?([0-9]+)$', value)
-            if match:
+            if match := re.match(r'^([A-Z]+)-?([0-9]+)$', value):
                 # Format like "A-1" or "C10"
                 prefix = match.group(1)
                 suffix_num = int(match.group(2))
                 return (prefix, 0, suffix_num, '')
 
-            match = re.match(r'^([A-Z]+)-([A-Z]+)$', value)
-            if match:
+            if match := re.match(r'^([A-Z]+)-([A-Z]+)$', value):
                 # Format like "A-R" or "C-F"
                 prefix = match.group(1)
                 suffix_alpha = match.group(2)
                 return (prefix, 1, 0, suffix_alpha)
 
-            match = re.match(r'^([A-Z]+)(\d+)$', value)
-            if match:
+            if match := re.match(r'^([A-Z]+)(\d+)$', value):
                 # Format like "CA3" (no dash)
                 prefix = match.group(1)
                 suffix_num = int(match.group(2))
                 return (prefix, 0, suffix_num, '')
 
-            match = re.match(r'^([A-Z]+)([A-Z]+)$', value)
-            if match and len(match.group(1)) <= 2:
+            if (match := re.match(r'^([A-Z]+)([A-Z]+)$', value)) and len(match.group(1)) <= 2:
                 # Format like "CAE" or "CAW" (prefix + alpha suffix)
                 prefix = match.group(1)
                 suffix_alpha = match.group(2)
@@ -275,9 +271,10 @@ def ordered_districts(layer) -> tuple[typing.Optional[str], list]:
                 has_alpha_then_alpha = any(re.match(r'^[A-Z]+-[A-Z]+$', v) for v in raw_values_str)
 
                 # Priority 3 for Census columns
-                fields.append((3, name, has_no_repeats, polygon_features,
-                              _make_district_sort_key(name, has_pure_alpha, has_num_then_alpha,
-                                                      has_alpha_then_num, has_alpha_then_alpha)))
+                sort_key = _make_district_sort_key(
+                    name, has_pure_alpha, has_num_then_alpha, has_alpha_then_num, has_alpha_then_alpha
+                )
+                fields.append((3, name, has_no_repeats, polygon_features, sort_key))
         else:
             # Non-Census columns - use original logic
             try:
