@@ -1,0 +1,23 @@
+{
+"type": "FeatureCollection",
+"features": [
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "A-5" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "A-1" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "A-R" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "B-1" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "C-9" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "C10" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "C11" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "C-F" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "CA3" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "CAE" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "CAW" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "E-C" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "E-O" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "R-9" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "R10" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "R11" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "R-B" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDLST": "R-W" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } }
+]
+}

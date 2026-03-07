@@ -1,3 +1,4 @@
+from __future__ import annotations
 import urllib.parse
 import tempfile
 import shutil
@@ -11,6 +12,7 @@ import csv
 import re
 import time
 import json
+import typing
 
 try:
     import osgeo.ogr
@@ -169,61 +171,156 @@ def baf_stream_to_pairs(stream):
         for row in rows if row[district_column] != 'ZZ'
     ]
 
-def ordered_districts(layer):
+def _make_district_sort_key(
+    field_name: str,
+    has_pure_alpha: bool,
+    has_num_then_alpha: bool,
+    has_alpha_then_num: bool,
+    has_alpha_then_alpha: bool
+) -> typing.Callable[[typing.Any], tuple]:
+    ''' Create a sort key function for Census district identifiers.
+
+        Analyzes the pattern of district values and returns a function that
+        generates appropriate sort keys for different naming conventions.
+    '''
+    def sort_key(f):
+        value = str(f.GetField(field_name))
+
+        # Pure alphabetic (like Vermont upper house: "ADD", "BEN")
+        if has_pure_alpha and not has_num_then_alpha and not has_alpha_then_num:
+            return (value,)
+
+        # Number+letter format (like Maryland: "003", "01A", "01C")
+        # Sort lexicographically because of zero-padding
+        if has_num_then_alpha:
+            return (value,)
+
+        # Letter+number or letter+letter format (like Vermont lower: "A-1", "A-R", "CA3")
+        if has_alpha_then_num or has_alpha_then_alpha:
+            # Extract prefix letters and suffix
+            if match := re.match(r'^([A-Z]+)-?([0-9]+)$', value):
+                # Format like "A-1" or "C10"
+                prefix = match.group(1)
+                suffix_num = int(match.group(2))
+                return (prefix, 0, suffix_num, '')
+
+            if match := re.match(r'^([A-Z]+)-([A-Z]+)$', value):
+                # Format like "A-R" or "C-F"
+                prefix = match.group(1)
+                suffix_alpha = match.group(2)
+                return (prefix, 1, 0, suffix_alpha)
+
+            if match := re.match(r'^([A-Z]+)(\d+)$', value):
+                # Format like "CA3" (no dash)
+                prefix = match.group(1)
+                suffix_num = int(match.group(2))
+                return (prefix, 0, suffix_num, '')
+
+            if (match := re.match(r'^([A-Z]+)([A-Z]+)$', value)) and len(match.group(1)) <= 2:
+                # Format like "CAE" or "CAW" (prefix + alpha suffix)
+                prefix = match.group(1)
+                suffix_alpha = match.group(2)
+                return (prefix, 1, 0, suffix_alpha)
+
+        # Fallback: sort alphabetically
+        return (value,)
+
+    return sort_key
+
+def ordered_districts(layer) -> tuple[str|None, list]:
     ''' Return field name and list of layer features ordered by guessed district numbers.
     '''
     defn = layer.GetLayerDefn()
     fields = list()
-    
+
     polygon_features = [feat for feat in layer if is_polygonal_feature(feat)]
     has_multipolygons = True in [is_multipolygon_feature(f) for f in polygon_features]
 
     for index in range(defn.GetFieldCount()):
         name = defn.GetFieldDefn(index).GetName()
         raw_values = [feat.GetField(name) for feat in polygon_features]
-        
-        try:
-            int_values = {int(raw) for raw in raw_values}
-            float_values = {float(raw) for raw in raw_values}
-        except Exception:
-            continue
-        
-        if (int_values != float_values):
-            # All values must be integers
-            continue
-        
-        has_no_repeats = bool(len(int_values) == len(polygon_features))
-        
-        if 1 not in int_values or int_values > {i+1 for i in range(len(int_values))}:
-            continue
-        
-        fields.append((2 if 'dist' in name.lower() else 1, name, has_no_repeats))
+
+        # Check if this is a U.S. Census column name
+        is_census_column = bool(re.match(r'^(SLDLST|SLDUST|CD\d\d\dFP)$', name))
+
+        if is_census_column:
+            # Census columns need special handling
+            raw_values_str = [str(v) for v in raw_values]
+
+            # Check if all values are numeric (possibly with ZZ/ZZZ water markers)
+            non_water_values = [v for v in raw_values_str if v not in ('ZZ', 'ZZZ')]
+            all_numeric = all(v.isdigit() for v in non_water_values)
+
+            if all_numeric:
+                # Purely numeric with possible water markers - filter and sort numerically
+                filtered_features = [f for f in polygon_features
+                                    if str(f.GetField(name)) not in ('ZZ', 'ZZZ')]
+                has_no_repeats = len(set(str(f.GetField(name)) for f in filtered_features)) == len(filtered_features)
+
+                # Priority 3 for Census columns
+                fields.append((3, name, has_no_repeats, filtered_features,
+                              lambda f, n=name: int(f.GetField(n))))
+            else:
+                # Alphanumeric or alphabetic - analyze pattern across all values
+                has_no_repeats = len(set(raw_values_str)) == len(polygon_features)
+
+                # Analyze the overall pattern in the data
+                has_pure_alpha = any(re.match(r'^[A-Z]+$', v) for v in raw_values_str)
+                has_num_then_alpha = any(re.match(r'^\d+[A-Z]+$', v) for v in raw_values_str)
+                has_alpha_then_num = any(re.match(r'^[A-Z]+-?\d+$', v) for v in raw_values_str)
+                has_alpha_then_alpha = any(re.match(r'^[A-Z]+-[A-Z]+$', v) for v in raw_values_str)
+
+                # Priority 3 for Census columns
+                sort_key = _make_district_sort_key(
+                    name, has_pure_alpha, has_num_then_alpha, has_alpha_then_num, has_alpha_then_alpha
+                )
+                fields.append((3, name, has_no_repeats, polygon_features, sort_key))
+        else:
+            # Non-Census columns - use original logic
+            try:
+                int_values = {int(raw) for raw in raw_values}
+                float_values = {float(raw) for raw in raw_values}
+            except Exception:
+                continue
+
+            if (int_values != float_values):
+                # All values must be integers
+                continue
+
+            has_no_repeats = bool(len(int_values) == len(polygon_features))
+
+            if 1 not in int_values or int_values > {i+1 for i in range(len(int_values))}:
+                continue
+
+            # Priority 2 for 'dist' columns, 1 otherwise
+            priority = 2 if 'dist' in name.lower() else 1
+            fields.append((priority, name, has_no_repeats, polygon_features,
+                          lambda f, n=name: int(f.GetField(n))))
 
     if not fields:
         # No district field found, return everything as-is
         return None, polygon_features
-    
-    field_name, has_no_repeats = sorted(fields)[-1][1:]
-    def district_number(f):
-        return int(f.GetField(field_name))
-    
+
+    # Sort by priority (highest first), then by name
+    priority, field_name, has_no_repeats, features_to_use, sort_key = sorted(fields, reverse=True)[0]
+
     if has_multipolygons or has_no_repeats:
         # Don't try to merge when a multipolygon is present or no repeats exist
-        return field_name, sorted(polygon_features, key=district_number)
+        return field_name, sorted(features_to_use, key=sort_key)
 
-    sorted_features = sorted(polygon_features, key=district_number)
+    sorted_features = sorted(features_to_use, key=sort_key)
     output_features = []
-    
+
     def _union_features(f1, f2):
         dissolved_geom = f1.GetGeometryRef().Union(f2.GetGeometryRef())
         f1.SetGeometry(dissolved_geom)
         return f1
 
-    # Union feature geometries based on district number
-    for (_, group) in itertools.groupby(sorted_features, key=district_number):
+    # Union feature geometries based on district identifier
+    for (_, group) in itertools.groupby(sorted_features, key=sort_key):
         head = next(group)
         output_features.append(functools.reduce(_union_features, group, head))
-    
+
     return field_name, output_features
     
 def is_polygonal_feature(feature):

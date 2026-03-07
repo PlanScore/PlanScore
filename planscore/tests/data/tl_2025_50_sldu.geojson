@@ -1,0 +1,21 @@
+{
+"type": "FeatureCollection",
+"features": [
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDUST": "BEN" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDUST": "ADD" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDUST": "CAL" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDUST": "CHC" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDUST": "CHN" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDUST": "CHS" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDUST": "ESX" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDUST": "FRA" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDUST": "GRI" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDUST": "LAM" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDUST": "ORA" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDUST": "ORL" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDUST": "RUT" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDUST": "WAS" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDUST": "WDH" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } },
+{ "type": "Feature", "properties": { "STATEFP": "50", "SLDUST": "WSR" }, "geometry": { "type": "Point", "coordinates": [ 0, 0 ] } }
+]
+}
