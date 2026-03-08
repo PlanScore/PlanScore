@@ -72,7 +72,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
-        keys = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
         self.assertEqual(keys, [
             'uploads/ID/geometries/0.wkt',
             'uploads/ID/geometries/1.wkt',
@@ -88,7 +88,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-25d.geojson')
-        keys = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
         self.assertEqual(keys, [
             'uploads/ID/geometries/0.wkt',
             'uploads/ID/geometries/1.wkt',
@@ -104,7 +104,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-missing-geometries.geojson')
-        keys = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
         self.assertEqual(keys, [
             'uploads/ID/geometries/0.wkt',
             'uploads/ID/geometries/1.wkt',
@@ -120,7 +120,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         plan_path = os.path.join(os.path.dirname(__file__), 'data', 'PA-DRA-points-included.geojson')
-        keys = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, plan_path)
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, plan_path)
         self.assertEqual(len(keys), 51)
         
         self.assertEqual(s3.mock_calls[-1][2]['Key'], 'uploads/ID/districts/partition.csv.gz')
@@ -191,7 +191,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.txt')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.txt')
-        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
+        keys, source_districts = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
         self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
 
         self.assertEqual(s3.mock_calls[0][2]['Key'], 'uploads/ID/assignments/0.txt')
@@ -225,7 +225,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.txt')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'ohio-1195_001.csv')
-        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
+        keys, source_districts = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
         self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt', 'uploads/ID/assignments/2.txt'])
         
         self.assertEqual(s3.mock_calls[0][2]['Key'], 'uploads/ID/assignments/0.txt')
@@ -244,7 +244,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.txt')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.txt.zip')
-        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
+        keys, source_districts = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
         self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
         
         self.assertEqual(s3.mock_calls[0][2]['Key'], 'uploads/ID/assignments/0.txt')
@@ -392,7 +392,7 @@ class TestPostreadCalculate (unittest.TestCase):
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
 
-        put_district_geometries.return_value = [unittest.mock.Mock()] * 2
+        put_district_geometries.return_value = ([unittest.mock.Mock()] * 2, [None, None])
         accumulate_district_totals.return_value = [(None, [])]
         populate_compactness.return_value = [{}, {}]
 
@@ -430,7 +430,7 @@ class TestPostreadCalculate (unittest.TestCase):
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.shp.zip'
 
-        put_district_geometries.return_value = [unittest.mock.Mock()] * 2
+        put_district_geometries.return_value = ([unittest.mock.Mock()] * 2, [None, None])
         accumulate_district_totals.return_value = [(None, [])]
         populate_compactness.return_value = [{}, {}]
 
