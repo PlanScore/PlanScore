@@ -179,3 +179,104 @@ District    Source District        Democratic Votes    ...
 ```
 
 Note: CSV excel-tab dialect quotes fields containing quotes and doubles internal quotes per CSV spec.
+
+---
+
+## PHASE 3: Remove Extraneous district_number (PENDING)
+
+### Issue
+
+The `district_number` field (0-indexed array position) is completely redundant:
+
+**Current structure in index.json:**
+```json
+{
+  "number": 1,                          // User-facing district number (1, 2, 3...)
+  "source_district": "SLDUST=\"028\"",  // Source field identifier (what we just added)
+  "is_counted": true,
+  "vote_swing": 0.0,
+  "totals": {
+    "district_number": 0,  // ← REDUNDANT: 0-indexed array position
+    "Democratic Votes": 177750.84,
+    ...
+  },
+  "compactness": {...}
+}
+```
+
+### Why district_number is Redundant
+
+1. **For display**: We use `number` (user-facing 1, 2, 3...)
+2. **For source tracking**: We now have `source_district` (e.g., 'SLDUST="028"')
+3. **For indexing**: Array iteration provides indices when needed
+4. **Current usage**:
+   - ❌ NOT used in plan.js (confirmed: not in FIELDS whitelist at lines 3-70)
+   - ❌ NOT used in data.py:to_plaintext (uses `number` instead)
+   - ❌ No other code references found
+5. **Web UI impact**:
+   - ✅ **Removing it will NOT change the Web UI** - it's not displayed
+   - The Web UI only shows fields explicitly listed in the FIELDS array
+   - `district_number` is not in that array, so it's already hidden
+   - Dead code that just sits in the JSON
+
+### Implementation Plan
+
+**8. Modify `planscore/postread_calculate.py:commence_geometry_upload_scoring()` (lines 84-87)**
+
+```python
+def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
+    # ... existing code ...
+
+    upload4 = upload3.clone(districts=[
+        dict(totals=totals, **district)
+        for (district, totals) in zip(districts, results)
+    ])
+
+    # Remove extraneous district_number from totals
+    for district in upload4.districts:
+        district['totals'].pop('district_number', None)
+
+    # ... rest unchanged ...
+```
+
+**9. Modify `planscore/postread_calculate.py:commence_blockassign_upload_scoring()` (lines 138-141)**
+
+```python
+def commence_blockassign_upload_scoring(context, s3, athena, bucket, upload, file_path):
+    # ... existing code ...
+
+    upload5 = upload4.clone(districts=[
+        dict(totals=totals, **district)
+        for (district, totals) in zip(districts, results)
+    ])
+
+    # Remove extraneous district_number from totals
+    for district in upload5.districts:
+        district['totals'].pop('district_number', None)
+
+    # ... rest unchanged ...
+```
+
+### Expected Result
+
+**After Phase 3 index.json structure:**
+```json
+{
+  "number": 1,                          // User-facing district number
+  "source_district": "SLDUST=\"028\"",  // Source field identifier
+  "is_counted": true,
+  "vote_swing": 0.0,
+  "totals": {
+    "Democratic Votes": 177750.84,  // Only statistics here, no district_number
+    ...
+  },
+  "compactness": {...}
+}
+```
+
+### Testing
+
+- Run full test suite to verify no breakage
+- Check that `district_number` no longer appears as a column in web UI
+- Verify index.json structure matches expected output
+- Confirm no code actually depends on `district_number`
