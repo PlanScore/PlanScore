@@ -32,6 +32,21 @@ jobs:
       - run: pip3 install '.[deploy]'
       - run: make live-deploy
 
+  # Deploy to development site
+  Dev-Deploy:
+    machine:
+      - image: ubuntu-2404:current
+    resource_class: arm.medium
+    working_directory: ~/repo
+    environment:
+      API_TOKENS: 'Good,Better,Best'
+      PLANSCORE_SECRET: 'fake-fake'
+    steps:
+      - run: npm install -g aws-cdk@2.17.0
+      - checkout
+      - run: pip3 install '.[deploy]'
+      - run: make dev-deploy
+
 workflows:
   version: 2
   Everything:
@@ -44,3 +59,10 @@ workflows:
             branches:
               only:
                 - main
+      - Dev-Deploy:
+          requires:
+            - Test
+          filters:
+            branches:
+              only:
+                - development
