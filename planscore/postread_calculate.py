@@ -85,7 +85,7 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
         dict(totals=totals, **district)
         for (district, totals) in zip(districts, results)
     ])
-    
+
     observe.put_upload_index(storage, upload4.clone(message='Predicting future votes for each district'))
 
     try:
@@ -139,7 +139,7 @@ def commence_blockassign_upload_scoring(context, s3, athena, bucket, upload, fil
         dict(totals=totals, **district)
         for (district, totals) in zip(districts, results)
     ])
-    
+
     observe.put_upload_index(storage, upload5.clone(message='Predicting future votes for each district'))
 
     try:
@@ -188,7 +188,6 @@ def accumulate_district_totals(athena, upload, is_spatial):
     query = f'''
         -- {os.environ.get('ATHENA_DB')} {upload.model.key_prefix} and {upload.id[:2]}…{upload.id[-4:]}
         SELECT
-            d.number AS district_number,
             {indent.join(columns)}
         FROM
             "{os.environ.get('ATHENA_DB')}"."blocks" as b,

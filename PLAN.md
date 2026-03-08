@@ -182,7 +182,7 @@ Note: CSV excel-tab dialect quotes fields containing quotes and doubles internal
 
 ---
 
-## PHASE 3: Remove Extraneous district_number (PENDING)
+## PHASE 3: Remove Extraneous district_number ✅ COMPLETED
 
 ### Issue
 
@@ -219,43 +219,32 @@ The `district_number` field (0-indexed array position) is completely redundant:
    - `district_number` is not in that array, so it's already hidden
    - Dead code that just sits in the JSON
 
-### Implementation Plan
+### Implementation (Completed)
 
-**8. Modify `planscore/postread_calculate.py:commence_geometry_upload_scoring()` (lines 84-87)**
+**8. Modified `planscore/postread_calculate.py:accumulate_district_totals()` (line 199)**
 
-```python
-def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
-    # ... existing code ...
-
-    upload4 = upload3.clone(districts=[
-        dict(totals=totals, **district)
-        for (district, totals) in zip(districts, results)
-    ])
-
-    # Remove extraneous district_number from totals
-    for district in upload4.districts:
-        district['totals'].pop('district_number', None)
-
-    # ... rest unchanged ...
-```
-
-**9. Modify `planscore/postread_calculate.py:commence_blockassign_upload_scoring()` (lines 138-141)**
+Instead of fetching `district_number` from Athena and then removing it, we simply don't request it:
 
 ```python
-def commence_blockassign_upload_scoring(context, s3, athena, bucket, upload, file_path):
-    # ... existing code ...
-
-    upload5 = upload4.clone(districts=[
-        dict(totals=totals, **district)
-        for (district, totals) in zip(districts, results)
-    ])
-
-    # Remove extraneous district_number from totals
-    for district in upload5.districts:
-        district['totals'].pop('district_number', None)
-
-    # ... rest unchanged ...
+query = f'''
+    -- {os.environ.get('ATHENA_DB')} {upload.model.key_prefix} and {upload.id[:2]}…{upload.id[-4:]}
+    SELECT
+        {indent.join(columns)}  # Removed: d.number AS district_number,
+    FROM
+        "{os.environ.get('ATHENA_DB')}"."blocks" as b,
+        "{os.environ.get('ATHENA_DB')}"."districts" AS d
+    WHERE
+        {where_clause}
+        AND b.prefix = '{upload.model.key_prefix}'
+        AND d.upload = '{upload.id}'
+    GROUP BY d.number
+    ORDER BY d.number
+'''
 ```
+
+**9. Updated test mock data in `planscore/tests/test_postread_calculate.py` (line 509)**
+
+Removed `district_number` column from mock Athena result set to match new query structure.
 
 ### Expected Result
 
@@ -274,9 +263,12 @@ def commence_blockassign_upload_scoring(context, s3, athena, bucket, upload, fil
 }
 ```
 
-### Testing
+### Testing ✅
 
-- Run full test suite to verify no breakage
-- Check that `district_number` no longer appears as a column in web UI
-- Verify index.json structure matches expected output
-- Confirm no code actually depends on `district_number`
+- ✅ Full test suite passes (all tests passing)
+- ✅ `district_number` no longer queried from Athena
+- ✅ `district_number` removed from test mock data
+- ✅ Confirmed no code depends on `district_number` in totals:
+  - Not used in planscore/data.py
+  - Not used in planscore/website (plan.js)
+  - score.py uses `district['number']` (top-level), not `district['totals']['district_number']`
