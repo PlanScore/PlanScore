@@ -1,0 +1,172 @@
+# Plan: Add "source_district" Property to Track Original District Field Values
+
+Based on commit 8ca2c0cc where district ordering was implemented, we need to track the original source field and values used for ordering districts.
+
+---
+
+## PHASE 1: Write Failing Unit Tests
+
+### 1. Add tests to `planscore/tests/test_postread_calculate.py`
+
+**Test 1: `test_put_district_geometries_with_census_field()`**
+- Use existing `tl_2025_09_sldu.geojson` (has SLDUST="028", "029", etc.)
+- Call `put_district_geometries()` and verify it returns `(keys, source_districts)`
+- Assert `source_districts[0] == 'SLDUST="028"'` (first after sorting)
+- Assert `source_districts[1] == 'SLDUST="029"'`
+
+**Test 2: `test_put_district_geometries_with_numeric_field()`**
+- Use existing `null-plan.geojson` (has numeric district field)
+- Call `put_district_geometries()` and verify tuple return
+- Assert source_districts contain proper format like `'District=1'`, `'District=2'`
+
+**Test 3: `test_put_district_geometries_without_district_field()`**
+- Use a test file with no valid district column
+- Verify source_districts list contains None values
+
+**Test 4: `test_put_district_assignments_returns_none_source_districts()`**
+- Modify existing `test_put_district_assignments()`
+- Verify it returns `(keys, source_districts)` where all source_districts are None
+
+### 2. Add tests to `planscore/tests/test_data.py`
+
+**Test 5: `test_upload_plaintext_with_source_district()`** (in `test_upload_plaintext()`)
+- Create upload with districts that have `source_district` property
+- Example: `{"totals": {...}, "compactness": {...}, "source_district": 'SLDUST="001"'}`
+- Assert header includes: `'District\tSource District\tDemocratic Votes\t...'`
+- Assert rows include source district values in correct position
+
+**Test 6: `test_upload_plaintext_with_none_source_district()`**
+- Create upload with `source_district=None` in districts
+- Assert Source District column shows empty string
+
+---
+
+## PHASE 2: Implementation Changes
+
+### 3. Modify `planscore/postread_calculate.py:put_district_geometries()` (lines 260-330)
+
+```python
+def put_district_geometries(s3, bucket, upload, path):
+    # ... existing code ...
+
+    field_name, features = util.ordered_districts(ds.GetLayer(0))  # Line 277 change
+    source_districts = []
+
+    for (index, feature) in enumerate(features):
+        # Extract source_district value before processing geometry
+        if field_name:
+            field_value = feature.GetField(field_name)
+            source_district = f'{field_name}={json.dumps(field_value)}'
+        else:
+            source_district = None
+        source_districts.append(source_district)
+
+        # ... rest of existing geometry processing ...
+
+    # ... existing code ...
+
+    return keys, source_districts  # Changed from just 'keys'
+```
+
+### 4. Update `planscore/postread_calculate.py:commence_geometry_upload_scoring()` (lines 57-101)
+
+```python
+def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
+    # ... existing code ...
+    keys, source_districts = put_district_geometries(...)  # Line 61 change
+
+    # ... existing code through line 68 ...
+
+    districts = observe.populate_compactness(geometries)  # Line 68
+
+    # Add source_district to each district
+    for i, district in enumerate(districts):
+        district['source_district'] = source_districts[i]
+
+    upload3 = upload2.clone(districts=districts)  # Line 69
+    # ... rest unchanged ...
+```
+
+### 5. Update `planscore/postread_calculate.py:put_district_assignments()` (lines 332-396)
+
+```python
+def put_district_assignments(s3, bucket, upload, path):
+    # ... existing code ...
+
+    # Build source_districts list of None values (BAF files don't have field info)
+    source_districts = [None] * len(keys)
+
+    return keys, source_districts  # Changed from just 'keys'
+```
+
+### 6. Update `planscore/postread_calculate.py:commence_blockassign_upload_scoring()` (lines 103-150)
+
+```python
+def commence_blockassign_upload_scoring(context, s3, athena, bucket, upload, file_path):
+    # ... existing code ...
+    keys, source_districts = put_district_assignments(...)  # Line 107 change
+
+    # ... existing code through line 117 ...
+
+    districts = observe.populate_compactness(geometries)  # Line 117
+
+    # Add source_district to each district
+    for i, district in enumerate(districts):
+        district['source_district'] = source_districts[i]
+
+    upload4 = upload3.clone(districts=districts)  # Line 118
+    # ... rest unchanged ...
+```
+
+### 7. Modify `planscore/data.py:to_plaintext()` (lines 293-327)
+
+```python
+def to_plaintext(self):
+    # ... existing code through line 308 ...
+
+    out = io.StringIO()
+    rows = csv.DictWriter(out,
+        ['District', 'Source District'] + extra_columns + column_names,  # Line 313 change
+        dialect='excel-tab')
+    rows.writeheader()
+    for (index, district) in enumerate(self.districts):
+        totals, compactness = district['totals'], district['compactness']
+        extra_values = {'Candidate Scenario': self.incumbents[index]} if has_incumbency else {}
+        rows.writerow(dict(
+            District = district.get('number', index+1),
+            **{'Source District': district.get('source_district', '')},  # New line
+            **dict(totals, **dict(compactness, **extra_values)),
+        ))
+    # ... rest unchanged ...
+```
+
+---
+
+## Expected Test Results
+
+**Before implementation:** All 6 new tests fail
+**After implementation:** All tests pass
+
+**Output Examples:**
+- Census text column: `'SLDUST="028"'`
+- Census int column: `'CD119FP="01"'`
+- Regular int column: `'District=1'`
+- No field: `None` → empty string in plaintext
+
+**index.json output:**
+```json
+{"districts": [
+  {
+    "source_district": "SLDUST=\"001\"",
+    "totals": {...},
+    "compactness": {...}
+  }
+]}
+```
+
+**index.txt output:**
+```
+District    Source District    Democratic Votes    ...
+1           SLDUST="028"       12345              ...
+2           SLDUST="029"       23456              ...
+```
