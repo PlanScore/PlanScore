@@ -125,10 +125,12 @@ class TestPostreadCalculate (unittest.TestCase):
         
         self.assertEqual(s3.mock_calls[-1][2]['Key'], 'uploads/ID/districts/partition.csv.gz')
     
+    @unittest.mock.patch('planscore.util.is_polygonal_feature')
     @unittest.mock.patch('sys.stdout')
-    def test_put_district_geometries_with_census_field(self, stdout):
+    def test_put_district_geometries_with_census_field(self, stdout, is_polygonal_feature):
         ''' Test put_district_geometries returns (keys, source_districts) for Census field
         '''
+        is_polygonal_feature.return_value = True
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         test_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'tl_2025_09_sldu.geojson')
@@ -144,10 +146,12 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(source_districts[0], 'SLDUST="028"')
         self.assertEqual(source_districts[1], 'SLDUST="029"')
 
+    @unittest.mock.patch('planscore.util.is_polygonal_feature')
     @unittest.mock.patch('sys.stdout')
-    def test_put_district_geometries_with_numeric_field(self, stdout):
+    def test_put_district_geometries_with_numeric_field(self, stdout, is_polygonal_feature):
         ''' Test put_district_geometries returns (keys, source_districts) for numeric field
         '''
+        is_polygonal_feature.return_value = True
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         test_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'unordered6.geojson')
@@ -162,10 +166,12 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertTrue(source_districts[0].startswith('District='))
         self.assertTrue(source_districts[1].startswith('District='))
 
+    @unittest.mock.patch('planscore.util.is_polygonal_feature')
     @unittest.mock.patch('sys.stdout')
-    def test_put_district_geometries_without_district_field(self, stdout):
+    def test_put_district_geometries_without_district_field(self, stdout, is_polygonal_feature):
         ''' Test put_district_geometries returns (keys, source_districts) when no district field exists
         '''
+        is_polygonal_feature.return_value = True
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
