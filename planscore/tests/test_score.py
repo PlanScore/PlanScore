@@ -123,6 +123,124 @@ class TestScore (unittest.TestCase):
         self.assertAlmostEqual(votes_zero_dist[0, 0, 0], 3.4)  # Sim 0, District 0, blue
         self.assertAlmostEqual(votes_zero_dist[0, 2, 0], 2.4)  # Sim 0, District 2, blue
 
+    def test_vectorized_logit_shift(self):
+        ''' Logit-based vote shift is correctly calculated for vectorized multi-sim numpy arrays
+        '''
+        # Test with 2 simulations, 3 districts
+        # Convention: [:,:,0] = blue (Dem), [:,:,1] = red (Rep)
+        # Array shape is (sims, districts, parties)
+        votes1 = numpy.array([
+            [[300, 100], [200, 200], [100, 300]],  # Sim 1: 60% blue overall
+            [[300, 100], [200, 200], [100, 300]],  # Sim 2: same as Sim 1
+        ])
+
+        # Calculate initial national vote share
+        total_blue_initial = votes1[:, :, 0].sum(axis=1)
+        total_red_initial = votes1[:, :, 1].sum(axis=1)
+        initial_share = total_blue_initial / (total_blue_initial + total_red_initial)
+        # Should be 0.6 for both sims: (300+200+100)/(600+400+600) = 600/1600 = 0.375... wait let me recalculate
+        # Sim 1: total blue = 300+200+100 = 600, total red = 100+200+300 = 600
+        # Share = 600/1200 = 0.5
+        self.assertAlmostEqual(initial_share[0], 0.5, places=4)
+
+        # Test zero swing - should return identical votes
+        votes_zero = score.vectorized_logit_shift(votes1, 0.0)
+        self.assertEqual(votes_zero.shape, votes1.shape)
+        self.assertTrue(numpy.allclose(votes_zero, votes1))
+
+        # Test positive shift (+0.05 toward blue)
+        # National vote share should increase by 0.05 (from 0.5 to 0.55)
+        votes_pos = score.vectorized_logit_shift(votes1, 0.05)
+        self.assertEqual(votes_pos.shape, votes1.shape)
+
+        # Verify national vote share is correct
+        total_blue_pos = votes_pos[:, :, 0].sum(axis=1)
+        total_red_pos = votes_pos[:, :, 1].sum(axis=1)
+        new_share_pos = total_blue_pos / (total_blue_pos + total_red_pos)
+        self.assertAlmostEqual(new_share_pos[0], 0.55, places=3)
+        self.assertAlmostEqual(new_share_pos[1], 0.55, places=3)
+
+        # Verify turnout is preserved in each district
+        turnout_initial = votes1.sum(axis=2)
+        turnout_pos = votes_pos.sum(axis=2)
+        self.assertTrue(numpy.allclose(turnout_initial, turnout_pos))
+
+        # Verify that competitive districts shift more than safe districts
+        # District 1 (75% blue) is safer than District 2 (50% blue)
+        # Under logit shift, District 2 should shift more in absolute terms
+        shift_dist0 = votes_pos[0, 0, 0] / (votes_pos[0, 0, 0] + votes_pos[0, 0, 1]) - votes1[0, 0, 0] / (votes1[0, 0, 0] + votes1[0, 0, 1])
+        shift_dist1 = votes_pos[0, 1, 0] / (votes_pos[0, 1, 0] + votes_pos[0, 1, 1]) - votes1[0, 1, 0] / (votes1[0, 1, 0] + votes1[0, 1, 1])
+        shift_dist2 = votes_pos[0, 2, 0] / (votes_pos[0, 2, 0] + votes_pos[0, 2, 1]) - votes1[0, 2, 0] / (votes1[0, 2, 0] + votes1[0, 2, 1])
+        # District 1 (50% blue) should shift more than Districts 0 and 2
+        self.assertGreater(shift_dist1, shift_dist0)
+        self.assertGreater(shift_dist1, shift_dist2)
+
+        # Test negative shift (-0.05 toward red)
+        votes_neg = score.vectorized_logit_shift(votes1, -0.05)
+        self.assertEqual(votes_neg.shape, votes1.shape)
+
+        # Verify national vote share is correct
+        total_blue_neg = votes_neg[:, :, 0].sum(axis=1)
+        total_red_neg = votes_neg[:, :, 1].sum(axis=1)
+        new_share_neg = total_blue_neg / (total_blue_neg + total_red_neg)
+        self.assertAlmostEqual(new_share_neg[0], 0.45, places=3)
+        self.assertAlmostEqual(new_share_neg[1], 0.45, places=3)
+
+        # Verify turnout is preserved
+        turnout_neg = votes_neg.sum(axis=2)
+        self.assertTrue(numpy.allclose(turnout_initial, turnout_neg))
+
+        # Test with zero-vote districts (resilience to division by zero)
+        votes_with_zeros = numpy.array([
+            [[300, 100], [0, 0], [200, 200]],  # Sim 1: Normal, Zero-vote, Normal
+            [[300, 100], [0, 0], [200, 200]],  # Sim 2: same
+        ])
+        votes_zero_dist = score.vectorized_logit_shift(votes_with_zeros, 0.05)
+        self.assertEqual(votes_zero_dist.shape, votes_with_zeros.shape)
+
+        # Zero-vote district should remain zero
+        self.assertEqual(votes_zero_dist[0, 1, 0], 0)  # Sim 0, District 1 (zero-vote), blue
+        self.assertEqual(votes_zero_dist[0, 1, 1], 0)  # Sim 0, District 1 (zero-vote), red
+        self.assertEqual(votes_zero_dist[1, 1, 0], 0)  # Sim 1, District 1 (zero-vote), blue
+        self.assertEqual(votes_zero_dist[1, 1, 1], 0)  # Sim 1, District 1 (zero-vote), red
+
+        # Verify national vote share excludes zero-vote districts correctly
+        total_blue_zero = votes_zero_dist[:, :, 0].sum(axis=1)
+        total_red_zero = votes_zero_dist[:, :, 1].sum(axis=1)
+        # Initial: (300+200)/(400+400) = 500/800 = 0.625
+        initial_share_zero = (300 + 200) / (400 + 400)
+        new_share_zero = total_blue_zero / (total_blue_zero + total_red_zero)
+        self.assertAlmostEqual(new_share_zero[0], initial_share_zero + 0.05, places=3)
+
+        # Test with higher-dimensional arrays (model_versions, incumbency, sims, districts, parties)
+        votes_5d = numpy.array([
+            [  # Model version 1
+                [  # Incumbency 0
+                    [[300, 100], [200, 200], [100, 300]],  # Sim 1
+                    [[300, 100], [200, 200], [100, 300]],  # Sim 2
+                ],
+                [  # Incumbency 1
+                    [[310, 90], [200, 200], [90, 310]],  # Sim 1
+                    [[310, 90], [200, 200], [90, 310]],  # Sim 2
+                ],
+            ],
+        ])
+        votes_5d_shifted = score.vectorized_logit_shift(votes_5d, 0.05)
+        self.assertEqual(votes_5d_shifted.shape, votes_5d.shape)
+
+        # Verify each scenario gets the correct national shift
+        for model_idx in range(votes_5d.shape[0]):
+            for inc_idx in range(votes_5d.shape[1]):
+                for sim_idx in range(votes_5d.shape[2]):
+                    original_blue = votes_5d[model_idx, inc_idx, sim_idx, :, 0].sum()
+                    original_red = votes_5d[model_idx, inc_idx, sim_idx, :, 1].sum()
+                    shifted_blue = votes_5d_shifted[model_idx, inc_idx, sim_idx, :, 0].sum()
+                    shifted_red = votes_5d_shifted[model_idx, inc_idx, sim_idx, :, 1].sum()
+
+                    original_share = original_blue / (original_blue + original_red)
+                    shifted_share = shifted_blue / (shifted_blue + shifted_red)
+                    self.assertAlmostEqual(shifted_share, original_share + 0.05, places=3)
+
     def test_safe_mean(self):
         ''' Means are correctly calculated
         '''

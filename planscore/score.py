@@ -220,6 +220,130 @@ def swing_vote_matrix(votes:numpy.typing.NDArray, vote_swings:list[float]) -> nu
 
     return new_votes.round(6)
 
+def _vectorized_expit(arr:numpy.typing.NDArray) -> numpy.typing.NDArray:
+    clipped = numpy.clip(arr, -20, 20)
+    return 1.0 / (1.0 + numpy.exp(-clipped))
+
+def vectorized_logit_shift(votes:numpy.typing.NDArray, target_diff:float) -> numpy.typing.NDArray:
+    '''
+    Fully vectorized logit-based vote shift - processes all scenarios in parallel.
+
+    Instead of looping over scenarios, perform bisection simultaneously across
+    all scenarios using numpy broadcasting.
+
+    Input array shape is (*leading_dims, districts, 2) where leading_dims can be any number of dimensions.
+    Convention: votes[..., 0] = blue, votes[..., 1] = red
+    Returns array of same shape with logit-shifted votes.
+
+    Unlike vectorized_swing() which applies uniform shifts, this calculates
+    per-district shifts using log-odds transformation to better model real
+    electoral swing patterns.
+
+    Examples:
+    - (sims, districts, 2) - original 3D shape
+    - (incumbency, sims, districts, 2) - 4D shape with incumbency
+    - (model_versions, incumbency, sims, districts, 2) - 5D shape
+    '''
+    if target_diff == 0:
+        return votes.copy()
+
+    # Store original shape and flatten leading dimensions
+    original_shape = votes.shape
+    district_count = original_shape[-2]
+
+    # Reshape to (N, districts, 2) where N = product of all leading dimensions
+    votes_flat = votes.reshape(-1, district_count, 2)
+
+    # Extract blue and red votes for all scenarios at once
+    # Shape: (N, districts)
+    blue_votes = votes_flat[:, :, 0]
+    red_votes = votes_flat[:, :, 1]
+
+    # Calculate target shares for all scenarios
+    # Shape: (N,)
+    total_blue = blue_votes.sum(axis=1)
+    total_red = red_votes.sum(axis=1)
+    total_votes = total_blue + total_red
+
+    # Handle zero-vote scenarios
+    valid_mask = total_votes > 0
+    current_share = numpy.where(valid_mask, total_blue / total_votes, 0.5)
+    target_share = current_share + target_diff
+
+    # Turnout for each district in each scenario
+    # Shape: (N, districts)
+    turnout = blue_votes + red_votes
+
+    # Compute log-odds for all scenarios
+    # Shape: (N, districts)
+    log_odds = numpy.where(
+        turnout > 0,
+        numpy.log(blue_votes + 1e-10) - numpy.log(red_votes + 1e-10),
+        0
+    )
+
+    # Vectorized bisection: maintain arrays of left/right bounds for all scenarios
+    # Shape: (N,)
+    left = numpy.full(votes_flat.shape[0], -10.0)
+    right = numpy.full(votes_flat.shape[0], 10.0)
+
+    # Iterate until convergence or 50x, whichever is sooner
+    for _ in range(50):
+        # Check convergence for all scenarios within epsilon=1e-6
+        if numpy.all(right - left <= 1e-6):
+            break
+
+        # Midpoint for all scenarios
+        # Shape: (N,)
+        mid = (left + right) / 2.0
+
+        # Evaluate objective function for all scenarios simultaneously
+        # Add shift to log_odds using broadcasting: (N, 1) + (N, districts) -> (N, districts)
+        shifted_log_odds = log_odds + mid[:, numpy.newaxis]
+
+        # Apply expit to get probabilities
+        # Shape: (N, districts)
+        probs = _vectorized_expit(shifted_log_odds)
+
+        # Weighted average for each scenario
+        # Shape: (N,)
+        weighted_avg = numpy.average(probs, weights=turnout, axis=1)
+
+        # Objective value for each scenario
+        # Shape: (N,)
+        obj_vals = weighted_avg - target_share
+
+        # Update bounds based on objective values
+        # Where obj_val < 0, move left bound up; where >= 0, move right bound down
+        left = numpy.where(obj_vals < 0, mid, left)
+        right = numpy.where(obj_vals >= 0, mid, right)
+
+    # Final shift values for all scenarios
+    # Shape: (N,)
+    shift = (left + right) / 2.0
+
+    # Apply shifts to get new vote shares
+    # Shape: (N, districts)
+    shifted_log_odds = log_odds + shift[:, numpy.newaxis]
+    new_shares = _vectorized_expit(shifted_log_odds)
+
+    # Convert back to vote counts
+    # Shape: (N, districts, 2)
+    new_votes = numpy.zeros_like(votes_flat, dtype=float)
+    new_votes[:, :, 0] = new_shares * turnout  # blue
+    new_votes[:, :, 1] = (1 - new_shares) * turnout  # red
+
+    # Preserve zero-turnout districts
+    mask = turnout > 0
+    new_votes[:, :, 0] = numpy.where(mask, new_votes[:, :, 0], 0.0)
+    new_votes[:, :, 1] = numpy.where(mask, new_votes[:, :, 1], 0.0)
+
+    # Handle zero-vote scenarios (no change)
+    new_votes[~valid_mask] = votes_flat[~valid_mask]
+
+    # Reshape back to original dimensions
+    return new_votes.reshape(original_shape)
+
 def _is_valid_number(val):
     '''Helper to check if a value is a valid number (not None or NaN)'''
     return val is not None and not (isinstance(val, float) and math.isnan(val))
@@ -1143,7 +1267,7 @@ def calculate_district_biases(upload):
     swing_range = [(i - swing_count // 2) / 2 for i in range(swing_count)]
     z = swing_count // 2 # Index of zero-swing swing_range midpoint
     all_votes = numpy.concatenate(
-        [vectorized_swing(model_output, a/100).reshape(
+        [vectorized_logit_shift(model_output, a/100).reshape(
             (model_output.shape[0], 1, *model_output.shape[1:])
         ) for a in swing_range],
         axis=1,
