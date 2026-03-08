@@ -509,9 +509,9 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(response2, iter_athena_exec.return_value[0])
     
     def test_resultset_to_district_totals(self):
-        result = { "UpdateCount": 0, "ResultSet": { "Rows": [ { "Data": [ { "VarCharValue": "district_number" }, { "VarCharValue": "US President 2020 - DEM" }, { "VarCharValue": "US President 2020 - REP" }, { "VarCharValue": "US President 3000 - Other" }, ] }, { "Data": [ { "VarCharValue": "0" }, { "VarCharValue": "100" }, { "VarCharValue": "200.2" }, { }, ] }, { "Data": [ { "VarCharValue": "0" }, { "VarCharValue": "200" }, { "VarCharValue": "100.1" }, { }, ] } ], "ResultSetMetadata": { "ColumnInfo": [ { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "district_number", "Label": "district_number", "Type": "integer", "Precision": 10, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "US President 2020 - DEM", "Label": "US President 2020 - DEM", "Type": "bigint", "Precision": 17, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "US President 2020 - REP", "Label": "US President 2020 - REP", "Type": "double", "Precision": 17, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "US President 3000 - Other", "Label": "US President 3000 - Other", "Type": "double", "Precision": 17, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, ] } }, }
+        result = { "UpdateCount": 0, "ResultSet": { "Rows": [ { "Data": [ { "VarCharValue": "US President 2020 - DEM" }, { "VarCharValue": "US President 2020 - REP" }, { "VarCharValue": "US President 3000 - Other" }, ] }, { "Data": [ { "VarCharValue": "100" }, { "VarCharValue": "200.2" }, { }, ] }, { "Data": [ { "VarCharValue": "200" }, { "VarCharValue": "100.1" }, { }, ] } ], "ResultSetMetadata": { "ColumnInfo": [ { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "US President 2020 - DEM", "Label": "US President 2020 - DEM", "Type": "bigint", "Precision": 17, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "US President 2020 - REP", "Label": "US President 2020 - REP", "Type": "double", "Precision": 17, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "US President 3000 - Other", "Label": "US President 3000 - Other", "Type": "double", "Precision": 17, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, ] } }, }
         totals = postread_calculate.resultset_to_district_totals(result)
-        
+
         self.assertEqual(
             totals,
             [
@@ -519,17 +519,13 @@ class TestPostreadCalculate (unittest.TestCase):
                     result['ResultSet']['ResultSetMetadata']['ColumnInfo'][0]['Name']:\
                         int(result['ResultSet']['Rows'][1]['Data'][0]['VarCharValue']),
                     result['ResultSet']['ResultSetMetadata']['ColumnInfo'][1]['Name']:\
-                        int(result['ResultSet']['Rows'][1]['Data'][1]['VarCharValue']),
-                    result['ResultSet']['ResultSetMetadata']['ColumnInfo'][2]['Name']:\
-                        float(result['ResultSet']['Rows'][1]['Data'][2]['VarCharValue']),
+                        float(result['ResultSet']['Rows'][1]['Data'][1]['VarCharValue']),
                 },
                 {
                     result['ResultSet']['ResultSetMetadata']['ColumnInfo'][0]['Name']:\
                         int(result['ResultSet']['Rows'][2]['Data'][0]['VarCharValue']),
                     result['ResultSet']['ResultSetMetadata']['ColumnInfo'][1]['Name']:\
-                        int(result['ResultSet']['Rows'][2]['Data'][1]['VarCharValue']),
-                    result['ResultSet']['ResultSetMetadata']['ColumnInfo'][2]['Name']:\
-                        float(result['ResultSet']['Rows'][2]['Data'][2]['VarCharValue']),
+                        float(result['ResultSet']['Rows'][2]['Data'][1]['VarCharValue']),
                 },
             ],
         )
