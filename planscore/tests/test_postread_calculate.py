@@ -125,6 +125,59 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(s3.mock_calls[-1][2]['Key'], 'uploads/ID/districts/partition.csv.gz')
     
     @unittest.mock.patch('sys.stdout')
+    def test_put_district_geometries_with_census_field(self, stdout):
+        ''' Test put_district_geometries returns (keys, source_districts) for Census field
+        '''
+        s3 = unittest.mock.Mock()
+        upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
+        test_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'tl_2025_09_sldu.geojson')
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, test_plan_path)
+
+        # Should return a tuple with keys and source_districts
+        self.assertIsInstance(keys, list)
+        self.assertIsInstance(source_districts, list)
+        self.assertEqual(len(keys), len(source_districts) + 1)  # +1 for bboxes
+
+        # Check that source_districts are in the expected format
+        # After sorting by SLDUST, first should be "028", second should be "029"
+        self.assertEqual(source_districts[0], 'SLDUST="028"')
+        self.assertEqual(source_districts[1], 'SLDUST="029"')
+
+    @unittest.mock.patch('sys.stdout')
+    def test_put_district_geometries_with_numeric_field(self, stdout):
+        ''' Test put_district_geometries returns (keys, source_districts) for numeric field
+        '''
+        s3 = unittest.mock.Mock()
+        upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
+        test_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'unordered6.geojson')
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, test_plan_path)
+
+        # Should return a tuple with keys and source_districts
+        self.assertIsInstance(keys, list)
+        self.assertIsInstance(source_districts, list)
+
+        # Check that source_districts are in the expected format for numeric fields
+        # Format should be like 'District=1', 'District=2', etc.
+        self.assertTrue(source_districts[0].startswith('District='))
+        self.assertTrue(source_districts[1].startswith('District='))
+
+    @unittest.mock.patch('sys.stdout')
+    def test_put_district_geometries_without_district_field(self, stdout):
+        ''' Test put_district_geometries returns (keys, source_districts) when no district field exists
+        '''
+        s3 = unittest.mock.Mock()
+        upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
+        null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
+
+        # Should return a tuple with keys and source_districts
+        self.assertIsInstance(keys, list)
+        self.assertIsInstance(source_districts, list)
+
+        # When no district field is found, all source_districts should be None
+        self.assertTrue(all(sd is None for sd in source_districts))
+
+    @unittest.mock.patch('sys.stdout')
     def test_put_district_assignments(self, stdout):
         '''
         '''
@@ -133,7 +186,7 @@ class TestPostreadCalculate (unittest.TestCase):
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.txt')
         keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
         self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
-        
+
         self.assertEqual(s3.mock_calls[0][2]['Key'], 'uploads/ID/assignments/0.txt')
         self.assertEqual(s3.mock_calls[1][2]['Key'], 'uploads/ID/assignments/1.txt')
         self.assertEqual(s3.mock_calls[0][2]['Body'], '0000000004\n0000000008\n0000000009\n0000000010\n')
@@ -141,6 +194,23 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(s3.mock_calls[2][2]['Key'], 'uploads/ID/districts/partition.csv.gz')
         self.assertEqual(gzip.decompress(s3.mock_calls[2][2]['Body']), b'0,,0000000004\r\n0,,0000000008\r\n0,,0000000009\r\n0,,0000000010\r\n1,,0000000001\r\n1,,0000000002\r\n1,,0000000003\r\n1,,0000000005\r\n1,,0000000006\r\n1,,0000000007\r\n')
     
+    @unittest.mock.patch('sys.stdout')
+    def test_put_district_assignments_returns_none_source_districts(self, stdout):
+        ''' Test put_district_assignments returns (keys, source_districts) with None values
+        '''
+        s3 = unittest.mock.Mock()
+        upload = data.Upload('ID', 'uploads/ID/upload/file.txt')
+        null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.txt')
+        keys, source_districts = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
+
+        # Should return a tuple with keys and source_districts
+        self.assertIsInstance(keys, list)
+        self.assertIsInstance(source_districts, list)
+        self.assertEqual(len(keys), len(source_districts))
+
+        # BAF files don't have field info, so all source_districts should be None
+        self.assertTrue(all(sd is None for sd in source_districts))
+
     @unittest.mock.patch('sys.stdout')
     def test_put_district_assignments_funky_districts(self, stdout):
         '''
