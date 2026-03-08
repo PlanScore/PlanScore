@@ -307,16 +307,17 @@ class Upload:
             
             column_names.extend(self.districts[0]['compactness'].keys())
             extra_columns = ['Candidate Scenario'] if has_incumbency else []
-                
+
             out = io.StringIO()
             rows = csv.DictWriter(out,
-                ['District'] + extra_columns + column_names, dialect='excel-tab')
+                ['District', 'Source District'] + extra_columns + column_names, dialect='excel-tab')
             rows.writeheader()
             for (index, district) in enumerate(self.districts):
                 totals, compactness = district['totals'], district['compactness']
                 extra_values = {'Candidate Scenario': self.incumbents[index]} if has_incumbency else {}
                 rows.writerow(dict(
                     District = district.get('number', index+1),
+                    **{'Source District': district.get('source_district') or ''},
                     **dict(totals, **dict(compactness, **extra_values)),
                 ))
         

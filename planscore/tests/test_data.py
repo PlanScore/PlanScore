@@ -391,8 +391,9 @@ class TestData (unittest.TestCase):
 
         # Header should include 'Source District' column right after 'District'
         self.assertEqual(head, 'District\tSource District\tDemocratic Votes\tRepublican Votes\tPopulation 2015\tReock')
-        self.assertEqual(row1, '1\tSLDUST="028"\t100\t300\t200\t0.2')
-        self.assertEqual(row2, '2\tSLDUST="029"\t400\t600\t500\t0.3')
+        # CSV excel-tab dialect will quote fields containing quotes and double internal quotes
+        self.assertEqual(row1, '1\t"SLDUST=""028"""\t100\t300\t200\t0.2')
+        self.assertEqual(row2, '2\t"SLDUST=""029"""\t400\t600\t500\t0.3')
         self.assertEqual(row3, '3\tDistrict=3\t700\t900\t800\t0.4')
         self.assertEqual(tail, '')
 
