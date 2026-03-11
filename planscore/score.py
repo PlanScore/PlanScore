@@ -1452,18 +1452,15 @@ parser.add_argument('upload_url')
 def calculate_everything(upload1):
     '''
     '''
-    upload2 = calculate_bias(upload1)
-    upload3 = calculate_open_biases(upload2)
-    upload4 = calculate_biases(upload3)
-    upload5 = calculate_district_biases(upload4)
-    upload6 = calculate_fva_biases(upload5)
+    upload2 = calculate_district_biases(upload1)
+    upload3 = calculate_fva_biases(upload2)
     
     rounded_summary_dict = {
         k: None if v is None else round(v, constants.ROUND_FLOAT)
-        for (k, v) in upload6.summary.items()
+        for (k, v) in upload3.summary.items()
     }
 
-    return upload6.clone(summary=rounded_summary_dict)
+    return upload3.clone(summary=rounded_summary_dict)
 
 def main():
     ''' Write all district vote simulations to single CSV file
