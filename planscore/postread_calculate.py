@@ -199,9 +199,7 @@ def accumulate_district_totals(athena, upload, is_spatial):
         GROUP BY d.number
         ORDER BY d.number
     '''
-    
-    print(query)
-    
+
     for (status, dict) in util.iter_athena_exec(athena, query):
         if 'ResultSet' in dict:
             dict = resultset_to_district_totals(dict)
@@ -258,8 +256,6 @@ def generate_block_assignment_file(athena, s3, bucket, upload):
         ORDER BY d.number
     '''
 
-    print(query)
-
     # Execute query and collect results
     rows = []
     for (status, dict) in util.iter_athena_exec(athena, query):
@@ -267,28 +263,23 @@ def generate_block_assignment_file(athena, s3, bucket, upload):
             rows = resultset_to_district_totals(dict)
 
     # Build source_district lookup by district number (0-based from Athena)
-    source_district_map = {}
-    for district in upload.districts:
-        # district['number'] is 1-based from observe.populate_compactness
-        district_index = district.get('number', 0) - 1
-        source_district_map[district_index] = district.get('source_district', '')
+    source_district_map = {
+        district.get('number', 0): district.get('source_district', '')
+        for district in upload.districts
+    }
 
     # Generate CSV content
     csv_buffer = io.StringIO()
-    csv_writer = csv.writer(csv_buffer, lineterminator='\n')
+    csv_writer = csv.writer(csv_buffer, dialect='excel')
 
     # Write header
     csv_writer.writerow(['district_number', 'source_district', 'geoid20', 'intpt_lon', 'intpt_lat'])
 
     # Write data rows
     for row in rows:
-        athena_district_number = row['district_number']  # 0-based from Athena
-        one_based_district = athena_district_number + 1  # Convert to 1-based
-        source_district = source_district_map.get(athena_district_number, '')
-
         csv_writer.writerow([
-            one_based_district,
-            source_district,
+            row['district_number'] + 1,
+            source_district_map.get(row['district_number'] + 1, ''),
             row['geoid20'],
             row['intpt_lon'],
             row['intpt_lat'],

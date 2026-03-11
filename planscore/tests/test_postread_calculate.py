@@ -614,7 +614,7 @@ class TestPostreadCalculate (unittest.TestCase):
 
         # Check CSV content structure
         csv_body = gzip.decompress(put_call[2]['Body'])
-        csv_lines = csv_body.decode('utf8').strip().split('\n')
+        csv_lines = csv_body.decode('utf8').strip().split('\r\n')
         self.assertEqual(csv_lines[0], 'district_number,source_district,geoid20,intpt_lon,intpt_lat')
         self.assertIn('1,District-1,370010001001000,-78.5,35.8', csv_lines[1])
 
