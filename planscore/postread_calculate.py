@@ -238,10 +238,10 @@ def generate_block_assignment_file(athena, s3, bucket, upload):
     query = f'''
         -- {os.environ.get('ATHENA_DB')} {upload.model.key_prefix} and {upload.id[:2]}…{upload.id[-4:]}
         SELECT
-            d.number AS district_number,
+            d.number AS district,
             b.geoid20,
-            ST_X(ST_GeometryFromText(b.point)) AS intpt_lon,
-            ST_Y(ST_GeometryFromText(b.point)) AS intpt_lat
+            ST_X(ST_GeometryFromText(b.point)) AS intptlon,
+            ST_Y(ST_GeometryFromText(b.point)) AS intptlat
         FROM
             "{os.environ.get('ATHENA_DB')}"."blocks" as b,
             "{os.environ.get('ATHENA_DB')}"."districts" AS d
@@ -263,15 +263,15 @@ def generate_block_assignment_file(athena, s3, bucket, upload):
     csv_writer = csv.writer(csv_buffer, dialect='excel')
 
     # Write header
-    csv_writer.writerow(['district_number', 'geoid20', 'intpt_lon', 'intpt_lat'])
+    csv_writer.writerow(['district', 'geoid20', 'intptlon', 'intptlat'])
 
     # Write data rows
     for row in rows:
         csv_writer.writerow([
-            row['district_number'] + 1,
+            row['district'] + 1,
             row['geoid20'],
-            row['intpt_lon'],
-            row['intpt_lat'],
+            row['intptlon'],
+            row['intptlat'],
         ])
 
     # Gzip and upload to S3

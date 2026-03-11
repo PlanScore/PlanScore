@@ -571,14 +571,14 @@ class TestPostreadCalculate (unittest.TestCase):
             'ResultSet': {
                 'ResultSetMetadata': {
                     'ColumnInfo': [
-                        {'Name': 'district_number', 'Type': 'integer'},
+                        {'Name': 'district', 'Type': 'integer'},
                         {'Name': 'geoid20', 'Type': 'varchar'},
-                        {'Name': 'intpt_lon', 'Type': 'double'},
-                        {'Name': 'intpt_lat', 'Type': 'double'},
+                        {'Name': 'intptlon', 'Type': 'double'},
+                        {'Name': 'intptlat', 'Type': 'double'},
                     ]
                 },
                 'Rows': [
-                    {'Data': [{'VarCharValue': 'district_number'}, {'VarCharValue': 'geoid20'}, {'VarCharValue': 'intpt_lon'}, {'VarCharValue': 'intpt_lat'}]},
+                    {'Data': [{'VarCharValue': 'district'}, {'VarCharValue': 'geoid20'}, {'VarCharValue': 'intptlon'}, {'VarCharValue': 'intptlat'}]},
                     {'Data': [{'VarCharValue': '0'}, {'VarCharValue': '370010001001000'}, {'VarCharValue': '-78.5'}, {'VarCharValue': '35.8'}]},
                     {'Data': [{'VarCharValue': '1'}, {'VarCharValue': '370010001001001'}, {'VarCharValue': '-78.6'}, {'VarCharValue': '35.9'}]},
                 ]
@@ -598,10 +598,10 @@ class TestPostreadCalculate (unittest.TestCase):
         # Check the Athena query structure
         query = iter_athena_exec.mock_calls[-1][1][1]
         self.assertIn('ST_Within(ST_GeometryFromText(b.point), ST_GeometryFromText(d.polygon))', query)
-        self.assertIn('d.number AS district_number', query)
+        self.assertIn('d.number AS district', query)
         self.assertIn('b.geoid20', query)
-        self.assertIn('ST_X(ST_GeometryFromText(b.point)) AS intpt_lon', query)
-        self.assertIn('ST_Y(ST_GeometryFromText(b.point)) AS intpt_lat', query)
+        self.assertIn('ST_X(ST_GeometryFromText(b.point)) AS intptlon', query)
+        self.assertIn('ST_Y(ST_GeometryFromText(b.point)) AS intptlat', query)
         self.assertIn(f"b.prefix = '{upload.model.key_prefix}'", query)
         self.assertIn(f"d.upload = '{upload.id}'", query)
         self.assertIn('ORDER BY d.number', query)
@@ -615,7 +615,7 @@ class TestPostreadCalculate (unittest.TestCase):
         # Check CSV content structure
         csv_body = gzip.decompress(put_call[2]['Body'])
         csv_lines = csv_body.decode('utf8').strip().split('\r\n')
-        self.assertEqual(csv_lines[0], 'district_number,geoid20,intpt_lon,intpt_lat')
+        self.assertEqual(csv_lines[0], 'district,geoid20,intptlon,intptlat')
         self.assertIn('1,370010001001000,-78.5,35.8', csv_lines[1])
 
     @unittest.mock.patch('planscore.util.iter_athena_exec')
@@ -629,14 +629,14 @@ class TestPostreadCalculate (unittest.TestCase):
             'ResultSet': {
                 'ResultSetMetadata': {
                     'ColumnInfo': [
-                        {'Name': 'district_number', 'Type': 'integer'},
+                        {'Name': 'district', 'Type': 'integer'},
                         {'Name': 'geoid20', 'Type': 'varchar'},
-                        {'Name': 'intpt_lon', 'Type': 'double'},
-                        {'Name': 'intpt_lat', 'Type': 'double'},
+                        {'Name': 'intptlon', 'Type': 'double'},
+                        {'Name': 'intptlat', 'Type': 'double'},
                     ]
                 },
                 'Rows': [
-                    {'Data': [{'VarCharValue': 'district_number'}, {'VarCharValue': 'geoid20'}, {'VarCharValue': 'intpt_lon'}, {'VarCharValue': 'intpt_lat'}]},
+                    {'Data': [{'VarCharValue': 'district'}, {'VarCharValue': 'geoid20'}, {'VarCharValue': 'intptlon'}, {'VarCharValue': 'intptlat'}]},
                     {'Data': [{'VarCharValue': '0'}, {'VarCharValue': '370010001001000'}, {'VarCharValue': '-78.5'}, {'VarCharValue': '35.8'}]},
                     {'Data': [{'VarCharValue': '0'}, {'VarCharValue': '370010001001001'}, {'VarCharValue': '-78.51'}, {'VarCharValue': '35.81'}]},
                     {'Data': [{'VarCharValue': '1'}, {'VarCharValue': '370010001002000'}, {'VarCharValue': '-78.6'}, {'VarCharValue': '35.9'}]},
@@ -661,14 +661,14 @@ class TestPostreadCalculate (unittest.TestCase):
         rows = list(csv_reader)
 
         # Check column order
-        self.assertEqual(list(rows[0].keys()), ['district_number', 'geoid20', 'intpt_lon', 'intpt_lat'])
+        self.assertEqual(list(rows[0].keys()), ['district', 'geoid20', 'intptlon', 'intptlat'])
 
-        # Check data - district_number should be 1-based
+        # Check data - district should be 1-based
         self.assertEqual(len(rows), 3)
-        self.assertEqual(rows[0]['district_number'], '1')
+        self.assertEqual(rows[0]['district'], '1')
         self.assertEqual(rows[0]['geoid20'], '370010001001000')
-        self.assertEqual(rows[1]['district_number'], '1')
-        self.assertEqual(rows[2]['district_number'], '2')
+        self.assertEqual(rows[1]['district'], '1')
+        self.assertEqual(rows[2]['district'], '2')
 
     @unittest.mock.patch('planscore.score.calculate_everything')
     @unittest.mock.patch('planscore.observe.populate_compactness')
