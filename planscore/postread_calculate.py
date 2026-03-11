@@ -58,7 +58,7 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     storage = data.Storage(s3, bucket, upload.model.key_prefix)
     observe.put_upload_index(storage, upload)
     upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
-    keys, source_districts = put_district_geometries(s3, bucket, upload2, ds_path)
+    put_district_geometries(s3, bucket, upload2, ds_path)
 
     response = accumulate_district_totals(athena, upload2, True)
 
@@ -66,10 +66,6 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
 
     geometries = observe.load_upload_geometries(storage, upload2)
     districts = observe.populate_compactness(geometries)
-
-    # Add source_district to each district dict
-    for (district, source_district) in zip(districts, source_districts):
-        district['source_district'] = source_district
 
     upload3 = upload2.clone(districts=districts)
 
@@ -262,24 +258,17 @@ def generate_block_assignment_file(athena, s3, bucket, upload):
         if 'ResultSet' in dict:
             rows = resultset_to_district_totals(dict)
 
-    # Build source_district lookup by district number (0-based from Athena)
-    source_district_map = {
-        district.get('number', 0): district.get('source_district', '')
-        for district in upload.districts
-    }
-
     # Generate CSV content
     csv_buffer = io.StringIO()
     csv_writer = csv.writer(csv_buffer, dialect='excel')
 
     # Write header
-    csv_writer.writerow(['district_number', 'source_district', 'geoid20', 'intpt_lon', 'intpt_lat'])
+    csv_writer.writerow(['district_number', 'geoid20', 'intpt_lon', 'intpt_lat'])
 
     # Write data rows
     for row in rows:
         csv_writer.writerow([
             row['district_number'] + 1,
-            source_district_map.get(row['district_number'] + 1, ''),
             row['geoid20'],
             row['intpt_lon'],
             row['intpt_lat'],
@@ -356,16 +345,8 @@ def put_district_geometries(s3, bucket, upload, path):
     partition_csv = csv.writer(partition_buffer, dialect='excel')
 
     field_name, features = util.ordered_districts(ds.GetLayer(0))
-    source_districts = []
 
     for (index, feature) in enumerate(features):
-        # Extract source_district value from feature
-        if field_name:
-            source_district = str(feature.GetField(field_name))
-        else:
-            source_district = ''
-
-        source_districts.append(source_district)
         geometry = feature.GetGeometryRef()
 
         if geometry.GetSpatialReference():
@@ -416,7 +397,7 @@ def put_district_geometries(s3, bucket, upload, path):
         StorageClass='INTELLIGENT_TIERING',
     )
 
-    return keys, source_districts
+    return keys
 
 def put_district_assignments(s3, bucket, upload, path):
     '''
