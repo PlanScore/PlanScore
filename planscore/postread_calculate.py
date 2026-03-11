@@ -249,7 +249,7 @@ def generate_block_assignment_file(athena, s3, bucket, upload):
             {where_clause}
             AND b.prefix = '{upload.model.key_prefix}'
             AND d.upload = '{upload.id}'
-        ORDER BY d.number
+        ORDER BY d.number, b.geoid20
     '''
 
     # Execute query and collect results
