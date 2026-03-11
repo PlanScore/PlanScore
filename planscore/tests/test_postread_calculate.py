@@ -554,3 +554,200 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(test_upload.model_version, '2022F',
             f'Expected specified version "2022F" but got "{test_upload.model_version}". '
             f'When model_version is already set, it should not be changed.')
+
+    @unittest.mock.patch('planscore.util.iter_athena_exec')
+    def test_generate_block_assignment_file_spatial_join(self, iter_athena_exec):
+        '''Test block assignment file generation with spatial join query'''
+        athena, s3, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
+        upload.id, upload.model.key_prefix = 'ID', 'data/XX'
+
+        # Mock Athena response with sample block assignments
+        mock_resultset = {
+            'ResultSet': {
+                'ResultSetMetadata': {
+                    'ColumnInfo': [
+                        {'Name': 'district_number', 'Type': 'integer'},
+                        {'Name': 'geoid20', 'Type': 'varchar'},
+                        {'Name': 'intpt_lon', 'Type': 'double'},
+                        {'Name': 'intpt_lat', 'Type': 'double'},
+                    ]
+                },
+                'Rows': [
+                    {'Data': [{'VarCharValue': 'district_number'}, {'VarCharValue': 'geoid20'}, {'VarCharValue': 'intpt_lon'}, {'VarCharValue': 'intpt_lat'}]},
+                    {'Data': [{'VarCharValue': '0'}, {'VarCharValue': '370010001001000'}, {'VarCharValue': '-78.5'}, {'VarCharValue': '35.8'}]},
+                    {'Data': [{'VarCharValue': '1'}, {'VarCharValue': '370010001001001'}, {'VarCharValue': '-78.6'}, {'VarCharValue': '35.9'}]},
+                ]
+            }
+        }
+
+        # Mock districts with source_district information
+        upload.districts = [
+            {'number': 1, 'source_district': 'District-1'},
+            {'number': 2, 'source_district': 'District-2'},
+        ]
+
+        iter_athena_exec.return_value = [(True, mock_resultset)]
+
+        url = postread_calculate.generate_block_assignment_file(athena, s3, 'bucket', upload)
+
+        # Check the Athena query structure
+        query = iter_athena_exec.mock_calls[-1][1][1]
+        self.assertIn('ST_Within(ST_GeometryFromText(b.point), ST_GeometryFromText(d.polygon))', query)
+        self.assertIn('d.number AS district_number', query)
+        self.assertIn('b.geoid20', query)
+        self.assertIn('ST_X(ST_GeometryFromText(b.point)) AS intpt_lon', query)
+        self.assertIn('ST_Y(ST_GeometryFromText(b.point)) AS intpt_lat', query)
+        self.assertIn(f"b.prefix = '{upload.model.key_prefix}'", query)
+        self.assertIn(f"d.upload = '{upload.id}'", query)
+        self.assertIn('ORDER BY d.number', query)
+
+        # Check S3 upload
+        self.assertEqual(len(s3.put_object.mock_calls), 1)
+        put_call = s3.put_object.mock_calls[0]
+        self.assertEqual(put_call[2]['Key'], data.UPLOAD_BLOCKASSIGN_FILE_KEY.format(id=upload.id))
+        self.assertEqual(put_call[2]['ContentEncoding'], 'gzip')
+
+        # Check CSV content structure
+        csv_body = gzip.decompress(put_call[2]['Body'])
+        csv_lines = csv_body.decode('utf8').strip().split('\n')
+        self.assertEqual(csv_lines[0], 'district_number,source_district,geoid20,intpt_lon,intpt_lat')
+        self.assertIn('1,District-1,370010001001000,-78.5,35.8', csv_lines[1])
+
+    @unittest.mock.patch('planscore.util.iter_athena_exec')
+    def test_generate_block_assignment_file_csv_format(self, iter_athena_exec):
+        '''Test that block assignment CSV has correct format and column order'''
+        athena, s3, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
+        upload.id, upload.model.key_prefix = 'ID', 'data/XX'
+
+        # Mock response with multiple districts and blocks
+        mock_resultset = {
+            'ResultSet': {
+                'ResultSetMetadata': {
+                    'ColumnInfo': [
+                        {'Name': 'district_number', 'Type': 'integer'},
+                        {'Name': 'geoid20', 'Type': 'varchar'},
+                        {'Name': 'intpt_lon', 'Type': 'double'},
+                        {'Name': 'intpt_lat', 'Type': 'double'},
+                    ]
+                },
+                'Rows': [
+                    {'Data': [{'VarCharValue': 'district_number'}, {'VarCharValue': 'geoid20'}, {'VarCharValue': 'intpt_lon'}, {'VarCharValue': 'intpt_lat'}]},
+                    {'Data': [{'VarCharValue': '0'}, {'VarCharValue': '370010001001000'}, {'VarCharValue': '-78.5'}, {'VarCharValue': '35.8'}]},
+                    {'Data': [{'VarCharValue': '0'}, {'VarCharValue': '370010001001001'}, {'VarCharValue': '-78.51'}, {'VarCharValue': '35.81'}]},
+                    {'Data': [{'VarCharValue': '1'}, {'VarCharValue': '370010001002000'}, {'VarCharValue': '-78.6'}, {'VarCharValue': '35.9'}]},
+                ]
+            }
+        }
+
+        # Mock districts with source_district information
+        upload.districts = [
+            {'number': 1, 'source_district': 'CD-01'},
+            {'number': 2, 'source_district': 'CD-02'},
+        ]
+
+        iter_athena_exec.return_value = [(True, mock_resultset)]
+
+        url = postread_calculate.generate_block_assignment_file(athena, s3, 'bucket', upload)
+
+        # Parse the uploaded CSV
+        put_call = s3.put_object.mock_calls[0]
+        csv_body = gzip.decompress(put_call[2]['Body']).decode('utf8')
+        csv_reader = csv.DictReader(io.StringIO(csv_body))
+        rows = list(csv_reader)
+
+        # Check column order
+        self.assertEqual(list(rows[0].keys()), ['district_number', 'source_district', 'geoid20', 'intpt_lon', 'intpt_lat'])
+
+        # Check data - district_number should be 1-based
+        self.assertEqual(len(rows), 3)
+        self.assertEqual(rows[0]['district_number'], '1')
+        self.assertEqual(rows[0]['source_district'], 'CD-01')
+        self.assertEqual(rows[0]['geoid20'], '370010001001000')
+        self.assertEqual(rows[1]['district_number'], '1')
+        self.assertEqual(rows[2]['district_number'], '2')
+        self.assertEqual(rows[2]['source_district'], 'CD-02')
+
+    @unittest.mock.patch('planscore.util.iter_athena_exec')
+    def test_generate_block_assignment_file_blank_source_district(self, iter_athena_exec):
+        '''Test that blank source_district is handled correctly'''
+        athena, s3, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
+        upload.id, upload.model.key_prefix = 'ID', 'data/XX'
+
+        # Mock response
+        mock_resultset = {
+            'ResultSet': {
+                'ResultSetMetadata': {
+                    'ColumnInfo': [
+                        {'Name': 'district_number', 'Type': 'integer'},
+                        {'Name': 'geoid20', 'Type': 'varchar'},
+                        {'Name': 'intpt_lon', 'Type': 'double'},
+                        {'Name': 'intpt_lat', 'Type': 'double'},
+                    ]
+                },
+                'Rows': [
+                    {'Data': [{'VarCharValue': 'district_number'}, {'VarCharValue': 'geoid20'}, {'VarCharValue': 'intpt_lon'}, {'VarCharValue': 'intpt_lat'}]},
+                    {'Data': [{'VarCharValue': '0'}, {'VarCharValue': '370010001001000'}, {'VarCharValue': '-78.5'}, {'VarCharValue': '35.8'}]},
+                ]
+            }
+        }
+
+        # Mock districts with blank/missing source_district
+        upload.districts = [
+            {'number': 1, 'source_district': ''},
+            {'number': 2},  # Missing source_district key
+        ]
+
+        iter_athena_exec.return_value = [(True, mock_resultset)]
+
+        url = postread_calculate.generate_block_assignment_file(athena, s3, 'bucket', upload)
+
+        # Parse the uploaded CSV
+        put_call = s3.put_object.mock_calls[0]
+        csv_body = gzip.decompress(put_call[2]['Body']).decode('utf8')
+        csv_lines = csv_body.strip().split('\n')
+
+        # Should handle blank source_district gracefully
+        self.assertIn('1,,370010001001000,-78.5,35.8', csv_lines[1])
+
+    @unittest.mock.patch('planscore.score.calculate_everything')
+    @unittest.mock.patch('planscore.observe.populate_compactness')
+    @unittest.mock.patch('planscore.observe.load_upload_geometries')
+    @unittest.mock.patch('planscore.observe.put_upload_index')
+    @unittest.mock.patch('planscore.postread_calculate.generate_block_assignment_file')
+    @unittest.mock.patch('planscore.postread_calculate.accumulate_district_totals')
+    @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
+    def test_commence_geometry_upload_scoring_creates_blockassign_file(self, put_district_geometries, accumulate_district_totals, generate_block_assignment_file, put_upload_index, load_upload_geometries, populate_compactness, calculate_everything):
+        '''Test that geometry upload scoring generates block assignment file and stores URL in library_metadata'''
+        id = 'ID'
+        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
+        upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
+
+        put_district_geometries.return_value = [unittest.mock.Mock()] * 2
+        accumulate_district_totals.return_value = [(None, [])]
+        generate_block_assignment_file.return_value = 'https://s3.amazonaws.com/bucket/uploads/ID/blockassignments.csv.gz'
+
+        s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
+        s3.get_object.return_value = {'Body': None}
+
+        upload = data.Upload(id, upload_key, model=data.MODELS[0])
+        info = postread_calculate.commence_geometry_upload_scoring(s3, athena, bucket, upload, nullplan_path)
+
+        # Check that generate_block_assignment_file was called
+        self.assertEqual(len(generate_block_assignment_file.mock_calls), 1)
+
+        # Check that library_metadata contains blockassign_file URL
+        self.assertIsNotNone(info.library_metadata)
+        self.assertEqual(info.library_metadata['blockassign_file'], 'https://s3.amazonaws.com/bucket/uploads/ID/blockassignments.csv.gz')
+
+    @unittest.mock.patch('sys.stdout')
+    def test_put_district_geometries_tracks_source_district(self, stdout):
+        '''Test that put_district_geometries extracts source_district from features'''
+        s3 = unittest.mock.Mock()
+        upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
+        null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
+
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
+
+        # Should return list of source_district values
+        self.assertIsInstance(source_districts, list)
+        self.assertEqual(len(source_districts), 2)  # null-plan has 2 districts
