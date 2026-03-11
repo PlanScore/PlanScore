@@ -2,6 +2,7 @@ import unittest
 import unittest.mock
 import io
 import os
+import csv
 import contextlib
 import gzip
 from .. import postread_calculate, data, constants
@@ -71,7 +72,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
-        keys = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
         self.assertEqual(keys, [
             'uploads/ID/geometries/0.wkt',
             'uploads/ID/geometries/1.wkt',
@@ -87,7 +88,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-25d.geojson')
-        keys = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
         self.assertEqual(keys, [
             'uploads/ID/geometries/0.wkt',
             'uploads/ID/geometries/1.wkt',
@@ -103,7 +104,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-missing-geometries.geojson')
-        keys = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
         self.assertEqual(keys, [
             'uploads/ID/geometries/0.wkt',
             'uploads/ID/geometries/1.wkt',
@@ -119,7 +120,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         plan_path = os.path.join(os.path.dirname(__file__), 'data', 'PA-DRA-points-included.geojson')
-        keys = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, plan_path)
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, plan_path)
         self.assertEqual(len(keys), 51)
         
         self.assertEqual(s3.mock_calls[-1][2]['Key'], 'uploads/ID/districts/partition.csv.gz')
@@ -305,17 +306,19 @@ class TestPostreadCalculate (unittest.TestCase):
     @unittest.mock.patch('planscore.observe.populate_compactness')
     @unittest.mock.patch('planscore.observe.load_upload_geometries')
     @unittest.mock.patch('planscore.observe.put_upload_index')
+    @unittest.mock.patch('planscore.postread_calculate.generate_block_assignment_file')
     @unittest.mock.patch('planscore.postread_calculate.accumulate_district_totals')
     @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
-    def test_commence_geometry_upload_scoring_good_ogr_file(self, put_district_geometries, accumulate_district_totals, put_upload_index, load_upload_geometries, populate_compactness, calculate_everything):
+    def test_commence_geometry_upload_scoring_good_ogr_file(self, put_district_geometries, accumulate_district_totals, generate_block_assignment_file, put_upload_index, load_upload_geometries, populate_compactness, calculate_everything):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
-        
-        put_district_geometries.return_value = [unittest.mock.Mock()] * 2
+
+        put_district_geometries.return_value = ([unittest.mock.Mock()] * 2, ['District-1', 'District-2'])
         accumulate_district_totals.return_value = [(None, [])]
+        populate_compactness.return_value = [{}, {}]
 
         s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
@@ -324,7 +327,7 @@ class TestPostreadCalculate (unittest.TestCase):
         info = postread_calculate.commence_geometry_upload_scoring(s3, athena, bucket, upload, nullplan_path)
 
         self.assertIsNotNone(info)
-    
+
         self.assertEqual(len(put_upload_index.mock_calls), 5)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
         
@@ -341,17 +344,19 @@ class TestPostreadCalculate (unittest.TestCase):
     @unittest.mock.patch('planscore.observe.populate_compactness')
     @unittest.mock.patch('planscore.observe.load_upload_geometries')
     @unittest.mock.patch('planscore.observe.put_upload_index')
+    @unittest.mock.patch('planscore.postread_calculate.generate_block_assignment_file')
     @unittest.mock.patch('planscore.postread_calculate.accumulate_district_totals')
     @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
-    def test_commence_geometry_upload_scoring_zipped_ogr_file(self, put_district_geometries, accumulate_district_totals, put_upload_index, load_upload_geometries, populate_compactness, calculate_everything):
+    def test_commence_geometry_upload_scoring_zipped_ogr_file(self, put_district_geometries, accumulate_district_totals, generate_block_assignment_file, put_upload_index, load_upload_geometries, populate_compactness, calculate_everything):
         ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.shp.zip'
-        
-        put_district_geometries.return_value = [unittest.mock.Mock()] * 2
+
+        put_district_geometries.return_value = ([unittest.mock.Mock()] * 2, ['District-1', 'District-2'])
         accumulate_district_totals.return_value = [(None, [])]
+        populate_compactness.return_value = [{}, {}]
 
         s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
@@ -361,7 +366,7 @@ class TestPostreadCalculate (unittest.TestCase):
         info = postread_calculate.commence_geometry_upload_scoring(s3, athena, bucket, upload, nullplan_datasource)
 
         self.assertIsNotNone(info)
-    
+
         self.assertEqual(len(put_upload_index.mock_calls), 5)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
         
@@ -588,7 +593,7 @@ class TestPostreadCalculate (unittest.TestCase):
 
         iter_athena_exec.return_value = [(True, mock_resultset)]
 
-        url = postread_calculate.generate_block_assignment_file(athena, s3, 'bucket', upload)
+        postread_calculate.generate_block_assignment_file(athena, s3, 'bucket', upload)
 
         # Check the Athena query structure
         query = iter_athena_exec.mock_calls[-1][1][1]
@@ -647,7 +652,7 @@ class TestPostreadCalculate (unittest.TestCase):
 
         iter_athena_exec.return_value = [(True, mock_resultset)]
 
-        url = postread_calculate.generate_block_assignment_file(athena, s3, 'bucket', upload)
+        postread_calculate.generate_block_assignment_file(athena, s3, 'bucket', upload)
 
         # Parse the uploaded CSV
         put_call = s3.put_object.mock_calls[0]
@@ -699,7 +704,7 @@ class TestPostreadCalculate (unittest.TestCase):
 
         iter_athena_exec.return_value = [(True, mock_resultset)]
 
-        url = postread_calculate.generate_block_assignment_file(athena, s3, 'bucket', upload)
+        postread_calculate.generate_block_assignment_file(athena, s3, 'bucket', upload)
 
         # Parse the uploaded CSV
         put_call = s3.put_object.mock_calls[0]
@@ -722,9 +727,16 @@ class TestPostreadCalculate (unittest.TestCase):
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
 
-        put_district_geometries.return_value = [unittest.mock.Mock()] * 2
+        put_district_geometries.return_value = ([unittest.mock.Mock()] * 2, ['District-1', 'District-2'])
         accumulate_district_totals.return_value = [(None, [])]
         generate_block_assignment_file.return_value = 'https://s3.amazonaws.com/bucket/uploads/ID/blockassignments.csv.gz'
+
+        # Configure calculate_everything to return a mock upload that clones properly
+        mock_upload5 = unittest.mock.Mock()
+        mock_upload6 = unittest.mock.Mock()
+        mock_upload6.library_metadata = {'blockassign_file': 'https://s3.amazonaws.com/bucket/uploads/ID/blockassignments.csv.gz'}
+        mock_upload5.clone.return_value = mock_upload6
+        calculate_everything.return_value = mock_upload5
 
         s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
@@ -738,6 +750,11 @@ class TestPostreadCalculate (unittest.TestCase):
         # Check that library_metadata contains blockassign_file URL
         self.assertIsNotNone(info.library_metadata)
         self.assertEqual(info.library_metadata['blockassign_file'], 'https://s3.amazonaws.com/bucket/uploads/ID/blockassignments.csv.gz')
+
+        # Verify that clone was called with library_metadata
+        mock_upload5.clone.assert_called_once()
+        clone_call_kwargs = mock_upload5.clone.call_args[1]
+        self.assertEqual(clone_call_kwargs['library_metadata'], {'blockassign_file': 'https://s3.amazonaws.com/bucket/uploads/ID/blockassignments.csv.gz'})
 
     @unittest.mock.patch('sys.stdout')
     def test_put_district_geometries_tracks_source_district(self, stdout):
