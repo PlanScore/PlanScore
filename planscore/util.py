@@ -2,6 +2,7 @@ from __future__ import annotations
 import urllib.parse
 import tempfile
 import shutil
+import io
 import os
 import contextlib
 import zipfile
@@ -332,7 +333,7 @@ def is_multipolygon_feature(feature):
     geometry = feature.GetGeometryRef() or EMPTY_GEOMETRY
     return bool(geometry.GetGeometryType() == osgeo.ogr.wkbMultiPolygon)
 
-def iter_athena_exec(ath, query_string, workgroup=None, s3=None):
+def iter_athena_exec(ath, query_string, workgroup=None, s3=None) -> tuple[string, dict|io.TextIOWrapper]:
     kwargs = dict(QueryString=query_string)
     if workgroup:
         kwargs.update(WorkGroup=workgroup)
@@ -349,15 +350,16 @@ def iter_athena_exec(ath, query_string, workgroup=None, s3=None):
 
         time.sleep(2)
 
-    print(json.dumps(execution['QueryExecution']['Statistics']))
-
     # Get initial results
     results = ath.get_query_results(QueryExecutionId=query_id)
 
     # Check if we might have hit the row limit (1000 rows + 1 header row = 1001)
     row_count = len(results.get('ResultSet', {}).get('Rows', []))
 
-    if row_count >= 1000 and s3:
+    if row_count < 1000 or not s3:
+        # Return normal ResultSet
+        yield state, results
+    else:
         # Likely hit the limit, fetch full results from S3
         output_location = execution['QueryExecution']['ResultConfiguration']['OutputLocation']
 
@@ -369,9 +371,4 @@ def iter_athena_exec(ath, query_string, workgroup=None, s3=None):
 
         # Download the CSV from Athena's output location
         athena_result = s3.get_object(Bucket=output_bucket, Key=output_key)
-        csv_content = athena_result['Body'].read().decode('utf-8')
-
-        yield state, {'S3Output': csv_content}
-    else:
-        # Return normal ResultSet
-        yield state, results
+        yield state, io.TextIOWrapper(athena_result['Body'], encoding='utf-8')

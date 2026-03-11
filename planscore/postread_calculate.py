@@ -254,14 +254,13 @@ def generate_block_assignment_file(athena, s3, bucket, upload):
 
     # Execute query and collect results
     rows = []
-    for (status, dict) in util.iter_athena_exec(athena, query, s3=s3):
-        if 'S3Output' in dict:
+    for (status, response) in util.iter_athena_exec(athena, query, s3=s3):
+        if isinstance(response, io.TextIOWrapper):
             # Got full CSV from S3
-            csv_reader = csv.DictReader(io.StringIO(dict['S3Output']))
-            rows = list(csv_reader)
-        elif 'ResultSet' in dict:
+            rows = list(csv.DictReader(response))
+        elif 'ResultSet' in response:
             # Got standard ResultSet (< 1000 rows)
-            rows = resultset_to_district_totals(dict)
+            rows = resultset_to_district_totals(response)
 
     # Generate CSV content
     csv_buffer = io.StringIO()

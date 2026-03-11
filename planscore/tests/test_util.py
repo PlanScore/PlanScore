@@ -464,3 +464,106 @@ class TestUtil (unittest.TestCase):
 
         feature.GetGeometryRef.return_value = ogr.CreateGeometryFromWkt('POLYGON Z ((-87.855131 41.148036 0,-87.860482 41.148024 0,-87.857652 41.16262 0,-87.866291 41.162616 0,-87.866302 41.161839 0,-87.855131 41.148036 0))')
         self.assertTrue(util.is_polygonal_feature(feature))
+
+    def test_iter_athena_exec_small_resultset(self):
+        '''Test iter_athena_exec returns ResultSet for queries with < 1000 rows'''
+        athena = unittest.mock.Mock()
+
+        # Mock query execution
+        athena.start_query_execution.return_value = {'QueryExecutionId': 'query-123'}
+
+        # Mock query status (succeeded immediately)
+        athena.get_query_execution.return_value = {
+            'QueryExecution': {
+                'Status': {'State': 'SUCCEEDED'},
+                'ResultConfiguration': {'OutputLocation': 's3://bucket/path.csv'}
+            }
+        }
+
+        # Mock result with < 1000 rows
+        mock_resultset = {
+            'ResultSet': {
+                'Rows': [{'Data': []}] * 100  # 100 rows (< 1000)
+            }
+        }
+        athena.get_query_results.return_value = mock_resultset
+
+        # Execute without s3 client
+        results = list(util.iter_athena_exec(athena, 'SELECT * FROM table'))
+
+        # Should return ResultSet - yields status update + final result
+        self.assertEqual(len(results), 2)
+        self.assertEqual(results[-1][0], 'SUCCEEDED')
+        self.assertEqual(results[-1][1], mock_resultset)
+
+    def test_iter_athena_exec_large_resultset_fallback_to_s3(self):
+        '''Test iter_athena_exec falls back to S3 for queries with >= 1000 rows'''
+        athena = unittest.mock.Mock()
+        s3 = unittest.mock.Mock()
+
+        # Mock query execution
+        athena.start_query_execution.return_value = {'QueryExecutionId': 'query-123'}
+
+        # Mock query status (succeeded immediately)
+        athena.get_query_execution.return_value = {
+            'QueryExecution': {
+                'Status': {'State': 'SUCCEEDED'},
+                'ResultConfiguration': {'OutputLocation': 's3://test-bucket/results/query-123.csv'}
+            }
+        }
+
+        # Mock result with exactly 1000 rows (indicating limit was hit)
+        mock_resultset = {
+            'ResultSet': {
+                'Rows': [{'Data': []}] * 1000  # Exactly 1000 rows
+            }
+        }
+        athena.get_query_results.return_value = mock_resultset
+
+        # Mock S3 response with full CSV
+        csv_content = 'col1,col2\nval1,val2\nval3,val4\n'
+        mock_body = unittest.mock.Mock()
+        mock_body.read.return_value = csv_content.encode('utf-8')
+        s3.get_object.return_value = {'Body': mock_body}
+
+        # Execute with s3 client
+        results = list(util.iter_athena_exec(athena, 'SELECT * FROM table', s3=s3))
+
+        # Should fetch from S3 - yields status update + TextIOWrapper
+        self.assertEqual(len(results), 2)
+        self.assertEqual(results[-1][0], 'SUCCEEDED')
+        self.assertIsInstance(results[-1][1], io.TextIOWrapper)
+
+        # Verify S3 was accessed with correct bucket/key
+        s3.get_object.assert_called_once_with(Bucket='test-bucket', Key='results/query-123.csv')
+
+    def test_iter_athena_exec_large_resultset_no_s3_client(self):
+        '''Test iter_athena_exec returns ResultSet when no s3 client provided, even for large results'''
+        athena = unittest.mock.Mock()
+
+        # Mock query execution
+        athena.start_query_execution.return_value = {'QueryExecutionId': 'query-123'}
+
+        # Mock query status (succeeded immediately)
+        athena.get_query_execution.return_value = {
+            'QueryExecution': {
+                'Status': {'State': 'SUCCEEDED'},
+                'ResultConfiguration': {'OutputLocation': 's3://bucket/path.csv'}
+            }
+        }
+
+        # Mock result with >= 1000 rows
+        mock_resultset = {
+            'ResultSet': {
+                'Rows': [{'Data': []}] * 1000
+            }
+        }
+        athena.get_query_results.return_value = mock_resultset
+
+        # Execute without s3 client
+        results = list(util.iter_athena_exec(athena, 'SELECT * FROM table'))
+
+        # Should still return ResultSet since no s3 client provided
+        self.assertEqual(len(results), 2)
+        self.assertEqual(results[-1][0], 'SUCCEEDED')
+        self.assertEqual(results[-1][1], mock_resultset)

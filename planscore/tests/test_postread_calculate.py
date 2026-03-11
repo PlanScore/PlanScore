@@ -670,6 +670,37 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(rows[1]['district'], '1')
         self.assertEqual(rows[2]['district'], '2')
 
+    @unittest.mock.patch('planscore.util.iter_athena_exec')
+    def test_generate_block_assignment_file_large_result_streaming(self, iter_athena_exec):
+        '''Test that large result sets (>1000 rows) are handled via S3 streaming'''
+        athena, s3, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
+        upload.id, upload.model.key_prefix = 'ID', 'data/XX'
+
+        # Mock a large CSV response from S3 (simulating >1000 rows)
+        csv_content = 'district,geoid20,intptlon,intptlat\n0,370010001001000,-78.5,35.8\n1,370010001001001,-78.6,35.9\n'
+        mock_csv_stream = io.StringIO(csv_content)
+        mock_text_wrapper = io.TextIOWrapper(io.BytesIO(csv_content.encode('utf-8')), encoding='utf-8')
+
+        iter_athena_exec.return_value = [(True, mock_text_wrapper)]
+
+        postread_calculate.generate_block_assignment_file(athena, s3, 'bucket', upload)
+
+        # Verify S3 upload was called
+        self.assertEqual(len(s3.put_object.mock_calls), 1)
+        put_call = s3.put_object.mock_calls[0]
+
+        # Parse the uploaded CSV
+        csv_body = gzip.decompress(put_call[2]['Body']).decode('utf8')
+        csv_reader = csv.DictReader(io.StringIO(csv_body))
+        rows = list(csv_reader)
+
+        # Check data was processed correctly from streaming source
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[0]['district'], '1')  # 0-based to 1-based conversion
+        self.assertEqual(rows[0]['geoid20'], '370010001001000')
+        self.assertEqual(rows[1]['district'], '2')
+        self.assertEqual(rows[1]['geoid20'], '370010001001001')
+
     @unittest.mock.patch('planscore.score.calculate_everything')
     @unittest.mock.patch('planscore.observe.populate_compactness')
     @unittest.mock.patch('planscore.observe.load_upload_geometries')
