@@ -332,22 +332,46 @@ def is_multipolygon_feature(feature):
     geometry = feature.GetGeometryRef() or EMPTY_GEOMETRY
     return bool(geometry.GetGeometryType() == osgeo.ogr.wkbMultiPolygon)
 
-def iter_athena_exec(ath, query_string, workgroup=None):
+def iter_athena_exec(ath, query_string, workgroup=None, s3=None):
     kwargs = dict(QueryString=query_string)
     if workgroup:
         kwargs.update(WorkGroup=workgroup)
 
     query_id = ath.start_query_execution(**kwargs)['QueryExecutionId']
-    
+
     while True:
         execution = ath.get_query_execution(QueryExecutionId=query_id)
         state = execution['QueryExecution']['Status']['State']
         yield state, execution['QueryExecution']['Status']
-        
+
         if state in ('SUCCEEDED', 'FAILED', 'CANCELLED'):
             break
-    
+
         time.sleep(2)
-    
+
     print(json.dumps(execution['QueryExecution']['Statistics']))
-    yield state, ath.get_query_results(QueryExecutionId=query_id)
+
+    # Get initial results
+    results = ath.get_query_results(QueryExecutionId=query_id)
+
+    # Check if we might have hit the row limit (1000 rows + 1 header row = 1001)
+    row_count = len(results.get('ResultSet', {}).get('Rows', []))
+
+    if row_count >= 1000 and s3:
+        # Likely hit the limit, fetch full results from S3
+        output_location = execution['QueryExecution']['ResultConfiguration']['OutputLocation']
+
+        # Parse S3 URL to get bucket and key
+        # Format: s3://bucket-name/path/to/file.csv
+        s3_url_parts = output_location.replace('s3://', '').split('/', 1)
+        output_bucket = s3_url_parts[0]
+        output_key = s3_url_parts[1]
+
+        # Download the CSV from Athena's output location
+        athena_result = s3.get_object(Bucket=output_bucket, Key=output_key)
+        csv_content = athena_result['Body'].read().decode('utf-8')
+
+        yield state, {'S3Output': csv_content}
+    else:
+        # Return normal ResultSet
+        yield state, results

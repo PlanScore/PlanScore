@@ -167,14 +167,14 @@ def accumulate_district_totals(athena, upload, is_spatial):
         score.Aggregator.Median: constants.ROUND_FLOAT,
         score.Aggregator.WeightedMean: constants.ROUND_FLOAT,
     }
-    
+
     columns = [
         f'ROUND({aggregators[agg].format(name)}, {precision[agg]}) AS "{name}"'
         for (name, _, agg) in score.BLOCK_TABLE_FIELDS
     ]
-    
+
     indent = ',\n            '
-    
+
     if is_spatial:
         where_clause = 'ST_Within(ST_GeometryFromText(b.point), ST_GeometryFromText(d.polygon))'
     else:
@@ -199,7 +199,7 @@ def accumulate_district_totals(athena, upload, is_spatial):
     for (status, dict) in util.iter_athena_exec(athena, query):
         if 'ResultSet' in dict:
             dict = resultset_to_district_totals(dict)
-    
+
         yield (status, dict)
 
 def resultset_to_district_totals(results):
@@ -254,8 +254,13 @@ def generate_block_assignment_file(athena, s3, bucket, upload):
 
     # Execute query and collect results
     rows = []
-    for (status, dict) in util.iter_athena_exec(athena, query):
-        if 'ResultSet' in dict:
+    for (status, dict) in util.iter_athena_exec(athena, query, s3=s3):
+        if 'S3Output' in dict:
+            # Got full CSV from S3
+            csv_reader = csv.DictReader(io.StringIO(dict['S3Output']))
+            rows = list(csv_reader)
+        elif 'ResultSet' in dict:
+            # Got standard ResultSet (< 1000 rows)
             rows = resultset_to_district_totals(dict)
 
     # Generate CSV content
@@ -267,8 +272,10 @@ def generate_block_assignment_file(athena, s3, bucket, upload):
 
     # Write data rows
     for row in rows:
+        # Handle both dict formats (from CSV or from ResultSet)
+        district = int(row['district']) if isinstance(row['district'], str) else row['district']
         csv_writer.writerow([
-            row['district'] + 1,
+            district + 1,
             row['geoid20'],
             row['intptlon'],
             row['intptlat'],
