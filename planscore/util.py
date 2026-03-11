@@ -12,7 +12,6 @@ import enum
 import csv
 import re
 import time
-import json
 import typing
 
 try:
@@ -333,7 +332,7 @@ def is_multipolygon_feature(feature):
     geometry = feature.GetGeometryRef() or EMPTY_GEOMETRY
     return bool(geometry.GetGeometryType() == osgeo.ogr.wkbMultiPolygon)
 
-def iter_athena_exec(ath, query_string, workgroup=None, s3=None) -> tuple[string, dict|io.TextIOWrapper]:
+def iter_athena_exec(ath, query_string, workgroup=None, s3=None) -> tuple[str, dict|io.TextIOWrapper]:
     kwargs = dict(QueryString=query_string)
     if workgroup:
         kwargs.update(WorkGroup=workgroup)

@@ -678,7 +678,6 @@ class TestPostreadCalculate (unittest.TestCase):
 
         # Mock a large CSV response from S3 (simulating >1000 rows)
         csv_content = 'district,geoid20,intptlon,intptlat\n0,370010001001000,-78.5,35.8\n1,370010001001001,-78.6,35.9\n'
-        mock_csv_stream = io.StringIO(csv_content)
         mock_text_wrapper = io.TextIOWrapper(io.BytesIO(csv_content.encode('utf-8')), encoding='utf-8')
 
         iter_athena_exec.return_value = [(True, mock_text_wrapper)]
