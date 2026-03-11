@@ -283,7 +283,7 @@ def generate_block_assignment_file(athena, s3, bucket, upload):
     s3.put_object(
         Bucket=bucket,
         Key=key,
-        ACL='bucket-owner-full-control',
+        ACL='public-read',
         Body=gzipped_content,
         ContentType='text/csv',
         ContentEncoding='gzip',
