@@ -248,8 +248,8 @@ def generate_block_assignment_file(athena, s3, bucket, upload):
         SELECT
             d.number AS district,
             b.geoid20,
-            ST_X(ST_GeometryFromText(b.point)) AS intptlon,
-            ST_Y(ST_GeometryFromText(b.point)) AS intptlat
+            ROUND(ST_X(ST_GeometryFromText(b.point)), 6) AS intptlon,
+            ROUND(ST_Y(ST_GeometryFromText(b.point)), 6) AS intptlat
         FROM
             "{os.environ.get('ATHENA_DB')}"."blocks" as b,
             "{os.environ.get('ATHENA_DB')}"."districts" AS d

@@ -672,8 +672,8 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertIn('ST_Within(ST_GeometryFromText(b.point), ST_GeometryFromText(d.polygon))', query)
         self.assertIn('d.number AS district', query)
         self.assertIn('b.geoid20', query)
-        self.assertIn('ST_X(ST_GeometryFromText(b.point)) AS intptlon', query)
-        self.assertIn('ST_Y(ST_GeometryFromText(b.point)) AS intptlat', query)
+        self.assertIn('ROUND(ST_X(ST_GeometryFromText(b.point)), 6) AS intptlon', query)
+        self.assertIn('ROUND(ST_Y(ST_GeometryFromText(b.point)), 6) AS intptlat', query)
         self.assertIn(f"b.prefix = '{upload.model.key_prefix}'", query)
         self.assertIn(f"d.upload = '{upload.id}'", query)
         self.assertIn('ORDER BY d.number', query)
@@ -744,6 +744,8 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(rows[1]['source'], '')
         self.assertEqual(rows[2]['district'], '2')
         self.assertEqual(rows[2]['source'], '')
+        self.assertEqual(rows[2]['intptlon'], '-78.6')
+        self.assertEqual(rows[2]['intptlat'], '35.9')
 
     @unittest.mock.patch('planscore.util.iter_athena_exec')
     def test_generate_block_assignment_file_large_result_streaming(self, iter_athena_exec):
@@ -753,7 +755,7 @@ class TestPostreadCalculate (unittest.TestCase):
         upload.districts = [{'source_district': f'District={n}'} for n in (1, 2)]
 
         # Mock a large CSV response from S3 (simulating >1000 rows)
-        csv_content = 'district,geoid20,intptlon,intptlat\n0,370010001001000,-78.5,35.8\n1,370010001001001,-78.6,35.9\n'
+        csv_content = 'district,geoid20,intptlon,intptlat\n0,370010001001000,-78.5,35.8\n1,370010001001001,-78.666667,35.999999\n'
         mock_text_wrapper = io.TextIOWrapper(io.BytesIO(csv_content.encode('utf-8')), encoding='utf-8')
 
         iter_athena_exec.return_value = [(True, mock_text_wrapper)]
@@ -774,9 +776,13 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(rows[0]['district'], '1')  # 0-based to 1-based conversion
         self.assertEqual(rows[0]['source'], 'District=1')
         self.assertEqual(rows[0]['geoid20'], '370010001001000')
+        self.assertEqual(rows[0]['intptlon'], '-78.5')
+        self.assertEqual(rows[0]['intptlat'], '35.8')
         self.assertEqual(rows[1]['district'], '2')
         self.assertEqual(rows[1]['source'], 'District=2')
         self.assertEqual(rows[1]['geoid20'], '370010001001001')
+        self.assertEqual(rows[1]['intptlon'], '-78.666667')
+        self.assertEqual(rows[1]['intptlat'], '35.999999')
 
     @unittest.mock.patch('planscore.score.calculate_everything')
     @unittest.mock.patch('planscore.observe.populate_compactness')
