@@ -687,7 +687,7 @@ class TestPostreadCalculate (unittest.TestCase):
         # Check CSV content structure
         csv_body = gzip.decompress(put_call[2]['Body'])
         csv_lines = csv_body.decode('utf8').strip().split('\r\n')
-        self.assertEqual(csv_lines[0], 'district,geoid20,intptlon,intptlat')
+        self.assertEqual(csv_lines[0], 'district,geoid20,intptlon,intptlat,source')
         self.assertIn('1,370010001001000,-78.5,35.8', csv_lines[1])
 
     @unittest.mock.patch('planscore.util.iter_athena_exec')
@@ -733,20 +733,24 @@ class TestPostreadCalculate (unittest.TestCase):
         rows = list(csv_reader)
 
         # Check column order
-        self.assertEqual(list(rows[0].keys()), ['district', 'geoid20', 'intptlon', 'intptlat'])
+        self.assertEqual(list(rows[0].keys()), ['district', 'geoid20', 'intptlon', 'intptlat', 'source'])
 
         # Check data - district should be 1-based
         self.assertEqual(len(rows), 3)
         self.assertEqual(rows[0]['district'], '1')
+        self.assertEqual(rows[0]['source'], '')
         self.assertEqual(rows[0]['geoid20'], '370010001001000')
         self.assertEqual(rows[1]['district'], '1')
+        self.assertEqual(rows[1]['source'], '')
         self.assertEqual(rows[2]['district'], '2')
+        self.assertEqual(rows[2]['source'], '')
 
     @unittest.mock.patch('planscore.util.iter_athena_exec')
     def test_generate_block_assignment_file_large_result_streaming(self, iter_athena_exec):
         '''Test that large result sets (>1000 rows) are handled via S3 streaming'''
         athena, s3, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
         upload.id, upload.model.key_prefix = 'ID', 'data/XX'
+        upload.districts = [{'source_district': f'District={n}'} for n in (1, 2)]
 
         # Mock a large CSV response from S3 (simulating >1000 rows)
         csv_content = 'district,geoid20,intptlon,intptlat\n0,370010001001000,-78.5,35.8\n1,370010001001001,-78.6,35.9\n'
@@ -768,8 +772,10 @@ class TestPostreadCalculate (unittest.TestCase):
         # Check data was processed correctly from streaming source
         self.assertEqual(len(rows), 2)
         self.assertEqual(rows[0]['district'], '1')  # 0-based to 1-based conversion
+        self.assertEqual(rows[0]['source'], 'District=1')
         self.assertEqual(rows[0]['geoid20'], '370010001001000')
         self.assertEqual(rows[1]['district'], '2')
+        self.assertEqual(rows[1]['source'], 'District=2')
         self.assertEqual(rows[1]['geoid20'], '370010001001001')
 
     @unittest.mock.patch('planscore.score.calculate_everything')

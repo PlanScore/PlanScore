@@ -275,13 +275,14 @@ def generate_block_assignment_file(athena, s3, bucket, upload):
     csv_writer = csv.writer(csv_buffer, dialect='excel')
 
     # Write header
-    csv_writer.writerow(['district', 'geoid20', 'intptlon', 'intptlat'])
+    csv_writer.writerow(['district', 'geoid20', 'intptlon', 'intptlat', 'source'])
 
     # Write data rows
     for row in rows:
         # Handle both dict formats (from CSV or from ResultSet)
         district = int(row['district']) if isinstance(row['district'], str) else row['district']
-        csv_writer.writerow([district + 1, row['geoid20'], row['intptlon'], row['intptlat']])
+        source = upload.districts[district].get('source_district', '')
+        csv_writer.writerow([district + 1, row['geoid20'], row['intptlon'], row['intptlat'], source])
 
     # Gzip and upload to S3
     csv_content = csv_buffer.getvalue().encode('utf8')
