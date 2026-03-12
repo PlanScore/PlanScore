@@ -226,21 +226,6 @@ class TestScore (unittest.TestCase):
                     shifted_share = shifted_blue / (shifted_blue + shifted_red)
                     self.assertAlmostEqual(shifted_share, original_share + 0.05, places=3)
 
-    def test_safe_positives(self):
-        ''' Positive values are correctly counted
-        '''
-        l1 = [-1, 1]
-        self.assertEqual(score.safe_positives(l1), .5)
-
-        l2 = [-1]
-        self.assertEqual(score.safe_positives(l2), 0.)
-
-        l3 = [1]
-        self.assertEqual(score.safe_positives(l3), 1.)
-
-        l4 = [-1, 1, 1, None]
-        self.assertAlmostEqual(score.safe_positives(l4), 2/3)
-
     def test_np_safe_mean(self):
         ''' Means are correctly calculated for numpy arrays
         '''

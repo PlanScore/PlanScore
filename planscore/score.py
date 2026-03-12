@@ -332,23 +332,6 @@ def vectorized_logit_shift(votes:numpy.typing.NDArray, target_diff:float) -> num
     # Reshape back to original dimensions
     return new_votes.reshape(original_shape)
 
-def _is_valid_number(val):
-    '''Helper to check if a value is a valid number (not None or NaN)'''
-    return val is not None and not (isinstance(val, float) and math.isnan(val))
-
-def safe_positives(values):
-    '''
-    '''
-    safe_values = [val for val in values if _is_valid_number(val)]
-
-    if len(safe_values) < 1:
-        return None
-
-    # Use epsilon threshold to avoid counting floating point errors as positive
-    # Machine epsilon for float64 is ~2.22e-16, so use 1e-10 as safe threshold
-    epsilon = 1e-10
-    return len([n for n in safe_values if n > epsilon]) / len(safe_values)
-
 def np_safe_mean(arr):
     '''Compute mean of numpy array, ignoring NaN values'''
     if not numpy.any(~numpy.isnan(arr)):
