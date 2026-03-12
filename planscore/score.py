@@ -8,11 +8,9 @@ from __future__ import annotations
 import os
 import gzip
 import csv
-import statistics
 import copy
 import itertools
 import enum
-import math
 import argparse
 import urllib.request
 from . import data, constants, matrix
