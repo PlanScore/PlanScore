@@ -59,13 +59,14 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
     observe.put_upload_index(storage, upload)
     upload2 = upload.clone(geometry_key=data.UPLOAD_GEOMETRY_KEY.format(id=upload.id))
     put_district_geometries(s3, bucket, upload2, ds_path)
-    
+
     response = accumulate_district_totals(athena, upload2, True)
-    
+
     observe.put_upload_index(storage, upload2.clone(message='Calculating district shapes'))
 
     geometries = observe.load_upload_geometries(storage, upload2)
     districts = observe.populate_compactness(geometries)
+
     upload3 = upload2.clone(districts=districts)
 
     observe.put_upload_index(storage, upload3.clone(message='Counting votes and people in each district'))
@@ -80,7 +81,10 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
         dict(totals=totals, **district)
         for (district, totals) in zip(districts, results)
     ])
-    
+
+    # Generate block assignment file after districts have data
+    blockassign_url = generate_block_assignment_file(athena, s3, bucket, upload4)
+
     observe.put_upload_index(storage, upload4.clone(message='Predicting future votes for each district'))
 
     try:
@@ -94,10 +98,11 @@ def commence_geometry_upload_scoring(s3, athena, bucket, upload, ds_path):
         upload6 = upload5.clone(
             status=True,
             message='Finished scoring this plan.',
+            library_metadata={'blockassign_file': blockassign_url},
         )
 
     observe.put_upload_index(storage, upload6)
-    
+
     return upload6
 
 def commence_blockassign_upload_scoring(context, s3, athena, bucket, upload, file_path):
@@ -162,21 +167,21 @@ def accumulate_district_totals(athena, upload, is_spatial):
         score.Aggregator.Median: constants.ROUND_FLOAT,
         score.Aggregator.WeightedMean: constants.ROUND_FLOAT,
     }
-    
+
     columns = [
         f'ROUND({aggregators[agg].format(name)}, {precision[agg]}) AS "{name}"'
         for (name, _, agg) in score.BLOCK_TABLE_FIELDS
     ]
-    
+
     indent = ',\n            '
-    
+
     if is_spatial:
         where_clause = 'ST_Within(ST_GeometryFromText(b.point), ST_GeometryFromText(d.polygon))'
     else:
         where_clause = 'b.geoid20 = d.geoid20'
 
     query = f'''
-        -- {os.environ.get('ATHENA_DB')} {upload.model.key_prefix} and {upload.id[:2]}…{upload.id[-4:]}
+        -- Counts {os.environ.get('ATHENA_DB')} {upload.model.key_prefix} and {upload.id[:2]}…{upload.id[-4:]}
         SELECT
             d.number AS district_number,
             {indent.join(columns)}
@@ -190,13 +195,11 @@ def accumulate_district_totals(athena, upload, is_spatial):
         GROUP BY d.number
         ORDER BY d.number
     '''
-    
-    print(query)
-    
+
     for (status, dict) in util.iter_athena_exec(athena, query):
         if 'ResultSet' in dict:
             dict = resultset_to_district_totals(dict)
-    
+
         yield (status, dict)
 
 def resultset_to_district_totals(results):
@@ -211,7 +214,7 @@ def resultset_to_district_totals(results):
         'date': lambda s: datetime.datetime.strptime(s, '%Y-%m-%d').date(),
         'boolean': lambda s: bool(s.lower() in ('t', 'true')),
     }
-    
+
     return [
         {
             col['Name']: types[col['Type']](cell['VarCharValue'])
@@ -223,6 +226,74 @@ def resultset_to_district_totals(results):
         }
         for row in results['ResultSet']['Rows'][1:]
     ]
+
+def generate_block_assignment_file(athena, s3, bucket, upload):
+    '''Generate block assignment CSV file from spatial join and upload to S3.
+
+    Returns S3 URL for the generated file.
+    '''
+    # Build Athena query for spatial join
+    where_clause = 'ST_Within(ST_GeometryFromText(b.point), ST_GeometryFromText(d.polygon))'
+
+    query = f'''
+        -- Blocks {os.environ.get('ATHENA_DB')} {upload.model.key_prefix} and {upload.id[:2]}…{upload.id[-4:]}
+        SELECT
+            d.number AS district,
+            b.geoid20,
+            ST_X(ST_GeometryFromText(b.point)) AS intptlon,
+            ST_Y(ST_GeometryFromText(b.point)) AS intptlat
+        FROM
+            "{os.environ.get('ATHENA_DB')}"."blocks" as b,
+            "{os.environ.get('ATHENA_DB')}"."districts" AS d
+        WHERE
+            {where_clause}
+            AND b.prefix = '{upload.model.key_prefix}'
+            AND d.upload = '{upload.id}'
+        ORDER BY d.number, b.geoid20
+    '''
+
+    # Execute query and collect results
+    rows = []
+    for (status, response) in util.iter_athena_exec(athena, query, s3=s3):
+        if isinstance(response, io.TextIOWrapper):
+            # Got full CSV from S3
+            rows = list(csv.DictReader(response))
+        elif 'ResultSet' in response:
+            # Got standard ResultSet (< 1000 rows)
+            rows = resultset_to_district_totals(response)
+
+    # Generate CSV content
+    csv_buffer = io.StringIO()
+    csv_writer = csv.writer(csv_buffer, dialect='excel')
+
+    # Write header
+    csv_writer.writerow(['district', 'geoid20', 'intptlon', 'intptlat'])
+
+    # Write data rows
+    for row in rows:
+        # Handle both dict formats (from CSV or from ResultSet)
+        district = int(row['district']) if isinstance(row['district'], str) else row['district']
+        csv_writer.writerow([district + 1, row['geoid20'], row['intptlon'], row['intptlat']])
+
+    # Gzip and upload to S3
+    csv_content = csv_buffer.getvalue().encode('utf8')
+    gzipped_content = gzip.compress(csv_content)
+
+    key = data.UPLOAD_BLOCKASSIGN_FILE_KEY.format(id=upload.id)
+
+    s3.put_object(
+        Bucket=bucket,
+        Key=key,
+        ACL='public-read',
+        Body=gzipped_content,
+        ContentType='text/csv',
+        ContentEncoding='gzip',
+        StorageClass='INTELLIGENT_TIERING',
+    )
+
+    # Return S3 URL
+    url = constants.S3_URL_PATTERN.format(b=bucket, k=key)
+    return url
 
 def partition_large_geometries(geom):
     '''
@@ -274,8 +345,8 @@ def put_district_geometries(s3, bucket, upload, path):
     partition_buffer = io.StringIO()
     partition_csv = csv.writer(partition_buffer, dialect='excel')
 
-    _, features = util.ordered_districts(ds.GetLayer(0))
-    
+    field_name, features = util.ordered_districts(ds.GetLayer(0))
+
     for (index, feature) in enumerate(features):
         geometry = feature.GetGeometryRef()
 
@@ -326,7 +397,7 @@ def put_district_geometries(s3, bucket, upload, path):
         ContentEncoding='gzip',
         StorageClass='INTELLIGENT_TIERING',
     )
-    
+
     return keys
 
 def put_district_assignments(s3, bucket, upload, path):

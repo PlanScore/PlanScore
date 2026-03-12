@@ -2,6 +2,7 @@ import unittest
 import unittest.mock
 import io
 import os
+import csv
 import contextlib
 import gzip
 from .. import postread_calculate, data, constants
@@ -305,17 +306,19 @@ class TestPostreadCalculate (unittest.TestCase):
     @unittest.mock.patch('planscore.observe.populate_compactness')
     @unittest.mock.patch('planscore.observe.load_upload_geometries')
     @unittest.mock.patch('planscore.observe.put_upload_index')
+    @unittest.mock.patch('planscore.postread_calculate.generate_block_assignment_file')
     @unittest.mock.patch('planscore.postread_calculate.accumulate_district_totals')
     @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
-    def test_commence_geometry_upload_scoring_good_ogr_file(self, put_district_geometries, accumulate_district_totals, put_upload_index, load_upload_geometries, populate_compactness, calculate_everything):
+    def test_commence_geometry_upload_scoring_good_ogr_file(self, put_district_geometries, accumulate_district_totals, generate_block_assignment_file, put_upload_index, load_upload_geometries, populate_compactness, calculate_everything):
         ''' A valid district plan file is scored and the results posted to S3
         '''
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
-        
+
         put_district_geometries.return_value = [unittest.mock.Mock()] * 2
         accumulate_district_totals.return_value = [(None, [])]
+        populate_compactness.return_value = [{}, {}]
 
         s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
@@ -324,7 +327,7 @@ class TestPostreadCalculate (unittest.TestCase):
         info = postread_calculate.commence_geometry_upload_scoring(s3, athena, bucket, upload, nullplan_path)
 
         self.assertIsNotNone(info)
-    
+
         self.assertEqual(len(put_upload_index.mock_calls), 5)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
         
@@ -341,17 +344,19 @@ class TestPostreadCalculate (unittest.TestCase):
     @unittest.mock.patch('planscore.observe.populate_compactness')
     @unittest.mock.patch('planscore.observe.load_upload_geometries')
     @unittest.mock.patch('planscore.observe.put_upload_index')
+    @unittest.mock.patch('planscore.postread_calculate.generate_block_assignment_file')
     @unittest.mock.patch('planscore.postread_calculate.accumulate_district_totals')
     @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
-    def test_commence_geometry_upload_scoring_zipped_ogr_file(self, put_district_geometries, accumulate_district_totals, put_upload_index, load_upload_geometries, populate_compactness, calculate_everything):
+    def test_commence_geometry_upload_scoring_zipped_ogr_file(self, put_district_geometries, accumulate_district_totals, generate_block_assignment_file, put_upload_index, load_upload_geometries, populate_compactness, calculate_everything):
         ''' A valid district plan zipfile is scored and the results posted to S3
         '''
         id = 'ID'
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.shp.zip'
-        
+
         put_district_geometries.return_value = [unittest.mock.Mock()] * 2
         accumulate_district_totals.return_value = [(None, [])]
+        populate_compactness.return_value = [{}, {}]
 
         s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
         s3.get_object.return_value = {'Body': None}
@@ -361,7 +366,7 @@ class TestPostreadCalculate (unittest.TestCase):
         info = postread_calculate.commence_geometry_upload_scoring(s3, athena, bucket, upload, nullplan_datasource)
 
         self.assertIsNotNone(info)
-    
+
         self.assertEqual(len(put_upload_index.mock_calls), 5)
         self.assertEqual(put_upload_index.mock_calls[0][1][1].id, upload.id)
         
@@ -554,3 +559,185 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(test_upload.model_version, '2022F',
             f'Expected specified version "2022F" but got "{test_upload.model_version}". '
             f'When model_version is already set, it should not be changed.')
+
+    @unittest.mock.patch('planscore.util.iter_athena_exec')
+    def test_generate_block_assignment_file_spatial_join(self, iter_athena_exec):
+        '''Test block assignment file generation with spatial join query'''
+        athena, s3, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
+        upload.id, upload.model.key_prefix = 'ID', 'data/XX'
+
+        # Mock Athena response with sample block assignments
+        mock_resultset = {
+            'ResultSet': {
+                'ResultSetMetadata': {
+                    'ColumnInfo': [
+                        {'Name': 'district', 'Type': 'integer'},
+                        {'Name': 'geoid20', 'Type': 'varchar'},
+                        {'Name': 'intptlon', 'Type': 'double'},
+                        {'Name': 'intptlat', 'Type': 'double'},
+                    ]
+                },
+                'Rows': [
+                    {'Data': [{'VarCharValue': 'district'}, {'VarCharValue': 'geoid20'}, {'VarCharValue': 'intptlon'}, {'VarCharValue': 'intptlat'}]},
+                    {'Data': [{'VarCharValue': '0'}, {'VarCharValue': '370010001001000'}, {'VarCharValue': '-78.5'}, {'VarCharValue': '35.8'}]},
+                    {'Data': [{'VarCharValue': '1'}, {'VarCharValue': '370010001001001'}, {'VarCharValue': '-78.6'}, {'VarCharValue': '35.9'}]},
+                ]
+            }
+        }
+
+        # Mock districts
+        upload.districts = [
+            {'number': 1},
+            {'number': 2},
+        ]
+
+        iter_athena_exec.return_value = [(True, mock_resultset)]
+
+        postread_calculate.generate_block_assignment_file(athena, s3, 'bucket', upload)
+
+        # Check the Athena query structure
+        query = iter_athena_exec.mock_calls[-1][1][1]
+        self.assertIn('ST_Within(ST_GeometryFromText(b.point), ST_GeometryFromText(d.polygon))', query)
+        self.assertIn('d.number AS district', query)
+        self.assertIn('b.geoid20', query)
+        self.assertIn('ST_X(ST_GeometryFromText(b.point)) AS intptlon', query)
+        self.assertIn('ST_Y(ST_GeometryFromText(b.point)) AS intptlat', query)
+        self.assertIn(f"b.prefix = '{upload.model.key_prefix}'", query)
+        self.assertIn(f"d.upload = '{upload.id}'", query)
+        self.assertIn('ORDER BY d.number', query)
+
+        # Check S3 upload
+        self.assertEqual(len(s3.put_object.mock_calls), 1)
+        put_call = s3.put_object.mock_calls[0]
+        self.assertEqual(put_call[2]['Key'], data.UPLOAD_BLOCKASSIGN_FILE_KEY.format(id=upload.id))
+        self.assertEqual(put_call[2]['ContentEncoding'], 'gzip')
+
+        # Check CSV content structure
+        csv_body = gzip.decompress(put_call[2]['Body'])
+        csv_lines = csv_body.decode('utf8').strip().split('\r\n')
+        self.assertEqual(csv_lines[0], 'district,geoid20,intptlon,intptlat')
+        self.assertIn('1,370010001001000,-78.5,35.8', csv_lines[1])
+
+    @unittest.mock.patch('planscore.util.iter_athena_exec')
+    def test_generate_block_assignment_file_csv_format(self, iter_athena_exec):
+        '''Test that block assignment CSV has correct format and column order'''
+        athena, s3, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
+        upload.id, upload.model.key_prefix = 'ID', 'data/XX'
+
+        # Mock response with multiple districts and blocks
+        mock_resultset = {
+            'ResultSet': {
+                'ResultSetMetadata': {
+                    'ColumnInfo': [
+                        {'Name': 'district', 'Type': 'integer'},
+                        {'Name': 'geoid20', 'Type': 'varchar'},
+                        {'Name': 'intptlon', 'Type': 'double'},
+                        {'Name': 'intptlat', 'Type': 'double'},
+                    ]
+                },
+                'Rows': [
+                    {'Data': [{'VarCharValue': 'district'}, {'VarCharValue': 'geoid20'}, {'VarCharValue': 'intptlon'}, {'VarCharValue': 'intptlat'}]},
+                    {'Data': [{'VarCharValue': '0'}, {'VarCharValue': '370010001001000'}, {'VarCharValue': '-78.5'}, {'VarCharValue': '35.8'}]},
+                    {'Data': [{'VarCharValue': '0'}, {'VarCharValue': '370010001001001'}, {'VarCharValue': '-78.51'}, {'VarCharValue': '35.81'}]},
+                    {'Data': [{'VarCharValue': '1'}, {'VarCharValue': '370010001002000'}, {'VarCharValue': '-78.6'}, {'VarCharValue': '35.9'}]},
+                ]
+            }
+        }
+
+        # Mock districts
+        upload.districts = [
+            {'number': 1},
+            {'number': 2},
+        ]
+
+        iter_athena_exec.return_value = [(True, mock_resultset)]
+
+        postread_calculate.generate_block_assignment_file(athena, s3, 'bucket', upload)
+
+        # Parse the uploaded CSV
+        put_call = s3.put_object.mock_calls[0]
+        csv_body = gzip.decompress(put_call[2]['Body']).decode('utf8')
+        csv_reader = csv.DictReader(io.StringIO(csv_body))
+        rows = list(csv_reader)
+
+        # Check column order
+        self.assertEqual(list(rows[0].keys()), ['district', 'geoid20', 'intptlon', 'intptlat'])
+
+        # Check data - district should be 1-based
+        self.assertEqual(len(rows), 3)
+        self.assertEqual(rows[0]['district'], '1')
+        self.assertEqual(rows[0]['geoid20'], '370010001001000')
+        self.assertEqual(rows[1]['district'], '1')
+        self.assertEqual(rows[2]['district'], '2')
+
+    @unittest.mock.patch('planscore.util.iter_athena_exec')
+    def test_generate_block_assignment_file_large_result_streaming(self, iter_athena_exec):
+        '''Test that large result sets (>1000 rows) are handled via S3 streaming'''
+        athena, s3, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
+        upload.id, upload.model.key_prefix = 'ID', 'data/XX'
+
+        # Mock a large CSV response from S3 (simulating >1000 rows)
+        csv_content = 'district,geoid20,intptlon,intptlat\n0,370010001001000,-78.5,35.8\n1,370010001001001,-78.6,35.9\n'
+        mock_text_wrapper = io.TextIOWrapper(io.BytesIO(csv_content.encode('utf-8')), encoding='utf-8')
+
+        iter_athena_exec.return_value = [(True, mock_text_wrapper)]
+
+        postread_calculate.generate_block_assignment_file(athena, s3, 'bucket', upload)
+
+        # Verify S3 upload was called
+        self.assertEqual(len(s3.put_object.mock_calls), 1)
+        put_call = s3.put_object.mock_calls[0]
+
+        # Parse the uploaded CSV
+        csv_body = gzip.decompress(put_call[2]['Body']).decode('utf8')
+        csv_reader = csv.DictReader(io.StringIO(csv_body))
+        rows = list(csv_reader)
+
+        # Check data was processed correctly from streaming source
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[0]['district'], '1')  # 0-based to 1-based conversion
+        self.assertEqual(rows[0]['geoid20'], '370010001001000')
+        self.assertEqual(rows[1]['district'], '2')
+        self.assertEqual(rows[1]['geoid20'], '370010001001001')
+
+    @unittest.mock.patch('planscore.score.calculate_everything')
+    @unittest.mock.patch('planscore.observe.populate_compactness')
+    @unittest.mock.patch('planscore.observe.load_upload_geometries')
+    @unittest.mock.patch('planscore.observe.put_upload_index')
+    @unittest.mock.patch('planscore.postread_calculate.generate_block_assignment_file')
+    @unittest.mock.patch('planscore.postread_calculate.accumulate_district_totals')
+    @unittest.mock.patch('planscore.postread_calculate.put_district_geometries')
+    def test_commence_geometry_upload_scoring_creates_blockassign_file(self, put_district_geometries, accumulate_district_totals, generate_block_assignment_file, put_upload_index, load_upload_geometries, populate_compactness, calculate_everything):
+        '''Test that geometry upload scoring generates block assignment file and stores URL in library_metadata'''
+        id = 'ID'
+        nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
+        upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
+
+        put_district_geometries.return_value = [unittest.mock.Mock()] * 2
+        accumulate_district_totals.return_value = [(None, [])]
+        generate_block_assignment_file.return_value = 'https://s3.amazonaws.com/bucket/uploads/ID/blockassignments.csv.gz'
+
+        # Configure calculate_everything to return a mock upload that clones properly
+        mock_upload5 = unittest.mock.Mock()
+        mock_upload6 = unittest.mock.Mock()
+        mock_upload6.library_metadata = {'blockassign_file': 'https://s3.amazonaws.com/bucket/uploads/ID/blockassignments.csv.gz'}
+        mock_upload5.clone.return_value = mock_upload6
+        calculate_everything.return_value = mock_upload5
+
+        s3, athena, bucket = unittest.mock.Mock(), unittest.mock.Mock(), 'fake-bucket-name'
+        s3.get_object.return_value = {'Body': None}
+
+        upload = data.Upload(id, upload_key, model=data.MODELS[0])
+        info = postread_calculate.commence_geometry_upload_scoring(s3, athena, bucket, upload, nullplan_path)
+
+        # Check that generate_block_assignment_file was called
+        self.assertEqual(len(generate_block_assignment_file.mock_calls), 1)
+
+        # Check that library_metadata contains blockassign_file URL
+        self.assertIsNotNone(info.library_metadata)
+        self.assertEqual(info.library_metadata['blockassign_file'], 'https://s3.amazonaws.com/bucket/uploads/ID/blockassignments.csv.gz')
+
+        # Verify that clone was called with library_metadata
+        mock_upload5.clone.assert_called_once()
+        clone_call_kwargs = mock_upload5.clone.call_args[1]
+        self.assertEqual(clone_call_kwargs['library_metadata'], {'blockassign_file': 'https://s3.amazonaws.com/bucket/uploads/ID/blockassignments.csv.gz'})
