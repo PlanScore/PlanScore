@@ -427,38 +427,6 @@ def percentrank_rel(column, house, value):
     
     return sum(values) / len(values)
 
-def calculate_EG(red_districts:list[float], blue_districts:list[float], vote_swing=0) -> float:
-    ''' Convert two lists of district vote counts into an EG score.
-    
-        By convention, result is positive for blue and negative for red.
-    '''
-    init_red, init_blue = swing_vote(red_districts, blue_districts, vote_swing)
-    init_vote_share = sum(init_blue) / (sum(init_blue) + sum(init_red))
-
-    if init_vote_share < .25:
-        # Very red state, swing to 25 blue/75 red
-        clamped_swing = vote_swing + (.25 - init_vote_share)
-    elif init_vote_share > .75:
-        # Very blue state, swing to 75 blue/25 red
-        clamped_swing = vote_swing - (init_vote_share - .75)
-    else:
-        clamped_swing = vote_swing
-
-    swung_red, swung_blue = swing_vote(red_districts, blue_districts, clamped_swing)
-    nonzero_districts = [(r, b) for (r, b) in zip(swung_red, swung_blue) if r+b > 0]
-
-    district_blue_wins = len([
-        1 for (red_votes, blue_votes) in nonzero_districts
-        if blue_votes > red_votes
-    ])
-    statewide_seat_share = district_blue_wins / len(nonzero_districts)
-    
-    district_raw_blue_votes = sum(swung_blue)
-    district_raw_total_votes = sum(swung_red) + district_raw_blue_votes
-    statewide_vote_share = district_raw_blue_votes / district_raw_total_votes
-    
-    return statewide_seat_share - 0.5 - 2 * (statewide_vote_share - 0.5)
-
 def vectorized_EG(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
     ''' Calculate Efficiency Gap for vectorized multi-sim numpy arrays.
 
@@ -1109,10 +1077,13 @@ def calculate_fva_biases(upload):
     
     for race in races:
         if (totals0.get(f'{race} - DEM') is not None and totals0.get(f'{race} - REP') is not None):
-            summary[f'{race} Efficiency Gap'] = calculate_EG(
-                [d['totals'][f'{race} - REP'] for d in upload.districts],
-                [d['totals'][f'{race} - DEM'] for d in upload.districts],
-            )
+            # Convert to numpy array format for vectorized_EG
+            red_votes = numpy.array([d['totals'][f'{race} - REP'] for d in upload.districts])
+            blue_votes = numpy.array([d['totals'][f'{race} - DEM'] for d in upload.districts])
+            # Create array with shape (1, districts, 2) where [:,:,0] = blue, [:,:,1] = red
+            votes = numpy.stack([blue_votes, red_votes], axis=-1)[numpy.newaxis, ...]
+            # Use flat[0] to robustly extract first element as scalar
+            summary[f'{race} Efficiency Gap'] = float(vectorized_EG(votes).flat[0])
 
     return upload.clone(summary=summary)
 
