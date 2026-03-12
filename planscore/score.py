@@ -120,7 +120,7 @@ BLOCK_TABLE_FIELDS = [
 # Template for simulated election vote totals with incumbency
 FIELD_TMPL = '{incumbent}:{party}{sim:03d}'
 
-def vectorized_swing(votes:numpy.typing.NDArray, amount:float) -> numpy.typing.NDArray:
+def swing_vote(votes: numpy.typing.NDArray, amount: float) -> numpy.typing.NDArray:
     ''' Swing the vote by a percentage, positive toward blue, using vectorized operations.
 
         Input array shape is (*leading_dims, districts, 2) where leading_dims can be any number of dimensions.
@@ -161,7 +161,7 @@ def vectorized_swing(votes:numpy.typing.NDArray, amount:float) -> numpy.typing.N
 
     return swung_votes
 
-def swing_vote_matrix(votes:numpy.typing.NDArray, vote_swings:list[float]) -> numpy.typing.NDArray:
+def swing_vote_matrix(votes: numpy.typing.NDArray, vote_swings: list[float]) -> numpy.typing.NDArray:
     ''' Swing the vote by a percentage, positive toward blue, for per-district vote swings.
 
         Input array shape is (*leading_dims, districts, 2) where leading_dims can be any number of dimensions.
@@ -194,13 +194,13 @@ def swing_vote_matrix(votes:numpy.typing.NDArray, vote_swings:list[float]) -> nu
         # Use ellipsis to handle arbitrary leading dimensions
         district_votes = votes[..., i, :]
 
-        # Apply vectorized_swing to this district's votes (handles arbitrary dimensions)
+        # Apply swing_vote to this district's votes (handles arbitrary dimensions)
         # Need to reshape to add a districts dimension, apply swing, then extract result
         # district_votes shape: (*leading_dims, 2)
         # Add district dimension: (*leading_dims, 1, 2)
         # Apply swing, then extract: (*leading_dims, 2)
         district_votes_with_dim = numpy.expand_dims(district_votes, axis=-2)
-        swung_district = vectorized_swing(district_votes_with_dim, vote_swing)
+        swung_district = swing_vote(district_votes_with_dim, vote_swing)
         swung_district = swung_district.squeeze(axis=-2)
 
         # Update this district for all leading dimensions
@@ -208,11 +208,15 @@ def swing_vote_matrix(votes:numpy.typing.NDArray, vote_swings:list[float]) -> nu
 
     return new_votes.round(6)
 
-def _vectorized_expit(arr:numpy.typing.NDArray) -> numpy.typing.NDArray:
+def _expit(arr: numpy.typing.NDArray) -> numpy.typing.NDArray:
+    ''' Compute the expit (logistic sigmoid) function element-wise.
+
+        Returns 1 / (1 + exp(-arr)), with input clipped to [-20, 20] for numerical stability.
+    '''
     clipped = numpy.clip(arr, -20, 20)
     return 1.0 / (1.0 + numpy.exp(-clipped))
 
-def vectorized_logit_shift(votes:numpy.typing.NDArray, target_diff:float) -> numpy.typing.NDArray:
+def logit_shift(votes: numpy.typing.NDArray, target_diff: float) -> numpy.typing.NDArray:
     '''
     Fully vectorized logit-based vote shift - processes all scenarios in parallel.
 
@@ -223,7 +227,7 @@ def vectorized_logit_shift(votes:numpy.typing.NDArray, target_diff:float) -> num
     Convention: votes[..., 0] = blue, votes[..., 1] = red
     Returns array of same shape with logit-shifted votes.
 
-    Unlike vectorized_swing() which applies uniform shifts, this calculates
+    Unlike swing_vote() which applies uniform shifts, this calculates
     per-district shifts using log-odds transformation to better model real
     electoral swing patterns.
 
@@ -291,7 +295,7 @@ def vectorized_logit_shift(votes:numpy.typing.NDArray, target_diff:float) -> num
 
         # Apply expit to get probabilities
         # Shape: (N, districts)
-        probs = _vectorized_expit(shifted_log_odds)
+        probs = _expit(shifted_log_odds)
 
         # Weighted average for each scenario
         # Shape: (N,)
@@ -313,7 +317,7 @@ def vectorized_logit_shift(votes:numpy.typing.NDArray, target_diff:float) -> num
     # Apply shifts to get new vote shares
     # Shape: (N, districts)
     shifted_log_odds = log_odds + shift[:, numpy.newaxis]
-    new_shares = _vectorized_expit(shifted_log_odds)
+    new_shares = _expit(shifted_log_odds)
 
     # Convert back to vote counts
     # Shape: (N, districts, 2)
@@ -332,20 +336,29 @@ def vectorized_logit_shift(votes:numpy.typing.NDArray, target_diff:float) -> num
     # Reshape back to original dimensions
     return new_votes.reshape(original_shape)
 
-def np_safe_mean(arr):
-    '''Compute mean of numpy array, ignoring NaN values'''
+def safe_mean(arr: numpy.typing.NDArray) -> float | None:
+    ''' Compute mean of numpy array, ignoring NaN values.
+
+        Returns None if all values are NaN.
+    '''
     if not numpy.any(~numpy.isnan(arr)):
         return None
     return numpy.nanmean(arr).item()
 
-def np_safe_stdev(arr):
-    '''Compute standard deviation of numpy array, ignoring NaN values'''
+def safe_stdev(arr: numpy.typing.NDArray) -> float | None:
+    ''' Compute standard deviation of numpy array, ignoring NaN values.
+
+        Returns None if fewer than 2 non-NaN values.
+    '''
     if numpy.sum(~numpy.isnan(arr)) < 2:
         return None
     return numpy.nanstd(arr, ddof=1).item()
 
-def np_safe_positives(arr):
-    '''Compute proportion of positive values in numpy array, ignoring NaN'''
+def safe_positives(arr: numpy.typing.NDArray) -> float | None:
+    ''' Compute proportion of positive values in numpy array, ignoring NaN.
+
+        Returns None if all values are NaN.
+    '''
     valid_mask = ~numpy.isnan(arr)
     if not numpy.any(valid_mask):
         return None
@@ -398,7 +411,7 @@ def percentrank_rel(column, house, value):
     
     return sum(values) / len(values)
 
-def vectorized_EG(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
+def calculate_EG(votes: numpy.typing.NDArray) -> numpy.typing.NDArray:
     ''' Calculate Efficiency Gap for vectorized multi-sim numpy arrays.
 
         Input array shape is (*leading_dims, districts, 2) where leading_dims can be any number of dimensions.
@@ -408,7 +421,7 @@ def vectorized_EG(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
         By convention, result is positive for blue and negative for red.
 
         Vote shares outside [0.25, 0.75] are clamped to that range before calculating EG.
-        To apply vote swings, use vectorized_swing() before calling this function.
+        To apply vote swings, use swing_vote() before calling this function.
 
         Examples:
         - (sims, districts, 2) - returns shape (sims,)
@@ -475,7 +488,7 @@ def vectorized_EG(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
 
     return eg_scores
 
-def vectorized_MMD(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
+def calculate_MMD(votes: numpy.typing.NDArray) -> numpy.typing.NDArray:
     ''' Calculate Mean-Median for vectorized multi-sim numpy arrays.
 
         Input array shape is (*leading_dims, districts, 2) where leading_dims can be any number of dimensions.
@@ -511,7 +524,7 @@ def vectorized_MMD(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
 
     return mmd_scores
 
-def vectorized_PB(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
+def calculate_PB(votes: numpy.typing.NDArray) -> numpy.typing.NDArray:
     ''' Calculate Partisan Bias for vectorized multi-sim numpy arrays.
 
         Input array shape is (*leading_dims, districts, 2) where leading_dims can be any number of dimensions.
@@ -590,7 +603,7 @@ def vectorized_PB(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
 
     return pb_scores
 
-def vectorized_D2(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
+def calculate_D2(votes: numpy.typing.NDArray) -> numpy.typing.NDArray:
     ''' Calculate Declination (D2) for vectorized multi-sim numpy arrays.
 
         Input array shape is (*leading_dims, districts, 2) where leading_dims can be any number of dimensions.
@@ -662,7 +675,7 @@ def vectorized_D2(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
 
     return -declination2
 
-def vectorized_D2_diff(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
+def calculate_D2_diff(votes: numpy.typing.NDArray) -> numpy.typing.NDArray:
     ''' Calculate vote share difference for vectorized multi-sim numpy arrays.
 
         Input array shape is (sims, districts, dem/rep votes)
@@ -775,8 +788,12 @@ def select_incumbency_votes(values: numpy.typing.NDArray, incumbents: list[str])
 
     return new_values
 
-def vectorized_vote_statistics(all_votes: numpy.typing.NDArray) -> numpy.typing.NDArray:
-    '''
+def calculate_vote_statistics(all_votes: numpy.typing.NDArray) -> numpy.typing.NDArray:
+    ''' Calculate vote statistics (wins, means, standard deviations) across simulations.
+
+        Input array shape is (*leading_dims, sims, districts, parties).
+        Returns array of shape (*leading_dims, districts, parties, 3) where the last
+        dimension contains [win_probability, mean_votes, stdev_votes].
     '''
     *leading_dims, sim_count, district_count, party_count = all_votes.shape
     assert party_count == 2
@@ -876,16 +893,16 @@ def calculate_district_biases(upload):
     swing_range = [(i - swing_count // 2) / 2 for i in range(swing_count)]
     z = swing_count // 2 # Index of zero-swing swing_range midpoint
     all_votes = numpy.concatenate(
-        [vectorized_logit_shift(model_output, a/100).reshape(
+        [logit_shift(model_output, a/100).reshape(
             (model_output.shape[0], 1, *model_output.shape[1:])
         ) for a in swing_range],
         axis=1,
     )
     # all_votes shape is now (model_versions, swing_count, incumbency=4, sims, districts, 2)
-    vote_stats = vectorized_vote_statistics(all_votes)
+    vote_stats = calculate_vote_statistics(all_votes)
 
     # vote_stats shape is now (model_versions, swing_count, incumbency=4, districts, 2, 3)
-    # Note: sims dimension is aggregated by vectorized_vote_statistics
+    # Note: sims dimension is aggregated by calculate_vote_statistics
     # Use first model version as base for differential encoding
     vote_stats_base = vote_stats[0, 0, 0, ...]
     vote_stats_diff = vote_stats - numpy.full(vote_stats.shape, vote_stats_base)
@@ -979,52 +996,52 @@ def calculate_district_biases(upload):
             district['vote_swing'] = None
 
     # Calculate partisanship metrics for all simulations using vectorized functions
-    MMDs = vectorized_MMD(chosen_votes)
-    PBs = vectorized_PB(chosen_votes)
-    D2s = vectorized_D2(chosen_votes)
-    D2ds = vectorized_D2_diff(chosen_votes)
+    MMDs = calculate_MMD(chosen_votes)
+    PBs = calculate_PB(chosen_votes)
+    D2s = calculate_D2(chosen_votes)
+    D2ds = calculate_D2_diff(chosen_votes)
 
     # Need <50% simulations with single-party outcomes for valid declination
     D2_is_valid = len(list(filter(None, D2ds))) > sim_count * .75
 
     # EG alone also gets a sensitivity test for vote swing scenarios
     assert incumbent_votes.shape[0] == swing_count
-    EGs = {swing: EG for swing, EG in zip(swing_range, vectorized_EG(incumbent_votes))}
+    EGs = {swing: EG for swing, EG in zip(swing_range, calculate_EG(incumbent_votes))}
 
     summary_dict = {
-        'Mean-Median': np_safe_mean(MMDs),
-        'Mean-Median SD': np_safe_stdev(MMDs),
-        'Mean-Median Positives': np_safe_positives(MMDs),
-        'Mean-Median Absolute Percent Rank': percentrank_abs(COLUMN_MMD, upload.model.house, np_safe_mean(MMDs)),
-        'Mean-Median Relative Percent Rank': percentrank_rel(COLUMN_MMD, upload.model.house, np_safe_mean(MMDs)),
-        'Partisan Bias': np_safe_mean(PBs),
-        'Partisan Bias SD': np_safe_stdev(PBs),
-        'Partisan Bias Positives': np_safe_positives(PBs),
-        'Partisan Bias Absolute Percent Rank': percentrank_abs(COLUMN_PB, upload.model.house, np_safe_mean(PBs)),
-        'Partisan Bias Relative Percent Rank': percentrank_rel(COLUMN_PB, upload.model.house, np_safe_mean(PBs)),
-        'Declination': np_safe_mean(D2s),
-        'Declination SD': np_safe_stdev(D2s),
-        'Declination Positives': np_safe_positives(D2s),
+        'Mean-Median': safe_mean(MMDs),
+        'Mean-Median SD': safe_stdev(MMDs),
+        'Mean-Median Positives': safe_positives(MMDs),
+        'Mean-Median Absolute Percent Rank': percentrank_abs(COLUMN_MMD, upload.model.house, safe_mean(MMDs)),
+        'Mean-Median Relative Percent Rank': percentrank_rel(COLUMN_MMD, upload.model.house, safe_mean(MMDs)),
+        'Partisan Bias': safe_mean(PBs),
+        'Partisan Bias SD': safe_stdev(PBs),
+        'Partisan Bias Positives': safe_positives(PBs),
+        'Partisan Bias Absolute Percent Rank': percentrank_abs(COLUMN_PB, upload.model.house, safe_mean(PBs)),
+        'Partisan Bias Relative Percent Rank': percentrank_rel(COLUMN_PB, upload.model.house, safe_mean(PBs)),
+        'Declination': safe_mean(D2s),
+        'Declination SD': safe_stdev(D2s),
+        'Declination Positives': safe_positives(D2s),
         'Declination Is Valid': D2_is_valid,
-        'Declination Absolute Percent Rank': percentrank_abs(COLUMN_D2, upload.model.house, np_safe_mean(D2s)),
-        'Declination Relative Percent Rank': percentrank_rel(COLUMN_D2, upload.model.house, np_safe_mean(D2s)),
-        'Efficiency Gap': np_safe_mean(EGs[0.0]),
-        'Efficiency Gap SD': np_safe_stdev(EGs[0.0]),
-        'Efficiency Gap Positives': np_safe_positives(EGs[0.0]),
-        'Efficiency Gap Absolute Percent Rank': percentrank_abs(COLUMN_EG, upload.model.house, np_safe_mean(EGs[0.0])),
-        'Efficiency Gap Relative Percent Rank': percentrank_rel(COLUMN_EG, upload.model.house, np_safe_mean(EGs[0.0])),
+        'Declination Absolute Percent Rank': percentrank_abs(COLUMN_D2, upload.model.house, safe_mean(D2s)),
+        'Declination Relative Percent Rank': percentrank_rel(COLUMN_D2, upload.model.house, safe_mean(D2s)),
+        'Efficiency Gap': safe_mean(EGs[0.0]),
+        'Efficiency Gap SD': safe_stdev(EGs[0.0]),
+        'Efficiency Gap Positives': safe_positives(EGs[0.0]),
+        'Efficiency Gap Absolute Percent Rank': percentrank_abs(COLUMN_EG, upload.model.house, safe_mean(EGs[0.0])),
+        'Efficiency Gap Relative Percent Rank': percentrank_rel(COLUMN_EG, upload.model.house, safe_mean(EGs[0.0])),
     }
 
     # Add sensitivity sweep properties for the sensitivity chart
     # 'Efficiency Gap 0 Swing' is the center point, always calculated at 0.0 regardless of current swing
-    summary_dict['Efficiency Gap 0 Swing'] = np_safe_mean(EGs[0.0])
+    summary_dict['Efficiency Gap 0 Swing'] = safe_mean(EGs[0.0])
 
     for swing in (1.0, 2.0, 3.0, 4.0, 5.0):
         summary_dict.update({
-            f'Efficiency Gap +{swing:.0f} Dem': np_safe_mean(EGs[swing]),
-            f'Efficiency Gap +{swing:.0f} Rep': np_safe_mean(EGs[-swing]),
-            f'Efficiency Gap +{swing:.0f} Dem SD': np_safe_stdev(EGs[swing]),
-            f'Efficiency Gap +{swing:.0f} Rep SD': np_safe_stdev(EGs[-swing]),
+            f'Efficiency Gap +{swing:.0f} Dem': safe_mean(EGs[swing]),
+            f'Efficiency Gap +{swing:.0f} Rep': safe_mean(EGs[-swing]),
+            f'Efficiency Gap +{swing:.0f} Dem SD': safe_stdev(EGs[swing]),
+            f'Efficiency Gap +{swing:.0f} Rep SD': safe_stdev(EGs[-swing]),
         })
 
     return upload.clone(
@@ -1048,13 +1065,13 @@ def calculate_fva_biases(upload):
     
     for race in races:
         if (totals0.get(f'{race} - DEM') is not None and totals0.get(f'{race} - REP') is not None):
-            # Convert to numpy array format for vectorized_EG
+            # Convert to numpy array format for calculate_EG
             red_votes = numpy.array([d['totals'][f'{race} - REP'] for d in upload.districts])
             blue_votes = numpy.array([d['totals'][f'{race} - DEM'] for d in upload.districts])
             # Create array with shape (1, districts, 2) where [:,:,0] = blue, [:,:,1] = red
             votes = numpy.stack([blue_votes, red_votes], axis=-1)[numpy.newaxis, ...]
             # Use flat[0] to robustly extract first element as scalar
-            summary[f'{race} Efficiency Gap'] = float(vectorized_EG(votes).flat[0])
+            summary[f'{race} Efficiency Gap'] = float(calculate_EG(votes).flat[0])
 
     return upload.clone(summary=summary)
 
