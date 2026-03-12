@@ -348,26 +348,6 @@ def _is_valid_number(val):
     '''Helper to check if a value is a valid number (not None or NaN)'''
     return val is not None and not (isinstance(val, float) and math.isnan(val))
 
-def safe_mean(values):
-    '''
-    '''
-    safe_values = [val for val in values if _is_valid_number(val)]
-
-    if len(safe_values) < 1:
-        return None
-
-    return statistics.mean(safe_values)
-
-def safe_stdev(values):
-    '''
-    '''
-    safe_values = [val for val in values if _is_valid_number(val)]
-
-    if len(safe_values) < 2:
-        return None
-
-    return statistics.stdev(safe_values)
-
 def safe_positives(values):
     '''
     '''
@@ -556,27 +536,6 @@ def vectorized_EG(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
 
     return eg_scores
 
-def calculate_MMD(red_districts:list[float], blue_districts:list[float]) -> float:
-    ''' Convert two lists of district vote counts into a Mean-Median score.
-    
-        By convention, result is positive for blue and negative for red.
-    
-        Vote swing does not seem to affect Mean-Median, so leave it off.
-    '''
-    shares = sorted([
-        B / (R + B) for (R, B) in zip(red_districts, blue_districts)
-        if (R + B) > 0
-    ])
-    
-    median = statistics.median(shares)
-    mean = statistics.mean(shares)
-    
-    ## TODO: remove print output unless running planscore-score-locally
-    #with open('MMDs.csv', 'a') as file:
-    #    print(f'{mean:.9f},{median:.9f}', file=file)
-    
-    return median - mean
-
 def vectorized_MMD(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
     ''' Calculate Mean-Median for vectorized multi-sim numpy arrays.
 
@@ -612,32 +571,6 @@ def vectorized_MMD(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
     mmd_scores = medians - means
 
     return mmd_scores
-
-def calculate_PB(red_districts:list[float], blue_districts:list[float]) -> float:
-    ''' Convert two lists of district vote counts into a Partisan Bias score.
-    
-        By convention, result is positive for blue and negative for red.
-    '''
-    nonzero_reds, nonzero_blues = zip(*[
-        (r, b) for (r, b) in zip(red_districts, blue_districts) if r+b > 0
-    ])
-    
-    red_total, blue_total = sum(nonzero_reds), sum(nonzero_blues)
-    blue_margin = (blue_total - red_total) / (blue_total + red_total)
-    
-    reds_5050, blues_5050 = swing_vote(nonzero_reds, nonzero_blues, -blue_margin/2)
-    blue_seats = len([True for (R, B) in zip(reds_5050, blues_5050) if R < B])
-    blue_seatshare = blue_seats / len(blues_5050)
-    blue_voteshare = sum(blues_5050) / (sum(blues_5050) + sum(reds_5050))
-
-    assert round(blue_voteshare, 7) == .5, \
-        'Vote-share Partisan Bias should always be 50%, not {}'.format(blue_voteshare)
-
-    ## TODO: remove print output unless running planscore-score-locally
-    #with open('PBs.csv', 'a') as file:
-    #    print(f'{blue_seatshare:.9f},{blue_voteshare:.3f}', file=file)
-    
-    return blue_seatshare - blue_voteshare
 
 def vectorized_PB(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
     ''' Calculate Partisan Bias for vectorized multi-sim numpy arrays.
@@ -718,55 +651,6 @@ def vectorized_PB(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
 
     return pb_scores
 
-def calculate_D2(red_districts:list[float], blue_districts:list[float]) -> float:
-    ''' Convert two lists of district vote counts into a Declination score.
-    
-        By convention, result is positive for blue and negative for red.
-        Adapt Python sample code from Warrington, 2018.
-    '''
-    blue_shares = [
-        B / (R + B) for (R, B) in zip(red_districts, blue_districts)
-        if (R + B) > 0
-    ]
-
-    seats = len(blue_shares)
-    red_wins = sorted([share for share in blue_shares if share <= 0.5])
-    blue_wins = sorted([share for share in blue_shares if share > 0.5])
-    
-    if not red_wins:
-        # -1 if red party does not win at least one seat
-        declination = -1
-
-    elif not blue_wins:
-        # +1 if blue party does not win at least one seat
-        declination = +1
-
-    else:
-        theta = math.atan(
-            (1 - 2 * statistics.mean(red_wins)) * seats / len(red_wins)
-        )
-
-        gamma = math.atan(
-            (2 * statistics.mean(blue_wins) - 1) * seats / len(blue_wins)
-        )
-    
-        # Convert to range [-1,1]
-        # A little extra precision just in case.
-        declination = 2.0 * (gamma - theta) / math.pi
-
-    declination2 = declination * math.log(seats) / 2
-    
-    ## TODO: remove print output unless running planscore-score-locally
-    #with open('D2s.csv', 'a') as file:
-    #    print(
-    #        f'{-declination2:.3f}',
-    #        ','.join([f'{s:.3f}' for s in blue_shares]),
-    #        sep=',',
-    #        file=file,
-    #    )
-
-    return -declination2
-
 def vectorized_D2(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
     ''' Calculate Declination (D2) for vectorized multi-sim numpy arrays.
 
@@ -839,26 +723,6 @@ def vectorized_D2(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
 
     return -declination2
 
-def calculate_D2_diff(red_districts:list[float], blue_districts:list[float]) -> float | None:
-    ''' Convert two lists of district vote counts into vote share difference.
-    
-        Relevant for the textual description of Declination.
-    '''
-    blue_shares = [
-        B / (R + B) for (R, B) in zip(red_districts, blue_districts)
-        if (R + B) > 0 and B >= R
-    ]
-
-    red_shares = [
-        R / (R + B) for (R, B) in zip(red_districts, blue_districts)
-        if (R + B) > 0 and B < R
-    ]
-    
-    if red_shares and blue_shares:
-        return statistics.mean(blue_shares) - statistics.mean(red_shares)
-
-    return None
-
 def vectorized_D2_diff(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
     ''' Calculate vote share difference for vectorized multi-sim numpy arrays.
 
@@ -897,200 +761,6 @@ def vectorized_D2_diff(votes:numpy.typing.NDArray) -> numpy.typing.NDArray:
     diff = mean_blue_wins - mean_red_wins
 
     return diff
-
-def calculate_bias(upload):
-    ''' Calculate partisan metrics for districts with plain vote counts.
-        
-        Look for obsolete vote properties from early 2018 PlanScore models.
-    '''
-    summary_dict, gaps = {}, {
-        'Red/Blue': ('Red Votes', 'Blue Votes'),
-        'US House': ('US House Rep Votes', 'US House Dem Votes'),
-        'SLDU': ('SLDU Rep Votes', 'SLDU Dem Votes'),
-        'SLDL': ('SLDL Rep Votes', 'SLDL Dem Votes'),
-        }
-    
-    first_totals = upload.districts[0]['totals']
-
-    for (prefix, (red_field, blue_field)) in gaps.items():
-        if red_field not in first_totals or blue_field not in first_totals:
-            continue
-    
-        red_districts = [d['totals'].get(red_field) or 0 for d in upload.districts]
-        blue_districts = [d['totals'].get(blue_field) or 0 for d in upload.districts]
-
-        if prefix == 'Red/Blue':
-            summary_dict['Mean-Median'] = calculate_MMD(red_districts, blue_districts)
-            summary_dict['Partisan Bias'] = calculate_PB(red_districts, blue_districts)
-            summary_dict['Declination'] = calculate_D2(red_districts, blue_districts)
-            summary_dict['Efficiency Gap'] = calculate_EG(red_districts, blue_districts)
-
-            # Calculate -5 to +5 point swings
-            swings = itertools.product([1, 2, 3, 4, 5], [(.01, 'Blue'), (-.01, 'Red')])
-            for (points, (swing, party)) in swings:
-                gap = calculate_EG(red_districts, blue_districts, swing * points)
-                summary_dict[f'Efficiency Gap +{points:.0f} {party}'] = gap
-        else:
-            summary_dict[f'{prefix} Mean-Median'] = calculate_MMD(red_districts, blue_districts)
-            summary_dict[f'{prefix} Partisan Bias'] = calculate_PB(red_districts, blue_districts)
-            summary_dict[f'{prefix} Declination'] = calculate_D2(red_districts, blue_districts)
-            summary_dict[f'{prefix} Efficiency Gap'] = calculate_EG(red_districts, blue_districts)
-
-            # Calculate -5 to +5 point swings
-            swings = itertools.product([1, 2, 3, 4, 5], [(.01, 'Dem'), (-.01, 'Rep')])
-            for (points, (swing, party)) in swings:
-                gap = calculate_EG(red_districts, blue_districts, swing * points)
-                summary_dict[f'{prefix} Efficiency Gap +{points:.0f} {party}'] = gap
-    
-    return upload.clone(summary=summary_dict)
-
-def calculate_open_biases(upload):
-    ''' Calculate partisan metrics for districts with multiple simulations.
-
-        Look for "DEM000"-style vote properties from 2018 and 2019 PlanScore models.
-    '''
-    if 'DEM000' not in upload.districts[0]['totals']:
-        # Skip everything if we don't see a "DEM000"-style vote property
-        return upload.clone()
-    
-    MMDs, PBs, D2s = list(), list(), list()
-    EGs = {swing: list() for swing in (0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5)}
-    summary_dict, copied_districts = dict(), copy.deepcopy(upload.districts)
-    first_totals = copied_districts[0]['totals']
-    
-    # Prepare place for simulation vote totals in each district
-    all_red_districts = [list() for d in copied_districts]
-    all_blue_districts = [list() for d in copied_districts]
-
-    # Iterate over all simulations, tracking EG and vote totals
-    for sim in range(1000):
-        if f'REP{sim:03d}' not in first_totals or f'DEM{sim:03d}' not in first_totals:
-            continue
-        
-        sim_red_districts, sim_blue_districts = list(), list()
-
-        for (i, district) in enumerate(copied_districts):
-            red_votes = district['totals'].pop(f'REP{sim:03d}', 0)
-            blue_votes = district['totals'].pop(f'DEM{sim:03d}', 0)
-            sim_red_districts.append(red_votes)
-            sim_blue_districts.append(blue_votes)
-            all_red_districts[i].append(red_votes)
-            all_blue_districts[i].append(blue_votes)
-    
-        MMDs.append(calculate_MMD(sim_red_districts, sim_blue_districts))
-        PBs.append(calculate_PB(sim_red_districts, sim_blue_districts))
-        D2s.append(calculate_D2(sim_red_districts, sim_blue_districts))
-        
-        for swing in EGs:
-            EGs[swing].append(calculate_EG(sim_red_districts, sim_blue_districts, swing/100))
-    
-    # Finalize per-district vote totals and confidence intervals
-    for (i, district) in enumerate(copied_districts):
-        red_votes, blue_votes = all_red_districts[i], all_blue_districts[i]
-        district['totals'].update({
-            'Democratic Votes': round(statistics.mean(blue_votes), constants.ROUND_COUNT),
-            'Republican Votes': round(statistics.mean(red_votes), constants.ROUND_COUNT),
-            'Democratic Votes SD': round(statistics.stdev(blue_votes), constants.ROUND_COUNT),
-            'Republican Votes SD': round(statistics.stdev(red_votes), constants.ROUND_COUNT)
-            })
-
-    summary_dict['Mean-Median'] = statistics.mean(MMDs)
-    summary_dict['Mean-Median SD'] = statistics.stdev(MMDs)
-    summary_dict['Partisan Bias'] = statistics.mean(PBs)
-    summary_dict['Partisan Bias SD'] = statistics.stdev(PBs)
-    summary_dict['Declination'] = statistics.mean(D2s)
-    summary_dict['Declination SD'] = statistics.stdev(D2s)
-    summary_dict['Efficiency Gap'] = statistics.mean(EGs[0])
-    summary_dict['Efficiency Gap SD'] = statistics.stdev(EGs[0])
-    
-    for swing in (1, 2, 3, 4, 5):
-        summary_dict[f'Efficiency Gap +{swing} Dem'] = statistics.mean(EGs[swing])
-        summary_dict[f'Efficiency Gap +{swing} Rep'] = statistics.mean(EGs[-swing])
-        summary_dict[f'Efficiency Gap +{swing} Dem SD'] = statistics.stdev(EGs[swing])
-        summary_dict[f'Efficiency Gap +{swing} Rep SD'] = statistics.stdev(EGs[-swing])
-    
-    rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
-    return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
-
-def calculate_biases(upload):
-    ''' Calculate partisan metrics for districts with simulations and incumbency.
-    
-        Look for "O:DEM000"-style vote properties from PlanScore models starting 2020.
-    '''
-    if FIELD_TMPL.format(party='DEM', sim=0, incumbent=data.Incumbency.Open.value) \
-            not in upload.districts[0]['totals']:
-        # Skip everything if we don't see an "O:DEM000"-style vote property
-        return upload.clone()
-    
-    MMDs, PBs, D2s = list(), list(), list()
-    EGs = {swing: list() for swing in (0, 1, -1, 2, -2, 3, -3, 4, -4, 5, -5)}
-    summary_dict, copied_districts = dict(), copy.deepcopy(upload.districts)
-    first_totals = copied_districts[0]['totals']
-    
-    # Prepare place for simulation vote totals in each district
-    all_red_districts = [list() for d in copied_districts]
-    all_blue_districts = [list() for d in copied_districts]
-
-    # Iterate over all simulations, tracking EG and vote totals
-    for sim in range(1000):
-        if FIELD_TMPL.format(party='DEM', sim=sim, incumbent=data.Incumbency.Open.value) \
-                not in first_totals:
-            # Skip if we don't seem to have sims up to this iteration
-            continue
-        
-        sim_red_districts, sim_blue_districts = list(), list()
-
-        for (i, district) in enumerate(copied_districts):
-            incumbent = upload.incumbents[i]
-            oDEMnnn = FIELD_TMPL.format(party='DEM', sim=sim, incumbent=incumbent)
-            oREPnnn = FIELD_TMPL.format(party='REP', sim=sim, incumbent=incumbent)
-        
-            red_votes = district['totals'].pop(oREPnnn, 0)
-            blue_votes = district['totals'].pop(oDEMnnn, 0)
-            sim_red_districts.append(red_votes)
-            sim_blue_districts.append(blue_votes)
-            all_red_districts[i].append(red_votes)
-            all_blue_districts[i].append(blue_votes)
-            
-            # Clear out vote total fields for all conditions in the current sim
-            for (party, incumbent) in itertools.product(('DEM', 'REP'), list(data.Incumbency)):
-                kwargs = dict(incumbent=incumbent.value, party=party, sim=sim)
-                district['totals'].pop(FIELD_TMPL.format(**kwargs), None)
-    
-        MMDs.append(calculate_MMD(sim_red_districts, sim_blue_districts))
-        PBs.append(calculate_PB(sim_red_districts, sim_blue_districts))
-        D2s.append(calculate_D2(sim_red_districts, sim_blue_districts))
-        
-        for swing in EGs:
-            EGs[swing].append(calculate_EG(sim_red_districts, sim_blue_districts, swing/100))
-    
-    # Finalize per-district vote totals and confidence intervals
-    for (i, district) in enumerate(copied_districts):
-        red_votes, blue_votes = all_red_districts[i], all_blue_districts[i]
-        district['totals'].update({
-            'Democratic Votes': round(statistics.mean(blue_votes), constants.ROUND_COUNT),
-            'Republican Votes': round(statistics.mean(red_votes), constants.ROUND_COUNT),
-            'Democratic Votes SD': round(statistics.stdev(blue_votes), constants.ROUND_COUNT),
-            'Republican Votes SD': round(statistics.stdev(red_votes), constants.ROUND_COUNT)
-            })
-
-    summary_dict['Mean-Median'] = safe_mean(MMDs)
-    summary_dict['Mean-Median SD'] = safe_stdev(MMDs)
-    summary_dict['Partisan Bias'] = safe_mean(PBs)
-    summary_dict['Partisan Bias SD'] = safe_stdev(PBs)
-    summary_dict['Declination'] = safe_mean(D2s)
-    summary_dict['Declination SD'] = safe_stdev(D2s)
-    summary_dict['Efficiency Gap'] = safe_mean(EGs[0])
-    summary_dict['Efficiency Gap SD'] = safe_stdev(EGs[0])
-    
-    for swing in (1, 2, 3, 4, 5):
-        summary_dict[f'Efficiency Gap +{swing} Dem'] = safe_mean(EGs[swing])
-        summary_dict[f'Efficiency Gap +{swing} Rep'] = safe_mean(EGs[-swing])
-        summary_dict[f'Efficiency Gap +{swing} Dem SD'] = safe_stdev(EGs[swing])
-        summary_dict[f'Efficiency Gap +{swing} Rep SD'] = safe_stdev(EGs[-swing])
-    
-    rounded_summary_dict = {k: round(v, constants.ROUND_FLOAT) for (k, v) in summary_dict.items()}
-    return upload.clone(districts=copied_districts, summary=rounded_summary_dict)
 
 def select_incumbency_stats(values: numpy.typing.NDArray, incumbents: list[str]) -> numpy.typing.NDArray:
     """Select appropriate incumbency scenario per district stats.
