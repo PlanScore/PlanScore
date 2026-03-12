@@ -181,7 +181,7 @@ def accumulate_district_totals(athena, upload, is_spatial):
         where_clause = 'b.geoid20 = d.geoid20'
 
     query = f'''
-        -- {os.environ.get('ATHENA_DB')} {upload.model.key_prefix} and {upload.id[:2]}…{upload.id[-4:]}
+        -- Counts {os.environ.get('ATHENA_DB')} {upload.model.key_prefix} and {upload.id[:2]}…{upload.id[-4:]}
         SELECT
             d.number AS district_number,
             {indent.join(columns)}
@@ -236,7 +236,7 @@ def generate_block_assignment_file(athena, s3, bucket, upload):
     where_clause = 'ST_Within(ST_GeometryFromText(b.point), ST_GeometryFromText(d.polygon))'
 
     query = f'''
-        -- {os.environ.get('ATHENA_DB')} {upload.model.key_prefix} and {upload.id[:2]}…{upload.id[-4:]}
+        -- Blocks {os.environ.get('ATHENA_DB')} {upload.model.key_prefix} and {upload.id[:2]}…{upload.id[-4:]}
         SELECT
             d.number AS district,
             b.geoid20,
@@ -273,12 +273,7 @@ def generate_block_assignment_file(athena, s3, bucket, upload):
     for row in rows:
         # Handle both dict formats (from CSV or from ResultSet)
         district = int(row['district']) if isinstance(row['district'], str) else row['district']
-        csv_writer.writerow([
-            district + 1,
-            row['geoid20'],
-            row['intptlon'],
-            row['intptlat'],
-        ])
+        csv_writer.writerow([district + 1, row['geoid20'], row['intptlon'], row['intptlat']])
 
     # Gzip and upload to S3
     csv_content = csv_buffer.getvalue().encode('utf8')
