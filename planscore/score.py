@@ -120,18 +120,6 @@ BLOCK_TABLE_FIELDS = [
 # Template for simulated election vote totals with incumbency
 FIELD_TMPL = '{incumbent}:{party}{sim:03d}'
 
-def swing_vote(red_districts:list[float], blue_districts:list[float], amount:float) -> tuple(list[float], list[float]):
-    ''' Swing the vote by a percentage, positive toward blue.
-    '''
-    if amount == 0:
-        return list(red_districts), list(blue_districts)
-
-    districts = [(R, B, R + B) for (R, B) in zip(red_districts, blue_districts)]
-    swung_reds = [((R/T - amount) * T) for (R, B, T) in districts if T > 0]
-    swung_blues = [((B/T + amount) * T) for (R, B, T) in districts if T > 0]
-
-    return swung_reds, swung_blues
-
 def vectorized_swing(votes:numpy.typing.NDArray, amount:float) -> numpy.typing.NDArray:
     ''' Swing the vote by a percentage, positive toward blue, using vectorized operations.
 

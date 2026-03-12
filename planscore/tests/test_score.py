@@ -33,21 +33,6 @@ def mock_s3_get_object(Bucket, Key):
 
 class TestScore (unittest.TestCase):
 
-    def test_swing_vote(self):
-        ''' Vote swing is correctly calculated
-        '''
-        reds1, blues1 = score.swing_vote((1, 2, 3), (3, 2, 1), 0)
-        self.assertEqual(reds1, [1, 2, 3])
-        self.assertEqual(blues1, [3, 2, 1])
-
-        reds2, blues2 = score.swing_vote((1, 2, 3), (3, 2, 1), .1)
-        self.assertEqual(reds2, [.6, 1.6, 2.6])
-        self.assertEqual(blues2, [3.4, 2.4, 1.4])
-
-        reds3, blues3 = score.swing_vote((1, 2, 3), (3, 2, 1), -.1)
-        self.assertEqual(reds3, [1.4, 2.4, 3.4])
-        self.assertEqual(blues3, [2.6, 1.6, .6])
-
     def test_swing_vote_matrix(self):
         ''' Vote swing is correctly calculated for multi-sim numpy arrays
         '''
