@@ -785,7 +785,7 @@ class TestPostreadCalculate (unittest.TestCase):
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
 
-        put_district_geometries.return_value = [unittest.mock.Mock()] * 2
+        put_district_geometries.return_value = ([unittest.mock.Mock()] * 2, [None, None])
         accumulate_district_totals.return_value = [(None, [])]
         generate_block_assignment_file.return_value = 'https://s3.amazonaws.com/bucket/uploads/ID/blockassignments.csv.gz'
 
