@@ -115,9 +115,6 @@ BLOCK_TABLE_FIELDS = [
     ("Expected American Indian or Alaska Native 2024 Democratic Vote Share (RPV)", float, Aggregator.WeightedMean),
 ]
 
-# Template for simulated election vote totals with incumbency
-FIELD_TMPL = '{incumbent}:{party}{sim:03d}'
-
 def swing_vote(votes: numpy.typing.NDArray, amount: float) -> numpy.typing.NDArray:
     ''' Swing the vote by a percentage, positive toward blue, using vectorized operations.
 
