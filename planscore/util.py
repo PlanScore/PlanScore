@@ -139,36 +139,64 @@ def baf_stream_to_pairs(stream):
     head, tail = next(stream), stream
     delimiter = '|' if '|' in head else ','
     numeric_head = {bool(re.match(r'^\d+$', col)) for  col in head.split(delimiter)}
-    if False in numeric_head:
+    has_header = False in numeric_head
+
+    if has_header:
         # There's a header row with non-numeric characters
         lines = itertools.chain([head], tail)
     else:
         # No header row, make a fake one
         lines = itertools.chain([f'BLOCKID{delimiter}DISTRICT', head], tail)
-    rows = csv.DictReader(lines, delimiter=delimiter)
-    
-    if len(rows.fieldnames) != 2:
-        raise ValueError(f'Bad column count in {stream}')
 
-    if 'GEOID10' in rows.fieldnames:
-        block_column = 'GEOID10'
-        district_column = rows.fieldnames[(rows.fieldnames.index(block_column) + 1) % 2]
-    elif 'GEOID20' in rows.fieldnames:
-        block_column = 'GEOID20'
-        district_column = rows.fieldnames[(rows.fieldnames.index(block_column) + 1) % 2]
-    elif 'BLOCKID' in rows.fieldnames:
-        block_column = 'BLOCKID'
-        district_column = rows.fieldnames[(rows.fieldnames.index(block_column) + 1) % 2]
-    elif 'DISTRICT' in rows.fieldnames:
-        district_column = 'DISTRICT'
-        block_column = rows.fieldnames[(rows.fieldnames.index(district_column) + 1) % 2]
+    rows = csv.DictReader(lines, delimiter=delimiter)
+
+    # Validate column count based on whether headers are present
+    if has_header:
+        # With headers, accept 2+ columns
+        if len(rows.fieldnames) < 2:
+            raise ValueError(f'Need at least 2 columns in {stream}, got {len(rows.fieldnames)}')
     else:
-        block_column, district_column = rows.fieldnames
-    
+        # Without headers, require exactly 2 columns
+        if len(rows.fieldnames) != 2:
+            raise ValueError(f'Need exactly 2 columns without headers in {stream}, got {len(rows.fieldnames)}')
+
+    # Convert to list to check for extra columns in headerless files
+    rows_list = list(rows)
+
+    # Check if headerless file has more than 2 columns per row
+    if not has_header and rows_list and None in rows_list[0]:
+        # DictReader puts extra columns under None key
+        extra_count = len(rows_list[0][None]) if rows_list[0][None] else 0
+        total_columns = len(rows.fieldnames) + extra_count
+        raise ValueError(f'Need exactly 2 columns without headers in {stream}, got {total_columns}')
+
+    # Create lowercase mapping for case-insensitive lookup
+    fieldnames_lower = {name.lower(): name for name in rows.fieldnames}
+
+    # Detect block column (case-insensitive)
+    if 'geoid20' in fieldnames_lower:
+        block_column = fieldnames_lower['geoid20']
+    elif 'geoid10' in fieldnames_lower:
+        block_column = fieldnames_lower['geoid10']
+    elif 'geoid' in fieldnames_lower:
+        block_column = fieldnames_lower['geoid']
+    elif 'blockid' in fieldnames_lower:
+        block_column = fieldnames_lower['blockid']
+    else:
+        # Fall back to first column
+        block_column = rows.fieldnames[0]
+
+    # Detect district column (case-insensitive)
+    if 'district' in fieldnames_lower:
+        district_column = fieldnames_lower['district']
+    else:
+        # Fall back to first non-block column
+        district_column = [col for col in rows.fieldnames if col != block_column][0]
+
     # Exclude "ZZ" district, used by Census for all-water non-districts
     return [
         (row[block_column], row[district_column])
-        for row in rows if row[district_column] != 'ZZ'
+        for row in rows_list if row[district_column] != 'ZZ'
     ]
 
 def _make_district_sort_key(

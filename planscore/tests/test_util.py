@@ -277,7 +277,105 @@ class TestUtil (unittest.TestCase):
             rows13 = util.baf_stream_to_pairs(file13)
             self.assertEqual(len(rows13), 9)
             self.assertEqual(rows13[0], ('390017701001000', '14'))
-    
+
+    def test_baf_stream_to_pairs_with_five_columns(self):
+        ''' Test that baf_stream_to_pairs() handles 5-column output format
+        '''
+        # Test 5-column format without source data
+        with open(os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v13.csv')) as file:
+            rows = util.baf_stream_to_pairs(file)
+            self.assertEqual(len(rows), 9)
+            self.assertEqual(rows[0], ('0000000001', '1'))
+            self.assertEqual(rows[1], ('0000000002', '1'))
+            self.assertEqual(rows[2], ('0000000003', '2'))
+
+        # Test 5-column format with source data
+        with open(os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments-v14.csv')) as file:
+            rows = util.baf_stream_to_pairs(file)
+            self.assertEqual(len(rows), 9)
+            self.assertEqual(rows[0], ('0000000001', '1'))
+            self.assertEqual(rows[1], ('0000000002', '1'))
+            self.assertEqual(rows[2], ('0000000003', '2'))
+
+    def test_baf_stream_to_pairs_with_three_columns(self):
+        ''' Test that baf_stream_to_pairs() handles 3-column subset
+        '''
+        import io
+        content = 'district,geoid20,extra\n1,0000000001,foo\n2,0000000002,bar\n'
+        stream = io.StringIO(content)
+        rows = util.baf_stream_to_pairs(stream)
+        self.assertEqual(len(rows), 2)
+        self.assertEqual(rows[0], ('0000000001', '1'))
+        self.assertEqual(rows[1], ('0000000002', '2'))
+
+    def test_baf_stream_to_pairs_case_insensitive(self):
+        ''' Test that baf_stream_to_pairs() handles mixed case headers
+        '''
+        import io
+
+        # Test lowercase headers (matches output format)
+        content1 = 'district,geoid20\n1,0000000001\n2,0000000002\n'
+        stream1 = io.StringIO(content1)
+        rows1 = util.baf_stream_to_pairs(stream1)
+        self.assertEqual(rows1[0], ('0000000001', '1'))
+
+        # Test uppercase headers (backward compat)
+        content2 = 'DISTRICT,GEOID20\n1,0000000001\n2,0000000002\n'
+        stream2 = io.StringIO(content2)
+        rows2 = util.baf_stream_to_pairs(stream2)
+        self.assertEqual(rows2[0], ('0000000001', '1'))
+
+        # Test mixed case headers
+        content3 = 'District,GeoID20\n1,0000000001\n2,0000000002\n'
+        stream3 = io.StringIO(content3)
+        rows3 = util.baf_stream_to_pairs(stream3)
+        self.assertEqual(rows3[0], ('0000000001', '1'))
+
+    def test_baf_stream_to_pairs_rejects_single_column_with_header(self):
+        ''' Test that baf_stream_to_pairs() rejects single-column files with header
+        '''
+        import io
+        content = 'district\n1\n2\n'
+        stream = io.StringIO(content)
+        with self.assertRaises(ValueError) as context:
+            util.baf_stream_to_pairs(stream)
+        self.assertIn('at least 2 columns', str(context.exception))
+
+    def test_baf_stream_to_pairs_column_order_independent(self):
+        ''' Test that baf_stream_to_pairs() works with columns in any order
+        '''
+        import io
+
+        # Standard order: district, geoid20
+        content1 = 'district,geoid20\n1,0000000001\n2,0000000002\n'
+        stream1 = io.StringIO(content1)
+        rows1 = util.baf_stream_to_pairs(stream1)
+        self.assertEqual(rows1[0], ('0000000001', '1'))
+
+        # Reversed order: geoid20, district
+        content2 = 'geoid20,district\n0000000001,1\n0000000002,2\n'
+        stream2 = io.StringIO(content2)
+        rows2 = util.baf_stream_to_pairs(stream2)
+        self.assertEqual(rows2[0], ('0000000001', '1'))
+
+        # With extra columns in middle
+        content3 = 'district,extra,geoid20\n1,foo,0000000001\n2,bar,0000000002\n'
+        stream3 = io.StringIO(content3)
+        rows3 = util.baf_stream_to_pairs(stream3)
+        self.assertEqual(rows3[0], ('0000000001', '1'))
+
+    def test_baf_stream_to_pairs_headerless_requires_two_columns(self):
+        ''' Test that baf_stream_to_pairs() requires exactly 2 columns for headerless files
+        '''
+        import io
+
+        # Headerless file with 3 numeric columns should fail
+        content = '0000000001,1,999\n0000000002,2,888\n'
+        stream = io.StringIO(content)
+        with self.assertRaises(ValueError) as context:
+            util.baf_stream_to_pairs(stream)
+        self.assertIn('exactly 2 columns without headers', str(context.exception))
+
     @unittest.mock.patch('planscore.util.is_polygonal_feature')
     @unittest.mock.patch('sys.stdout')
     def test_ordered_districts(self, stdout, is_polygonal_feature):
