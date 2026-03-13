@@ -72,7 +72,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
-        keys = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
         self.assertEqual(keys, [
             'uploads/ID/geometries/0.wkt',
             'uploads/ID/geometries/1.wkt',
@@ -88,7 +88,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-25d.geojson')
-        keys = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
         self.assertEqual(keys, [
             'uploads/ID/geometries/0.wkt',
             'uploads/ID/geometries/1.wkt',
@@ -104,7 +104,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-missing-geometries.geojson')
-        keys = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
         self.assertEqual(keys, [
             'uploads/ID/geometries/0.wkt',
             'uploads/ID/geometries/1.wkt',
@@ -120,11 +120,70 @@ class TestPostreadCalculate (unittest.TestCase):
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
         plan_path = os.path.join(os.path.dirname(__file__), 'data', 'PA-DRA-points-included.geojson')
-        keys = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, plan_path)
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, plan_path)
         self.assertEqual(len(keys), 51)
         
         self.assertEqual(s3.mock_calls[-1][2]['Key'], 'uploads/ID/districts/partition.csv.gz')
     
+    @unittest.mock.patch('planscore.util.is_polygonal_feature')
+    @unittest.mock.patch('sys.stdout')
+    def test_put_district_geometries_with_census_field(self, stdout, is_polygonal_feature):
+        ''' Test put_district_geometries returns (keys, source_districts) for Census field
+        '''
+        is_polygonal_feature.return_value = True
+        s3 = unittest.mock.Mock()
+        upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
+        test_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'tl_2025_09_sldu.geojson')
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, test_plan_path)
+
+        # Should return a tuple with keys and source_districts
+        self.assertIsInstance(keys, list)
+        self.assertIsInstance(source_districts, list)
+        self.assertEqual(len(keys), len(source_districts) + 1)  # +1 for bboxes
+
+        # Check that source_districts are in the expected format
+        # After sorting by SLDUST, first should be "028", second should be "029"
+        self.assertEqual(source_districts[0], 'SLDUST="028"')
+        self.assertEqual(source_districts[1], 'SLDUST="029"')
+
+    @unittest.mock.patch('planscore.util.is_polygonal_feature')
+    @unittest.mock.patch('sys.stdout')
+    def test_put_district_geometries_with_numeric_field(self, stdout, is_polygonal_feature):
+        ''' Test put_district_geometries returns (keys, source_districts) for numeric field
+        '''
+        is_polygonal_feature.return_value = True
+        s3 = unittest.mock.Mock()
+        upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
+        test_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'unordered6.geojson')
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, test_plan_path)
+
+        # Should return a tuple with keys and source_districts
+        self.assertIsInstance(keys, list)
+        self.assertIsInstance(source_districts, list)
+
+        # Check that source_districts are in the expected format for numeric fields
+        # Format should be like 'District=1', 'District=2', etc.
+        self.assertTrue(source_districts[0].startswith('District='))
+        self.assertTrue(source_districts[1].startswith('District='))
+
+    @unittest.mock.patch('planscore.util.is_polygonal_feature')
+    @unittest.mock.patch('sys.stdout')
+    def test_put_district_geometries_without_district_field(self, stdout, is_polygonal_feature):
+        ''' Test put_district_geometries returns (keys, source_districts) when no district field exists
+        '''
+        is_polygonal_feature.return_value = True
+        s3 = unittest.mock.Mock()
+        upload = data.Upload('ID', 'uploads/ID/upload/file.geojson')
+        null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
+        keys, source_districts = postread_calculate.put_district_geometries(s3, 'bucket-name', upload, null_plan_path)
+
+        # Should return a tuple with keys and source_districts
+        self.assertIsInstance(keys, list)
+        self.assertIsInstance(source_districts, list)
+
+        # When no district field is found, all source_districts should be None
+        self.assertTrue(all(sd is None for sd in source_districts))
+
     @unittest.mock.patch('sys.stdout')
     def test_put_district_assignments(self, stdout):
         '''
@@ -132,9 +191,9 @@ class TestPostreadCalculate (unittest.TestCase):
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.txt')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.txt')
-        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
+        keys, source_districts = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
         self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
-        
+
         self.assertEqual(s3.mock_calls[0][2]['Key'], 'uploads/ID/assignments/0.txt')
         self.assertEqual(s3.mock_calls[1][2]['Key'], 'uploads/ID/assignments/1.txt')
         self.assertEqual(s3.mock_calls[0][2]['Body'], '0000000004\n0000000008\n0000000009\n0000000010\n')
@@ -143,13 +202,30 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(gzip.decompress(s3.mock_calls[2][2]['Body']), b'0,,0000000004\r\n0,,0000000008\r\n0,,0000000009\r\n0,,0000000010\r\n1,,0000000001\r\n1,,0000000002\r\n1,,0000000003\r\n1,,0000000005\r\n1,,0000000006\r\n1,,0000000007\r\n')
     
     @unittest.mock.patch('sys.stdout')
+    def test_put_district_assignments_returns_none_source_districts(self, stdout):
+        ''' Test put_district_assignments returns (keys, source_districts) with None values
+        '''
+        s3 = unittest.mock.Mock()
+        upload = data.Upload('ID', 'uploads/ID/upload/file.txt')
+        null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.txt')
+        keys, source_districts = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
+
+        # Should return a tuple with keys and source_districts
+        self.assertIsInstance(keys, list)
+        self.assertIsInstance(source_districts, list)
+        self.assertEqual(len(keys), len(source_districts))
+
+        # BAF files don't have field info, so all source_districts should be None
+        self.assertTrue(all(sd is None for sd in source_districts))
+
+    @unittest.mock.patch('sys.stdout')
     def test_put_district_assignments_funky_districts(self, stdout):
         '''
         '''
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.txt')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'ohio-1195_001.csv')
-        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
+        keys, source_districts = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
         self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt', 'uploads/ID/assignments/2.txt'])
         
         self.assertEqual(s3.mock_calls[0][2]['Key'], 'uploads/ID/assignments/0.txt')
@@ -168,7 +244,7 @@ class TestPostreadCalculate (unittest.TestCase):
         s3 = unittest.mock.Mock()
         upload = data.Upload('ID', 'uploads/ID/upload/file.txt')
         null_plan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan-blockassignments.txt.zip')
-        keys = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
+        keys, source_districts = postread_calculate.put_district_assignments(s3, 'bucket-name', upload, null_plan_path)
         self.assertEqual(keys, ['uploads/ID/assignments/0.txt', 'uploads/ID/assignments/1.txt'])
         
         self.assertEqual(s3.mock_calls[0][2]['Key'], 'uploads/ID/assignments/0.txt')
@@ -316,7 +392,7 @@ class TestPostreadCalculate (unittest.TestCase):
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
 
-        put_district_geometries.return_value = [unittest.mock.Mock()] * 2
+        put_district_geometries.return_value = ([unittest.mock.Mock()] * 2, [None, None])
         accumulate_district_totals.return_value = [(None, [])]
         populate_compactness.return_value = [{}, {}]
 
@@ -354,7 +430,7 @@ class TestPostreadCalculate (unittest.TestCase):
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.shp.zip')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.shp.zip'
 
-        put_district_geometries.return_value = [unittest.mock.Mock()] * 2
+        put_district_geometries.return_value = ([unittest.mock.Mock()] * 2, [None, None])
         accumulate_district_totals.return_value = [(None, [])]
         populate_compactness.return_value = [{}, {}]
 
@@ -433,9 +509,9 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertEqual(response2, iter_athena_exec.return_value[0])
     
     def test_resultset_to_district_totals(self):
-        result = { "UpdateCount": 0, "ResultSet": { "Rows": [ { "Data": [ { "VarCharValue": "district_number" }, { "VarCharValue": "US President 2020 - DEM" }, { "VarCharValue": "US President 2020 - REP" }, { "VarCharValue": "US President 3000 - Other" }, ] }, { "Data": [ { "VarCharValue": "0" }, { "VarCharValue": "100" }, { "VarCharValue": "200.2" }, { }, ] }, { "Data": [ { "VarCharValue": "0" }, { "VarCharValue": "200" }, { "VarCharValue": "100.1" }, { }, ] } ], "ResultSetMetadata": { "ColumnInfo": [ { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "district_number", "Label": "district_number", "Type": "integer", "Precision": 10, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "US President 2020 - DEM", "Label": "US President 2020 - DEM", "Type": "bigint", "Precision": 17, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "US President 2020 - REP", "Label": "US President 2020 - REP", "Type": "double", "Precision": 17, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "US President 3000 - Other", "Label": "US President 3000 - Other", "Type": "double", "Precision": 17, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, ] } }, }
+        result = { "UpdateCount": 0, "ResultSet": { "Rows": [ { "Data": [ { "VarCharValue": "US President 2020 - DEM" }, { "VarCharValue": "US President 2020 - REP" }, { "VarCharValue": "US President 3000 - Other" }, ] }, { "Data": [ { "VarCharValue": "100" }, { "VarCharValue": "200.2" }, { }, ] }, { "Data": [ { "VarCharValue": "200" }, { "VarCharValue": "100.1" }, { }, ] } ], "ResultSetMetadata": { "ColumnInfo": [ { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "US President 2020 - DEM", "Label": "US President 2020 - DEM", "Type": "bigint", "Precision": 17, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "US President 2020 - REP", "Label": "US President 2020 - REP", "Type": "double", "Precision": 17, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, { "CatalogName": "hive", "SchemaName": "", "TableName": "", "Name": "US President 3000 - Other", "Label": "US President 3000 - Other", "Type": "double", "Precision": 17, "Scale": 0, "Nullable": "UNKNOWN", "CaseSensitive": False }, ] } }, }
         totals = postread_calculate.resultset_to_district_totals(result)
-        
+
         self.assertEqual(
             totals,
             [
@@ -443,17 +519,13 @@ class TestPostreadCalculate (unittest.TestCase):
                     result['ResultSet']['ResultSetMetadata']['ColumnInfo'][0]['Name']:\
                         int(result['ResultSet']['Rows'][1]['Data'][0]['VarCharValue']),
                     result['ResultSet']['ResultSetMetadata']['ColumnInfo'][1]['Name']:\
-                        int(result['ResultSet']['Rows'][1]['Data'][1]['VarCharValue']),
-                    result['ResultSet']['ResultSetMetadata']['ColumnInfo'][2]['Name']:\
-                        float(result['ResultSet']['Rows'][1]['Data'][2]['VarCharValue']),
+                        float(result['ResultSet']['Rows'][1]['Data'][1]['VarCharValue']),
                 },
                 {
                     result['ResultSet']['ResultSetMetadata']['ColumnInfo'][0]['Name']:\
                         int(result['ResultSet']['Rows'][2]['Data'][0]['VarCharValue']),
                     result['ResultSet']['ResultSetMetadata']['ColumnInfo'][1]['Name']:\
-                        int(result['ResultSet']['Rows'][2]['Data'][1]['VarCharValue']),
-                    result['ResultSet']['ResultSetMetadata']['ColumnInfo'][2]['Name']:\
-                        float(result['ResultSet']['Rows'][2]['Data'][2]['VarCharValue']),
+                        float(result['ResultSet']['Rows'][2]['Data'][1]['VarCharValue']),
                 },
             ],
         )
@@ -600,8 +672,8 @@ class TestPostreadCalculate (unittest.TestCase):
         self.assertIn('ST_Within(ST_GeometryFromText(b.point), ST_GeometryFromText(d.polygon))', query)
         self.assertIn('d.number AS district', query)
         self.assertIn('b.geoid20', query)
-        self.assertIn('ST_X(ST_GeometryFromText(b.point)) AS intptlon', query)
-        self.assertIn('ST_Y(ST_GeometryFromText(b.point)) AS intptlat', query)
+        self.assertIn('ROUND(ST_X(ST_GeometryFromText(b.point)), 6) AS intptlon', query)
+        self.assertIn('ROUND(ST_Y(ST_GeometryFromText(b.point)), 6) AS intptlat', query)
         self.assertIn(f"b.prefix = '{upload.model.key_prefix}'", query)
         self.assertIn(f"d.upload = '{upload.id}'", query)
         self.assertIn('ORDER BY d.number', query)
@@ -615,7 +687,7 @@ class TestPostreadCalculate (unittest.TestCase):
         # Check CSV content structure
         csv_body = gzip.decompress(put_call[2]['Body'])
         csv_lines = csv_body.decode('utf8').strip().split('\r\n')
-        self.assertEqual(csv_lines[0], 'district,geoid20,intptlon,intptlat')
+        self.assertEqual(csv_lines[0], 'district,geoid20,intptlon,intptlat,source')
         self.assertIn('1,370010001001000,-78.5,35.8', csv_lines[1])
 
     @unittest.mock.patch('planscore.util.iter_athena_exec')
@@ -661,23 +733,29 @@ class TestPostreadCalculate (unittest.TestCase):
         rows = list(csv_reader)
 
         # Check column order
-        self.assertEqual(list(rows[0].keys()), ['district', 'geoid20', 'intptlon', 'intptlat'])
+        self.assertEqual(list(rows[0].keys()), ['district', 'geoid20', 'intptlon', 'intptlat', 'source'])
 
         # Check data - district should be 1-based
         self.assertEqual(len(rows), 3)
         self.assertEqual(rows[0]['district'], '1')
+        self.assertEqual(rows[0]['source'], '')
         self.assertEqual(rows[0]['geoid20'], '370010001001000')
         self.assertEqual(rows[1]['district'], '1')
+        self.assertEqual(rows[1]['source'], '')
         self.assertEqual(rows[2]['district'], '2')
+        self.assertEqual(rows[2]['source'], '')
+        self.assertEqual(rows[2]['intptlon'], '-78.6')
+        self.assertEqual(rows[2]['intptlat'], '35.9')
 
     @unittest.mock.patch('planscore.util.iter_athena_exec')
     def test_generate_block_assignment_file_large_result_streaming(self, iter_athena_exec):
         '''Test that large result sets (>1000 rows) are handled via S3 streaming'''
         athena, s3, upload = unittest.mock.Mock(), unittest.mock.Mock(), unittest.mock.Mock()
         upload.id, upload.model.key_prefix = 'ID', 'data/XX'
+        upload.districts = [{'source_district': f'District={n}'} for n in (1, 2)]
 
         # Mock a large CSV response from S3 (simulating >1000 rows)
-        csv_content = 'district,geoid20,intptlon,intptlat\n0,370010001001000,-78.5,35.8\n1,370010001001001,-78.6,35.9\n'
+        csv_content = 'district,geoid20,intptlon,intptlat\n0,370010001001000,-78.5,35.8\n1,370010001001001,-78.666667,35.999999\n'
         mock_text_wrapper = io.TextIOWrapper(io.BytesIO(csv_content.encode('utf-8')), encoding='utf-8')
 
         iter_athena_exec.return_value = [(True, mock_text_wrapper)]
@@ -696,9 +774,15 @@ class TestPostreadCalculate (unittest.TestCase):
         # Check data was processed correctly from streaming source
         self.assertEqual(len(rows), 2)
         self.assertEqual(rows[0]['district'], '1')  # 0-based to 1-based conversion
+        self.assertEqual(rows[0]['source'], 'District=1')
         self.assertEqual(rows[0]['geoid20'], '370010001001000')
+        self.assertEqual(rows[0]['intptlon'], '-78.5')
+        self.assertEqual(rows[0]['intptlat'], '35.8')
         self.assertEqual(rows[1]['district'], '2')
+        self.assertEqual(rows[1]['source'], 'District=2')
         self.assertEqual(rows[1]['geoid20'], '370010001001001')
+        self.assertEqual(rows[1]['intptlon'], '-78.666667')
+        self.assertEqual(rows[1]['intptlat'], '35.999999')
 
     @unittest.mock.patch('planscore.score.calculate_everything')
     @unittest.mock.patch('planscore.observe.populate_compactness')
@@ -713,7 +797,7 @@ class TestPostreadCalculate (unittest.TestCase):
         nullplan_path = os.path.join(os.path.dirname(__file__), 'data', 'null-plan.geojson')
         upload_key = data.UPLOAD_PREFIX.format(id=id) + 'null-plan.geojson'
 
-        put_district_geometries.return_value = [unittest.mock.Mock()] * 2
+        put_district_geometries.return_value = ([unittest.mock.Mock()] * 2, [None, None])
         accumulate_district_totals.return_value = [(None, [])]
         generate_block_assignment_file.return_value = 'https://s3.amazonaws.com/bucket/uploads/ID/blockassignments.csv.gz'
 

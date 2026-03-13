@@ -321,11 +321,11 @@ class TestData (unittest.TestCase):
         
         plaintext1 = upload1.to_plaintext()
         head, row1, row2, row3, tail = plaintext1.split('\r\n', 4)
-        
-        self.assertEqual(head, 'District\tDemocratic Votes\tRepublican Votes\tPopulation 2015\tReock')
-        self.assertEqual(row1, '1\t100\t300\t200\t0.2')
-        self.assertEqual(row2, '2\t400\t600\t500\t0.3')
-        self.assertEqual(row3, '3\t700\t900\t800\t0.4')
+
+        self.assertEqual(head, 'District\tSource District\tDemocratic Votes\tRepublican Votes\tPopulation 2015\tReock')
+        self.assertEqual(row1, '1\t\t100\t300\t200\t0.2')
+        self.assertEqual(row2, '2\t\t400\t600\t500\t0.3')
+        self.assertEqual(row3, '3\t\t700\t900\t800\t0.4')
         self.assertEqual(tail, '')
 
         upload2 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
@@ -345,11 +345,11 @@ class TestData (unittest.TestCase):
         
         plaintext3 = upload3.to_plaintext()
         head, row1, row2, row3, tail = plaintext3.split('\r\n', 4)
-        
-        self.assertEqual(head, 'District\tCandidate Scenario\tDemocratic Votes\tRepublican Votes\tPopulation 2015\tReock')
-        self.assertEqual(row1, '1\tO\t100\t300\t200\t0.2')
-        self.assertEqual(row2, '2\tD\t400\t600\t500\t0.3')
-        self.assertEqual(row3, '3\tR\t700\t900\t800\t0.4')
+
+        self.assertEqual(head, 'District\tSource District\tCandidate Scenario\tDemocratic Votes\tRepublican Votes\tPopulation 2015\tReock')
+        self.assertEqual(row1, '1\t\tO\t100\t300\t200\t0.2')
+        self.assertEqual(row2, '2\t\tD\t400\t600\t500\t0.3')
+        self.assertEqual(row3, '3\t\tR\t700\t900\t800\t0.4')
         self.assertEqual(tail, '')
 
         upload4 = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
@@ -363,11 +363,60 @@ class TestData (unittest.TestCase):
         
         plaintext4 = upload4.to_plaintext()
         head, row1, row2, row3, tail = plaintext4.split('\r\n', 4)
-        
-        self.assertEqual(head, 'District\tCandidate Scenario\tDemocratic Votes\tRepublican Votes\tPopulation 2015\tReock')
-        self.assertEqual(row1, '1\tO\t100\t300\t200\t0.2')
-        self.assertEqual(row2, '\tD\t400\t600\t500\t0.3')
-        self.assertEqual(row3, '2\tR\t700\t900\t800\t0.4')
+
+        self.assertEqual(head, 'District\tSource District\tCandidate Scenario\tDemocratic Votes\tRepublican Votes\tPopulation 2015\tReock')
+        self.assertEqual(row1, '1\t\tO\t100\t300\t200\t0.2')
+        self.assertEqual(row2, '\t\tD\t400\t600\t500\t0.3')
+        self.assertEqual(row3, '2\t\tR\t700\t900\t800\t0.4')
+        self.assertEqual(tail, '')
+
+    def test_upload_plaintext_with_source_district(self):
+        ''' data.Upload instances with source_district can be converted to plaintext
+        '''
+        upload = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
+            districts=[
+                { "totals": { "Democratic Votes": 100, "Population 2015": 200, "Republican Votes": 300 },
+                  "compactness": { "Reock": .2 },
+                  "source_district": 'SLDUST="028"' },
+                { "totals": { "Democratic Votes": 400, "Population 2015": 500, "Republican Votes": 600 },
+                  "compactness": { "Reock": .3 },
+                  "source_district": 'SLDUST="029"' },
+                { "totals": { "Democratic Votes": 700, "Population 2015": 800, "Republican Votes": 900 },
+                  "compactness": { "Reock": .4 },
+                  "source_district": 'District=3' }
+              ])
+
+        plaintext = upload.to_plaintext()
+        head, row1, row2, row3, tail = plaintext.split('\r\n', 4)
+
+        # Header should include 'Source District' column right after 'District'
+        self.assertEqual(head, 'District\tSource District\tDemocratic Votes\tRepublican Votes\tPopulation 2015\tReock')
+        # CSV excel-tab dialect will quote fields containing quotes and double internal quotes
+        self.assertEqual(row1, '1\t"SLDUST=""028"""\t100\t300\t200\t0.2')
+        self.assertEqual(row2, '2\t"SLDUST=""029"""\t400\t600\t500\t0.3')
+        self.assertEqual(row3, '3\tDistrict=3\t700\t900\t800\t0.4')
+        self.assertEqual(tail, '')
+
+    def test_upload_plaintext_with_none_source_district(self):
+        ''' data.Upload instances with source_district=None show empty string in plaintext
+        '''
+        upload = data.Upload(id='ID', key='uploads/ID/upload/whatever.json',
+            districts=[
+                { "totals": { "Democratic Votes": 100, "Population 2015": 200, "Republican Votes": 300 },
+                  "compactness": { "Reock": .2 },
+                  "source_district": None },
+                { "totals": { "Democratic Votes": 400, "Population 2015": 500, "Republican Votes": 600 },
+                  "compactness": { "Reock": .3 },
+                  "source_district": None }
+              ])
+
+        plaintext = upload.to_plaintext()
+        head, row1, row2, tail = plaintext.split('\r\n', 3)
+
+        # Header should include 'Source District' column, but rows should have empty values
+        self.assertEqual(head, 'District\tSource District\tDemocratic Votes\tRepublican Votes\tPopulation 2015\tReock')
+        self.assertEqual(row1, '1\t\t100\t300\t200\t0.2')
+        self.assertEqual(row2, '2\t\t400\t600\t500\t0.3')
         self.assertEqual(tail, '')
     
     @unittest.mock.patch('time.time')
