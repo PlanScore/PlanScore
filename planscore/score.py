@@ -869,7 +869,9 @@ def calculate_district_biases(upload):
         pvote_years.append(pvote_year)
 
     # Stack into 5D: (model_versions, incumbency=4, sims, districts, 2)
-    model_output = numpy.stack(model_outputs, axis=0)
+    sim_count_cap = min(o.shape[1] for o in model_outputs)
+    truncated_model_outputs = [o[:, :sim_count_cap, :, :] for o in model_outputs]
+    model_output = numpy.stack(truncated_model_outputs, axis=0)
     print("model_output.shape:", model_output.shape, "=", model_output.size, "cells")
     # model_output shape is now (model_versions, incumbency=4, sims, districts, 2)
 
