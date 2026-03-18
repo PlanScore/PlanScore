@@ -72,6 +72,10 @@ VERSION_PARAMETERS = {
         'New: rerun the 2020 election with more accurate updated data (updated August 2025)',
         '-2025A', [2020], 2024, -0.523, -0.495, True,
     ),
+    '2026A': VersionParameters(
+        'New: rerun the 2024 election with more accurate updated data (updated March 2026)',
+        '-2026A', [2024], 2024, -0.5, -0.5, True,
+    ),
 }
 
 PRESIDENTIAL_YEARS = (2016, 2020, 2024)
@@ -473,9 +477,9 @@ class Upload:
 
 # Active version of each state model
 
-VERSIONS_16_20_24A = ['2019Z', '2022F', '2025A']
+VERSIONS_16_20_24A = ['2019Z', '2022F', '2026A']
 VERSIONS_16_20_24B = ['2019Z', '2022F', '2025B']
-VERSIONS_20_24A = ['2022F', '2025A']
+VERSIONS_20_24A = ['2022F', '2026A']
 VERSIONS_20_24B = ['2022F', '2025B']
 
 MODELS = [
