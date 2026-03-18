@@ -477,10 +477,12 @@ class Upload:
 
 # Active version of each state model
 
-VERSIONS_16_20_24A = ['2019Z', '2022F', '2026A']
+VERSIONS_16_20_24A = ['2019Z', '2022F', '2025A']
 VERSIONS_16_20_24B = ['2019Z', '2022F', '2025B']
-VERSIONS_20_24A = ['2022F', '2026A']
+VERSIONS_16_20_24AA = ['2019Z', '2022F', '2026A']
+VERSIONS_20_24A = ['2022F', '2025A']
 VERSIONS_20_24B = ['2022F', '2025B']
+VERSIONS_20_24AA = ['2022F', '2026A']
 
 MODELS = [
     Model(State.XX, House.statehouse,    2,  True, VERSIONS_16_20_24A, 'data/XX/007-pvote-2024'), # b8e19879 and more
@@ -501,9 +503,9 @@ MODELS = [
     Model(State.AZ, House.statehouse,   60,  True, VERSIONS_16_20_24A, 'data/AZ/012-acs-2020'), # c82db89
     Model(State.AZ, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/AZ/012-acs-2020'), # c82db89
     Model(State.CA, House.ushouse,      52,  True, VERSIONS_16_20_24B, 'data/CA/011-pvote-2016'), # 5c24f37
-    Model(State.CA, House.statesenate,  40,  True, VERSIONS_20_24A, 'data/CA/008-acs-2020'), # c82db89
-    Model(State.CA, House.statehouse,   80,  True, VERSIONS_20_24A, 'data/CA/008-acs-2020'), # c82db89
-    Model(State.CA, House.localplan,  None,  True, VERSIONS_20_24A, 'data/CA/008-acs-2020'), # c82db89
+    Model(State.CA, House.statesenate,  40,  True, VERSIONS_20_24AA, 'data/CA/011-pvote-2016'), # 5c24f37
+    Model(State.CA, House.statehouse,   80,  True, VERSIONS_20_24AA, 'data/CA/011-pvote-2016'), # 5c24f37
+    Model(State.CA, House.localplan,  None,  True, VERSIONS_20_24AA, 'data/CA/011-pvote-2016'), # 5c24f37
     Model(State.CO, House.ushouse,       8,  True, VERSIONS_16_20_24B, 'data/CO/015-cvap-2023'), # d4b3c7d
     Model(State.CO, House.statesenate,  35,  True, VERSIONS_16_20_24A, 'data/CO/013-acs-2020'), # c82db89
     Model(State.CO, House.statehouse,   65,  True, VERSIONS_16_20_24A, 'data/CO/013-acs-2020'), # c82db89
