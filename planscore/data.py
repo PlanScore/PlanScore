@@ -74,7 +74,7 @@ VERSION_PARAMETERS = {
     ),
     '2026A': VersionParameters(
         'New: rerun the 2024 election with more accurate updated data (updated March 2026)',
-        '-2026A', [2024], 2024, -0.5, -0.5, True,
+        '-2026A', [2024], 2024, -0.5, -0.4948475, True,
     ),
 }
 
