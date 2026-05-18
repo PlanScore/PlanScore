@@ -62,6 +62,12 @@ PlanScore requires GDAL 3.
 
 ##### Mac OS X
 
+  PATH="/Applications/Postgres.app/Contents/Versions/latest/bin:$PATH" \                                                                                                                                     
+    pip install "gdal[numpy]==$(/Applications/Postgres.app/Contents/Versions/latest/bin/gdal-config --version).*"
+                                                                                                                                                                                                             
+  No Homebrew involved — just Postgres.app as the GDAL provider, same self-contained-app-bundle model as your old KyngChaos setup.                                                                           
+
+
 On Mac, [GDAL is gettable from KyngChaos](http://www.kyngchaos.com/software:frameworks).
 After installing the framework to `/Library/Frameworks/GDAL.framework/Versions/3.2`,
 install GDAL with [custom library and include directories](https://stackoverflow.com/questions/18783390/python-pip-specify-a-library-directory-and-an-include-directory).
