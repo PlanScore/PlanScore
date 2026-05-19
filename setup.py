@@ -33,6 +33,8 @@ setup(
         'Markdown == 3.9',
         'ModestMaps == 1.4.7',
         'Werkzeug == 2.3.8',
+        'click == 8.1.8',
+        'click-plugins == 1.1.1',
         ],
     extras_require = {
         'test': [
