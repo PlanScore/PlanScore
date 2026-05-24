@@ -72,6 +72,10 @@ VERSION_PARAMETERS = {
         'New: rerun the 2020 election with more accurate updated data (updated August 2025)',
         '-2025A', [2020], 2024, -0.523, -0.495, True,
     ),
+    '2026A': VersionParameters(
+        'New: rerun the 2024 election with more accurate updated data (updated March 2026)',
+        '-2026A', [2024], 2024, -0.5, -0.4948475, True,
+    ),
 }
 
 PRESIDENTIAL_YEARS = (2016, 2020, 2024)
@@ -475,8 +479,10 @@ class Upload:
 
 VERSIONS_16_20_24A = ['2019Z', '2022F', '2025A']
 VERSIONS_16_20_24B = ['2019Z', '2022F', '2025B']
+VERSIONS_16_20_24AA = ['2019Z', '2022F', '2026A']
 VERSIONS_20_24A = ['2022F', '2025A']
 VERSIONS_20_24B = ['2022F', '2025B']
+VERSIONS_20_24AA = ['2022F', '2026A']
 
 MODELS = [
     Model(State.XX, House.statehouse,    2,  True, VERSIONS_16_20_24A, 'data/XX/007-pvote-2024'), # b8e19879 and more
@@ -497,9 +503,9 @@ MODELS = [
     Model(State.AZ, House.statehouse,   60,  True, VERSIONS_16_20_24A, 'data/AZ/012-acs-2020'), # c82db89
     Model(State.AZ, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/AZ/012-acs-2020'), # c82db89
     Model(State.CA, House.ushouse,      52,  True, VERSIONS_16_20_24B, 'data/CA/011-pvote-2016'), # 5c24f37
-    Model(State.CA, House.statesenate,  40,  True, VERSIONS_20_24A, 'data/CA/008-acs-2020'), # c82db89
-    Model(State.CA, House.statehouse,   80,  True, VERSIONS_20_24A, 'data/CA/008-acs-2020'), # c82db89
-    Model(State.CA, House.localplan,  None,  True, VERSIONS_20_24A, 'data/CA/008-acs-2020'), # c82db89
+    Model(State.CA, House.statesenate,  40,  True, VERSIONS_20_24AA, 'data/CA/011-pvote-2016'), # 5c24f37
+    Model(State.CA, House.statehouse,   80,  True, VERSIONS_20_24AA, 'data/CA/011-pvote-2016'), # 5c24f37
+    Model(State.CA, House.localplan,  None,  True, VERSIONS_20_24AA, 'data/CA/011-pvote-2016'), # 5c24f37
     Model(State.CO, House.ushouse,       8,  True, VERSIONS_16_20_24B, 'data/CO/015-cvap-2023'), # d4b3c7d
     Model(State.CO, House.statesenate,  35,  True, VERSIONS_16_20_24A, 'data/CO/013-acs-2020'), # c82db89
     Model(State.CO, House.statehouse,   65,  True, VERSIONS_16_20_24A, 'data/CO/013-acs-2020'), # c82db89
@@ -585,9 +591,9 @@ MODELS = [
     Model(State.MT, House.statehouse,  100,  True, VERSIONS_16_20_24A, 'data/MT/010-acs-2020'), # c82db89
     Model(State.MT, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/MT/010-acs-2020'), # c82db89
     Model(State.NC, House.ushouse,      14,  True, VERSIONS_16_20_24B, 'data/NC/024-cvap-2023'), # d4b3c7d
-    Model(State.NC, House.statesenate,  50,  True, VERSIONS_16_20_24A, 'data/NC/022-acs-2020'), # c82db89
-    Model(State.NC, House.statehouse,  120,  True, VERSIONS_16_20_24A, 'data/NC/022-acs-2020'), # c82db89
-    Model(State.NC, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/NC/022-acs-2020'), # c82db89
+    Model(State.NC, House.statesenate,  50,  True, VERSIONS_16_20_24A, 'data/NC/024-cvap-2023'), # d4b3c7d
+    Model(State.NC, House.statehouse,  120,  True, VERSIONS_16_20_24AA, 'data/NC/024-cvap-2023'), # d4b3c7d
+    Model(State.NC, House.localplan,  None,  True, VERSIONS_16_20_24AA, 'data/NC/024-cvap-2023'), # d4b3c7d
     Model(State.ND, House.ushouse,       1,  True, VERSIONS_16_20_24B, 'data/ND/013-pvote-2024'), # 3581561
     Model(State.ND, House.statesenate,  47,  True, VERSIONS_16_20_24A, 'data/ND/011-acs-2020'), # c82db89
     Model(State.ND, House.statehouse,   94,  True, VERSIONS_16_20_24A, 'data/ND/011-acs-2020'), # c82db89
@@ -628,9 +634,9 @@ MODELS = [
     Model(State.OR, House.statehouse,   60,  True, VERSIONS_16_20_24A, 'data/OR/008-acs-2020'), # c82db89
     Model(State.OR, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/OR/008-acs-2020'), # c82db89
     Model(State.PA, House.ushouse,      17,  True, VERSIONS_16_20_24B, 'data/PA/021-cvap-2023'), # d4b3c7d
-    Model(State.PA, House.statesenate,  50,  True, VERSIONS_16_20_24A, 'data/PA/019-acs-2020'), # c82db89
-    Model(State.PA, House.statehouse,  203,  True, VERSIONS_16_20_24A, 'data/PA/019-acs-2020'), # c82db89
-    Model(State.PA, House.localplan,  None,  True, VERSIONS_16_20_24A, 'data/PA/019-acs-2020'), # c82db89
+    Model(State.PA, House.statesenate,  50,  True, VERSIONS_16_20_24A, 'data/PA/021-cvap-2023'), # d4b3c7d
+    Model(State.PA, House.statehouse,  203,  True, VERSIONS_16_20_24AA, 'data/PA/021-cvap-2023'), # d4b3c7d
+    Model(State.PA, House.localplan,  None,  True, VERSIONS_16_20_24AA, 'data/PA/021-cvap-2023'), # d4b3c7d
     Model(State.RI, House.ushouse,       2,  True, VERSIONS_16_20_24B, 'data/RI/017-cvap-2023'), # d4b3c7d
     Model(State.RI, House.statesenate,  38,  True, VERSIONS_16_20_24A, 'data/RI/015-acs-2020'), # c82db89
     Model(State.RI, House.statehouse,   75,  True, VERSIONS_16_20_24A, 'data/RI/015-acs-2020'), # c82db89

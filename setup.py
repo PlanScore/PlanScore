@@ -27,21 +27,36 @@ setup(
             ],
         },
     install_requires = [
-        'Flask == 2.3.3',
-        'itsdangerous == 2.2.0',
-        'Jinja2 == 3.1.6',
         'Markdown == 3.9',
         'ModestMaps == 1.4.7',
+        # Flask and its dependencies
+        'Flask == 2.3.3',
+        'blinker == 1.9.0',
+        'click == 8.1.8',
+        'importlib_metadata == 8.7.0',
+        'itsdangerous == 2.2.0',
+        'Jinja2 == 3.1.6',
+        'MarkupSafe == 3.0.2',
         'Werkzeug == 2.3.8',
+        'zipp == 3.23.0',
         ],
     extras_require = {
         'test': [
             'ruff == 0.13.2',
             ],
         'large': [
-            'boto3 == 1.40.25',
-            'networkx == 2.5.1',
             'Shapely == 1.7.1',
+            # NetworkX and its dependencies
+            'networkx == 2.5.1',
+            'decorator == 4.4.2',
+            # Boto3 and its dependencies
+            'boto3 == 1.40.25',
+            'botocore == 1.40.30',
+            'jmespath == 0.10.0',
+            'python-dateutil == 2.8.2',
+            's3transfer == 0.13.1',
+            'six == 1.16.0',
+            'urllib3 == 1.26.6',
             ],
         'compiled': [
             'GDAL == 3.8.4',
