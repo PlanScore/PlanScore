@@ -272,7 +272,7 @@ function load_plan_map(url, div, plan)
         pane.style.pointerEvents = 'none';
 
         // Add Toner tiles for base map
-        L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}{r}.png', {
+        L.tileLayer('https://basemaps.cartocdn.com/rastertiles/light_nolabels/{z}/{x}/{y}{r}.png?key=cb1_3hom_1_36a6e8b83eb81e2de4540c37', {
             attribution: '&copy;<a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy;<a href="https://carto.com/attribution">CARTO</a>',
             maxZoom: 18
         }).addTo(map);
