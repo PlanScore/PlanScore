@@ -73,7 +73,7 @@ setup(
             'oauth2client == 4.1.3',
             ],
         'prepare': [
-            'geopandas == 0.10.2',
+            'geopandas == 1.1.2',
             'pandas == 1.4.1',
             'pyarrow == 6.0.1',
             ],
