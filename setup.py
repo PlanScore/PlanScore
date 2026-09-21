@@ -45,7 +45,7 @@ setup(
             'Shapely == 1.7.1',
             ],
         'compiled': [
-            'GDAL == 3.8.4',
+            'GDAL == 3.13.1',
             'numpy == 1.26.4',
             ],
         'deploy': [
