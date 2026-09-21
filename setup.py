@@ -75,7 +75,7 @@ setup(
         'prepare': [
             'geopandas == 0.10.2',
             'pandas == 1.4.1',
-            'pyarrow == 6.0.1',
+            'pyarrow == 14.0.1',
             ],
         },
     entry_points = dict(
