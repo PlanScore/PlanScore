@@ -27,6 +27,7 @@ setup(
             ],
         },
     install_requires = [
+        'click >= 7.1.2, < 8.2',
         'Flask == 2.3.3',
         'itsdangerous == 2.2.0',
         'Jinja2 == 3.1.6',

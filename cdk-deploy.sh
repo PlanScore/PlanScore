@@ -1,4 +1,5 @@
-#!/bin/sh -ex
+#!/bin/bash -ex
+set -o pipefail
 
 PREFIX=$1
 OPTION=$2
